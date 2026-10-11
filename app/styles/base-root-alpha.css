@@ -246,7 +246,6 @@
     --topology-command-primary-surface: rgba(139, 151, 255, 0.105);
     --topology-command-primary-border: rgba(139, 151, 255, 0.24);
     --topology-command-primary-min-height: clamp(40px, 2.6vw, 44px);
-    --topology-overview-proof-summary-lines: 1;
     --topology-path-handoff-surface: rgba(139, 151, 255, 0.045);
     --topology-path-handoff-border: rgba(139, 151, 255, 0.16);
     --topology-path-handoff-action-min-height: 20px;
