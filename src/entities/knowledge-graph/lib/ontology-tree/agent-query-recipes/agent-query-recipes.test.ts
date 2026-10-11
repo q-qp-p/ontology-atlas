@@ -1,35 +1,42 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import type { KnowledgeGraphEdge, KnowledgeGraphNode } from "../../model";
+import type { KnowledgeGraphEdge, KnowledgeGraphNode } from "../../../model";
 import {
-  AGENT_PRACTITIONER_CONCERNS,
-  buildAgentHandoffPrompt,
-  buildAgentGraphDbQueryPack,
-  buildAgentInvestigationPlaybooks,
-  buildAgentQueryRecipes,
-  buildAgentTraversalStrategies,
-  buildAgentWriteGuardrails,
-  countAgentGraphDbCliPackCommands,
   formatAgentBusinessQuestionBrief,
   formatAgentBusinessQuestionHandoff,
+} from "./business-questions";
+import { selectAgentProjectEntrypoint, selectAgentQueryEntrypoints } from "./entrypoints";
+import {
+  buildAgentGraphDbQueryPack,
+  countAgentGraphDbCliPackCommands,
   formatAgentGraphDbCliPack,
   formatAgentGraphDbQueryPack,
   formatAgentGraphDbQueryPackItemPrompt,
-  formatAgentPractitionerConcernsChecklist,
-  formatAgentGuardrailPrompt,
+} from "./graph-db-query-pack";
+import { buildAgentHandoffPrompt } from "./handoff-prompt";
+import {
+  buildAgentInvestigationPlaybooks,
   formatAgentPlaybookPrompt,
+} from "./investigation-playbooks";
+import { validateAgentMcpQueryCall, validateAgentMcpToolCall } from "./mcp-payloads";
+import {
+  AGENT_PRACTITIONER_CONCERNS,
+  formatAgentPractitionerConcernsChecklist,
+} from "./practitioner-concerns";
+import {
+  buildAgentQueryRecipes,
   formatAgentQueryCallCliCommand,
   formatAgentRecipeCliCommand,
   formatAgentRecipePayload,
   formatAgentRunOrderPrompt,
+} from "./query-recipes";
+import {
+  buildAgentTraversalStrategies,
   formatAgentTraversalPacket,
   formatAgentTraversalStrategyPrompt,
-  selectAgentProjectEntrypoint,
-  selectAgentQueryEntrypoints,
-  validateAgentMcpQueryCall,
-  validateAgentMcpToolCall,
-} from "./agent-query-recipes";
+} from "./traversal-strategies";
+import { buildAgentWriteGuardrails, formatAgentGuardrailPrompt } from "./write-guardrails";
 
 function readMcpOperationEnum(name: string): string[] {
   const source = readFileSync(join(process.cwd(), "mcp/src/ontology-engine.mjs"), "utf-8");
