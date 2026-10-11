@@ -21,8 +21,8 @@ export const MARKDOWN_LANGUAGE_BASELINES = Object.freeze({
     quotedEvidenceLines: 0,
   }),
   historical: Object.freeze({
-    unexpectedFiles: 7,
-    unexpectedLanguageCodePoints: 16_365,
+    unexpectedFiles: 4,
+    unexpectedLanguageCodePoints: 6_344,
     quotedEvidenceLines: 0,
   }),
 });

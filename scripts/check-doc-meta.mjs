@@ -315,7 +315,6 @@ export function citationProblems(root = ROOT) {
 }
 
 export const STANDING_DATED_DOCS = [
-  'docs/audits/USER-WALKTHROUGH-FIRST-RUN-2026-08-31.md',
   'docs/benchmark/FINDINGS-2026-08-25.md',
   'docs/benchmark/FINDINGS-2026-08-31-change-flow.md',
   'docs/benchmark/FINDINGS-2026-08-31-metric-split.md',
@@ -333,7 +332,6 @@ export const STANDING_DATED_DOCS = [
   'docs/benchmark/MCP-ONE-CLICK-2026-09-07.md',
   'docs/benchmark/STRATA-2026-09-06.md',
   'docs/benchmark/THREE-PROBE-2026-09-06.md',
-  'docs/plans/DESIGN-OVERHAUL-2026-07-25.md',
 ];
 
 const DATED_NAME = /20\d{2}-?[01]\d-?[0-3]\d/;

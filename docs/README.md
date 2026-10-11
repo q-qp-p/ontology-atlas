@@ -43,7 +43,7 @@ or a test that parses them pins their path.
 | `records/` | decision, change, release and pilot fragments | `records/README.md` only |
 | `plans/` | plans, historical and one live program | no |
 | `launch/` | marketing copy and the demo shoot | no |
-| `archive/`, `audits/`, `benchmark/`, `prototypes/` | dated evidence and drafts | no |
+| `benchmark/`, `prototypes/` | dated evidence and drafts | no |
 | `assets/readme/` | images the root README shows | no |
 
 The vault's frontmatter is graph data; use the MCP/CLI rather than manually
@@ -54,7 +54,7 @@ which resolves to their GitHub page.
 
 `DECISIONS.md`, `CHANGELOG.md` and `PO-PILOT.md` are frozen history; new decisions, changes and
 pilot runs are fragments under `records/` written by `pnpm record:new`
-([how](records/README.md)); the PO pilot is closed and its records are frozen. `archive/`, `audits/`, `plans/` and
+([how](records/README.md)); the PO pilot is closed and its records are frozen. `plans/` and
 `benchmark/` hold dated context, not current instructions. A deleted superseded
 artifact can be recovered from Git when a specific historical question requires
 it.
