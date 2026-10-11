@@ -86,7 +86,7 @@ export interface DocsSidebarBodyProps {
 const RECENTLY_CHANGED_STRIP_MAX = 5;
 
 /**
- * The row's widest state needs 301.3px (`.claude/shots-2026-09-07/docshead-before-measurements.json`);
+ * The row's widest state measured 301.3px;
  * 320 adds the next gap step so a label never appears with nowhere to go.
  * The className writes it out as `@min-[320px]`: Tailwind cannot read a template, and the test compares them.
  */
