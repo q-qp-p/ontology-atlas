@@ -3,30 +3,12 @@ import { expect, test } from '@playwright/test';
 import { waitForAnimationsDone } from './settle';
 
 /**
- * "Recent changes" must **not be a dead end on the sample.**
- *
- * ## Why this spec exists
- *
- * Owner report, 2026-08-03: *"On the normal screen, pressing 'recent changes' does nothing."* There
- * were two causes: ① it was disabled without looking disabled (owned by
- * `tests/contract/disabled-affordance.contract.test.ts`), and ② on the sample it
- * **should not have been disabled at all.**
- *
- * Recent changes is 0 on the sample not because nothing has been changed yet but
- * because **the sample's dates are when this repository last touched the fixture.**
- * Waiting does not turn it on — it only gains meaning once a folder is opened. When
- * the reason is "your next action" rather than "none", the next action must be
- * offered: that is `surfaces.md`'s degradation contract (why plus where) and the
- * **0 dead CTAs** the web smoke test requires.
- *
- * Why e2e rather than jsdom: modality (the scrim), centring, focus, and Esc can only
- * be shown true **on a rendered screen.**
+ * On the sample, recent changes is 0 because the fixture dates are not real, so the dialog must
+ * offer the next action (why plus where, `surfaces.md`). Modality, centring, focus and Esc need
+ * a rendered screen.
  */
 
-/*
- * One page load walks the whole contract. It used to be six tests that each paid for the map's
- * load to check one property of the same dialog.
- */
+/* One page load walks the whole contract rather than paying the map's load per property. */
 test('최근 변경 — 샘플에서 폴더로 가는 길이 모달로 열리고 닫힌다', async ({ page }) => {
   await page.setViewportSize({ width: 1512, height: 900 });
   // The page's scripts have loaded (so the chip answers a press) and its toolbar is at rest.

@@ -5,15 +5,8 @@ import { waitForMapSettled, waitForMapStill } from "./settle";
 import type { Box, DialProbe } from "../../src/widgets/ontology-map/dial/types";
 
 /**
- * **A short window does not keep tall reservations** (2026-09-19).
- *
- * The overview fit reserves a tool lane on top (148) and a readout band on
- * the bottom (96 plus the label allowance), sized for a tall desktop window.
- * Below 880 px the bands shrink to the tool lane plus a chip and the readout
- * plus a name. The flat dial (2026-10-03) frames its clusters and their
- * outward names, so the bar is the drawn extent (chips, discs and domain
- * names) against the free map: on the binding axis it fills at least 85 %
- * at 1512×806, and no name leaves the free rect.
+ * Below 880 px the overview fit shrinks its top and bottom reservations. The bar is the
+ * drawn extent filling at least 85 % of the free map on the binding axis at 1512x806.
  */
 async function drawnFill(page: import("@playwright/test").Page) {
   return page.evaluate(() => {
@@ -90,9 +83,8 @@ test("the dial fills a short window's free map instead of a tall reservation", a
 });
 
 /**
- * The lanes are read again on every viewport commit, so a window dragged
- * from tall to short refits with the short lanes without a reload — the
- * token cache used to hold the first read for the whole session.
+ * The lanes are read on every viewport commit, so a window resized from tall to short refits
+ * without a reload.
  */
 test("shrinking a tall window refits with the short lanes without a reload", async ({ page }) => {
   test.setTimeout(90_000);

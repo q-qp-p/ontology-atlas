@@ -6,50 +6,8 @@ import { AUDITED_ROUTES } from "./audited-routes";
 import { seedFirstRunSeen } from "./first-run-seed";
 
 /**
- * **WCAG does not exempt states** — 4.5:1 must hold during hover too.
- *
- * ## Why this gate exists (2026-08-05 audit)
- *
- * Both `measure-contrast.mjs` and `contrast-ratchet` sweep **only the resting DOM**.
- * In that blind spot the product's primary CTAs were breaking AA while hovered:
- *
- *   Download for Apple Silicon  4.70 → **3.51**
- *   Get the app                 4.70 → **3.17**
- *   Choose an existing folder   4.70 → **4.01**
- *   Copy the next action        4.61 → **4.41**
- *
- * Two causes, both **conventions**. ① Dark UI brightens on hover, but on a **filled
- * button** the ink is white, so brightening lowers contrast. ② Controls carrying a
- * tint used `accent` ink, and the tint went up one step on hover.
- *
- * ## What this instrument **does not** see (measured 2026-08-15 — the numbers
- * decided whether to switch it on)
- *
- * - **It does not judge non-text contrast (1.4.11).** Measuring every place where
- *   hover changes a border against 3:1 found **57 of 60 below** (1.12–2.92).
- *   Enabling that as an error means 57 items of noise, the exact shape this
- *   repository explicitly forbids (`design-gates.md`, on always measuring before
- *   enabling a rule — noise buries the existing signal). Besides, hover in this app
- *   never states its state through a border alone: surface, ink, and border change
- *   **together**, and it has already been measured separately that a 1px border
- *   cannot be separated by luminance on this dark ground whatever value is chosen.
- *   **Whether to require 3:1 of borders is a design verdict, not an instrument's
- *   question**, so it goes to that seat.
- * - **Child ink changed by `group-hover:`** — this instrument reads only the
- *   control's **own** colours (25 measured places are outside its view).
- * - **Controls that only render, and surfaces that only open, with a vault** (sheets,
- *   menus, popovers). The same blind spot recorded in ledger 2026-08-15 (6) —
- *   indicators that appear only conditionally may never enter a runtime
- *   instrument's view, which is why a computed contract at the source layer is
- *   needed as its partner.
- *
- * ## ⚠️ Never infer by reading the stylesheet
- *
- * The first version found `:hover` rules in `document.styleSheets` and computed from
- * them. **That instrument reported 0** — it picked "the last matching rule" rather
- * than the cascade winner, so hover backgrounds resolved to the panel colour.
- * Actually hovering and reading `getComputedStyle` produced 5. **Inference is not
- * measurement.**
+ * Hover is measured by hovering and reading `getComputedStyle`; stylesheet inference picks the wrong
+ * rule. Not seen: non-text contrast, child ink changed by `group-hover:`, vault-only surfaces.
  */
 // Each audit owns its page and pointer; no file hooks or shared mutable state.
 test.describe.configure({ mode: 'parallel' });
@@ -150,26 +108,8 @@ async function parkPointer(page: Page): Promise<void> {
 }
 
 /**
- * **Next's dev overlay is not our UI** (2026-08-18).
- *
- * Tooling UI that exists only on the dev server (the "N Issues" badge and "Collapse
- * issues badge") was caught by this audit and turned five routes red. That was
- * **not a false alarm in itself** — the badge appeared because of a hydration error
- * we had introduced, and fixing it made the badge disappear.
- * But **on one route it cannot disappear in principle**: the locale-less 404 is
- * fully client-rendered in dev, so for the inline boot script the layout renders,
- * React emits
- * *«scripts inside React components are never executed when rendering on the
- * In the production static export that page is baked to HTML at build time, so the
- * script runs normally and this warning **never reaches a user.**
- *
- * So it is excluded from the audit — not switching the rule off but **restoring its
- * reach to our own surface**. What this gate protects is the hover contrast of the
- * controls we ship, and tooling that exists only on the dev server is not shipped.
- *
- * ⚠️ Whether this exclusion also swallows our controls is measured by the
- * self-verification test below: it must still catch the planted failure, and the
- * number of controls compared must be at least 3 per route.
+ * Next's dev overlay is tooling that exists only on the dev server and is not shipped UI,
+ * so it is excluded from the audit.
  */
 const DEV_TOOLING_SELECTOR = "nextjs-portal, [data-nextjs-toast], [data-nextjs-dev-tools-button]";
 
@@ -191,15 +131,8 @@ async function auditRoute(page: Page) {
         if (node.closest(devTooling)) return false;
         const c = getComputedStyle(node), r = node.getBoundingClientRect();
         /*
-         * ⚠️ **The first-viewport constraint was removed** (2026-08-15). It used to measure
-         * only controls inside the initially visible screen via
-         * `r.top >= 0 && r.bottom <= innerHeight …`. That constraint was inertia, not a
-         * technical limit — Playwright's `hover()` scrolls the target into view itself.
-         * Measured: that one line left 25 controls unmeasured across the audited routes.
-         *
-         * Why resting states may be collected before scrolling: this instrument reads only
-         * colours, and colours do not change with scroll (background compositing follows the
-         * ancestor chain, which is position-independent).
+         * Controls outside the first viewport are measured: Playwright's `hover()` scrolls into view itself,
+         * and colours do not change with scroll.
          */
         return (
           r.width > 6 && r.height > 6 && c.visibility !== "hidden" && Number(c.opacity) > 0.05 &&
@@ -233,21 +166,6 @@ async function auditRoute(page: Page) {
   return { offenders, compared, colorChanged, mainCompared };
 }
 
-/**
- * **The routes this instrument walks.**
- *
- * Everything in this file measures `AUDITED_ROUTES`, and it should: a route nobody hovers is a
- * route whose hover contrast nobody knows. This instrument has a floor, and a floor is only
- * meaningful on a screen whose controls it has not already counted — which is why the list has
- * had a subtraction twice and has none now.
- *
- * `/ko/agents/` came off on 2026-09-05, when MCP left that destination and what remained — in a
- * browser, which cannot launch a program — was a title, a sentence and one degradation row, below
- * the floor of 3. On 2026-09-18 MCP came back as a section of that same page, and
- * `/ko/agents/?tab=mcp` was that page scrolled: the same controls, so the address came off to
- * keep from counting the same state pairs twice. On 2026-09-19 MCP became the page's second tab:
- * a different set of controls under the same title, walked as itself again.
- */
 const HOVER_ROUTES = AUDITED_ROUTES;
 
 for (const route of HOVER_ROUTES) {

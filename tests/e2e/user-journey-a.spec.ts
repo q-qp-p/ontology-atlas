@@ -20,22 +20,13 @@ import { useDogfoodSample } from "./sample-source";
 const FINDING_LIMIT = 15;
 
 test("A1·A2·A5 공개 여정 한 플로우", async ({ page }) => {
-  // This journey walks the dogfood project (`/project/ontology-atlas/`) — the default
-  // sample became an example business on 2026-07-26, so it is selected explicitly.
+  // This journey walks the dogfood project (`/project/ontology-atlas/`), so it is selected explicitly.
   await useDogfoodSample(page);
   const consoleErrors: string[] = [];
   const pageErrors: string[] = [];
   /** Time budgets — machine-dependent, so they are **reported only**. */
   const findings: string[] = [];
-  /*
-   * **Deterministic facts — these fail the test** (check inventory, 2026-08-17).
-   *
-   * This spec is named for a journey, yet every journey assertion was a
-   * `console.log`. A sentence like *"A2 root map INDEX panel missing — landing detour
-   * regression?"* is a fact independent of machine speed, and it was printed while
-   * passing. Only the machine-dependent parts (TTFB budgets) stay as reports;
-   * presence-or-absence is raised to a failure.
-   */
+  /* Deterministic facts fail the test; only machine-dependent parts (TTFB budgets) are reported. */
   const defects: string[] = [];
 
   page.on("pageerror", (err) => pageErrors.push(err.message));
@@ -76,12 +67,7 @@ test("A1·A2·A5 공개 여정 한 플로우", async ({ page }) => {
     );
   }
 
-  // ── A2. Root = the map (no separate marketing landing) ──────────────────
-  // `getByText("Ontology Atlas", { exact: true })` used to match visible
-  // hero copy on the old marketing LandingPage. Root-first-open moved that
-  // copy to `/download` — the only surviving "Ontology Atlas" mark on `/`
-  // is the persistent AppNavRail brand link (`title`/`aria-label`, icon-only,
-  // no text child), so assert via its accessible name instead.
+  // Assert the persistent nav rail brand link by accessible name: it is icon-only with no text child.
   const landingStart = Date.now();
   await page.goto("/en/", { waitUntil: "domcontentloaded" });
   const productName = page.getByRole("link", { name: "Ontology Atlas", exact: true }).first();
@@ -90,23 +76,6 @@ test("A1·A2·A5 공개 여정 한 플로우", async ({ page }) => {
   if (landingTtfb > 5_000) {
     findings.push(`A2 root map product mark까지 ${landingTtfb}ms (5s 초과)`);
   }
-  /*
-   * **The check that demanded INDEX here was deleted** (check inventory,
-   * 2026-08-17).
-   *
-   * It used to print *"landing detour regression?"* when `/` had no map INDEX. That
-   * expectation is **an inverted contract** — by the 2026-07-30 decision, `/` for a
-   * web visitor who has not chosen a vault is the gateway (the same face as
-   * `/download`), and having no INDEX is correct
-   * (`.claude/rules/architecture.md` "URL contract" — the URL contract). A separate
-   * check guards that contract now: `ontology-ui.spec.ts`'s "root renders the gateway
-   * face", where `download-gnb` is visible and `topology-index-panel` count is 0.
-   *
-   * Because this line **only ever printed to the log**, it kept calling correct
-   * behaviour a defect long after the contract was inverted, and nobody saw it. The
-   * moment it was raised to a failure, that became visible. Another check's contract
-   * is not re-measured here.
-   */
 
   // ── A5. Cmd+K on the detail page → the search palette, in place ─────────
   // Cmd+K on a detail page opens the SearchPalette inside that page rather than

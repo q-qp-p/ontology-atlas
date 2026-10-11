@@ -7,81 +7,13 @@ const { judgeText, judgeAdjacentMarks } = require('../../scripts/lib/contrast.mj
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- Same reason.
 const { collectAdjacentMarks } = require('../../scripts/lib/contrast-collect.mjs');
 
-/**
- * Contrast ratchet — **a token that drops contrast turns red in the build it lands
- * in.**
- *
- * **Why an instrument is not enough.** `scripts/measure-contrast.mjs` landed on
- * 2026-08-03, but it only runs **when a person invokes it**. The standard practice
- * in design-system testing demands the opposite: *"a token edit that quietly drops
- * contrast below the accessibility threshold shows up the same build it lands"*. A
- * hand-invoked instrument does not exist unless whoever edited the token invokes it.
- *
- * **Why this is needed alongside the axe ratchet.** They overlap without being the
- * same. `a11y-ratchet`'s `color-contrast` counts elements **axe's way** (12
- * elements); this counts **(foreground, background, size) combinations** (4
- * combinations). The unit of prescription is the combination, so this side is easier
- * to fix, while axe covers rules we do not look at. Keeping both is worth it — when
- * one develops a blind spot, the other covers it.
- *
- * The calculation lives in `scripts/lib/contrast.mjs` (pure functions with fixture
- * probes). This file only collects and judges.
- */
-
-// Uses **the same list** as the axe ratchet. This side used to have 5 routes and
-// that side 8, with no reason recorded on either — the cost of that blind spot is
-// in `audited-routes.ts`'s doc-block.
 const ROUTES = AUDITED_ROUTES;
 
-/**
- * Full inventory 2026-08-03 (1512×900, the 5 routes of the time, 109 combinations):
- *
- * | Route | Failing | What |
- * |---|---:|---|
- * | ~~`/ko`~~ | ~~2~~ → **0** | The ink on the primary CTA's indigo fill was `--color-text-primary` (#f7f8f8, **4.42:1**). Moved to `--color-text-on-accent` (#ffffff, **4.70:1**), which already existed for that surface — two places, `button.tsx`'s `primary` variant and `DownloadPage`'s size badge. Zero new values |
- * | ~~`/ko/projects`~~ | ~~2~~ → **0** | `--color-text-quaternary` only broke on surfaces one step up (overlay-1 composited **4.37**, elevated **4.16**). The 2026-08-03 verdict took it `#787c84` → `#82828a` — all four resting surfaces AA (5.23 / 5.00 / 4.81 / 4.57), hierarchy step ratio 1.17 preserved, converging with the map panel's quaternary. Ledger: docs/DECISIONS.md |
- * | Map · docs · studio | 0 | |
- *
- * With the baseline at 0, this gate's life is held by the `measured > 50` collection
- * guard below — without it an empty screen and no failures are the same green.
- * **This number only goes down.**
- */
 const BASELINE_FAILING_COMBINATIONS = 0;
 
-/**
- * Floor on the (foreground, background, size) combinations **actually measured** on
- * real content for one route.
- *
- * Measured 2026-08-04 (17 routes): the thinnest are the two 404s at **6** —
- * naturally low, being a single-card screen — then `/ko/guide/` at 15, with most
- * between 16 and 30.
- *
- * The floor of 4 was **found by probe**: adding a temporary route rendering only
- * `<div />` produced **3** (the value with shell chrome alone) and this assertion
- * went red on the spot. So 4 stands between "a shell-only screen, 3" and "the
- * thinnest real screen, 6". A genuinely empty document is 0, so the margin is far
- * larger.
- *
- * This guard does the same job as the axe ratchet's `MIN_RULES_PASSED_PER_ROUTE`:
- * with the baseline at 0, "no failures" and "nothing was measured" are the same
- * green, and this assertion is the only thing separating them.
- */
+/** The floor is 4: a shell-only screen yields 3 and the thinnest real screen 6. */
 const MIN_COMBINATIONS_PER_ROUTE = 4;
 
-/**
- * Count of adjacent data-mark pairs failing WCAG 1.4.11 (3:1) — **only goes down.**
- *
- * **Why this gate appeared on 2026-08-06.** `judgeAdjacentMarks` and the on-screen
- * collector already existed as of 2026-08-04, but **both lived only inside
- * `scripts/measure-contrast.mjs`**, the hand-invoked instrument. This CI ratchet
- * called `judgeText` alone — so the adjacent-mark check was **a check that ran only
- * when a person remembered it**, which is exactly how this repository missed a
- * 1.14:1 adjacent pair. The failure the instrument's own doc-block recorded ("the
- * calculator existed but no instrument called it") was repeating one layer up.
- *
- * Inventory at switch-on (17 routes, 1512×900): touching pairs **1**, failures
- * **0**, pairs already separated by a gap 8. Hence a baseline of 0.
- */
 const BASELINE_FAILING_ADJACENT_PAIRS = 0;
 
 /** Extracts only colours and fonts from the page; pure functions do the judging. */
@@ -220,13 +152,7 @@ test('대비 래칫 — WCAG 1.4.3 미달 조합이 늘지 않는다', async ({ 
     }
   }
 
-  // An idling detector makes every judgement above "always pass", which is the same
-  // as having no gate.
-  //
-  // ⚠️ This used to be a **total** of `> 50`. That was loose even at 5 routes (one
-  // route clearing 50 keeps it green while every other screen is empty), and a
-  // whole-run total leaves a blind spot that blocks effectively nothing. The guard has
-  // to stand **per route**.
+  // The guard is per route: a whole-run total lets one route clear it while others are empty.
   expect(
     thinRuns,
     `Fewer than ${MIN_COMBINATIONS_PER_ROUTE} combinations were measured on a route. That is not the absence of failures: ` +

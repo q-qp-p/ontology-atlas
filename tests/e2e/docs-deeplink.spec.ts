@@ -5,88 +5,21 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { stubDirectoryPicker } from "./vault-picker-stub";
 
 /**
- * Docs deep links — **`?slug=` in the URL beats the stored "last document".**
- *
- * **What happened** (field review 2026-08-08, real-device Chrome). In a session
- * with a local vault open, entering the docs surface via
- * `?slug=domains/typed-api` **opened the last-viewed document and silently
- * overwrote the URL with that slug too.** An agent leaving a link for a person is
- * this product's core promise, and that link was losing to the recipient's last
- * screen.
- *
- * **Cause — the blind spot of a good fix.** The 2026-08-01 fix, "when the vault
- * changes, clear vault-scoped address state", is right: `?slug=` is a name that
- * only means something inside one vault, so switching vaults must clear it. The
- * problem is that **the cold load's source-preference hydration**
- * (`sample:… → local:…`) looked like a vault switch to that cleanup: a deep link
- * someone had just handed over was mistaken for a leftover mid-boot and erased, and
- * tab restoration filled the vacancy with the last document. The fix's own comment
- * said *"A `?slug=` on first mount is not a leftover but something someone handed you."* (a `?slug=` on first
- * mount is not a leftover but something someone handed you) — but that protection
- * only covered the first run and never reached a switch during boot.
- *
- * **Why e2e.** The defect is **a race between three async layers** (URL parsing,
- * source-preference hydration, tab restoration). No unit test of any single layer
- * can say who wins across the whole boot — all three layers passed their own unit
- * tests while producing this defect.
- *
- * Both directions are measured: deep-link survival (this fix) and **clearing the
- * slug on a vault switch after settling** (the 2026-08-01 fix's guarantee). Fixing
- * the former while killing the latter brings back stale-slug noise.
- */
-
-/**
- * A nested slug that really exists in the fixture — the folder prefix is required
- * to reproduce the defect.
- *
- * ⚠️ **The slug must exist only in the fixture** (2026-08-08). It was
- * `capabilities/checkout` at first, and that name **also exists in the shipped
- * sample vault** — so the test stayed green even when the deep link was cleared
- * while boot passed through the sample window and the sample's document of the same
- * name opened. A target present in both vaults cannot measure which vault opened
- * it.
+ * The slug must exist only in the fixture:
+ * a slug also in the sample vault cannot show which vault opened it.
  */
 const DEEP_SLUG = "capabilities/deeplink-probe";
 const DEEP_TITLE = /딥링크 표적 문서/;
 
 
 /**
- * Switches the source **to sample** — the control moved on 2026-08-08.
- *
- * It used to be the 「Sample | Local」 (sample | local) radio at the right edge of the
- * screen. #987 (docs chrome consolidation) removed that radio and gathered display,
- * switching, and diagnostics into the **vault chip menu**, because two places on
- * screen were stating the same fact.
- *
- * ⚠️ **This spec was not updated in that PR, and CI stayed broken across six
- * merges.** `.claude/rules/testing.md` warns about exactly that — *"Delete a screen and sweep
- * its e2e specs in the same PR."* (delete a screen and sweep
- * its e2e specs in the same PR). The property being guarded (a vault switch after
- * settling clears the slug) is unchanged and only **the control's location** moved,
- * so instead of deleting the test it is gathered here in one place — the next move
- * needs one edit.
- */
-/**
- * **Opens the chip menu — never relying on a single click.**
- *
- * ⚠️ On the dev server (Turbopack) a click that lands before hydration is **lost**.
- * Pressing a button React has not attached to yet does nothing, and the following
- * `toBeVisible` will not open even after waiting 10 seconds — waiting does not
- * revive a lost click. `playwright.config.ts` already warns about this fragility
- * (on-demand recompilation causes sporadic failures); it passes on static export
- * and dies only on dev — on 2026-08-09 it went red in CI only, in exactly that
- * shape.
- *
- * So it **clicks again until the menu opens**, and does not click when it is
- * already open (clicking an open menu closes it).
+ * Click until the menu opens, but not when it is open: on dev a click before hydration is lost,
+ * and clicking an open menu closes it.
  */
 async function openVaultChipMenu(page: import("@playwright/test").Page): Promise<void> {
   /*
-   * ⚠️ **Only pick the visible one.** During a screen transition the old and new
-   * trees are briefly mounted together, so the same testid matches **twice** and both
-   * are hidden at that moment (measured on dev 2026-08-09: strict-mode conflict plus
-   * `unexpected value "hidden"`). The user can only touch the visible one, so only
-   * that one is targeted.
+   * Pick the visible one: during a transition old and new trees are mounted together
+   * and the testid matches twice.
    */
   const trigger = page.locator('[data-testid="vault-chip-menu-trigger"]:visible');
   const anyRow = page.locator('[data-testid="vault-chip-use-sample"]:visible');
@@ -227,13 +160,8 @@ test.describe("문서함 딥링크 — URL 이 이긴다", () => {
   });
 
   /**
-   * A blind spot caught by the second field review, 2026-08-08: the first test above
-   * passed while the real device failed. The difference was **whether the profile had
-   * used the sample scope first**. On a boot whose stored source preference is
-   * `server`, the "server settles immediately" predicate makes the sample window read
-   * as settled; then, when local vault restoration finishes and the landing
-   * auto-switch (C5) flips it, that switch is mistaken for a user vault switch and
-   * the deep link is cleared.
+   * Covers a profile whose stored source preference is `server`: the sample window reads as settled and
+   * the later landing auto-switch is mistaken for a user vault switch.
    */
   test("샘플을 먼저 쓰던 프로필의 콜드 로드에서도 로컬 전용 딥링크가 살아남는다", async ({
     page,
@@ -242,19 +170,14 @@ test.describe("문서함 딥링크 — URL 이 이긴다", () => {
     await stubDirectoryPicker(page, FIXTURE_VAULT);
     await seedFirstRunSeen(page);
 
-    // ① Create traces of the sample scope, matching the real-device incident profile:
-    //    use the docs surface on sample first (storing the preference plus sample tabs
-    //    and recents), then open the vault.
+    // Leave traces of the sample scope first: preference, sample tabs and recents.
     await page.goto("/ko/docs/?guides=off", { waitUntil: "domcontentloaded" });
     await waitForIntegratedOntologyReader(page);
     await page.evaluate(() => {
       window.localStorage.setItem("demo:docs-vault:source", "server");
     });
 
-    // ② Open the vault from the map and use the docs surface on local once to create
-    //    **the local scope's "last document"** — the candidate that would fill the
-    //    vacancy left by a cleared deep link. (In the real-device incident this tab
-    //    restoration is what wrote the final URL.)
+    // Use docs on local once to create a last document, which would fill the slot of a cleared deep link.
     await page.goto("/ko/topology/?guides=off");
     await page.waitForLoadState("networkidle");
     await page.getByTestId("first-run-starter-open").click();
@@ -309,13 +232,8 @@ test.describe("문서함 딥링크 — URL 이 이긴다", () => {
   });
 
   /**
-   * The second defect from the same root: on a boot whose stored preference is
-   * `local` the landing auto-switch never fires, so the one-shot ref is never spent —
-   * and that loaded shot **bounced the user's first switch to "sample" straight back
-   * to local** (real device, 2026-08-08: still local at both 300ms and 1800ms after
-   * the click). The landing decision must conclude exactly once, at the moment the
-   * restoration attempt ends, and must not participate in manual switches after
-   * that.
+   * With a stored `local` preference the one-shot landing ref is never spent and bounces
+   * the first manual switch back; the landing decision must conclude once.
    */
   test("저장 취향이 로컬인 부팅에서 첫 샘플 전환이 즉시 먹는다", async ({ page }) => {
     test.setTimeout(120_000);

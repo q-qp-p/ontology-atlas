@@ -3,21 +3,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { openLibraryWorkScenario } from './library-work-harness';
 
 /**
- * **The work harness drives the request it advertises.**
- *
- * `permissionKind: 'ontology-patch'` titled its tool call `patch_concept` but sent the wiki tool
- * name in the correlated MCP payload, and `toPermissionRequest` derives the tool from that
- * correlation rather than from the title. So the card received a `write_wiki_file` request and
- * classified it through the generic branch: the review read 「Change your folder」 and counted the
- * concept's own slug among its changed fields. The mode existed and drove the wrong thing, which
- * is worse than not existing — every assertion written against it passed for the wrong reason.
- *
- * `permissionText` had the same shape of fault: accepted by the signature, read only on the wiki
- * branch, silently dropped on the other. Measured 2026-09-19, when a probe written to grow the
- * review card until it scrolled produced a card of exactly the same height every time.
- *
- * ⚠️ These assertions are about **what the card receives**, not about how it draws it. A harness
- * is a claim about the wire, and nothing else in this suite checks that claim.
+ * The harness must put the right tool name on the wire: `toPermissionRequest` derives the tool from
+ * the correlated MCP payload, not the title. These assertions cover what the card receives, not how
+ * it draws.
  */
 const DISTINCT = '## Definition\n\nA sentence only this test would ever write.\n';
 
@@ -67,8 +55,8 @@ test('the wiki kind still drives the wiki tool', async ({ page }) => {
   // The wire carries the wiki tool...
   const { events } = await harness.snapshot(page);
   expect(JSON.stringify(events)).toContain('mcp__atlas-vault__write_wiki_file');
-  // ...and the row names what it does to the wiki page, not a concept patch. Since 2026-09-25 a call
-  // on our server the label table does not know reads as its ACP kind rather than its function name.
+  // The row names what it does to the wiki page; a call on our server that the label table does not
+  // know reads as its ACP kind rather than its function name.
   const rows = await page.evaluate(() => [...document.querySelectorAll('[data-acp-entry="tool"]')]
     .map((row) => (row.textContent ?? '').trim()));
   expect(rows.join(' | ')).toContain('Edit · wiki/architecture.md');

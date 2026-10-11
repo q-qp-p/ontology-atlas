@@ -3,24 +3,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { useDogfoodSample } from "./sample-source";
 
 /**
- * Regression guard for the local working-folder entry policy.
- *
- * [Rewritten 2026-07] PR #435 (P1b/N1) inverted the policy: the gate looks at
- * **capability (FSA support)**, not at the runtime (web vs desktop). A web session
- * in an FSA-capable browser (including Chromium) can open a local vault directly,
- * and `?intent=local` opens the local workspace picker. The previous spec asserting
- * the old contract (hosted is read-only plus macOS download guidance) was a rotten
- * spec that should have been swept away with #435.
- *
- * ⚠️ **[2026-08-08] The source indicator lives in the vault chip menu, not a header
- * radio.** PR #987 removed the 「sample|local」 radio pair on the right of the header and
- * moved that judgement into the vault chip menu. This spec was still clicking those
- * radios, so two tests died on a 2-minute timeout — **the second victim of the same
- * cause** as `docs-deeplink.spec.ts`. Use `expectSourceIs*` below to read source
- * state.
- *
- * Running it requires a separate dev server (`next dev -p 3100`).
- *   pnpm exec playwright test tests/e2e/local-vault-picker.spec.ts
+ * The gate looks at capability (File System Access support), not runtime, so a web session in a
+ * capable browser opens a local vault and `?intent=local` opens the picker. Needs `next dev -p 3100`.
  */
 
 /**
@@ -32,9 +16,8 @@ import { useDogfoodSample } from "./sample-source";
  */
 async function expectSourceIs(page: import("@playwright/test").Page, which: "sample" | "local") {
   /*
-   * ⚠️ Do not rely on a single click. On the dev server a click landing before
-   * hydration is lost, and no subsequent wait revives it — it passes on the static
-   * export and dies only in dev (measured 2026-08-09).
+   * Do not rely on a single click: on the dev server a click before hydration is lost and no later wait
+   * revives it, so this passes on the static export and fails only in dev.
    */
   // Take only what is visible — during a transition the same testid matches twice (same reason as above).
   const trigger = page.locator('[data-testid="vault-chip-menu-trigger"]:visible');

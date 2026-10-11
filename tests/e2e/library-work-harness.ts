@@ -221,12 +221,7 @@ export async function installLibraryWorkHarness(
         update({ sessionUpdate: "tool_call_update", toolCallId: "read-architecture", status: "completed", rawInput: { file_path: "sources/architecture.docx" }, rawOutput: { text: "Architecture evidence" } });
         phase = "waiting";
         const targetPath = initialScenario === "successful-write" ? `${vaultRoot}/${permissionFile ?? 'wiki/architecture.md'}` : `${vaultRoot}/outside/unknown.md`;
-        /*
-         * ⚠️ **`permissionText` reaches both kinds.** It used to be read only on the wiki branch, so
-         * a caller asking for an ontology patch with a body of its own was silently given this
-         * fixed one — measured 2026-09-19, when a probe written to grow the review card until it
-         * scrolled produced a card of exactly the same height every time and proved nothing.
-         */
+        /* `permissionText` reaches both permission kinds, so an ontology patch gets the caller's own body. */
         const rawInput = permissionKind === 'ontology-patch'
           ? permissionInput ?? {
               slug: 'capabilities/task-review',

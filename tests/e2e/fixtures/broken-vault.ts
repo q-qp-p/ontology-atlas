@@ -1,26 +1,6 @@
 /**
- * Broken-vault fixture — **data that stops gates idling over an empty set.**
- *
- * **Why this was promoted into `tests/e2e/fixtures/`.** The dogfood vault and the
- * sample vault both have **zero issues**, so every gate measuring "does the screen
- * report the check results" had **never once turned red** — not passing, but having
- * nothing to look at. A 2026-08-04 measurement showed the cost: in a folder with 5
- * errors the readiness meter was 100% indigo (0px of danger segment), the per-file
- * diagnostics showed only warnings while hiding the errors, and a document absent
- * from the map claimed to be "map evidence". None of those three defects can exist in
- * a healthy vault.
- *
- * So the defects are fixed as data — exactly one per check — and reverting any one
- * prescription makes that one disappear from the screen, breaking the gate on the
- * spot.
- *
- * **Exact expectations** (UI fast path = `validateVaultDocFrontmatter` +
- * `summarizeVaultValidation`): **5 errors, 4 warnings**, itemised by the numbered
- * comments below. `unclosed-frontmatter` and `parse-zero-keys` are not included — the
- * parser is lenient so the fast path cannot see them in principle, and they belong to
- * the CLI (`validateVaultDocument`).
- *
- * Consumer: `tests/e2e/vault-truth-telling.spec.ts`.
+ * Defects are fixed as data, one per check: 5 errors and 4 warnings on the UI fast path.
+ * `unclosed-frontmatter` and `parse-zero-keys` are excluded; the lenient parser hides them from it.
  */
 export const BROKEN_VAULT: Record<string, string> = {
   // ── Healthy anchor: a node that really exists in the graph is what makes "on the
@@ -158,15 +138,8 @@ export const BROKEN_VAULT: Record<string, string> = {
  * is not always-red.
  */
 /**
- * A finished body, per kind.
- *
- * `validate_vault` and `ontology-atlas validate` read the prose as well as the
- * frontmatter since 2026-09-22, so a fixture named HEALTHY has to be a written
- * vault and not only a well-formed one: a document with nothing under its title
- * now carries `definition-missing`, both `boundary-missing` sides, and
- * `uncertainty-missing`. The text is Korean because every title in this fixture
- * is — it stands in for a real person's folder, and a half-translated sample
- * would not.
+ * A written body per kind: validation reads prose, so a healthy fixture needs definition,
+ * boundaries and uncertainty.
  */
 const FINISHED_BODY: Record<string, string[]> = {
   domain: [

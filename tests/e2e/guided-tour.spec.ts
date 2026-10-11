@@ -2,23 +2,9 @@ import { expect, test } from "@playwright/test";
 import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForMapStill } from "./settle";
 
-/**
- * Guided tour (`src/features/guided-tour`) click-through — walks all 8
- * declarative steps (dev persona branch at step 7) at 1440x900 and asserts the
- * cutout/card render sane, resolvable rects.
- *
- * Manual-verification companion for the 2026-07-24 tour polish pass — not a
- * committed CI spec (guided tour has no prior e2e coverage; unit coverage
- * lives in `src/features/guided-tour/**\/*.test.ts(x)`).
- */
-
 async function gotoAndSettle(page: import("@playwright/test").Page, url: string) {
-  // This spec opens the tour **manually**. Without seeding away the first-visit
-  // automatic surfaces (the folder-first guidance sheet and the auto tour), the 900ms
-  // trigger races the manual click and on a slow CI runner the tour button is covered
-  // by the overlay and the click times out (the cause of the 2026-07-24 CI flake).
-  // Seeding "done" does not prevent a rerun — the tour button always calls
-  // tour.start() regardless of stored state.
+  // Seeded away the automatic first-visit surfaces: their 900ms trigger races the manual click and the
+  // overlay covers the tour button. Seeding "done" does not prevent a rerun.
   await seedFirstRunSeen(page);
   await page.goto(url);
   await page.waitForLoadState("networkidle");
@@ -197,7 +183,6 @@ test.describe("guided tour click-through (dev branch, 1440x900)", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
   test("all 8 steps render a resolvable anchor + card", async ({ page }) => {
-    // The tour runs on the map — since 2026-07-30 `/` is the gateway.
     await gotoAndSettle(page, "/en/topology/?e2e=1");
 
     const tourButton = page.getByTestId("topology-tour-button");
@@ -221,7 +206,6 @@ test.describe("guided tour click-through (dev branch, 1440x900)", () => {
     await readLegend();
     await expect(page.getByTestId("guided-tour-cutout")).toBeVisible({ timeout: 5_000 });
 
-    // Step 3 — relations (centered explanation; the persistent corner legend is retired)
     await card.getByTestId("guided-tour-next").click();
     await expect(overlay).toHaveAttribute("data-tour-step", "relations");
     await readLegend();
@@ -240,8 +224,7 @@ test.describe("guided tour click-through (dev branch, 1440x900)", () => {
     await expect(cutout).toBeVisible({ timeout: 5_000 });
     const cutoutBox = await cutout.boundingBox();
     expect(cutoutBox).not.toBeNull();
-    // The card asks the person to press the lit node; it must not sit on that
-    // node's name (2026-09-19: the card's top cut the hub's name in half).
+    // The card must not sit on the lit node's name.
     const nameClearance = await page.evaluate(() => {
       const probe = window.__atlasMap!;
       const canvas = document.querySelector('[data-testid="ontology-map-canvas"]')!.getBoundingClientRect();
@@ -257,10 +240,10 @@ test.describe("guided tour click-through (dev branch, 1440x900)", () => {
     if (nameClearance.cardBelow) {
       expect(nameClearance.cardTop, `카드 위쪽(${Math.round(nameClearance.cardTop)})이 켜진 노드의 이름(${Math.round(nameClearance.nameBottom!)})을 덮는다`).toBeGreaterThanOrEqual(nameClearance.nameBottom!);
     }
-    /* Regression for the 2026-07-24 live defect: if the spotlight hole is misaligned with the
-       drawn node, the four-strip blocker swallows the click on the lit node and the tour stalls.
-       The probe (`topology-tour-anchor`) reports the engine's real worldToScreen coordinates, so
-       its centre must be the canvas itself, not a blocker strip, and a press there advances. */
+    /*
+     * The probe reports the engine's real `worldToScreen` coordinates; a misaligned spotlight hole
+     * makes the blocker swallow the click on the lit node and the tour stalls.
+     */
     const anchor = (await page.getByTestId("topology-tour-anchor").boundingBox())!;
     const cx = anchor.x + anchor.width / 2;
     const cy = anchor.y + anchor.height / 2;
@@ -351,15 +334,7 @@ test.describe("guided tour at a laptop window in Korean (1200x863)", () => {
   });
 });
 
-/**
- * **The INDEX step shows the INDEX, not the first-run card** (2026-09-19).
- *
- * A first-run person starts the tour from the first-run card, so at the
- * "INDEX: the map's table of contents" step that card was still standing where
- * the list should be, and the cutout lit a sample picker and an open-folder
- * button while the copy described a list of names. The card gives way to the
- * list for that step; the other specs seed the card away and could not see it.
- */
+/** Other specs seed the first-run card away and cannot see this. */
 test.describe("guided tour on a true first run", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 

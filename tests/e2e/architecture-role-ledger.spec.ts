@@ -25,24 +25,6 @@ async function graphSettled(page: import("@playwright/test").Page) {
 }
 
 
-/**
- * The role ledger — **the receipt has to fit the box, and the chain has to fit the canvas.**
- *
- * Both halves are geometry no unit test can see. jsdom lays no text out, so the sentence inside a
- * role box measures nothing there; and whether seven boxes clear the canvas depends on the panel
- * height the real layout hands the scroller. Both were real defects on 2026-08-30, found by
- * screenshotting the running app rather than by reading the arithmetic:
- *
- * 1. the first two-line receipt made the boxes 82px tall, and **Shared foundation — the role every
- *    arrow points at — was cut in half** below the fold at 1512;
- * 2. the one-line receipt then rendered 144–156px wide inside a 148px box, so the sentence
- *    **crossed both outlines**.
- *
- * The vault is seeded through the picker stub because the receipt lives in
- * `.ontology-atlas/architecture/<slug>.json`, which only a vault handle can reach — the shipped
- * sample has none, so no other entry point can put a ledger on the screen at all.
- */
-
 const VAULT_ROOT = path.resolve(__dirname, '../../docs/ontology');
 
 /** Enough of the dogfood vault to open it and reach the profile the receipt is written for. */
@@ -160,11 +142,8 @@ test('a measured profile separates each role contract and receipt, whole chain o
             .querySelector('[data-testid="architecture-graph"]')
             ?.getAttribute('data-evidence-layout'),
           /*
-           * How far the lowest box falls below the fold — the measurement that catches a chain
-           * running off the screen. Neither the scroller's `scrollHeight` nor the box's position
-           * inside the canvas can say this: the canvas sizes itself to its drawing and lets the
-           * page scroll instead, which is exactly how the cut-in-half box on 2026-08-30 stayed
-           * invisible to arithmetic. Measured: 0px at a 74px box, 60px at 90px.
+           * Distance the lowest box falls below the fold;
+           * the canvas sizes to its drawing, so scrollHeight cannot show it.
            */
           belowFold: Math.max(
             0,
@@ -233,8 +212,7 @@ test('a measured profile separates each role contract and receipt, whole chain o
 
       await routing.click();
       await expect(routing).toHaveAttribute('data-architecture-role-state', 'selected');
-      /* 0.7, not 0.35 (2026-09-03): at 0.35 a receded title measured 3.0:1 and its sentence
-         1.7:1; at 0.7 every receded word stays at or above 3:1 while still stepping back. */
+      /* 0.7, not 0.35: at 0.35 receded text falls below 3:1 contrast; at 0.7 it stays at or above 3:1. */
       await expect
         .poll(() => receded.evaluate((el) => getComputedStyle(el).opacity), { timeout: 2000 })
         .toBe('0.7');
@@ -246,17 +224,6 @@ test('a measured profile separates each role contract and receipt, whole chain o
   }
 });
 
-/**
- * The workbench is a canvas with docks, not a page that scrolls.
- *
- * ⚠️ **What this replaces, in numbers** (installed app and browser, 1512×945, 2026-08-30). The
- * screen was a two-row grid: the canvas took 967px of an 844px viewport row and the second row —
- * the applied scopes, the rules, the receipt, the chosen role — got 64px each, with 66px and 219px
- * of their own hidden content. The page scroller had 187px of travel and was already at its end,
- * so the lower half was not long, it was unreachable. The owner's instruction for the fix is the
- * subject of this gate: structurally there is to be no scroll below the canvas at all — a canvas,
- * and panels that open on a click.
- */
 test('the workbench holds one screen: no page scroll, and the panels open on a click', async ({
   page,
 }) => {
@@ -285,7 +252,6 @@ test('the workbench holds one screen: no page scroll, and the panels open on a c
       });
     expect(await travel(), where).toBeLessThanOrEqual(1);
 
-    /* The dock is closed, and the one-line evidence rail keeps the receipt verdict visible. */
     const dock = page.getByTestId('architecture-inspector');
     await expect(dock, where).toHaveAttribute('data-architecture-inspector-open', 'false');
     const evidenceRail = page.getByTestId('architecture-evidence-rail');
@@ -297,8 +263,7 @@ test('the workbench holds one screen: no page scroll, and the panels open on a c
         .filter((rect): rect is DOMRect => Boolean(rect))
         .map((rect) => ({ y: Math.round(rect.y), height: Math.round(rect.height) })),
     );
-    /* 40, the standard `md` control height: at 44 the toolbar stood beside the Harness shell's
-       40px tabs as a different product (design audit, 2026-09-25). */
+    /* 40 is the standard `md` control height, matching the Harness shell tabs. */
     expect(toolbarGeometry.map((rect) => rect.height), `${where} toolbar heights`).toEqual([
       40,
       40,
@@ -386,8 +351,6 @@ test('the workbench holds one screen: no page scroll, and the panels open on a c
     await expect(dock, where).toHaveAttribute('data-architecture-inspector-open', 'true');
     await expect(page.getByTestId('architecture-rules'), where).toBeVisible();
 
-    /* Playback, guided walking, and prose-only workflow stages were removed: direct role
-       selection plus the two factual docks are the complete visible path. */
     await expect(page.getByTestId('architecture-graph-run'), where).toHaveCount(0);
     await expect(page.getByTestId('architecture-walk'), where).toHaveCount(0);
     await expect(page.getByRole('radio'), where).toHaveCount(0);
@@ -398,12 +361,7 @@ test('the workbench holds one screen: no page scroll, and the panels open on a c
 });
 
 test('a skip sentence never sits on another arc, sampled along the strokes', async ({ page }) => {
-  /*
-   * ⚠️ Review 2026-08-30 at 1920 with Entities selected: the sentence beside the shorter of two
-   * nested skips sat on its own apex and the longer arc ran through it. The rectangle gates
-   * compare sentences with boxes and with each other; an arc is a curve, so it is measured as
-   * points along its length against every visible sentence's box, with 2px of air.
-   */
+  /* An arc is a curve, so sample points along it against every visible sentence box with 2px of air. */
   test.setTimeout(180_000);
   await openSeededVault(page);
   await page.goto('/en/architecture/?view=architecture&e2e=1&guides=off', { waitUntil: 'domcontentloaded' });
@@ -412,8 +370,7 @@ test('a skip sentence never sits on another arc, sampled along the strokes', asy
   for (const size of [
     { width: 1512, height: 945 },
     { width: 1920, height: 1080 },
-    /* A wide but short canvas is the one place the split across chain still draws (2026-09-03);
-       its sentence and arc separation is measured here, where the one-screen claim is not made. */
+    /* A wide but short canvas is the one place the split across chain still draws. */
     { width: 1920, height: 800 },
   ]) {
     await page.setViewportSize(size);
@@ -456,12 +413,6 @@ test('a skip sentence never sits on another arc, sampled along the strokes', asy
 });
 
 test('choosing a role does not turn the chain, and the chosen box is in view', async ({ page }) => {
-  /*
-   * ⚠️ Measured 2026-08-30 at 1920: the chain ran across at rest; choosing Entities opened the
-   * inspector beside the canvas, the canvas narrowed from 1756px to 1376px, and the whole drawing
-   * turned into a column under the click. The axis is measured against the canvas at rest now;
-   * a selection may cut the chain but not turn it, and the chosen box is scrolled into view.
-   */
   test.setTimeout(180_000);
   await openSeededVault(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
@@ -473,8 +424,6 @@ test('choosing a role does not turn the chain, and the chosen box is in view', a
       const boxes = [...document.querySelectorAll('[data-testid^="architecture-graph-box-"]')].map((b) => b.getBoundingClientRect());
       return boxes.length > 1 && Math.abs(boxes[0].top - boxes[1].top) < 1 ? 'across' : 'down';
     });
-  /* Since 2026-09-03 the seven rows fit a 1080px canvas, so the comparison ladder runs down at
-     rest here too; the claim under test is unchanged — a click may not turn it. */
   expect(await axisOf(), 'the seven-role chain runs down at 1920×1080 at rest').toBe('down');
   for (const role of ['shared', 'routing', 'entities']) {
     await page.getByTestId(`architecture-graph-box-${role}`).click();

@@ -67,6 +67,6 @@ test("an awake map allocates per frame far slower than its graph grows", async (
   });
   const small = await kilobytesPerFrame(page, 300);
   const large = await kilobytesPerFrame(page, 3000);
-  // Measured 2026-09-28: 2.3–3.0 healthy, 6.2–6.8 with per-frame graph rebuilds.
+  // Per-frame graph rebuilds push the large/small KB ratio past 4.
   expect(large / small, `KB per frame: ${small.toFixed(1)} at 300 concepts, ${large.toFixed(1)} at 3,000`).toBeLessThan(4);
 });

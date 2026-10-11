@@ -2,38 +2,6 @@ import { expect, test } from "@playwright/test";
 import { seedFirstRunSeen } from "./first-run-seed";
 import { stubDirectoryPicker } from "./vault-picker-stub";
 
-/**
- * **Measures where the activity row and the notification tray sit** (three owner
- * reports, 2026-08-17).
- *
- * ## Why this spec exists
- *
- * Moving notifications from the bottom of the map to the top right **moved the
- * control but left the geometry as it was at the bottom.** The owner reported three
- * things at once, and all three came from that one cause:
- *
- * 1. *"The bell icon is far too wide"* (the bell icon is far too wide) — the
- *    bell-only chip sat inside a **text-row chip shell**
- *    (`CHROME_STATUS_CHIP_CLASS`, 14px horizontal padding). That is not a box for a
- *    single icon.
- * 2. *"Pressing it, you cannot see it properly"* (pressing it, you cannot see it properly) — the
- *    tray grows **upward** via `bottom-[calc(100%+8px)]`, the geometry from when the
- *    chip lived at the bottom of the map. After the move, upward means off-screen
- *    and into the utility row.
- * 3. *"This is still down at the bottom? confusing"* (this is still down at the bottom?
- *    confusing) — the bell moved up while the status row stayed below, so **the same
- *    fact was in two places.**
- *
- * ## What this spec measures
- *
- * It does not pin the position in coordinates — that is a design verdict and may
- * change. It measures only the three properties that must hold wherever they are
- * placed: **is there exactly one, is the bell not stretched, and is it fully visible
- * when open.**
- *
- * Only the picker is stubbed; everything behind it is real code (see the
- * `vault-picker-stub` preamble).
- */
 test("활동 줄은 한 곳에만 있고, 알림함은 열었을 때 다 보인다", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 900 });
@@ -87,8 +55,6 @@ test("활동 줄은 한 곳에만 있고, 알림함은 열었을 때 다 보인�
     Math.abs(bellBox.x + bellBox.width - (utilityRowBox.x + utilityRowBox.width)),
     '종이 도구줄 맨 오른쪽이 아니다',
   ).toBeLessThanOrEqual(1);
-  // Since 2026-09-24 the status is the bell's left segment in the same row, not a line
-  // hanging under it (owner: the floating line read as a stray toast).
   const statusBox = (await page.getByTestId('agent-activity-status-trigger').boundingBox())!;
   expect(Math.abs(statusBox.y - bellBox.y), '작업 상태가 종과 같은 줄이 아니다').toBeLessThanOrEqual(1);
   expect(
@@ -131,14 +97,8 @@ test("활동 줄은 한 곳에만 있고, 알림함은 열었을 때 다 보인�
   expect(overlaps, "알림함이 위쪽 유틸 버튼 줄을 덮었다").toBe(false);
 
   /*
-   * ④ **The tray paints on top** (owner report 2026-08-17: *"Should the notification cover what is above?"*
-   * — the notification should cover what is above). ③ only checked for overlap, not
-   * **which one paints on top**, so it stayed green while the right-hand tool tiles
-   * were covering the tray.
-   *
-   * The judgement uses **what is actually hit at that point** (elementFromPoint)
-   * rather than rect overlap. Comparing computed z-index gives the wrong answer when
-   * the stacking contexts differ.
+   * Judged by what is actually hit at the point (elementFromPoint);
+   * computed z-index misleads across stacking contexts.
    */
   const topAtInbox = await page.evaluate(() => {
     const inbox = document.querySelector('[data-testid="agent-activity-inbox"]');

@@ -5,21 +5,6 @@ import { expect, test, type Page } from "@playwright/test";
 import { installDesktopRailRuntime, type ModelsStubOptions } from "./desktop-rail-arrival-harness";
 import { waitForAnimationsDone, waitForBoxStill } from "./settle";
 
-/**
- * **Agents → Models** (owner, 2026-09-25): API keys, local runners, the experimental Jev check and
- * the sent log, moved out of the settings sheet. Walked in the installed-app shape (the desktop
- * harness answers the Keychain, `secret_verify`, `jev_*` and the vault's audit file), at the two
- * desk widths the owner works at.
- *
- * What a walk here has to show a person, in order:
- * - the tab is reachable from the rail and from the old settings door, and `?tab=models` holds;
- * - a runner row tells connected, unreachable and empty apart, in words;
- * - a key can be added, replaced and removed, and only its last four are ever drawn;
- * - the Jev request is on screen, unfolded, before the one press that sends it, and what is sent
- *   is exactly that text;
- * - every transfer is one more line in the folder's record, and the count says so.
- */
-
 const AXE_PATH = require.resolve("axe-core/axe.min.js");
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const CAPTURE_DIR = process.env.AGENTS_MODELS_CAPTURE_DIR ?? "";
@@ -164,9 +149,7 @@ for (const width of [1280, 1512]) {
       await page.getByTestId("ai-save-anthropic").click();
       await expect(page.getByTestId("ai-stored-anthropic")).toContainText("····9x7y");
       expect(await page.content()).not.toContain("sk-ant-e2e-secret");
-      // The row says it, and the announcer reads it out. A toast repeating it stood over this
-      // tall page's own text (2026-09-25: the sent-log caption at 1512, the Jev row at 1280),
-      // and it would have been on screen by now, beside the row's new last four.
+      // The row and the announcer say it; a toast would stand over the page's own text.
       await expect(page.getByTestId("models-announcer")).toContainText("키를 저장했어요");
       await expect(page.locator("[data-sonner-toast]")).toHaveCount(0);
 

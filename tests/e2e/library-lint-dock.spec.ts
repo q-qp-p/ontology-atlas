@@ -3,18 +3,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { seedFirstRunSeen } from "./first-run-seed";
 
 /**
- * **Check the wiki opens the same dock, carrying a lint request.**
- *
- * The second door beside Compile (2026-09-06). It reads `wiki/` and reports; it writes
- * nothing, so it does not wait on an uncompiled source — it waits on there being two
- * pages, because one page has nothing to disagree with. This spec proves the chip is
- * offered under the same runtime conditions as Compile, is disabled with one page and
- * enabled with two, and that pressing it reaches the dock with a `lint` request. The
- * brief's content is `lint-brief.test.ts`'s to pin.
- *
- * The desktop bridge is stubbed in the browser for the reason
- * `library-compile-dock.spec.ts` records: the app is a WKWebView running this same static
- * export, and the render boundary is what is being measured.
+ * Check the wiki is offered under Compile's runtime conditions: disabled with one page, enabled
+ * with two, and it reaches the dock with a `lint` request. `lint-brief.test.ts` pins the brief.
  */
 
 const VAULT_ROOT = "/Users/probe/Ontology Atlas/launch";
@@ -168,15 +158,8 @@ async function installDesktopBridge(page: Page) {
 }
 
 /**
- * With the runtime signal injected, Docs opens on the installed app's own first screen —
- * "Open a folder to start working" — rather than the read-only sample. Its middle door
- * calls the native picker, which the stub answers with an absolute path.
- *
- * ⚠️ **The folder is still opened from Docs, and that is deliberate.** The Library moved
- * to its own destination on 2026-09-06, but the app's first-run card lives on the docs
- * intent, and this spec's subject is the dock rather than the picker. Walking in the way a
- * person does — open the folder, then cross the rail — also proves the rail tile reaches
- * the new destination with the session's folder still attached.
+ * The folder is opened from Docs because the first-run card lives on the docs intent;
+ * crossing the rail proves the session's folder stays attached.
  */
 async function openFolder(page: Page) {
   await page.goto("/en/docs/");
@@ -193,10 +176,8 @@ async function openFolder(page: Page) {
   await page.getByTestId("app-nav-rail").getByRole("link", { name: "Library" }).click();
   await page.getByTestId("library-sources").waitFor({ timeout: 30_000 });
   /*
-   * Check the wiki and Compile are the Wiki half's own doors since 2026-09-07: the index
-   * draws one list at a time and the workspace tab decides which. The column opens on Sources —
-   * the first half of the work — so a spec about the wiki's doors presses the switch, the
-   * same press a person makes.
+   * Check the wiki and Compile are the Wiki half's doors; the column opens on Sources, so press
+   * the switch first.
    */
   await page.getByTestId("library-workspace-wiki").click();
   await page.getByTestId("library-wiki").waitFor({ timeout: 30_000 });
@@ -214,21 +195,13 @@ test.describe("Check the wiki opens the agent dock", () => {
     await expect(lint).toBeVisible({ timeout: 25_000 });
     await expect(lint).toBeEnabled();
     await expect(page.getByTestId("library-compile")).toBeVisible();
-    // The shipped template is in the folder and is not a page: two rows, and the reader
-    // opens a real page rather than "<the page name>" (installed app, 2026-09-06).
+    // The shipped template is in the folder and is not a page: two rows, and the reader opens a real page.
     await expect(page.getByTestId("library-wiki")).not.toContainText("<the page name>");
     await expect(page.getByTestId("library-wiki")).not.toContainText("Wiki log");
     await expect(page.getByTestId("library-workspace-wiki")).toHaveAccessibleName("Wiki, 2");
-    // With nothing selected the pane is the graph (2026-09-06, third pass), so no page
-    // heading is on screen here; the list above already proves the template is not a row.
     /*
-     * Reading before writing — but the two doors no longer share a row (2026-09-12).
-     * They wear the plain-language names the owner asked for, and at 11px
-     * `Ask the agent to compile` needs about 119px of the 125px half a 255px column
-     * leaves, so it truncated mid-word. Each takes the full row instead, and both fill
-     * the column exactly (`docs/DESIGN-SYSTEM.md`, "Control groups fill their column").
-     * The order that carried the meaning is now vertical, and the width is the assertion
-     * that the group fills its column.
+     * Both doors take the full row, since at 11px the compile label truncated in half a column;
+     * the width assertion is that the group fills its column (`docs/DESIGN-SYSTEM.md`).
      */
     const [lintBox, compileBox, fieldBox] = await Promise.all([
       lint.boundingBox(),
@@ -244,9 +217,7 @@ test.describe("Check the wiki opens the agent dock", () => {
         "a door ends where the search field does",
       ).toBeLessThan(1);
     }
-    // The app's own record of the last check is read back on the Check results page in the
-    // pane, opened from the chip beside the status strip (owner, 2026-09-07: the column is an
-    // index); nothing about it stands in the column.
+    // The last check's record is read on the Check results page, not in the column.
     await expect(page.getByTestId("library-wiki-log")).toHaveCount(0);
     await page.getByTestId("library-open-report").click();
     await expect(page.getByTestId("library-check-report-when")).toContainText("superseded 1");

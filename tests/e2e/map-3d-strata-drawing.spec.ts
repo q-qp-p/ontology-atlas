@@ -6,79 +6,15 @@ import { seedFirstRunSeen } from "./first-run-seed";
 
 
 /**
- * **The Strata view's drawing, measured on the real vault** (2026-09-06).
- *
- * Sibling of `map-3d-cone-drawing.spec.ts`, and deliberately a sibling rather
- * than a fourth row inside it: the two arrangements answer the same containment
- * question with different geometry, so they crowd differently and their numbers
- * are not comparable to a shared threshold. Reading the two files side by side is
- * how a person sees which arrangement is paying what.
- *
- * ## The three measurements, and what they measured here
- *
- * Every number comes from `window.__atlasMap` (opened by `?e2e=1`), which reports
- * what the frame **drew**. Measured on the sample vault (125 concepts, 9 domains)
- * with the index panel open, at the two sizes the owner reviews on:
- *
- * | | 1512x982 | 1040x720 | Cone, same sizes |
- * |---|---|---|---|
- * | outline ÷ free canvas | 65.5% | 72.5% | 73.4% / 69.2% |
- * | …after the tier legend took its column (2026-09-06) | 66.3% | 63.6% | unchanged |
- * | …after the column became conditional (2026-09-07) | 66.3% | **73.4%** | unchanged |
- * | overlapping node pairs | **0** | **2** | 4 / 8 |
- * | same-tier overlapping pairs | 0 | 0 | 0 / 0 |
- * | resting labels drawn | 15 | 11 | 15 / 13 |
- *
- * Strata crowds **less** than the cone at both sizes, and two things earn that: a
- * plane spreads its tier across a whole disc instead of packing it under one
- * parent, and each plane alternates two radii so neighbours from different
- * parents cannot fuse (`applyLanes` in `model/dome-view/`). What it pays is
- * silhouette width, which is why the fill floors below are not simply the cone's.
- *
- * The floors are set a few points under the measured value and the ceilings a few
- * pairs above it — a gate pinned to the exact number fails on the first
- * legitimate vault edit.
+ * Every number comes from `window.__atlasMap` (`?e2e=1`), which reports what the frame drew.
+ * Floors sit a few points under measured values and ceilings a few pairs above,
+ * so a legitimate vault edit does not fail.
  */
 
 /**
- * The two sizes the owner reviews on, with the floor and ceiling each has to hold.
- *
- * **1040 paid for the legend rail on 2026-09-06, and stopped paying on
- * 2026-09-07.** Strata's four tier names moved off the plane rims — where at this
- * very size they were drawn on top of the graph — onto a legend rail at the
- * canvas's right edge, and the fit kept that rail's column clear
- * (`TIER_LEGEND_RESERVE_PX`, 56 px). On a 976 px canvas that is 6% of the width,
- * and width is what binds the fit here, so the outline fell to **565 × 529 =
- * 63.6%** from 72.5% and two element pairs on one plane began to touch where none
- * did. At 1512 the fit is bound by height instead and the same reservation costs
- * nothing: **888 × 824 = 66.3%**.
- *
- * The rail is not what was wrong; taking that column unconditionally was.
- * `tierLegendPlacement` now decides from the fit's own free box, so the column is
- * reserved only where it was going to go unused, and at 1040 the four names become
- * a compact corner stack in the bottom-right corner the plane rims curve away
- * from. Measured after: **607 × 567 = 73.4%** — above even the 72.5% of before the
- * rail existed, because the corner stack asks for nothing — **0** same-tier
- * touching pairs, and 2 overlapping pairs down from 5. 1512 is unchanged at 66.3%
- * with the rail still on the edge. Ledger: `docs/DECISIONS.md`, 2026-09-06 and
- * 2026-09-07.
- *
- * **The lit map's key stays one row (2026-09-25).** The key became a strip along the
- * canvas bottom that the fit keeps the drawing above (`data-map-fit-obstacle="bottom"`),
- * because as a corner card it stood over nine drawn nodes. Wrapped to two rows at 1040
- * (three on the CI runner's fonts) it reserved 72px and more: the outline fell to
- * 565 × 528 locally and 539 × 505 on CI, with 6 overlapping and 3 same-tier pairs. Below
- * `xl` the strip now sets its words at the legend size in one row, and the fill counts
- * the strip out of the free canvas the way it counts a side panel. Measured after:
- * **592 × 553 = 73.7%**, 3 overlapping pairs, 0 same-tier. The ceilings did not move.
- *
- * **No column for the names, and the rail's only where it is free (2026-09-26).** The
- * names now stand beside their own rims (`model/tier-names.ts`) and reserve nothing.
- * The utility rail's column is reserved so the drawing centres between INDEX and the
- * rail — but at 1040 width binds, the tiles stand beside Strata's narrow top, and
- * reserving it measured 564 × 528 = 66.9% with two same-tier pairs fused. So the fit
- * takes the column only where it costs nothing or the tiles would cover a node, and
- * 1040 keeps 592 × 553 = 73.7%.
+ * At 1040 width binds the fit, so the legend column is reserved only where it costs
+ * nothing (`tierLegendPlacement`). The lit map's key stays one row below `xl` so the
+ * bottom strip does not shrink the fill; the ceilings are tuned to that.
  */
 const SCREENS = [
   { width: 1512, height: 982, fillFloor: 0.58, overlapMax: 3, sameTierMax: 1, stolenMax: 1 },
@@ -132,9 +68,10 @@ async function readStrata(page: Page) {
     const maxY = Math.max(...nodes.map((n) => n.y + n.radius));
     const insets = probe.obstacleInsets();
     const freeW = Math.max(1, box.width - (insets?.left ?? 0) - (insets?.right ?? 0));
-    /* A strip that declares itself a bottom fit obstacle (the lit map's key, 2026-09-25) is
-       canvas the drawing is kept out of, the same as a side panel's width: it leaves the
-       free canvas rather than counting as unfilled. */
+    /*
+     * A strip declaring `data-map-fit-obstacle="bottom"` is canvas the drawing is kept out
+     * of, so it leaves the free canvas instead of counting as unfilled.
+     */
     let bottomStrip = 0;
     for (const strip of document.querySelectorAll('[data-map-fit-obstacle="bottom"]')) {
       const r = strip.getBoundingClientRect();
@@ -285,24 +222,8 @@ for (const screen of SCREENS) {
 }
 
 /**
- * **Pointing at a node's drawn centre answers with that node** (2026-09-06).
- *
- * `__atlasMap.nodes()` reports where the frame drew each disc, and every other
- * number in this file trusts that coordinate. When the pointer disagrees with it,
- * the suite is measuring one picture while the person is clicking another. It did
- * disagree: the 5 px courtesy ring that makes a 3.5 px element pressable used to
- * compete with the painted disc on equal terms, and because depth was decided
- * before distance, a near domain answered for the far elements drawn beside it,
- * 15 px away, with none of its ink under the cursor.
- *
- * The sweep is the whole vault rather than a sample, because the victims are the
- * small discs and a handful picked by size never included one: with the rule
- * reverted, five spine nodes still answered correctly and an earlier version of
- * this case stayed green (gate probe, 2026-09-06). What is asserted is the rule
- * itself. A node may lose its own centre to a node **drawn over it** — that is
- * depth, and the halo and the draw order exist to show it — and to nothing else.
- * Measured before the fix, sweeping all 125: 124 of 125 answered here at
- * 1512×982 and 123 of 125 at 1040×720, the rest to a disc that covered nothing.
+ * Pointing at a node's drawn centre must answer with that node, unless another node
+ * drawn over it wins by depth. Sweeps the whole vault because the failures are small discs.
  */
 async function settleCamera(page: Page) {
   // Stillness judged in the page, on drawn frames: two samples 150 ms apart from
@@ -322,13 +243,8 @@ async function drawnNodes(page: Page): Promise<DrawnNode[]> {
 }
 
 /**
- * A canvas point with no drawn disc within 40 px — clicking it clears the focus.
- *
- * The point must also reach the canvas itself. The map's chrome floats over it, and
- * "no disc here" is not "nothing here": once the toolbar's search lane moved to the
- * free map's left edge (2026-09-24), the first empty point this scan found, 360 px
- * in and 40 px down, was the Expand all tile, and the "spare" click expanded the map
- * under the next measurement.
+ * A canvas point with no drawn disc within 40 px that also reaches the canvas itself,
+ * not floating chrome such as a toolbar tile.
  */
 async function emptyPoint(page: Page): Promise<{ x: number; y: number }> {
   return page.evaluate(() => {
@@ -385,18 +301,8 @@ for (const screen of SCREENS) {
       if (!covers) stolen.push(`${node.id} (r ${node.radius.toFixed(1)}) answered ${got}`);
     }
     /*
-     * **Ratcheted at one, not pinned at zero, and the one is a different defect.**
-     * A node can be drawn and still be absent from the hit test: `isNodeHittable`
-     * reads the alpha the frame painted, and depth fog can take a far element
-     * under that threshold while it is still a visible dot. When that happens the
-     * node is not competing at all, and whichever disc reaches it through the
-     * slack ring answers. Measured here both before and after the ink rule
-     * changed: the same single node at 1512×982
-     * (`element:stock-snapshot` losing to `domain:loyalty`, which paints nothing
-     * at that point), which is why it cannot be this rule's doing. Fixing that one
-     * is a question about the fog's hittability threshold, not about ranking.
-     * Planting the old rule back returns 3 at 1040×720 (gate probe, 2026-09-06),
-     * so this still fails on the defect it was written for.
+     * Ratcheted at one: a far node can be drawn yet fall under the `isNodeHittable` alpha
+     * threshold, so a neighbouring disc answers through the slack ring.
      */
     expect(
       stolen.length,
@@ -417,13 +323,8 @@ for (const screen of SCREENS) {
         const spare = await emptyPoint(page);
         await page.mouse.click(canvas.x + spare.x, canvas.y + spare.y);
         /*
-         * ⚠️ **This click does not deselect, and the sleep it replaced never waited
-         * for one either** (measured 2026-09-13). Inside the dome an empty-ground
-         * press is an orbit grab, not a deselect (`map-3d-grip.spec.ts`), so the
-         * selection survives it — polling for a cleared selection here sat for the
-         * full timeout holding `capability:carrier-integration`. What the click
-         * does do is end the ego dim and the tier reveal, and it does that inside
-         * the pointer handler, so the next drawn frames already carry it.
+         * This click does not deselect: an empty-ground press inside the dome is an orbit grab.
+         * It does end the ego dim and tier reveal in the pointer handler.
          */
         await waitFrames(page, 3);
       }
@@ -463,17 +364,8 @@ for (const screen of SCREENS) {
 }
 
 /**
- * **The tier names land on nothing, at either size** (2026-09-06, rewritten 2026-09-26).
- *
- * They first hung on the plane rims, drawn on the canvas, and at 1040×720 that put
- * them over the graph. A rail at the canvas's right edge replaced them, then a corner
- * stack wherever the rail could not align — four words that named no plane. Since
- * 2026-09-26 each name stands beside its own plane's rim, only where it lands on
- * nothing, and a plane with no such place is left to the legend strip
- * (`model/tier-names.ts`). What this file owns is the part that must hold wherever a
- * name is drawn: in tier order, equal heights, on nothing — not a disc, not a concept
- * name, not the utility tiles, not the readout — and gone while the inspector is
- * docked. `map-strata-tier-scale.spec.ts` owns "beside its own plane".
+ * Tier names must be in tier order, equal heights and land on nothing, and be gone while
+ * the inspector is docked. `map-strata-tier-scale.spec.ts` owns placement beside the rim.
  */
 for (const legend of [
   { width: 1512, height: 982 },
@@ -548,10 +440,8 @@ test(`Strata ${legend.width}x${legend.height} — the tier names land on nothing
     });
 
   /*
-   * **The first reading waits for a drawn name** (2026-09-20). The names are measured,
-   * then placed on the next frame, so a single read can land between the two. The
-   * second reading below deliberately expects none — the names step aside while the
-   * inspector is docked — so waiting there would wait forever.
+   * Names are measured, then placed on the next frame, so wait for a drawn name;
+   * the later reading expects none.
    */
   await page.waitForFunction(
     () => document.querySelectorAll('[data-testid^="topology-tier-legend-row-"]').length > 0,

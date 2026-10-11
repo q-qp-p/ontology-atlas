@@ -1,28 +1,8 @@
 import { expect, type Page } from "@playwright/test";
 
 /**
- * **One planted folder for every proof about the Check-results page.**
- *
- * It lives outside both specs because two of them need the same bytes and a spec may not
- * import another spec — Playwright would register that file's tests twice. The recovery
- * proof (`library-check-computed.spec.ts`) asserts what the page lists; the touch-target
- * contract asserts what a finger can hit on it; a temporary capture harness shoots it.
- * A frame, a hit box and a row count that came from three different folders would be three
- * facts about nothing.
- *
- * Two deliberate absences make it a proof rather than a demonstration, and both belong to
- * the folder rather than to any one spec:
- *
- * 1. **No runtime.** `acp_detect_runtimes` answers `[]`, so `agent.route` is never
- *    `"agent"` and nothing on this screen can start a turn.
- * 2. **No `wiki/_log.md`.** The counts in a log alone used to satisfy the report door's
- *    condition, so a proof run against a folder that had one would pass whether or not the
- *    door was fixed. This folder has never been checked, which is the state a person who
- *    has never run a check is actually in.
- *
- * The link topology is deliberate: merchant ← refund, refund ← merchant and settlement,
- * settlement ← refund, and settlement-ko ← nobody, so exactly one page is an orphan rather
- * than all four.
+ * One planted folder shared by the recovery and touch-target proofs; a spec may not import
+ * another spec. No runtime (`acp_detect_runtimes` answers `[]`) and no `wiki/_log.md`.
  */
 
 export const LIBRARY_CHECK_VAULT_ROOT = "/Users/probe/Ontology Atlas/payments";

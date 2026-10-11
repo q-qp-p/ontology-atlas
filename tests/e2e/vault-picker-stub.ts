@@ -1,34 +1,9 @@
 import type { Page } from "@playwright/test";
 
 /**
- * Stubs `showDirectoryPicker` with an OPFS handle.
- *
- * The File System Access API opens an OS window that automation cannot click. An
- * OPFS handle (`navigator.storage.getDirectory()`) is a **real**
- * `FileSystemDirectoryHandle`, so the app's vault read/write paths — including
- * `createWritable` — run unchanged. This stub replaces only the picker window;
- * everything after it is verified against real code.
- *
- * **Why a module outside the spec** (2026-08-04): this stub was born inside web
- * smoke ②, and while it stayed there **the only means of reproducing
- * data-dependent defects** was one spec's private property. Screens rendering
- * shapes absent from the sample vault (cross-domain edges and the like) had never
- * been seen by any gate — a second consumer is the moment to promote it.
- *
- * **Seeds carrying a timestamp are built at pick time** — `{{NOW-<ms>}}`.
- * `{{NOW-30000}}` inside a seed string becomes
- * `new Date(Date.now() - 30000).toISOString()` at the moment the file is actually
- * written (that is, when the user picks the folder).
- *
- * ⚠️ **Why it must not be computed in the spec** (full check audit, 2026-08-17):
- * the activity chip's "working" window is **2 minutes** after the last write. If
- * the spec computes "30 seconds ago" at the top of the file, **the entire page
- * load** eats into those 2 minutes before the value reaches the screen — the slack
- * is 90 seconds while the spec's own timeout is 120, so on a slow runner it passes
- * the window, becomes "last worked", and fails for reasons unrelated to the
- * product. Computing at write time leaves only the vault read and render.
- *
- * @param seed markdown to pre-place in the folder (path → contents)
+ * Stubs `showDirectoryPicker` with an OPFS handle, a real `FileSystemDirectoryHandle`, so vault
+ * read/write run unchanged. `{{NOW-<ms>}}` seed tokens resolve at pick time: computing them in the
+ * spec lets page load eat the activity chip's 2-minute working window.
  */
 export async function stubDirectoryPicker(page: Page, seed: Record<string, string>) {
   await page.addInitScript((files: Record<string, string>) => {

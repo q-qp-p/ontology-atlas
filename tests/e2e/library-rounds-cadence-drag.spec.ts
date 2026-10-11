@@ -4,16 +4,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { installDesktopBridge, openRounds } from "./rounds-desktop-bridge";
 
 /**
- * **The cadence is dragged, and the scope names its places.**
- *
- * Spec: `docs/specs/2026-09-21-round-cadence-and-scope.md` §2.2 ("Ratchet": the
- * thumb's travel is measured, not assumed) and §3.3. The owner asked for this on the installed
- * app — "1, 5, 10, 30 minutes, 1 hour; pick minutes or hours at the top and a different drag
- * comes out" — and ten minutes is exactly the value four chips could not say.
- *
- * What is proven here is the real thumb under a real pointer: `page.mouse` presses the track
- * 40% across, the sentence above the form says the new interval, the unit switch carries the
- * value onto the other rail, and what the index row says afterwards is what the store holds.
+ * The real thumb under a real pointer: `page.mouse` presses the track 40% across, the sentence shows
+ * the new interval, the unit switch carries the value, and the index row matches the store.
  */
 
 async function openNewDocumentSchedule(page: import("@playwright/test").Page) {
@@ -84,8 +76,8 @@ test.describe("Library rounds — the cadence rail", () => {
     await expect(readback).toContainText("Every 10 minutes");
 
     /*
-     * A place, with a location. Two of them: the scope sentence and the readback must name
-     * each one, and the record must carry both while its legacy fields carry the first.
+     * Two places: the scope sentence and the readback name each, and the record carries both while the
+     * legacy fields carry the first.
      */
     await page.getByTestId("library-rounds-add-place").click();
     await page.getByTestId("library-rounds-add-menu").getByRole("menuitem", { name: "Confluence" }).click();

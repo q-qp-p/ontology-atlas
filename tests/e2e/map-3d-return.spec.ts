@@ -3,23 +3,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForDomeAssembled, waitForFlatMap, waitForMapStill, waitFrames } from "./settle";
 
 /**
- * **Coming back from 3D leaves the 2D map alone** (owner report, 2026-09-07).
- *
- * The owner switched the map to a 3D arrangement and back to flat, and the flat
- * map then showed a walked trail and one domain fanned open inside a selection
- * ring — from a click they never made. The chain, both halves in
- * `search-hint/ui/View3dMenu.tsx`:
- *
- * 1. The 「3D」 chip counted as 「outside」 its own picker, so a second press closed
- *    and reopened it in one batch and could never put it away. The only exit left
- *    was pressing the map.
- * 2. That press was not consumed: it dismissed the picker **and** reached the
- *    canvas. In 3D every tier is drawn, so it usually landed on a capability —
- *    which appends a footprint step and derives that node's `contains` ancestors
- *    into `open=`, the flat map's expansion state.
- *
- * So this spec walks 2D → 3D → 2D, dismissing the picker over a node on the way (the
- * reported accident) and returning through the picker as intended, which leaves nothing behind.
+ * Switching 2D -> 3D -> 2D must leave the flat map's trail and `open=` state untouched.
+ * Dismissing the picker over a node must not also press the canvas.
  */
 const trailChip = (page: import("@playwright/test").Page) => page.getByText(/걸어온 길/);
 
@@ -52,8 +37,7 @@ test("the press that dismisses the 3D picker does not also walk the map", async 
   const target = await page.evaluate(() => {
     const m = (window as unknown as { __atlasMap: { nodes: () => Array<{ id: string; hidden: boolean; x: number; y: number }> } }).__atlasMap;
     const box = document.querySelector('[data-testid="ontology-map-canvas"]')!.getBoundingClientRect();
-    /* A press on the map, not on the picker or the toolbar above it: the picker hangs from
-       the chip into the map (2026-09-25), so a node under it would be a press on the picker. */
+    /* Press on the map, not on the picker or toolbar: a node under them would hit the picker. */
     const covers = ['[data-testid="topology-view-3d-menu"]', '[data-testid="topology-top-toolbar"]']
       .map((selector) => document.querySelector(selector)?.getBoundingClientRect())
       .filter((rect): rect is DOMRect => Boolean(rect));

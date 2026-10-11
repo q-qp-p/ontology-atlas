@@ -1,25 +1,6 @@
 /**
- * The **canonical type declaration** for the `window.__atlasMap` hook.
- *
- * ⚠️ **Two specs declared it separately and CI caught it** (2026-08-10):
- *
- * ```
- * tests/e2e/map-keyboard-walk.spec.ts(24,5): error TS2717:
- *   Subsequent property declarations must have the same type.
- *   Property '__atlasMap' must be of type 'AtlasProbe | undefined',
- *   but here has type 'AtlasMapProbe | undefined'.
- * ```
- *
- * Declaring the same property in two files with `declare global` requires the types
- * to match to **the character**. With two copies, diverging is the default (Carbon) —
- * so it lives here in one place.
- *
- * **Local `tsc` missed this.** The same command (`pnpm exec tsc --noEmit`) passed
- * locally and failed in CI, because the incremental cache did not re-check files it
- * had already seen. So "local tsc is green" is not evidence about this class of
- * conflict.
- *
- * This hook opens only on pages carrying `?e2e=1` (`use-topology-loop.ts`).
+ * Declared once: duplicate `declare global` property types must match to the character.
+ * Opens only with `?e2e=1`.
  */
 
 import type { DialProbe } from "../../src/widgets/ontology-map/dial/types";

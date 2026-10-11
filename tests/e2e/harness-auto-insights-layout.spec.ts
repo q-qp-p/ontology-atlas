@@ -4,15 +4,6 @@ import { box, hintPanel } from './harness-auto-insights-harness';
 import { waitForAnimationsDone, waitForBoxStill } from './settle';
 import { installHarnessRuntime, mountHarnessVault } from './harness-tab-fixture';
 
-/**
- * **Placement, overlap and consistency on Harness, Automations and Analysis** (2026-09-25).
- *
- * The owner's question was whether things are placed oddly, whether the buttons differ in size,
- * and whether anything overlaps. Every assertion here is a rect, a computed style or an
- * `elementFromPoint` answer, because each of these defects passed an eye that looked at a
- * screenshot: a 34px-wide tooltip, a panel 600px from its button, a confirm 126px from its trigger.
- */
-
 test.describe('Harness hints', () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1512, height: 949 });

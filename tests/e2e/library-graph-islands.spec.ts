@@ -5,14 +5,8 @@ import "./library-graph-probe";
 import { stubDirectoryPicker } from "./vault-picker-stub";
 
 /**
- * **The islands overview: a folder past a few hundred marks is a map, a press on an island
- * is its own columns, and the way back is one chip or Escape.** (Owner, 2026-09-18: a wiki
- * piles up thousands of files; plan for tens of thousands.)
- *
- * The folder below is 450 marks — past `ISLANDS_MIN_MARKS` (400) — with three concepts,
- * a page naming none, and files no page has read, so every island kind is on the map.
- * The a11y opener model cannot press a painted island (it presses DOM triggers), so this
- * spec is where the island bar's own checks live; `surface-motion-ratchet` cites it.
+ * The folder is 450 marks, past `ISLANDS_MIN_MARKS` (400). The a11y opener model cannot press a
+ * painted island, so the island bar's checks live here; `surface-motion-ratchet` cites it.
  */
 function bigFolder(): Record<string, string> {
   const files: Record<string, string> = {
@@ -145,10 +139,8 @@ test("zooming the wheel out of an opened island returns the map", async ({ page 
   await expect(bar, "zooming out of the island did not return the map").toBeHidden();
   await expect.poll(async () => page.evaluate(() => (window.__atlasLibraryGraph!.islands() ?? []).length)).toBeGreaterThan(3);
   /*
-   * The wheel that returned the map keeps turning for a few steps, as a hand does. Those
-   * steps belong to the return, not to the map: measured before the fix (2026-09-19) they
-   * left the archipelago at a 0.46 scale in the middle of a dark canvas. The map stands at
-   * its fit once the camera settles.
+   * The wheel that returned the map keeps turning; the extra steps belong to the return, so the map
+   * stands at its fit once the camera settles.
    */
   for (let step = 0; step < 6; step += 1) await page.mouse.wheel(0, 100);
   await expect.poll(async () => page.evaluate(() => window.__atlasLibraryGraph!.arriving())).toBe(false);
@@ -200,11 +192,7 @@ test("a page opened from an island's card is marked and in view on the shelf, ho
   await page.getByTestId("library-graph-card-open").click();
   const shelf = page.getByTestId("library-wiki-shelf");
   await expect(shelf).toBeVisible();
-  /*
-   * Measured 2026-09-19 before the fix: the shelf stayed at its top (window `0-20`), the
-   * selected spine neither rendered nor in view. The list follows its selection now, and
-   * the exact finish is the browser's own scrollIntoView once the row exists.
-   */
+  /* The list follows its selection: the selected spine must render and scroll into view. */
   await expect.poll(async () =>
     page.evaluate(() => {
       const shelf = document.querySelector('[data-testid="library-wiki-shelf"]')!;

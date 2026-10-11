@@ -3,20 +3,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForMapStill } from "./settle";
 
 /**
- * **Closing the shortcuts sheet gives the keyboard back where it was** (map
- * round, 2026-09-20).
- *
- * The sheet records the element to return to when it opens, but the button
- * that opens it unmounts at that moment — the sheet raises a blocking-overlay
- * flag that turns off that button's render condition — so the record is empty
- * and the close falls back to the start of the content. Measured on the live
- * map: open with the map's `?` button, press Escape, and focus lands on
- * `main`, while the button itself is back in the page. A keyboard user is put
- * at the top of the content and has to walk back.
- *
- * The repo already solves exactly this elsewhere (`returnFocusSelector` on the
- * analysis workbench and the architecture dock): name the control to come back
- * to, and look it up after it remounts.
+ * The opener button unmounts while the sheet is open, so the recorded return element is empty;
+ * close must look up the control by selector after it remounts (`returnFocusSelector`).
  */
 test("단축키 시트를 닫으면 포커스가 열었던 버튼으로 돌아온다", async ({ page }) => {
   test.setTimeout(120_000);

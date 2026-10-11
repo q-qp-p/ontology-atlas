@@ -24,43 +24,11 @@ const canvasHash = (page: import("@playwright/test").Page) =>
 
 
 /**
- * **The library graph is alive** — the five claims only a running browser can settle.
- *
- * The owner's verdict on 2026-09-07 was that the shipped picture was *"a static hairball
- * — nothing moves, nothing responds"*, and the answer (`docs/DECISIONS.md`, 2026-09-07)
- * replaced a one-shot layout with a live force simulation and four gestures. Unit tests
- * own the physics, the view arithmetic and what one frame paints; this spec owns the
- * things that are only true once a real pointer meets a real canvas:
- *
- * 1. a drag moves the mark **and pulls its neighbours after it** — the whole point of
- *    live physics, and the one claim a settled layout could never make;
- * 2. hovering dims everything outside the neighbourhood, measured **in the canvas's own
- *    pixels**, because that is the only place the dim exists;
- * 3. the wheel changes the scale rather than scrolling the page;
- * 4. the fit control brings the whole picture back;
- * 5. under `prefers-reduced-motion` the canvas is **identical** frame to frame **at rest**
- *    — no settle, no drift. At rest is the whole of the claim since 2026-09-12: the dim
- *    ramp keeps its `--motion-fast` at both settings, because it moves no mark and a hand's
- *    own move keeps its time (`docs/DECISIONS.md`, "The Library canvas's ink ramp keeps its
- *    120ms under reduced motion"). This case measures three hashes with no pointer on the
- *    canvas and no clause held, which is exactly the narrowed claim;
- * 6. once it has settled the canvas is still and the loop stops asking for frames, hover
- *    included — the 2026-09-08 reversal of the ambient drift, which was a *display* offset
- *    the loop applied after the view transform, so nothing a settled simulation could say
- *    about itself would have caught it.
- *
- * ⚠️ **Aiming is done through `window.__atlasLibraryGraph`, never by sweeping pixels.**
- * The map lost six measurement rounds to drag specs that were silently panning the
- * background, because from outside a canvas a grab and a pan are the same cursor over the
- * same colour. `interaction()` is what distinguishes them, and this spec asserts it before
- * it asserts anything a drag did.
+ * Claims only a running browser can settle: drag, hover dim in canvas pixels, wheel scale, fit,
+ * stillness at rest. Aim via `window.__atlasLibraryGraph`; `interaction()` tells grab from pan.
  */
 
-/**
- * The owner's own folder shape: **seven sources, six pages, every page citing four to
- * seven of them and naming two or three concepts.** Sparse fixtures make any layout look
- * competent; this is the density that produced the hairball.
- */
+/** Dense fixture: seven sources, six pages, each page citing four to seven sources. */
 const SOURCES = [
   "quarter-plan.pdf",
   "budget.xlsx",
@@ -147,7 +115,6 @@ async function openGraph(page: Page): Promise<void> {
   // covering the canvas and intercepting every pointer event.
   await page.goto("/en/library/?guides=off&e2e=1");
   await page.getByTestId("library-open-vault").click();
-  // The picture is the home (2026-09-12): nothing is chosen, so the canvas is already up.
   await expect(page.getByTestId("library-graph-canvas")).toBeVisible();
   await expect
     .poll(async () => page.evaluate(() => window.__atlasLibraryGraph?.nodes().length ?? 0), {
@@ -190,14 +157,8 @@ test.describe("the library graph responds", () => {
     }
 
     /*
-     * **Since 2026-09-17 the picture is columns, and a mark has a place, not a position a
-     * hand may improve.** A file stands in the file column on the row of the page that
-     * read it; dragging it somewhere else would put it on a row that means nothing, and
-     * the live-spring test this replaced ("the neighbours followed") was the force
-     * picture's proof of life. The gesture is still honoured — it is the same drag a
-     * person makes on the background, and the whole picture goes with it — so what is
-     * asserted is that the hand moved the *camera*: every mark travelled by one and the
-     * same offset, and none by a different one.
+     * The picture is columns: a mark has a place, so a drag is a camera pan and every mark
+     * travels by the same offset.
      */
     const holding = await page.evaluate(() => window.__atlasLibraryGraph!.interaction());
     expect(holding.kind, "a drag on a mark in the flow picture is a pan").toBe("pan");
@@ -288,12 +249,8 @@ test.describe("the library graph responds", () => {
     expect(fitted).toBeGreaterThan(0);
 
     /*
-     * ⚠️ **The wheel is driven *out*, and the reason is the 2026-09-12 clamp.** The zoom's
-     * ceiling is absolute now (1.6) and the fit is clamped into the same pair, so on a folder
-     * this small the fitted view **is** the ceiling and four notches inward are four no-ops —
-     * which is the contract, not a defect: a mark's drawn size is the camera's, and a camera
-     * that could be pushed past its ceiling would hand that size back to the window. Out is
-     * the direction with room, and it measures the same two claims.
+     * The wheel goes out: the zoom ceiling is absolute (1.6) and the fit is clamped into it, so zooming
+     * in on a small folder is a no-op.
      */
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     for (let notch = 0; notch < 4; notch += 1) {
@@ -320,16 +277,8 @@ test.describe("the library graph responds", () => {
   });
 
   /**
-   * **A settled picture is still, and it stops asking for frames** (owner, 2026-09-08:
-   * *"why does it wriggle whenever the mouse is on the graph?"*).
-   *
-   * This is the barrier for the ambient drift `docs/DECISIONS.md` (2026-09-08) removed. It
-   * has to live here rather than in a unit test for the reason the whole file exists: the
-   * drift was a *display* offset applied by the loop after the view transform, so a
-   * simulation asserted to be at rest was at rest while the canvas was not. The two things
-   * it measures are the two halves of what the owner saw — the marks moving, and the loop
-   * spending a frame to move them — and both are measured at ordinary motion, not under the
-   * reduced-motion preference where stillness was already true.
+   * A settled canvas is still and stops asking for frames. The drift was a display offset the loop
+   * applied after the view transform, so only a frame count can catch it.
    */
   test("a settled canvas is still and stops asking for frames, hover included", async ({ page }) => {
     await page.addInitScript(() => {
@@ -345,31 +294,8 @@ test.describe("the library graph responds", () => {
     const canvas = page.getByTestId("library-graph-canvas");
     const box = (await canvas.boundingBox())!;
     /*
-     * Everything else on the page has had its chance to animate by now, so what follows is
-     * this canvas's own loop or nothing.
-     *
-     * ⚠️ **Three seconds, not one and a half, since 2026-09-12.** The home now gives every
-     * citation it cannot vouch for a **single** amber breath as the picture arrives
-     * (`docs/DECISIONS.md`, "a press opens a card beside the mark"), and this fixture has
-     * stale citations in it. That breath is two settle budgets long and then clears its own
-     * timestamp, so the promise this case guards is unchanged — *a canvas with nothing left
-     * to say stops asking for frames* — and the wait is now past the one thing that has
-     * something to say. `library-graph-card.spec.ts` owns the other half: that the breath
-     * is bounded rather than a loop.
-     *
-     * ⚠️ **Watched, not timed.** Three seconds was the sum of two budgets nobody here can
-     * read. The condition is the picture itself: four samples in a row drawing the same
-     * bytes is the breath having let go, and it is **not** the claim below — a loop that
-     * keeps asking for frames to redraw the same picture still fails the count, which is
-     * the other half of what this case owns.
-     *
-     * `alpha() < 0.01` alone was tried and is not enough: the simulation goes cold while
-     * the amber breath is still painting, and this fixture has stale citations in it
-     * (measured 2026-09-13 — 224 frames over the window that followed).
-     *
-     * ⚠️ `waitFrames` must not be used from here on: this case has replaced
-     * `requestAnimationFrame` with a counting wrapper, so a frame wait would be counted
-     * as the canvas asking for one.
+     * Watched, not timed: four identical samples in a row mean the stale-citation breath has let go.
+     * `alpha() < 0.01` alone is not enough. Never use `waitFrames` here; rAF is replaced by a counter.
      */
     let previousFrame: string | null = null;
     let repeats = 0;
@@ -430,11 +356,8 @@ test.describe("the library graph responds", () => {
   test.describe("under reduced motion", () => {
     test("the canvas is still: the same picture, arrived at without the journey", async ({ page }) => {
       /*
-       * ⚠️ **`emulateMedia`, not `test.use({ reducedMotion })`.** The fixture form is not in
-       * this Playwright version's test options, so it type-checks as an unknown key and is
-       * silently ignored — the first draft of this case ran with motion fully on, and
-       * failed for the right reason by luck (2026-09-07). Emulating before the navigation
-       * means the preference is true from the app's first client render.
+       * Use `emulateMedia`: `test.use({ reducedMotion })` is not an option in this Playwright version and
+       * is silently ignored.
        */
       await page.emulateMedia({ reducedMotion: "reduce" });
       expect(await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches)).toBe(true);
@@ -445,20 +368,7 @@ test.describe("the library graph responds", () => {
       ).toBe(true);
       const frameHash = () => canvasHash(page);
 
-      /*
-       * ⚠️ **The pointer leaves the canvas first, and that is the whole of "at rest."**
-       *
-       * `openGraph` ends on a click, which parks the mouse wherever that control was — and
-       * on CI's viewport that landed **over the picture**, so the first hash was taken with
-       * a mark hovered and the dim ramp running. Measured 2026-09-11 on GitHub's runner:
-       * frame 1 `71219841`, frame 2 `fa10ee96`, green on every local run. Since 2026-09-12
-       * the ramp keeps its `--motion-fast` at both settings (`docs/DECISIONS.md`, "The
-       * Library canvas's ink ramp keeps its 120ms under reduced motion"), so a held hover
-       * is a moving picture by decision, and this case is about the state with **no pointer
-       * on the canvas and no clause held** — which is what that record's falsifier names.
-       * Moving to the origin and letting one ramp's worth of time pass is what makes the
-       * instrument measure the claim instead of the mouse's last resting place.
-       */
+      /* The pointer leaves the canvas first: a hovered mark runs the dim ramp, which is not at rest. */
       await page.mouse.move(0, 0);
       await expect(page.getByTestId("library-graph-canvas")).toHaveAttribute("data-hovered-node-id", "");
       /*

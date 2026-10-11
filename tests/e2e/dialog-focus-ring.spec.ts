@@ -1,47 +1,15 @@
 import { expect, test, type Page } from "@playwright/test";
 
 /**
- * Programmatically moved focus **must not draw the browser's default ring.**
- *
- * **Why this gate exists** (design audit, 2026-08-04). The first-run sheet
- * 「Turn my folder into a map」 (turn my folder into a map) moves focus to a
- * `tabIndex={-1}` container when it opens — the correct handling, so a screen reader
- * starts from the title. But that container had nothing switching the ring off, so
- * `:focus-visible` matched and the browser's default focus ring (**system sky blue**
- * `rgb(153, 200, 255)`) was drawn around the modal.
- *
- * Why that is a defect:
- *
- * - The charter is **neutrals + a single indigo** (`forbidden.md` — no second
- *   colour system). System sky blue is outside it.
- * - It is **the very first modal seen on first launch**, and the installed app's
- *   WKWebView draws it thicker (reproduced by measurement on both app and web).
- * - The ring means "you can press this", and this container is not pressable — the
- *   signal is false.
- *
- * ⚠️ **The reproduction path is not "click to open".** The first version of this
- * gate opened the sheet **by clicking a button** and no ring appeared, because
- * Chrome does not apply `:focus-visible` to programmatic focus when the last input
- * was a pointer. The defect actually lives on **the path where the sheet opens by
- * itself on first visit** — there has been no pointer interaction yet, so
- * `:focus-visible` matches and the ring is drawn. That is also exactly what someone
- * launching the app for the first time sees. A check that opens by clicking is
- * **green while the defect is alive**.
- *
- * **Why this is e2e rather than a value rule.** The violation **leaves no value in
- * the code at all**: what is missing is one class, and the thing drawing the ring is
- * the browser's default stylesheet. There is nothing for lint to see — the only way
- * is to open it and read the computed `outline`. (Same family as `design.md`'s
- * "layers lint cannot see are handled by contract tests".)
+ * Programmatic focus must not draw the browser's default ring. The sheet opens by itself with no
+ * click, because Chrome does not apply `:focus-visible` to programmatic focus after a pointer.
  */
 /**
  * Opens exactly as a first visit — no `seedFirstRunSeen`, no `?guides=off`, and
  * **nothing is clicked** (see the warning above).
  */
 async function openGuideSheetOnFirstRun(page: Page) {
-  // Auto-display has been opt-in since 2026-08-13. What this spec measures is the
-  // sheet's focus ring, not whether it auto-displays, so the enabled state is seeded
-  // before opening.
+  // Guide auto-display is opt-in, so the enabled state is seeded before opening.
   await page.addInitScript(() => {
     window.localStorage.setItem("ontology-atlas:guide-auto-start:v1", "1");
   });

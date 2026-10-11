@@ -12,40 +12,8 @@ import { stubDirectoryPicker } from "./vault-picker-stub";
 import { waitFrames } from "./settle";
 
 /**
- * **Is the picture legible — at six documents, at sixty, and at three hundred?**
- *
- * ⚠️ **This file used to be the fill gate**, and the fill gate is what G2 replaces. It
- * measured the tallest empty band and the fraction of a 6×4 grid the picture reached, and it
- * held the falsifier of 2026-09-12 "The Library's home is the folder's graph": *a canvas band
- * under 60% of its width*. Those numbers can only be satisfied by making the picture larger
- * when the window is larger — which is exactly what the marks and the layout were doing when
- * the owner looked at a 1920 window and said the graph was too big and ugly, and asked what
- * happens at a few hundred documents.
- *
- * So a folder now has **one size**, and the canvas is a window onto it. What that makes worth
- * measuring is not how much of the canvas is covered but whether a person can read what is
- * on it:
- *
- * 1. **no two names cross, and no name sits on a mark it does not belong to** — the one
- *    defect a screenshot hides from a gate, because the greedy placement pass slides,
- *    truncates and drops, and only its own output knows where a name landed;
- * 2. **every mark is still a mark**: a source's square is at least
- *    {@link MIN_SOURCE_MARK_PX} across at the fitted zoom, which is what the camera's own
- *    floor is derived from;
- * 3. **the picture is where the eye lands**: its centre of mass is within a sixth of the
- *    canvas of the canvas's centre, and no group of the folder stands further than 0.6 of the
- *    picture's own radius from its middle — the composition is a rosette around the centre,
- *    never clusters at the walls;
- * 4. **the pages are named**: a page is the subject of this canvas, so a majority of them
- *    carry their name at every size, and the ones that lose a collision are the quieter ones.
- *
- * The band and the grid occupancy are still **computed and written out**, because they are
- * the numbers the previous round was judged on and a record that drops them cannot be
- * compared. They are no longer asserted.
- *
- * ⚠️ **Screenshots are evidence, never the measurement.** `ATLAS_PICTURE_OUT=<dir>` writes
- * one PNG and one JSON per case for a person to look at; the assertions below do not read
- * them.
+ * Legibility at six, sixty and three hundred documents: no names cross, every mark is a mark,
+ * the picture is centred, pages carry names. Screenshots are evidence, never the measurement.
  */
 
 /** Mirrors `library-graph-view.ts`; a spec that imports the widget's own floor proves nothing. */
@@ -68,11 +36,7 @@ const SOURCE_LABEL_MIN_SCALE = 1.4;
  * the collision order is what is judged instead.
  */
 const LEADER_MAX_MARKS = 120;
-/**
- * The order at which every mark of a folder can carry its name at once — the owner's own
- * folder and the one it was reviewed against, and the order inspection 122's S18 was raised
- * at. Below it no mark may be anonymous at any window.
- */
+/** The order at which every mark can carry its name at once; below it no mark is anonymous. */
 const NAMES_ALL_FIT_MARKS = 30;
 /**
  * Mirrors `STALE_DOT_STANDING_MAX`: how many standing amber dots a folder may draw at rest
@@ -83,21 +47,8 @@ const NAMES_ALL_FIT_MARKS = 30;
  */
 const STALE_DOT_STANDING_MAX = 64;
 /**
- * **The ink budget the standing amber holds to at rest**, and the number re-inspection 122
- * R2 is graded against.
- *
- * R2 measured the three-hundred-source folder at **23,298 amber pixels against 0** with
- * total graph ink up **48%**, and called the result a warning field rather than a folder
- * with some stale citations. In this suite's own units the same state read **15.57%** of
- * the canvas's ink at 1040x720. Both sides of 4% are measured rather than chosen: the
- * densest folder the 2026-09-12 and 2026-09-13 reviews read as legible (`vault-60`, 48
- * stale citations) draws **2.09%** at its narrowest window, and the folder the finding is
- * about draws **5.77%** at its widest. 4% sits between them at 1.91x the observed-good
- * ceiling and 0.69x the observed-bad floor.
- *
- * ⚠️ **At rest only.** Pressing the strip's `N sources changed` clause is a person asking
- * for exactly this field, and it dims everything else to say so; a budget that bound that
- * state would forbid the answer to the question it is the answer to.
+ * The standing amber's share of the canvas ink at rest. 4% sits between the densest legible folder
+ * (2.09%) and a warning field (5.77%). At rest only: pressing `N sources changed` asks for the field.
  */
 const AMBER_INK_BUDGET = 0.04;
 
@@ -112,11 +63,8 @@ const SIZES = [
 ] as const;
 
 /**
- * Where each claim is run. The picture's size is the claim that needs more than one window, so
- * the legibility matrix keeps the two extremes (the app's minimum and the wide monitor): a mark
- * size that drifted with the window shows at those two before anywhere between them. The fit
- * tile and the stale-citation routes do not depend on the window at all above `lg`, so they are
- * run once each (2026-09-27 suite trim).
+ * The legibility matrix keeps the two extremes: a mark size that drifts with the window shows there
+ * first. The fit tile and stale routes do not depend on the window above `lg`, so each runs once.
  */
 const [SIZE_1512, SIZE_1040, SIZE_1920] = SIZES;
 const LEGIBILITY_SIZES = [SIZE_1040, SIZE_1920] as const;
@@ -124,13 +72,8 @@ const FIT_TILE_SIZES = [SIZE_1512] as const;
 const STALE_ROUTE_SIZES = [SIZE_1040] as const;
 
 /**
- * The three folder shapes, built here rather than read off a disk.
- *
- * They are the shapes the 2026-09-12 review ran on — the owner's own dispute/settlement
- * folder, the same folder before any question was filed, and a sixty-mark folder — and they
- * are written out because a gate that reads a path under `~/scratch` is green on one machine
- * and absent on every other. What the picture depends on is the **graph**: which files exist,
- * which pages cite them, and what everything is called.
+ * Folder shapes are written out, not read from disk: a path under `~/scratch` exists on one machine.
+ * The picture depends on the graph: which files exist, which pages cite them, and the names.
  */
 interface FolderShape {
   sources: readonly string[];
@@ -197,7 +140,6 @@ function seedFolder(shape: FolderShape): Record<string, string> {
   return vault;
 }
 
-/** Six files, six write-ups, four groups — the folder the owner reviewed. */
 const OWNER_SOURCES = [
   "chargeback-runbook.md",
   "dispute-handling-standard.docx",
@@ -283,13 +225,8 @@ function sixtyMarkFolder(): FolderShape {
 }
 
 /**
- * **Sixty write-ups over three hundred files, in six themed clusters** — the folder the owner
- * asked about (*"what happens when a few hundred documents pile up?"*), and the same shape as
- * `opus-g2/make-vault-300.mjs`, which writes it to disk for the rendered-evidence loop.
- *
- * Every file is cited by at least one page, because a wiki of this size has been worked
- * through; consecutive pages of a cluster share the middle of their citation runs, so each
- * cluster is one component rather than ten disconnected stars.
+ * Mirrors `opus-g2/make-vault-300.mjs`. Every file is cited by a page; consecutive pages of a
+ * cluster share citation runs, so each cluster is one component rather than disconnected stars.
  */
 function threeHundredMarkFolder(): FolderShape {
   const clusters = [
@@ -339,8 +276,6 @@ function threeHundredMarkFolder(): FolderShape {
 const FIXTURES = [
   {
     name: "vault",
-    // The owner's folder as reviewed: the four groups, plus a second write-up of the same two
-    // settlement files and a question filed from the conversation.
     shape: (): FolderShape => ({
       sources: OWNER_SOURCES,
       pages: [
@@ -363,12 +298,7 @@ async function openGraph(page: Page, seed: Record<string, string>): Promise<void
   await stubDirectoryPicker(page, seed);
   await page.goto("/en/library/?guides=off&e2e=1");
   await page.getByTestId("library-open-vault").click();
-  /*
-   * ⚠️ **Its own timeout, because the 300-file folder is written into OPFS and read back
-   * before anything is drawn.** At the suite's 15s default this case went red on a laptop
-   * running four branches at once while passing alone — a lane failing on machine load
-   * rather than on the picture (measured 2026-09-12, 16.0s to first canvas).
-   */
+  /* Own timeout: the 300-file folder is written into OPFS and read back before anything is drawn. */
   await expect(page.getByTestId("library-graph-canvas")).toBeVisible({ timeout: 60_000 });
   await expect
     .poll(async () => page.evaluate(() => window.__atlasLibraryGraph?.nodes().length ?? 0), {
@@ -440,42 +370,8 @@ async function settleToRest(page: Page): Promise<void> {
 }
 
 /**
- * **How much amber is on the canvas, how much of it is a mark, and how much ink the picture
- * has at all** — all counted inside the page, in one pass over the same buffer.
- *
- * The dot that says *this citation is no longer vouched for* is the one mark on this
- * picture with no DOM, no label box and no probe entry — it is painted into the break of a
- * line — so the only honest question is whether its pixels are there. Inspection 122 ran
- * exactly this scan on two captures of the identical state and got **28 hits at 1040×720
- * and 0 at 1512×901** (S2): the mark existed only during a breath that lasts two settle
- * budgets and never returns, so which window drew it was decided by when the shutter fell.
- *
- * ⚠️ **Both predicates are the re-inspection's own, to the constant**, because the finding
- * this gate now holds was stated in them: `amber` is `measure.py::amber`'s strict scan
- * (`R>190, 140<G<210, B<120`) and `ink` is `measure.py::bbox`'s `inkPixels` — a canvas
- * pixel brighter than luma 30 on a ground of `rgb(8,9,10)`. Re-inspection 122 R2 measured
- * this picture's ink up **48%** on the three-hundred-source folder with 23,298 amber
- * pixels against 0, and called the result a warning field rather than a folder. A gate
- * written in a statistic of its own could not be compared against that sentence.
- *
- * ⚠️ **`mark` is the number the bars are stated in, and it excludes the placed names.**
- * The strict predicate does not only match this canvas's amber: a **name's own
- * antialiasing** matches it too, wherever the text engine puts warm pixels on the edge of a
- * light glyph against this dark ground. That is a property of the runner and not of the
- * picture — on this machine it scores nothing, and on the Linux CI runner it scored **973,
- * 634 and 1,614 pixels on the three-hundred-source folder in a state whose renderer drew no
- * dot at all**, deterministic across all three retries and proportional to the number of
- * names the window placed (about 33 per name). So the count is split by the label boxes the
- * renderer itself reports (`labels()`, which is where every name actually landed, ellipsis
- * and slide included): the mark being gated lives in the break of a line and never inside a
- * name's box, and a name is never painted in this canvas's warning amber. Both halves are
- * reported, so nothing is quietly dropped: on this machine `amberInNames` is 13–52 pixels of
- * real dot that happen to land under a name, and on a runner whose text engine warms its
- * glyph edges it is that plus the artefact.
- *
- * ⚠️ **Counted in the page, never transferred.** Handing an `ImageData` array back over CDP
- * costs about twelve seconds on a canvas this size; the same count inside the page is three
- * milliseconds.
+ * Counts amber, mark and total ink inside the page in one pass; `ImageData` over CDP costs ~12s.
+ * `amber` and `ink` keep the original measurement script's predicates so figures stay comparable.
  */
 interface CanvasInk {
   /** Every strict-amber pixel on the canvas — 122's own scan, unmodified. */
@@ -958,8 +854,6 @@ test("the legend swaps its gesture for the way out while a card is open", async 
   await page.mouse.move(box.x + box.width / 2, box.y - 40);
   await expect(hint).not.toContainText("press a dot for a card beside it");
   await expect(hint).toContainText("close the card");
-  // The vocabulary stays: it is the key to the picture, and a walker recorded the cost of
-  // losing it (2026-09-12).
   await expect(hint).toContainText("a square a source");
 
   await page.keyboard.press("Escape");
@@ -1021,22 +915,8 @@ for (const size of FIT_TILE_SIZES) {
 }
 
 /**
- * **On a folder past the standing cap, a stale citation is still one press away.**
- *
- * The other half of re-inspection 122 R2. The finding was that 480 standing dots read as a
- * warning field; the answer is that the picture stops repeating the fact, which is only
- * honest if the fact is still reachable. Three routes, all of them already on the screen
- * before this change and none of them new UI:
- *
- * 1. the strip's `N sources changed` clause — a toggle that lights every stale citation's
- *    two ends and prints both counts in the legend's own slot (slice L0, 2026-09-12);
- * 2. a press on a page, which opens its card and flows its own citations;
- * 3. the pointer, which holds the same neighbourhood a card does.
- *
- * Run at the app's minimum window only. The strip folds its non-lead clauses below `lg`, and
- * every window the app can have is above it, so 1040 is the narrowest width the clause can be
- * measured at and the wider windows add nothing (the 2026-09-04 width-conditional finding is
- * about widths where the control is folded, which the app no longer has).
+ * Past the standing cap a stale citation stays one press away: the strip's `N sources changed` toggle,
+ * a page card, or the pointer. Run at 1040 only: the strip folds its non-lead clauses below `lg`.
  */
 for (const size of STALE_ROUTE_SIZES) {
   test(`a stale citation on the three-hundred-source folder is one press away at ${size.name}`, async ({
@@ -1208,24 +1088,8 @@ for (const fixture of FIXTURES) {
       // ── The names. ──
       expect(picture.labelOverlaps, "two names cross each other").toEqual([]);
       /*
-       * ⚠️ **Nobody is anonymous on the folder a person starts with.**
-       *
-       * A name that loses all four of its places is pushed out on a leader rather than
-       * dropped. Inspection 122 measured the alternative on the owner's own six files: five
-       * named, and the sixth — colliding with the `Settlement` label — left with no identity
-       * at all (S18). Counted over this matrix, marks carrying a name and not given one:
-       *
-       * | folder | 1040 | 1512 | 1920 |
-       * |---|---|---|---|
-       * | `vault` | 1 → **0** | 1 → **0** | 1 → **0** |
-       * | `vault-60` | 6 → **1** | 2 → **0** | 1 → **0** |
-       *
-       * So the bar is zero for a folder of {@link NAMES_ALL_FIT_MARKS} or fewer — the order
-       * the finding was raised at, and the order at which every mark can be named at once —
-       * and one for the sixty-mark folder, whose tightest window (616×594 of canvas holding
-       * 79% × 84% of picture) leaves one write-up with nothing free inside a leader's reach.
-       * Above `LEADER_MAX_MARKS` the folder has chosen a subset of names on purpose and the
-       * collision order is what is judged, two bars below.
+       * A name that loses all four places goes out on a leader instead of being dropped, so no mark is
+       * anonymous on a folder of `NAMES_ALL_FIT_MARKS` or fewer, and at most one on the sixty-mark folder.
        */
       if (picture.nodes.length <= NAMES_ALL_FIT_MARKS) {
         expect(picture.anonymous, "a mark that carries a name at this zoom was left without one").toEqual([]);
@@ -1268,21 +1132,8 @@ for (const fixture of FIXTURES) {
       ).toBeGreaterThanOrEqual(0.97);
 
       /*
-       * ── The fill, stated as the fit rather than as a fraction. ──
-       *
-       * ⚠️ **A flat fill percentage cannot be the bar, and inspection 122 is where both
-       * halves of that were measured.** The finding is real — the owner's six-document
-       * folder drew a picture over 38% of a 1512 window, with ~340px of empty gutter on each
-       * side (S1) — but the fix it proposed, "fit to 60–75% of the shorter axis", is the
-       * fill objective G2 removed: at 1512 that scale draws the busiest page at **43px**,
-       * which is the exact balloon the owner rejected, and at 1920 it is larger still. One
-       * folder would again be a different size on every monitor.
-       *
-       * What is asserted instead is that **the fit takes every bit of camera it is
-       * allowed**: the scale is the canvas's own wish clamped into the folder's band, and
-       * the band's top is the widest mark the picture may draw. That is red both ways — a
-       * fit that stops short of the canvas (the S1 defect, whose camera sat 25% under its
-       * own ceiling) and a fit that pushes past the mark cap (the G2 defect).
+       * A flat fill percentage cannot be the bar: it would make marks larger on larger windows. The fit must
+       * take all the camera it is allowed: scale is the canvas's wish clamped into the folder's band.
        */
       expect(
         picture.viewScale,
@@ -1293,18 +1144,8 @@ for (const fixture of FIXTURES) {
         "a mark is wider than a map node, which is the balloon the ceiling exists to stop",
       ).toBeLessThanOrEqual(LIBRARY_MAX_MARK_PX + 1e-6);
       /*
-       * ⚠️ **One folder, one mark size — at every window, and this is the bar that holds it.**
-       *
-       * A folder small enough to fit any of these canvases sits *against* the ceiling, so its
-       * widest mark is drawn at exactly `LIBRARY_MAX_MARK_PX` on all three. That is the whole
-       * of what G1 answered: the owner's complaint was "one twelve-mark folder wearing 26.1px
-       * marks at 1040 and 34.0 at 1920".
-       *
-       * It is also what bounds every future attempt to fill the canvas by making the *world*
-       * bigger. Measured on this branch, stretching the gap between unrelated groups (the one
-       * distance on this canvas that carries no claim about meaning) to 1.55× its value takes
-       * `vault` to 59.8% of the 1512 window's width — and drops the 1040 camera to 1.74, its
-       * widest mark to **31.4px** while 1512 still draws 36. This bar goes red there.
+       * A folder small enough to fit sits against the ceiling, so its widest mark is the same size at every
+       * window. This bar also stops growing the world to fill the canvas.
        */
       if (picture.nodes.length <= NAMES_ALL_FIT_MARKS) {
         expect(
@@ -1314,20 +1155,8 @@ for (const fixture of FIXTURES) {
       }
 
       /*
-       * ── The amber dot is on the canvas at every window, and holds its share of the ink. ──
-       *
-       * Every fixture here writes a hash that cannot match on a third of its pages, so every
-       * one of them has unverified citations. Two bars, one per side of
-       * {@link STALE_DOT_STANDING_MAX}:
-       *
-       * - **under the cap the mark must be painted**, at every window. The same scan before
-       *   2026-09-13 returned **0** at rest on all twelve cases, because the dot existed only
-       *   during the arrival breath (inspection 122, S2). On the six-document folder at
-       *   1512x901 that bar is 0 -> 97 strict amber pixels (59 outside its placed names),
-       *   and this file is what keeps it.
-       * - **over it the picture must be calm at rest**, inside {@link AMBER_INK_BUDGET}.
-       *   Re-inspection 122 R2 is the other side of the same mark: standing was the fix, and
-       *   standing 480 times was the next defect.
+       * Every fixture has unverified citations. Under `STALE_DOT_STANDING_MAX` the dot must be painted at
+       * rest; over it the picture must stay calm, inside `AMBER_INK_BUDGET`.
        */
       expect(staleEdges, "the fixture has no unverified citation, so this case proves nothing").toBeGreaterThan(0);
       /*
@@ -1383,28 +1212,12 @@ for (const fixture of FIXTURES) {
 
       // ── The composition. ──
       /*
-       * **Columns, since 2026-09-17.** The picture is the flow layout — files on the left,
-       * the pages written from them in the middle, the concepts those pages name on the
-       * right — so "a rosette around the centre" is no longer what a good picture looks
-       * like: a folder's files stand at the left rim *by design*, and a folder's weight sits
-       * where its files are. Both of the rosette's bars (weight within a sixth of the
-       * centre; no group past 0.8 of the picture's radius) are still computed and written
-       * out for the record, and what is asserted is what the columns promise instead:
-       *
-       * - the picture's bounding box is centred on the canvas — the fit's own claim, and
-       *   the one a person sees as "it is in the middle";
-       * - every column stands level with the canvas's middle, so no column is a ladder
-       *   hanging from the top edge;
-       * - the columns read left to right in the order the evidence flows.
+       * The picture is columns, so the rosette bars are only recorded. Asserted: the box is centred,
+       * columns are level with the canvas middle, and read left to right in evidence order.
        */
       /*
-       * The bound has a measured basis, not a round number: 0.05 was set by hand, and the
-       * CI runner measured 0.0508 on vault-300 at 1040×720 on 2026-09-19 while a Mac measured
-       * under 0.05 — the label room the layout reserves comes from `measureText`, and the
-       * runner's fonts are a hair wider, which shifts the columns a hair. 5% of a 1040
-       * canvas is 52px; a hundredth of that is not the drift this case exists to catch (a
-       * column hanging from the top edge, a picture fitted into the wrong box). The value
-       * is printed so the next reader can re-derive the margin instead of guessing.
+       * The bound is derived: a CI runner measured 0.0508 where a Mac measured under 0.05, since
+       * `measureText` fonts differ. 5% of a 1040 canvas is 52px; the value is printed to re-derive it.
        */
       console.log(`[picture] ${fixture.name} ${size.name}: centre offset ${picture.pictureCentreOffset.toFixed(4)}`);
       expect(

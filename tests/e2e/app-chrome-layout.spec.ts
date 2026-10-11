@@ -22,21 +22,6 @@ test.describe('the vault switcher geometry', () => {
     expect(Math.abs(lines.caption - lines.pick), 'caption and picker glyph start on different lines').toBeLessThanOrEqual(1);
   });
 
-  /*
-   * **The popover belongs to its chip, and what it stands on is dimmed, not collided with.**
-   *
-   * Two placements failed review (2026-09-25). Hung from the chip's corner with nothing dimmed it
-   * lay over the INDEX search field and folder line, edge straddling the INDEX card's. Stepped
-   * into the "free map" (x412-828) it covered the fitted graph's top node and its label at 1040
-   * and 1280, stood ~350px from the chip under the toolbar's Expand all / Auto-arrange buttons,
-   * and its gap to INDEX was 8px at one width and 6px at the others.
-   *
-   * Measured at the app's minimum window and a wide one, INDEX open and folded, en and ko:
-   * - anchored: one gap past the rail, top on the chip's top, the same rect at every width;
-   * - every INDEX, toolbar and on-screen node point outside the popover hits the scrim, so
-   *   nothing under it reads as live chrome, and the rail itself stays lit;
-   * - a press on the dimmed map closes the popover and does not reach the map.
-   */
   test('the popover stands beside its chip over a dimmed workspace, at every rail width', async ({ page }) => {
     test.setTimeout(300_000);
     await installDesktopRailRuntime(page);

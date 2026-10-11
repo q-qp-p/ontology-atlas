@@ -5,30 +5,8 @@ import { seedFirstRunSeen } from './first-run-seed';
 import { waitForAnimationsDone } from "./settle";
 
 /**
- * **Caps tracking is a Latin device** (owner, 2026-09-06, of the installed app in Korean):
- * the uppercase eyebrow style is applied to Korean strings and *"it spaces the syllables apart and
- * reads broken."*
- *
- * ## Why this is measured in a browser and not in source
- *
- * The defect is a **pair**: a `--tracking-caps-*` class on an element whose *rendered text* is
- * Hangul. Neither half is a violation alone — the same class on `OVERVIEW` is the specification —
- * and lint can see the class while knowing nothing about what the message catalogue will put
- * inside it. Only the rendered page holds both facts at once, which is why this is a spec and not
- * a contract test.
- *
- * ## The threshold, and why it is not zero
- *
- * | | letter-spacing on a 9.5-11px label |
- * |---|---|
- * | `--tracking-caps-12 … -16` (the defect) | 1.14 – 1.76px |
- * | `--tracking-caption` / `--tracking-label` (kept) | 0.38 – 0.44px |
- *
- * Measured on twelve `/ko/` routes at 1512x949 before the rule existed: 26 distinct Hangul
- * strings across eight routes, every one of them a caps-step consumer. The two type-ramp pairs are
- * body-text pairs that apply to both scripts and were never part of the complaint, so the gate
- * sits at **0.6px** — above everything kept, below everything removed, and a number a future
- * caps step cannot slip under.
+ * The defect is a caps-tracking class on rendered Hangul text, visible only in the rendered page.
+ * 0.6px sits above kept tracking (0.38-0.44px) and below removed tracking (1.14-1.76px).
  */
 const MAX_HANGUL_TRACKING_PX = 0.6;
 

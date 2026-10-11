@@ -3,20 +3,8 @@ import { installDesktopRailRuntime } from "./desktop-rail-arrival-harness";
 import { waitForMapStill } from "./settle";
 
 /**
- * **A name painted under the inspector is a name nobody reads.**
- *
- * The label cull asks the safe rect whether a name has room, and that rect came
- * from `--map-safe-inset-right`, a static 120 px. The inspector that opens on a
- * selection is 352 px wide from x=1128, so the cull believed there was clear
- * canvas where a panel was sitting. Measured at 1512x982 on the sample folder,
- * clicking each of the five concepts the first frame offers: two of the five
- * painted a concept's name more than half underneath that panel. The name could
- * not be read, and it still spent one of the map's limited label slots.
- *
- * The camera has taken the larger of token and measurement since 2026-08-10;
- * this asserts the names get the same truth. Stated as a rule, so it holds for
- * whatever panel a future selection opens: no label may be painted mostly under
- * an open panel.
+ * No label may be painted mostly under an open panel. The label cull needs the measured
+ * panel rect, not the static `--map-safe-inset-right`.
  */
 test("no concept's name is painted under the open inspector", async ({ page }) => {
   test.setTimeout(180_000);

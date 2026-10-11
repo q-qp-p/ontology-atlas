@@ -4,47 +4,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { installLibraryCheckBridge, openLibraryCheckFolder } from "./library-check-fixture";
 
 /**
- * **The recovery proof, in the runtime: no agent, no press, and it survives a restart.**
- *
- * `docs/DECISIONS.md` 2026-09-11 ("The Library keeps its spine, and computes the
- * structural check itself") decides that *"the structural check is aggregated from the
- * local per-page verdict, always available and persistent; the agent adds only semantic
- * findings"*. Before this, every row on the Check-results page came from an agent turn
- * held in memory: after quitting the app the page said so and listed nothing, and a person
- * with **no** agent never reached the page at all, because its door was drawn only once a
- * check had run.
- *
- * So this spec plants the owner's 2026-09-11 library fixture folder — the four codes it fires —
- * and holds the whole product to the proof the PO pass wrote before implementation.
- * `library-check-fixture.ts` owns those bytes and the bridge that serves them, because the
- * touch-target contract now measures the same page and a spec may not import a spec:
- *
- *   Given this folder opened with **no coding agent connected and no button pressed**, a
- *   person reaching the Library landing can open one report that lists every structural
- *   finding, grouped by code, each naming and linking the page it concerns; and the same
- *   list is there after quitting and reopening the app.
- *
- * Two deliberate absences make it a proof rather than a demonstration:
- *
- * 1. **No runtime.** `acp_detect_runtimes` answers `[]`, so `agent.route` is never
- *    `"agent"` and nothing on this screen can start a turn. Both PO seats (2026-09-12)
- *    named this as the frame the old capture never showed.
- * 2. **No `wiki/_log.md`.** The real fixture already carries two `lint` lines, which alone
- *    satisfied the old door condition — so a proof run against it would have passed
- *    whether or not the door was fixed. The folder here has no log, which is the state a
- *    person who has never run a check is actually in.
- *
- * **Why a browser rather than the installed app.** The app is a WKWebView running this
- * same static export and the render boundary is what is measured, which is the reason
- * `library-compile-dock.spec.ts` records. Beyond that, on 2026-09-12 the one installed
- * instance on this machine belonged to somebody else's inspection session, and driving a
- * window this session did not launch is how a blind coordinate loop presses another
- * person's app.
- *
- * The reload stands for quitting and reopening: the page is torn down, the vault handle is
- * restored from IndexedDB, and every verdict is computed again from the folder's bytes.
- * Nothing about the structural half is written anywhere, so a list that comes back
- * identical is the whole claim.
+ * No runtime (`acp_detect_runtimes` answers `[]`) and no `wiki/_log.md` make this a proof.
+ * The reload stands for quit and reopen. `library-check-fixture.ts` owns the fixture and bridge.
  */
 
 /**
@@ -55,11 +16,8 @@ import { installLibraryCheckBridge, openLibraryCheckFolder } from "./library-che
 const EXPECTED: ReadonlyArray<{ code: string; page: string; line: string; advisory: boolean }> = [
   { code: "citation-target-missing", page: "refund-timing", line: "", advisory: false },
   /*
-   * Two uncited bullets on one page, with one row of ink and **two line numbers**: since
-   * 2026-09-12 rows that share a page and an identical sentence collapse into one door
-   * reading `merchant-onboarding · :19 · :20`. A person still fixes two bullets, so the
-   * finding is identified by its line — which is why this proof reads the suffix and not
-   * only the door. Counting doors here would silently assert five findings for six.
+   * Rows sharing a page and an identical sentence collapse into one door,
+   * so findings are identified by line.
    */
   { code: "uncited-fact", page: "merchant-onboarding", line: ":19", advisory: false },
   { code: "uncited-fact", page: "merchant-onboarding", line: ":20", advisory: false },
@@ -70,16 +28,8 @@ const EXPECTED: ReadonlyArray<{ code: string; page: string; line: string; adviso
 ];
 
 /**
- * Read the screen's own enumeration: one `(code, page, line)` triple per **finding**, not
- * per row. A collapsed row names one page and carries one place for each finding inside
- * it, so the line is read from the door's own paragraph — where the place lives — rather
- * than from the row, whose rule sentence is prose this proof must not parse.
- *
- * ⚠️ The place used to be printed as `:19`, the anchor `wiki-validate` writes, and this
- * reader matched it literally. Since 2026-09-13 the door says it the way the describer says
- * it beside the page (`line 19` on this English run), so the reader takes the number out of
- * those words and keeps the `:19` shape `EXPECTED` is written in — the proof is about which
- * findings the page enumerates, not about how it words a line number.
+ * Reads one triple per finding from the door's paragraph, taking the number out of the describer's
+ * wording and keeping the `:19` shape `EXPECTED` is written in.
  */
 async function readReport(page: Page) {
   return page.evaluate(() => {
@@ -115,11 +65,7 @@ const expectedRows = sortRows(EXPECTED);
 /** What the page holds with the fold closed, which is how it opens in every state. */
 const expectedBlockingRows = sortRows(EXPECTED.filter((row) => !row.advisory));
 
-/**
- * The advisory fold is **closed on arrival** (council 2026-09-12, unanimous), so a proof
- * that never presses it would assert three findings for six. Pressing it is also the
- * assertion that it is a disclosure and not a filter: nothing is removed from the page.
- */
+/** The advisory fold is closed on arrival; pressing it also asserts it is a disclosure, not a filter. */
 async function openAdvisoryFold(page: Page) {
   const fold = page.getByTestId("library-advisory-fold");
   await expect(fold).toHaveAttribute("aria-expanded", "false");
@@ -138,37 +84,19 @@ test.describe("the structural check is the app's own", () => {
     await page.getByTestId("library-workspace-wiki").click();
     await page.getByTestId("library-wiki").waitFor({ timeout: 30_000 });
 
-    /*
-     * Nothing on this screen can start a turn. Since 2026-09-25 the two dead doors are one
-     * notice that names what they would do, says why they cannot, and ends in the door to
-     * the agents page — the state with its reason and its way out.
-     */
+    /* Nothing here can start a turn: one notice says why and links to the agents page. */
     const notice = page.getByTestId("library-agent-missing");
     await expect(notice).toBeVisible({ timeout: 25_000 });
     await expect(notice).toContainText("check page format");
     await expect(notice.getByTestId("library-agent-missing-door")).toHaveAttribute("href", /\/agents/);
     await expect(page.getByTestId("library-lint")).toHaveCount(0);
 
-    /*
-     * **This is the installed app, so it must not offer its own download**
-     * (`.claude/rules/surfaces.md`). The stub sets `isTauri`, and with no runtime
-     * `onCompile` is null — the state in which the Compile slot used to print "which only
-     * the app can start… Get the app" at a person already running the app, directly under
-     * Check's own true reason (measured 2026-09-12,
-     * `.claude/shots-2026-09-12/library-check/1512-report-folded.png`). One paragraph now,
-     * and it is the one that is true of this surface.
-     */
+    /* The installed app must not offer its own download (`.claude/rules/surfaces.md`). */
     await expect(page.getByTestId("library-compile-web-limit")).toHaveCount(0);
     await expect(page.getByTestId("library-compile-web-get-app")).toHaveCount(0);
     /*
-     * And the reason is on screen exactly once **per screen**, which is the rule A1 (#1560)
-     * routes and this keeps. Since 2026-09-12 the home is the folder's graph: it makes no
-     * claim about an agent at all, and each surface that holds a blocked press prints its
-     * own one reason behind its own door (`library-spine.spec.ts` counts that). So the
-     * home's own count is zero. On this folder nothing is waiting to be compiled — the
-     * bridge answers every hash with `null`, so every cited source is `checking` — so the
-     * strip carries no Compile clause at all and the blocked press is Check the wiki, whose
-     * sentence stands in the guide beside it.
+     * The reason is on screen once per screen: the home makes no agent claim, and the blocked press is
+     * Check the wiki, whose sentence stands in the guide.
      */
     await expect(page.getByText(/No verified coding agent is set up on this computer/)).toHaveCount(0);
     await page.getByTestId("library-workspace-sources").click();
@@ -181,15 +109,8 @@ test.describe("the structural check is the app's own", () => {
     await expect(guide).toHaveCount(0);
 
     /*
-     * **Two presses, one report, one state.** The index row is the report's only door with
-     * live state — a count, `running`, `unseen` — and the strip keeps `N off-template` as
-     * the *fact* that presses into it (po-leverage, council 2026-09-12: two doors to one
-     * report, one of them stateless, is not worth the row). Both go through `LibraryPage`'s
-     * `choose`, which is the single seam slice 3 put "seen" on, so the row must be left in
-     * the same state by either. Read here rather than asserted from the source: the row's
-     * own marks are pinned by `LibrarySection.index.test.tsx`, because no browser can reach
-     * `unseen: true` — the dock harness leaves `acp_start` unanswered on purpose, so no
-     * turn completes.
+     * The index row and the strip's `N off-template` both go through `LibraryPage`'s `choose`, so either
+     * must leave the row in the same state; `unseen: true` is unreachable in a browser.
      */
     const rowState = () =>
       page.getByTestId("library-open-report").evaluate((node) => ({
@@ -239,12 +160,6 @@ test.describe("the structural check is the app's own", () => {
     await expect(page.getByTestId("library-check-structural")).not.toContainText("has not read these pages yet");
     await expect(page.getByTestId("library-check-semantic")).toContainText("has not read these pages yet");
 
-    /*
-     * **One missing agent reads one way on both sides of the press** (2026-09-25). The
-     * index row that opened this page sits under the notice; this page kept its own Check
-     * on screen, dead, over a caption with no way out. It now draws the index's notice,
-     * with its door, and no dead Check — and the two cards are one component, box for box.
-     */
     const reportNotice = page.getByTestId("library-check-report-agent-missing");
     await expect(reportNotice).toBeVisible();
     await expect(reportNotice).toContainText("check page format");
@@ -257,8 +172,7 @@ test.describe("the structural check is the app's own", () => {
       });
     expect(await card("library-check-report-agent-missing")).toEqual(await card("library-agent-missing"));
 
-    // A structural row's door is the page name, and it opens that page. No Fix, no Propose:
-    // those write, so they stay on the agent's half (owner decision 4).
+    // A structural row's door opens its page; Fix and Propose write, so they stay on the agent's half.
     await expect(page.getByTestId("library-finding-fix")).toHaveCount(0);
     await page
       .locator('[data-testid="library-structural-group"][data-code="citation-target-missing"]')
@@ -294,21 +208,8 @@ test.describe("the structural check is the app's own", () => {
 });
 
 /**
- * **The row that says "you are here" must not dim when a finger or a pointer is on it.**
- *
- * Measured at 1512 on 2026-09-12 (`design-interaction`, council): the selected report row
- * was `--color-overlay-2` at 1.14:1 and fell to 1.03:1 while the pointer rested on it,
- * because a `hover:bg-…` written into `className` outranked the `{shape:'row',
- * active:true}` compound — the value layer gates every hover compound on `active: false`
- * for exactly this reason and the class bypassed the axis. The repair routes hover through
- * `hoverSurface`/`hoverInk` and draws selection in the grammar this column already uses:
- * an indigo tint plus the 2px inline-start edge the docs tree, the palette and the hub rail
- * carry, whose ink clears the 3:1 non-text floor on canvas where the tint alone does not.
- *
- * It lives beside the recovery proof because it needs this folder's report row and a real
- * browser: jsdom has no computed hover. **A fresh element per condition** — a transition
- * returns the previous value, which is where this repository measured 1,240 false
- * positives from reusing one element.
+ * A fresh element per condition: a transition returns the previous computed value.
+ * jsdom has no computed hover, so the selected row's hover contrast is measured in a browser.
  */
 test.describe("the index row's own state", () => {
   test.beforeEach(async ({ page }) => {

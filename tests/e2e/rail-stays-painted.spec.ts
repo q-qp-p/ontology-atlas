@@ -4,60 +4,9 @@ import { installDesktopRailRuntime, mountDesktopVault } from "./desktop-rail-arr
 import { waitForAnimationsDone } from "./settle";
 
 /**
- * **The rail and the page frame are on screen for every frame of a rail navigation.**
- *
- * ## What was wrong
- *
- * Inspection 122 of the installed app (2026-09-13, blocker B1): *"every rail navigation
- * blanks the whole window — rail included — for 0.3-0.5 s."* Captured ink fractions on the
- * installed app, rail band against body band, timed from the click returning:
- *
- * | route | +0.15 s | +0.30 s | +0.47 s | +0.63 s |
- * |---|---|---|---|---|
- * | History, first visit | 0.0000 / 0.0000 | 0.0000 / 0.0000 | 0.0000 / 0.0000 | 0.0601 / 0.0574 |
- * | History, warm | 0.0000 / 0.0000 | 0.0550 / 0.0075 | — | — |
- *
- * The rail was never unmounted. A rail navigation runs inside
- * `document.startViewTransition`, which captured the **document**, and the rail was named
- * `app-nav-rail` so it would be lifted out of that snapshot. In WebKit — which is the engine
- * the installed app runs — the root group paints over every other group, so the lifted rail
- * spent the whole transition underneath the departing screen's snapshot. Measured on one
- * page in both engines, rail band ink while a transition ran: Chromium 0.9808, WebKit
- * 0.0000, and no styling of the pair changed it; only not capturing the root did. The full
- * measurement table is in `app/globals.css`.
- *
- * Capturing the pane instead of the document is what this gate holds in place, so the rail,
- * the page frame and everything else the shell owns stay part of the live document.
- *
- * ## ⚠️ It was not the whole story, and the ink above is not this gate's evidence
- *
- * The blank survived that change (inspection 122, re-inspection). A rail press in the
- * installed app was not a route change at all: `connect-src` refused the App Router's fetch
- * of the arriving route's payload, so the router fell back to a **full document load**, and
- * the blank was the app booting and restoring the folder again — 33-67 ms on six documents,
- * 100-300 ms on 104. The cause and its gates are in `scripts/lib/desktop-csp.mjs`; with it
- * fixed, a crossing on WKWebView runs the crossfade with every frame painted (rail ink
- * 0.0243-0.0307, measured on the installed app at 1/120 s). So the ink table above records a
- * real WebKit behaviour and a wrong diagnosis, and what follows guards only what it can
- * actually see.
- *
- * ## ⚠️ Why this gate hit-tests instead of reading pixels
- *
- * The defect is WebKit-only and CI installs Chromium alone, so an ink gate here would be
- * green before and after — a permanently green gate, which is not evidence. What *is*
- * engine-independent is the cause: **a captured element is not painted, and an unpainted
- * element is not hit-tested** (`route-transition-input.spec.ts` established that reasoning
- * on 2026-09-12). So this gate asks the two questions that decide whether the rail can be
- * on screen at all — is the document being captured, and does a press aimed at the rail
- * reach the rail — and both were red in Chromium on the defect:
- *
- * | sampled over one whole transition | before | after |
- * |---|---|---|
- * | frames where a rail point answered `HTML` | 182 of 183 | 1 of 183 |
- * | frames where the document itself was captured | all | none |
- *
- * A rail that answers presses is a rail that is painted. The pixels are measured directly
- * in WebKit against the static export, and that table is in the pull request.
+ * Hit-tests instead of reading pixels: the defect is WebKit-only and CI installs Chromium alone.
+ * A captured element is not painted and an unpainted element is not hit-tested, so ask whether the
+ * document is being captured and whether a press aimed at the rail reaches it.
  */
 
 /** The shell's neutral pane. It exists on purpose, but it must never reach a frame. */
@@ -168,7 +117,7 @@ async function readCrossing(page: Page): Promise<Crossing> {
 /** How long to keep sampling if a transition never ends — generous, because a stall is a failure. */
 const MAX_SAMPLE_MS = 3_000;
 
-/** Five current destinations the rail offers on a vault-bearing workbench; MCP is a section of Agents since 2026-09-18. */
+/** The five destinations the rail offers on a vault-bearing workbench; MCP is a section of Agents. */
 const DESTINATIONS = ["library", "agents", "git", "map", "architecture"] as const;
 
 test.use({ viewport: { width: 1512, height: 901 } });

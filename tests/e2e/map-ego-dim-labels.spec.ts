@@ -2,16 +2,7 @@ import { expect, test } from "@playwright/test";
 import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForMapStill } from "./settle";
 
-/**
- * **A selected node does not make the other domains nameless** (2026-09-19).
- *
- * Selecting the order domain dimmed the domains it does not touch — and their
- * names went to alpha 0 with them, so three of the nine domains became
- * anonymous grey chips. A person deciding where to go next was left hovering
- * to find out which chip was which. The dimmed domain keeps a faint name now
- * (now `--map-ego-rest-alpha`, which the node itself sinks to); children stay unnamed, as they were before
- * the selection.
- */
+/** A dimmed domain keeps a faint name (`--map-ego-rest-alpha`); children stay unnamed. */
 test("selecting a domain keeps every other domain's name on the map", async ({ page }) => {
   test.setTimeout(90_000);
   await page.setViewportSize({ width: 1512, height: 806 });

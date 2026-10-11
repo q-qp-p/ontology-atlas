@@ -2,35 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { seedFirstRunSeen } from "./first-run-seed";
 
-/**
- * **The docs sidebar head holds its own width** (owner report 2026-09-07, installed app,
- * `/ko/library?tab=ontology`).
- *
- * Library fixes this reader to Ontology, so the head is one row of the three controls that
- * remain meaningful: filter · order · new document. At the only width the
- * desktop pane has — `--docs-list-width`, 280px — the active chip's own name spent more than
- * the row had, and **the new-document button was cut in half by the pane's right border**.
- * Measured before the fix on this same static export: `scrollWidth` 285 against
- * `clientWidth` 279 in Korean (283/279 in English), with the `+` button's right edge 13.8px
- * past the row's content box.
- *
- * Two facts are asserted, and they are different failures:
- *
- * ① **`scrollWidth === clientWidth`** — the row is not secretly scrollable. A row that
- *    overflows into a scroll container hides the last control instead of clipping it, which
- *    is the same defect wearing a different symptom.
- * ② **no control's right edge passes the row's content box** — nothing is drawn under the
- *    pane border, so every control keeps its full hit area.
- *
- * 1040 is the app's minimum window and the desktop pane (280px, `lg` and up, labels collapsed to
- * glyphs). The component measures **the row** with a container query rather than a viewport
- * breakpoint, so the row is what is measured here too.
- *
- * Why e2e rather than jsdom: a container query and a flex row's `scrollWidth` are rendered
- * geometry. jsdom reports zero for both, so a unit test of this row cannot fail on the
- * defect. `DocsSidebarBody.test.tsx` owns the part that is checkable there — that the
- * threshold written into the class and the constant beside it are one number.
- */
+/** Rendered geometry: jsdom reports zero for container queries and scrollWidth. */
 
 /** Every control in Library's fixed-scope head row. */
 const HEAD_CONTROL_IDS = [

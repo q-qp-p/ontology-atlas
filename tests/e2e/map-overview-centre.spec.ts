@@ -5,25 +5,9 @@ import { dogfoodVaultFiles } from "./dogfood-vault-files";
 import { waitForBoxStill, waitForDomeEntered, waitForMapSettled, waitForMapStill } from "./settle";
 
 /**
- * **The overview stands in the middle of the free map, and the map's chrome stands on
- * one line** (owner report, 2026-09-25, the installed app at 1512×949: "isn't the ratio
- * off? INDEX on the left too, and the nodes seem pushed right").
- *
- * Measured before the fix on screen, the drawing's centre minus the centre of the free
- * map (INDEX's right edge to the utility rail's left edge):
- *
- * - the dogfood ontology, +82 px at 1512 (+38 to +113 across sizes and INDEX states):
- *   its hub is folded behind a crowded domain's chip, but the fit framed it anyway;
- * - the bundled sample, -52 to -89 px: its hub folds on the other side;
- * - any vault, -13 px with INDEX open and -10 px beside the agent dock: the side lanes
- *   reserved 26 px past INDEX against 52 past the rail, and the dock pulled the rail
- *   12 px closer without the lane following;
- * - and the tool row stood 8 px below INDEX's top edge from 1280 up, the rail 8 px
- *   further in than INDEX's inset.
- *
- * The drawn positions are converted to the screen through the canvas's own box, so a
- * viewport measured through the entry fade's scale (the bitmap stretched 0.5% across
- * the canvas) shows up here rather than being trusted.
+ * The overview's centre must match the free map's centre (INDEX right edge to rail left edge)
+ * and the chrome stands on one line. Drawn positions convert through the canvas's own box so
+ * the entry fade's scale shows up.
  */
 
 /** The app's window floor and its opening window: the two sizes the installed app is read at. */
@@ -227,15 +211,8 @@ async function chooseView(page: Page, view: string) {
 }
 
 /**
- * **Territories and Neural rest in the middle of the free map too** (2026-09-26), measured on
- * the product's own ontology at 1512×949 with INDEX open, as the owner saw them.
- *
- * - Territories rested with its project where the room's centre put it, 10 px left of that
- *   centre, and its names hang unevenly around the project: the drawing stood 12.5 px right.
- * - Neural was fitted between INDEX and the canvas's edge, as if the rail's column were free
- *   map: 30 px right at its fitted pose, one node under the tiles.
- *
- * Reduced motion, so the 3D view rests at the pose it was fitted for rather than turning.
+ * Territories and Neural rest in the middle of the free map, measured with INDEX open.
+ * Reduced motion so the 3D view rests at its fitted pose.
  */
 test("Territories and Neural rest in the middle of the free map", async ({ page }) => {
   test.setTimeout(240_000);

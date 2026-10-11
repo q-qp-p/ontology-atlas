@@ -4,15 +4,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForMapStill } from "./settle";
 
 /**
- * **The constellation chip expands a named region** (map round, 2026-09-20).
- *
- * Measured on the live map before the fix: the chip claimed
- * `aria-haspopup="dialog"`, the page held `0` elements with `role="dialog"`
- * once it opened, the trigger had no `aria-controls`, and the panel had no
- * accessible name — a reader heard "expanded" and had nothing to move to. The
- * dialog role would have been a hand-assembled modal (refused by the dialog
- * adoption ratchet) and a lie: no scrim, no focus trap, the map behind stays
- * live. This walks the honest shape on the real screen.
+ * The chip must not claim `aria-haspopup="dialog"` without a dialog;
+ * the panel needs an accessible name and `aria-controls`.
  */
 test("별자리 칩은 이름 있는 영역을 펼치고, 그 영역을 가리킨다", async ({ page }) => {
   test.setTimeout(120_000);

@@ -2,30 +2,9 @@ import { expect, test, type Page } from "@playwright/test";
 import { openOwnerState } from "./map-toolbar-popovers-harness";
 import { waitForBoxStill, waitForMapStill } from "./settle";
 /**
- * **What the map's top toolbar opens lands in the free map, and its tiles hold still**
- * (owner, 2026-09-25: "the positions are odd, the buttons differ in size, and they
- * overlap").
- *
- * Five claims, each measured rather than looked at:
- *
- * 1. The trail popover is never drawn under the INDEX panel. It hung from the chip's
- *    right edge, so with the trail chip first in the lane its left 92px landed under
- *    INDEX, which painted above it (elementFromPoint at its left edge returned the
- *    INDEX rows).
- * 2. The tool tiles and the status chips share one row, and a view change never
- *    moves that row between lines. The search lane used to wrap as a whole when the
- *    chips made it 12px too wide, and choosing Domain structure (which hides expand-all) then
- *    made it fit, so every tile jumped a line. Whether the row shares the utility
- *    lane's line is the width's decision (round 2: chips wrapped under the tools
- *    made a three-line staircase), but it is the same decision in every view.
- * 3. The path chip's copy action is the same 24px icon button as its clear action.
- *    It measured 30x14, under the 24px target floor, with a border its sibling lacks.
- * 4. Keyboard: the view picker puts focus on the checked view when it opens and
- *    gives it back to the chip after a choice; the agent dock closes on Escape and
- *    returns focus to its toggle.
- * 5. The tour's try-click card covers no toolbar control (it stood over the second
- *    line and cut the path chip mid-word), and Escape leaves an exit frame instead of
- *    removing the overlay in one frame.
+ * Each claim is measured: trail popover clear of INDEX, tool tiles and status chips on one row
+ * in every view, path chip actions at the 24px target floor, keyboard focus handoff, and the
+ * tour card covering no toolbar control.
  */
 const HEIGHT = 949;
 /** Which test id is painted at fractions of a box — the popover must answer for itself. */
@@ -213,10 +192,8 @@ async function toolbarControls(page: Page) {
         .filter((r) => r.visible && r.right - r.left > 0 && r.bottom - r.top > 0));
 }
 /**
- * Round 2 (2026-09-25). The first fix let the search lane span the free map below
- * `xl`, but the box still started at `md:left-6`, so with INDEX folded the first
- * tile stood 2px under the collapsed tab (elementFromPoint at the seam answered
- * the tab) at 900, 1040, 1100 and 1200.
+ * With INDEX folded, the first toolbar tile must not share pixels with the collapsed tab
+ * (`elementFromPoint` at the seam).
  */
 test("the collapsed INDEX tab and the toolbar never share pixels, md to 2xl", async ({ page }) => {
     test.setTimeout(240000);
@@ -237,11 +214,8 @@ test("the collapsed INDEX tab and the toolbar never share pixels, md to 2xl", as
     expect(failures, failures.join("\n")).toEqual([]);
 });
 /**
- * Round 2 (2026-09-25). Wrapping the status chips under the tools made the toolbar
- * three lines at 1040 and 1280 (bottom 156 against a 112 reserve) and put the two
- * chips side by side at 1512 but one per line at 1280. The lane is one row, the
- * chips on the tools' line, and the map's top reserve covers the toolbar's real
- * bottom — following it when the toolbar grows past the stylesheet's number.
+ * The toolbar is one lane row, status chips on the tools' line, and the map's top reserve
+ * covers its real bottom, following it when the toolbar grows.
  */
 test("the toolbar is one lane row inside the map's top reserve at every width", async ({ page }) => {
     test.setTimeout(240000);
@@ -285,10 +259,7 @@ test("the toolbar is one lane row inside the map's top reserve at every width", 
         .toBe(0);
     expect(failures, failures.join("\n")).toEqual([]);
 });
-/**
- * Round 2 (2026-09-25). At 1040x720 the three-line toolbar's path chip stood over
- * domain:catalog, the node the try-click step lights for the reader to press.
- */
+/** At 1040x720 the path chip must not stand over `domain:catalog`, the node the try-click step lights. */
 test("the tour's lit node is not under the toolbar at 1040x720", async ({ page }) => {
     test.setTimeout(180000);
     await openOwnerState(page, 1040);

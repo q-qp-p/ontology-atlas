@@ -3,24 +3,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForAnimationsDone, waitForBoxStill, waitForMapStill } from "./settle";
 
 /**
- * **The edge hover card covers nothing the map drew** (2026-09-19).
- *
- * The card sat at the pointer's lower right, always. On the sample map at
- * 1512×806, hovering the catalog-to-inventory line put it squarely over the
- * fulfillment node and its name: the card explained one relation by hiding
- * another concept. The
- * card now tries the four corners around the pointer and takes the first that
- * covers no drawn disc or name.
- *
- * The Flat overview draws counted domain lines with no edge pick (the flat dial,
- * 2026-10-02), so the lines are hovered inside a realm, where the map still draws
- * each relation and picks it.
- *
- * Measured, not eyeballed: for each line between two drawn nodes, the pointer goes to
- * the midpoint of the drawn curve, and the card's rect is compared with every
- * drawn disc and name. The assertion is conditional the same way the placement
- * is — when some corner of that pointer is clear, the card must be clear too; a
- * pointer boxed in on all four sides is allowed the least overlap.
+ * The card tries the four corners around the pointer and takes the first that covers
+ * no drawn disc or name. Lines are hovered inside a realm, where relations are picked.
  */
 test("hovering a line puts the card beside the drawn nodes, not on them", async ({ page }) => {
   test.setTimeout(120_000);

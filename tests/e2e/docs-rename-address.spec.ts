@@ -2,22 +2,6 @@ import { expect, test } from "@playwright/test";
 import { seedFirstRunSeen } from "./first-run-seed";
 import { stubDirectoryPicker } from "./vault-picker-stub";
 
-/**
- * **After a rename, the address follows the new name** (found in a walkthrough,
- * 2026-08-13).
- *
- * The rename handler moved only the selection (`setSelectedSlug`), leaving the
- * address (`?slug=`) and the active memory on the old one. The moment the vault
- * manifest refreshed and the old address disappeared, the "the URL asked for a
- * document that does not exist" verdict fired and **warned that the name the user
- * had just changed could not be found** — the rename succeeded while the screen
- * reported failure.
- *
- * Two things are measured: ① after a rename the "not found" banner never appears,
- * including across the manifest-refresh gap, and ② the address bar's `?slug=`
- * points at the new name — copying and sharing that address must bring the
- * recipient to the same document.
- */
 const VAULT = {
   "README.md": "# 걷기 볼트\n",
   "domains/order.md":
@@ -28,8 +12,7 @@ const VAULT = {
 
 test("이름 변경 뒤 — 경고가 안 뜨고 주소가 새 이름을 가리킨다", async ({ page }) => {
   test.setTimeout(150_000);
-  // Rename is the in-app dialog now (2026-09-26), never a browser prompt: record any
-  // native dialog so its return fails the test instead of being answered for it.
+  // Record native dialogs so their appearance fails the test instead of being answered.
   const nativeDialogs: string[] = [];
   page.on("dialog", (d) => {
     nativeDialogs.push(d.type());
@@ -61,8 +44,7 @@ test("이름 변경 뒤 — 경고가 안 뜨고 주소가 새 이름을 가리�
     .poll(() => new URL(page.url()).searchParams.get("slug"), { timeout: 20_000 })
     .toBe("capabilities/cart");
 
-  // Palette → rename command. People still type the command's old Korean name; the
-  // command answers to it through its keywords although its label changed on 2026-09-26.
+  // The command answers to its old Korean name through its keywords.
   await page.keyboard.press("Meta+k");
   const palette = page.getByRole("dialog").filter({ has: page.locator('input[type="text"]') }).first();
   await expect(palette, "팔레트가 안 열렸다").toBeVisible();
@@ -96,15 +78,8 @@ test("이름 변경 뒤 — 경고가 안 뜨고 주소가 새 이름을 가리�
   expect(nativeDialogs, "이름 변경이 브라우저 입력창을 띄웠다").toEqual([]);
 });
 
-/**
- * Deletion had the same illness (measured in the 2026-08-13 walkthrough): for a
- * document the user deleted through a confirmation dialog, the app reported "not
- * found — try a different workspace". An address the user just deleted is not a
- * broken link from outside.
- */
 test("삭제 뒤 — 경고가 안 뜨고 주소가 지운 문서를 가리키지 않는다", async ({ page }) => {
   test.setTimeout(150_000);
-  // Delete confirms in the app's own dialog now (2026-09-26), never a browser confirm.
   const nativeDialogs: string[] = [];
   page.on("dialog", (d) => {
     nativeDialogs.push(d.type());

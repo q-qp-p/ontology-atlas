@@ -4,43 +4,9 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import "./atlas-map-probe";
 
 /**
- * The camera transition spec — **measured and locked.**
- *
- * The claim is already written in code (`model/camera-easing.ts`): a
- * programmatic move follows a symmetric ease-in-out cubic, its duration is
- * **proportional to distance** and clamped to 200–420ms, and a user gesture hands
- * it straight to the spring. But **no check measured that claim on screen** — it
- * was being judged by "looks smooth".
- *
- * **Why camera values rather than pixels.** `/ui-proof` judges motion from
- * pixel deltas between recorded frames; that is the instrument for when you do not
- * know what moved. The camera is different — `__atlasMap.camera()` returns x, y,
- * and zoom **as numbers**, so the curve's shape and duration can be measured
- * directly. Pixel deltas cannot tell 200ms from 420ms.
- *
- * **Why arrow keys drive the camera.** Synthetic pointer events (`dispatchEvent`)
- * do not select a node on this canvas (measured). And in the installed app,
- * osascript reaches the canvas with **neither arrow keys nor clicks** (measured
- * 2026-08-10 — DOM buttons work, the canvas does not). In the browser, Playwright's
- * key events are real events, so **walking with arrow keys** is the only
- * automatable path that causes a camera transition. It is also the path users take.
- *
- * **Probes — does this gate actually catch anything** (2026-08-10):
- *
- * | Defect reverted in | Result |
- * |---|---|
- * | Transition removed entirely (`beginCameraTween` returns immediately) | **fails** with "it is a hard cut" |
- * | Transition duration floor 200 → 900ms | **fails** with "it was 676ms" |
- * | Transition duration **ceiling** only, 420 → 1600ms | **not caught** |
- *
- * The third matters: a move of this distance already lands **near the floor**, so
- * raising the ceiling does not change the value
- * (`CAMERA_TRANSITION_MIN + min(1,normalized) × span`). This spec therefore locks
- * **"does it actually take time to move inside that window"**, not "does it respect
- * the ceiling". The ceiling itself is locked by the pure-function test (the clamp
- * in `cameraTransitionDurationMs`). Different instruments catch different things,
- * and without writing that boundary down the next person mistakes this spec for a
- * ceiling gate.
+ * Camera values, not pixels: pixel deltas cannot tell 200ms from 420ms. Arrow keys drive the camera
+ * because synthetic pointer events do not select a node. This locks that the move takes time inside
+ * the window; the ceiling is covered by the `cameraTransitionDurationMs` unit test.
  */
 
 interface CameraSample {
@@ -166,46 +132,8 @@ test.describe("카메라 전환 규격", () => {
   });
 
   /**
-   * **One input = one event** — do the three things that move on selection read as
-   * the same event?
-   *
-   * The rule is pinned in `design.md`: *"Stages caused by the same input start on the same frame;
-   * a start-time gap over `--motion-fast` (120ms) reads as two events and is a
-   * defect."* (stages caused by the same input start on the same frame;
-   * a start-time gap over `--motion-fast` (120ms) reads as two events and is a
-   * defect). This repository has **already produced that value** — the node popover
-   * finished at 88.8% on the first frame while only the background map received a
-   * 100ms transition.
-   *
-   * The gate exists because of **a change made here** (2026-08-10): measuring free
-   * space requires the popover to be open, so the camera was delayed by **one
-   * frame**. That delay has to be measured so it does not widen into "two events".
-   * Measured (120fps machine): canvas 16.6ms · popover 31ms · camera 43.9ms — a
-   * spread of about 27ms.
-   *
-   * **What this gate is actually attached to — the probes told us.**
-   *
-   * ⚠️ **The camera assertions are not attached to any specific code path.**
-   * Blocking the selection effect's camera setup **entirely** still left this test
-   * green (3 probes: 300ms delay · raised threshold · blocked path), because on
-   * selection a **different path** (the cluster fit of the neighbour expansion) moves
-   * the camera.
-   *
-   * So what this assertion locks is the observable property **"the camera reacts
-   * within a few frames of the input"**, not "free-space re-aiming runs on time".
-   * Locking the latter would require finding and isolating every path that moves the
-   * camera, which is separate work on those paths rather than this gate.
-   *
-   * **The popover side is proven discriminating** — deleting its entry animation
-   * turns it red. Grouping by target element rather than by animation name was also
-   * the probes' doing (the name-based version was satisfied by a chip instead).
-   *
-   * **Instrument boundary — canvas hard cuts are not measured here.** Whether the
-   * protagonist hard-cuts can only be known by reading canvas pixels every frame,
-   * and **that reading drops the frame interval from 8ms to 75ms** (measured). That
-   * changes the very timing being measured, so it is not in this gate — it belongs to
-   * a one-off measurement and to `/ui-proof` (in that measurement the first
-   * frame's share was 14.3%, so not a hard cut).
+   * Locks that the camera reacts within a few frames of the input, not one specific code path.
+   * Canvas hard cuts are not measured: reading pixels every frame distorts the timing.
    */
   test("입력 뒤 카메라와 팝오버가 한 사건으로 시작한다", async ({ page }) => {
     const canvas = page.getByTestId("ontology-map-canvas");
@@ -403,18 +331,8 @@ test.describe("카메라 전환 규격", () => {
       );
     }
     /*
-     * ⚠️ **A floor must not depend on the machine** (2026-08-11, caught by CI).
-     *
-     * The floor started at `> 3`. The transition is 200–420ms, so the sample count is
-     * decided by **how many frames the machine produced in that time** — the CI runner
-     * produced only 3 and went red on all three retries (local passed). This is the
-     * discipline the repository already set: locking a gate to milliseconds or frame
-     * counts produces machine-dependent flakiness.
-     *
-     * The floor's purpose is the **idling guard** (not stamping an empty set as
-     * passing), not a performance verdict. And the verdict itself ("is there a frame at
-     * 0") holds with two samples. So the floor drops to 2 and the sample count is
-     * logged — a shrinking sample must be visible rather than a silent weakening.
+     * The floor is 2: the frame count in a 200-420ms transition depends on the machine.
+     * The count is logged.
      */
     console.log(`[camera] 전환 표본 ${steps.length}개 · ${span.durationMs.toFixed(0)}ms`);
     expect(steps.length, "구간이 비었다 — 아무것도 재지 못했다").toBeGreaterThanOrEqual(2);

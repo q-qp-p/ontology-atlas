@@ -5,15 +5,6 @@ import { installDesktopRailRuntime, mountDesktopVault } from './desktop-rail-arr
 import { seedFirstRunSeen } from './first-run-seed';
 import { waitForMapSettled, waitForMapStill } from './settle';
 
-/**
- * **The app chrome keeps its geometry, its focus and its word while it works.**
- *
- * Interaction inspection, 2026-09-25 (owner: "the position is odd, isn't it? the button sizes
- * differ, and things overlap"). Each block below is one defect that inspection measured, and
- * each measures the same thing it did — rects, computed styles and `document.activeElement` —
- * rather than a class name, because every one of these passed a class-name check.
- */
-
 test.describe('the vault switcher', () => {
   test.use({ viewport: { width: 1512, height: 949 } });
 
@@ -90,12 +81,7 @@ test.describe('the vault switcher', () => {
     });
   }
 
-  /*
-   * Paced at 300ms, a person's typing speed, and asserted after every press. The first version of
-   * this test sent six Tabs in a burst, which passed only because a 0ms timeout ran after focus
-   * had already reached the skip link - at a normal pace the popover stayed open throughout
-   * (review, 2026-09-25).
-   */
+  /* Paced at 300ms, a person's typing speed; a burst of Tabs passes before the focus handling runs. */
   for (const opener of ['mouse', 'Enter'] as const) {
     test(`Tab past the popover's last control closes it and moves on from the chip (${opener})`, async ({ page }) => {
       test.setTimeout(120_000);

@@ -6,22 +6,9 @@ import { waitForMapSettled } from "./settle";
 import { stubDirectoryPicker } from "./vault-picker-stub";
 
 /**
- * Does the first screen **show nearly all the nodes**?
- *
- * ## Why (2026-08-17)
- *
- * After building "hovering a node name in the chat highlights that node on the map",
- * this test came out of measuring the fact that **highlighting an off-screen node
- * shows nothing**. The count was 19 of 20 on screen — the first-screen fit
- * (`computeOverviewCameraTarget`) was doing its job.
- *
- * So this test stays as a **lock** on that property. If layout or the first-screen fit
- * drifts, the first screen goes empty, and being a canvas no check can see it while a
- * person reads it as "is it meant to look like this?".
- *
- * ⚠️ **Coordinate trap** — `__atlasMap.nodes()` already returns **screen
- * coordinates**. Applying the camera transform once more puts everything off screen,
- * and measuring that way really did produce a false "0 of 20" once.
+ * Locks that the first-screen fit (`computeOverviewCameraTarget`) shows nearly all nodes; an
+ * off-screen node highlights nothing. `__atlasMap.nodes()` already returns screen coordinates,
+ * so do not apply the camera transform again.
  */
 
 /** Minimum share that must be visible on the first screen. Measured 19/20 = 95%. */
@@ -40,14 +27,8 @@ test("첫 화면이 노드를 거의 다 보여 준다", async ({ page }) => {
   await expect(page.getByTestId("first-run-starter")).toHaveCount(0, { timeout: 30_000 });
   await expect(page.getByTestId("ontology-map-canvas")).toBeVisible({ timeout: 30_000 });
   /*
-   * Waits for layout to settle — counting while things move gives a different number
-   * every run.
-   *
-   * ⚠️ This used to be `waitForTimeout(8_000)`. 8 seconds is **one machine's number**:
-   * a slow machine counts while nodes are still moving and a fast one throws away 7
-   * seconds. Settling is judged by **value**, not time — layout has settled when node
-   * coordinates barely move between frames (full check audit, 2026-08-17), read in
-   * the page on consecutive frames rather than across a 400 ms gap.
+   * Waits for layout to settle by value (node coordinates barely move between consecutive frames),
+   * since counting while nodes move gives a different number every run.
    */
   await waitForMapSettled(page, { timeout: 60_000 });
 

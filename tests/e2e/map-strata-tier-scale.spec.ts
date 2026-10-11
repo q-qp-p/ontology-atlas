@@ -4,18 +4,8 @@ import { dogfoodVaultFiles } from "./dogfood-vault-files";
 import { waitForDomeEntered, waitForMapStill } from "./settle";
 
 /**
- * **Every tier name stands beside the plane it names** (2026-09-26).
- *
- * Strata named its four planes on a rail down the canvas's right edge, and wherever
- * the rail could not align a row with its plane the names fell to a stack in the
- * bottom-right corner. That was the usual case: measured on the product's own ontology
- * at 1512×949 the four names sat in the corner, 64 px wide and 64 px tall, naming no
- * plane and repeating the lit legend's key along the bottom (owner report).
- *
- * The rule, measured against the planes the frame drew (`__atlasMap.tierPlanes()`):
- * a name stands at its plane's height, a gap outside the rim's right or left extreme,
- * and nowhere else — no list in a corner. A plane with no clear place beside its rim
- * goes unnamed; at this size every plane has one.
+ * A name stands at its plane's height, a gap outside the rim's right or left extreme,
+ * measured against `__atlasMap.tierPlanes()`. A plane with no clear place goes unnamed.
  */
 
 type Plane = { kind: string; left: number; right: number; top: number; bottom: number; y: number };

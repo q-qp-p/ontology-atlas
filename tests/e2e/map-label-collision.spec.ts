@@ -5,30 +5,9 @@ import { waitForMapSettled } from "./settle";
 test.use({ contextOptions: { reducedMotion: "reduce" } });
 
 /**
- * Map labels must not overlap — measured from the boxes the frame actually drew.
- *
- * ## Why this needs an instrument at all
- *
- * The map is a canvas. It has no DOM, so a spec can otherwise only diff pixels,
- * which reports *"something changed"* and never *"these two names are on top of
- * each other"*. Node centres are not a substitute either: measured 2026-08-22 on
- * the download page's former evidence map, disc overlaps were **zero** on a frame whose names
- * were visibly crowding. Names collide long before discs do.
- *
- * `__atlasMap.labels()` returns the boxes recorded at the draw call, so what is
- * asserted here is what was painted — not what the placer decided. Those differ:
- * the LOD presence ramp can still put a candidate on screen after placement.
- *
- * ## What is asserted, and what is deliberately not
- *
- * **Overlap must be zero.** Two names sharing pixels is unreadable, full stop.
- *
- * **Clearance is only recorded, not enforced.** The obvious next step — require a
- * minimum gap — was tried and reverted the same day: raising the vertical box by
- * 2px dropped the drawn labels from **32 to 24** while the tightest pairs stayed
- * at 0px. The placer answers crowding by discarding labels, so a clearance floor
- * buys silence, not readability. If crowding is to be fixed it has to be fixed in
- * layout, and this spec is the instrument that will tell whether it worked.
+ * Measured from the boxes the frame actually drew via `__atlasMap.labels()`: names collide
+ * long before node discs do, and the LOD presence ramp can differ from the placer's decision.
+ * Overlap must be zero; clearance is only recorded, as the placer answers crowding by dropping labels.
  */
 
 interface LabelBox {
@@ -49,10 +28,8 @@ test.describe("지도 라벨 — 그려진 박스로 잰다", () => {
       { timeout: 20_000 },
     );
     /*
-     * Under reduced motion (pinned above) the assembly snaps, so there is no spring to outwait —
-     * and waiting the old 6s reads **after the map's ambient sleep** (3s idle): the sleeping
-     * canvas's last frame carried ≤5 label boxes (measured 2026-08-23) and the anti-idle guard
-     * below fired. The read is taken the moment the snap has settled, which is before sleep.
+     * Reduced motion snaps the assembly, so read the moment it settles, before the map's ambient
+     * sleep (3s idle) leaves the canvas's last frame with too few label boxes.
      */
     await waitForMapSettled(page);
 
@@ -83,12 +60,7 @@ test.describe("지도 라벨 — 그려진 박스로 잰다", () => {
       `지도에서 두 이름이 픽셀을 공유한다 — 읽을 수 없다:\n${overlaps.join("\n")}`,
     ).toEqual([]);
 
-    /*
-     * **The flat dial owns the overview's names** (2026-10-02). The old top-K budget
-     * (`LABEL_TOP_K`) capped a greedy placer that stacked leaf names into walls; the dial
-     * places names whole or not at all against its own marks, so the wall is ruled out by
-     * its own count of overlapping texts, read from the frame it drew.
-     */
+    /* The flat dial places names whole or not at all, so assert its own count of overlapping texts. */
     const dial = await page.evaluate(
       () => (window as unknown as { __atlasMap: { dial: () => { owns: boolean; textOverlaps?: number } } }).__atlasMap.dial(),
     );

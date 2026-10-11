@@ -11,23 +11,7 @@ import { expect, test } from "@playwright/test";
  * automatically.
  */
 
-/*
- * ⚠️ **The slug on the last row must exist** (found in the 2026-08-17 audit of the
- * checks themselves).
- *
- * The previous value, `capability:agent-config-onboarding`, was a name present in
- * **neither** this vault nor the sample (it appeared nowhere in the repository except
- * this line). The row was added to audit the focused screen, and since focus never
- * engaged, this check **had never once seen that screen.**
- *
- * It now uses a real name, and the assertion below also checks whether focus actually
- * engaged — so if the name disappears again this breaks here instead of passing
- * quietly.
- *
- * ⚠️ **With no vault chosen, this screen renders the *sample* vault**, not this
- * repository's dogfood vault. So a dogfood name like `capability:mcp-tool-server` also
- * fails to focus here (measured). Use a real node name read from the instrument.
- */
+/* With no vault chosen this screen renders the sample vault, so the slug must be a node in the sample. */
 const FOCUS_NODE_ID = "capability:cart";
 
 const ROUTES = [
@@ -38,15 +22,7 @@ const ROUTES = [
   `/ko/topology/?mode=focus&p=${encodeURIComponent(FOCUS_NODE_ID)}`,
 ];
 
-/**
- * The minimum each screen must have scanned.
- *
- * This check's verdict is "is the violation list empty", and before hydration or on a
- * screen that never mounted there are 0 buttons, so the list is empty and it **passes
- * automatically**. This check really did scan after a fixed 600 ms wait — meaning on a
- * slow machine it was green having seen nothing. So "how many were seen" is asserted
- * alongside.
- */
+/** Minimum scanned count: an empty violation list passes automatically on a screen that never mounted. */
 const MIN_SCANNED_PER_ROUTE = 5;
 
 test("접근성 없는 버튼·링크 탐지", async ({ page }) => {

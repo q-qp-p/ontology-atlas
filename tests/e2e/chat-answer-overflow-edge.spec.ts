@@ -5,20 +5,6 @@ import { openFolderFromFirstRun } from './open-folder';
 import { installLibraryWorkHarness } from './library-work-harness';
 
 /**
- * **A fenced block that runs past the panel says so.**
- *
- * Measured in the rendered dock on 2026-09-19: a command in an answer drew as
- * `pnpm atlas compile --page wiki/archite` at a 320px panel — cut flush at the right edge, with no
- * fade, no rule and no resting scrollbar, because a WebView's overlay scrollbars appear only while
- * the pointer moves. A truncated sentence is visibly truncated; a truncated **command** looks
- * complete, and copying it runs the wrong thing.
- *
- * ⚠️ **Both states are measured at a width where that state exists.** A mask painted
- * unconditionally states the opposite of the fact it exists to state, and a gate that only ever
- * looks at the narrow case would never catch that. So the same answer is read at the width where
- * the command fits and at the width where it does not.
- */
-/**
  * The command measured in the dock, unchanged: it fits the panel's default width and runs past its
  * documented floor. A longer one would prove only that a very long command overflows everywhere.
  */

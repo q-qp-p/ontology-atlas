@@ -4,23 +4,9 @@ import { seedFirstRunSeen } from './first-run-seed';
 import { stubDirectoryPicker } from './vault-picker-stub';
 
 /**
- * **Relaunching with more than one folder asks which one, and the rail always says which
- * one you are in.**
- *
- * Owner report (2026-09-13): once the app is set up, relaunching always drops you in the
- * same folder with no say in it, and the settings row that could change it is somewhere he
- * would not have thought to look.
- *
- * Why this is an end-to-end spec and not only a hook test: the launch rule is a
- * *conspiracy* between four places - the cold restore that defers, the source-landing
- * predicate that must then choose the local source, the welcome gate that renders the
- * folder screen for an idle session, and the rail slot the shell registers. Each one is unit
- * tested; only a real browser reload proves they agree. The unit tests pass with any one of
- * them disconnected.
- *
- * The picker is the OPFS stub (`vault-picker-stub.ts`), which hands back a real
- * `FileSystemDirectoryHandle` under a fresh name per pick - so two picks are genuinely two
- * folders in the recent list, deduped by the same identity rule the store uses.
+ * Relaunching with more than one folder asks which one, and the rail names the current folder.
+ * The launch rule spans cold restore, source landing, welcome gate and rail slot; only a real
+ * reload proves they agree.
  */
 
 const VAULT_SEED = {
@@ -60,23 +46,9 @@ async function settled(page: import('@playwright/test').Page, testId: string) {
 }
 
 /**
- * **The chooser's accent belongs to the folder list, in every channel.**
- *
- * The strongest chroma (saturation × value, alpha composited over the canvas so a 32%-alpha
- * hairline is judged as it is seen) inside a subtree — reading border, background and glyph
- * colour, which is where an accent can hide.
- *
- * Why this is measured rather than asserted on a class name: the first correction gated only
- * the *border* of the "open another folder" card, and the same card's glyph stayed at
- * `--color-indigo-accent`. Measured on the rendered chooser (guardian, 2026-09-13), the door's
- * glyph scored 0.561 against the list's 0.153 — so the screen still pointed at the door that
- * makes a *third* folder while its border claimed to defer. A class-name assertion would have
- * passed that state; the ranking is the fact, so the ranking is what is checked. The header's
- * brand lockup is deliberately out of scope: it is identity above the question, not an answer
- * to it.
- *
- * The whole computation happens in the page — pixel arrays crossing the CDP boundary cost
- * seconds, computed styles cost milliseconds.
+ * Strongest chroma (saturation x value, alpha composited over the canvas) in a subtree, across
+ * border, background and glyph colour. Computed in the page: pixel arrays over CDP cost seconds,
+ * computed styles milliseconds.
  */
 async function strongestChroma(page: import('@playwright/test').Page, selector: string) {
   return page.evaluate((sel) => {
@@ -130,9 +102,8 @@ async function pickFolderFromFirstRun(page: Page) {
 }
 
 /**
- * The rail tile stays on screen while the next folder opens (it is disabled and `data-busy`
- * then), so "the tile is visible" no longer means "the switch finished". Wait for the busy
- * state to come and go.
+ * The rail tile stays visible while the next folder opens (disabled, `data-busy`), so wait for the
+ * busy state to come and go.
  */
 async function switchSettled(page: Page) {
   const tile = page.getByTestId('vault-switch-rail-tile');
@@ -177,12 +148,8 @@ test.describe('the launch asks which folder when it knows more than one', () => 
       })
       .not.toBe(firstName.trim());
 
-    // ── Now two folders are known, so the launch must stop and ask.
-    //
-    // `?shell=desktop` is the installed shell's own override (`isDesktopShell`), and it is
-    // the honest surface to assert on: in the real app `AppShell` sends every workbench
-    // route to `/` while no vault is loaded, and `RootEntryPage` renders `FirstRunPage`
-    // there. That screen - not the docs welcome - is where the owner's relaunch lands.
+    // Two folders are known, so the launch must ask. `?shell=desktop` is the installed shell's override
+    // (`isDesktopShell`); there `RootEntryPage` renders `FirstRunPage` while no vault is loaded.
     await page.goto('/en/?shell=desktop&e2e=1&guides=off', { waitUntil: 'domcontentloaded' });
     const list = page.getByTestId('recent-vault-list');
     await expect(list).toBeVisible({ timeout: 60_000 });

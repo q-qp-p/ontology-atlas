@@ -5,38 +5,9 @@ import type { AtlasMapProbe } from "./atlas-map-probe";
 import { waitForMapSettled } from "./settle";
 
 /**
- * **When the cursor leaves the canvas the map goes back to sleep** (measured defect,
- * 2026-08-19).
- *
- * ## What happened
- *
- * The canvas's `pointerleave` cleared only the background coordinate and left the
- * node hover (`hoveredNodeIdRef`) in place. The only path that released that value
- * was a pointermove to empty space **inside** the canvas, so leaving the window with
- * the cursor on a node left a highlight pointing at nobody, **forever**.
- *
- * The idle gate (`model/idle-gate.ts`) counts "there is a hover target" as activity.
- * So this was not a wrong-picture problem but a **gate that never closes again**: on
- * a 2,000-node 2D map it burned 130ms per second even 48 seconds after the last
- * input (normal idle is 3ms/s).
- *
- * ## What this check measures is the point of this file
- *
- * The first version checked whether `__atlasMap.hover()` became null. **That check
- * stayed green even with the defect reinjected** — `hover()` reports the hover the
- * frame *drew*, which comes from the background coordinate, and leave was already
- * clearing that. The value holding the gate open was a different ref. In other
- * words, the check was measuring beside the defect.
- *
- * So the **consequence** is measured instead, in two layers:
- *
- * - **The proof** reads the map's own e2e record: after the cursor leaves, the idle
- *   gate's last awake frame (`idleDebug().lastActive.t`) stops advancing. Any flag
- *   that keeps counting as activity — the stale hover or a copy of it — keeps that
- *   stamp moving. It does not depend on machine load.
- * - **A coarse backstop** compares rAF callback time after release with time while
- *   hovering, in the same run. It catches a broken idle gate that keeps drawing
- *   without recording activity, which the stamp cannot see.
+ * After the cursor leaves, the idle gate's last awake frame (`idleDebug().lastActive.t`)
+ * must stop advancing. `hover()` reports the drawn hover, so it cannot see a stale
+ * `hoveredNodeIdRef`; a coarse rAF-time comparison backs this up.
  */
 test("커서가 캔버스를 벗어나면 지도가 프레임을 그만 그린다", async ({ page }) => {
   await seedFirstRunSeen(page);
@@ -76,11 +47,8 @@ test("커서가 캔버스를 벗어나면 지도가 프레임을 그만 그린�
   expect(target).not.toBeNull();
 
   /**
-   * Time per second spent in rAF callbacks over the last `ms`. Why time rather than a
-   * frame **count**: the "did work" threshold (0.4ms) overlaps ordinary frame cost on a
-   * small vault and makes the verdict flaky (measured: a defective build reported
-   * 2/143 on 200 nodes). Time is only a backstop here; the ratio numbers sit at the
-   * assertion below.
+   * Time rather than frame count: the 0.4ms threshold overlaps ordinary frame cost on a
+   * small vault, so a frame count is unstable.
    */
   const idleCost = (ms: number) =>
     page.evaluate((windowMs) => {
@@ -110,18 +78,8 @@ test("커서가 캔버스를 벗어나면 지도가 프레임을 그만 그린�
     page.evaluate(() => (window as unknown as { __atlasMap?: AtlasMapProbe }).__atlasMap?.hover() ?? null);
 
   /*
-   * Leave onto chrome layered **over** the canvas — the left nav rail.
-   *
-   * Why not "a coordinate outside the canvas": this map's canvas **covers the whole
-   * screen** (measured box = viewport). So a coordinate written as "outside" was
-   * actually inside it, and that move emitted a pointermove over empty canvas, which
-   * the old path used to release the hover — that is how a check that stays green with
-   * the defect reinjected gets built.
-   *   (This paragraph stays because the next person makes the same mistake.)
-   *
-   * Moving onto the rail makes the canvas receive `pointerleave` and no pointermove —
-   * exactly the shape of the most common exit, looking at a node and then going to the
-   * sidebar.
+   * Leave onto the nav rail: the canvas covers the whole screen, so an outside coordinate
+   * would still be a pointermove over empty canvas. The rail gives `pointerleave` only.
    */
   const rail = page.getByTestId("app-nav-rail-item-agents");
   const railBox = await rail.boundingBox();
@@ -137,26 +95,20 @@ test("커서가 캔버스를 벗어나면 지도가 프레임을 그만 그린�
   for (let round = 0; round < 3; round++) {
     await page.mouse.move(box!.x + target!.x, box!.y + target!.y);
     await expect.poll(hovered, { timeout: 15_000 }).toBe(target!.id);
-    // The hover's opening animation runs its first ~500 ms hotter (69-89 vs 48-66
-    // ms/s, 2026-09-27 review), so only the steady last second is sampled.
-    // measurement window: 1.5 s of hovered frames, the last 1 s of which is sampled.
+    // The hover's opening animation runs hotter for its first ~500 ms, so only the last
+    // second is sampled.
     await page.waitForTimeout(1_500);
     const awake = await idleCost(1_000);
     expect(awake.frames).toBeGreaterThan(20);
     awakeSamples.push(awake.cpuMsPerSec);
 
     await page.mouse.move(railBox!.x + railBox!.width / 2, railBox!.y + railBox!.height / 2);
-    // ① Was the highlight actually released — the cause side, no timing noise. With
-    //    the pointerleave release removed (2026-09-27) this poll already fails here.
+    // Cause side, no timing noise: the highlight must be released.
     await expect.poll(hovered, { message: "레일로 나갔는데 호버가 안 풀렸다" }).toBeNull();
 
     /*
-     * ② The proof: the idle gate stops recording awake frames. Poll until two reads
-     * a poll interval apart agree (the gate stamps every awake frame, so equal reads
-     * mean it has gone quiet), then hold for a labelled window and require that no
-     * awake frame was recorded in it. With the hover-never-released defect the stamp
-     * advances every frame and the poll never settles: measured red on 2026-09-27
-   * with the pointerleave release removed and ① disabled.
+     * The proof: poll until two reads a poll interval apart agree, then require no awake
+     * frame in a held window. A never-released hover advances the stamp every frame.
      */
     let previous = -1;
     await expect
@@ -176,13 +128,8 @@ test("커서가 캔버스를 벗어나면 지도가 프레임을 그만 그린�
     expect(await lastActiveStamp(), "잠든 지도가 1초 안에 다시 깨어났다").toBe(quietFrom);
 
     /*
-     * The released cost sample waits out another subsystem's tail (2026-09-13 sweep,
-     * `?synth=800`): with the pointer parked on a rail tile, roughly one further
-     * `requestAnimationFrame` callback per frame keeps working for about three seconds
-     * after the pointer leaves, and that loop exposes no state to wait on —
-     * `document.getAnimations()` reports nothing because it is script-driven. Measured
-     * released cost by what was waited for: camera and layout still 38 ms/s, the
-     * map's gate skipping for 1.5 s 45 ms/s, 3,500 ms after the pointer left 2.7 ms/s.
+     * The rail's script-driven rAF loop keeps working about three seconds after the pointer leaves
+     * and exposes no state to wait on (`document.getAnimations()` reports nothing), so wait it out.
      */
     // measurement window: outlasts the rail's script-driven tail described above.
     await page.waitForTimeout(3_500);
@@ -195,12 +142,9 @@ test("커서가 캔버스를 벗어나면 지도가 프레임을 그만 그린�
   const awakeMin = Math.min(...awakeSamples);
   const releasedMin = Math.min(...releasedSamples);
   /*
-   * ③ The coarse backstop, not the proof: it catches an idle gate that keeps drawing
-   * without recording activity (② cannot see that). Relative to awake in the same
-   * run, so load inflates both sides alike. Measured 2026-09-27, 5 runs each,
-   * headless static build, synth=800, min of three rounds: healthy ratio
-   * 0.039-0.243; `shouldSkipFrame` pinned to false 0.855-0.951. The bound sits
-   * between the healthy worst and the forced-awake best; it is not 3x from either.
+   * The coarse backstop, not the proof: it catches an idle gate that keeps drawing without
+   * recording activity. Relative to awake in the same run so load inflates both sides alike;
+   * the bound sits between the healthy worst and the forced-awake best.
    */
   expect(
     releasedMin,

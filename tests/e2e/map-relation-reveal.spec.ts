@@ -4,8 +4,7 @@ import "./atlas-map-probe";
 import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForMapStill } from "./settle";
 
-// The Flat overview counts lines between domains (the flat dial, 2026-10-02); one relation
-// at a time is drawn and revealed inside a realm.
+// The Flat overview counts lines between domains; one relation at a time is revealed inside a realm.
 const ROUTE = "/ko/topology/?e2e=1&guides=off&realm=domain%3Aorder";
 const SAMPLES = 24;
 // Points under fixed-pixel labels and discs change by up to 26 levels while

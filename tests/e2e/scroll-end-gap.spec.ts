@@ -63,39 +63,16 @@ const MIN_GAP = 24;
 const MIN_FRAME_RESERVE = 36;
 
 /**
- * How far the last ink must sit **above the floating «back to top» pill's top edge**.
- *
- * The reserve the pane declares is the pill's inset plus its height plus 12px of breath
- * (`--doc-reading-back-to-top-clearance`), which measured 64px of clearance on 2026-09-08.
- * 8 is subpixel slack over "not touching" — a deliberately low bar, because the defect this
- * guards is the line being **under** the pill, and a number tuned to today's reserve would
- * fail on a re-decided one instead of on a regression.
+ * How far the last ink must sit above the floating back-to-top pill's top edge. The pane reserves
+ * the pill's inset plus its height plus 12px (`--doc-reading-back-to-top-clearance`). 8 is
+ * subpixel slack, deliberately low: the defect is the line being under the pill.
  */
 const MIN_PILL_CLEARANCE = 8;
 
 /**
- * Uses the **canonical** audited-route list as is (2026-08-06).
- *
- * **Why it moved off a hand-picked five.** The previous list was five hand-written
- * lines and **nobody had recorded why those five**. That blind spot hid a real
- * defect: `/` (the gateway) was not on the list, and there the last line sat
- * **17px** behind the bottom tab bar (at both 390 and 768, re-confirmed against the
- * production static export).
- *
- * Worse is **why it was not caught**. `/` and `/download` render the same gateway
- * view, but the tab bar stands only on `/` (`shouldHideBottomTabBar` hides it on
- * `/download` alone). What was on the list was the side **without** the tab bar,
- * and with no tab bar `tabClearance` is `null` and check ③ below is **silently
- * skipped**. The same screen was being measured only from the side where the check
- * is disabled.
- *
- * So three things were fixed together: the list became canonical, phone width
- * joined the matrix, and ③ failed if it never ran. Phone and tablet widths left the
- * matrix on 2026-09-27 (not a target), so ③ now judges only a fixed bottom strip that
- * happens to stand at a desktop width, and its never-ran guard went with them. Since
- * `audited-route-coverage.contract.test.ts` already forces a new route into the
- * canonical list, this gate follows automatically — one fewer hand-maintained
- * list.
+ * Uses the canonical audited-route list; `audited-route-coverage.contract.test.ts` forces a new
+ * route into it, so this gate follows automatically. The tab-bar check judges only a fixed
+ * bottom strip that stands at a desktop width.
  */
 const ROUTES = AUDITED_ROUTES.map((url) => [url, url] as const);
 
@@ -140,12 +117,11 @@ const VIEWPORTS = [
   // The installed app's opening window — `tauri.conf.json` main window content size. Before
   // this entry, neither size the macOS app actually opens at was ever measured here.
   { label: "desktop-1512x900", w: 1512, h: 900 },
-  // The app's window floor (`minWidth`/`minHeight`). `tauri-plugin-window-state` restores the
-  // owner's last size, so the floor is a routine first viewport, not an occasional one. Still
-  // `≥lg` (1024): no tab bar; the `lg:pb-10` 40px `--page-bottom-breath` reservation applies.
+  // The app's window floor (`minWidth`/`minHeight`); the window-state plugin restores the last
+  // size, so the floor is a routine first viewport. At `lg` (1024) and up: no tab bar, and the
+  // `lg:pb-10` 40px `--page-bottom-breath` reservation applies.
   { label: "desktop-1040x720", w: 1040, h: 720 },
-  // Tablet and phone widths (where the bottom tab bar stands) are not a target (owner
-  // direction, 2026-09-27); every width here is `≥lg`.
+  // Every width here is at least `lg`; tablet and phone widths are not a target.
 ] as const;
 
 type Measured = {
@@ -154,34 +130,16 @@ type Measured = {
   rootHeight: number;
   scrollHeight: number;
   /**
-   * The gap remaining below the last "ink" at the end of a scroll.
-   *
-   * **`null` when no ink is found at all.** This used to return `0` in that case,
-   * and since `0 < MIN_GAP` **a measurement failure was reported as a "0px gap
-   * violation"** (measured 2026-08-06 on `/ko/project/storefront/`). Failing to
-   * measure is neither a pass nor a failure but **a measurement failure**, and the
-   * caller must say so.
+   * The gap below the last ink at the end of a scroll; `null` when no ink is found, because a
+   * measurement failure is neither a pass nor a violation.
    */
   gap: number | null;
   /** When a fixed bottom tab bar exists, how far the last ink sits above it. */
   tabClearance: number | null;
   /**
-   * **What the page itself reserves at the bottom, and whether it wears the page frame.**
-   *
-   * `gap` alone cannot tell "the frame reserved 40px" from "the last card happened to have 28px of
-   * its own padding" — measured 2026-09-05 with the reservation deliberately removed, the gap on
-   * `/ko/mcp/` was **28px**, over `MIN_GAP` and therefore green, while the page reserved nothing at
-   * all. So the reservation is read directly.
-   *
-   * Frame membership is detected from the **rendered** max width rather than from a class name: a
-   * class assertion belongs in `page-frame.contract.test.ts`, and this file's job is pixels.
-   *
-   * ⚠️ **There are two frames, and this detector once knew only one** (2026-09-06). It compared the
-   * root's max width with `--page-max` alone, so when `/agents` and `/mcp` moved onto the 960 form
-   * column they stopped being recognised as framed at all — and at 1040/1280/1512 the count of
-   * routes ④ judged fell to **zero**, which the idling guard below caught exactly as it was written
-   * to. The widths come from `page-frame.ts` rather than from a literal here, so a re-decided 960
-   * cannot leave this file measuring the old one.
+   * The page's own bottom reservation and whether it wears the page frame. `gap` alone cannot tell
+   * a 40px frame reserve from a card's own 28px padding. Frame membership is read from the rendered
+   * max width, with widths imported from `page-frame.ts`, not from a literal here.
    */
   framed: boolean;
   /** The rendered max width that made `framed` true — which of the two frames this page wears. */
@@ -210,13 +168,8 @@ async function measure(page: import("@playwright/test").Page): Promise<Measured>
       };
     }
     /**
-     * The page root — **not the first child.**
-     *
-     * Next injects `<script>` inside this slot too, and when that is the first child
-     * the previous code took a zero-height node as the page root and **found no ink at
-     * all** (measured 2026-08-06 on `/ko/project/storefront/`: the slot's children were
-     * `[SCRIPT, SCRIPT, DIV(1004px)]` — `rootHeight 0`, 0 ink). Pick the first child
-     * that has a box.
+     * The page root is the first child that has a box: Next injects `<script>` into this slot too,
+     * and a zero-height first child finds no ink.
      */
     const root = ([...slot.children] as HTMLElement[]).find(
       (el) => el.getBoundingClientRect().height > 0,
@@ -224,27 +177,14 @@ async function measure(page: import("@playwright/test").Page): Promise<Measured>
     slot.scrollTop = slot.scrollHeight;
 
     /**
-     * Anything an ancestor clipped is **not this page's ink.**
-     *
-     * The desktop table of contents on `/ko/changelog/` is a sticky sidebar with its
-     * own scroll (`max-h-[…] overflow-y-auto`), so its item rects extend far outside
-     * the sidebar. The previous code counted one as the page's last ink and produced a
-     * **false violation of `gap −184px`** (measured 2026-08-06 at 1280×700 — the
-     * sidebar spans 63.8–619.8 while the ink found was at 883.8).
-     *
-     * The slot itself is not inspected — the slot is the container we scrolled to the
-     * end, and what sits lowest inside it is exactly what we want to measure.
+     * Anything an ancestor clipped is not this page's ink: a sticky sidebar with its own scroll
+     * (the changelog table of contents) has item rects far outside it. The slot itself is not
+     * inspected, since it is the container scrolled to the end.
      */
     /**
-     * Returns the **visible bottom edge** after ancestor clipping, or `null` when
-     * fully outside.
-     *
-     * ⚠️ Checking only "is it fully outside" is not enough (code review 2026-08-07). A
-     * child **straddling** the clipping box's bottom edge is not fully outside, so it
-     * passes and its `bottom` — including the clipped, invisible part — is used as is.
-     * The `/ko/changelog/` sidebar false violation this function exists to prevent
-     * then reappears with nothing more than a different scroll position or viewport.
-     * So the value is **clamped** by intersection.
+     * Returns the visible bottom edge after ancestor clipping, or `null` when fully outside. A child
+     * straddling the clip box's bottom edge is not fully outside, so its bottom is clamped by
+     * intersection.
      */
     const visibleBottom = (el: Element, r: DOMRect): number | null => {
       let bottom = r.bottom;
@@ -265,14 +205,8 @@ async function measure(page: import("@playwright/test").Page): Promise<Measured>
         if (cs.position === "fixed" || cs.display === "none" || cs.visibility === "hidden") continue;
         if ((child.className ?? "").toString().includes("sr-only")) continue;
         /**
-         * ⚠️ **A closed `<details>`'s content has a box but is not ink.**
-         *
-         * Recent Chromium hides a closed disclosure with `content-visibility: hidden`
-         * rather than `display: none` (changed behaviour, for the expand animation). It
-         * passes all three conditions above while being absent from the screen — measured
-         * 2026-07-29: the collapsed trust section on `/download` became 561px of phantom
-         * ink and drove the bottom gap to −505px. `checkVisibility()` is the standard
-         * test.
+         * A closed `<details>`'s content has a box but is not ink: Chromium hides it with
+         * `content-visibility: hidden` rather than `display: none`, so use `checkVisibility()`.
          */
         if (typeof child.checkVisibility === "function" && !child.checkVisibility()) continue;
         const r = child.getBoundingClientRect();
@@ -289,13 +223,8 @@ async function measure(page: import("@playwright/test").Page): Promise<Measured>
       const s = getComputedStyle(el);
       if (s.position !== "fixed") return false;
       /**
-       * A decorative layer that takes no pointer events is not a bar (caught during the
-       * 2026-08-18 remake). The gateway's field canvas (`gateway-fx-field`) is
-       * `fixed inset-0` and satisfied every previous condition (height > 20, touching the
-       * bottom, width > 50%); with top = 0 it produced a false clearance violation around
-       * −700px. A real bar is **a low strip pinned to the bottom** — anything taller than
-       * half the screen is a background, not a bar, and something with
-       * `pointer-events: none` has no authority to obscure content in the first place.
+       * A decorative layer with no pointer events is not a bar (the gateway field canvas is
+       * `fixed inset-0`). A real bar is a low strip pinned to the bottom, under half the screen.
        */
       if (s.pointerEvents === "none") return false;
       const r = el.getBoundingClientRect();
@@ -430,18 +359,9 @@ for (const vp of VIEWPORTS) {
           `Either the frame is gone (then the contract changed) or the --page-max detection is stale.`,
         ).toBeGreaterThan(1);
       /*
-       * ⚠️ **The frame that moved is the one that must be seen.** `/agents` and `/mcp` are the two
-       * routes ④ has ever actually judged, and on 2026-09-06 they moved onto the 960 form column.
-       * A detector that still knew only `--page-max` would have kept passing on the day the
-       * reservation stopped being measured, so the width itself is asserted rather than only the
-       * count.
-       *
-       * ⚠️ **A named gap, not a silent one:** the two wide-frame members among the audited routes
-       * (`/ko/projects/`, `/ko/ontology/insights/`) are *not* reached by this measurement — their
-       * page root is not the slot child this function reads, which is why removing the two narrow
-       * members earlier took `framedRoutes` to **zero** rather than to two. That is older than this
-       * change and is left as it is rather than widened here; the class layer of the same
-       * prescription is covered by `page-frame.contract.test.ts` for every member.
+       * The frame that must be seen is the 960 form column: assert the width itself, not only the
+       * count, so a detector that knows only `--page-max` fails. The wide-frame members
+       * (`/ko/projects/`, `/ko/ontology/insights/`) are not reached: their root is not the slot child.
        */
       expect(
         [...framedWidths],
@@ -454,42 +374,25 @@ for (const vp of VIEWPORTS) {
 }
 
 /**
- * **The routes above are opened with no folder, and two of them are short in that state.**
- *
- * Measured 2026-09-05 at 1040×720 and 1512×900: with nothing attached, `/mcp` is 533px and
- * `/agents` 228px inside a 720px slot. `!m.scrollable` skips them before any assertion runs, so
- * both were carried through every desktop pass **without being judged once** — and a defect
- * shipped underneath that: `PAGE_FRAME` reserved nothing at the bottom at `lg`, so with a folder
- * open the last card sat flush against the bottom edge of the installed app's window. Planting
- * that exact defect and re-running the three desktop passes above left all three green.
- *
- * A gate that cannot reach a state cannot judge it. So this opens the folder first, which is the
- * state those screens are actually used in, and measures the same three checks there. The routes
- * are the frame family plus the two tabs of `/mcp`, because a tab is a different document height
- * and the frame is what both of them lean on.
- *
- * Two viewports, both `≥lg`: the app's window floor and the width where content most reliably
- * exceeds the viewport. Below `lg` the reservation is the per-surface tab-bar reserve, which the
- * pass above already measures on every route.
+ * With no folder two of these routes are short and `!m.scrollable` skips them before any assertion,
+ * so this opens the folder first, the state those screens are used in, and measures the same
+ * three checks. Both viewports are at least `lg`.
  */
 const VAULT_ROUTES = [
   "/ko/agents/?tab=mcp",
   "/ko/agents/?tab=mcp&mcp=connectors",
   "/ko/agents/",
   "/ko/ontology/insights/",
-  // The board's default landing is the brief, which is four cards and ends well above the fold.
-  // Its tallest documents are the concept questions: with a folder open, composition, relations
-  // and growth all run past the window (1063-1357px measured at 1512x900 on 2026-09-20), so the
-  // scroll end this reservation protects is only reachable through one of them.
+  // The board's default landing is the brief, four cards ending well above the fold; the concept
+  // questions (composition, relations, growth) run past the window with a folder open, which is
+  // what makes the scroll end reachable.
   "/ko/ontology/insights/?tab=composition",
   "/ko/projects/",
-  // Docs joined on 2026-09-05: with a folder open its sidebar grew two capped lists above
-  // the tree, so the column's own scroll end is a thing that can now be reached and cut.
+  // With a folder open the Docs sidebar has two capped lists above the tree, so the column's own
+  // scroll end can be reached and cut.
   "/ko/docs/",
-  // The Library joined on 2026-09-06, when those two lists left Docs for their own
-  // destination. Both halves of this screen can be taller than the window with a folder
-  // open — the index when the folder holds many files, and the reader on any long wiki
-  // page — and the no-folder pass above cannot reach either.
+  // Both halves of the Library can be taller than the window with a folder open (many files in the
+  // index, any long wiki page), and the no-folder pass cannot reach either.
   "/ko/library/",
 ] as const;
 
@@ -534,11 +437,8 @@ for (const vp of VAULT_VIEWPORTS) {
         "## Not in sources",
         "",
         /*
-         * The trailing sections carry a line each **on purpose**. Left empty, the page's last
-         * painted ink stopped 176px above the back-to-top pill, so check ⑥ below could not
-         * reach the thing it measures: with the reserve deliberately removed the whole pass
-         * stayed green (probed 2026-09-08). A fixture that cannot reach the defect is not a
-         * fixture.
+         * Trailing sections carry a line each so the page's last ink sits at the back-to-top pill;
+         * empty sections would leave the pill clearance check nothing to measure.
          */
         "- Nothing outside the gathered sources is claimed on this page.",
         "- The last line of the page, which is what check ⑥ measures against the pill.",
@@ -588,11 +488,8 @@ for (const vp of VAULT_VIEWPORTS) {
     ).toBeGreaterThan(0);
 
     /*
-     * ⑤ **The Library scrolls inside its own boxes, not in the shell slot.** Its `<main>` is
-     * `overflow-hidden` with the index column and the reading pane scrolling within it, so
-     * the slot above never scrolls and every check above skipped this destination on every
-     * pass (design-workbench, council 2026-09-07). Measure the two inner scrollers directly:
-     * the wiki reader with a page open, and the index column.
+     * The Library scrolls inside its own boxes (index column and reading pane), not in the shell slot,
+     * so measure the two inner scrollers directly: the wiki reader with a page open, and the index.
      */
     await page.goto("/ko/library/", { waitUntil: "domcontentloaded" });
     await routeSettled(page);
@@ -610,20 +507,8 @@ for (const vp of VAULT_VIEWPORTS) {
         if (reader.gap === null) violations.push("/ko/library/ reader: 잉크를 하나도 못 찾았다 — 계측 실패이지 통과가 아니다");
         else if (reader.gap < MIN_GAP) violations.push(`/ko/library/ reader: 스크롤 끝 하단 여백 ${reader.gap}px (< ${MIN_GAP})`);
         /*
-         * ⑥ **The gap must clear the thing standing in it, not merely exist.**
-         *
-         * The reading pane lays a floating «back to top» pill over its own scroll area, so
-         * at the end of the scroll the page stops and the pill stays on top of whatever is
-         * beneath it. ⑤ could not see that: it measures to the scroller's bottom **edge**,
-         * and the pill's own body is 60px above that edge. Owner report on the installed
-         * app, 2026-09-08 — at the foot of the Library's check results the pill covered the
-         * "N more names" fold chip and hid its words — while this file was green, because
-         * the gap at the edge was 52px.
-         *
-         * So the yardstick here is the pill's top edge, not the scroller's bottom. Measured
-         * the same day on the wiki reader before the fix: −8px at 1400×860, 1200×800 and
-         * 1040×720 alike (at 1040 that was 60px of the last line's width behind the pill),
-         * and +64px after it.
+         * The gap must clear the floating back-to-top pill's top edge, not just exist: the pill body sits
+         * 60px above the scroller's bottom edge and covers the last line otherwise.
          */
         const pill = await measureBackToTopClearance(page, '[data-testid="library-reading-pane"]');
         if (pill === null) {

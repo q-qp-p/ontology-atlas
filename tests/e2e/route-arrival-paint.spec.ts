@@ -7,53 +7,9 @@ import {
 import { waitForAnimationsDone } from "./settle";
 
 /**
- * **A pane the app has already read arrives painted, not loading** — the proof for the
- * flicker the owner reported on 2026-09-12: *"when this right-hand area switches it loads
- * with a strange flicker."*
- *
- * ## What was wrong, and why no gate saw it
- *
- * Every destination's view is unmounted on a route change, so all of its async state went
- * back to "not known yet" and its fallback painted again — **on a return visit exactly as on
- * the first**. Measured with the harness beside this file (installed-app runtime, 120 ms
- * native answers, 1512×901, static export), second arrival from the rail:
- *
- * | arriving at | before | after |
- * |---|---|---|
- * | History | loading skeleton + connect stepper 43-278 ms, workbench cut in at 283 ms | workbench from 44 ms |
- * | Agents | "checking…" row until 201 ms, list from there | list from 48 ms |
- * | Map | `map-entry-fallback` painted 35-53 ms | never mounts |
- *
- * That reads as a flicker rather than as loading because a rail navigation runs inside
- * `document.startViewTransition`. The browser captures the arriving state about 25-40 ms
- * after the click — while the pane is still its fallback — and crossfades the old screen
- * into **that**. So the fade landed on a skeleton and the real screen then cut in with no
- * motion: two events where the design system promised one.
- *
- * No existing gate could see it. The web gates cannot: on the web `useAtlasGitContext`
- * resolves `vaultPath` to `null`, so History renders its honest web degradation card and
- * never enters the state that flashes. And a stub that answers natively in the same
- * microtask leaves no window for a fallback to reach the screen at all — which is why the
- * harness delays every answer.
- *
- * ## ⚠️ Why this counts frames instead of asserting a screenshot
- *
- * The wrong picture is on screen for 200-240 ms and is then replaced. A screenshot taken
- * after `expect(...).toBeVisible()` sees the settled screen and passes on the defect; one
- * taken at a fixed offset measures how fast the runner renders, which
- * `route-transition-input.spec.ts` already records failing three times out of three on the
- * GitHub runner. A frame sampler armed **before** the click cannot miss the window, and
- * counting is machine-independent: zero is zero on any hardware.
- *
- * ## ⚠️ The idling guard is the cold arrival
- *
- * A count of zero is also what a broken sampler reports. So each destination is measured
- * **twice**: the first arrival has nothing remembered and must still show its fallback
- * (History's loading skeleton is asserted to appear), and the second must show none. The
- * first assertion is what proves the second one is looking at something. Verified by
- * planting the defect: reverting `shared/lib/navigation/route-arrival-memory.ts` to a plain `useState`
- * turns the second-arrival assertions red on all three destinations while the cold-arrival
- * assertion stays green.
+ * Counts frames instead of asserting a screenshot: the wrong picture is on screen for 200-240 ms,
+ * so a screenshot after `toBeVisible()` passes on the defect. A sampler armed before the click
+ * cannot miss it, and each destination is measured twice so the cold arrival proves the sampler works.
  */
 
 /**
@@ -74,21 +30,9 @@ const NOT_SETTLED = [
 ] as const;
 
 /**
- * **The shell's own neutral pane is measured but not gated here** — a separate subject with a
- * separate owner.
- *
- * `app/providers/AppShell.tsx` used to mount an empty canvas-coloured pane on **every** route
- * change and release it from a microtask. Measured across 18 crossings on the static export it
- * reached 0 of ~90 sampled frames; against the dev server the same crossings put it in **1-3**,
- * and it was named here as follow-up because removing it meant changing the shell rather than
- * what any pane remembers.
- *
- * It was removed on 2026-09-13 (inspection 122, B1): no release mechanism was early enough,
- * because what held the pane on the glass was the *arriving* route suspending against it, and
- * React already keeps the departing screen until the destination can render. The boundary now
- * fires only for a folder load or a workbench destination with no vault, so this count is
- * expected to be zero on every crossing below. It stays measured rather than asserted —
- * `rail-stays-painted.spec.ts` is what gates it — so that a number appearing here still says so.
+ * The shell's neutral pane is measured but not gated here; `rail-stays-painted.spec.ts` gates it.
+ * It fires only for a folder load or a workbench destination with no vault, so the count is
+ * expected to be zero on every crossing below.
  */
 const SHELL_NEUTRAL_PANE = '[data-testid="vault-route-identity-pending"]';
 
@@ -152,15 +96,8 @@ async function sampleArrival(page: Page, windowMs: number, routePath: string): P
       });
       if (host) observer.observe(host, { childList: true });
       /*
-       * ⚠️ **The window starts at the arrival, not at the click.**
-       *
-       * It used to be a fixed wall-clock window from the click, which passed against the static
-       * export and collapsed to 7 frames against the dev server — Turbopack compiles the route
-       * on demand, so most of the window was spent before the arriving pane existed at all. A
-       * fixed offset from a click measures how fast the machine renders, which is the same
-       * mistake `route-transition-input.spec.ts` records failing three times out of three on
-       * the GitHub runner. Counting from the moment the address becomes the destination makes
-       * the sample the same size on a fast machine, a cold dev server, and a CI runner.
+       * The window starts at the arrival, not at the click: a fixed offset from a click measures how fast
+       * the machine renders, and a dev server compiles the route on demand.
        */
       let started: number | null = null;
       const tick = () => {
@@ -286,7 +223,7 @@ test("a pane the app has already read arrives painted on every rail crossing", a
 
   // ── Every return arrival must be painted ────────────────────────────────
   const returns: Record<string, Arrival> = {};
-  // MCP is a section of the Agents page since 2026-09-18, not a rail crossing of its own.
+  // MCP is a section of the Agents page, not a rail crossing of its own.
   for (const destination of ["agents", "git", "map", "library", "architecture"]) {
     // Warm it once, so "already read" is true, then measure the arrival after that.
     if (destination !== "agents") await arriveFrom(page, destination);

@@ -143,7 +143,7 @@ test('선택한 로컬 볼트의 LNB 전환은 번들 샘플을 한 프레임도
   await stubDirectoryPicker(page, LOCAL_ONLY_VAULT);
   await seedFirstRunSeen(page);
 
-  // Reproduce the owner's profile: the Storefront docs source and its order slug existed first.
+  // Start from the Storefront docs source with its order slug already loaded.
   await page.goto('/ko/docs/?guides=off&slug=domains%2Forder', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: /Orders/ }).first()).toBeVisible({ timeout: 20_000 });
 
@@ -173,10 +173,8 @@ test('선택한 로컬 볼트의 LNB 전환은 번들 샘플을 한 프레임도
   await expectLocalOnlyTransition(page, 'library', 'Local Only Capability', 'ontology');
   await expect(page.getByTestId('docs-missing-slug-banner')).toHaveCount(0);
   await expectLocalOnlyTransition(page, 'insights', '로컬 전용 역량');
-  // The Korean display name, like the Insights marker above it: on a Korean screen every
-  // destination draws a concept by its `display_<locale>`, and since 2026-09-19 the projects
-  // list draws a project the same way (decision "A project is drawn by its locale display
-  // name on every screen"). The canonical `title` stays what identifies the document.
+  // On a Korean screen every destination draws a concept by `display_<locale>`, including projects;
+  // the canonical `title` stays what identifies the document.
   await expectLocalOnlyTransition(page, 'projects', '로컬 전용 프로젝트');
 });
 

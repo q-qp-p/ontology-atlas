@@ -1,15 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForMapStill } from "./settle";
-/**
- * **A path between two domains keeps the whole ring on screen** (2026-09-19).
- *
- * The path lens fitted the two endpoints alone, at 1.55× the overview: the
- * rest of the ring overflowed, three domains sat under the toolbar and one
- * left the canvas. The path is bright and the rest dim now, so the person
- * wants the dim ring as the frame the path sits in, not a crop that cuts it.
- * The lens fit takes the spine into its bounds while a path is asked for.
- */
+/** The path lens fit takes the spine into its bounds so the dim ring stays on screen. */
 test("a path keeps every spine node on the canvas and out from under the toolbar", async ({ page }) => {
   test.setTimeout(90_000);
   await page.setViewportSize({ width: 1512, height: 806 });

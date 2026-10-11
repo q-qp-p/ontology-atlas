@@ -2,25 +2,16 @@ import { waitForDocumentPaint } from './visual-ready';
 import { test, expect } from "@playwright/test";
 
 /**
- * Opens the main routes at several viewports and checks that the document's
- * scrollWidth never exceeds the viewport. Any horizontal scroll fails immediately.
- *
- * The viewport list follows the owner's responsive sweep matrix: the app floor
- * 1040 and desktop 1280 · 1440 · 1512 (the MBP14's real resolution) · 1920 · 2560.
- * Phone and tablet widths are not a target (owner direction, 2026-09-27). 1920 and
- * 2560 coincide with `.topology-ui-scale`'s real zoom breakpoints (1.15 / 1.3) in
- * app/globals.css, so chrome scaling is covered at the same time and no separate
- * zoom-simulation viewport is needed — those are real min-width media queries, so
- * passing at the real values is what counts.
+ * Viewports follow the responsive sweep matrix: the app floor 1040 and desktop 1280, 1440, 1512,
+ * 1920 and 2560. 1920 and 2560 coincide with `.topology-ui-scale`'s zoom breakpoints
+ * (1.15 / 1.3) in app/globals.css, which are real min-width media queries.
  */
 
 const VIEWPORTS = [
   /*
-   * ⚠️ **The app's own floor was not in this list.** `src-tauri/tauri.conf.json` enforces a
-   * 1040x720 minimum window, and the band from there to 1263 behaves differently from its
-   * wider neighbours: above `lg` the rail takes 64px, so a container query written against the
-   * scroll slot fires later than its number suggests. A census strip measured only at 1280 and
-   * up read 172px there and 344px at the app floor (design-responsive, 2026-09-20).
+   * `src-tauri/tauri.conf.json` enforces a 1040x720 minimum window, and the band up to 1263 differs:
+   * above `lg` the rail takes 64px, so a container query on the scroll slot fires later than its
+   * number suggests.
    */
   { label: "app-floor-1040", w: 1040, h: 720 },
   { label: "desktop-1280", w: 1280, h: 800 },
@@ -75,17 +66,7 @@ async function measureOverflow(page: import("@playwright/test").Page) {
   }));
 }
 
-/**
- * Did it overflow — and **there is a reason the predicate is a named function**
- * (2026-08-06).
- *
- * The first probe asserted only `measureOverflow`'s return value, so **deleting the
- * whole `bodyScroll > client` term from the gate still left the probe green** — it
- * proved the instrument sees the overflow but not that the gate uses it.
- *
- * With the predicate in one place, the probe calls **the same function as the
- * gate**, and deleting a term turns the probe red.
- */
+/** Named so the probe calls the same predicate as the gate; deleting a term then turns the probe red. */
 function isOverflowing({
   scroll,
   bodyScroll,
@@ -129,19 +110,9 @@ for (const vp of VIEWPORTS) {
 }
 
 /**
- * **Instrument probe — proof this check is not idling** (2026-08-06).
- *
- * This sweep always reports 0, which leaves no way to distinguish "0 because it is
- * clean" from "0 because it cannot see" (`/gate-probe`). A throwaway instrument
- * built the same day **reported 0** even with a 900px element planted in a 390px
- * viewport (the probe below now plants 1400px in the 1040px app floor).
- *
- * The cause is that this repository sets `overflow-x: hidden` on `html` and `body`,
- * so **`documentElement.scrollWidth` does not grow**. The only thing that
- * reports the overflow is **`body.scrollWidth`**.
- *
- * This check watched both from the start. This probe pins that the `bodyScroll` term
- * is **actually doing work** — deleting it as "looks redundant" turns this red.
+ * Instrument probe: `html` and `body` set `overflow-x: hidden`, so `documentElement.scrollWidth`
+ * does not grow and only `body.scrollWidth` reports overflow. Deleting the `bodyScroll` term
+ * as redundant turns this red.
  */
 test("계기 프로브 — 넘친 원소를 실제로 잡고, documentElement 만으로는 못 잡는다", async ({ page }) => {
   await page.setViewportSize({ width: 1040, height: 720 });
