@@ -6,28 +6,8 @@ import { installDesktopBridge, openRounds } from "./rounds-desktop-bridge";
 import { stubDirectoryPicker } from "./vault-picker-stub";
 
 /**
- * **Where the Library's transient surfaces land, and what they cover** (2026-09-25 sweep).
- *
- * Each case is a measured defect from the interaction audit, asserted on rects,
- * `elementFromPoint` and computed style rather than on a screenshot:
- *
- * - the Rounds column's help sentence was a 288px panel in a 280px `overflow-hidden`
- *   column, clipped mid-word and lying on the door it explains;
- * - the index chips' tooltips ran as one 449px line from x 44 across the nav rail and the
- *   search box, and their accessible names replaced the visible label;
- * - at 1040 the guide popover lay 34px across the index column;
- * - below `xl` the conversation dock covered the index, ignored Escape and left focus on
- *   `body`;
- * - the questions popover mixed a 12px/14px button with the 6px/11px chip grammar
- *   (asserted in `library-spine.spec.ts`, beside the list it belongs to);
- * - Find documents with nothing to suggest offered a dead primary and no corner close;
- * - the new-page dialog moved its field 9px under the caret on the first keystroke;
- * - the graph card cut a long page name to one line, the only place it could be read whole;
- * - the morning card's page presses wore two shapes, and its refused line had no press.
- *
- * The desktop bridge is the Rounds specs' stub: the installed app is a WKWebView running
- * this same export, and it answers `discover_source_candidates` with nothing, which is
- * the empty Find documents state measured here.
+ * Asserted on rects, `elementFromPoint` and computed style: help text clipped by its column, tooltips
+ * over the nav rail, popovers over the index, a dock ignoring Escape, a dead primary, dialog shifts.
  */
 
 type Box = { x: number; y: number; width: number; height: number };

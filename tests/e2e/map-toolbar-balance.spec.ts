@@ -3,20 +3,8 @@ import { installDesktopRailRuntime } from "./desktop-rail-arrival-harness";
 import { waitForBoxStill, waitForMapStill } from "./settle";
 
 /**
- * **The map's top toolbar spans the free map, it does not pile up on the right**
- * (owner report, 2026-09-24, installed app at about 1512 with INDEX open).
- *
- * The search lane (outline, relayout, view, constellations, search) was centred in
- * whatever the utility lane left over, so with INDEX open both lanes sat in the right
- * half of the map: search at about x 720-925, utility at 985-1300, over a free map
- * running from INDEX's right edge (about 340) to the right edge (about 1260). The
- * left third of the map carried no control at all.
- *
- * The claim is geometric and relative to the free map, the part of the canvas that
- * INDEX (open, or its collapsed tab) does not cover: the search lane starts at the
- * free map's left edge, one chrome inset in, and its centre is out of the right third;
- * the utility lane ends at the free map's right edge. It holds from `xl` (1280), where
- * the lanes share one row; below that they stack and the overlap spec owns the layout.
+ * The search lane starts at the free map's left edge and its centre is out of the right third;
+ * the utility lane ends at the free map's right edge. Holds from `xl` (1280), where lanes share a row.
  */
 
 const WIDTHS = [1280, 1512, 1920] as const;

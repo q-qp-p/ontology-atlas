@@ -2,8 +2,7 @@ import { expect, test } from '@playwright/test';
 import { installDesktopRailRuntime } from './desktop-rail-arrival-harness';
 import { openSettings } from './settings-reading-harness';
 
-// The app's window floor and a common desktop window; phone and tablet widths are not a
-// target (owner direction, 2026-09-27).
+// The app's window floor and a common desktop window; phone and tablet widths are not a target.
 for (const [width, height] of [[1040, 720], [1440, 900]] as const) {
   test.describe(`settings at ${width}`, () => {
     test.use({ viewport: { width, height } });

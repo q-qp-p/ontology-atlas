@@ -2,17 +2,8 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import { seedFirstRunSeen } from "./first-run-seed";
 
 /**
- * **One shape for a page's one way forward** (owner review, 2026-09-26).
- *
- * Page-level primary actions were drawn in two shapes: full pills on some screens (Harness,
- * the Agents and Models web tabs) and rounded rectangles elsewhere (Projects, Agents' open-chat),
- * with the Automations one a 40px button whose 12px corner read as a pill beside them. The design
- * system draws a primary action with `Button` and keeps the pill for a state or a count, so every
- * web-only door below is now the primary `Button` at the size most page-level primaries use: 32px
- * on the chip corner.
- *
- * Measured from computed style, in the browser, so a class that stops producing the shape fails
- * here even when the markup still names it.
+ * Primary actions are the `Button` primary at 32px on the chip corner. Measured from computed
+ * style, so a class that stops producing the shape fails even when the markup still names it.
  */
 const DOORS: readonly { name: string; url: string; door: (page: Page) => Locator }[] = [
   {

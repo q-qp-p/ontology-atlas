@@ -5,19 +5,6 @@ import { FIT_LOCALES } from './locales';
 import { openFolderFromFirstRun } from './open-folder';
 import { installLibraryWorkHarness } from './library-work-harness';
 
-/**
- * **Nothing on the composer footer is drawn over anything else while a turn runs.**
- *
- * Measured on the rendered footer, 2026-09-19. A running turn puts the Stop chip on the right-hand
- * group, which takes it to 215 of the 228 pixels the footer has at the panel's documented minimum.
- * The picker row was left with nine, and the picker inside it does not shrink below its floor, so
- * it drew **on top of the status word**: three of five probe points over the status came back as
- * the picker or its chevron.
- *
- * ⚠️ The footer's `scrollWidth` equalled its `clientWidth` the whole time. Nothing measuring
- * rectangles would have seen this — occlusion is not geometry, so every visible piece is probed
- * with `elementFromPoint` across its own box.
- */
 const MIN = 320;
 const BELOW_FIT = 380;
 const FITS = 400;
@@ -74,23 +61,8 @@ const covered = (page: Page) => page.evaluate(() => {
 });
 
 /*
- * ⚠️ **Measure the text against its box in the same units, or sub-pixel rounding invents a clip.**
- *
- * This compared `scrollWidth` with `clientWidth`, which are integers, against a label whose real
- * box is fractional. Measured locally: the Korean mode name lays out at 58.94px inside a 58.94px
- * label, and those two round to 60 and 59 — a one-pixel "overflow" in a word that is not clipped
- * at all. A `+ 1` tolerance hid it on macOS; on the CI runner the fractions fall differently and
- * the same untruncated word failed, on the first run and both retries, in Korean only.
- *
- * A Range over the text node measures what is actually drawn, fractionally, against a box read
- * the same way — so the comparison no longer depends on which side of .5 a platform lands.
- * `document.fonts.ready` stays: a measurement taken in a fallback face is a different number again.
- *
- * The slack is one pixel, not half of one. At half a pixel **both** locales failed on the runner
- * while both passed here, which kills every locale-specific explanation and says the fractional
- * measurement itself sits a little wider there. One pixel is still far short of an ellipsis, which
- * costs more than ten, so the case still catches the thing it is for — and it now prints the two
- * widths it compared, so the next failure argues with a number instead of a theory.
+ * Compare fractional Range widths: integer scrollWidth and clientWidth
+ * round differently per platform and invent a clip.
  */
 const modeWordIsWhole = async (page: Page) => {
   await page.evaluate(() => document.fonts.ready);
@@ -159,19 +131,7 @@ for (const locale of FIT_LOCALES) {
   });
 }
 
-/*
- * ⚠️ **Two tools make the name a picker, and every case above renders only the plain name.**
- *
- * Measured 2026-09-25 with two runtimes, five modes and a past conversation (so the history button
- * is on the row too): the tool picker has a 48px floor the plain name does not, and the pair drew
- * the mode over the status word idle at the narrowest drag, and over "Waiting for you" while a
- * turn waited on the person at every composer width up to 348px. The cases above stayed green the
- * whole time because their fixture could not produce the picker.
- *
- * So these walk the drag range in all three footer states — idle, thinking, and waiting on a
- * permission card, which has the longest status — and demand what a person would: nothing drawn
- * over anything, and every word that is shown is shown whole.
- */
+/* Two tools make the name a picker with a 48px floor; the cases above render only the plain name. */
 const TWO_TOOLS = {
   runtimeIds: ['claude-acp', 'codex-acp'],
   modes: [

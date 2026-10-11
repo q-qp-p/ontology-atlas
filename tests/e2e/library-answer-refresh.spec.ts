@@ -234,12 +234,7 @@ test('a running refresh remains visibly reopenable and can be stopped after clos
   await reopen.click();
   await page.getByRole('button', { name: 'Stop', exact: true }).click();
   await expect(page.getByTestId('answer-refresh-start')).toBeEnabled();
-/*
-   * The sentence is read from the catalogue rather than typed here. It used to be the string
-   * `answer-revision-store.ts` threw, which is exactly what finding B2 replaced: a Korean reader
-   * met it in English. Pinning a literal would put this spec back in the business of asserting
-   * the developer's wording instead of the reader's.
-   */
+/* The sentence is read from the catalogue, not typed, so the spec does not pin developer wording. */
   await expect(page.getByTestId('retained-answer-context')).toContainText(TURN_INCOMPLETE);
   expect((await harness.snapshot(page)).files[ANSWER]).toBe(OLD_PAGE);
 });
@@ -261,10 +256,7 @@ for (const { retained, kind, manual, name } of [
     await page.getByTestId('library-questions-open').click();
     expect(await page.evaluate(() => localStorage.getItem('library.wikiWriteMode'))).toBe('auto');
     if (kind === 'refresh') await page.getByTestId('answer-refresh-start').click();
-    /* By testid, not by label: the door's words became plain language on 2026-09-12
-       (`Ask the agent to compile`), and this test is about the write permission, not the
-       copy. The index is the only surface drawing it here — the stage is not on an open
-       answer page. */
+    /* By testid, not label: this test is about the write permission, not the copy. */
     else await page.getByTestId('library-compile').click();
     await expect.poll(async () => (await harness.snapshot(page)).calls.some((call) => call.method === 'session/prompt')).toBe(true);
     await harness.read(page);
@@ -284,23 +276,8 @@ for (const { retained, kind, manual, name } of [
 }
 
 /**
- * **A full-surface dialog takes the toast inside its own safe area** (`docs/DECISIONS.md`,
- * 2026-09-12 — "The Library's toast stands in the corner of the pane it is about").
- *
- * The Library's toasts anchor to the pane's bottom-right corner, and the answer comparison
- * is the one `size="viewport"` dialog this view has left since the graph became the home:
- * `--chrome-inset` from each window edge with `p-4` inside that. At the plain 16px gutter a
- * box came to rest in the corner of that padding, on the dialog's own close control — a
- * dismissible aside laid over a surface a person is reading, which is the floating-box soup
- * the charter refuses. A dialog that *asks* clears toasts instead, which
- * `library.spec.ts` measures on Find documents.
- *
- * ⚠️ **What is measured here is the resolved gutter, not a painted box.** Every toast this
- * view raises either closes the comparison as it fires (`onSave`) or is raised from the
- * index behind the scrim, so there is no press that puts a live box on screen while the
- * dialog stands — and a gate cannot wait for an agent turn to coincide with a four-second
- * toast. The probe reads the two custom properties `ToastProvider` hands sonner, resolved
- * by the engine against a real fixed element, which is the value a box would use.
+ * Measures the resolved gutter, not a painted box: no press puts a live toast on screen while
+ * the dialog stands. The probe reads the two custom properties `ToastProvider` hands sonner.
  */
 test('the toast gutters move inside the comparison dialog and back out again', async ({ page }) => {
   await page.setViewportSize({ width: 1512, height: 900 });

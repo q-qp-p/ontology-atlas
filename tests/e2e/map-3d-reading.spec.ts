@@ -23,10 +23,8 @@ test('Neural detail has a visible return path and fitting never paints overlappi
       !nodes.some(other => other.id !== node.id && Math.hypot(other.x - node.x, other.y - node.y) < other.radius + node.radius + 4));
   });
   expect(target, 'an isolated domain is required to exercise real selection').toBeTruthy();
-  // A double-click: since 2026-09-25 a single click in 3D only selects, and the return
-  // transition below needs a view that was actually moved — the fly-to moves it. The target
-  // stays left of where the inspector docks: the first click opens it, and a second click
-  // landing on the panel is a click on the panel.
+  // A double-click, since a single click in 3D only selects and the fly-to moves the view. The target
+  // stays left of the inspector dock so a second click does not land on the panel.
   await page.mouse.dblclick(rect.x + target!.x, rect.y + target!.y);
   const panel = page.getByTestId('map-detail-panel');
   await expect(panel).toBeVisible();
@@ -83,14 +81,8 @@ test('Neural detail has a visible return path and fitting never paints overlappi
 });
 
 /**
- * **Reduced motion keeps the lit Neural map still** (retargeted 2026-09-25).
- *
- * Until the lit 3D direction this watched Neural's indigo cell bloom fade in on the switch
- * from the Cone. The Cone is gone and both 3D views wear the same evidence light, so a
- * switch no longer changes the light at all; what reduced motion still owes is stillness.
- * Switched into Neural under reduced motion, the settled curves must not travel from frame
- * to frame (no spin, no particle, no morph), and a session with no Git walk must not claim
- * a single current light.
+ * Under reduced motion the settled curves must not travel (no spin, particle or morph), and a session
+ * with no Git walk must not claim a current light.
  */
 test('reduced motion keeps the lit Neural map still, and claims no light it did not measure', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });

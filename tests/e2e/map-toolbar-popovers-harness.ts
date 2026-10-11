@@ -13,7 +13,6 @@ const ACTIVITY_LINE = JSON.stringify({
   why: null,
 });
 
-/** The owner's state: a desktop folder, a path from checkout to invoice, one visit on the trail. */
 export async function openOwnerState(page: Page, width = 1512) {
   await page.setViewportSize({ width, height: HEIGHT });
   await page.emulateMedia({ reducedMotion: "reduce" });

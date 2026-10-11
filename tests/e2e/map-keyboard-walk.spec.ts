@@ -35,13 +35,8 @@ const selectedId = (page: import("@playwright/test").Page) =>
   page.evaluate(() => window.__atlasMap?.selection().nodeId ?? null);
 
 /**
- * **Press once, then wait until it moves.**
- *
- * ⚠️ This used to count a fixed 250ms after the press and check once. 250ms is one
- * machine's number: on a slower one, a not-yet-moved state reads as "no neighbour
- * in this direction", and on a faster one the remaining time is simply wasted. It
- * now returns **immediately** on a move, and only answers "none" after waiting up
- * to `patienceMs` (full check audit, 2026-08-17).
+ * Press once, then wait until it moves; answers "none" only after waiting up to `patienceMs`,
+ * because a fixed delay is one machine's number.
  */
 async function pressAndSettle(
   page: import("@playwright/test").Page,
@@ -86,12 +81,8 @@ async function walkOneStep(
 }
 
 /**
- * **Walks one direction until a dead end.**
- *
- * ⚠️ This used to be "press eight times, then check". Once the notice began
- * dismissing itself, that approach **broke first** — the notice appeared and
- * vanished during the presses and was never seen. Stopping the moment the notice
- * appears is correct: a person also sees it right after being blocked.
+ * Walks one direction until a dead end; stops the moment the notice appears, since it
+ * dismisses itself during further presses.
  */
 async function walkUntilDeadEnd(page: import("@playwright/test").Page, direction = "ArrowLeft") {
   for (let i = 0; i < 12; i += 1) {
@@ -190,12 +181,7 @@ test.describe("지도 키보드 걷기", () => {
     const from = await selectedId(page);
 
     const to = await walkOneStep(page, from);
-    /*
-     * ⚠️ This used to be `test.skip(to === null, …)` — **a silent skip.** The test
-     * directly above pins "it walks" from the same setup, so failing to walk here is a
-     * regression rather than a property of the vault. A skipped test looks green and
-     * nobody looks at it (full check audit, 2026-08-17).
-     */
+    /* Failing to walk here is a regression, not a vault property, so assert rather than skip. */
     expect(to, `첫 노드(${from})에서 네 방향 어디로도 못 걸었다`).not.toBeNull();
 
     // Are the two really joined by an edge — ask the graph, not the screen.
@@ -220,13 +206,7 @@ test.describe("지도 키보드 걷기", () => {
     await page.keyboard.press("ArrowRight");
     await expect.poll(() => selectedId(page), { timeout: 5_000 }).not.toBeNull();
 
-    /*
-     * ⚠️ This used to be a fixed 500ms per press ("so the camera transition
-     * finishes"). This test judges by **reading coordinates**, so what must be waited
-     * on is whether the coordinates settled, not a duration — a slow machine measures
-     * mid-transition and a fast one wastes the remainder (full check audit,
-     * 2026-08-17).
-     */
+    /* Wait for the coordinates to settle, not a duration: a slow machine would measure mid-transition. */
     for (const key of DIRECTIONS) {
       await page.keyboard.press(key);
       await settleSelectedPosition(page);
@@ -256,17 +236,8 @@ test.describe("지도 키보드 걷기", () => {
   });
 
   /**
-   * **Sidestepping between siblings works** (owner report from real use,
-   * 2026-08-10).
-   *
-   * At first the only candidates were connected neighbours (edges). But the domains
-   * surrounding the project at the map's centre **have no edges between them** — each
-   * attaches only to the project. So sidestepping from one domain to another did not
-   * work, and on a screen where they stand in a ring that reads as broken (owner:
-   * *"You cannot move freely from the centre."*
-   *
-   * Siblings are a relation ("same parent"), so this is not an arbitrary spatial
-   * jump.
+   * Sidestepping between siblings works: domains around the project have no edges between
+   * them, so siblings (same parent) are candidates.
    */
   test("한 부모 아래 형제끼리 방향키로 오갈 수 있다", async ({ page }) => {
     await focusCanvas(page);
@@ -289,27 +260,8 @@ test.describe("지도 키보드 걷기", () => {
   });
 
   /**
-   * **When there is nowhere to go, say so** — rather than staying silent.
-   *
-   * This test exists because of what the owner said in real use: *"The arrow keys work, but you cannot
-   * move freely between nodes."* With no response at all, "broken" and "nothing in
-   * that direction" are indistinguishable.
-   *
-   * **The notice appears beside the node being walked from, dismisses itself, and
-   * does not block walking** (three owner reports from real use, 2026-08-10).
-   *
-   * What the owner saw: *"Shown this way I cannot tell — it should appear clearly right beside the node I was moving from and then go
-   * away; right now it does not even disappear, and while it is up I cannot move at
-   * all unless I press the x."* (shown this way I cannot tell
-   * — it should appear clearly right beside the node I was moving from and then go
-   * away; right now it does not even disappear, and while it is up I cannot move at
-   * all unless I press the x).
-   *
-   * All three are measured together because **all three follow from one decision:
-   * where and as what it was raised**. Raised as the app's shared toast, its position
-   * is a screen corner, its close button takes focus so arrow keys never reach the
-   * canvas, and a focused toast stops its own dismissal timer. Fixing one leaves the
-   * other two.
+   * When there is nowhere to go, say so beside the node walked from. The notice must dismiss
+   * itself and must not take focus, or arrow keys never reach the canvas.
    */
   test("막다른 길에서 안내가 노드 옆에 뜨고, 초점을 빼앗지 않으며, 스스로 사라진다", async ({ page }) => {
     await focusCanvas(page);
@@ -350,7 +302,7 @@ test.describe("지도 키보드 걷기", () => {
     );
     expect(stillOnCanvas, "안내가 초점을 가져갔다 — 그러면 방향키가 지도에 도착하지 않는다").toBe(true);
 
-    // It goes away without being pressed — owner: *"Show briefly, then vanish on its own."*
+    // It goes away without being pressed.
     await expect(page.locator("[data-walk-notice]")).toHaveCount(0, { timeout: 6_000 });
 
     // And walking still works. Going back the way we came, there is a neighbour.
@@ -362,18 +314,9 @@ test.describe("지도 키보드 걷기", () => {
   });
 
   /**
-   * **The selected node is never hidden behind the panel** (owner decision
-   * 2026-08-10: *"It must not be covered; centre it in the space excluding the panel."*
-   *
-   * Selecting a node opens a popover on the right. The camera used to target **the
-   * viewport centre**, so the selection could end up **behind the panel describing
-   * it**. Measured at 1512×982: canvas x64 w1448, popover x1128 w352 — the free
-   * area's centre is 192px left of the screen centre.
-   *
-   * The property locked is **"it is not covered"**, not "exactly centred". While
-   * walking, the camera follows only when needed (following every step would make
-   * the map slide constantly), so where the node sits inside the free area differs
-   * per step. Being covered must be false regardless.
+   * The selected node is never hidden behind the panel: the camera centres it in the space
+   * excluding the panel. Asserts "not covered", not "exactly centred", since the camera
+   * follows only when needed.
    */
   test("고른 노드가 패널에 가리지 않는다", async ({ page }) => {
     await focusCanvas(page);
@@ -532,16 +475,7 @@ test.describe("지도 키보드 걷기", () => {
     ).toBeLessThan(toCanvas);
   });
 
-  /**
-   * **A feature nobody can discover is not a feature** (caught in a usability review
-   * 2026-08-10).
-   *
-   * Arrow-key walking shipped, yet the map section of the shortcut sheet — **the only
-   * place that teaches the keyboard** — did not know about it; measured, that section
-   * listed only click, drag, and scroll. That same sheet once caused trouble by
-   * **advertising a feature that did not exist** (see its own comments). This is the
-   * same failure in the opposite direction.
-   */
+  /** The shortcut sheet is the only place that teaches the keyboard, so it must list arrow-key walking. */
   test("단축키 시트가 방향키 걷기를 안내한다", async ({ page }) => {
     await focusCanvas(page);
     await page.locator("main").first().click({ position: { x: 5, y: 5 } });
@@ -566,15 +500,7 @@ test.describe("지도 키보드 걷기", () => {
     ).toBe(true);
   });
 
-  /**
-   * **The canvas label does not send people elsewhere** (usability review
-   * 2026-08-10).
-   *
-   * The label read *"you can navigate the same information by keyboard in the INDEX
-   * panel"* — true yesterday, but **this canvas now does that job itself**. A label
-   * telling someone who just took focus "not here, go over there" is stale
-   * information.
-   */
+  /** The canvas label must say what works on the canvas, not send people to the INDEX panel. */
   test("캔버스 라벨이 여기서 되는 일을 먼저 말한다", async ({ page }) => {
     const canvas = page.getByTestId("ontology-map-canvas");
     await canvas.waitFor({ state: "visible", timeout: 20_000 });

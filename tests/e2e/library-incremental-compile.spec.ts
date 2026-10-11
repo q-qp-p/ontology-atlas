@@ -37,19 +37,12 @@ test("a current source write-up revises an outdated related page; approval updat
   await browser.getByRole("button", { name: /Open my folder/i }).click();
   await browser.getByTestId("app-nav-rail-item-library").click();
   await browser.getByTestId("library-workspace-sources").click();
-  /*
-   * ⚠️ **The waiting line left the index's foot on 2026-09-12** (owner: *"written like
-   * this, who is ever going to look at it?"*). The home is the folder's graph, and this
-   * sentence is under the press it is about — one press from the strip clause that names
-   * the file Compile would start on. Escape closes the popover so the rest of the walk
-   * begins from the home, as it did before.
-   */
+  /* The waiting line sits under the Compile press it is about; Escape returns the walk to the home. */
   await browser.getByTestId("library-strip-compile").click();
   await expect(browser.getByText("1 existing page needs rechecking", { exact: false }).first()).toBeVisible();
   await browser.keyboard.press("Escape");
   await browser.getByTestId("library-workspace-wiki").click();
   await expect(browser.getByTestId("library-compile")).toBeEnabled();
-  // Begin from the old related page, where the local review used to remain hidden.
   await browser.getByRole("button", { name: /Release research/ }).first().click();
   await captureEvidence(browser, "01-before-compile");
   await browser.getByTestId("library-compile").click();

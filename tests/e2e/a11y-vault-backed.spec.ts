@@ -16,87 +16,15 @@ const { judgeText } = require("../../scripts/lib/contrast.mjs");
 const AXE_PATH = require.resolve("axe-core/axe.min.js");
 
 /**
- * Accessibility and contrast ratchet — **with a vault attached.**
- *
- * ════════════════════════════════════════════════════════════════════
- * ## Why this file exists (2026-08-04)
- * ════════════════════════════════════════════════════════════════════
- *
- * `a11y-ratchet` measures the **first screen** of 17 URLs. `a11y-open-surfaces`
- * opens 5 surfaces that appear only after a click. As that file records, most of
- * what it **cannot** open stays closed because a vault is required.
- *
- * This round's field test put a number on the cost:
- *
- *   A newly built screen passed **both** ratchets. That screen had 2 AA
- *   violations. What the gates had measured was **the route sitting empty because
- *   there was no vault.**
- *
- * ════════════════════════════════════════════════════════════════════
- * ## What the blind spot actually was — the inventory's conclusion
- * ════════════════════════════════════════════════════════════════════
- *
- * The diagnosis "no vault means an empty screen" was **only half right**. With no
- * vault selected the default data source is the shipped sample
- * (`samples/storefront/`, 112 concepts · 241 relations), so most routes are not
- * empty. Re-measuring with a vault attached (all 16 states, 1512×900) found
- * **0 violations revealed by attaching a vault alone.**
- *
- * Three things were actually blinding the gates, in order of yield:
- *
- * | # | Blind spot | Violations revealed |
- * |---|---|---:|
- * | 1 | **The address did not exist** — two project routes opened a slug absent from the running data source, so the gates measured a degraded card (40 elements) and an **empty screen (0 elements)** | `aria-valid-attr-value` **1** |
- * | 2 | **Only the first screen is measured** — the studio's first screen is a choice card (24 elements); the compass stage and the empty socket are born after one more click | `color-contrast` **2** |
- * | 3 | **Data shape** — the sample has no cross-domain edges, so the coupling grid never rendered | (repaid by PR #918) |
- *
- * So this file's job is not to mine new violations by attaching a vault but **to
- * make those states reachable and to assert that they were reached**. Even with
- * today's baseline at 0, if these screens silently go empty tomorrow the gate turns
- * red as "not measured" rather than green as "0 violations".
- *
- * ════════════════════════════════════════════════════════════════════
- * ## Which vault
- * ════════════════════════════════════════════════════════════════════
- *
- * `fixture-vault.ts` holds that decision and **the list of what this fixture
- * misses**. In short: the dogfood vault moves every week, and the shipped sample is
- * already the data of the no-vault state. The fixture's weakness (it misses the
- * shape of reality) is offset by the "proof it rendered" checks below.
- *
- * ════════════════════════════════════════════════════════════════════
- * ## Four layers proving this gate does not idle
- * ════════════════════════════════════════════════════════════════════
- *
- * 1. **The vault attached** — the first-run card disappears and the map draws the
- *    vault's scale. On failure the whole spec dies right there (passing silently
- *    would make this file meaningless).
- * 2. **The state opened** — each state must show a selector that exists only in it.
- * 3. **There is content** — a floor on elements inside `<main>`. Shell chrome sits
- *    outside `<main>` and is not counted.
- * 4. **Collection is alive** — floors on axe passing rules and contrast
- *    combinations.
+ * Accessibility and contrast ratchet with a vault attached: states that exist only with data must be
+ * reached and proven reached, so an empty screen reads as not measured rather than as zero violations.
+ * Four layers prove it is not idling; `fixture-vault.ts` holds the fixture choice and its gaps.
  */
 
 /** axe runs WCAG A/AA only — mixing in best-practice merges spec violations and taste into one number. */
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
-/**
- * **These numbers only go down.**
- *
- * The 3 violations from the 2026-08-04 inventory (16 states) were all repaid in
- * that PR:
- *   - `aria-valid-attr-value` 1 — the shared tab bar hard-coded an `insights-`
- *     prefix, so on project detail the selected tab's `aria-controls` pointed at a
- *     panel that did not exist. The prefix became a prop and the consumer renders
- *     `role="tabpanel"`.
- *   - `color-contrast` 2 — the studio's empty socket used
- *     `--color-text-quaternary` on an amber tint (4.29:1). The quaternary licence
- *     only extends to still, achromatic backgrounds, so it was already out of spec
- *     → tertiary (5.03:1).
- *
- * **Not one ramp token was touched** — both are per-place moves.
- */
+/** These numbers only go down. */
 const AXE_BASELINE: Readonly<Record<string, number>> = {};
 const CONTRAST_BASELINE_FAILING_COMBINATIONS = 0;
 
@@ -121,20 +49,9 @@ const MIN_RULES_PASSED = 15;
 const MIN_COMBINATIONS = 6;
 
 /**
- * Collects colours and fonts. The verdict is made by a pure function
- * (`scripts/lib/contrast.mjs`).
- *
- * ⚠️ **Two layers against false positives** (the previous audit produced 3):
- *   - Anything inside `aria-hidden="true"` is not in the accessibility tree, so it
- *     is not a violation.
- *   - `elementFromPoint` confirms the element is **actually visible at that
- *     point**, filtering out closed `<details>` and elements covered by others.
- * (`display:none`, `visibility:hidden`, `opacity:0`, and off-viewport are already
- * filtered before this.)
- *
- * Both layers can only **shrink** the candidate set, so they cannot create false
- * positives but can create false negatives — the floor on measured combinations
- * (`MIN_COMBINATIONS`) catches degradation in that direction.
+ * Collects colours and fonts; the contrast judgement is a pure function in `scripts/lib/contrast.mjs`.
+ * `aria-hidden` content is skipped and `elementFromPoint` confirms visibility; both only shrink the
+ * candidate set, so `MIN_COMBINATIONS` catches false negatives.
  */
 const COLLECT = `(() => {
   const resolveBackground = (el) => {
@@ -274,13 +191,8 @@ const STATES: readonly VaultState[] = [
     evidence: '[id^="insights-tabpanel"]',
   },
   {
-    // The old ratchet measured the "not in your folder" degraded card here.
-    //
-    // The tabs are gone (2026-09-20): the page asks "what is built in here", so the composition
-    // board and the domain rows stand on one page instead of behind a tablist. Both are still
-    // vault-backed states — the board needs a project with an ontology, the rows need domains —
-    // so the ratchet still measures what only data can open. The `act` that clicked the second
-    // tab went with the tablist.
+    // Both states below are vault-backed: the composition board needs a project with an ontology and the
+    // rows need domains, so the ratchet measures what only data can open.
     name: "프로젝트 상세 · 구성 판",
     url: "/ko/project/storefront/",
     evidence: '[data-testid="project-detail-composition"]',

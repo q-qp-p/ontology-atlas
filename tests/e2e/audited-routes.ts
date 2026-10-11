@@ -1,27 +1,6 @@
 /**
- * The single source for **which routes the accessibility and contrast ratchets must
- * sweep.**
- *
- * ## Why this file exists (2026-08-04)
- *
- * The two ratchets each carried a hand-written route array — `a11y-ratchet` 8,
- * `contrast-ratchet` 5 — while the authoritative inventory is derived from the
- * filesystem. Neither list recorded why it had that many, and in fact they were two
- * different subsets with no stated reason.
- *
- * That blind spot hid a defect: the 2026-08-03 round found ink on filled indigo at
- * **4.42:1** (below AA) on **the two 404 pages**, a place **neither ratchet had ever
- * looked at**. It is true that every baseline reached 0, but that 0 was "0 across 8
- * routes" — **a screen that was not measured is not a screen that passed.**
- *
- * So the lists were merged, and a missing route is recorded **not as absence but as
- * "excluded + reason"**. If a route that fell out silently is indistinguishable in
- * code from one deliberately excluded, the next person recreates the same blind
- * spot.
- *
- * ⚠️ **Adding a route means adding it here.** That is not left to human memory —
- * `tests/contract/audited-route-coverage.contract.test.ts` reads `app/[locale]/**`
- * directly and fails when a route is unclassified.
+ * Adding a route means adding it here; the audited-route-coverage contract test
+ * fails on unclassified routes. A route left out is recorded as excluded with a reason.
  */
 
 /**
@@ -46,89 +25,30 @@ export const AUDITED_ROUTES = [
   "/ko/docs/",
   "/ko/ontology/insights/",
   "/ko/projects/",
-  // ⚠️ The slug must exist in **the running data source, not the build output**
-  // (corrected by measurement, 2026-08-04). The previous value was `ontology-atlas`
-  // on the grounds that `out/ko/project/ontology-atlas/` exists in the static
-  // export — but a route existing and that address rendering content are different
-  // facts. Without a vault the app reads **`samples/storefront/`**, which has no
-  // `ontology-atlas` project. So what the two URLs actually rendered was:
-  //
-  //   /ko/project/ontology-atlas/       → the "this project is not in the current
-  //                                       folder" degraded card (40 elements in main)
-  //   /ko/project/ontology-atlas/edit/  → "project not found", with
-  //                                       **no `<main>` at all (0 elements)**
-  //
-  // In other words the two ratchets **never once saw** the project detail and edit
-  // screens. Switching the slug to one present in the data source rendered 149 and
-  // 227 elements respectively for the first time, and one axe violation
-  // (`aria-valid-attr-value`) surfaced immediately.
-  //
-  // So this class cannot return silently, `a11y-ratchet` puts a **floor on the
-  // element count inside `<main>`** per route — shell chrome alone yields 25 axe
-  // rules and 6 contrast combinations, so the two previous collection guards would
-  // pass a body of 0.
+  // The slug must exist in the running data source (`samples/storefront/`), not only the build output;
+  // a missing project renders a degraded card or no `<main>`, which the ratchets would not measure.
   "/ko/project/storefront/",
   "/ko/project/storefront/edit/",
   "/ko/project/new/",
   "/ko/project/fallback/",
   "/ko/git/",
-  // Agents (added 2026-08-20, ledger 90). **Becoming a destination is what put it on
-  // this list** — one of the real gains of the move: while this screen lived inside
-  // the settings sheet, `audited-routes` being route-based meant **four gates could
-  // not see it at all** (scroll padding, responsive overflow, cursor, Korean line
-  // breaking) — measured by the workbench seat. Promotion switches all four on at
-  // once.
-  //
-  // Measures the state with no tools installed — the web cannot spawn processes, so
-  // it is the only state the ratchet can see, and it is also what a first-time
-  // visitor sees.
+  // Measures the no-tools state: the web cannot spawn processes.
   "/ko/agents/",
-  // MCP (added 2026-09-05). The folder's own connection and the connectors left
-  // `/agents` for their own destination; a new route that is not on this list is a
-  // surface four gates (scroll padding, responsive overflow, cursor, Korean line
-  // breaking) cannot see at all, which is the blind spot this file exists to close.
-  //
-  // Measures the no-vault state: a browser cannot read this machine's agent config
-  // files or hold a token, so that is both what the ratchet can see and what a
-  // first-time visitor meets.
+  // Measures the no-vault state: a browser cannot read agent config files or hold a token.
   "/ko/agents/?tab=mcp",
-  // Models (added 2026-09-25). API keys, local runners and the experimental Jev check moved here
-  // from the settings sheet; the web state is the honest desktop-only card, which is what a
-  // browser ratchet can see.
+  // The web state is the desktop-only card, which is all a browser ratchet can see.
   "/ko/agents/?tab=models",
-  // Library (added 2026-09-06). Sources and Wiki left `/docs` for their own destination;
-  // the same reason MCP is on this list applies unchanged — a new route that is not here
-  // is a surface four gates (scroll padding, responsive overflow, cursor, Korean line
-  // breaking) cannot see at all.
-  //
-  // Measures the **no-folder** state, which is what a ratchet without a vault can reach
-  // and also what a first-time visitor meets: one centred stage naming the two kinds of
-  // file this folder keeps, and the door that opens one.
+  // Measures the no-folder state, the only one a ratchet without a vault can reach.
   "/ko/library/",
-  // Automations (added 2026-09-20). The browser cannot run the local clock without a native
-  // folder root, so this audits the honest no-folder state: both lanes are discoverable and the
-  // page explains why registration waits for the installed app.
+  // Without a native folder root the browser cannot run the local clock;
+  // this audits the no-folder state.
   "/ko/automations/",
   "/ko/download/",
   "/ko/guide/",
   "/ko/guide/what-is-atlas/",
   "/ko/changelog/",
-  // ── 404 ────────────────────────────────────────────────────────────────
-  // Where the 2026-08-03 round found the AA failure — a screen the ratchets had
-  // **never once** looked at.
-  //
-  // ⚠️ Corrected by measurement (2026-08-04 probe): not-found has two files
-  // (`app/not-found.tsx` and `app/[locale]/not-found.tsx`) but **only the root one
-  // ever renders.** Planting a low-contrast paragraph in the locale file and
-  // measuring both URLs caught nothing; planting the same thing in the root file
-  // turned **both URLs** red simultaneously. Exactly as the root file's own comment
-  // predicted — with `output:'export'` plus Turbopack, `[locale]/not-found.tsx` may
-  // never trigger. So `app/[locale]/not-found.tsx` is **unreachable code today** (a
-  // separate round's problem).
-  //
-  // Both URLs are kept anyway: today that measures the same file twice, but the day
-  // Next's not-found wiring changes and the locale file comes back, it stops that URL
-  // silently introducing **a never-audited surface**. Three seconds of insurance.
+  // Only the root `app/not-found.tsx` renders under static export; both URLs stay in case the
+  // locale file's not-found wiring returns.
   "/ko/this-route-does-not-exist/",
   "/this-route-does-not-exist/",
 ] as const;
@@ -140,14 +60,9 @@ export const AUDITED_ROUTES = [
  * matches on this key).
  */
 export const EXCLUDED_ROUTES: Readonly<Record<string, string>> = {
-  // A thin client-side redirect with **no screen of its own** — opening it shows the
-  // destination, so measuring it measures the destination twice. The two legacy edit
-  // addresses translate their query into the map's contextual workbench address. The
-  // map's default state is covered by the list above, and the vault-backed relation
-  // editing state is opened separately by `a11y-vault-backed.spec.ts`.
+  // Redirects have no screen of their own; opening one would measure the destination twice.
   "/ontology": "리다이렉트 → /topology?index=expanded — 목적지를 이미 잰다",
   "/ontology/edit": "호환 리다이렉트 → /topology contextual workbench — 목적지와 편집 상태를 이미 잰다",
   "/ontology/studio": "호환 리다이렉트 → /topology contextual workbench — 자기 화면이 없다",
-  // MCP folded into Agents on 2026-09-17; the address only forwards its parameters.
   "/mcp": "호환 리다이렉트 → /agents/?tab=mcp — 목적지를 이미 잰다",
 };

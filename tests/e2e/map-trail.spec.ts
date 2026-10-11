@@ -3,17 +3,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForMapStill } from "./settle";
 
 /**
- * **The trail round trip** (promoted from the 2026-08-13 walkthrough — zero gates
- * measured this journey).
- *
- * The map's visit trail is a feature the owner chose personally (footprint numbers,
- * the trail popover), yet no check measured "it accumulates → the list is right →
- * jumping back works → clearing works" end to end. The keyboard walk spec covers
- * arrow-key movement only and never looks at the trail UI.
- *
- * Three steps are accumulated by moving through popover rows (re-clicking the same
- * node is a separate contract that opens the document, so it is not used — the first
- * attempt exited to the docs view that way, measured).
+ * Three steps accumulate by moving through popover rows; re-clicking the same node opens the
+ * document and exits to the docs view, so it is not used.
  */
 test("걸어온 길 — 쌓이고, 목록이 맞고, 뒤로 점프하고, 지워진다", async ({ page }) => {
   test.setTimeout(120_000);

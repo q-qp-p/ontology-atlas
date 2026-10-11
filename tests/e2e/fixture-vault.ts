@@ -1,61 +1,7 @@
 /**
- * The fixture vault gates use to measure **with a vault mounted**.
- *
- * ════════════════════════════════════════════════════════════════════
- * ## Which vault to measure with — this round's verdict (2026-08-04)
- * ════════════════════════════════════════════════════════════════════
- *
- * There were three candidates, each with a benefit and a cost.
- *
- * | Candidate | Gains | Loses |
- * |---|---|---|
- * | dogfood `docs/ontology/` | most realistic | **the input moves weekly** — every node `/ontology-sync` adds shakes the gate, and a failure cannot be told apart from a vault change. Writes 100+ files to OPFS on every run |
- * | the shipped sample `samples/storefront/` | exactly the data a first visitor sees, already maintained by the repo | **it is already the default data source without mounting a vault** — measuring it mounted measures the same DOM twice. And it is the very vault that hid the dense-row defect (0 cross-domain edges) |
- * | a fixture (here) | **deliberately** produces shapes the sample structurally cannot, and is deterministic | **it can miss real-world shapes** — which is exactly how the dense rows hid |
- *
- * **Chosen: the fixture, but with coverage asserted rather than assumed.**
- *
- * The fixture's known weakness (missing shapes) is the very defect this round is
- * fixing, so this vault is not used on the basis of "it is realistic enough" —
- * `a11y-vault-backed.spec.ts` requires **evidence that the shape really rendered** for
- * each state (the cross-domain grid is visible, example links are stacked vertically,
- * the element floor inside `<main>`). A fixture with asserted coverage degrades
- * **loudly**; an unasserted real vault degrades **quietly**. That difference is the
- * whole of this choice.
- *
- * And **both** states are measured:
- *   - no vault = the sample = what a first visitor sees → the existing
- *     `a11y-ratchet` / `contrast-ratchet`
- *   - vault mounted = this fixture = shapes the sample cannot produce →
- *     `a11y-vault-backed`
- *
- * ⚠️ **What this fixture misses (a list for the next person)**
- *   1. **Extremes of volume** — a real vault's long bodies, deep heading trees,
- *      hundreds of nodes. Text-fit and overflow defects do not appear here (that is the
- *      `overflow-sweep` family's job).
- *   2. **frontmatter keys not used here** — `screenshots`, `evidence`, `merged_uids`
- *      and so on. The places those keys render remain unmeasured.
- *   3. **Multiple projects** — there is one today. The "connected projects" card that
- *      inter-project relations (`dependencies`) render only ever appears empty.
- *   4. **Non-Korean locales** — widths and wrapping on the `/en` side.
- *
- * ════════════════════════════════════════════════════════════════════
- * ## Why this shape
- * ════════════════════════════════════════════════════════════════════
- *
- * - **Cross-domain edges** — 3 from orders to settlement, 3 from orders to catalogue,
- *   1 from catalogue to settlement. Without them the coupling grid on the insights
- *   "boundaries" tab has **no cells at all** (PR #918 first rendered that site).
- *   Several examples per pair are needed for dense rows to appear, so one branch is
- *   not enough.
- * - **It uses `relates`** — that is the key the web deriver
- *   (`derive-ontology-from-vault`) reads as a capability's cross edge. Writing
- *   `depends_on` on a capability yields **silently zero edges** (measured in #918).
- * - **The slug `storefront`** — a static export emits routes only for slugs known at
- *   build time, so the fixture project must be one of them to open at
- *   `/ko/project/<slug>/`.
- * - **`path` on element nodes** — the condition for the implementation evidence line
- *   to render.
+ * A fixture, not the dogfood or sample vault: deterministic, with shapes the sample cannot produce;
+ * coverage is asserted in `a11y-vault-backed.spec.ts`. It uses `relates`, which the web deriver reads,
+ * and the slug `storefront` because a static export emits routes only for build-time slugs.
  */
 
 interface CapabilityOptions {
@@ -198,12 +144,8 @@ export const FIXTURE_VAULT: Readonly<Record<string, string>> = {
     dependencies: ["invoice"],
   }),
   "capabilities/tax-report.md": capability("tax-report", "세금 신고 자료", "settlement"),
-  // ⚠️ **A slug that never exists in the shipped sample vault** — the target of the
-  // deep-link tests. Storefront vocabulary such as `checkout` also exists in the shipped
-  // sample (sample-storefront, 112 nodes), so the tests could not tell which vault
-  // opened the document (2026-08-08 — a boot race defect hid behind that overlap and
-  // stayed green). If this name ever appears in the sample those tests go blind again —
-  // do not add it there.
+  // A slug that never exists in the shipped sample vault; if it appears there, the deep-link tests
+  // cannot tell which vault opened the document.
   "capabilities/deeplink-probe.md": capability("deeplink-probe", "딥링크 표적 문서", "settlement", {
     desc: "픽스처 볼트에만 존재해, 열린 문서가 어느 볼트에서 왔는지를 시험이 가른다.",
   }),

@@ -39,11 +39,10 @@ async function seedChooser(page: Page, longNames = false) {
 }
 
 test('the chooser stays fixed while its folder list scrolls and every action remains reachable', async ({ page }) => {
-  // Five is the supported recent-folder limit. Long valid names exercise scrolling without the retired game card.
   await seedChooser(page, true);
   const measurements = [];
-  // The app's minimum window, the owner's desk and a wide display, with English at the floor where
-  // its longer labels bind.
+  // The app's minimum window, a desk width and a wide display;
+  // English only at the floor where its longer labels bind.
   for (const [locale, sizes] of [['ko', [[1040, 720], [1512, 900], [2560, 1440]]], ['en', [[1040, 720]]]] as const) {
     for (const [width, height] of sizes) {
       await page.setViewportSize({ width, height });

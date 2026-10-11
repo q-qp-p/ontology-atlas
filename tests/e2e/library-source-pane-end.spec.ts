@@ -4,43 +4,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { stubDirectoryPicker } from "./vault-picker-stub";
 
 /**
- * **Where the source pane ends** — slice S7's first proof.
- *
- * The pane is a document: it sizes itself to what it holds, and what sits below a short
- * source is the landing's own ground rather than an empty second panel. Half of that was
- * already true and this spec is what says so in numbers; the other half was missing and
- * this spec is why it is now there.
- *
- * Measured on the static export 2026-09-12, before anything changed:
- *
- * | state | 1512x901 | 1040x720 |
- * |---|---|---|
- * | un-cited DOCX | box 657px = content, 195px of ground below | box 657px, 14px below |
- * | un-cited XLSX | box 523px = content, 329px below | box 523px, 148px below |
- * | cited Markdown | box 777px, 75px below | box 777px in a 671px scroller, **0px** |
- *
- * No `min-height`, no `justify-content`, no `align-items` and no filler anywhere in the
- * chain from the pane to the shell, and the ground under every one of them painted
- * `--color-canvas` on `library-page` — the same ground the landing stands on. So the
- * earlier reading, "395px of empty **panel**", was wrong about what the empty space is.
- *
- * What was real is the last row of that table. `pt-8` opened the document and nothing
- * closed it, so on a cited source at the app's own window floor the last block ended
- * **flush with the bottom of the window**, at the scroll end, with nothing below it —
- * while `tests/e2e/scroll-end-gap.spec.ts` holds a 24px floor for every other surface and
- * `DocReadingPane` reserves its pill's clearance. This spec asserts the gutter at both
- * ends and the ground, so a later change cannot put filler in either.
- *
- * The second proof is the `sha256` row. All 64 characters plus the clause saying when the
- * value was measured ran to **two** 16px lines at both widths (84 characters against a
- * ~69-character mono line in a 456px cell), which made the one fixed-height block in this
- * pane change height depending on whether anything had ever cited the file. The middle is
- * elided now (`src/views/library/lib/elide-hash.ts`) and the whole value stays on the
- * cell's `title`; the assertion is the rendered line count, not the string.
- *
- * A text-only folder on purpose: the cited-Markdown state is the one that proves both
- * claims, it needs no workbook bytes, and the OPFS picker exercises the browser's own
- * File System Access path end to end.
+ * The pane sizes itself to its content, and the ground below a short source is the landing's own.
+ * Asserted: gutters at both ends and the ground, and the `sha256` row's rendered line count.
  */
 
 const SOURCE = [
@@ -216,12 +181,8 @@ for (const [width, height] of [
     });
 
     /*
-     * Measure the scroll end at the scroll end. Citation arrival intentionally lands the
-     * named passage near the top of the viewport, so its scroll position is unrelated to
-     * the document's closing gutter. With the Markdown headings added on 2026-09-14, the
-     * initial measurements were scrollTop 0 of 115 at 1512x901 and 167 of 323 at
-     * 1040x720; viewport coordinates therefore put the last block 83px/124px below the
-     * scroller even though both true ends retained exactly 32px of clearance.
+     * Measure at the scroll end: citation arrival lands the passage near the top, so viewport coordinates
+     * would put the last block far below the scroller.
      */
     await page.evaluate(() => {
       const pane = document.querySelector<HTMLElement>('[data-testid="library-source-summary"]');
@@ -268,9 +229,8 @@ for (const [width, height] of [
     ).toBe(GUTTER);
 
     /*
-     * ⚠️ The defect this number is here for: at 1040x720 this content is taller than its
-     * scroller, and before 2026-09-12 the last block ended at y=720 — flush with the
-     * bottom of the window at the scroll end, 0px of clearance.
+     * At 1040x720 the content is taller than its scroller, and the last block must keep clearance
+     * at the scroll end, not sit flush with the window bottom.
      */
     expect(
       pane.scrollEnd - pane.lastBlockBottom,

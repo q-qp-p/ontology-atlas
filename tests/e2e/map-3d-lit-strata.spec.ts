@@ -8,22 +8,8 @@ import { installDesktopRailRuntime, type StubPathChange } from "./desktop-rail-a
 import { waitForDomeEntered, waitForMapStill } from "./settle";
 
 /**
- * **The lit 3D map on the dogfood vault** (2026-09-25).
- *
- * The approved direction lights Strata and Neural: evidence is light (current emits, stale
- * emits less and wears an amber ring, unknown emits nothing and wears a dashed ring), the
- * camera only moves when asked, and the pitch stays where the planes read. Each claim here is
- * measured on the drawn result of the product's own vault (`docs/ontology`), opened through
- * the installed-app runtime with the Git walk answered from this repository's real history:
- *
- * - the legend's evidence counts are the rule's (`shared/lib/git/evidence-verdict.mjs`) over the
- *   same Git times, and the frame drew those lights — never current for an unmeasured node;
- * - a single click selects and leaves pose and camera where they were;
- * - a double-click flies to the node and Esc flies back to the view it left;
- * - a drag cannot tip the planes past 0.15–0.95 rad.
- *
- * Captures of rest and focus are written to `MAP_3D_CAPTURE_DIR` when it is set, for the
- * comparison with the approved look.
+ * The lit 3D map on the dogfood vault, opened through the installed-app runtime with the Git walk
+ * answered from this repository's real history; each claim is measured on the drawn result.
  */
 
 const REPO = path.resolve(__dirname, "../..");
@@ -218,10 +204,8 @@ test.describe("lit 3D map on the dogfood vault", () => {
   });
 
   /*
-   * The one move a click may make is the nudge that slides a node out from under the inspector
-   * it opened, and it has to leave with the selection. Without the return (CI, 2026-09-25, at
-   * 1040×720) the nudged view outlived the deselect and the next concept sat under the INDEX
-   * panel, so a click aimed at it pressed the panel.
+   * The nudge that slides a node out from under the inspector must leave with the selection, or the
+   * next concept sits under the INDEX panel and a click aimed at it presses the panel.
    */
   test("Strata: a click's nudge off the inspector is undone when the selection clears", async ({ page }) => {
     await openLit(page, "strata", true);
@@ -341,12 +325,8 @@ test.describe("lit 3D map on the dogfood vault", () => {
     const t0 = moving[0]!.t;
     const startScale = samples.find((x) => x.t >= t0 - 1)!.s;
     /*
-     * "Arrived" is within 1% of **the travel**, not of the final scale. Measured against |end| the
-     * gate only held while the domain nearest the centre happened to need a large zoom: when the
-     * dogfood vault grew two nodes (2026-09-25) the pick became `meaning-layer`, a 6% zoom, and 1%
-     * of the end scale was a sixth of the whole travel — the same ~750 ms ease-out read as 422 ms
-     * with 44% done at "half time". The flight's duration and shape are the claim; which domain the
-     * layout puts in the middle is not.
+     * Arrived is within 1% of the travel, not of the final scale: the claim is the flight's duration and
+     * shape, not which domain the layout puts in the middle.
      */
     const travel = Math.abs(end - startScale);
     const arrived = samples.find((x) => x.t > t0 && Math.abs(x.s - end) <= travel * 0.01);
@@ -357,9 +337,8 @@ test.describe("lit 3D map on the dogfood vault", () => {
     const firstHalf = Math.abs(mid.s - startScale) / Math.max(1e-6, Math.abs(end - startScale));
     console.log(`[fly-to] ${duration.toFixed(0)} ms to within 1%, ${(firstHalf * 100).toFixed(0)}% of the zoom done at half time`);
     /*
-     * The claim is the flight's shape, stated relative to its own duration in the same run: it
-     * moved over several frames (not a snap) and eased out. Absolute bounds on the duration
-     * measured the runner's frame pacing as much as the flight (2026-09-27 suite trim).
+     * The claim is the flight's shape relative to its own duration: several frames, eased out.
+     * Absolute duration bounds measure the runner's frame pacing.
      */
     expect(firstHalf).toBeGreaterThan(0.6);
     if (CAPTURE_DIR) await page.screenshot({ path: path.join(CAPTURE_DIR, "neuron-focus.png") });

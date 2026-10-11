@@ -2,18 +2,7 @@ import { expect, test } from "@playwright/test";
 import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForMapStill } from "./settle";
 
-/**
- * **The ego graph draws every neighbour, including the ones another domain holds**
- * (map round, 2026-09-19).
- *
- * Measured before the fix: selecting the exchange-request capability opened
- * its panel, which listed three relations (one parent, one user, two
- * dependencies), while the map drew only the ones inside its own domain. The
- * two dependencies lived in other domains (fulfillment, inventory), so the
- * picture said "this needs nothing from elsewhere". The flat dial
- * (2026-10-02) folds nothing, and a focused capability keeps its needs drawn
- * and named beside the detail panel, read from the frame the dial painted.
- */
+/** A focused capability keeps its cross-domain needs drawn and named beside the detail panel. */
 type DialProbe = {
   owns: boolean;
   discs: Array<{ id: string; x: number; y: number; r: number }>;

@@ -197,10 +197,8 @@ test.describe("하네스 탭", () => {
     // Exactly one page headline: the identity travels into the blueprint's own header.
     await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
     /*
-     * The explainer stands on the document views. In the blueprint the line directly under the
-     * title already names the profile and what the view compares, and 20px there is a third of a
-     * layer row — the difference between the ladder tightening its seven rows and hiding the
-     * seventh (measured 2026-09-13).
+     * The explainer stands on the document views; in the blueprint the line under the title already names
+     * the profile, and 20px there would make the ladder hide the seventh row.
      */
     await page.locator("#harness-tab-guides").click();
     await expect(
@@ -314,10 +312,8 @@ test.describe("하네스 탭", () => {
 
   test("은퇴한 sensors 주소는 그 질문에 답하는 보기로 간다", async ({ page }) => {
     /*
-     * The sensors view named this exact question — which checks cover each domain's paths, and
-     * where nobody is watching — and said it was not built. It is built now, so that address opens
-     * the answer. The shell-wide `?focus=main` that every left-rail link carries names no view, so
-     * it opens the destination's own arrival screen — the harness structure, since 2026-09-19.
+     * `?focus=main` names no view, so it opens the destination's own arrival screen:
+     * the harness structure.
      */
     await mountHarnessVault(page);
     await page.goto("/ko/architecture/?view=sensors");
@@ -335,16 +331,8 @@ test.describe("하네스 탭", () => {
 
   test("설명 말풍선은 그 아래 본문에 덮이지 않는다", async ({ page }) => {
     /*
-     * ⚠️ **A panel that is on screen is not yet a panel that can be read.** The lead sentence's
-     * `InfoHint` hangs out of `harness-sentence`, and the results block is the *next sibling*, so
-     * every mark it draws — the guides heading, the file table, the matrix — painted on top of the
-     * open panel and the two texts read as one smear (owner, 2026-09-14, installed app). The
-     * panel's own `z-30` could never fix it: it orders the panel inside its own element, never
-     * against the element that follows it.
-     *
-     * The geometry gate at 390 could not see this: a panel fully inside the window is exactly what
-     * an occluded panel also is. So this measures **what a person's eye lands on** —
-     * `elementFromPoint` over the panel's own text — which is the only question a tooltip has.
+     * Measures what the eye lands on with `elementFromPoint` over the panel's text: a panel inside the
+     * window can still be occluded by the next sibling.
      */
     await mountHarnessVault(page);
     await page.goto("/ko/architecture/?view=guides");
@@ -362,9 +350,10 @@ test.describe("하네스 탭", () => {
       const el = document.getElementById(id)!;
       const box = el.getBoundingClientRect();
       const hits: string[] = [];
-      /* A panel shown by focus lets the pointer through (`InfoHint`, 2026-09-25), and
-         `elementFromPoint` skips what the pointer skips. Paint order is the question here,
-         so the probe makes the panel hit-testable for the length of the reading. */
+      /*
+       * `InfoHint` lets the pointer through when shown by focus; paint order is the question,
+       * so the probe makes the panel hit-testable during the reading.
+       */
       const previous = el.style.pointerEvents;
       el.style.pointerEvents = "auto";
       for (let i = 1; i <= 9; i += 1) {
@@ -382,16 +371,8 @@ test.describe("하네스 탭", () => {
 
   test("구조 보기가 저장소가 알려주는 것·막는 것·지켜보는 것을 부속별로 세고, 도구가 가진 자리는 숫자로 세지 않는다", async ({ page }) => {
     /*
-     * The tab is named Harness and its first screen used to be the product's layer ladder. The
-     * owner named the mismatch on 2026-09-19: that ladder is architecture, which a harness
-     * regulates, not a part of the harness. This is what took its place, and the assertions are
-     * about the two readings it must never allow — a grade, and a zero where the answer is simply
-     * not in the checkout.
-     */
-    /*
-     * ⚠️ The console is part of this assertion. An `InfoHint` placed inside a `<p>` renders a
-     * `div` in a paragraph, which React reports as a hydration error and the dev overlay counts
-     * silently in the corner — the screen looked perfectly correct while doing it (2026-09-20).
+     * The console is part of the assertion: an `InfoHint` inside a `<p>` is a hydration error
+     * that the rendered screen does not show.
      */
     const consoleErrors: string[] = [];
     page.on("console", (message) => {
@@ -583,11 +564,6 @@ test.describe("하네스 탭", () => {
   });
 
   test("세는 방법은 문장이 아니라 접힌 자리에 있다", async ({ page }) => {
-    /*
-     * Every honesty rule this page depends on used to stand at body size in the reading flow, where
-     * the most carefully reasoned part of the screen was the heaviest to read. The claim is
-     * unchanged; it costs nothing until a reader asks for it.
-     */
     await mountHarnessVault(page);
     await page.goto("/ko/architecture/?view=coverage");
     await expect(page.getByTestId("harness-coverage")).toBeVisible({ timeout: 30_000 });
@@ -667,11 +643,7 @@ test.describe("하네스 탭", () => {
   });
 
   test("다른 보기로 가는 길은 어떤 화면에서도 사라지지 않는다", async ({ page }) => {
-    /*
-     * The tab set must never be a property of the panel it switches. With no architecture profile
-     * the blueprint returns its empty state early; a tab set rendered inside it vanished, and the
-     * other two views had no path from the screen a person lands on (design-interaction, 2026-09-13).
-     */
+    /* The tab set must not be a property of the panel it switches; the empty blueprint returns early. */
     await page.setViewportSize({ width: 1512, height: 949 });
     await installProfilelessHarnessRuntime(page);
     await mountHarnessVault(page);
@@ -765,9 +737,7 @@ test.describe("하네스 탭", () => {
       }
       await reducedPage.setViewportSize({ width: 1040, height: 720 });
       const field = overview.locator('[data-domain-count]');
-      // A condition wait, not one read: the field refits to the new window a frame after the
-      // resize, and the single read measured the old fit — red on every local run and green in
-      // CI only on retry (2026-09-24), which `.claude/rules/testing.md` says is not a gate.
+      // A condition wait: the field refits a frame after the resize, so a single read measures the old fit.
       await expect.poll(() => field.evaluate((element) => element.scrollHeight - element.clientHeight)).toBeGreaterThan(0);
       await field.evaluate((element) => { element.scrollTop = element.scrollHeight; });
       await expect(surface).toHaveCount(0);

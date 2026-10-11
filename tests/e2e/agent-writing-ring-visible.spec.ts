@@ -4,37 +4,6 @@ import { FIXTURE_VAULT } from "./fixture-vault";
 import { seedFirstRunSeen } from "./first-run-seed";
 import { stubDirectoryPicker } from "./vault-picker-stub";
 
-/**
- * While a conversation is **running**, the map marks the node a fresh heartbeat lit
- * up.
- *
- * **How this differs from what already exists** (2026-08-17).
- * `agent-activity-chip.spec.ts` already locks the same chain, but it plants the signal
- * **before the vault is opened**. That measures "I launched the app and an agent was
- * already working", which is not what the owner asked for:
- *
- * > *"So you can see the ontology being drawn on the left-hand map in real time"*
- * > (so you can see the ontology being drawn on the left-hand map in real time)
- *
- * That is, arriving **while you are watching**. The present tense is owned by an
- * explicit heartbeat, not by a successful-write log. This updates the document, the
- * audit log, and the heartbeat together, then measures whether polling carries the new
- * target all the way to the map.
- *
- * **What has to break for this to turn red.** Confirmed by switching off the re-read
- * on poll — it turns red. Conversely, neutralising the "only the sidecar changed"
- * comparison still **passes**: a real agent leaves the document and the record
- * together, and a changed document changes the fingerprint, so a full re-read runs
- * anyway. That branch is recorded as outside this test's reach — do not read a pass as
- * evidence about it.
- *
- * **How it is measured.** A canvas has no element to assert on. Pixel comparison is
- * not used either: the physics simulation moves on its own, so "it changed" cannot be
- * attributed to our signal (this was actually built and discarded). Instead it reads
- * `agentFocus` from `__atlasMap.nodes()`, which exposes **the same verdict** the
- * renderer uses — the approach the neighbouring spec already takes.
- */
-
 const WRITTEN_SLUG = "capabilities/checkout";
 
 function activityLine(slug: string, atIso: string): string {

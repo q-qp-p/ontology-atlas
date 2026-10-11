@@ -4,22 +4,8 @@ import { installDesktopRailRuntime, mountDesktopVault } from "./desktop-rail-arr
 import { FIXTURE_VAULT } from "./fixture-vault";
 
 /**
- * **A jump along one document's history keeps that document** (2026-09-25).
- *
- * Found with the real-bridge QA harness on a real git vault: in a step's detail, "Other steps that
- * changed this document" → a press on a step opened that step with its FIRST document selected,
- * because the jump cleared the focused concept. In a vault's first commit that is the vault guide,
- * and "Restore this version" there named and restored `README.md` — not the document the person
- * was following.
- *
- * What is measured is the promise, in the rendered page: after the jump the followed document is
- * the one selected (the pressed chip, or the open file row in the files lens), it is inside the
- * window, the restore door names that file, and the native restore command is sent that path and
- * nothing else.
- *
- * The import step here holds every fixture document plus eighty source notes, so its file list
- * runs far past the window — a followed file at the end of it is only on screen if the jump
- * brings it there.
+ * The import step holds eighty source notes so its file list runs past the window;
+ * a followed file at the end is on screen only if the jump brings it there.
  */
 
 type Entry = { path: string; status: string; kind: string | null; slug: string; renamedFrom: null };

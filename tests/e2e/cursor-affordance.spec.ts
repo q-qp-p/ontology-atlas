@@ -5,35 +5,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForPageSettled } from "./settle";
 
 /**
- * **Everything pressable uses the same cursor.**
- *
- * **Why this gate exists (audit 2026-08-05).** Measured at 1512 across 7 routes:
- * 75 `a` links were `pointer` while 58 buttons were `default`. Nobody had decided
- * that — it was **the browser's per-tag defaults taken as they came**. On top of
- * that, hand-written `cursor-pointer` was scattered across 22 places in 10 files,
- * and even among buttons it contradicted itself 5:56 — not a split from policy but
- * whatever each author wrote at the time.
- *
- * Owner decision: **pointer everywhere.** The policy lives in one place, the base
- * layer of `app/globals.css`.
- *
- * **Why here and not lint.** A violation **leaves no value in the code at all.** A
- * new component that simply uses `<button>` falls to the browser default with no
- * class and no inline style — there is no string to look at. The selectors in
- * `eslint.config.mjs` can catch only *redundantly written* values; "the central
- * rule disappeared or does not reach here" is knowable only by **measuring the
- * rendered result** (`design.md`: "layers lint cannot see belong to contract
- * tests").
- *
- * **What is not measured.**
- *
- * - **Disabled controls** — `disabled:cursor-not-allowed` (7 places) and
- *   `disabled:cursor-wait` (5) say "you cannot press this". Requiring pointer here
- *   would erase that signal.
- * - **Canvas** — the map is correctly `grab`/`grabbing` (it is dragged, not
- *   pressed).
- * - **Scrims** — pressing closes them, but they are a surface, not a control
- *   (`cursor-default` is right).
+ * Measured on the rendered result because a missing cursor rule leaves no value in the code.
+ * Disabled controls, the canvas and scrims are deliberately not measured.
  */
 const VIEWPORT = { width: 1512, height: 900 };
 

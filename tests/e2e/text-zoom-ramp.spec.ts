@@ -23,59 +23,9 @@ async function openOntologyAudit(page: import("@playwright/test").Page) {
 }
 
 /**
- * **Does the browser's text-only zoom reach the type?**
- *
- * A browser has two zooms and they are not the same control. *Page* zoom scales the layout, so
- * a person who wants larger words gets a narrower window with it. *Text-only* zoom — Chrome's
- * Appearance → Font size, Firefox's "Zoom text only", Safari's accessibility text size —
- * multiplies the **root font size** and nothing else, and it is the one a person uses when the
- * window is already the size they want.
- *
- * Until 2026-09-12 that control was inert on every Atlas surface, because the type ramp was
- * absolute `px`: measured across the ramp, at every setting up to 200%, the screen was
- * pixel-for-pixel identical (carry-forward finding, U2 council, 2026-09-11). The ramp is now
- * written in `rem` and this spec is the browser half of that change. Its sibling,
- * `tests/contract/type-ramp-root-relative.contract.test.ts`, reads the declarations; it cannot
- * see a screen, and this file cannot tell `px` from `rem` at the default root. Both are needed.
- *
- * ## Two techniques, because one of them is a trap
- *
- * There is no `emulateMedia` for this: text-only zoom is a browser **setting**, not a media
- * feature. The obvious stand-in is `documentElement.style.fontSize = '32px'`, and for the
- * *type* it is exact — every `rem` length in the cascade resolves against the root.
- *
- * ⚠️ **It is not the browser's setting.** `rem` inside a **media query** resolves against the
- * root element's *initial* font size — the browser's own default — and an author-set
- * `html { font-size }` cannot move it. Tailwind v4's breakpoints are `rem`
- * (`48rem` / `64rem` / `80rem`), so a real font-size preference moves them and the script
- * stand-in does not. Measured at a 1512 viewport: with the author-set root,
- * `(min-width: 48rem)` is **true**; with the browser's default font size set to 32px it is
- * **false**, while the repository's own `(min-width: 768px)` queries stay **true** in both.
- * A real reader at 200% therefore gets a state no script stand-in produces — the below-`lg`
- * layout in a 1512 window — and every layout claim measured the other way describes a screen
- * that does not exist.
- *
- * So the file splits. The first group sets the root in script, because a claim about *type*
- * wants the root moved and nothing else moved with it. The second group launches the browser
- * with `defaultFontSize=32`, which is the setting, and it carries a self-probe on
- * `(min-width: 48rem)` so it cannot quietly fall back to the stand-in and stay green.
- *
- * ## What is asserted, and what is deliberately not
- *
- * | | at the 16px root | at a 32px root |
- * |---|---|---|
- * | every ramp step | its pinned pixel — the byte-identity witness | exactly 2× |
- * | the reading column | 709.1px | 1338.1px — the measure doubles, the two gutters hold |
- * | chrome geometry | 36 · 20 · 64 · 420 · 560 · 26 · 40 | **the same numbers** |
- * | horizontal overflow | none | none |
- * | text outside the viewport | none that is not inside a clipping ancestor | the same |
- *
- * The last row is the one worth reading twice. Elements whose rect extends past the viewport
- * exist at **both** roots on these routes — a truncated path, a sidebar sentence — and they are
- * correct: an ancestor marked `truncate` clips them and shows an ellipsis, which is the
- * behaviour the author chose for a narrow box. A count of such rects therefore grows with the
- * type and says nothing. What must stay at zero is text that reaches past the viewport with
- * **nothing clipping it**, because that text is unreachable: the document does not scroll to it.
+ * Text-only zoom changes the root font size and nothing else. A script-set root is exact for type,
+ * but `rem` media queries resolve against the browser default, so layout checks launch with
+ * `defaultFontSize=32` and self-probe `(min-width: 48rem)` to prove it is not the stand-in.
  */
 
 /** What each probe below hands back. `eval()` erases the type, so each call names it again. */
@@ -106,11 +56,7 @@ const RAMP = [
   { step: "hero-lg" },
 ] as const;
 
-/**
- * Chrome geometry: the boxes the fixed-scale contract pins (owner, 2026-07-24) plus the widths
- * a reader's font setting must not move. A hit target that grew or shrank with a font size
- * would be a different promise than the one every other gate measures.
- */
+/** Chrome boxes the fixed-scale contract pins; a reader's font setting must not move them. */
 const CHROME_BOXES = [
   "--chrome-tile-size",
   "--app-nav-rail-icon-size",

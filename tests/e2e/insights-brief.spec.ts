@@ -81,12 +81,9 @@ test("브리핑은 연 폴더의 위키·에이전트를 이름으로 말하고,
   const brief = page.getByTestId("brief-tab");
   await expect(brief).toBeVisible({ timeout: 30_000 });
 
-  // The wiki core measures the folder: one page, and its source moved under it. Since
-  // 2026-09-23 every core's lines share one list, and each row carries its core.
   await expect(page.locator('[data-brief-core="wiki"][data-brief-line="wiki-stale-pages"]')).toHaveText(/1/, { timeout: 30_000 });
 
-  // The agent core counts the write in the list. The calls themselves are named one by one in
-  // the since card under it, so the list does not count them a second time (review, 2026-09-25).
+  // The list does not count the calls a second time; the since card names them one by one.
   const agent = page.getByTestId("brief-lines");
   await expect(agent.locator('[data-brief-core="agent"][data-brief-line="agent-writes-since"]')).toHaveText(/1/);
   await expect(agent.locator('[data-brief-line="agent-calls-since"]')).toHaveCount(0);
@@ -116,15 +113,6 @@ test("브리핑은 연 폴더의 위키·에이전트를 이름으로 말하고,
 
 });
 
-/**
- * **The headline never paints a partial sum** (real bridge, 2026-09-25).
- *
- * In the app the guidance scan lands seconds after the other cores. The headline printed their sum
- * as final — "98 to learn · 99 not checked" — and turned into 142 · 101 when the scan arrived, with
- * no mark in between. Here the source repository's reads are held behind a gate, so the "still
- * reading" window lasts exactly as long as the test says, and the line must say it is counting,
- * carry no number, and keep its height when the numbers land.
- */
 test("앱에서 지침을 아직 읽는 동안 헤드라인은 부분 합을 그리지 않고 세는 중이라고 말한다", async ({ page }) => {
   test.setTimeout(180_000);
   await page.setViewportSize({ width: 1512, height: 949 });

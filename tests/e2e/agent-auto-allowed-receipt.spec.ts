@@ -5,17 +5,6 @@ import { seedFirstRunSeen } from './first-run-seed';
 import { openFolderFromFirstRun } from './open-folder';
 import { installLibraryWorkHarness } from './library-work-harness';
 
-/**
- * **The receipt for a file written without asking, and the two doors on it.**
- *
- * ## Why this spec exists at all
- *
- * Until 2026-09-20 no test reached this notice. It needs four things together — the folder set to
- * write automatically, a permission that carries a real `filePath` rather than the MCP envelope, a
- * page that passes the wiki contract, and a native folder root — and no spec had assembled them.
- * So the surface that reports **a write nobody approved** was drawn by nothing but the product.
- */
-
 const FITTING_PAGE = [
   '---',
   'title: Architecture',

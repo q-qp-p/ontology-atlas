@@ -39,23 +39,7 @@ async function openConnectorsWithVault(
 
 test("연결 도구 딥링크는 그 칸에 내려선다 — 짧은 창에서도", async ({ page }) => {
   test.setTimeout(300_000);
-  /*
-   * ⚠️ **Measured at four viewports, 2026-09-19.** `?mcp=connectors` stopped being a tab
-   * switch and became a scroll when the MCP screen's two halves became two groups under one
-   * strip. Nothing measured whether it lands: this spec only asserted the panel was *visible*,
-   * which both groups always are now, so the deep link's whole effect sat outside coverage.
-   *
-   * A short window is the state that catches it. The scroll used to run while the connector
-   * store was still loading, against a page at its short height; the list then rendered
-   * underneath and pushed the group down, leaving the heading **140px above the viewport** at
-   * 1440×600 — a link named "connectors" arriving with the connectors heading cut off. At
-   * 1280×900 the group is in view without scrolling at all, which is why a desktop-sized
-   * check saw nothing.
-   */
-  /*
-   * The app's window floor is 720 tall, so the short window is read there (2026-09-27); the
-   * 600 the defect was first measured at is below any window the app opens.
-   */
+  /* The app's window floor is 720 tall, so the short window is read there. */
   await page.setViewportSize({ width: 1440, height: 720 });
   /*
    * **Attached connectors are the state that catches it**, and the empty fixture is not: the
@@ -99,9 +83,8 @@ test("빈 상태는 한 문장·한 줄 공개·문 하나다", async ({ page })
   await openConnectorsWithVault(page);
 
   /*
-   * The owner read this card on 2026-09-07 and asked for a design pass. What it must be with
-   * nothing attached: one sentence saying what a connector is, one quiet line saying where the
-   * traffic goes, and one door. Not two warnings about traffic that is not happening.
+   * With nothing attached: one sentence saying what a connector is, one quiet line saying where
+   * the traffic goes, and one door.
    */
   const empty = page.getByTestId("connectors-empty");
   await expect(empty).toBeVisible();
@@ -129,9 +112,8 @@ test("추가 대화상자는 검색 하나 아래 한 목록이고, 직접 적�
   await expect(dialog).toBeVisible();
 
   /*
-   * No tabs (owner, 2026-09-07 afternoon). One list: the catalogue as a group with its capture
-   * date beside the heading, the by-hand form folded under it, and — on the web — the card
-   * saying why this machine cannot be scanned, after the list that does work here.
+   * One list: the catalogue as a group with its capture date, the by-hand form folded under it,
+   * and on the web the card saying why this machine cannot be scanned.
    */
   await expect(page.getByTestId("connectors-catalogue-section")).toBeVisible();
   await expect(page.getByTestId("connectors-catalogue-item")).not.toHaveCount(0);
@@ -172,10 +154,8 @@ test("묻는 게 없는 줄은 한 번 눌러 붙고, 실행될 주소를 그 �
   const row = page.locator('[data-testid="connectors-catalogue-item"][data-catalogue-id="context7"]');
   await expect(row).toBeVisible();
   /*
-   * The last thing on screen before the press is still the address, written out — the
-   * difference between this and the deep-link CVEs recorded in
-   * `docs/benchmark/MCP-ONE-CLICK-2026-09-07.md`. Context7's address asks nothing (no sign-in,
-   * no token), so the press writes the row and closes.
+   * The address is written out before the press. Context7's address asks nothing, so the press
+   * writes the row and closes.
    */
   await expect(row.getByTestId("connectors-catalogue-runs")).toContainText("https://mcp.context7.com/mcp");
   const add = row.getByTestId("connectors-catalogue-add");
@@ -252,7 +232,7 @@ test("설치 링크는 대화상자를 채워 열 뿐, 아무것도 붙이지 �
     "utf8",
   ).toString("base64");
   await page.goto(`/ko/mcp/?tab=connectors&install=${encodeURIComponent(config)}`);
-  // The retired address still resolves: it redirects into the Agents destination.
+  // The old address redirects into the Agents destination.
   await expect(page).toHaveURL(/\/agents\/\?tab=mcp/);
   await page.waitForLoadState("networkidle");
 

@@ -4,23 +4,9 @@ import { dogfoodEvidenceVault } from "./hex-board-vaults";
 import { waitForAnimationsDone } from "./settle";
 
 /**
- * **A hex board route never leaves the free map.**
- *
- * Owner report (2026-09-25, installed app, 1512x949, `docs/ontology`): with the domain
- * meaning layer (`DOMAIN_NAME`) selected, the inspector open and INDEX folded, the routed relation lines left the
- * board, ran along the very top of the canvas under the map toolbar (the trail chip and the
- * tool tiles) and came back down. The router searched a lattice padded two rings past the
- * board, and nothing told it where the chrome was.
- *
- * This opens the product's own dogfood vault through the installed-app runtime and, at 1280
- * and 1512, with a domain and then a capability selected and INDEX folded and then open,
- * holds every drawn route (`canvas[data-route-paths]`, canvas px) to the free map:
- *
- * - below the toolbar's real bottom (the lowest visible control inside it), right of INDEX
- *   (the open panel or the folded tab), left of the inspector, above the board's footer
- *   (the two chips and the legend);
- * - and at every sampled point the element under it is the canvas itself, so no toolbar
- *   control, tab, panel or chip is drawn over a route.
+ * Every drawn route (`canvas[data-route-paths]`) must stay below the toolbar, right of INDEX,
+ * left of the inspector and above the footer, and the element under each sampled point
+ * must be the canvas itself.
  */
 
 const DOMAIN_NAME = "의미 계층";
@@ -183,7 +169,7 @@ async function holdRoutes(page: Page, label: string, minRoutes: number) {
   expect(problems, label).toEqual([]);
 }
 
-// The owner's report width; 1280 is the same `xl` chrome and never failed on its own.
+// 1280 is the same `xl` chrome, so one width suffices.
 for (const viewport of [{ width: 1512, height: 949 }]) {
   test(`hex board routes stay in the free map at ${viewport.width}: domain and capability, INDEX folded and open`, async ({ page }) => {
     test.setTimeout(300_000);

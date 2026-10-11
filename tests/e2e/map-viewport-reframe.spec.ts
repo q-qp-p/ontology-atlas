@@ -87,13 +87,8 @@ test("짧은 선택 인스펙터도 실제 자유 영역으로 카메라를 민�
 test("우측 도크로 지도 폭이 줄면 현재 overview를 새 가용영역에 다시 맞춘다", async ({ page }) => {
   test.setTimeout(90_000);
   /*
-   * A narrower map moves the camera only when the frame is width-bound: a
-   * height-bound overview keeps its camera and stays centred through the canvas's
-   * own centre, which needs no reframe. At 1512×900 the dogfood spine is
-   * height-bound all the way to a 420 px dock once the overview frames only what it
-   * draws; this passed there only while the viewport was measured 0.5% small
-   * through the entry fade, so the dock's first resize corrected the scale
-   * (2026-09-25). A tall window makes the width bind from the dock's fifth step.
+   * A narrower map moves the camera only when the frame is width-bound; a height-bound overview
+   * stays centred and needs no reframe. A tall window makes width bind from the dock's fifth step.
    */
   await page.setViewportSize({ width: 1512, height: 1400 });
   await seedFirstRunSeen(page);
@@ -226,19 +221,8 @@ test("우측 도크로 지도 폭이 줄면 현재 overview를 새 가용영역�
     Math.abs(automatic!.y - before!.y) +
     Math.abs(automatic!.scale - before!.scale) * 100;
   /*
-   * **Where the camera is aimed, not how far it has travelled.**
-   *
-   * This used to assert that under 35% of the motion remained once the dock
-   * transition ended. The concern was real — a camera that only starts moving
-   * after ACP boot reads as stutter — but it sampled an interpolating position at
-   * a wall-clock moment, so it measured the machine as much as the product. On
-   * 2026-08-26 it read 0.360 against the 0.35 threshold on one laptop while every
-   * CI run passed, and `design-gates.md` already names the mistake: gate by call
-   * count, not milliseconds.
-   *
-   * The invariant that matters is causal and timing-free — the resize must aim
-   * the camera at the new area straight away. How many frames the travel takes is
-   * the machine's business.
+   * Assert where the camera is aimed (`cameraTarget`), not how far it has travelled: sampling an
+   * interpolating position at a wall-clock moment measures the machine. Timing-free and causal.
    */
   const targetAtDockEnd = await page.evaluate(
     () => window.__atlasMap?.cameraTarget?.() ?? null,

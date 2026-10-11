@@ -22,53 +22,9 @@ async function openOntologyAudit(page: import('@playwright/test').Page) {
 }
 
 /**
- * **`--measure-prose` must be worth the sentence written next to it.**
- *
- * `docs/DESIGN-SYSTEM.md` and `src/views/gateway-doc/ui/GatewayDocPage.tsx` both state the
- * intent of this token as *"65–75 characters per line"*. Until 2026-09-11 the token read
- * `70ch` and produced **92** — because `ch` is the advance of the digit `0`, and a
- * proportional Latin average is only about three quarters of that. The number in the token
- * and the number in the sentence were never the same quantity, and nothing measured the
- * gap.
- *
- * ## Why this is a spec and not a contract test
- *
- * Both halves of the fact live only in a rendered page: the resolved length of
- * `var(--measure-prose)` and the advance width of real glyphs in the shipped
- * **Pretendard Variable**. A source test can read `60ch` out of `app/globals.css` and still
- * know nothing about how many characters that is — which is exactly the blindness that let
- * the mis-calibration stand. Swapping the body font would move this number without touching
- * one line of CSS, and this gate would say so.
- *
- * ## What is measured
- *
- * `"0".repeat(100)` gives `1ch` to two decimal places, and a fixed English sample of known
- * length gives the average character. Their ratio times the token's number is the
- * characters-per-line the token actually buys. Both sides scale with the font size, so the
- * answer is the same at 14, 15, 16 and 17px — asserted here rather than assumed, because a
- * font whose digits are not proportional to its letters would break that and nothing else
- * would notice.
- *
- * ## The band, and why it is not a point
- *
- * | measure | characters per line |
- * |---|---:|
- * | `50ch` | 65 |
- * | `57ch` | 75 |
- * | `60ch` (until 2026-09-12) | 78 |
- * | **`66ch` (shipped)** | **86** |
- * | `70ch` (the 2026-09-11 defect) | 91 |
- *
- * ⚠️ **The band moved with the measure on 2026-09-12.** The owner read a 500px line inside a
- * 1168px pane and asked for the line rather than the void (`docs/DECISIONS.md`, "The reading
- * column is worth more of its pane than the measure was buying"), which put the measure at
- * `66ch` spent at `--text-reading` — **86** Latin characters and 46 Hangul syllables. The
- * floor is **80** and the ceiling **92**: 80 is under the shipped 86 by the same slack a
- * hinted rasterizer already spends here (the four probe sizes measured 74–81 at `60ch` on
- * CI's Linux Chromium, so a silent return to `60ch` still fails this floor), and 92 is one
- * step past the value, so the token cannot drift wider without saying so. What the band no
- * longer guards is the old *45–75* guidance; that is the dissent the record keeps, and its
- * falsifier is a reader who loses their line on the wiki page at 1512.
+ * `--measure-prose` must buy the characters per line its docs state. `ch` is the advance of `0`,
+ * so a Latin average is about three quarters of it; only a rendered page with Pretendard
+ * Variable can measure that. The band is 80 to 92 characters, one step past the shipped `66ch`.
  */
 const MIN_CHARS_PER_MEASURE = 80;
 const MAX_CHARS_PER_MEASURE = 92;
@@ -174,32 +130,9 @@ async function calibrate(
 const SHIPPED_FONT_FAMILY = 'pretendard';
 
 /**
- * ⚠️ **Prove the font before measuring the font.**
- *
- * Every number below is an advance width in Pretendard Variable. If the face has not loaded,
- * the measurements are of a fallback on whatever machine is running, and every assertion becomes
- * a lie about the product — reported as calibration drift, which is the one reading that must
- * never happen. `document.fonts.ready` is not enough: it resolves when loading has *settled*,
- * including settling on failure.
- *
- * ## What each signal is actually worth (measured 2026-09-11, this export)
- *
- * The woff2 request was blocked two ways — aborted, and answered `200 text/plain` — and the
- * three candidate signals were read in each case:
- *
- * | signal | font loaded | font failed | worth |
- * |---|---|---|---|
- * | `FontFace.status` for the family | `loaded` | **`error`** | the real signal |
- * | `document.fonts.check('16px pretendard')` | `true` | **`false`** | good, but see below |
- * | computed `font-family` of a probe | `pretendard, …` | `pretendard, …` | **none** |
- *
- * The computed family names the *declared* stack whether or not anything loaded, so it proves
- * only that the product still sets this family — worth asserting, worthless as proof of
- * rendering. And `check()` answers "can this be rendered without loading anything new", so it
- * returns **`true` for a family that was never declared at all** (measured: `check('16px
- * pretendard-not-shipped')` = true, because the fallback can render it). It is therefore only
- * meaningful for a family the stylesheet does declare, which is why the face-status assertion
- * comes first and carries the verdict.
+ * Prove the font before measuring it: `document.fonts.ready` resolves even when loading failed.
+ * `FontFace.status` is the real signal; computed `font-family` names the declared stack only,
+ * and `document.fonts.check` returns true for a family never declared.
  */
 async function assertShippedFontIsRendering(page: import('@playwright/test').Page) {
   await page.evaluate(() => document.fonts.ready);
@@ -229,8 +162,8 @@ async function assertShippedFontIsRendering(page: import('@playwright/test').Pag
   ].join(' · ');
   const notRendering = `the shipped font is not rendering on this runner; calibration cannot be measured here — ${detail}`;
 
-  // The verdict: a registered face for this family finished loading. `error` here is the shape
-  // a 404, a wrong MIME type or a rejected format takes.
+  // A registered face for this family must have finished loading; `error` is the shape a 404,
+  // wrong MIME type or rejected format takes.
   expect(
     state.faces.some((face) => normalise(face) === `${SHIPPED_FONT_FAMILY}:loaded`),
     notRendering,
@@ -244,30 +177,9 @@ async function assertShippedFontIsRendering(page: import('@playwright/test').Pag
 }
 
 /**
- * ⚠️ **A rasterizer may quantise advances to whole pixels; the product's numbers may not.**
- *
- * Measured 2026-09-11, the same build on two runners:
- *
- * | | `0` advance @16px | `0` advance @14px | `60ch` @14px |
- * |---|---|---|---|
- * | macOS (CoreText, subpixel) | 9.531px | 8.340px | 500.4px |
- * | CI Linux Chromium (FreeType, hinted) | 10px | 9px | **540.0px** |
- *
- * Both runners were rendering **Pretendard** — `ceil(14 × 0.5957) = 9` and
- * `ceil(16 × 0.5957) = 10`, and the only advance ratios satisfying both are `(0.5714, 0.625]`,
- * which excludes every plausible Linux fallback (Liberation/Arimo 0.5562, Noto Sans 0.5615,
- * Roboto 0.5679, DejaVu Sans 0.6362). It also excludes this export's **own** declared fallback:
- * blocking the woff2 was measured at **9.032px** at 16px (`local(Arial)` × the 101.55%
- * size-adjust), i.e. 0.5645em — so a load failure and a hinted success are not confusable, and
- * `0.6250` is the second, not the first.
- *
- * The consequence for this gate: an assertion comparing a **`ch`-resolved length** against the
- * **derived px constant** is asserting the rasterizer's rounding, not the design. It is asserted
- * against the derivation instead, and the font metric is checked at 100px where one pixel of
- * hinting is 1% rather than 12%.
- *
- * The product is unaffected either way: the column is absolute, so a hinted runner simply has
- * the column rather than the `ch` cap bind the line — at the same width.
+ * A hinted rasterizer may quantise advances to whole pixels (CI Linux Chromium: `0` is 10px
+ * at 16px, 540px for `60ch` at 14px). Assert against the derivation and check the font metric
+ * at 100px, where one pixel of hinting is 1%.
  */
 const FONT_METRIC_PROBE_PX = 100;
 const FONT_METRIC_TOLERANCE_EM = 0.01;
@@ -303,12 +215,8 @@ test('the prose measure buys 80-92 characters per line in the shipped font', asy
   }
 
   /*
-   * ⚠️ A cross-size *invariance* assertion used to live here — the measure had to buy the same
-   * character count at 14/15/16/17px, which it does wherever advances are subpixel. It was
-   * removed on 2026-09-11: on CI's Linux Chromium the same build measured 78.5 / 74.3 / 80.6 /
-   * 75.7, a spread produced entirely by whole-pixel advance hinting. Every one of those four is
-   * inside the band above, which is the claim that matters; the spread was measuring the
-   * rasterizer. The band is asserted per size, so a real drift at any one size still fails.
+   * Cross-size invariance is not asserted: hinting spreads the count on CI's Linux Chromium.
+   * The band is asserted per size, so a real drift at any one size still fails.
    */
 });
 
@@ -469,17 +377,9 @@ test('the derived column, the measured advance and the JS mirror all still agree
 });
 
 /**
- * ⚠️ **A gate that can only pass is not a gate.** The defect this file exists for is a
- * *wider* token, so the probe plants one and requires the measurement to leave the band. Then
- * it restores the real value through the same channel and requires GREEN again, so a probe
- * that had simply stopped measuring would be caught too.
- *
- * ⚠️ **The planted value moved on 2026-09-12, and it had to.** It used to be `70ch` — the
- * value that shipped until 2026-09-11 — which measured 88.4 characters here. When the measure
- * moved to `66ch` (86 characters) the band's ceiling rose to 92 and the old plant landed
- * *inside* it: the probe would have reported the instrument healthy while planting a defect
- * the gate could no longer see. It plants `80ch` instead, one clear step past the ceiling, and
- * the plant's own margin is asserted below so this cannot happen silently again.
+ * A gate that can only pass is not a gate: plant a wider token and require the reading to leave
+ * the band, then restore it and require green. `80ch` is one clear step past the ceiling of 92,
+ * and the plant's own margin is asserted below.
  */
 const PLANTED_MEASURE = '80ch';
 

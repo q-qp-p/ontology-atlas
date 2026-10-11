@@ -144,9 +144,8 @@ test.describe("프로젝트 온톨로지 구축 검수", () => {
     });
   }
 
-  // The four fail-closed states are each covered at the component layer
-  // (`ProjectDetailPage.test.tsx`, `parse-construction-review.test.ts`); this keeps one
-  // end to end so the file input's wiring to that verdict stays proven in a browser.
+  // The fail-closed states are covered at the component layer; one end-to-end case keeps the file
+  // input's wiring to that result proven in a browser.
   for (const [state, value] of [
     ["plan_mismatch", envelope({ writePlan: { concepts: [], relations: [], competencyAnswers: {} } })],
   ] as const) {

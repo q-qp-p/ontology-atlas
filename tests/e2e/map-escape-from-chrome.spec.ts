@@ -3,25 +3,15 @@ import { installDesktopRailRuntime } from "./desktop-rail-arrival-harness";
 import { openOwnerState } from "./map-toolbar-popovers-harness";
 import { waitForMapStill } from "./settle";
 
-/**
- * **Escape keeps the map's order when focus sits on the map's own chrome** (2026-09-26).
- *
- * The map closes one thing per Escape: the node card, then the selection. Focus rarely
- * stays on the canvas while a person works — the gear and the tool tiles keep it after a
- * press, and a closed surface hands it back to the control that opened it. Measured on the
- * product's own map at 1512×949: with a domain selected and its card already closed,
- * Escape on the settings gear left the domain selected however often it was pressed,
- * because the gear's closed sheet still took the key. The tool tiles already passed it on.
- */
+/** Escape closes one thing per press even when focus sits on map chrome such as the gear. */
 
 const selection = (page: Page) =>
   page.evaluate(() => window.__atlasMap?.selection().nodeId ?? null);
 
 /** Select a domain drawn clear of the panels, then close its card: the next rung is "deselect". */
 async function selectDomainWithCardClosed(page: Page) {
-  // Aim at the frame the map settled on, not one it is still moving to: on a slow runner the
-  // agent dock arrives after the first settle and the map reframes around it, so a point read
-  // earlier missed its node in all three CI attempts (2026-09-26).
+  // Aim at the settled frame: on a slow runner the agent dock arrives after the first
+  // settle and the map reframes.
   await waitForMapStill(page);
   const target = await page.evaluate(() => {
     const probe = window.__atlasMap!;
@@ -86,16 +76,9 @@ test("Escape from the gear and the tool tiles reaches the map's dismissal order"
 });
 
 /**
- * **An Escape pressed as the view picker appears still hands focus back to the chip**
- * (2026-09-26).
- *
- * The picker focuses its checked view once its box is in the document. That focus ran as a
- * passive effect, a task after the insert, and an input event is dispatched ahead of such a
- * task: an Escape landing in the gap closed the picker and focused the chip, and then the
- * stale effect focused the closing radio, so focus fell to `<body>` when the box left. The
- * test above caught it once in a full shard run and never in isolation, because a real key
- * rarely lands in that gap. Here the Escape is delivered in exactly that gap, from a mutation
- * observer that fires on the radio's insert, before any later task can run.
+ * An Escape landing as the picker's box is inserted must still hand focus back to the chip.
+ * The picker focuses in a passive effect a task later, so the Escape is sent from a
+ * mutation observer on the radio's insert.
  */
 test("an Escape pressed as the view picker appears returns focus to its chip", async ({ page }) => {
   test.setTimeout(120_000);

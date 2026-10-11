@@ -5,10 +5,8 @@ import { stubDirectoryPicker } from "./vault-picker-stub";
 import { BROKEN_VAULT } from "./fixtures/broken-vault";
 
 /**
- * Defective-vault reader diagnostics: exact errors, untyped documents and map evidence.
- * The 2026-10-10 Analysis relationship/evidence decision retires the global repair list.
- * Its two list-only cases are removed; every reader diagnostic and positive/negative
- * map-evidence assertion remains. A healthy-looking sample cannot exercise these errors.
+ * Defective-vault reader diagnostics: exact errors, untyped documents and map evidence; a healthy
+ * sample cannot exercise these.
  */
 
 async function loadVault(page: Page, seed: Record<string, string>) {

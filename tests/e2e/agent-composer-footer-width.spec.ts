@@ -5,42 +5,9 @@ import { FIT_LOCALES } from './locales';
 import { openFolderFromFirstRun } from './open-folder';
 import { installLibraryWorkHarness } from './library-work-harness';
 
-/**
- * **The composer footer's one rule: the picker never hides the choice it is naming.**
- *
- * Measured across the drag range on 2026-09-19, at the panel's own documented minimum the mode
- * picker's word box was fourteen pixels wide for a forty-pixel word in English and a sixty-pixel
- * one in Korean — `Ask first` rendered as `A…` — while the runtime name it shares the row with
- * was never truncated by a single pixel at any width. The picker was `basis-0 flex-1` and was
- * therefore served last.
- *
- * ⚠️ **This measures the widths where each state actually exists.** A width-conditional gate that
- * only ever measures one width is permanently green (the blind spot this repository recorded on
- * 2026-09-03). So the sweep covers the panel's documented minimum, the width either side of the
- * threshold, and the width the app's own smallest window opens at — in both locales, because the
- * Korean mode name is half again as wide as the English one and it is the Korean one that decides.
- */
-/**
- * **What actually reddens each rule, measured rather than assumed (2026-09-20).**
- *
- * The obvious reversal does not work, and a green run from it would be misread as proof. Restoring
- * the mode picker's old `basis-0 flex-1` leaves every case green: below the threshold the runtime
- * name has already stood down, and above it the name's `shrink-[99]` makes the name yield first.
- *
- * | rule | what turns it red |
- * |---|---|
- * | the mode keeps its word | drop `shrink-[99]` from the runtime name **and** show the name below the threshold — 22px of a 40px word in English, 30px of a 60px word in Korean, at 320 |
- * | the name stands down | drop `@min-[286px]/composer:inline` from the runtime name (verified: two cases fail on `toBeHidden`) |
- *
- * Found by main-7-c2's gate probe and confirmed here on the second row.
- */
 /** The panel's own documented floor (`panel-width.ts`), where the clipping was worst. */
 const CHAT_WIDTH_MIN = 320;
-/**
- * The width that only Korean failed at. The Korean mode name is 60px against English's 40, so a
- * sweep written in English alone would have called this row healthy — and Korean is the locale
- * the owner reads it in.
- */
+/** Korean mode name is 60px against English 40px, so this width clips only in Korean. */
 const KOREAN_ONLY_CLIP = 360;
 const BELOW_THRESHOLD = 370;
 const AT_THRESHOLD = 380;
@@ -82,21 +49,8 @@ async function openDockAt(page: Page, width: number, locale: string) {
 }
 
 /**
- * **Move the dock to a width without opening it again.**
- *
- * The dock publishes its width as `--library-agent-chat-width` and the panel is laid out from
- * that variable, so every question this file asks — truncation, hiding, overflow — is answered by
- * CSS from the box. Setting the variable moves the box.
- *
- * ## Why it is worth doing (measured 2026-09-19 and 2026-09-20)
- *
- * This file used to open the dock once per case: thirty cases, each a viewport, a seed, a harness,
- * two navigations and three clicks. Locally that is 2.6s each and fine. In CI it turned shard 1 of
- * 3 from its usual eleven minutes into **thirty**, with cases timing out at exactly 60s and then
- * passing on retry in 2.1s — and every one of those retries is another landing that has to be run
- * again. It broke this repository's own landings twice, on two different sessions' pull requests.
- *
- * One boot, then the sweep. The verdicts are unchanged; only the price is.
+ * The panel is laid out from `--library-agent-chat-width`;
+ * setting it moves the box without reopening the dock.
  */
 async function moveDockTo(page: Page, width: number): Promise<number> {
   await page.evaluate((next) => {

@@ -4,15 +4,6 @@ import { seedFirstRunSeen } from './first-run-seed';
 import { openFolderFromFirstRun } from './open-folder';
 import { installLibraryWorkHarness } from './library-work-harness';
 
-/**
- * **Work in flight moves; work that landed is still** (owner, 2026-09-24).
- *
- * While the agent worked, a running tool row and the composer's 「thinking · 25s」 were the same
- * static grey as a finished transcript. The class assertions in `AcpChatPanel.test.tsx` prove which
- * element carries `.acp-working-shimmer`; they cannot prove the browser actually animates it, that
- * the band is painted through the glyphs, or that reduced motion takes it away. This measures the
- * computed style in a real engine instead, on the protocol-level ACP harness the library specs use.
- */
 async function open(page: Page) {
   await page.setViewportSize({ width: 1512, height: 982 });
   await seedFirstRunSeen(page);

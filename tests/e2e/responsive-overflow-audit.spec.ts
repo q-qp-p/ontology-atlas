@@ -3,24 +3,9 @@ import { expect, test } from "@playwright/test";
 import { waitForAnimationsDone } from "./settle";
 
 /**
- * Responsive overflow sweep (final review 2026-07-25).
- *
- * Every defect the owner reported repeatedly during that wave was the same kind:
- * "Text spilling out of its box, things overlapping,
- * content past the box at the bottom." No automated gate caught them, so they were
- * found by eye every time — and the shortcut sheet's scroll-height regression passed
- * the jsdom unit tests and was only caught at final review.
- *
- * What this spec checks:
- *  1. The document itself does not scroll horizontally (`scrollWidth <=
- *     clientWidth`). Design rule: wide content scrolls inside its own container, so
- *     the page body being pushed sideways is a defect.
- *  2. No interactive or text element leaves the viewport.
- *  3. No two `role="dialog"` are open at once (#62, overlay exclusivity).
- *
- * Widths: 1512 (the installed app's opening window) · 1040×720 (the app's
- * window floor). Phone and tablet widths are not a target (owner direction,
- * 2026-09-27). At each width it sweeps the live surfaces plus download.
+ * Sweeps the live surfaces plus download at 1512 and 1040x720 for: no horizontal document scroll
+ * (wide content scrolls inside its own container), no interactive or text element leaving the
+ * viewport, and no two `role="dialog"` open at once.
  */
 
 const WIDTHS = [
@@ -33,10 +18,8 @@ const ROUTES = [
   "/ko/docs/",
   "/ko/ontology/insights/",
   /*
-   * ⚠️ **The English strip was never swept** (2026-09-05). This list was Korean-only, and
-   * English tab labels are the longer ones — the insights strip measures 783px of content
-   * at en against 493px at ko, so every width at which the tab bar could break was a width
-   * this sweep did not visit. One route in the other locale is the whole fix.
+   * English tab labels are longer (insights strip 783px at en against 493px at ko), so one English
+   * route is swept too.
    */
   "/en/ontology/insights/",
   "/ko/projects/",
@@ -66,21 +49,9 @@ for (const vp of WIDTHS) {
       const report = await page.evaluate((selector) => {
         const vw = document.documentElement.clientWidth;
         /*
-         * ⚠️ **A horizontal scroller's children are not page overflow** (2026-09-05).
-         *
-         * This predicate read "any rect past the viewport is a defect", and for a page that
-         * is right. Inside a deliberate `overflow-x: auto` strip it is exactly backwards:
-         * the tab past the right edge is *how a scrolling strip works*, and the only way to
-         * satisfy the old rule was to let the labels wrap — the defect the tab bar was
-         * rewritten to stop, and which this sweep had been quietly rewarding.
-         *
-         * ⚠️ **The exemption is opt-in through `data-scroll-x`, and that is the whole
-         * point.** The first attempt keyed on computed `overflow-x`, and CSS computes
-         * `overflow-x: visible` to `auto` whenever `overflow-y` is not visible — so the
-         * page's own vertical scroll container matched, and a probe that removed
-         * `overflow-x-auto` from the tab strip still passed. A gate that cannot go red is
-         * not a gate. Only an element that has declared itself a horizontal strip exempts
-         * its children, so a new one must say so on purpose.
+         * A horizontal scroller's children are not page overflow. The exemption is opt-in through
+         * `data-scroll-x`: CSS computes `overflow-x: visible` to `auto` when `overflow-y` is not visible,
+         * so keying on computed `overflow-x` matches the page's own vertical scroll container.
          */
         const reachableByScrolling = (el: Element): boolean => {
           const strip = el.parentElement?.closest("[data-scroll-x]") ?? null;

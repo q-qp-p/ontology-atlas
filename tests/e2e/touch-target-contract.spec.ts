@@ -1,29 +1,9 @@
 import { test, expect } from "@playwright/test";
 
 /**
- * Minimum target contract — does the **WCAG 2.5.8 (AA) 24×24 floor** reach the render?
- *
- * Neither lint nor vitest can see a hit box: lint sees one file's AST, and jsdom has no
- * layout, so heights are always 0. Only a real browser can measure it. **A hit area is
- * not the box** — `.touch-hit-expand` widens only the hit area via a pseudo-element, so
- * this check measures the effective hit box (own rect ∪ ::after rect).
- *
- * The file once also held the coarse-pointer 44px layer (`--touch-target-min`), measured
- * at phone and tablet widths with `hasTouch`. Touch and phone widths are not a target
- * (owner direction, 2026-09-27), so that layer left with them; the fine layer below is
- * the one a desktop pointer meets. The predicate:
- *
- *   PASS(a) := hitBox ≥ 24×24
- *           || INLINE_EXEMPT(a)   — display:inline && non-target sibling text exists
- *           || SPACING_CLEAR(a)   — the 24 circle (square approximation) does not
- *                                   overlap another target
- *
- * The inline exemption went into the instrument **first** because without it prose
- * links (prose-link, whose line box the parent owns) go falsely red, and once a gate
- * is wrong, switching it off becomes the default. "Is it inside a sentence" cannot
- * be decided statically (sibling text source, used display, and reflow are all
- * outside the opening tag), so this runtime instrument is the authority — the
- * successor to the deleted `inline` axis.
+ * WCAG 2.5.8 24x24 floor on the effective hit box (own rect plus ::after rect); needs real layout.
+ * Pass if the box is large enough, or the target is inline in a sentence, or its 24 circle
+ * overlaps no other target.
  */
 
 interface Audit258Result {
@@ -177,19 +157,8 @@ test.describe("최소 타깃 계약 (pointer: fine — WCAG 2.5.8 AA)", () => {
   });
 
   /**
-   * **Form-coverage probes** — pin the blind spot in which this audit could not see
-   * forms until 2026-08-05.
-   *
-   * If the selector reverts to `button, a[href]`, all three below pass, and then
-   * "zero violations" is 0 because nothing was **looked at**, not because the screen
-   * is clean — the defect this repository has repeated.
-   *
-   * Each probe proves something different:
-   * - `probe-input-small` — is a form control **caught by the selector**
-   * - `probe-check-bare` — is a bare checkbox **judged at its own size**
-   * - `probe-check-labelled` — when a label wraps it, is it **substituted by the label
-   *   and passed** (without this, an already-fixed place is double-counted and falsely
-   *   reported)
+   * Form-coverage probes: if the selector reverted to `button, a[href]`, zero violations would mean
+   * nothing was looked at. Each probe proves one thing: input caught, bare checkbox sized, label wrap.
    */
   test("폼 커버리지 프로브 — 인풋·체크박스를 실제로 재고, 라벨로 감싼 것은 라벨로 친다", async ({ page }) => {
     await page.goto("/ko/download/?guides=off");

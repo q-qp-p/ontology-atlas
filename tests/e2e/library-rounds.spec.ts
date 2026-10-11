@@ -10,17 +10,8 @@ async function openNewDocumentSchedule(page: import("@playwright/test").Page) {
 }
 
 /**
- * **The Rounds tab draws what the ledger holds, and a round is registered under a stated scope.**
- *
- * Spec: `docs/specs/2026-09-17-library-rounds-design.md`. What this spec proves is
- * the screen half: the fifth tab exists, the morning card sums the seeded night, the axis draws a
- * held pass as a line and a change as a card and sleep as a gap, and the registration sheet writes
- * one round into `.ontology-atlas/rounds.json` with the scope sentences shown above the press.
- * What stays with installed-app measurement is a real pass: the adapter, the turn, the writes.
- *
- * The desktop bridge is stubbed the way `library-compile-dock.spec.ts` stubs it: the app is a
- * WKWebView running this same static export, so answering the commands the walk calls from a map
- * exercises the real handle, the real store, and the real presentation.
+ * The screen half: the morning card sums the seeded night, the axis draws passes, changes and sleep,
+ * and the sheet writes one round into `.ontology-atlas/rounds.json`. The desktop bridge is stubbed.
  */
 
 test.describe("Library rounds", () => {
@@ -159,11 +150,7 @@ test.describe("Library rounds", () => {
   });
 
   test("a local check runs once as it is saved, so the first result stands before the clock", async ({ page }) => {
-    /*
-     * Owner, 2026-09-19: the screen was "hard to operate". Measured on the installed app, a
-     * check saved at 21:35 showed nothing until its 22:00 boundary or until a person found
-     * "run now". A consistency pass costs no agent turn, so it runs as the sheet closes.
-     */
+    /* A consistency pass costs no agent turn, so a saved local check runs once as the sheet closes. */
     await seedFirstRunSeen(page);
     await installDesktopBridge(page, { seedRounds: false });
     await openRounds(page);

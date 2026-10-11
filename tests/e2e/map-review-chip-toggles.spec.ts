@@ -3,15 +3,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForMapStill } from "./settle";
 
 /**
- * **The review chip wears an on-state, so it has to report one and mean it**
- * (map round, 2026-09-20).
- *
- * `HomePage` states the rule beside a neighbouring control: a control may wear
- * the active tone and `aria-pressed` for exactly as long as the thing it names
- * is on. The meaning-review chip wore the tone and reported nothing, and its
- * handler only ever opened. Measured on the live map with the panel open:
- * three presses in a row left the panel present, the canvas at 928px, and no
- * pressed state on the chip — a lit control that does nothing when pressed.
+ * A control may wear the active tone and `aria-pressed` only while the thing it names is on,
+ * so pressing the review chip again must close the panel.
  */
 test("의미 검토 칩은 자기 상태를 말하고, 다시 누르면 닫힌다", async ({ page }) => {
   test.setTimeout(120_000);

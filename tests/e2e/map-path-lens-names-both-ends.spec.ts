@@ -3,17 +3,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForMapStill } from "./settle";
 
 /**
- * **A path names both of its ends** (map round, 2026-09-20).
- *
- * Asking how one concept reaches another opens the path lens: the two ends and
- * the line between them keep full ink and everything else sinks. Measured
- * before the fix on `mode=path` from the exchange-request capability to the
- * stock-reservation one: both ends were drawn at full alpha, the origin was
- * named, and **the destination was not** — it sits inside the inventory
- * domain's expanded disc, where the greedy placer hands the space to the
- * domain (priority 3) and the project (2) before a capability (4). The path's
- * nodes are the subject of the question, so they now take the top band, the
- * same one the constellation lens already had.
+ * Both path ends take the top label band, since a greedy placer would otherwise hand the
+ * space to the domain and project before the capability.
  */
 type Probe = {
   nodes: () => Array<{ id: string; hidden: boolean; alpha: number }>;

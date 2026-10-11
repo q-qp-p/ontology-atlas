@@ -1,16 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { installDesktopRailRuntime } from "./desktop-rail-arrival-harness";
 
-/**
- * **"Just start" leaves a starter in the folder it makes** (inspection 2026-09-25, D1).
- *
- * The door created and opened a new folder that stayed empty, with no error and no toast, three
- * runs out of three. The starter was written by an effect waiting for the first-run screen's next
- * render, and in the installed app that screen never renders again: the shell swaps it for the
- * opening pane as soon as the open begins, and the root entry swaps that for the map. A unit test
- * can only imitate those swaps; this runs the real shell and root entry over the native stub, and
- * reads the stub's files — the disk — before it believes the screen.
- */
 test("just start writes the chosen starter into the new folder and says where", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 949 });

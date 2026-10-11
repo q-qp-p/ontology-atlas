@@ -6,24 +6,8 @@ import { installLocalCompileHarness } from './library-local-compile-harness';
 import { seedFirstRunSeen } from './first-run-seed';
 
 /**
- * **The spine survives the first saved answer.**
- *
- * Until 2026-09-11 the Library landing read `retainedAnswers.length === 0 ? <stage> :
- * null`, so saving one answer deleted the only screen that named the next step, and Ask
- * fell from `outline` to `ghost` at exactly the moment a person had proved they use it.
- * `docs/DECISIONS.md`, "The Library keeps its spine, and computes the structural check
- * itself", makes the stage unconditional and seats the saved questions inside step three.
- *
- * `library-landing.spec.ts` already pins the stage at **zero** answers, so this spec owns
- * the count that used to remove it: one. Three facts, each of which was false before the
- * record:
- *
- * 1. the three-step stage is drawn with one retained answer on the landing;
- * 2. the saved answer is reachable from the home in one press (since 2026-09-12 the
- *    questions are a door on the strip rather than a section inside step three, and at
- *    exactly one answer that door is the question);
- * 3. Ask is still the `outline` button — proved by its resolved background, because a
- *    class-name assertion would pass a variant renamed in the primitive.
+ * The three-step stage is drawn with one retained answer; the saved answer is one press from the home;
+ * Ask stays `outline`, proved by its resolved background because a class assertion misses renames.
  */
 
 const SOURCE = 'sources/storage.md';
@@ -70,13 +54,8 @@ const SECOND_ANSWER = 'wiki/answers/approval.md';
 const SECOND_ANSWER_SLUG = 'wiki/answers/approval';
 
 /**
- * The same folder with **two** saved answers.
- *
- * Since 2026-09-12 the saved questions are a door on the home's strip, and at exactly one
- * answer that door *is* the question — its title is the label and its press opens the page,
- * which is what keeps the 2026-09-11 falsifier ("one press from the home") holding. So the
- * claims about the list itself — Ask's plane, the row's anatomy, the observation glyph —
- * need the count where a list exists, and that count is two.
+ * Two saved answers: at one answer the strip's door is the question itself,
+ * so claims about the list need a list.
  */
 const FILES_WITH_TWO_ANSWERS: Record<string, string> = {
   ...FILES,
@@ -103,21 +82,11 @@ async function openLibraryHome(page: Page, files: Record<string, string> = FILES
   await page.goto('/en/docs/');
   await page.getByRole('button', { name: /Open my folder|내 폴더 열기/i }).click();
   await page.getByTestId('app-nav-rail-item-library').click();
-  // The home is the folder's picture; everything else on it is a door (2026-09-12).
   await page.getByTestId('library-graph-canvas').waitFor();
 }
 
 test.describe('the Library spine at one saved answer', () => {
-  /**
-   * **The three steps survive the first answer — and are now one press from the home.**
-   *
-   * The 2026-09-11 record made the stepper unconditional because the first saved answer
-   * used to delete it. It is still unconditional; what moved on 2026-09-12 is where it is
-   * drawn. The owner read the always-drawn cards as a first-run screen that never leaves,
-   * so the home is the folder's graph and the steps live behind `How to use`. This case
-   * therefore reads the same three facts one press deeper, and adds the one the move is
-   * answerable for: the saved answer is still **one press** from the home.
-   */
+  /** The three steps live behind `How to use`, and the saved answer stays one press from the home. */
   test('keeps the three steps behind the guide door and the answer one press away', async ({ page }) => {
     await openLibraryHome(page);
 
@@ -133,11 +102,8 @@ test.describe('the Library spine at one saved answer', () => {
     await expect(guide).toHaveCount(0);
 
     /*
-     * 2 — **the 2026-09-11 falsifier, still holding**: *a person with one saved answer
-     * cannot reopen it from the home in one press*. At one answer the questions door is
-     * that question — its own title — and its press opens the page. A door labelled
-     * `Questions 1` opening a list of one row would be two presses, which is why this is
-     * the shape that was built.
+     * At one saved answer the questions door is that question, so one press opens the page;
+     * a `Questions 1` door opening a one-row list would take two.
      */
     const door = page.getByTestId('library-questions-open');
     await expect(door).toContainText('What is the retention policy?');
@@ -146,11 +112,6 @@ test.describe('the Library spine at one saved answer', () => {
     await expect(page.getByTestId('retained-answer-context')).toBeVisible();
   });
 
-  /**
-   * The list itself, at the count where there is a list: Ask's plane, the row's anatomy
-   * and the observation glyph, all three ruled on by the 2026-09-11 council and all three
-   * now inside the questions popup.
-   */
   test('draws the saved questions as doors inside their own popup', async ({ page }) => {
     await openLibraryHome(page, FILES_WITH_TWO_ANSWERS);
     const opener = page.getByTestId('library-questions-open');
@@ -163,8 +124,7 @@ test.describe('the Library spine at one saved answer', () => {
     const row = popup.getByTestId(`library-question-${ANSWER_SLUG}`);
     await expect(row).toBeVisible();
 
-    // 3 — Ask wears the chip grammar of the trigger that opened the popup (2026-09-25
-    //     interaction sweep): the trigger's radius and type size, not a second button shape.
+    // Ask wears the chip grammar of the trigger that opened the popup: same radius and type size.
     const ask = popup.getByTestId('library-questions-ask');
     await expect(ask).toBeVisible();
     const shape = (el: Element) => {
@@ -176,13 +136,8 @@ test.describe('the Library spine at one saved answer', () => {
     expect(Math.abs(askShape.height - openerShape.height), "Ask is a different height from its trigger").toBeLessThan(1);
 
     /*
-     * 4 — **the row says "door" at rest** (design-lead F2 with design-interaction C1,
-     *     council 2026-09-11). It was a borderless `RowButton` in a `divide-y` list: rest
-     *     measured 1.000:1 with no border and no fill, 25px from the only bordered control
-     *     in the block, which opens a *new* question. It now repeats the index's own wiki
-     *     row — a soft edge over `overlay-2` — and this compares the resolved values
-     *     against a fresh probe with motion off, because the row's own transition would
-     *     otherwise report a mid-flight colour (the Ask precedent above).
+     * The row reads as a door at rest: a soft edge over `overlay-2`, compared against a fresh probe with
+     * motion off, since the row's own transition would otherwise report a mid-flight colour.
      */
     const rowPlane = await row.evaluate((el) => {
       const probe = document.createElement('div');
@@ -211,12 +166,8 @@ test.describe('the Library spine at one saved answer', () => {
     expect(rowPlane.background).toBe(rowPlane.fill);
 
     /*
-     * 5 — **the observation is drawn at the grade the index already spends on it**
-     *     (design-infoviz, council 2026-09-11). One `text-body` strong mark drew all five
-     *     states, so *no change since source observation* was as loud as *a cited original
-     *     is missing*. The state with nothing to act on is the source list's check plus its
-     *     `sr-only` word, so the glyph is what is asserted and the sentence stays in the
-     *     row's accessible description.
+     * The observation is drawn at the index's grade: the unchanged state is a check plus an `sr-only`
+     * word, so the glyph is asserted and the sentence stays in the accessible description.
      */
     const observation = popup.getByTestId('answer-observation').first();
     await expect(observation).toHaveAttribute('data-state', 'unchanged');
@@ -261,12 +212,6 @@ test.describe('the Library index with an empty wiki', () => {
   });
 });
 
-/**
- * **One card says `next`, and the pane's own height decides what folds.**
- *
- * Both facts come from the council of 2026-09-11 and both were measured on this branch's
- * export, so they are pinned here rather than left to a screenshot.
- */
 test.describe('the Library spine names one lead step', () => {
   test('prints `next` on the lead card and `waiting` on the later one', async ({ page }) => {
     await seedFirstRunSeen(page);
@@ -297,19 +242,8 @@ test.describe('the Library spine names one lead step', () => {
 
 test.describe('the Library spine in a short surface', () => {
   /**
-   * **The fold follows the stepper into the popup** (2026-09-12).
-   *
-   * The failure mode was height, not width (design-responsive C1/C3): the three steps used
-   * to be drawn in the landing pane, and below `lg` that pane is the upper half of one
-   * column — at 390×844 the saved-question row inside step three stood 272px below its
-   * fold and at 1024×640 it stood 34 below. So the fold is a **container** query, and its
-   * height lives in `--library-spine-collapse-height`.
-   *
-   * The steps are now behind `How to use`, and the quantity the fold wants is unchanged:
-   * how much room the surface has. `LibraryHomePopover` therefore carries the container
-   * (its wrapper is definite in both axes, which size containment needs), and this case
-   * reads the token rather than repeating the number, so a drift between it and the rule
-   * in `app/globals.css` still fails here.
+   * The fold is a container query on `--library-spine-collapse-height`; `LibraryHomePopover` carries the
+   * container. The token is read, not repeated, so drift from the rule in `app/globals.css` fails here.
    */
   test('folds a finished step when the popup has less room than the token', async ({ page }) => {
     await page.setViewportSize({ width: 1040, height: 900 });
@@ -360,25 +294,9 @@ test.describe('the Library spine in a short surface', () => {
 });
 
 /**
- * **Each surface prints one availability sentence, on every route** (design-interaction C2
- * and design-lead F5, council 2026-09-11; rewritten 2026-09-12).
- *
- * Measured at 1512 on the no-agent folder before the 2026-09-11 change:
- * `stage.blockedNoAgent` stood at y≈410 under step two's Compile and again at y≈633 under
- * Ask — the same words twice in one viewport, ~200px apart. And the `local` route had no
- * sentence at all, so Ask and Check the wiki were simply absent there, which is the one
- * hole left in "availability is a state with its reason".
- *
- * What changed on 2026-09-12 is not the rule but the meaning of "one viewport": the
- * stepper and the saved questions were two halves of one column, and are now two popups
- * that can never be open at once. So the rule is read per surface — open a door, and that
- * surface carries exactly one `data-landing-blocked-reason` with its dead controls tied to
- * it. A card pointing at the *other* popup's paragraph would be an `aria-describedby` into
- * a closed surface.
- *
- * The local-compile harness is the only one that answers `acp_detect_runtimes` with an
- * empty list, so it is what both routes are built from: with the saved local address it is
- * the `local` route, and with that address removed it is a computer with neither.
+ * Each surface carries exactly one `data-landing-blocked-reason` with its dead controls tied to it;
+ * a card pointing at another popup's paragraph would be an `aria-describedby` into a closed surface.
+ * The local-compile harness answers `acp_detect_runtimes` with an empty list, so both routes use it.
  */
 async function openLocalRouteLibrary(page: Page, keepLocalAddress: boolean) {
   await seedFirstRunSeen(page);
@@ -400,13 +318,8 @@ async function openLocalRouteLibrary(page: Page, keepLocalAddress: boolean) {
 }
 
 /**
- * The questions surface, at the count where the door is the question.
- *
- * With exactly one saved answer — which is what both harnesses in this file hold — the
- * questions door **is** that question: its title is the label and its press opens the
- * page, which is what keeps the 2026-09-11 falsifier ("one press from the home") holding.
- * The list, with Ask and its reason, is then one press from the page a person is on,
- * through the answer's own `Back to questions` (2026-09-12).
+ * At exactly one saved answer the questions door is the question; the list with Ask and its reason
+ * is reached through the answer's `Back to questions`.
  */
 async function openQuestionsSurface(page: Page) {
   await page.getByTestId('library-questions-open').click();
@@ -454,10 +367,8 @@ test.describe('the Library home states availability once per surface', () => {
     await expect(ask).toHaveAttribute('aria-describedby', 'library-questions-ask-blocked');
 
     /*
-     * Check the wiki is present and dead in the guide — the folder holds two pages, which
-     * is the first moment two pages can disagree. On this route Compile *can* run, so its
-     * own paragraph is absent and the card prints Check's reason itself rather than
-     * pointing across a closed surface (the 2026-09-12 repair).
+     * On this route Compile can run, so its own paragraph is absent and the card prints Check's reason
+     * itself rather than pointing across a closed surface.
      */
     await page.keyboard.press('Escape');
     await page.getByTestId('library-workspace-sources').click();

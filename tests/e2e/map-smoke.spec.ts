@@ -6,30 +6,13 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { useDogfoodSample } from "./sample-source";
 
 /**
- * `ontology-map` canvas engine smoke — current-surface replacement for
- * the Sigma-era specs deleted in the 2026-07 e2e decontamination pass
- * (topology-overlap / topology-drag / topology-analysis-workflow /
- * topology-visual-regression / topology-loading, all targeting the retired
- * WebGL renderer and its `sigma-*` testids).
- *
- * Small and stable on purpose — a handful of contracts that are true of the
- * *current* map today, not an exhaustive interaction suite. Uses real
+ * Small and stable on purpose: a handful of contracts true of the current map, using real
  * dogfood vault slugs (`docs/ontology/`) rather than fixtures.
  */
 
 /**
- * The node to deep-link into is **picked from the vault — its name is not pinned
- * here.**
- *
- * `capability:topology-analysis-modes` used to be a constant, and when the vault was
- * regenerated against the spec on 2026-08-01 that capability disappeared and three
- * specs died at once (deep link, Escape, docs round trip). The vault is dogfood and
- * keeps getting redrawn, so a spec leaning on one node's name means **fixing e2e
- * every time the vault is fixed.**
- *
- * What this spec actually measures is not which capability opens but whether the deep
- * link arrives and the selection persists. So any capability will do as long as the
- * choice is deterministic — take the first capability by slug from the manifest.
+ * Picked from the vault, not pinned: the dogfood vault is redrawn often, and this spec only
+ * needs a deterministic capability, so take the first by slug from the manifest.
  */
 const REAL_CAPABILITY_SLUG = (() => {
   const manifestPath = path.resolve(
@@ -61,22 +44,15 @@ const REAL_CAPABILITY_SLUG = (() => {
 // on it — same fix applied to the analogous `project-selector-new-cta`
 // duplicate in `ontology-ui.spec.ts`.
 async function gotoAndSettle(page: import("@playwright/test").Page, url: string) {
-  // Suppress the automatic onboarding surfaces (fix for the 2026-07-24 CI flake): on a
-  // first visit in sample mode, /topology raises the folder guidance sheet plus a
-  // 900ms auto tour. The auto tour's full-screen scrim (z-70) covered the panel action
-  // button on a slow CI runner and the click timed out (the topology smoke verifies
-  // the map, not onboarding). Seeding turns the automatic surfaces off; manual entry
-  // is unaffected.
+  // Seed first-run so no automatic onboarding surface appears: the auto tour's full-screen scrim
+  // can cover the panel action button on a slow runner.
   await seedFirstRunSeen(page);
   await page.goto(url);
   await page.waitForLoadState("networkidle");
 }
 
 test.describe("ontology-map smoke", () => {
-  // Every assertion in this file leans on dogfood vault data (project name, deep-link
-  // slug, node labels). Since the default sample became an example business on
-  // 2026-07-26, the vault is selected explicitly per file rather than relying on the
-  // default.
+  // Assertions lean on dogfood vault data, so select that vault explicitly rather than the default.
   test.beforeEach(async ({ page }) => {
     await useDogfoodSample(page);
   });

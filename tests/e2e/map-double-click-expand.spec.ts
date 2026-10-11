@@ -2,16 +2,7 @@ import { expect, test } from "@playwright/test";
 import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForMapStill } from "./settle";
 
-/**
- * **A double-click never undoes the click** (map round, 2026-09-19).
- *
- * Measured before the fix on the order domain: two pointer taps within the
- * double-click window selected the node and then deselected it — the map ended
- * with nothing selected, and the person's most natural "open this" gesture had
- * done nothing. A repeated click never becomes an undo. On the flat dial
- * (2026-10-02) the overview folds nothing, so a double-click there selects and
- * opens nothing; folding and its double-click live inside a realm.
- */
+/** A repeated click never becomes an undo: two taps in the double-click window must not deselect. */
 type Probe = {
   dial: () => { owns: boolean; clusters: Array<{ domainId: string; chip: { x: number; y: number } }> };
   selection: () => { nodeId: string | null };

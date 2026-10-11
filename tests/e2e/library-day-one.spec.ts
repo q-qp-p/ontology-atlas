@@ -5,55 +5,13 @@ import { DAY_ONE_BINARY_BASE64, DAY_ONE_TEXT, dayOneRuntimes } from "./library-d
 import { waitForAnimationsDone, waitForDomQuiet, waitFrames } from "./settle";
 
 /**
- * **The Library's first day, with no coding agent — slice U2's three proofs.**
- *
- * Measured on the installed app 2026-09-11, this is the folder a third-tier person
- * (`docs/PRODUCT-DIRECTION.md` target tiers) actually has: six real documents in
- * `sources/`, a `wiki/` holding only its template, nothing compiled, no agent. What the
- * Library gave them was a file list with sizes, an empty wiki, a search matching **paths
- * only**, and a sentence explaining why the next step was refused with no way to take it.
- *
- * Each case here is one of the three things that changed, written as the failure it
- * prevents rather than the feature it demonstrates:
- *
- * 1. typing a phrase that is inside a document finds nothing (it is on line 11 of
- *    `settlement-policy.md`, and no path contains it);
- * 2. a spreadsheet's pane cannot say what is in the spreadsheet;
- * 3. the blocked step's reason is a dead end.
- *
- * ## Why the desktop bridge is stubbed rather than the picker
- *
- * The same reason `library-ask.spec.ts` and `library-compile-dock.spec.ts` record: the
- * installed app is a WKWebView running this exact static export, so stubbing the Rust
- * side exercises the real handle, the real folder walk, the real library model and the
- * real render. It also matters for **this** slice specifically: the app's source read is
- * `read_vault_binary_file`, which hands the WebView the raw bytes, and that is
- * the path both the search and the outline actually take on the surface a person uses.
- * An OPFS picker stub would prove the browser's File System Access path and say nothing
- * about the one that costs.
- *
- * It is also the only way to reach proof 3 at all. The door is **deliberately absent on
- * the web**, where the missing thing is the installed app and `/download/`'s own card is
- * the honest destination — so a browser-only run cannot show it, by design rather than by
- * accident.
- *
- * DOCX and XLSX ride in as base64 and are decoded to real bytes, because the outline's
- * numbers come out of the workbook itself: two sheets, four rows and five rows. A stubbed
- * string would have proved the section renders and nothing about whether it is true.
+ * The desktop bridge is stubbed, not the picker: the app's source read is `read_vault_binary_file`,
+ * and the agents door is absent on the web. DOCX and XLSX arrive as base64 and decode to real bytes.
  */
 
 const VAULT_ROOT = "/Users/probe/Ontology Atlas/day-one";
 
-/**
- * **No verified runtime, and the registry saying so for every agent it knows.**
- *
- * ⚠️ This was `[]`, which is a different machine from the one the slice is about: the real
- * `detect_runtimes` reports a state per registry agent, so "nothing installed" arrives as
- * forty rows of `cli-missing`. With the empty array the door landed on a page reading
- * "Nothing found yet — the install guides are in the list below" **with nothing below**,
- * and a capture of that is a capture of a screen the app never shows (design-lead, council
- * 2026-09-11).
- */
+/** No verified runtime: the registry reports every agent as `cli-missing`, as the real detection does. */
 const NO_RUNTIMES = dayOneRuntimes();
 
 async function installDesktopBridge(page: Page) {
@@ -235,12 +193,7 @@ test.describe("the Library on its first day, with no agent", () => {
 
     const field = page.getByTestId("library-search");
 
-    /*
-     * ⚠️ **The list must not move under the pointer on the first keystroke.** The matches
-     * line used to appear with the first character, and appearing is a layout event: the
-     * index dropped 18–19px, so the row somebody was reaching for moved as they typed
-     * (design-interaction, council 2026-09-11). The line's height is reserved at rest.
-     */
+    /* The matches line's height is reserved at rest, so the list must not move on the first keystroke. */
     const list = page.getByTestId("library-source-list");
     /*
      * The tab panel arrives with a short 4px rise (`library-workspace.module.css`). That entry
@@ -312,11 +265,7 @@ test.describe("the Library on its first day, with no agent", () => {
 
     await captureSettled(page, "1-search-inside-sources.png");
 
-    /*
-     * **Enter, not only a click.** The caption is a button and a keyboard press has to
-     * land where a pointer press lands — the passage section, which takes focus on
-     * arrival. Untested until the council read it (design-interaction, 2026-09-11).
-     */
+    /* A keyboard Enter on the caption must land where a pointer press lands: the passage section. */
     await hit.press("Enter");
     const passage = page.getByTestId("library-source-passage");
     await expect(passage).toHaveAttribute("data-state", "resolved", { timeout: 20_000 });
@@ -347,12 +296,7 @@ test.describe("the Library on its first day, with no agent", () => {
       "has never opened this file",
     );
 
-    /*
-     * **One right edge in the column** (2026-09-19). The sentence wore the `ch` measure
-     * itself and, at its 11px, ended 197px short of the table under it — two right edges
-     * inside one reading column, which the 2026-09-12 column decision exists to remove.
-     * The column is the measure; the sentence ends where the table ends.
-     */
+    /* The sentence ends where the table ends: the column is the measure, one right edge. */
     const [sentenceRight, tableRight] = await page.evaluate(() => {
       const sentence = document.querySelector('[data-testid="library-source-opened-state"]');
       const table = sentence?.parentElement?.querySelector("dl");
@@ -368,11 +312,8 @@ test.describe("the Library on its first day, with no agent", () => {
     await openLibrary(page);
 
     /*
-     * ⚠️ **One availability sentence per surface, and the home is not one of them**
-     * (2026-09-12). The home is the folder's graph and makes no claim about an agent; the
-     * sentence stands under the press it stops. The nearest press on a day-one folder is
-     * Compile, which the strip's own clause opens — and `library-spine.spec.ts` counts
-     * that each surface carries exactly one.
+     * The home makes no agent claim; the availability sentence stands under the press it stops.
+     * `library-spine.spec.ts` counts one per surface.
      */
     await expect(page.locator("[data-landing-blocked-reason]")).toHaveCount(0);
     await page.getByTestId("library-strip-compile").click();
@@ -390,13 +331,7 @@ test.describe("the Library on its first day, with no agent", () => {
     // It lands on the destination the rail names, with the rail's own word for it.
     await expect(page).toHaveURL(/\/en\/agents/, { timeout: 30_000 });
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Agents");
-    /*
-     * ⚠️ **And the landing has the answer on it.** With the old `[]` stub the page said
-     * "the install guides are in the list below" with nothing below — a screen the app
-     * never shows, because the real detection reports every registry agent as
-     * `cli-missing`. The chip that opens those guides is what makes the door's destination
-     * worth arriving at (design-lead, council 2026-09-11).
-     */
+    /* The landing shows the chip that opens the install guides, which the real detection makes appear. */
     await expect(page.getByTestId("app-settings-runtimes-others-toggle")).toBeVisible({
       timeout: 30_000,
     });
@@ -404,15 +339,8 @@ test.describe("the Library on its first day, with no agent", () => {
   });
 
   /**
-   * **The one press this slice exists to give somebody, at the window the app ships as its
-   * minimum.**
-   *
-   * Measured 2026-09-11 at 1040×720 on `dispute-handling-standard.docx` (design-responsive,
-   * council): the five-row 「Structure」 list pushed the availability sentence to the pane's
-   * last line and the 「Agents」 door to y=724, bottom 756 against a 720 viewport —
-   * `doorInViewport: false`. The XLSX pane, two rows shorter, kept its door at 684. The
-   * door's place may not depend on how long the open document happens to be, so the
-   * availability block now stands above the two blocks the document's length decides.
+   * The agents door must stay on screen at the app minimum window, whatever the open document's length;
+   * the availability block stands above the blocks the document's length decides.
    */
   for (const viewport of [
     { width: 1040, height: 720, name: "app-minimum" },

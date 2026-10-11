@@ -3,29 +3,9 @@ import { expect, test } from "@playwright/test";
 import { AUDITED_ROUTES } from "./audited-routes";
 
 /**
- * **No dead-end CTAs — the folder edition.** Anywhere that says "open a folder and
- * …" must have a path that opens that folder, and that path must **actually invoke
- * the picker**.
- *
- * **Why exhaustive rather than one route.** This disease was fixed once on
- * `/project/new` on 2026-08-06, with a gate to match (`screen-hierarchy.spec.ts`).
- * That gate was hard-coded to **one route and one testid**, and the 2026-08-07
- * exhaustive measurement found the same disease alive in **two more places** — the
- * read-only bundle header in insights (0 of 25 on-screen controls opened a folder)
- * and the "view only" badge on project detail.
- *
- * This is a failure shape the repository has already paid for
- * (.claude/rules/design-gates.md): **a check built from an allowlist fails on what is
- * not on the list, and what is not on the list is always the newly built thing.** So
- * this gate **covers every audited route and subtracts only exceptions**.
- *
- * **Why it measures "invokes", not "exists".** The old gate pressed the CTA and
- * checked only whether **the URL changed**. A real defect walked through that gap:
- * the destination was `/`, and for a web visitor with no vault `/` is the **gateway**
- * (the download screen), where the number of controls that open a folder is **0**.
- * The URL changed cleanly, the gate was green, and the person arrived at a dead end
- * one hop later. In the installed app `/` is the map, so it was correct there —
- * **a defect invisible if you only verify in the app**.
+ * No dead-end CTAs: anywhere that says "open a folder" needs a path that actually invokes the
+ * picker, not merely one that changes the URL. Covers every audited route and subtracts only
+ * exceptions (`.claude/rules/design-gates.md`).
  */
 
 /** Sentences that say "open a folder" or "you can open one". */
@@ -34,33 +14,9 @@ const PROMISE = /폴더[를을]? ?(열|여|고르|골라)|볼트[를을]? ?(열|
 const PATH = /폴더|볼트|문서함|앱 받기|앱에서 열기|내 데이터/;
 
 /**
- * Exceptions — **one site at a time, with a reason.** Never subtract by directory or
- * regex.
- *
- * **The gateway's exception is not "pending" — it moved to a different contract**
- * (council, 2026-08-08).
- *
- * On 2026-08-07 two rows sat here, `/ko/` and `/ko/download/`, with the reason
- * *"awaiting the hierarchy verdict"*. That verdict landed: **no folder-opening path is
- * placed on the gateway.** `/topology`'s first-run panel is already the real
- * first-run surface, so duplicating it would leave two first-run surfaces to
- * maintain, and when two paths do the same job one of them is guaranteed to become a
- * lie (2026-07-30, "two links doing the same job").
- *
- * So this sweep cannot run on the gateway — what the sweep requires (a control beside
- * the sentence) is precisely what that decision **chose not to do**. But **leaving it
- * here with the reason "pending" means no layer of this file runs on that screen at
- * all**: it would stay green forever even if the in-page web CTA disappeared or the
- * landing point became a dead end (raised by the design-systems seat).
- *
- * So the exception's cost was **repaid** — the `the gateway is not a screen that opens folders`
- * describe below measures, per width, that ① a hop to the map is rendered above the
- * fold ② pressing it arrives ③ the landing point **really invokes the picker** by way
- * of the sheet. The same check pins "0 folder controls on the gateway", so reversing
- * the decision means returning to the ledger.
- *
- * ⚠️ Adding a row to this list switches the rule off for that screen. To extend it,
- * write the reason here and also write what measures that site instead.
+ * Exceptions, one site at a time with a reason; never subtract by directory or regex. The gateway
+ * places no folder-opening path, so the reach describe below measures it instead. Adding a row
+ * switches the rule off for that screen, so name what measures that site instead.
  */
 const EXEMPT: ReadonlyArray<{ route: string; why: string }> = [
   {
@@ -73,22 +29,9 @@ const EXEMPT: ReadonlyArray<{ route: string; why: string }> = [
 const EXEMPT_ROUTES = new Set(EXEMPT.map((e) => e.route));
 
 /**
- * **Waits until the DOM goes quiet** — the only honest wait before a scan.
- *
- * **Why this file's waits were hard to decide (audit of every wait, 2026-08-17).**
- * Most fixed waits in this file sat right before a line that **sweeps the whole DOM**
- * with `page.evaluate`. Playwright's auto-waiting attaches to locators only, so
- * nothing here waits for anything, and "what to wait for" differs per route — on some
- * routes zero folder sentences is correct, so "until it appears" is unusable too.
- *
- * So the thing waited for becomes **"is anything else going to appear"**: if a
- * MutationObserver sees no change for `quietMs`, that screen is finished rendering.
- *
- * ⚠️ **`attributes` is not observed.** Measured: with it on, `/ko/topology/` burns the
- * entire 8 s ceiling (the map edits attributes every frame). With it off it settles at
- * 746ms, and all 16 audited routes land at 280–750ms — usually faster than a fixed
- * 900ms, and more patient than 900ms on a slow machine. Nothing is lost, because this
- * scanner reads text and elements, not attributes.
+ * Waits until the DOM goes quiet (no MutationObserver change for `quietMs`) before a scan.
+ * `attributes` is not observed: the map edits attributes every frame and would burn the cap,
+ * and this scanner reads text and elements only.
  */
 async function settleDom(page: import("@playwright/test").Page, quietMs = 250, capMs = 5_000) {
   await page.evaluate(
@@ -123,22 +66,8 @@ const pickerCalls = (page: import("@playwright/test").Page) =>
   page.evaluate(() => (window as unknown as { __picked?: number }).__picked ?? 0);
 
 /**
- * **Picks only what is rendered** — filters out the 0×0 ghost copy present during dev
- * hydration.
- *
- * ⚠️ Measured 2026-08-17: opening `/ko/project/storefront/` produces two elements with
- * the same `data-testid` **only between +100 and +250ms** — one normal (93×32) and one
- * **0×0**. By +300ms there is one again. It is the dev (Turbopack) double-mount
- * artifact `playwright.config.ts` documents, and it does not exist in a static export.
- * But a plain `getByTestId` landing in that window dies **immediately** on a strict
- * mode violation (auto-waiting does not rescue it).
- *
- * The previous revision was merely missing that window by luck, and removing one fixed
- * wait above exposed it — once again, something a fixed wait had been doing by
- * accident.
- *
- * **The gate is unchanged**: two genuinely *rendered* copies still fail on strict
- * mode. Only ghosts that render nothing are filtered out.
+ * Picks only rendered copies: dev hydration briefly mounts a 0x0 ghost with the same
+ * `data-testid`, which would fail Playwright's strict mode. Two rendered copies still fail.
  */
 const paintedTestId = (page: import("@playwright/test").Page, testId: string) =>
   page.getByTestId(testId).filter({ visible: true });
@@ -262,8 +191,7 @@ test.describe("막다른 CTA 금지 — 폴더를 열라고 말한 자리", () =
       const url = `${site.route}${site.route.includes("?") ? "&" : "?"}guides=off`;
       await page.goto(url, { waitUntil: "domcontentloaded" });
       await page.evaluate(() => document.fonts.ready);
-      // The assertion just below waits on its own — the fixed wait was waste (audit
-      // 2026-08-17).
+      // The assertion below waits on its own.
 
       const cta = paintedTestId(page, site.testId);
       await expect(cta, `${url}: 폴더 여는 길이 안 보인다`).toBeVisible();
@@ -273,9 +201,7 @@ test.describe("막다른 CTA 금지 — 폴더를 열라고 말한 자리", () =
       ).toHaveAttribute("data-open-vault-cta", "picker");
 
       await cta.click();
-      // This used to read once after a fixed 400ms **with no retry**, so on a slow machine
-      // "not open yet" read as "does not open". It now waits until the value arrives (audit
-      // 2026-08-17).
+      // Poll until the picker call arrives, so a slow machine's "not open yet" is not read as failure.
       await expect
         .poll(() => pickerCalls(page), {
           timeout: 10_000,
@@ -286,25 +212,14 @@ test.describe("막다른 CTA 금지 — 폴더를 열라고 말한 자리", () =
   });
 
   /**
-   * **If it cannot be written, say so before the press — create and edit must agree.**
-   *
-   * Measured 2026-08-07: `/project/new` locks the save button and says so up front in a
-   * banner, while `/project/[slug]/edit` kept the button enabled with no vault. Only on
-   * pressing did *"Saving is not available in demo mode"* appear, and at 390×844 that
-   * notice measured **top 802, bottom 872** — clipped at both ends against the 844
-   * viewport and stuck behind the bottom tab bar. On the presser's screen it is
-   * indistinguishable from nothing happening.
-   *
-   * Two screens were stating the same fact at different moments. The capability flag
-   * (`canEdit`) had existed from the start, its comment saying it was for pre-gating the
-   * UI, and this one form simply was not using it.
+   * If it cannot be written, say so before the press: create and edit must agree, driven by the
+   * capability flag `canEdit`.
    */
   test("쓸 수 없으면 누르기 전에 말한다 — 만들기와 편집이 같다", async ({ page }) => {
     for (const route of ["/ko/project/new/", "/ko/project/storefront/edit/"]) {
       await page.goto(`${route}?guides=off`, { waitUntil: "domcontentloaded" });
       await page.evaluate(() => document.fonts.ready);
-      // The assertion just below waits on its own — the fixed wait was waste (audit
-      // 2026-08-17).
+      // The assertion below waits on its own.
 
       await expect(
         page.getByTestId("project-write-disabled-banner").first(),
@@ -339,8 +254,7 @@ test.describe("막다른 CTA 금지 — 폴더를 열라고 말한 자리", () =
     });
     await page.goto("/ko/ontology/insights/?guides=off&tab=flow", { waitUntil: "domcontentloaded" });
     await page.evaluate(() => document.fonts.ready);
-    // The assertion just below waits on its own — the fixed wait was waste (audit
-      // 2026-08-17).
+    // The assertion below waits on its own.
 
     const cta = paintedTestId(page, "flow-open-vault");
     await expect(cta).toBeVisible();
@@ -356,36 +270,12 @@ test.describe("막다른 CTA 금지 — 폴더를 열라고 말한 자리", () =
 });
 
 /**
- * **The gateway is not a folder-opening screen — so measure whether it is reachable**
- * (council, 2026-08-08).
- *
- * The sweep's rule above (a control beside the sentence) cannot apply to the gateway,
- * because that is precisely what the verdict **chose not to do**: `/topology`'s
- * first-run panel is already the real first-run surface, and two paths doing the same
- * job guarantee that one becomes a lie (2026-07-30). So the gateway gets a different
- * contract.
- *
- * **Three criteria for "a path exists" — click count is not one of them.** ① the first
- * hop is rendered **above the fold at that width** ② pressing it arrives ③ the landing
- * point really does the job. The first-run sheet is legitimate guidance on the landing
- * surface rather than a barrier, so hops are not counted.
- *
- * **Why it is measured per width.** Measured 2026-08-08 on the static export: the
- * in-page web CTA sits at `y 638` at 1512×900 (above the fold) but at **`y 1136` at
- * 390×844** — below it. What satisfies criterion ① at 390 is the bottom tab bar's
- * "map" (`y 788`, viewport bottom 844). Measuring one width hides that fact, and would
- * stay green if the tab bar ever disappeared.
- *
- * **⚠️ Measuring "one hop" makes a permanently red gate.** The first probe did exactly
- * that. `first-run-starter-open` does **not** invoke the picker directly — it opens
- * `VaultOpenGuideSheet`, and only `vault-guide-pick-existing` there invokes it.
- * Measuring without knowing that produced a false red of "0 invocations". Confusing
- * the fact you are guarding with how it happens to be implemented makes the gate wrong
- * in both directions (`/gate-probe` §0).
+ * The gateway places no folder-opening control, so measure reachability per width: (1) the first
+ * hop is above the fold, (2) pressing it arrives, (3) the landing point invokes the picker.
+ * `first-run-starter-open` opens `VaultOpenGuideSheet`; only `vault-guide-pick-existing` invokes it.
  */
 test.describe("관문은 폴더를 여는 화면이 아니다 — 대신 그 화면에 닿는다", () => {
-  // Phone widths are not a target (owner direction, 2026-09-27): the 390 point walked on into
-  // the phone-width workbench, so only the installed app's opening window remains.
+  // Only the installed app's opening window is measured.
   const REACH_WIDTHS = [{ width: 1512, height: 900 }] as const;
 
   for (const viewport of REACH_WIDTHS) {
@@ -439,17 +329,8 @@ test.describe("관문은 폴더를 여는 화면이 아니다 — 대신 그 화
         });
 
       /*
-       * ⚠️ **The order changed here** (audit of every wait, 2026-08-17).
-       *
-       * This used to read ① once after a fixed 1200ms. Switching it to "until the DOM goes
-       * quiet" **broke under 6× throttling** — hydration on a slow machine can pause for
-       * more than 250ms and then continue, so a quiet stretch is misread as "finished
-       * rendering". Quiet is the fallback for *when you do not know what will appear*, not a
-       * predicate to use where you do.
-       *
-       * Here we know what to wait for: **the hop above the fold**. Wait until it appears,
-       * and put the assertion that counts absences after it — because ① is the strongest
-       * evidence that the gateway has finished rendering.
+       * Wait for the hop above the fold, then assert absences: a DOM-quiet wait misreads a pause in
+       * hydration under 6x throttling as finished rendering.
        */
       let hops = await readHops();
       await expect
@@ -490,8 +371,7 @@ test.describe("관문은 폴더를 여는 화면이 아니다 — 대신 그 화
       // ② Pressing it arrives.
       await page.locator(`[data-reach-hop="${inFold[0].index}"]`).click();
       await page.waitForURL(/\/topology/, { timeout: 15_000 });
-      // The assertion just below waits on its own — the fixed wait was waste (audit
-      // 2026-08-17).
+      // The assertion below waits on its own.
 
       // ③ The landing point's primary action is the job — via the sheet, it **really**
       // invokes the picker.
@@ -500,11 +380,7 @@ test.describe("관문은 폴더를 여는 화면이 아니다 — 대신 그 화
         starter,
         `${viewport.width}: 착지점에 폴더 여는 주 행동이 안 보인다`,
       ).toBeVisible();
-      /*
-       * **Visible ≠ pressable.** This screen was just navigated to, so hydration may not be
-       * finished and the click lands nowhere. What used to be a fixed 500ms is now retrying
-       * the press until it opens (audit of every wait, 2026-08-17).
-       */
+      /* Visible is not pressable: hydration may not be finished, so retry the press until the sheet opens. */
       const sheet = page.getByTestId("vault-guide-sheet");
       await expect(async () => {
         if (!(await sheet.isVisible())) await starter.click({ timeout: 5_000 });

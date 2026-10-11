@@ -3,19 +3,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { DESKTOP_VAULT_ROOT, installDesktopRailRuntime } from './desktop-rail-arrival-harness';
 
 /**
- * **Known folders that no longer exist are one quiet line at the end of the launch chooser.**
- *
- * Owner inspection, 2026-09-26: after a few QA runs the chooser opened on five dead rows — each a
- * full row with a warning and two buttons — above the folders that still exist, because the deleted
- * temporary folders were the most recently opened. This drives the installed app's own launch path
- * (the desktop runtime stub, `vault_path_exists` answering "No such file or directory" for the gone
- * paths exactly as Tauri rejects) and measures what the person meets:
- *
- * - the list never draws a gone folder as a row, not even for the frames before the probe answers;
- * - the live folders come first and the missing ones are one line, the list's last;
- * - opening the review does not move that line from under the pointer (the chooser is centred, so
- *   a review that grew the page in place re-centred it and slid a "forget" under the pointer);
- * - nothing leaves the known list until "forget" is pressed, and then exactly what was pressed.
+ * Drives the launch path through the desktop runtime stub, with `vault_path_exists` rejecting
+ * gone paths as Tauri does. Opening the review must not move the line from under the pointer:
+ * the chooser is centred, so a grown page would re-centre it.
  */
 
 const GONE = ['/Users/probe/qa-run-0925-a', '/Users/probe/qa-run-0925-b', '/Users/probe/qa-run-0926-c'];

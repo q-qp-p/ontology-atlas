@@ -3,16 +3,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { FIT_LOCALES, FIT_VIEWPORTS } from "./locales";
 
 /**
- * **No view description ends on a lone word** (owner review, 2026-09-26).
- *
- * The map's view picker is a fixed 240px surface, and a description that needs a second line
- * there was wrapped greedily: the hex board's Korean line ended on a lone one-syllable word
- * ("board") and its English one on a lone "domain". Every row now balances its description
- * (`text-wrap: balance`), so a two-line description splits into two comparable lines.
- *
- * Measured from the rendered text, not the class: each word's first client rect gives its line,
- * so the check sees what a reader sees in both locales. The picker is the same 240px at every
- * window width, so one width is enough.
+ * The picker is a fixed 240px surface with `text-wrap: balance`; a two-line description must
+ * split into comparable lines. Measured from each word's first client rect, in both locales.
  */
 for (const locale of FIT_LOCALES) {
   // The picker is a fixed 240px surface, so one window proves both locales' wraps.

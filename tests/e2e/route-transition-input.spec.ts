@@ -4,62 +4,9 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForAnimationsDone, waitFrames } from "./settle";
 
 /**
- * **Arriving from the rail, the new screen takes a press** — slice S7's third proof.
- *
- * A route change runs inside `document.startViewTransition`
- * (`src/shared/lib/navigation/route-view-transition.ts`, 2026-09-02), and while a view transition is
- * running the captured document is **not painted** — so it is not hit-tested either.
- * `document.elementFromPoint` answers `html` at every point and a press lands on nothing.
- * The length of the transition is therefore the length of time the arriving screen refuses
- * input, and nobody had measured it.
- *
- * Measured on the static export at 1512×901, before 2026-09-12, six rail crossings with
- * no sampling load on the page:
- *
- * | arriving at | route committed | animations started | transition finished |
- * |---|---|---|---|
- * | Agents / MCP / History | 20-43 ms | 39-56 ms | **278-301 ms** |
- * | Library | 22-24 ms | 229-239 ms | **480-489 ms** |
- *
- * Two independent causes. The browser also runs a *group* animation per captured name at
- * the UA's own 250 ms, which outlived the 180 ms crossfade `app/globals.css` declares and
- * which nobody chose; and the animations only begin on the first frame after the arriving
- * route's own first render, so the Library paid ~205 ms of its own work **and then** the
- * whole animation. A press aimed at `library-open-vault` landed on `HTML` for 430 ms after
- * that door had been laid out.
- *
- * `pointer-events: none` on `::view-transition` was tried first and measured to change
- * nothing — the overlay is not what the hit test reaches. The fix is for the transition to
- * end: the two group animations are removed, and the hold is bounded from the moment the
- * route commits (one crossfade's worth of time later, a fade that has not begun never
- * will, and it is skipped).
- *
- * ## ⚠️ Why the presses are timed from the door, not from the click
- *
- * The first draft pressed at a wall-clock +300 ms after the rail click. That passed locally
- * and **failed three times out of three on the GitHub runner** (`{"dt":327,"on":"HTML"}`),
- * because a fixed offset from the click measures how fast the runner renders the arriving
- * route, not how long the transition holds the screen. A slower machine commits the route
- * later, the bound starts later, and 300 ms lands legitimately inside a hold that has not
- * finished waiting for a screen that has not arrived.
- *
- * So the clock starts where the arriving screen does. `library-open-vault` belongs to the
- * Library's own tree, so it cannot have a box until the Library has committed and laid out
- * — which makes its first box a **lower bound on the commit**, observed in the page and
- * therefore scaled to whatever machine is running. The bound in
- * `route-view-transition.ts` ends the hold one crossfade after the commit, so it ends at
- * or before *that* moment plus one crossfade, on any machine.
- *
- * The presses are therefore at **one crossfade plus four frames** after the door's first
- * box, and again 100 ms later. Both must land. Measured locally, the door's box arrives
- * 49-52 ms after the click and the door becomes hit-testable 192-206 ms after that — so the
- * budget below clears the real figure by about 100 ms while still failing on the defect,
- * which held the door for 430 ms past its own layout.
- *
- * Not `paint + 0`: the door has a box ~150 ms *before* the crossfade this design system
- * chose is over, so a press there would assert the crossfade itself away rather than the
- * hold that outlived it. The click-to-layout and layout-to-hit-testable figures are
- * recorded as measurements below and nothing asserts on them.
+ * A route change runs inside `document.startViewTransition`, and while it runs the captured
+ * document is not painted or hit-tested, so presses land on `html`. Presses are timed from the
+ * door's first box (`library-open-vault`), not the click, so they scale to the machine.
  */
 
 /** One frame at 30fps, the unit this repository's motion proofs already sample in. */
@@ -344,11 +291,8 @@ test("전환이 도는 애니메이션 중 선언한 크로스페이드보다 �
     "전환 애니메이션 목록을 잡지 못했다 — ready 가 거부됐거나 브라우저에 전환이 없다",
   ).not.toBeNull();
   /*
-   * Idling guard. The four fade and blend animations on the captured pane's `old`/`new` pair
-   * are what the crossfade *is*, so a run that captured fewer than that captured the wrong
-   * moment and the duration rule below would pass on an empty set. The pair was named `root`
-   * until 2026-09-13, when the capture moved off the document so the rail could stay on screen
-   * in WebKit (`rail-stays-painted.spec.ts`); the count is the same either way.
+   * Idling guard: the four fade and blend animations on the captured pane's `old`/`new` pair are
+   * the crossfade itself, so a run that captured fewer captured the wrong moment.
    */
   expect(seen.animations!.length, `잡은 애니메이션: ${JSON.stringify(seen.animations)}`).toBeGreaterThanOrEqual(4);
   const overrunning = seen.animations!.filter((animation) => !(animation.duration <= declared));

@@ -3,16 +3,8 @@ import { expect, test } from "@playwright/test";
 import { installDesktopRailRuntime, mountDesktopVault } from "./desktop-rail-arrival-harness";
 
 /**
- * The project page's hero control row, measured in the state the owner saw it in.
- *
- * On 2026-09-19 the owner read the row as crooked: with a folder open it drew "View topology"
- * filled, "Open review result" outlined and the quick-edit trigger as a bare `ghost` label, so
- * three weights stood in one row and the third had no box at all. The fix gives the trigger the
- * same outline as its sibling, which is a rendered fact rather than a source one — a variant prop
- * reads correct in the diff and still lands wrong if a class wins over it.
- *
- * So this measures what a person sees: every control the same height, sharing one baseline, and
- * exactly one of them filled.
+ * Rendered fact, not source: a variant prop can read correct in the diff and still land wrong
+ * if a class wins. Every control the same height, one baseline, exactly one filled.
  */
 test("the hero's controls are one filled action and outline siblings, on one line", async ({ page }) => {
   await installDesktopRailRuntime(page);
@@ -52,7 +44,7 @@ test("the hero's controls are one filled action and outline siblings, on one lin
     return alpha === null || Number(alpha[1]) === 1;
   });
   expect(filled.length, `filled: ${JSON.stringify(row)}`).toBe(1);
-  // And no control is boxless — a bare label beside two boxes is the third weight the owner saw.
+  // No control is boxless: a bare label beside two boxes is a third weight.
   expect(row.every((control) => parseFloat(control.borderWidth) > 0), `borders: ${JSON.stringify(row)}`).toBe(true);
 
   await page.screenshot({ path: ".claude/shots-2026-09-19/81-hero-row-editable.png" });

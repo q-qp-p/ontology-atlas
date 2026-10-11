@@ -5,23 +5,8 @@ import { installDesktopRailRuntime, type DesktopRuntimeOptions } from "./desktop
 import { dogfoodEvidenceVault, syntheticVault } from "./hex-board-vaults";
 
 /**
- * **The hex board names every tile, keeps every name inside its own face, counts stale
- * honestly, and walks by keyboard.**
- *
- * One capability is one tile, a domain a region of tiles round its title tile (owner decision,
- * 2026-09-25). This opens the product's own dogfood vault (`docs/ontology`) through the
- * installed-app runtime, with the Git walk answered from this repository's real history, and
- * checks the claim on the drawn result:
- *
- * - every capability is a tile, named, and no two drawn names overlap or leave their face;
- * - the stale count the board shows equals the count this spec computes with the same rule;
- * - hovering shows a one-line tooltip clear of every name; "stale only" keeps the stale tiles
- *   and recedes the rest; clicking a tile opens the flat map's inspector and routes what it
- *   needs; an arrow key moves the selection to the neighbouring tile;
- * - at 300 capabilities the board opens in the far band: one nameplate per region, none over a
- *   tile or another plate.
- *
- * Captures are written to `HEX_BOARD_CAPTURE_DIR` when it is set, for the design review.
+ * Opens the dogfood vault (`docs/ontology`) through the installed-app runtime, with the Git
+ * walk answered from this repository's history. Captures go to `HEX_BOARD_CAPTURE_DIR`.
  */
 
 const CAPTURE_DIR = process.env.HEX_BOARD_CAPTURE_DIR ?? null;
@@ -173,7 +158,7 @@ test("hex board writes the address only on a real change: stale-only and 20 fore
   await expect(page.getByTestId("hex-board-map")).toHaveAttribute("data-hex-stale-only", "true");
 });
 
-// The owner's window; the board's naming, honesty and walk do not change between `xl` widths.
+// Naming, honesty and walk do not change between `xl` widths, so one width suffices.
 for (const viewport of [{ width: 1512, height: 982 }]) {
   test(`hex board on the dogfood vault at ${viewport.width}: named, clear, honest, walkable`, async ({ page }) => {
     test.setTimeout(240_000);

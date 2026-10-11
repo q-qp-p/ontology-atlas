@@ -2,32 +2,6 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { seedFirstRunSeen } from "./first-run-seed";
 
-/**
- * **Select a passage, ask the agent about it.**
- *
- * Owner direction 2026-09-07: dragging over a sentence in a wiki page offers a question at
- * once. This spec proves the bar appears only after a selection inside the page body, stands
- * above it, and that pressing a question reaches the docked agent with an
- * `ask` request. The brief's wording is `ask-brief.test.ts`'s to pin; the popover's own
- * keyboard path is `SelectionAsk.test.tsx`'s.
- *
- * (Harness shared with `library-lint-dock.spec.ts`: the desktop bridge is stubbed because
- * the app is a WKWebView running this same static export.)
- *
- * Original note of the harness:
- *
- * The second door beside Compile (2026-09-06). It reads `wiki/` and reports; it writes
- * nothing, so it does not wait on an uncompiled source — it waits on there being two
- * pages, because one page has nothing to disagree with. This spec proves the chip is
- * offered under the same runtime conditions as Compile, is disabled with one page and
- * enabled with two, and that pressing it reaches the dock with a `lint` request. The
- * brief's content is `lint-brief.test.ts`'s to pin.
- *
- * The desktop bridge is stubbed in the browser for the reason
- * `library-compile-dock.spec.ts` records: the app is a WKWebView running this same static
- * export, and the render boundary is what is being measured.
- */
-
 const VAULT_ROOT = "/Users/probe/Ontology Atlas/launch";
 
 const VAULT: Record<string, string> = {
@@ -179,15 +153,8 @@ async function installDesktopBridge(page: Page) {
 }
 
 /**
- * With the runtime signal injected, Docs opens on the installed app's own first screen —
- * "Open a folder to start working" — rather than the read-only sample. Its middle door
- * calls the native picker, which the stub answers with an absolute path.
- *
- * ⚠️ **The folder is still opened from Docs, and that is deliberate.** The Library moved
- * to its own destination on 2026-09-06, but the app's first-run card lives on the docs
- * intent, and this spec's subject is the dock rather than the picker. Walking in the way a
- * person does — open the folder, then cross the rail — also proves the rail tile reaches
- * the new destination with the session's folder still attached.
+ * The folder is opened from Docs because the first-run card lives on the docs intent;
+ * crossing the rail proves the session's folder stays attached.
  */
 async function openFolder(page: Page) {
   await page.goto("/en/docs/");
@@ -203,7 +170,7 @@ async function openFolder(page: Page) {
   // open folder in the session instead of asking the restore to find it again.
   await page.getByTestId("app-nav-rail").getByRole("link", { name: "Library" }).click();
   await page.getByTestId("library-sources").waitFor({ timeout: 30_000 });
-  // The index is a switch since 2026-09-07: the wiki rows exist only on the Wiki half.
+  // The wiki rows exist only on the Wiki half of the index switch.
   await page.getByTestId("library-workspace-wiki").click();
   await page.getByTestId("library-wiki").waitFor({ timeout: 30_000 });
 }

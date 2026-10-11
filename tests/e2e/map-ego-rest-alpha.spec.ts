@@ -2,17 +2,7 @@ import { expect, test } from "@playwright/test";
 import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForMapStill } from "./settle";
 
-/**
- * **What the ego focus dims actually recedes** (map round, 2026-09-20).
- *
- * Selecting a capability keeps its neighbours opaque and "dims" everything
- * else, but the dim was a colour ramp only: the dimmed stroke differs from the
- * normal stroke by 1.37:1 and the dimmed fill is lighter than the normal fill,
- * so three sibling capabilities beside the selection drew as bright, nameless
- * circles a person could not tell from the ego members. Dimmed nodes now sink
- * to `--map-ego-rest-alpha` on the same ramp the colour uses; ego members stay
- * at 1.
- */
+/** Dimmed nodes sink to `--map-ego-rest-alpha`; ego members stay at 1. */
 type Probe = {
   nodes: () => Array<{ id: string; hidden: boolean; alpha: number }>;
   selection: () => { nodeId: string | null };

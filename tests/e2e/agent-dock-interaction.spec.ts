@@ -4,26 +4,6 @@ import { seedFirstRunSeen } from './first-run-seed';
 import { installLibraryWorkHarness } from './library-work-harness';
 import { openFolderFromFirstRun } from './open-folder';
 
-/**
- * **The conversation dock behaves as one surface in both of its homes** (2026-09-25).
- *
- * Measured on the map's dock and the Library's, with the protocol-level harness:
- *
- * - Escape in the map's composer closed the whole dock and threw the typed draft away, while the
- *   Library's dock ignored the key and kept its draft. One rule now: a composer holding a sentence
- *   claims Escape, and from anywhere else the key puts the dock away.
- * - Focus fell to `<body>` after Stop, after answering a permission card, and on opening and
- *   putting away the Library's dock.
- * - After "Don't" the write's row said "running" and then "failed" — the person's own answer
- *   reported back as a fault — and a write on the vault server's prefix printed its function name.
- * - The resize handle straddled the dock's clipped edge, so part of it and its focus mark were cut.
- * - At 1040×720 the permission card left the transcript 96px, with the call it asks about out of
- *   view.
- *
- * Each case below measures the thing a person meets — where focus is, what the row says, what is
- * painted where — rather than the component state that produced it.
- */
-
 async function openMapDock(page: Page, size = { width: 1512, height: 949 }) {
   await page.setViewportSize(size);
   await seedFirstRunSeen(page);

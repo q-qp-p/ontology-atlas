@@ -4,83 +4,9 @@ import { waitForDomeEntered, waitForMapStill } from "./settle";
 import { seedFirstRunSeen } from "./first-run-seed";
 
 /**
- * **Can you see the relations in 3D?** (2026-09-06, owner report.)
- *
- * ## What was wrong, in numbers
- *
- * Looking at the installed app in Cloud on the dogfood ontology, the owner asked
- * whether the lines could be improved: they were so faint that the connections
- * were all but invisible and only the selected pair's indigo edge read at all.
- *
- * Depth attenuates a line twice — fog multiplies its alpha (1.0 → 0.09,
- * `domeFogAlpha`) and the width factor thins the stroke (0.90 → 0.35,
- * `domeLineWidthFactor`) — and the two stack, so the far end of the arrangement
- * drew at 3.5% of the near end's ink. That is the same stacking that made the
- * Strata plane rings disappear at 0.12. Measured here on the sample vault at
- * 1512×982, DPR 2, nothing selected and nothing hovered, sampling each drawn
- * line's own pixels against the canvas ground 14 px beside it:
- *
- * | at rest | contains median | depends median |
- * |---|---|---|
- * | 2D map (untouched) | 5.80 : 1 | 3.58 : 1 |
- * | Cone before → after | 1.26 → **1.89** : 1 | 1.25 → **1.75** : 1 |
- * | Strata before → after | 1.33 → **1.75** : 1 | 1.14 → **1.78** : 1 |
- * | Cloud before → after | 1.14 → **1.78** : 1 | 1.11 → **1.78** : 1 |
- *
- * The fix is a floor under the **product** of the two attenuations
- * (`DOME_EDGE_INK_FLOOR`), spent on the line's alpha so that width, halo, node fog
- * and draw order keep carrying depth. Ego, hover and selected lines were already
- * exempt from fog and are unchanged; so is the dim state of non-ego lines while
- * something is selected, and so is the whole 2D map.
- *
- * ## Why pixels and not a token assertion
- *
- * The complaint is about what reaches the eye, and what reaches the eye is a
- * product of a token alpha, two depth ramps, an antialiased sub-pixel stroke width
- * and the halo cut of every line in front. Asserting the token would leave every
- * one of those free to move. So this gate reads the canvas back
- * (`getImageData`) and computes the WCAG contrast of the line against the ground
- * beside it, which is the same quantity `dome-rim-contrast.contract.test.ts`
- * derives for the node rim — this one measures it on the real frame instead.
- *
- * The floors are set well under the measured medians, the way the sibling drawing
- * specs set theirs. The direction's own bar is ≥ 1.8 : 1 for containment and
- * ≥ 1.5 : 1 for dependency at rest; what these floors defend is the distance
- * already travelled from 1.1–1.3 : 1, which is the regression that would
- * otherwise return unseen.
- *
- * ## …and the same frames on a screen that is not Retina (2026-09-07)
- *
- * The first version of this gate ran at DPR 2 only, and said so: "the same frame
- * that measures 1.89 : 1 here measures 1.23 : 1 at DPR 1, before and after the
- * floor alike". That is the whole gain given back on every non-Retina screen, and
- * it happens because a line's width is a **CSS** quantity: at ratio 1 a 0.32 px
- * stroke covers a third of a device pixel, the rasteriser spreads its alpha over
- * the two rows it straddles, and the peak — what a reader follows a line by, and
- * what this instrument samples — collapses even though the ink floor's budget is
- * intact.
- *
- * `DOME_EDGE_DEVICE_WIDTH_FLOOR` (1.0 **device** px, converted to CSS px by the
- * ratio the canvas is rasterising at) stops the resting stroke going sub-pixel on
- * the device. Measured on the sample vault at 1512×982, nothing selected or
- * hovered, contains / depends median:
- *
- * | at rest | DPR 2 before → after | DPR 1 before → after |
- * |---|---|---|
- * | Cone | 1.89 / 1.75 → **2.44 / 1.96** | 1.29 / 1.26 → **2.72 / 2.33** |
- * | Strata | 1.72 / 1.55 → **2.26 / 1.87** | 1.25 / 1.19 → **2.33 / 1.57** |
- * | Cloud | 1.83 / 1.78 → **2.51 / 2.08** | 1.27 / 1.25 → **2.52 / 2.05** |
- *
- * DPR 2 rises too, because a floor of one device pixel is 0.5 CSS px there and the
- * thinnest resting strokes were 0.32. That is the same defect a step smaller, not
- * a second change. The whole 2D map is untouched at either ratio: its canvas comes
- * back byte-identical (`render/traces.test.ts` pins the mechanism — no
- * `minWidthPx`, no difference).
- *
- * Strata's dependency at DPR 1 is the tightest reading in the file, 1.571, and it
- * is worth naming why: its cross-plane lines are dashed, so where the instrument's
- * three samples land relative to a gap moves the number more than the ink does.
- * The floors sit under that.
+ * Reads the canvas back (`getImageData`) and measures WCAG contrast of each 3D line
+ * against the ground beside it; floors sit well under the measured medians.
+ * `DOME_EDGE_INK_FLOOR` and `DOME_EDGE_DEVICE_WIDTH_FLOOR` keep lines legible at DPR 2 and 1.
  */
 
 /** Both device pixel ratios, because the defect above lives in exactly that gap. */

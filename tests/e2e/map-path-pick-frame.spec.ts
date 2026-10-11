@@ -3,16 +3,7 @@ import { installDesktopRailRuntime } from "./desktop-rail-arrival-harness";
 import { dogfoodVaultFiles } from "./dogfood-vault-files";
 import { waitForMapSettled, waitForMapStill } from "./settle";
 
-/**
- * **Choosing a path's source keeps its candidate targets on the canvas** (2026-09-26).
- *
- * Right-click a domain, choose the path, and the map waits for a target. The source was
- * selected like any click, so the camera dived into its neighbourhood: measured on the
- * product's own ontology at 1512×949, the top domain's dive put the sibling domain a
- * person would pick next at y 1057.9 on a 949-tall canvas. Every drawn concept is a
- * candidate target, so the frame is now the map they are drawn on, centred between the
- * chrome — and the source stays in it.
- */
+/** Choosing a path's source must keep every candidate target on the canvas, centred between chrome. */
 test("a path's source waits for its target with every candidate on the canvas", async ({ page }) => {
   test.setTimeout(150_000);
   await page.setViewportSize({ width: 1512, height: 949 });

@@ -4,16 +4,8 @@ import { FIRST_RUN_STARTER_DISMISSED_KEY } from "../../src/features/first-run-st
 import { waitForAnimationsDone, waitForBoxStill, waitForMapStill, waitFrames } from "./settle";
 
 /**
- * The route has arrived and its layout has stopped moving.
- *
- * The sweep below enumerates every trigger on the screen and measures boxes, so what it
- * needs is a laid-out screen — not one second of this machine, which on a slow run is
- * the middle of hydration and on a fast one is 900 ms thrown away.
- *
- * ⚠️ Deliberately **not** `waitForAnimationsDone(body)`: some of these routes always
- * have something animating somewhere, so a page-wide animation wait sat for the full
- * hang ceiling (measured 2026-09-13). The body's box repeating across frames is the
- * condition these measurements actually need.
+ * The route has arrived and its layout stopped moving. Not `waitForAnimationsDone(body)`: some routes
+ * always animate somewhere, so a page-wide animation wait sits for the full hang ceiling.
  */
 /** Frames a trigger gets to put a declared surface on screen before it counts as opening none. */
 const SURFACE_FRAMES = 30;
@@ -25,42 +17,12 @@ async function routeSettled(page: import("@playwright/test").Page) {
 
 
 /**
- * **Sweeps three contracts for transient surfaces across every route** (2026-08-11).
- *
- * ## Why this spec exists
- *
- * On 2026-08-10 the owner found three defects in the real product — the map's
- * dead-end notice appeared in a screen corner, never dismissed itself, and swallowed
- * the arrow keys while it was up. **No check could see any of it.**
- *
- * The first attempt swept without any declaration. The instrument then picked "the
- * largest visible element" as the surface and measured **the scrim** instead of the
- * dialog, producing 6 violations that were all the instrument's fault (the settings
- * sheet closes on Escape and returns focus correctly). So surfaces now **declare
- * their own kind** (`shared/ui/transient-surface.ts`) — this spec measures only that
- * declaration and never guesses.
- *
- * ## Each kind is measured for different properties
- *
- * - **All**: they move on appearance (no hard cut).
- * - `notice` · `hint`: **never take focus.** That one property makes two of the three
- *   2026-08-10 defects structurally impossible — without focus they cannot intercept
- *   keys or stop the dismissal timer.
- * - `anchored` · `menu` · `sheet`: close on Escape and **return focus to whatever
- *   opened them.**
- *
- * ## Idling guard
- *
- * If no declared surface was opened, this spec measured nothing. So the number
- * actually opened is asserted — to distinguish "passed" from "found nothing", which
- * is how this repository lost a release in 2026-08.
+ * Sweeps declared transient surfaces (`shared/ui/transient-surface.ts`) on every route. All kinds
+ * move on appearance; notice and hint never take focus; anchored, menu and sheet close on Escape
+ * and return focus to the opener. The idling guard asserts surfaces were actually opened.
  */
 
-/**
- * The routes swept — **every destination** (widened 2026-08-11). The gateway reading
- * surfaces (`/guide`, `/changelog`) have zero open/close triggers, so including them
- * would measure nothing (verified).
- */
+/** Every destination; the gateway reading surfaces (`/guide`, `/changelog`) have no triggers. */
 const ROUTES = [
   "/ko/",
   "/ko/topology/",
@@ -86,7 +48,7 @@ const SWEEP_MUST_OPEN = ["sheet"] as const;
 const FOCUSLESS = new Set(["notice", "hint"]);
 const NEEDS_ESCAPE = new Set(["anchored", "menu", "sheet"]);
 
-/** The minimum number of surfaces this sweep must actually open — derived from the 2026-08-11 measurement. */
+/** The minimum number of surfaces the sweep must actually open, so a run that finds nothing fails. */
 const MIN_OPENED = 3;
 
 /** The kinds of declared surfaces currently **visible** on screen. */
@@ -144,20 +106,9 @@ test.describe("잠깐 뜨는 표면 3계약", () => {
 
       for (let index = 0; index < triggerCount; index += 1) {
         /*
-         * ⚠️ **Reload for every trigger.** A version that opened several triggers in a row
-         * on one load falsely reported "focus does not return" on two routes — putting the
-         * focus location into the failure message showed it on **the previous trigger**
-         * (`app-nav-rail-agent-status`). The focus and state left by the earlier trigger
-         * contaminated the next verdict. Opening each cleanly by hand returns focus to the
-         * trigger on all three routes.
-         *
-         * In hindsight this sweep needed **five** instrument fixes before it told the truth
-         * (mistaking the largest element for the surface; mistaking a leftover surface for
-         * the current one; not waiting for the exit; comparing focus by a marker that a
-         * rerender erases; contamination between triggers). That is this file's reason for
-         * existing: **when the measuring tool is wrong, neither green nor red is
-         * evidence.**
-        */
+         * Reload for every trigger: focus and state left by an earlier trigger contaminate the next and
+         * falsely report that focus does not return.
+         */
         if (index > 0) {
           await page.goto(destinationUrl, { waitUntil: "domcontentloaded" });
           if (route === "/ko/docs/") {
@@ -282,11 +233,8 @@ test.describe("잠깐 뜨는 표면 3계약", () => {
            * question about **that surface**.
            */
           /*
-           * A condition poll: it returns the moment that kind is gone. The interval is
-           * drawn frames rather than 220 ms, so a slow machine gets a longer exit to
-           * finish in instead of a stricter deadline. The loop still ends by itself
-           * because the verdict is collected into `violations` per route rather than
-           * thrown here.
+           * A condition poll that returns once that kind is gone. The interval is frames, not 220 ms, so a
+           * slow machine gets a longer exit. The loop ends by itself: failures collect into `violations`.
            */
           let stillOpen = true;
           for (let attempt = 0; attempt < 40; attempt += 1) {
@@ -349,9 +297,8 @@ test.describe("잠깐 뜨는 표면 3계약", () => {
   });
 
   /**
-   * **The dead-end notice must not take focus** — the sweep above covers only what a
-   * trigger opens, so this keyboard-only surface is measured separately. The direct
-   * gate for the 2026-08-10 defect.
+   * The dead-end notice must not take focus; the sweep covers only trigger-opened surfaces, so this
+   * keyboard-only surface is measured separately.
    */
   test("키보드로만 나타나는 안내도 초점을 받지 않는다", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -404,20 +351,8 @@ test.describe("잠깐 뜨는 표면 3계약", () => {
   });
 
   /**
-   * **Opens a node popover (`anchored`) for real and measures it** (2026-08-11).
-   *
-   * ⚠️ The route sweep sees only what `[aria-expanded]`/`[aria-haspopup]` triggers
-   * open. Measured: all 8 surfaces opened across 9 routes were **`sheet`**. So kinds
-   * that open only on the canvas are opened separately here — **a declaration nobody
-   * measures is decoration**, which was the dissent recorded in this change's decision
-   * entry.
-   *
-   * ⚠️ **Do not click the node with the mouse.** In a browser with no vault chosen, a
-   * panel over the map covers the canvas and eats the click (measured: the right click
-   * timed out after 120s, and that click also closed the popover). Selecting with the
-   * arrow keys opens the same popover — which also matches the user flow, and what
-   * this test measures is not how it was opened but whether what opened honours the
-   * contract.
+   * Opens a node popover (`anchored`) for real: the route sweep only reaches `sheet` kinds. Select with
+   * arrow keys, not the mouse, since a panel over the map eats the click when no vault is chosen.
    */
   test("노드 팝오버가 부른 것 옆에 서고 Escape 로 닫힌다", async ({ page }) => {
     test.setTimeout(180_000);
@@ -451,13 +386,9 @@ test.describe("잠깐 뜨는 표면 3계약", () => {
       };
     });
     expect(geom, "고른 노드를 못 찾았다 — 이 시험이 공회전한다").not.toBeNull();
-    // "Beside what called it" — farther than half a screen and it no longer reads as connected to its cause.
+    // Beside what called it: farther than half the canvas and it no longer reads as connected.
     expect(geom!.dx, "팝오버가 고른 노드에서 너무 멀다").toBeLessThan(geom!.canvasWidth / 2);
-    /*
-     * `anchored` may take focus, but **not when the selection was made with the arrow
-     * keys** — if it does, the next arrow key never reaches the map, which is the exact
-     * shape of the 2026-08-10 defect.
-     */
+    /* After an arrow-key selection focus must stay put, or the next arrow key never reaches the map. */
     expect(geom!.tookFocus, "방향키로 열린 팝오버가 초점을 가져갔다 — 다음 걸음이 막힌다").toBe(false);
 
     /*

@@ -16,10 +16,7 @@ test.describe("Library live work activity", () => {
     const harness = await openLibraryWorkScenario(page);
     await page.getByTestId("library-workspace-sources").click();
 
-    /*
-     * The canvas is the home now (2026-09-12), so there is nothing to open: the picture is
-     * already on screen with nothing chosen, and choosing a document is what takes it away.
-     */
+    /* The canvas is the home: it is on screen with nothing chosen, and choosing a document removes it. */
     const canvas = page.getByTestId("library-graph-canvas");
     await expect(canvas).toBeVisible();
 
@@ -42,10 +39,8 @@ test.describe("Library live work activity", () => {
     await expect.poll(() => page.evaluate(() => (window as unknown as PaintWindow).__libraryPaintCount ?? 0)).toBeGreaterThan(5);
     await canvas.press("ArrowRight");
     /*
-     * ⚠️ **`Enter` opens the card, and `Open` inside it is what selects the document**
-     * (2026-09-12, "a press opens a card beside the mark"). Before that, `Enter` *was* the
-     * commit; the claim this case makes — active work cannot paint a canvas that has been
-     * replaced by the reader — is unchanged, only the press that replaces it is.
+     * `Enter` opens the card and `Open` inside it selects the document; active work must not paint a
+     * canvas the reader has replaced.
      */
     await canvas.press("Enter");
     await page.getByTestId("library-graph-card-open").click();

@@ -4,20 +4,8 @@ import { dogfoodVaultFiles } from "./dogfood-vault-files";
 import { waitForDomeEntered, waitForMapSettled, waitForMapStill, waitFrames } from "./settle";
 
 /**
- * **Strata and Neural caption what the flat map would, and no more** (2026-09-26).
- *
- * With the agent dock open, the map names the relations it draws. The flat map drew its
- * spine at rest and named the project's four relations. Strata and Neural draw every
- * concept, so every relation qualified and the placer filled all 24 of its slots:
- * measured on the product's own ontology at 1512×949, twenty-four "↘ contains" chips over
- * the planes. A view that shows more does not ask a person to read more
- * (`render/relation-captions.ts#captionWithinFlatBudget`).
- *
- * **The reference is a focused domain** (2026-10-04). The Flat dial's overview names no
- * relation by design; a focused concept with meanings on hands Flat back to the classic
- * marks, which name its relations. The dial also exempts the flat map from the density
- * gate, and the views that draw every concept read that gate as their budget: with a
- * domain focused, Strata named 12 relations and Neural 5 where Flat named 2.
+ * With the agent dock open, Strata and Neural caption no more than the flat map would; all 24 placer
+ * slots filling is the failure. The reference is a focused domain, since the Flat overview names none.
  */
 
 const RUNTIME = {

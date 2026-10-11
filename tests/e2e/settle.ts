@@ -144,21 +144,8 @@ export async function waitForMapSettled(page: Page, options: MapStillOptions = {
 }
 
 /**
- * Resolve once no **finite** CSS animation or transition is running on `locator` or
- * inside it.
- *
- * This is the browser's own registry (`Element.getAnimations({ subtree: true })`),
- * so it covers a reveal whose duration comes from a token without the spec having
- * to read — or guess — that token. An element that never animates resolves on the
- * first poll.
- *
- * ⚠️ **Infinite animations are skipped**, because they are never done: an ambient
- * pulse or spinner somewhere on the page would otherwise hold this open until the
- * hang ceiling (measured 2026-09-13 — `waitForAnimationsDone(body)` on the route
- * sweep sat for the full 30 s). Something ambient that also moves the layout is
- * caught by {@link waitForBoxStill} instead. Scroll-driven animations are skipped
- * for the same reason: the gateway's scroll stages report `running` until scrolled
- * (measured 2026-09-26 on `/ko/` and `/ko/download/`).
+ * Infinite and scroll-driven animations are skipped because they never finish; ambient ones that
+ * also move layout are caught by `waitForBoxStill` instead.
  */
 export async function waitForAnimationsDone(locator: Locator, timeout = HANG_TIMEOUT_MS): Promise<void> {
   await locator.evaluate(

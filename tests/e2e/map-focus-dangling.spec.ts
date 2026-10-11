@@ -5,37 +5,9 @@ import { waitForMapStill } from "./settle";
 import { stubDirectoryPicker } from "./vault-picker-stub";
 
 /**
- * **The map must be readable however you deep-link into it** (owner report,
- * 2026-08-17).
- *
- * ## What happened
- *
- * Clicking "open in map" on a project document in the docs view made **every node on
- * the map look like it had vanished**. Owner: *"what is this now?"* · *"and it loads slowly too"*
- * (what is this now? and it loads slowly too).
- *
- * Nothing had vanished — **everything had been dimmed**. That button produces
- * `?p=<project slug>` (e.g. `project`), while map node names are `kind:slug`
- * (`project:project`) — a project slug has no prefix and a node name does, so the two
- * can **never match, structurally**. When the map concludes something is selected it
- * keeps that node and its neighbours and sinks the rest; with no node matching,
- * **everything became "the rest".**
- *
- * Measured (a 7-document vault, background `#0a0a0d`): the brightest node on screen
- * was **1.40:1** against the background. The floor for UI shapes is 3:1. On the
- * 125-node sample vault, **zero** pixels exceeded luminance 60.
- *
- * ## Why this check counts pixels
- *
- * **Lint, types, and contract tests are all blind to this defect** — every value used
- * is a legitimate token (`--map-node-stroke-dim`), and what is wrong is
- * *which nodes* it was applied to. The map is a canvas with no DOM, so there is
- * nothing for a selector to ask. The remaining instrument is **counting the painted
- * pixels directly.**
- *
- * The verdict is not "how many bright pixels" but **"is there any readable pixel at
- * all"** — node count, layout, and zoom differ per vault, but *whatever is drawn must
- * be visible to a person* holds for every vault.
+ * `?p=<project slug>` matches no `kind:slug` node name; with no selection match, nothing
+ * may end up dimmed. Counts painted pixels because lint, types and selectors cannot see
+ * which nodes a token was applied to.
  */
 
 const VAULT = {

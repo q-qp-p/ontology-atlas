@@ -4,47 +4,9 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForAnimationsDone, waitForPageSettled } from "./settle";
 
 /**
- * Are the public screens **silently broken** — two things: narrow viewports and the
- * console.
- *
- * **This file replaces three** (2026-08-16). There used to be three specs here and
- * **not one of them contained a single assertion**:
- *
- * | File | Lines | `expect` |
- * |---|---:|---:|
- * | `mobile-overflow-check.spec.ts` | 23 | **0** |
- * | `mobile-keyboard-audit.spec.ts` | 89 | **0** |
- * | `ui-audit-v2.spec.ts` | 101 | **0** |
- *
- * All three only gathered values into `console.log` or dropped screenshots in
- * `output/`, so **whatever broke, they were green.** On top of that the first used a
- * widget deleted on 2026-05-03 (`project-knowledge-topology`) as its selector, so
- * there was nothing to measure, and the third swallowed even navigation failures
- * into `console.log` (passing on a 500). This is the repository's rule exactly — **a
- * check that can never turn red is indistinguishable from no check.**
- *
- * What those three gathered was not worthless, so **the gathering was turned into
- * assertions**: horizontal overflow and console errors. A user meets both
- * immediately, and neither is knowable without opening the screen.
- *
- * The third file's shortcut checks (⌘K, ?) were **not discarded** — both are already
- * covered by specs that do assert (`docs-rename-address`, `user-journey-a`,
- * `destination-shortcuts` · `keyboard-path` · `map-keyboard-walk`).
- *
- * **Inventory when switched on: 0.** The six routes below were measured at 390×844
- * with no overflow and no console errors, so this check locks today's state rather
- * than creating new debt. Since 2026-09-27 only the gateway stays at 390; the
- * workbench routes are read at 1512.
- *
- * **One visit per route.** The same walk also carries two checks that used to be
- * separate specs: heading/landmark structure (exactly one `h1`, a `main` landmark, a
- * skip link) and Hangul purity on the two English routes that draw no vault text
- * (`/en/project/new/`, `/en/download/`). Hangul purity must be browser-measured because
- * lint and the message catalogue cannot see strings from code constants and JSX
- * literals; it stays limited to routes with no vault text, since the example vault is
- * legitimately Korean. A route that starts drawing vault data breaks it and forces
- * that list to be revisited. Language regressions elsewhere are blocked by
- * `tests/contract/taxonomy-locale-label.contract.test.ts`.
+ * Every assertion can turn red: horizontal overflow and console errors on each public route.
+ * The same walk checks heading and landmark structure (one `h1`, a `main`, a skip link) and Hangul
+ * purity on the English routes with no vault text; the example vault is legitimately Korean.
  */
 
 /** Every route is opened once at the workbench reference size and gets the checks listed for it. */

@@ -2,18 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { installDesktopRailRuntime, mountDesktopVault } from "./desktop-rail-arrival-harness";
 
-/**
- * **The keys the shortcut sheet teaches answer on every rail screen** (2026-09-26).
- *
- * The sheet's Navigation section — the one it shows on every tab of every screen — lists ⌘K and
- * `?` beside the `G` keys. The `G` keys are the shell's and always worked; ⌘K and `?` were wired
- * only by screens that drew their own dialog. Measured against a real folder on 2026-09-25, both
- * did nothing on Library, Git, Automations, Agents and the harness (0 of 5), so the keyboard's
- * own reference could not be opened on five of eight destinations. The shell answers them now.
- *
- * Also held here: the sheet teaches one search key (not ⌘K and ⇧⌘K as two searches that opened
- * one dialog), and it does not list `D`, which only the map binds, outside the map.
- */
+/** The shortcut sheet lists cmd-K and `?`, so the shell must answer them on every rail screen. */
 const SCREENS = ["library", "git", "automations", "agents", "architecture"] as const;
 
 async function focusContent(page: Page) {

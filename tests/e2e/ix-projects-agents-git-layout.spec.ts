@@ -10,8 +10,7 @@ test.describe("interaction sweep — projects, agents, git layout", () => {
     await mountDesktopVault(page);
   });
 
-  // Below `xl` (1280) the dock is a full-width overlay; it used to be `absolute top-0` against a
-  // row as tall as the page (1389 at 1040x806), so it never fitted the window there either.
+  // Below `xl` (1280) the dock is a full-width overlay that must fit the window.
   for (const viewport of [
     { width: 1920, height: 1080 },
     { width: 1512, height: 949 },

@@ -4,32 +4,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForAnimationsDone } from "./settle";
 
 /**
- * The map's controls stand on the **control-height ladder**, and the ladder is
- * measured on the rendered box.
- *
- * **Why this layer and not the two that already exist.**
- * `control-class.contract.test.ts` measures the string `controlClass()` emits, and
- * `control-height-ladder-scope.contract.test.ts` measures the CSS dimension tokens.
- * Between them sits the case that produced every finding below: **a height nobody
- * wrote.** `px-3 py-2` around an 18px line box is 38px, and a `shape: "row"` whose
- * floor is 36 measured 42 because a 26px glyph box plus `py-2` overshot the floor.
- * No string and no token carries either number, so neither existing gate can see
- * them — only layout can.
- *
- * Inventory at switch-on (2026-09-05, 1440×900 fine pointer, sample vault):
- *
- * | Control | Before | After |
- * |---|---:|---:|
- * | `topology-index-fold` | **42** | 36 |
- * | search palette result row | **38** | 40 |
- * | INDEX tree row floor | `min-h-[34px]` | `min-h-9` (36) |
- * | INDEX row chevron | **22×34** fixed | stretches to the row |
- *
- * The roster is named rather than swept: a sweep over every control on the route
- * would have to encode every legitimate content-driven exemption (the nav rail's
- * 62px outer height, a two-line tree row's 47.5) and would become a list of
- * excuses. Every name here is a control whose height its own padding decides, and
- * the roster guard below fails if any of them stops rendering.
+ * Measures the rendered box, not the class string or token: a height nobody wrote shows only in
+ * layout. The roster is named, not swept, so no content-driven exemption has to be encoded.
  */
 
 /** Derived from the ladder tokens at runtime, exactly as the token contract derives it. */

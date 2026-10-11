@@ -3,30 +3,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForPageSettled } from "./settle";
 
 /**
- * **A focus indicator has to be visible** (2026-08-18).
- *
- * ## Why this check exists
- *
- * When this app's focus policy was decided on 2026-08-05, the verdict stopped at
- * **"does it exist"** — all 197 interactive elements had an indicator. The axis not
- * measured then was "is it visible". Measured on 2026-08-18, alpha 0.46 composited
- * against the ground gives **1.75:1**:
- *
- *     /ko/ 13/14 · /ko/topology/ 28/28 · /ko/docs/ 32/34 · /ko/projects/ 14/18
- *
- * The floor for a visual indicator that announces state is 3:1 (WCAG 1.4.11,
- * non-text contrast). That is half of it.
- *
- * ## What this check does
- *
- * A focus ring is **invisible to the resting DOM in principle.** So each element is
- * focused, confirmed to be `:focus-visible`, and its computed outline/box-shadow is
- * read and **composited with its real ground** to produce a contrast ratio. Without
- * compositing the alpha, a 0.46 ring reports its source colour's contrast (4.24:1)
- * and the defect is entirely invisible.
- *
- * The denominator is reported alongside — without "how many of how many", a 0 cannot
- * be told apart from "0 because nothing was looked at".
+ * Each ring is composited with its real ground, since the uncomposited colour hides the defect.
+ * The denominator is reported so a 0 is not read as nothing looked at.
  */
 
 const ROUTES = ["/ko/", "/ko/topology/", "/ko/docs/", "/ko/projects/", "/ko/agents/"];

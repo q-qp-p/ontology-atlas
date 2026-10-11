@@ -3,14 +3,8 @@ import { expect, test } from "@playwright/test";
 import { installDesktopRailRuntime, mountDesktopVault } from "./desktop-rail-arrival-harness";
 
 /**
- * The project page's agent dock (2026-09-19): with the desktop bridge and a guarded runtime,
- * the overview's ask opens a dock beside the page and seats the brief instructions as the
- * first turn. The dock mounts only behind the bridge, so the static a11y opener list cannot
- * reach it; this spec is the surface's own check (see `surface-motion-ratchet`, 50 -> 51).
- *
- * The bridge stub never resolves `acp_start`, so the turn stays pending: what is asserted is
- * the frame opening, the request standing in the transcript, and closing putting the
- * conversation away rather than unmounting it.
+ * The dock mounts only behind the desktop bridge, so the static a11y opener list cannot reach it.
+ * The stub never resolves `acp_start`, so the turn stays pending (`surface-motion-ratchet`).
  */
 const RUNTIME = {
   id: "claude-code",
