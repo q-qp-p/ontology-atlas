@@ -170,7 +170,9 @@
     "sourceErrorUnbound_sidecar_unavailable": "Atlas could not read the local receipt, so it did not connect the folder.",
     "sourceErrorUnbound_picker_failed": "Atlas could not open the code-folder picker. Press it again.",
     "sourceErrorUnbound_measurement_failed": "Atlas could not measure the chosen folder, so it did not connect it.",
-    "sourceErrorUnbound_persistence_failed": "Atlas could not save the receipt, so it did not connect the folder."
+    "sourceErrorUnbound_persistence_failed": "Atlas could not save the receipt, so it did not connect the folder.",
+    "sourceRepairTarget": "Open {title} and review the missing code location: {path}.",
+    "sourceRepairUnavailable": "The recorded concept or code location no longer matches this project. Check the code folder again before choosing a repair target."
   },
   "createNode": {
     "heading": "Add concept",

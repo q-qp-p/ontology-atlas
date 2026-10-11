@@ -30,6 +30,13 @@ writable folder instead of presenting a dead editor.
 
 **Single source of truth**: `LocalVaultProvider` mounts once in `app/[locale]/layout.tsx`. Its many `useLocalVault()` consumers (`RootEntryPage` / `AppNavRail` / `HomePage` / `DocsVaultPage` / `useDataSourceMode` / `useProjects` / `useProjectMutations` / `useVaultOntology` and the persistent app shell) share one state instance, one IDB rehydrate, one filesystem walk.
 
+A project's missing-code-location remedy opens the exact affected concept from
+its current graph. The inspector names the concept and missing relative path;
+the copied project-source handoff retains both without the private source root.
+Deleted, foreign, ambiguous or changed claims ask for a new measurement before
+navigation. The compact inspector and full-detail action share this resolution;
+opening the concept performs no document write.
+
 ## 2. Bootstrap from existing docs
 
 Opening a folder that has markdown but no `kind:` frontmatter shows a topology

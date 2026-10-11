@@ -170,7 +170,9 @@
     "sourceErrorUnbound_sidecar_unavailable": "로컬 코드 확인 기록을 읽을 수 없어 연결하지 않았어요.",
     "sourceErrorUnbound_picker_failed": "코드 폴더 선택기를 열지 못했어요. 다시 눌러 주세요.",
     "sourceErrorUnbound_measurement_failed": "고른 폴더의 코드를 확인하지 못해 연결하지 않았어요.",
-    "sourceErrorUnbound_persistence_failed": "코드 확인 기록을 저장하지 못해 연결하지 않았어요."
+    "sourceErrorUnbound_persistence_failed": "코드 확인 기록을 저장하지 못해 연결하지 않았어요.",
+    "sourceRepairTarget": "{title}에서 누락된 코드 위치를 확인하세요: {path}.",
+    "sourceRepairUnavailable": "기록된 개념이나 코드 위치가 선택한 범위와 맞지 않아요. 코드 폴더를 다시 확인한 뒤 고칠 대상을 정해 주세요."
   },
   "createNode": {
     "heading": "개념 추가",
