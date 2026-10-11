@@ -147,7 +147,7 @@ const PRIMITIVE_EXPORT_FILES = new Set([
    * container wearing it). It emits no values at all, so an export inventory is
    * correct here rather than a vocabulary inventory.
    */
-  'src/shared/lib/use-roving-radio-group.ts',
+  'src/shared/lib/keyboard/use-roving-radio-group.ts',
 ]);
 
 /**
