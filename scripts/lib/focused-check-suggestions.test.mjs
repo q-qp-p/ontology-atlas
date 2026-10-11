@@ -1523,6 +1523,13 @@ describe('focused check suggestions', () => {
     ]);
   });
 
+  it('routes the split verify modules like the verify entry', () => {
+    assert.deepEqual(
+      domainCommands(suggestFocusedChecks(['mcp/scripts/verify/checks/compile.mjs'])),
+      domainCommands(suggestFocusedChecks(['mcp/scripts/verify.mjs'])),
+    );
+  });
+
   it('runs source-checkout MCP dependency guard tests from every implementation path', () => {
     assert.deepEqual(
       domainCommands(suggestFocusedChecks(['cli/src/lib/mcp-module.mjs'])),

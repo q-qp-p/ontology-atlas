@@ -187,6 +187,7 @@
     "src/write-consent.mjs",
     "src/parser.test.mjs",
     "scripts/verify.mjs",
+    "scripts/verify/",
     "scripts/json-rpc-lines.mjs",
     "CHANGELOG.md",
     "README.md"

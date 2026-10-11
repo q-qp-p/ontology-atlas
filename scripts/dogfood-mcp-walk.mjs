@@ -19,7 +19,10 @@ import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 import { runDogfoodWalk as main } from "./lib/dogfood-walk/report.mjs";
 
-export { toolsListAnnotationSummary, toolsListInventoryFailure } from "../mcp/scripts/verify.mjs";
+export {
+  toolsListAnnotationSummary,
+  toolsListInventoryFailure,
+} from "../mcp/scripts/verify/tools-list/inventory.mjs";
 
 export {
   dogfoodUsage,

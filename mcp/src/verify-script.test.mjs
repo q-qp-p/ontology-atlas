@@ -20,16 +20,38 @@ import {
 
 import {
   absorbDocumentDryRunFailure,
+  destructiveDryRunFailure,
+  destructiveDryRunSmokeFailure,
+  patchConflictGuardFailure,
+} from '../scripts/verify/checks/write-dry-runs.mjs';
+import {
   advisoryHealthChecksSummary,
   advisoryNextActionsSummary,
-  agentBriefFailure,
-  agentBriefSummary,
+  diagnosisBlockingFailure,
+  diagnosisIssueCount,
+  healthChecksSummary,
+  healthSummary,
+  tunedHealthScopeOutputSummary,
+  tunedWorkspaceBriefScopeOutputSummary,
+  workspaceBriefSummary,
+} from '../scripts/verify/checks/diagnosis.mjs';
+import { agentBriefFailure, agentBriefSummary } from '../scripts/verify/checks/agent-brief.mjs';
+import {
   analyzeRepoStructureFailure,
+  inferImportsFailure,
+  importModuleEdgeKindOutputSummary,
+} from '../scripts/verify/checks/import-analysis.mjs';
+import {
   batchCapFailure,
   batchRowIsolationFailure,
+} from '../scripts/verify/checks/batch-writes.mjs';
+import {
   buildFirstContactRequests,
-  cleanupAbsorbFixture,
-  ensureAbsorbFixture,
+  VERIFY_TUNED_HEALTH_ARGS,
+  VERIFY_TUNED_WORKSPACE_BRIEF_NODE_LIMIT,
+} from '../scripts/verify/requests/first-contact.mjs';
+import { cleanupAbsorbFixture, ensureAbsorbFixture } from '../scripts/verify/absorb-fixture.mjs';
+import {
   buildGetConceptSmokeSlug,
   buildGetConceptsSmokeSlugs,
   buildDestructiveDryRunSmokeRequests,
@@ -38,78 +60,113 @@ import {
   buildLimitedQueryConceptsSmokeRequest,
   buildGraphQuerySmokeArgs,
   buildGraphQuerySmokeRequests,
+} from '../scripts/verify/requests/follow-ups.mjs';
+import {
   compileFullArtifactFailure,
   compileIndexesFailure,
   compileIndexesSummary,
   compileSummaryFailure,
-  diagnosisBlockingFailure,
-  diagnosisIssueCount,
-  destructiveDryRunFailure,
-  destructiveDryRunSmokeFailure,
+} from '../scripts/verify/checks/compile.mjs';
+import {
   DYNAMIC_FIRST_CONTACT_RESPONSE_IDS,
-  patchConflictGuardFailure,
+  FIRST_CONTACT_RESPONSE_LABELS,
+  OPTIONAL_FIRST_CONTACT_RESPONSE_IDS,
+  firstContactMissingResponseLabels,
+  firstContactErrorFailure,
+  hasAllFirstContactResponses,
+  hasFirstContactErrorResponse,
+  initialExpectedFirstContactIds,
+} from '../scripts/verify/requests/first-contact-ids.mjs';
+import {
   EXPECTED_DESTRUCTIVE_TOOLS,
   EXPECTED_IDEMPOTENT_TOOLS,
   EXPECTED_READ_TOOLS,
   EXPECTED_TOOLS,
   EXPECTED_WRITE_TOOLS,
-  FIRST_CONTACT_RESPONSE_LABELS,
-  OPTIONAL_FIRST_CONTACT_RESPONSE_IDS,
   expectedToolTitle,
   expectedToolSplitLabel,
-  firstContactMissingResponseLabels,
-  firstContactErrorFailure,
-  firstContactLocalProbeFailure,
+  expectedToolsListAnnotationSummary,
+  toolsListAnnotationSummary,
+  toolsListInventoryFailure,
+} from '../scripts/verify/tools-list/inventory.mjs';
+import { firstContactLocalProbeFailure } from '../scripts/verify/checks/connection-scope.mjs';
+import {
   findBacklinksFailure,
   findEvidenceFailure,
-  findNeighborsFailure,
-  findOrphansFailure,
-  findPathFailure,
-  formatCount,
-  formatHopCount,
   getConceptFailure,
   getConceptsFailure,
-  hasAllFirstContactResponses,
-  hasFirstContactErrorResponse,
-  healthChecksSummary,
-  healthSummary,
-  initialExpectedFirstContactIds,
-  inferImportsFailure,
-  importModuleEdgeKindOutputSummary,
+  listConceptsFailure,
+  limitedQueryConceptsFailure,
+  queryConceptsFailure,
+  vaultWarningsFailure,
+  vaultWarningsNotice,
+} from '../scripts/verify/checks/concept-reads.mjs';
+import {
+  findNeighborsFailure,
+  findPathFailure,
+} from '../scripts/verify/checks/graph-navigation.mjs';
+import {
+  findOrphansFailure,
+  listKindsFailure,
+  projectProbeFailure,
+  validationCodeSummary,
+  validateVaultFailure,
+  validateVaultNotice,
+} from '../scripts/verify/checks/vault-census.mjs';
+import { formatCount, formatHopCount } from '../scripts/verify/output.mjs';
+import {
   IMPORT_EDGE_KIND_VALUES,
   IMPORT_SOURCE_ROLE_VALUES,
   IMPORT_UNRESOLVED_REASON_VALUES,
   IMPORT_USAGE_VALUES,
+} from './infer-imports.mjs';
+import {
   initializeInstructionsFailure,
   initializeToolInventoryFailure,
-  listConceptsFailure,
-  listKindsFailure,
-  limitedQueryConceptsFailure,
+} from '../scripts/verify/checks/initialize.mjs';
+import {
   maintenanceFilterEnumSummary,
   maintenanceBucketOutputSummary,
   maintenanceMissingCursorFailure,
   maintenanceNextActionOutputSummary,
   maintenanceReadyCursorFailure,
   maintenanceResumeCursorFailure,
+} from '../scripts/verify/checks/maintenance-cursor.mjs';
+import {
   meaningRepairFullBodyReadsFailure,
   meaningRepairReviewChainFailure,
+} from '../scripts/verify/checks/meaning-repair.mjs';
+import {
   overviewFailure,
   overviewQueryPlanFailure,
+  projectMapQueryPlanFailure,
+} from '../scripts/verify/checks/query-plans.mjs';
+import {
   parserSmokeFailure,
   parseVerifyArgs,
   parseVerifyKillGraceMs,
   parseVerifyTimeoutMs,
   normalizeVerifyArgs,
   resolveVerifyVault,
+  serverStartupFailure,
+  serverSignalFailure,
+  verifyKillGraceValueErrorMessage,
+  verifyRetryEnvForVault,
+  verifyRetryExample,
+  verifySuccessMessage,
+  verifyTimeoutFailure,
+  verifyTimeoutValueErrorMessage,
+  verifyUsage,
+  verifyVaultPathError,
+  emptyVerifyVaultFailure,
+} from '../scripts/verify/cli.mjs';
+import {
   allPathsQueryFailure,
   neighborsFailure,
   pathQueryFailure,
-  projectProbeFailure,
-  projectMapQueryPlanFailure,
   projectScopeFailure,
-  queryConceptsFailure,
-  serverStartupFailure,
-  serverSignalFailure,
+} from '../scripts/verify/checks/graph-queries.mjs';
+import {
   strictArgsFailure,
   strictMultiArgsFailure,
   strictUnknownToolFailure,
@@ -126,37 +183,19 @@ import {
   strictListConceptsKindFailure,
   strictRelationCheckFailure,
   strictAddRelationFailure,
+} from '../scripts/verify/checks/strict-arguments.mjs';
+import {
   structuredContentFailure,
   structuredContentMismatchSummary,
   structuredContentParityStatus,
   structuredContentVerifySummary,
-  expectedToolsListAnnotationSummary,
-  tunedHealthScopeOutputSummary,
-  tunedWorkspaceBriefScopeOutputSummary,
-  toolsListAnnotationSummary,
-  toolsListInventoryFailure,
-  toolsListSchemaFailure,
-  VAULT_ISSUE_CODE_VALUES,
-  validationCodeSummary,
-  validateVaultFailure,
-  VERIFY_TUNED_HEALTH_ARGS,
-  VERIFY_TUNED_WORKSPACE_BRIEF_NODE_LIMIT,
+} from '../scripts/verify/checks/structured-content.mjs';
+import { toolsListSchemaFailure } from '../scripts/verify/tools-list/schema.mjs';
+import { VAULT_ISSUE_CODE_VALUES } from './validate.mjs';
+import {
   verifyCountConsistencyFailure,
   verifyCountConsistencySummary,
-  verifyKillGraceValueErrorMessage,
-  verifyRetryEnvForVault,
-  verifyRetryExample,
-  verifySuccessMessage,
-  verifyTimeoutFailure,
-  verifyTimeoutValueErrorMessage,
-  verifyUsage,
-  verifyVaultPathError,
-  emptyVerifyVaultFailure,
-  vaultWarningsFailure,
-  vaultWarningsNotice,
-  validateVaultNotice,
-  workspaceBriefSummary,
-} from '../scripts/verify.mjs';
+} from '../scripts/verify/checks/count-consistency.mjs';
 
 describe('live local first-contact probes', () => {
   const response = (id, payload) => ({

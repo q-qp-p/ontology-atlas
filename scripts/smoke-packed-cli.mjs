@@ -20,12 +20,14 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { checkMcpLeanTarballFiles } from './check-package-contracts.mjs';
 import { parseMcpToolMetadataFromDescription } from '../cli/src/lib/mcp-metadata.mjs';
+import { expectedToolsListAnnotationSummary } from '../mcp/scripts/verify/tools-list/inventory.mjs';
 import {
-  expectedToolsListAnnotationSummary,
   structuredContentVerifySummary,
+} from '../mcp/scripts/verify/checks/structured-content.mjs';
+import {
   tunedHealthScopeOutputSummary,
   tunedWorkspaceBriefScopeOutputSummary,
-} from '../mcp/scripts/verify.mjs';
+} from '../mcp/scripts/verify/checks/diagnosis.mjs';
 
 const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const MCP_DIR = join(ROOT, 'mcp');
