@@ -300,11 +300,6 @@
 
   
 
-  /* [Deleted, 2026-07-18] Old SigmaTopology connector animation
-     (topology-connector-flow / topology-relation-inspector-enter keyframes,
-     .topology-connector-path rule + reduced-motion override) — consumer 0,
-     dead CSS after #344. */
-
   @media (min-width: 1920px) {
     :root {
       /* Owner re-report (2026-07-23 2nd): Even reducing to 1.08, "still large and font

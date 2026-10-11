@@ -311,11 +311,6 @@
      Three values mean it's a trace of preference, not a standard. */
   --shadow-control-press: 0 5px 12px var(--color-shadow-a12);
 
-  /* Modal/sheet background scrim. */
-
-  /* Canvas top-left save concept anchor rail — semi-transparent floating surface
-     placed over --color-panel(#0f1011 = 15,16,17) (kept dark by same principle as Sigma tooltip). */
-
   /*
    * Semantic tokens — bright-tone edges/overlays on surface.
    *
@@ -377,14 +372,6 @@
 
   /* Letter-spacing scale */
   --tracking-display: -0.022em;
-  /*
-   * [Retired 2026-08-18] `--tracking-hero`(-0.022em) — removed because #761 had 0 consumers;
-   * old gateway headline (`--text-hero-lg`) revived it, then gateway remake
-   * changed its consumer to monument step (`--tracking-monument`), making it have 0 consumers again.
-   * Tokens without consumers are misinformation (unused-token-ratchet).
-   * If hero/hero-lg letter-spacing is needed again, revive as companion
-   * (`--text-hero--letter-spacing`).
-   */
   --tracking-section: -0.020em;
   --tracking-card: -0.015em;
 
