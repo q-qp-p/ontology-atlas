@@ -34,6 +34,19 @@ headers of `scripts/classify-change.mjs`, `scripts/run-ci-lane.mjs`,
 `scripts/run-playwright-ci.mjs`, `scripts/pr-land.mjs`, and the workflow files
 under `.github/workflows/`.
 
+Pre-push validates the pushed commit, refuses a checkout that could mask its
+inputs, and selects affected lint, Node and unit tests. Message-part changes use
+their composed catalogue once; cross-package imports also select their frontend
+tests. Relevant documentation-registry and workflow-security checks run locally.
+The whole hook includes preparation in its reported duration. Full contract,
+Knip and browser suites remain CI work.
+
+CI tooling test edits keep their regression checks without promoting unrelated
+lanes to full runs. Runtime planner edits, unknown paths and invalid comparison
+history stay exhaustive. Unit and performance reach excludes explicit type-only
+imports; source-reading contracts retain them. Exact default Node test files run
+once across command aliases; flags and lifecycle hooks keep their semantics.
+
 CI rejects focused `.only` tests on every execution path. It records a trace on
 the first retry, preserves that trace even when the retry passes, and uploads
 full failure evidence for failed jobs. These artifacts last seven days; ordinary
@@ -219,7 +232,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 ### CI impact plan
 
 **Run**: `pnpm test:ci:impact`
-**Proves**: Changes select their evidence, including nested specs, or promote to full coverage. Test-only edits stay targeted; shared helpers run the browser suite. Main uses verified push-before ancestry; scheduled/manual runs are exhaustive.
+**Proves**: Changes select evidence, including nested specs; tooling tests stay focused while runtime planners remain exhaustive. Type-only imports do not wake runtime tests; source-reading contracts retain them. Main uses verified ancestry; scheduled/manual runs are exhaustive.
 **Escalate**: `pnpm exec vitest run tests/contract/workflow-budgets.contract.test.ts tests/contract/workflow-security.contract.test.ts` when workflow wiring changes
 **Fix**: update `scripts/classify-change.mjs`'s path-to-check rules so the new or moved path is classified instead of falling through as unknown.
 

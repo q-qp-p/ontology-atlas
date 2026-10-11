@@ -364,3 +364,25 @@ test('a command run beside the lane is reported with its own status and duration
   assert.deepEqual(writes.map(({ command, status: verdict }) => [command, verdict]), [['serial', 'pass'], ['pnpm lint', 'fail']]);
   assert.equal(writes[1].ms, 250, 'measured from its own start to its own finish');
 });
+
+test('CI runs an explicitly selected Node regression only once across equivalent wrappers', () => {
+  const plan = buildImpactPlan({ files: ['scripts/run-playwright-ci.test.mjs'] });
+  const commands = commandsForLane({ lane: 'gates', plan });
+  const direct = commands.filter((command) => /(?:^| )node --test /.test(command) && command.includes('scripts/run-playwright-ci.test.mjs'));
+  assert.equal(direct.length, 1, commands.join('\n'));
+});
+
+test('foreground commands finish before the next starts and asynchronous failures remain red', async () => {
+  const order = [];
+  const status = await runCommands({
+    commands: ['first', 'second'], stdout: { write() {} }, stderr: { write() {} },
+    async spawn(command) {
+      order.push(`start ${command}`);
+      await Promise.resolve();
+      order.push(`finish ${command}`);
+      return { status: command === 'first' ? 2 : 0 };
+    },
+  });
+  assert.equal(status, 1);
+  assert.deepEqual(order, ['start first', 'finish first', 'start second', 'finish second']);
+});
