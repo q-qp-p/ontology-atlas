@@ -16,7 +16,6 @@ export interface ResolveDocLinkParams {
   href: string;
   /** The vault slug of the document containing this link (e.g. `README`, `ontology/project`). */
   fromSlug: string;
-  /** Every slug present in the vault (used to decide internal vs external). */
   vaultSlugs: Set<string>;
   /**
    * Base for a vault-external GitHub blob URL; undefined for a local vault, where such links stay

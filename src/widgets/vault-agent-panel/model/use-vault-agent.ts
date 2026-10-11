@@ -351,9 +351,8 @@ export function useVaultAgent(args: UseVaultAgentArgs) {
             vaultIsGit: args.vaultIsGit,
             locale: args.locale,
             labels: args.proposalLabels,
-            // This draft was written by this provider's model — a web screen does not
-            // make it something a person wrote (ledger 2026-07-31). The same name the
-            // audit log already records is passed straight through.
+            // The draft was written by this provider's model, so `agentName` passes through the same name the
+            // audit log records.
             agentName: provider,
           });
           if (built && active()) {
@@ -479,9 +478,8 @@ export function useVaultAgent(args: UseVaultAgentArgs) {
         current?.id === proposal.id
           ? {
               ...current,
-              // 'failed' stays 'failed' — mapping it back to 'pending' discarded
-              // the error and made a failed write look like "not yet applied"
-              // while files may already have changed (bug sweep 2026-09-01).
+              // `failed` stays `failed`: mapping it back to `pending` would discard the error and make a failed
+              // write look not yet applied while files may have changed.
               status:
                 outcome.status === 'applied'
                   ? 'applied'

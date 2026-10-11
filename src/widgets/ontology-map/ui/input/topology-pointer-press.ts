@@ -21,12 +21,8 @@ export function createPointerPressHandlers(
   const { hitVisibleNode } = hits;
 
   const handlePointerDown = (e: ReactPointerEvent<HTMLCanvasElement>) => {
-    // Only the primary button presses the map. A right press used to run the
-    // same press machine, so a right-click selected the node under it and
-    // reframed the camera while the menu stayed where the pointer was — 47 px
-    // (headless) to 268 px (14-inch, INDEX folding) away from the node it
-    // belongs to (measured 2026-09-19). The context menu is the whole of what
-    // a secondary button does here (`handleContextMenu`).
+    // Only the primary button presses the map; the secondary button only opens the context menu
+    // (`handleContextMenu`).
     if (e.button !== undefined && e.button !== 0)
       return;
     const tokens = readOntologyMapTokensOrNull();
@@ -47,12 +43,8 @@ export function createPointerPressHandlers(
         dampingRef.current = tokens.cameraDampingDefault;
       }
     }
-    // Capture the pointer for the whole gesture — without this, releasing over
-    // the analysis rail / outside the window never delivers `pointerup` to the
-    // canvas, the state machine sticks in `dragging`, and the camera then
-    // follows a button-less mouse until it strands off-graph (owner's
-    // "Dragging makes the canvas disappear";
-    // QA loss B). Implicit release on pointerup/cancel is per-spec automatic.
+    // Capture the pointer for the whole gesture, else releasing outside the canvas never delivers
+    // `pointerup` and the state machine sticks in `dragging`. Release on up/cancel is automatic.
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     }

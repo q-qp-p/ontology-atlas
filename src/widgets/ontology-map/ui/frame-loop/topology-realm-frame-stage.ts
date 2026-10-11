@@ -208,20 +208,8 @@ export function createRealmFrameStage(sources: RealmFrameStageSources) {
       };
     }
 
-    // --- Orbit enter-button position: anchored due **east** of the focused
-    // node's ring, following the camera every frame. It disappears inside a
-    // realm or on a node with no children.
-    //
-    // It sat at 45° upper-right until 2026-08-02. The expand control (the
-    // shoulder badge) uses that **same bearing**, so 80% of the badge slid
-    // under this button and `elementFromPoint` returned the button: the badge
-    // could not be pressed, and the single character still poking out read as
-    // a false number (`+17` rendered as "7"). The default bar above the head
-    // also lost 80 px² of its lower-right corner. The single source for
-    // bearing allocation and its rationale is the 「Distinct Bearings」 (distinct
-    // bearings) section of `render/cluster-chips.ts`, and
-    // `expand-settings.contract.test.ts` locks zero overlap across all
-    // radii. ---
+    // Orbit enter button sits due east of the focused ring; bearings must stay distinct from the expand
+    // badge (`render/cluster-chips.ts`, locked by `expand-settings.contract.test.ts`).
     {
       const btn = realmEnterButtonElRef.current;
       if (btn) {
@@ -248,19 +236,8 @@ export function createRealmFrameStage(sources: RealmFrameStageSources) {
           const by = orbit.y + orbit.h / 2;
           btn.style.transform = `translate(-50%, -50%) translate(${bx}px, ${by}px)`;
         }
-        // ★ **The tab stop is toggled along with visibility** (measured on
-        // keyboard, 2026-07-29).
-        //
-        // `opacity: 0` does not remove focusability, so while invisible this
-        // button stayed in the tab order and the 26th Tab on the map stopped
-        // here — with the focus ring at alpha 0 it was nowhere on screen, and
-        // Enter did nothing either (the click decision lives in the canvas
-        // hit test). To a keyboard user it was **a slot where focus
-        // disappeared**.
-        //
-        // This is the same place `pointerEvents` is switched off, and it has
-        // to be: the JSX's initial values alone cannot track visibility that
-        // changes every frame.
+        // Toggle the tab stop with visibility: `opacity: 0` stays focusable, so focus would land on an
+        // invisible button.
         if (eligible) {
           realmEnterTargetRef.current = fid;
           btn.style.opacity = "1";

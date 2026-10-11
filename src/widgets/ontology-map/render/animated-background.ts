@@ -1,31 +1,7 @@
 /**
- * The animated canvas background — **the proximity constellation, and nothing
- * else** (design council 2026-07-29, owner confirmed).
- *
- * Eleven background candidates were all rejected, and the measurements named the
- * cause. It was not the **amount** of ink: dots 0.645 vs the flow field 0.601 is
- * effectively the same, yet only one was rejected. The variable was **form** —
- * every rejected candidate was made of lines or closed shapes, i.e. the **same
- * grammar** as nodes and edges, so it competed for the eye. And a continuously
- * moving field wasted 78% of the pixels it changed per frame on nothing
- * (flow field 38,928px vs dots 8,457px).
- *
- * The flow field and gravity field were therefore deleted renderer and all —
- * merely hiding their tab leaves the next person reading them as candidates. The
- * owner kept only the proximity constellation.
- *
- * **The background still loses to the data.** Its ink ceiling is
- * `--canvas-bg-ink-max`, and it only reaches that ceiling near the cursor.
- *
- * **It never opens a new idle burn.** It owns no timer: it multiplies
- * `ambientFactor` (`model/ambient-sleep.ts`) straight through, so it ramps down
- * to a stop when the user lets go. That is the only wiring stopping the
- * background from reopening the 100%-idle-consumption defect the workbench seat
- * found on 2026-07-28.
- *
- * **Under reduced-motion the screen is settled, not empty.** Zeroing the step
- * would leave a blank canvas — i.e. delete the background. Instead it runs
- * `SETTLE_STEPS` frames at mount to reach a still image and stops there.
+ * The proximity constellation is the only background; line or shape forms compete with the data.
+ * It owns no timer: it multiplies `ambientFactor` (`model/ambient-sleep.ts`), so it stops at idle.
+ * Under reduced motion it runs `SETTLE_STEPS` frames to a still image, not a blank canvas.
  */
 
 /** Cursor response radius, px — beyond it the background is completely still. */

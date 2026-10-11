@@ -1,27 +1,7 @@
 /**
- * **The lit hologram's light** — the 3D map's floors, emissive nodes, and evidence as light
- * (2026-09-25, owner-approved direction: "premium and refined, like a 3D model in a movie,
- * yet usable").
- *
- * Three pieces, all drawn by the existing canvas-2D engine:
- *
- * 1. **The stage** (`drawStrataStage`) — the Strata floors sampled by `model/strata-stage.ts`:
- *    a translucent disc per tier in its kind colour, a faint polar grid, and one sector band
- *    per domain. Grid lines take the same depth fog the rings and nodes take, so the floor
- *    recedes the way the data does.
- * 2. **Emissive light** (`drawEmissiveHalo`) — a radial halo in the node's kind colour, from
- *    0.55 at the disc to nothing at 3.5× its radius, added with `lighter` so overlapping light
- *    brightens rather than covers. Each colour is **rasterised once into a sprite** and only
- *    scaled per frame: no `shadowBlur`, no per-frame filter, so the cost of light is one
- *    `drawImage` per lit node whether the structure is still or turning.
- * 3. **Evidence as light** (`drawEvidenceRing`) — a node's evidence state decides how much it
- *    emits, and one mark says why when it emits less: `current` emits fully; `stale` keeps a
- *    dimmer core and wears a 1 px ring in the warning hue; `unknown` emits nothing and wears a
- *    dashed ring in its kind colour, so its kind is still readable while it is plainly not
- *    lit. Unknown is never drawn as current: a web session with no Git walk is all unknown,
- *    and the legend says so.
- *
- * Token-free by the `render/*` convention: every colour arrives as an `rgb` triple.
+ * The lit hologram's light: Strata floors, emissive node halos and evidence rings on the canvas-2D
+ * engine. Each halo colour is rasterised once into a sprite and only scaled per frame (no
+ * `shadowBlur`). Unknown is never drawn as current. Token-free: colours arrive as `rgb` triples.
  */
 
 import type { StrataLodState } from "../model/strata-lod";

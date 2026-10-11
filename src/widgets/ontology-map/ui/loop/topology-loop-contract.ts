@@ -33,9 +33,8 @@ export interface UseTopologyLoopArgs {
   overviewFit?: "spine" | "full";
   fitViewToken: number;
   /**
-   * Bump to **toggle** a growth replay (`model/growth-replay.ts`). Ignored under
-   * reduced motion. A bump while one runs stops it — the control is a toggle,
-   * not a hold (owner, 2026-09-07; see the token effect for the full rule).
+   * Bump to toggle a growth replay (`model/growth-replay.ts`); a bump while one runs stops it.
+   * Ignored under reduced motion.
    */
   growthReplayToken?: number;
   /**
@@ -46,7 +45,6 @@ export interface UseTopologyLoopArgs {
   onGrowthReplayingChange?: (running: boolean) => void;
   /** Bumped to aim the camera at the spotlit nodes when the lens or its window changes (0 = unused). */
   spotlightFitToken?: number;
-  /** Saved-set focus identity used to pair a focus fit with a reversible camera return. */
   constellationFocusId?: string | null;
   relayoutToken: number;
   /**
@@ -153,10 +151,8 @@ export interface UseTopologyLoopArgs {
   /** DOM for the orbit's enter button — anchored in canvas coords, following the camera every frame. */
   realmEnterButtonRef?: RefObject<HTMLButtonElement | null>;
   /**
-   * The census caption engraved under the warding ring. Formatted by HomePage
-   * from the same source as the ledger census, so the widget never touches
-   * i18n or census arithmetic itself. (The internal name stays `realm`; the
-   * user-facing wording is "View only this" — owner decision 2026-07-23.)
+   * Census caption engraved under the warding ring, formatted by HomePage so the widget never touches
+   * i18n or census arithmetic.
    */
   realmCaption?: string | null;
   /**
@@ -200,18 +196,8 @@ export interface UseTopologyLoopArgs {
    */
   trailHoverNodeIdRef?: RefObject<string | null>;
   /**
-   * **The node the cursor is pointing at from a side panel** (2026-08-17).
-   * Two callers — chat-pane node names and the data sheet's
-   * relation/evidence/domain rows — share one channel because there is one
-   * cursor.
-   *
-   * Second exception to "focus owns emphasis exclusively", for the same reason
-   * as the trail lens (`trailHoverNodeIdRef`): the cursor is over a panel, not
-   * the canvas, so it cannot compete with canvas hover.
-   *
-   * It deliberately looks **exactly** like a mouse hover — a distinct
-   * appearance would be one more thing to learn. A ref, because a render per
-   * hover feels sticky on a large graph.
+   * The node the cursor points at from a side panel (chat names, data sheet rows); one channel because
+   * there is one cursor. It looks exactly like a mouse hover. A ref so hovers do not re-render.
    */
   panelHoverNodeIdRef?: RefObject<string | null>;
   /**
@@ -243,17 +229,15 @@ export interface UseTopologyLoopArgs {
    */
   canvasBackground?: CanvasBackground;
   /**
-   * 3D view (2026-08-18, opt-in) — relays the map into lit Strata or the
-   * relation-driven Neural cloud (`model/dome-view/`). Draw, hit-testing, DOM
-   * anchors, and the inspection hook all read the same frame map. Omitted keeps 2D.
+   * Opt-in 3D view: lit Strata or the relation-driven Neural cloud (`model/dome-view/`). Draw, hit
+   * testing, DOM anchors and the inspection hook read the same frame map. Omitted keeps 2D.
    */
   view3d?: boolean;
   /** Which 3D structure is drawn — Strata or the coupling (Neural) cloud. */
   mapArrangement?: MapArrangement;
   /**
-   * Lit 3D (2026-09-25) — node id → evidence state, from the product's one evidence rule
-   * (`shared/lib/git/evidence-states.ts`). An absent id is unknown; null means nothing was
-   * measured, so every node is unknown. It decides how much each node emits.
+   * Node id to evidence state from `shared/lib/git/evidence-states.ts`. Absent id is unknown; null means
+   * nothing was measured. It decides how much each node emits.
    */
   domeEvidence?: ReadonlyMap<string, "current" | "stale" | "unknown"> | null;
   onHiddenDependenciesChange?: (count: number) => void;

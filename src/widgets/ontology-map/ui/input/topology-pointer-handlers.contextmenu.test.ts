@@ -145,13 +145,6 @@ describe("createTopologyPointerHandlers — 빈 캔버스 우클릭 (2026-08-03)
   });
 });
 
-/**
- * A right press used to run the same press machine as a left one, so a
- * right-click selected the node under it and reframed the camera while the
- * menu stayed at the pointer — 268 px from the node it belongs to on a 14-inch
- * window (measured 2026-09-19). The secondary button opens the menu and does
- * nothing else.
- */
 describe("createTopologyPointerHandlers — a secondary press does not press the map", () => {
   function fakeCanvas() {
     return {

@@ -62,18 +62,8 @@ export function resolveVaultAgentRoute({
 }
 
 /**
- * The guarded ACP runtime a screen can dock a conversation to, read one way for every screen.
- *
- * Until 2026-09-19 the Library (`views/library/lib/use-library-agent.ts`), Analysis
- * (`OntologyInsightsPage.tsx`) and the project page (`views/project-detail/lib/use-project-agent.ts`)
- * each carried this wiring: bridge presence through `useSyncExternalStore`, a fast runtime probe
- * then a login probe (the screen paints first and corrects later, owner 2026-08-16), the guarded
- * subset, the vault's own MCP registration honoured, connectors gated per runtime. Three copies
- * drift; this widget model is the one place, and a view keeps only what is its own (the Library's
- * local-model brain, Analysis's capture context).
- *
- * It lives in the chat panel widget rather than a feature because the connector store is a
- * feature too, and a feature-level hook would need a new same-layer edge in
+ * The guarded ACP runtime a screen can dock a conversation to, read one way for every screen. It lives
+ * in the chat panel widget because a feature-level hook would need a new same-layer edge in
  * `same-layer-cross-import-ratchet`; widgets may read every feature.
  */
 export function useVaultAgentRuntime(

@@ -5,28 +5,8 @@ import { controlClass } from '@/shared/ui';
 import { COPY_FEEDBACK_RESET_MS } from '@/shared/lib/clipboard/use-copy-feedback';
 
 /**
- * The boundary card — it states honestly 「what cannot be done here」 and hands over
- * to where it can.
- *
- * This panel's agent sees only the docs folder. Questions the code decides (does
- * this concept match the real implementation, does this path still exist) are
- * better answered by the AI **in the user's own terminal** — the session continues,
- * there are tabs, and their own configuration is intact. So what the card gives is
- * the two lines that get you there: the `cd` into the vault, and a sentence that
- * starts the work the moment it is pasted.
- *
- * Even without the app providing a window, half of the return trip already exists —
- * the vault watcher draws whatever was changed outside onto the map.
- *
- * Handing over rather than trying to win a losing fight is this surface's boundary.
- *
- * ## Why the boundary sentence moved here
- *
- * The sentence "work that needs the code too is better in the terminal AI" used to
- * sit permanently below the composer, eating two lines through the whole
- * conversation, while the only moment it is useful is **when handing over**. So it
- * moved down to that position — the reason for handing over and the way to hand
- * over have to be in one place for the sentence to be guidance.
+ * Boundary card: this panel's agent sees only the docs folder, so code-dependent questions are
+ * handed to the user's terminal AI with two lines: the `cd` into the vault and a sentence to paste.
  */
 export function AgentHandoffPacket({
   vaultPath,

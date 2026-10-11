@@ -76,19 +76,6 @@ describe("bezierPoint", () => {
   });
 });
 
-/**
- * Comet-tail contract (always-on comets, restored on the owner instruction
- * "bring back the old one" — bring the old one back). The
- * prototype's ambient comet is back: EVERY non-dim `depends` edge carries the
- * three-dot tail regardless of focus (the old A1 "focus signal only" retirement
- * is reversed). ego/selected edges get a bigger, brighter tail; dimmed edges
- * never draw it; reduced-motion suppresses it entirely (so the canvas can
- * still reach a genuine idle state for those users). Design Guardian-approved —
- * `contains` edges normally never draw a tail EXCEPT the incident ego edges
- * the caller marks `containsCometEligible: true` (seed-ranked top-24 cap
- * upstream in `render/edge-fireflies.ts#selectEgoContainsComets`) — see the
- * dedicated `describe` block below.
- */
 describe("draw — comet tail is an always-on depends signal", () => {
   const TOKENS = {
     edgeContains: "#3a3a42",
@@ -156,12 +143,6 @@ describe("draw — comet tail is an always-on depends signal", () => {
   });
 });
 
-/**
- * Design Guardian-approved: contains edges incident to the selection (ego) carry
- * comet flow too — the same continuous phase as depends, not a one-shot. Edges
- * that fail the cap (`containsCometEligible`), non-ego edges, dim, and
- * reduced-motion all stay at 0.
- */
 describe("draw — ego contains comet (Guardian E)", () => {
   const TOKENS = {
     edgeContains: "#3a3a42",

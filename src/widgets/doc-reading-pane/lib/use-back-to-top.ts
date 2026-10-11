@@ -10,7 +10,6 @@ import { scheduleStateSync } from "@/shared/lib/render-timing/schedule-state-syn
 
 export const BACK_TO_TOP_SCROLL_THRESHOLD = 640;
 
-/** A pure verdict, split out of the hook for testability. */
 export function shouldShowBackToTop(
   scrollTop: number,
   threshold: number = BACK_TO_TOP_SCROLL_THRESHOLD,

@@ -288,11 +288,8 @@ export function useTopologyInput({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    // The native listener must go through `noteInput` like every other input
-    // path. It used to bind the raw handler, so wheel input never updated
-    // lastInputMs — after the 30s ambient sleep, wheel-zooming without moving
-    // the pointer left the ambient factor at 0 and the depends-edge comets
-    // stayed frozen through the whole interaction (bug sweep 2026-09-01).
+    // The native listener must go through `noteInput` like every other input path, else wheel zoom leaves
+    // `lastInputMs` stale and the ambient factor stays 0 after ambient sleep.
     const listener = (e: WheelEvent) => {
       wheelNoteInputRef.current();
       handleWheelRef.current(e);
@@ -342,23 +339,8 @@ export function useTopologyInput({
   }, [noteInput]);
 
   /**
-   * Announcing a dead end — **silence was the defect.**
-   *
-   * Owner, using it for real: "The arrow keys work, but I cannot move between nodes freely?"
-   * With no connected node in that direction it was built to do **nothing**.
-   * Not wrapping around stands — jumping to the far side loses the user's
-   * place — but it now says why it did not move, because a press with no
-   * response cannot be told from "broken".
-   *
-   * **No new surface**: the app already has a toast mounted across the layout,
-   * it dismisses itself (owner: "Show it briefly, then let it disappear") and assistive technology reads it. A hint
-   * box on the map would need position, tokens and motion decided, which is not
-   * a spec to set alone.
-   *
-   * ⚠️ **The wording and the toast do not belong to this widget.** Calling
-   * `useTranslations` here broke five map component tests, which render without
-   * a provider. This widget already **takes its wording as props**, like
-   * `canvasLabel`, so only the event goes out (`onWalkDeadEnd`).
+   * Announces a dead end when no connected node lies in the arrow-key direction (no wrap-around).
+   * Wording and toast stay out of this widget (tests have no provider); only `onWalkDeadEnd` goes out.
    */
   const onWalkDeadEndRef = useRef(onWalkDeadEnd);
 
@@ -374,14 +356,8 @@ export function useTopologyInput({
     if (!shouldAnnounceDeadEnd(deadEndAtRef.current, now)) return;
     deadEndAtRef.current = now;
     /*
-     * Send **the blocked node's screen position** along. Owner, 2026-08-10:
-     * "It should appear clearly right beside the node you were moving from, and
-     * then disappear."
-     *
-     * The screen-coordinate formula is the one the `nodes()` window and the
-     * draw already share; deriving it here would be a third copy. When no
-     * coordinate can be produced it sends `null` and the receiver decides not
-     * to show anything.
+     * Sends the blocked node's screen position, from the formula the `nodes()` window and draw already
+     * share. When none can be produced it sends `null` and the receiver shows nothing.
      */
     const world = worldRef.current;
     const camera = cameraRef.current;
@@ -399,28 +375,13 @@ export function useTopologyInput({
   }, [cameraRef, focusedSlugRef, viewportRef, worldRef]);
 
   /**
-   * Arrow keys **walk the graph** (owner decision, 2026-08-09) — they move to a
-   * neighbour rather than pushing the camera. Which neighbour is decided by
-   * pure functions in `../interaction/keyboard-walk` (a ±60° wedge, projection
-   * plus an orthogonal penalty); this only wires the result into canvas state.
-   *
-   * **Why no separate focus ring.** Separating focus from selection visually
-   * needs a second indigo mark, and in this app indigo already means
-   * "selected"; one colour with two meanings breaks the diagram, and that is
-   * not a spec to set alone (`.claude/rules/design.md`, 「To change a spec, convene the 'System'」 — changing a spec convenes the design-systems seat). So
-   * the keys **move the selection**, identical in meaning to a click, with zero
-   * new visual language.
-   *
-   * **Collapsed nodes are not walked** — a subtree the density gate collapsed
-   * has been replaced by a chip, so moving there means "I pressed a key and
-   * nothing is visible".
+   * Arrow keys walk the graph by moving the selection, identical in meaning to a click (indigo already
+   * means selected, so no separate focus ring). Collapsed nodes are skipped: a chip replaced them.
    */
   const handleKeyDown = useCallback((e: ReactKeyboardEvent<HTMLCanvasElement>) => {
     /*
-     * 3D fly-to keys (2026-09-25) — the keyboard twin of the double-click. Enter flies to the
-     * selected node; Home flies back to where the first fly-to left from (or frames the whole
-     * structure); Esc flies back too when a fly-to is in effect, and still reaches whatever
-     * else Esc does (the selection clears as before), so it is not consumed here.
+     * 3D fly-to keys, the twin of the double-click: Enter flies to the selected node; Home flies back or
+     * frames the whole structure; Esc flies back too and still reaches its other handlers.
      */
     {
       const dome = domeRuntimeRef.current;
@@ -516,20 +477,8 @@ export function useTopologyInput({
       const from = world.nodeById.get(currentId);
       if (!from) return;
       /*
-       * Reachable = **connected neighbours plus siblings**.
-       *
-       * ⚠️ Neighbours (edges) alone were the candidates at first, and the owner
-       * hit the wall in the real thing: "At depth 1 they should be able to move among themselves — I could not move around freely at the centre?" (at
-       * depth 1 they should be able to move among themselves — I could not move
-       * around freely at the centre). The nine domains ringing the project at
-       * the map's centre **have no edges to each other**; each attaches only to
-       * the project. So stepping sideways from one to the next was impossible,
-       * and on a screen where they visibly form a ring that reads as broken.
-       *
-       * **This does not permit arbitrary spatial jumps.** A sibling is the
-       * typed relation "same parent", which is the very reason they form that
-       * ring on screen. Parentless roots count as siblings of each other, for
-       * vaults with more than one project.
+       * Reachable means connected neighbours plus siblings (same parent): domains ringing the project have
+       * no edges to each other. Parentless roots count as siblings of each other.
        */
       const candidateIds = new Set<string>(world.neighborMap.get(currentId) ?? []);
       for (const node of world.nodes) {
@@ -564,14 +513,8 @@ export function useTopologyInput({
     onSelect?.(nextId);
 
     /*
-     * The camera only **follows**, and only when the focus is about to leave
-     * the free area. Recentring on every step keeps the map sliding while you
-     * walk and the user loses their place — breaking Shneiderman's
-     * overview-first on our own.
-     *
-     * **Both the test and the target use the free area**, for the reason and
-     * the measurements recorded on the focus-dive path above (owner,
-     * 2026-08-10). It runs once per step, not per frame.
+     * The camera only follows, and only when the focus is about to leave the free area; recentring on
+     * every step would keep the map sliding. Test and target both use the free area.
      */
     const { width, height } = viewportRef.current;
     const canvasEl = canvasRef.current;

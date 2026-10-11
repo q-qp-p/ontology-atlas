@@ -79,15 +79,9 @@ export function useTopologyLayoutCommands({
     dragStartPosRef.current = null;
     dragTugOffsetsRef.current.clear();
 
-    // Warding invariant (owner bug report 2026-07-23, repro path ②): inside a
-    // realm, auto-arrange means "tidy *this* world", so the homing targets are
-    // the **realm layout coordinates** (`insideTargets`), not the global
-    // `homeX`/`homeY`. Sending them home globally left the warding ring at the
-    // realm origin while every member flew off to spine coordinates — the root
-    // ended up outside its own ring. Nodes outside are hard-culled, so they get
-    // no spring. A relayout while exiting takes the global path: the reverse
-    // playback's destination is global home, so realm-target homing must not
-    // pull nodes back into a world that is closing.
+    // Inside a realm, auto-arrange homes to the realm layout coordinates (`insideTargets`), not global
+    // `homeX`/`homeY`, or the root lands outside its ring. Outside nodes are culled and get no spring. A
+    // relayout while exiting takes the global path, since reverse playback ends at global home.
     const realmData = realmDataRef.current;
     const realmPhase = realmTransitionRef.current.phase;
     if (realmData !== null && (realmPhase === "entering" || realmPhase === "active")) {

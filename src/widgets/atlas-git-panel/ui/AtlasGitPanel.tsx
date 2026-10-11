@@ -42,8 +42,8 @@ export interface AtlasGitPanelProps {
   /** Session changeset for the web degradation summary — HomePage's `ontologyChangeset`. */
   sessionChangeset?: OntologyChangeset | null;
   /**
-   * The vault graph, used to map a step's files onto concepts. Passed in rather than read
-   * through `useOntologyInsight`, which would make every test of this widget need a provider.
+   * The vault graph, used to map a step's files onto concepts. Passed in rather than read through
+   * `useOntologyInsight`, so tests of this widget need no provider.
    */
   graph?: { nodes: readonly KnowledgeGraphNode[]; edges: readonly KnowledgeGraphEdge[] } | null;
   className?: string;

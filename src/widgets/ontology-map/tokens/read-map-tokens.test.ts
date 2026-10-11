@@ -270,13 +270,6 @@ describe("resolveOntologyMapTokens", () => {
 });
 
 describe("refreshIndexDependentTokens — 표적 갱신", () => {
-  /**
-   * Why this function exists (performance trace, 2026-07-28): `HomePage` threw away
-   * **the whole** cache on every INDEX state transition, and selecting a node changes
-   * that state. So every single click made the next frame run `getPropertyValue` 115
-   * times and force a style recalculation (the top ForcedReflow entry, 58ms). Exactly
-   * one token actually depends on `data-topology-index`.
-   */
   it("캐시가 없으면 아무것도 하지 않는다 (다음 읽기가 최신을 가져간다)", () => {
     clearOntologyMapTokensCache();
     expect(() => refreshIndexDependentTokens(document.documentElement)).not.toThrow();

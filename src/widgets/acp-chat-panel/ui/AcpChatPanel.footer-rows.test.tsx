@@ -1,12 +1,6 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-/**
- * Where the conversation's controls stand. Until 2026-09-07 they were the composer's own
- * two-row footer; the owner asked for the bottom to hold only the input and send, so the
- * pickers, the status word and the session buttons are a toolbar above the transcript.
- */
-
 const bridge = vi.hoisted(() => {
   const state = {
     sent: [] as Array<Record<string, unknown>>,
@@ -89,12 +83,6 @@ afterEach(() => {
 });
 
 describe('the composer footer is one quiet row: pickers left, status and buttons right, send last', () => {
-  /*
-   * Owner, installed app, 2026-09-07, after a toolbar above the transcript left an empty band
-   * at the top: "one line at the very bottom". So the tool and the mode are quiet text
-   * pickers at the left of the composer's bottom row, and the status word, the session
-   * buttons and send stand at its right — the way chat composers are laid out elsewhere.
-   */
   it('keeps everything on the composer footer, in that order', async () => {
     await bootPanel();
     const footer = screen.getByTestId('acp-chat-footer');

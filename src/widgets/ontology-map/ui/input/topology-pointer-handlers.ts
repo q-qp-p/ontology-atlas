@@ -18,21 +18,8 @@ export function createTopologyPointerHandlers(refs: PointerHandlerRefs): Topolog
   const { buildEdgeCandidates } = hits;
 
   /**
-   * ★ **Expose the app's own edge decision verbatim** (2026-08-03).
-   *
-   * Why: nodes can be driven from outside through `__atlasMap.nodes()`, which gives
-   * coordinates and `draggable`, but **edges could not be.** Measured — clicking 101
-   * points along a curve's midline across 3 offsets still left `selection().edge`
-   * null. The threshold is 7px and the inside of a node body is excluded, so from
-   * outside there is no way to guess "where do I have to press".
-   *
-   * The result was that **no change involving edges could be verified automatically** —
-   * attaching entry and exit to the edge panel hit that wall and was reverted
-   * (2026-08-03).
-   *
-   * It does not recompute the coordinates but calls **the same functions**
-   * (`buildEdgeCandidates` plus `hitTestEdges`). An instrument using a different
-   * formula from the app measures its own imagination rather than the screen.
+   * Exposes the app's own edge decision (`buildEdgeCandidates` plus `hitTestEdges`) so external
+   * instruments use the same formula as the app.
    */
   const probeEdgeAt = (screenX: number, screenY: number, thresholdPx = 7) => hitTestEdges(buildEdgeCandidates(), screenX, screenY, thresholdPx);
   return { handlePointerDown, handlePointerMove, handlePointerUp, handlePointerCancel, handlePointerLeave, handleWheel, handleGesturePinch, handleContextMenu, probeEdgeAt };

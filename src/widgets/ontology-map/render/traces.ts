@@ -125,13 +125,8 @@ export interface TraceDrawState {
    */
   emphasized?: boolean;
   /**
-   * **Hover lift** 0..1 — how far a `normal` edge that touches the hovered node
-   * has risen toward the ego ink (2026-09-02). The map's hover used to move only
-   * the node (ring, shimmer, neighbour ripple) and left every line untouched;
-   * the note-graph views the owner keeps naming as the tactile reference light a
-   * note's connections the moment the cursor lands. The value is the hovered
-   * node's own emphasis ramp, so lines rise and fall on the same clock as the
-   * ring and never cut. Ignored unless `egoState === "normal"`.
+   * Hover lift 0..1: how far a `normal` edge touching the hovered node has risen toward the ego ink,
+   * on the node's own emphasis ramp. Ignored unless `egoState === "normal"`.
    */
   hoverLift?: number;
     /**
@@ -183,18 +178,14 @@ export interface TraceDrawState {
   halo?: { color: string; px: number; alpha: number;
     } | null;
   /**
-   * `prefers-reduced-motion: reduce`. The comet tail is the one moving mark
-   * this module paints, so honouring the preference here is what keeps the
-   * canvas fully static for those users (audit A8: the tail was the largest
-   * of five uncovered motion sources).
+   * The comet tail is the only moving mark this module paints; honouring `prefers-reduced-motion`
+   * here keeps the canvas fully static.
    */
   reducedMotion?: boolean;
   /**
-   * Design Guardian-approved condition for comet flow on `contains` edges
-   * incident to the selection (ego). True only for `egoState === "ego"` contains
-   * edges that pass the cap (`render/edge-fireflies.ts#selectEgoContainsComets`,
-   * top 24 by seed order); edges outside the cap keep the ego brightening of the
-   * main stroke and draw no particles. `depends` edges ignore this field.
+   * True only for `egoState === "ego"` contains edges passing the cap (`selectEgoContainsComets`,
+   * top 24 by seed order). Edges outside the cap keep the ego brightening of the main stroke and
+   * draw no particles. `depends` edges ignore this.
    */
   containsCometEligible?: boolean;
   /**
@@ -206,27 +197,14 @@ export interface TraceDrawState {
   dependsCometEligible?: boolean;
   cometOwner?: ParticleEdge;
   /**
-   * "walked-path lens" strength, 0..1 — non-zero only when this
-   * relation was stepped along **consecutively**.
-   *
-   * Owner, 2026-08-02: *"Does the yellow reach the lines too?"* (does the yellow reach the lines
-   * too?). With the lens on, this file drew every edge `dim`: footprints landed
-   * beside the visited nodes but **the lines joining them carried background
-   * ink**, so the "path walked" showed no path.
-   *
-   * This opens no new hue — the colour is the footprint ink itself, passed in as
-   * `edgeTrail` (`--color-footprint-trail`, whichever of the two choices,
-   * yellow or indigo, the user picked). Mark and line must share one colour to
-   * read as two notations of the same fact.
+   * Walked-path lens strength, 0..1; non-zero only when this relation was stepped along
+   * consecutively. The colour is the footprint ink itself (`edgeTrail`): mark and line must share
+   * one colour.
    */
   trailWalked?: number;
   /**
-   * Which way the walk crossed this relation — `true` from `a` toward `b`.
-   *
-   * ⚠️ **The mark on the nodes lost its heading on 2026-09-10 and this is where it went.**
-   * The old shoe prints came in pairs whose toes pointed the way of travel; a star has no
-   * toes, so the direction runs along the line instead, as a light travelling it. Absent
-   * means no glint and no behaviour change.
+   * Which way the walk crossed this relation: `true` from `a` toward `b`. Drawn as a light
+   * travelling the line. Absent means no glint.
    */
   trailDirection?: boolean;
   /**
@@ -244,7 +222,6 @@ export interface TraceDrawState {
 
 export interface TraceTokens {
   edgeContains: string;
-  /** P3a hierarchy ladder — optional so legacy callers (hover pulses) keep working. */
   edgeContainsL0?: string;
   edgeContainsL2?: string;
   edgeDepends: string;
@@ -447,13 +424,8 @@ const CONTAINS_LEVEL_WIDTH_FACTOR: Record<0 | 1 | 2, number> = { 0: 1.4, 1: 1, 2
 const COMET_TAIL_STEPS = [0, 0.028, 0.056];
 const COMET_TAIL_FAR_SIZES = [1.3, 0.9, 0.6];
 /**
- * Comet-tail base radii, from the prototype (topology-b2plus §13 `drawEdge`).
- * **Non-ego (normal) `depends` edges flow too, regardless of focus** — an owner
- * instruction reversed the earlier demotion to "comet tail = focus signal".
- * ego/selected edges get a larger tail plus bright ink; the panel-linked
- * emphasis is largest. As farT rises these interpolate toward
- * `COMET_TAIL_FAR_SIZES`, thinning to hairline dust rather than fading via alpha
- * (glow is banned).
+ * Comet-tail base radii. As farT rises they interpolate toward `COMET_TAIL_FAR_SIZES`, thinning to
+ * hairline dust rather than fading via alpha.
  */
 const COMET_TAIL_BASE_NORMAL = [2.1, 1.5, 0.9];
 /** Extra width a hovered node's lines gain at full lift — half the ego step, since nothing is selected yet. */
@@ -581,11 +553,6 @@ export function draw(ctx: CanvasRenderingContext2D, state: TraceDrawState, token
      * The halo is never dashed — a dashed halo leaves gaps where it cuts, so it
      * reads as a dotted shadow rather than as occlusion.
      */
-    // perf 2026-08-19 — the `setLineDash([])` before the halo was removed. This
-    // file and every neighbouring painter always restore `[]` after using a dash
-    // (the body path below, node-shapes, cluster-chips, dome-rings, the frame-draw
-    // ring block), so the dash state on entry is always empty. Only the redundant
-    // re-set was deleted, verified by the pixel gate (screenshot comparison).
     const halo = state.halo;
     if (halo && halo.px > 0.05 && halo.alpha > 0.01) {
         const prevAlpha = ctx.globalAlpha;
@@ -625,26 +592,9 @@ export function draw(ctx: CanvasRenderingContext2D, state: TraceDrawState, token
         strokeBody(ctx, state, stroke, width, 0, 1);
     }
     /*
-     * The travelling light — the walk's direction, said by the line.
-     *
-     * ⚠️ It runs **only on a walked relation, only while the trail lens is open**, which is
-     * the whole of its licence. This canvas had its ambient drift removed on 2026-09-08 after
-     * the owner found it hard to look at, and nothing here reopens that: the light exists in a
-     * lens a person deliberately opened, it moves along a path they themselves walked, and it
-     * is answering a question they asked. That is the whole licence, and it is narrower than the
-     * one this file used to cite: the 2026-09-08 drift removal governs the *Library's* canvas,
-     * and quoting it here claimed an authority this loop does not have (design-motion,
-     * 2026-09-10).
-     *
-     * ⚠️ The second half of that sentence was **also wrong on both of its facts**. It said the
-     * stars hold still, and that they hold still because brightness means recency. They twinkle,
-     * and brightness means *walked* — order moved to the ordinal on 2026-09-10 precisely because
-     * additive light cannot rank. A twinkle argues with nothing now, which is the only reason it
-     * is allowed to exist. See `TRAIL_STAR_TWINKLE` in `ui/frame-draw/trail-curves.ts`.
-     *
-     * ⚠️ **One light on the walk, not one per line.** `state.trailGlint` is `null` on every
-     * relation the light is not currently crossing, so a walk's lines take their turn in the
-     * order they were walked, all at one speed.
+     * The travelling light runs only on a walked relation while the trail lens is open.
+     * `state.trailGlint` is `null` on relations the light is not crossing, so one light moves along
+     * the walk in walked order.
      */
     if (glint > 0.01 && tokens.edgeTrail && state.reducedMotion !== true && state.trailGlint != null) {
         const phase = clamp01(state.trailGlint);
@@ -663,23 +613,9 @@ export function draw(ctx: CanvasRenderingContext2D, state: TraceDrawState, token
         ctx.globalAlpha = prevAlpha;
     }
     /*
-     * **The chevron — the walk's direction, standing still.**
-     *
-     * ⚠️ Before this mark, the *only* thing on a walked relation that said which way the walk
-     * went was the travelling light, and both council seats measured the same consequence
-     * independently: a reduced-motion reader was handed **no per-relation direction at all**
-     * (peak-over-median in the edge band falls 192 → 4 with the light gated off), and even with
-     * motion on, the light is dark 13% of every lap and wants about a second of watching before
-     * its direction is legible. A still frame of this surface could not be read either.
-     *
-     * The endpoint ordinals are not a fallback: on a walk that revisits a node they read
-     * "2·5" and "4·7", so a line between those two stops could be 2→4, 4→5 or 5→7.
-     *
-     * It is a permitted arrow, not a decorative one — `forbidden.md` bans the trailing `Open →`
-     * flourish and explicitly keeps arrows that convey path, order or causality, which is the
-     * entire content of this one. Placed at 0.62 rather than the midpoint so it never sits under
-     * the relation caption, and drawn at the line's own alpha so it arrives with the line during
-     * the ignition sweep instead of being a second event.
+     * Still direction mark for a walked relation: reduced-motion readers get no direction from the
+     * travelling light, and endpoint ordinals are ambiguous on a revisited node. Offset from the
+     * midpoint to clear the relation caption.
      */
     if (glint > 0.01 && tokens.edgeTrail) {
         const forward = state.trailDirection !== false;

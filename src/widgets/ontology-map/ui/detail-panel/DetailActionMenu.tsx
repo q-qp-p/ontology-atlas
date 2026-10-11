@@ -71,13 +71,9 @@ export function DetailActionMenu({
         data-testid={triggerTestId}
         onClick={() => onOpenChange(!open)}
         /*
-         * The icon-only "more" trigger is the 32px icon step (`lg`), not `md` (28px): it sits in
-         * one row with the 32px `Button sm` and the 32px `Edit` chip, and at 28px it was the one
-         * control in the row that stood short (captured at 1512, 2026-09-25).
-         *
-         * The labelled trigger sets its word in the primary `Button sm`'s type (`text-body-lg`,
-         * 14px): at the chip's 11px, "Edit" read two steps smaller than the primary beside it
-         * (interaction audit round 2, 2026-09-25).
+         * The icon-only trigger is the 32px icon step (`lg`) to match the 32px `Button sm` and `Edit`
+         * chip in its row. The labelled trigger sets its word in the primary `Button sm`'s type
+         * (`text-body-lg`) so "Edit" is not smaller than the primary beside it.
          */
         className={controlClass({
           shape: iconOnly ? "icon" : "chip",

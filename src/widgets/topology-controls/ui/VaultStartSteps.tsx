@@ -96,8 +96,7 @@ export function VaultStartSteps({
   const codeDominant = sourceFileCount > docsFoundCount;
 
   /**
-   * Step order from what the folder holds: `analyze` leads for a codebase
-   * (`docs/audits/USER-WALKTHROUGH-FIRST-RUN-2026-08-31.md`, finding 3). It may lead without an
+   * Step order from what the folder holds: `analyze` leads for a codebase and may lead without an
    * agent because it degrades to a paste instruction.
    */
   const steps = useMemo<StartStepId[]>(

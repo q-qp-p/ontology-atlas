@@ -140,26 +140,8 @@ export function useTopologyMapInstrumentation({
   } = lens;
 
   /**
-   * ★ Inspection hook — an automation window attached only under `?e2e=1`.
-   * **Not a product API.**
-   *
-   * The 2026-07-31 accident: six consecutive attempts to reproduce node-drag
-   * lag **only ever dragged the background**. The only way to aim at a node
-   * from outside was sweeping the canvas for a `pointer` cursor, but that is a
-   * **hover hit**, not **grabbable** — a grab must also pass
-   * `sim.hasNode(pressedNodeId)`, and failing that it silently becomes a pan.
-   * Node drag and pan then set **the same `grabbing`** cursor
-   * (`topology-pointer-move.ts`), so even checking afterwards was
-   * impossible. Every run answered "it isn't slow here", until the owner looked
-   * at the screen: *"You are shaking the background, not a node."*
-   *
-   * > **A state you cannot distinguish from outside cannot be tested from
-   * > outside.**
-   *
-   * So two things are exposed: a node's **screen position and whether it is
-   * grabbable** (aiming), and whether the current drag is **a node or the
-   * background** (confirming). Both are getters reading refs on call, so the
-   * per-frame cost is zero.
+   * Inspection hook attached only under `?e2e=1`; not a product API. Exposes a node's screen position
+   * and grabbability (aiming), and whether the drag is a node or background (confirming).
    */
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -223,27 +205,9 @@ export function useTopologyMapInstrumentation({
             /** A collapsed subtree is replaced by a chip and is not on screen. */
             hidden: isPreviewEndpointHidden(clustered?.has(n.id) ?? false, preview, n.id),
             /**
-             * The alpha the **tier and ego passes** left this node at. `hidden`
-             * says "collapsed"; it does not say "drawn": at the overview the
-             * density gate keeps capabilities at alpha 0 with `hidden` false, and
-             * a spec that read `hidden` alone counted 26 invisible discs as on
-             * screen (2026-09-03).
-             *
-             * ⚠️ It is **not** what the frame painted. The lens sink
-             * (`spotlightSink`) and the growth-replay ramp are applied later, in
-             * the draw itself, and never reach this number: with the path lens on,
-             * every node still reports full ink while the screen plainly sinks
-             * everything off the path, and a growth replay that grew from 91 to
-             * 1,134 lit pixels reports one unchanging state (measured 2026-09-20,
-             * three times in one day before the cause was found). Nodes are drawn
-             * in more than one pass, so recording `ctx.globalAlpha` at any single
-             * one of them is worse than this: a first attempt reported the darkest
-             * nodes on screen (median 43 of 765) as `1.00` and the sunk ones
-             * (median 195) as `0.30`.
-             *
-             * To ask what a person can see under a lens or a replay, sample the
-             * canvas pixels — `map-path-lens-sink.spec.ts` does, and it is the
-             * only method that has agreed with the screen so far.
+             * The alpha the tier and ego passes left this node at. `hidden` means collapsed, not drawn.
+             * It is not what the frame painted: the lens sink and growth-replay ramp apply later in the draw.
+             * To see what a person sees under a lens or replay, sample the canvas pixels.
              */
             alpha: drawnAlphas.get(n.id) ?? 1,
             appear: appearRef.current.get(n.id) ?? 1,
@@ -265,20 +229,8 @@ export function useTopologyMapInstrumentation({
         });
       },
       /**
-       * **Edges** as drawn, in the same CSS pixel space as the nodes.
-       *
-       * Why expose this (2026-08-03): this app's primary surface is a node-link
-       * graph and **edge crossings had never once been counted**. Node specs
-       * (shape, radius, parity) had gates; whether the map reads as a graph had
-       * no numbers at all.
-       *
-       * Purchase (1997, Graph Drawing) sets the priority: **reducing edge
-       * crossings matters overwhelmingly most** for human comprehension, while
-       * maximising angular resolution and grid snapping were not statistically
-       * significant. So only crossings and overlap are exposed.
-       *
-       * Edges attached to a `hidden` node are excluded — counting crossings of
-       * lines nobody can see produces numbers that do not describe the screen.
+       * Edges as drawn, in the same CSS pixel space as the nodes, for counting crossings and overlap.
+       * Edges attached to a `hidden` node are excluded; invisible lines do not describe the screen.
        */
       edges: () => {
         const world = worldRef.current;
@@ -326,19 +278,8 @@ export function useTopologyMapInstrumentation({
                 });
             },
             /**
-             * **The edge the app would select** at `(x, y)`, or null on no hit.
-             *
-             * Why it has to exist (2026-08-03): nodes can be driven from outside via
-             * `nodes()` coordinates, but **edges could not be**. Measured: clicking
-             * 101 points along a curve's midline across 3 offsets left
-             * `selection().edge` null every time (7 px threshold, excluding node
-             * bodies). So **no change touching edges could be verified
-             * automatically**, and an attempt to give the edge panel enter/exit
-             * motion was reverted at that wall.
-             *
-             * It calls **the same function as the pointer handlers** rather than
-             * recomputing coordinates: an instrument with its own formula measures
-             * its imagination, not the screen.
+             * The edge the app would select at `(x, y)`, or null. Calls the same function as the pointer
+             * handlers, so external instruments do not measure with their own formula.
              */
             edgeAt: (x: number, y: number, thresholdPx?: number) => {
                 const e = handlersRef.current?.probeEdgeAt(x, y, thresholdPx);
@@ -417,11 +358,8 @@ export function useTopologyMapInstrumentation({
                     yaw: d.yaw,
                     pitch: d.pitch,
                     /*
-                     * The pose the pointer **commanded**. Its gap from `yaw` is how far
-                     * behind the hand the dome trails, and there is no way to see that
-                     * from outside the canvas — pixels show "the dome turns", never "the
-                     * dome turns late". Lowering the smoothing τ from 45 to 14 ms on
-                     * 2026-08-19 was decided by measuring this value.
+                     * The pose the pointer commanded; its gap from `yaw` is how far the dome trails the hand, which
+                     * pixels cannot show.
                      */
                     yawTarget: d.yawTarget,
                     pitchTarget: d.pitchTarget,
@@ -458,9 +396,8 @@ export function useTopologyMapInstrumentation({
                     entryArmed: d.entryArmed,
                     settling: domeModelBuildRef.current !== null,
                     /*
-                     * Lit 3D (2026-09-25) — the fly-to in effect (the node it framed) and how many
-                     * drawn nodes wore each evidence light in the last frame. What the frame
-                     * painted, so a spec compares it with the legend's measured counts.
+                     * The fly-to in effect (the node it framed) and how many drawn nodes wore each evidence light in the
+                     * last frame, so a spec can compare it with the legend's counts.
                      */
                     flight: d.flight?.slug ?? null,
                     flyPending: d.flyRequest !== null,
@@ -487,15 +424,8 @@ export function useTopologyMapInstrumentation({
                 };
             },
             /**
-             * The node the map is **pointing at via hover** — the same value whether
-             * the cursor is over the canvas or over a row in a side panel (chat, data
-             * sheet).
-             *
-             * Why it exists (2026-08-17): there was **no way from outside** to check
-             * the contract that hovering a panel row makes the map point at that
-             * node. The canvas has no DOM, leaving only pixel comparison, and pixels
-             * say "something changed" but never "that node" — pointing at the wrong
-             * node would still pass green.
+             * The node the map points at via hover, whether the cursor is over the canvas or a side-panel row.
+             * The canvas has no DOM, so pixels cannot say which node.
              */
             hover: () => drawnHoveredNodeIdRef.current,
             /** What is selected: one node, or one edge's endpoint pair. */
@@ -517,12 +447,8 @@ export function useTopologyMapInstrumentation({
              * outside.
              */
             /**
-             * The label boxes the last frame drew, in CSS pixels — the only way to see
-             * label collision from outside. The canvas has no DOM, so a spec can
-             * otherwise only diff pixels, which reports "something changed" and never
-             * "these two names sit on top of each other". Node centres are not a
-             * substitute: a frame measured **zero** disc overlaps while names visibly
-             * crossed (2026-08-22). Names collide long before discs do.
+             * The label boxes the last frame drew, in CSS pixels: the only way to see label collision from
+             * outside, since names collide long before discs do.
              */
             setComets: (on: boolean) => {
                 setMapComets(on);

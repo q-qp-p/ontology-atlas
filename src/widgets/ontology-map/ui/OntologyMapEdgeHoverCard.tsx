@@ -107,14 +107,8 @@ export function OntologyMapEdgeHoverCard({ sentence, typeLabel, why, clickHint, 
       <p className="font-mono text-caption uppercase tracking-[var(--tracking-caps-12)] text-[color:var(--map-panel-text-tertiary)]">
         {typeLabel}
       </p>
-      {/*
-        **The recorded reason leads when there is one** (owner, 2026-09-06: every hover on a
-        containment edge read the same templated sentence). The template — "A holds B" — is
-        true of every edge of its type, so it carries no information a person did not already
-        have from the line; the `relation_notes` sentence is the one thing that differs edge
-        by edge. With a note, the note is the protagonist and the template drops to a caption;
-        without one, the template stands as before.
-      */}
+      {/* The recorded reason leads when there is one: the templated sentence is true of every edge of its
+         type, so with a `relation_notes` note the note leads and the template drops to a caption. */}
       {why ? (
         <>
           <p className="text-label leading-label text-[color:var(--map-panel-text-secondary)]">{sentence}</p>

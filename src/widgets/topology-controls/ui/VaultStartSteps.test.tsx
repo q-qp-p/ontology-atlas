@@ -157,10 +157,6 @@ describe('existing docs in the folder become the first step', () => {
   });
 });
 
-/**
- * A codebase's owner has code, so the read-code step leads
- * (`docs/audits/USER-WALKTHROUGH-FIRST-RUN-2026-08-31.md`, finding 3).
- */
 describe('code comes first when there is more code than docs', () => {
   it('puts the read-code step first when sources outnumber docs', () => {
     renderSteps({ docsFoundCount: 1, sourceFileCount: 5, onStartFromDocs: vi.fn(), onScaffoldStarter: vi.fn() });

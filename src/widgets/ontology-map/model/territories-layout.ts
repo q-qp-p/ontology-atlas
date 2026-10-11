@@ -1,13 +1,7 @@
 /**
- * Territories: the flat map with nothing folded, so "which domain owns this" is read from
- * position (owner spec "A v2"). Elements belong to their most-specific capability and appear
- * only as satellites of a selected one. Each domain owns an angular sector with its
- * capabilities on open shelves, never a hull. Every disc, name, title and pill is a box
- * accepted only where it touches no placed box: greedy, total-ordered, over a spatial-hash
- * grid, about O(N × candidates). Dependencies roll up per ordered domain pair into one
- * stroke with a count. Past `maxShelves` or `denseDomainCount` names wait for hover. Inside
- * a room the spacing draws in before names fold, and only discs that cannot fit let the
- * drawing grow past it. CSS px at a fixed label scale; the view pans, never zooms.
+ * Territories: the flat map with nothing folded, so ownership reads from position. Elements appear
+ * only as satellites of a selected capability. Every disc, name, title and pill is a box accepted
+ * only where it touches no placed box (greedy, total-ordered). The view pans, never zooms.
  */
 
 import {

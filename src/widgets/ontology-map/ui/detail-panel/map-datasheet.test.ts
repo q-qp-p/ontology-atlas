@@ -225,10 +225,6 @@ describe("formatV2MetricLine — M-2 typed segments", () => {
     ).toBe("쓰는 곳 0 · 기대는 곳 0 · 근거 0");
   });
 
-  // Datasheet internal refinement (2026-07-23) — segments are exposed structured so
-  // the panel can render label ink apart from value ink. The key matches the
-  // `data-datasheet-group` id of the connection group below, which pins in the type
-  // that the strip count and the group count are the same fact by construction.
   it("buildV2MetricSegments exposes the same segments structured, keyed by the group ids", () => {
     expect(
       buildV2MetricSegments({ contains: 18, usedBy: 4, dependsOn: 2, belongsTo: 0, evidence: 1 }, labels),
@@ -372,8 +368,6 @@ describe("buildV2EvidenceRows — 근거(evidence) group promotion (RATIO-SYSTEM
   });
 });
 
-// Toss C2 (audience-language plain-wording pass, 2026-07-24) — the sticky footer
-// folds the full slug behind a hover title and shows only this segment in visible text.
 describe("slugDisplaySegment — sticky 푸터 slug 평문화 (Toss C2)", () => {
   it("returns the last path segment of a folder-shaped slug", () => {
     expect(slugDisplaySegment("ontology/capabilities/mcp-server")).toBe("mcp-server");

@@ -1,21 +1,8 @@
 import { ANALYSIS_FINDINGS_INSTRUCTION, READ_ONLY_TOOL_INSTRUCTION } from '@/features/acp-session';
 
 /**
- * **A turn the app wrote on the person's behalf still opens on the sentence they can read.**
- *
- * Some turns in this transcript are not typed. The workbench's 「Analyze with AI」 door sends a
- * request the app composes: one readable instruction, then the scope as JSON, then the
- * response-format contract — around 1,200 characters, of which the first sixty are the only part
- * a person is meant to read. Drawn whole, that block is the tallest thing in the conversation and
- * the answer to it starts below the fold.
- *
- * ⚠️ **Nothing is removed.** The 2026-08-24 decision that a caller may send on the person's behalf
- * rests on the sentence landing in the transcript **as their own turn**, so the full text stays one
- * disclosure away, verbatim and in one piece. What changes is only which half is standing.
- *
- * The split is by **marker, not by length**: a long typed question is a long typed question, and
- * truncating it would be the panel deciding what somebody meant to say. Only text the app itself
- * generates is folded, and every marker below is a literal this repository writes.
+ * A turn the app composed opens on the readable sentence; the full text stays one disclosure away.
+ * The split is by marker, not length: only text this repository generates is folded.
  */
 export interface RequestParts {
   /** The part a person is meant to read. Never empty — an unsplit request is all lead. */
@@ -25,29 +12,9 @@ export interface RequestParts {
 }
 
 /**
- * Where an app-composed block starts. Each is the exact opening of something a caller in this
- * repository appends after the readable sentence:
- *
- * - `Scope:` — `AnalysisWorkbench.request()` serialises the analysis scope as JSON.
- * - `Continue analysis ` — the follow-up sentence naming a record id and its read tool.
- * - `Selected relation:` — `HomePage`'s map context, a relation triple as JSON.
- * - `Architecture task context:` — the architecture workbench's typed handoff packet, followed by
- *   its instruction sentences. It has to be listed here *and* stand after the readable sentence in
- *   `buildArchitectureAgentPrompt`: a marker on line 0 folds nothing.
- * - `Folder:` and its Korean twin — the anchor line every Library brief writes before its
- *   instructions (`compile-brief`, `lint-brief`, `propose-node-brief`, and the three that open
- *   on it). ⚠️ The Check-the-wiki press opened the dock on ~2,000 characters of schema, fenced
- *   blocks and taxonomy rules (installed app, 2026-09-13). A brief whose *first* line is this
- *   anchor folds nothing, by the rule above, and that is the honest outcome: there is no
- *   readable half in front of it to stand on.
- * - the response-format contract — `ANALYSIS_FINDINGS_INSTRUCTION`'s own first line, taken from
- *   the constant rather than copied, so the two cannot drift apart.
- * - the read-only frame every non-Flow Analysis request opens with, in both languages
- *   (`READ_ONLY_TOOL_INSTRUCTION`). ⚠️ This one is what the Insights dock **seats in the
- *   composer**, and until it was listed the split found nothing: the person's own text box opened
- *   on `Use only Atlas MCP read tools…` and a literal `query_ontology({operation:"…"})`, five
- *   lines tall (measured 2026-09-19). Both languages are listed because the request is composed
- *   in the reader's, and a marker that only knows English folds nothing for the owner.
+ * Where an app-composed block starts: the exact opening of text a caller appends after
+ * the readable sentence. A brief whose first line is the anchor folds nothing: no readable half
+ * stands before it. Both languages of `READ_ONLY_TOOL_INSTRUCTION` are listed.
  */
 const APP_BLOCK_MARKERS = [
   'Scope:',

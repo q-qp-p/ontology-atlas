@@ -1,19 +1,7 @@
 /**
- * **Where a pointer-anchored card goes so that it covers nothing the map drew.**
- *
- * The edge hover card used to sit at the pointer's lower right, always. On the
- * sample map at 1512×806, hovering the catalog-to-inventory line put the card
- * squarely over the fulfillment node and its name (measured 2026-09-19): the
- * card explained one
- * relation by hiding another concept. Four corners around the pointer are
- * tried; the first that overlaps nothing wins, in a fixed order so the card
- * does not wander between renders. When every corner overlaps something, the
- * least overlap wins.
- *
- * Chrome counts for far more than a drawn node (interaction audit, 2026-09-25):
- * at 1040 the card landed on the INDEX panel's counts and at 1280 on the
- * utility tiles, because only discs and names were avoided. A card over a node
- * hides a name for a moment; a card over a control hides the control.
+ * Where a pointer-anchored card goes so it covers nothing the map drew: four corners around
+ * the pointer are tried in a fixed order so the card does not wander; the least overlap wins.
+ * Chrome counts far more than a drawn node: covering a control hides the control.
  */
 
 /** How much worse a px² of covered chrome is than a px² of covered drawing. */

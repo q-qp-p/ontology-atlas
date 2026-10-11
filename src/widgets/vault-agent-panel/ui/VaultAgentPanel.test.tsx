@@ -134,7 +134,7 @@ const refundNode = {
   ref: null,
 } as never;
 
-/** "Payment Processing" with an empty meaning plus "Refund" with an empty owner — the two concepts the queue points at. */
+/** Payment Processing has no meaning and Refund has no domain: the two concepts in the queue. */
 function loadQueueFolder() {
   conceptFacts.map = new Map([
     ['capabilities/payment', { findings: ['definition-missing'], domainRef: 'billing', mtime: null }],
@@ -230,10 +230,7 @@ describe('VaultAgentPanel', () => {
   });
 
   it('키가 없으면 말로 길을 알려주는 대신 그 자리로 가는 문을 준다', async () => {
-    // Owner reversal (2026-07-26). The old contract was "do not create a second
-    // entrance into settings; name the location instead" — "From 'AI Connection' in
-    // the bottom-left settings (gear icon)...". Making a person hunt for somewhere the screen could take them
-    // is not guidance.
+    // With no key the panel offers a door to settings in the composer's position rather than directions.
     bridge.available = true;
     secrets.stored = false;
     renderPanel();
@@ -244,8 +241,6 @@ describe('VaultAgentPanel', () => {
     expect(screen.queryByTestId('vault-agent-input')).not.toBeInTheDocument();
 
     fireEvent.click(door);
-    // Keys moved to Agents → Models on 2026-09-25: the door lands on that tab, never on a
-    // settings pane that no longer exists.
     expect(navigation.pushed).toEqual(['/agents/?tab=models']);
     secrets.stored = true;
   });
@@ -375,13 +370,6 @@ describe('VaultAgentPanel', () => {
   });
 
   it('이어가기를 펼치면 경계와 함께 폴더 절대경로·부탁 문장이 온다', async () => {
-    // After the in-app terminal was removed, this is the only surface bridging the
-    // moment of leaving. With copy alone the user has to find the folder's absolute
-    // path by hand, and the flow breaks there. Why it does not sit permanently
-    // (2026-07-27): this card is needed **only when leaving**, yet it stood below the
-    // composer at all times, eating two lines along with the boundary sentence. The
-    // contract is unchanged — one press expands it and the same three things arrive
-    // (why · where to · what).
     bridge.available = true;
     renderPanel();
     fireEvent.click(await screen.findByTestId('agent-scope-accept'));
@@ -411,13 +399,8 @@ describe('VaultAgentPanel', () => {
     expect(screen.getByTestId('agent-handoff-card')).toBeInTheDocument();
     expect(screen.queryByTestId('agent-prompt-disclosure')).not.toBeInTheDocument();
 
-    // Pressing the same button again closes it — there is always a way to close what
-    // was opened.
-    //
-    // Closing is **not one frame** (2026-08-03): the box stays through the exit window
-    // and collapses, and during that it is `inert` plus `pointer-events-none` so a
-    // disappearing surface does not eat a click. Opening grows through reflow, so a
-    // hard-cut close would make the two directions of the same input different grammars.
+    // Closing is not one frame: the box stays through the exit window, `inert` and
+    // `pointer-events-none`.
     fireEvent.click(screen.getByTestId('agent-meta-handoff'));
     const exiting = screen.getByTestId('agent-meta-disclosure');
     expect(exiting).toHaveAttribute('data-surface-state', 'exiting');

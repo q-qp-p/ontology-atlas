@@ -4,13 +4,8 @@ import type { LibraryGraph } from "./build-library-graph";
 import { islandsLayout } from "./library-islands-layout";
 
 /**
- * How long the islands overview takes to lay, at the sizes the owner named on 2026-09-18
- * ("thousands in no time; plan for tens of thousands"). The layout is pure, so this is the
- * whole cost of a folder arriving on the home apart from painting it.
- *
- * Measured 2026-09-18 on the development Mac under Vitest, best of three: 10,000 files +
- * 1,200 pages + 40 concepts in 36 ms; 30,000 + 3,600 + 60 in 107 ms. The bounds below are
- * over ten times that; they are hang detectors, not budgets (`.claude/rules/testing.md`).
+ * Bounds are over ten times the measured cost (10,000 files in 36 ms): hang detectors, not budgets
+ * (`.claude/rules/testing.md`).
  */
 function folder(sources: number, pages: number, concepts: number): LibraryGraph {
   const nodes = [

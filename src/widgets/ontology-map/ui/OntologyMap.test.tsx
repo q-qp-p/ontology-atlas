@@ -155,16 +155,6 @@ describe("OntologyMap", () => {
     expect(canvas.getAttribute("onwheel")).toBeNull();
   });
 
-  /*
-   * The microtooltip on the orbit "Show only this" button is drawn
-   * **in 2D only** (owner instruction, 2026-08-18). That button rides the node's
-   * projected coordinates every frame, and in the dome those coordinates keep
-   * moving with rotation and perspective, so the text box slides across the scene.
-   *
-   * Both directions are measured — the `/gate-probe` discipline: checking only
-   * "absent in 3D" stays green even if the tooltip is deleted outright, so the
-   * check would enforce nothing.
-   */
   const realmProps: OntologyMapProps = {
     ...baseProps,
     onEnterRealm: () => {},

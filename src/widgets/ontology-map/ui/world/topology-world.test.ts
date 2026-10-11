@@ -412,11 +412,8 @@ describe("computeRevealedBounds", () => {
 });
 
 /**
- * **The overview frames the spine it draws** (2026-09-25). The one hub is spine, but
- * the density gate folds it behind its parent's chip like any sibling once that parent
- * holds more than twelve children, and the fit went on framing it: on the dogfood
- * ontology the folded hub stood 166 world units left of the drawn cross and the drawing
- * landed 77 px right of the free map's centre at 1512×949.
+ * The density gate can fold the hub behind a crowded parent's chip (over twelve children), so the
+ * overview must frame only the spine that is drawn.
  */
 describe("the drawn spine — a hub folded behind a crowded parent", () => {
   const p = node({ id: "p", kind: "project", x: 0, y: 0 });
@@ -462,9 +459,8 @@ describe("the drawn spine — a hub folded behind a crowded parent", () => {
     });
 });
 /**
- * **A path's source is framed with the map its target is picked from** (2026-09-26).
- * The frame is the overview's own bounds grown by the source and the neighbours its focus
- * draws; the source's own folded children stay behind its chip and do not widen it.
+ * The path pick frame is the overview bounds grown by the source and the neighbours its focus draws;
+ * the source's own folded children stay behind its chip.
  */
 describe("computePathPickBounds", () => {
     const p = node({ id: "p", kind: "project", x: 0, y: 0 });

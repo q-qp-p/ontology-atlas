@@ -6,19 +6,9 @@ import type { DomeViewKind } from "../model/dome-view/types";
 import { TIER_NAME_ROW_PX, type TierNameAnchor } from "../model/tier-names";
 
 /**
- * **Strata's tier names, each beside the plane it names** (2026-09-26).
- *
- * The frame decides where a name stands (`model/tier-names.ts`): outside its own
- * plane's rim, on nothing, or not at all. This draws the names it placed, as DOM rows
- * over the canvas so they keep the chrome's type, and measures every name in that
- * type so the placement works from the widths a person sees.
- *
- * Hovering a name raises its plane's ring to the tertiary ink while the pointer is on
- * it — the reverse lookup, pointing from the word to the plane it sits against.
- *
- * The names are the planes' captions, not a second key: the legend strip along the
- * bottom still names each kind by colour for everyone, assistive technology included,
- * so these are hidden from it rather than read twice.
+ * Strata's tier names, each beside the plane it names. The frame decides where a name stands
+ * (`model/tier-names.ts`); this draws them as DOM rows over the canvas and measures each in that
+ * type. Hidden from assistive technology: the bottom legend strip already names each kind.
  */
 
 const ROW_CLASS =

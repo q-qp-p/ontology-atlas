@@ -1,17 +1,7 @@
 /**
- * Viewport culling — pure screen-space rejection tests, no canvas/DOM.
- *
- * AUDIT FINDING this fixes (Design Guardian, 2026-07-20 B2): the frame draw
- * gated all 491 edges and every node on tier alpha ALONE — nothing checked
- * whether the geometry lands on screen. At deep zoom the loop still walked
- * every curve (plus up to 3 comet arcs each) fully off-canvas.
- *
- * DELIBERATE DEPARTURE from the prescription: Guardian proposed culling an
- * edge when BOTH endpoints are off-screen, arguing an edge with no visible
- * endpoint conveys no relation. That rule is geometrically wrong — a long
- * edge can cross the viewport with both ends outside it — so it would pop
- * real structure out of view mid-pan. We cull on bbox intersection instead:
- * strictly invisible geometry only, so culling is never perceptible.
+ * Viewport culling: pure screen-space rejection tests, no canvas/DOM. Edges are culled on bbox
+ * intersection, not when both endpoints are off-screen: a long edge can cross the viewport with
+ * both ends outside.
  */
 
 export interface ScreenPoint {

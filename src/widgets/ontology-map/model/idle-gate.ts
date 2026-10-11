@@ -48,7 +48,6 @@ export interface EgoTailActivityInput {
   ambientAsleep: boolean;
   hasDependsEdges: boolean;
   edgePulseSpeed: number;
-  /** The incident-contains comet case. */
   focused: boolean;
   hasContainsEdges: boolean;
   livePulseCount: number;

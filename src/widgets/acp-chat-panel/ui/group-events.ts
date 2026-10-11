@@ -101,41 +101,9 @@ function foldRepeats(events: readonly AcpToolEvent[]): TranscriptToolRow[] {
 }
 
 /**
- * Separates the answer from the agent's work stream — and separates that stream into its
- * two halves, which are not the same thing.
- *
- * **Thinking is folded.** A stretch of consecutive thought chunks is collected into one
- * disclosure where that stretch began. It is multi-paragraph markdown, and standing it would
- * let the middle of the work outweigh the conclusion — the failure this function was written
- * to prevent.
- *
- * **A disclosure ends where the thinking stops** (2026-09-20). It used to collect *every*
- * thought of the turn, reaching backwards past whatever had happened in between, so a turn
- * that went think → read → think drew both thoughts above the read: the second one appeared
- * to have come first, and the read appeared to have followed a decision it actually preceded.
- * Order is the only thing this column has to say about cause, so anything that is not a
- * thought — a tool call, an answer — closes the open disclosure and the next thought opens a
- * new one. The fold survives; its reach does not.
- *
- * **Tool calls stand** (2026-09-05). A tool call is one dim line naming what was touched
- * and what came back, and it is the only thing on screen that can tell you *why* an answer
- * is wrong — that the search found nothing, or read a stale frame. Folded away, that
- * diagnosis costs a click nobody makes while reading a confident paragraph, so the wrong
- * answer is simply believed.
- *
- * **Consecutive calls come back as one run.** Standing rows won the diagnosis and then
- * cost the transcript its shape: four dim lines with nothing tying them together read as
- * four unrelated interruptions rather than one stretch of work. The run is a grouping for
- * the panel to draw a single rule beside — every row is still on screen, in arrival order,
- * and nothing is collapsible.
- *
- * **Only repetition collapses** (2026-09-06). The 2026-09-05 decision that an agent's lookups
- * stand above its answer is unchanged: no tool call is hidden behind a click. What a run of three
- * or more byte-identical calls loses is its *separate lines* — same name, same input, same answer
- * is one fact stated three times, and stating it three times pushes the next, different call out
- * of view. The row still says how many (`×N`), so nothing about what happened is lost.
- *
- * A later user message starts a new group.
+ * Separates the answer from the agent's work stream. Consecutive thought chunks fold into one
+ * disclosure, closed by any non-thought. Tool calls stand, consecutive ones forming a run; only
+ * byte-identical repeats collapse onto one row with `×N`. A later user message starts a new group.
  */
 export function groupEvents(events: readonly AcpEvent[]): TranscriptItem[] {
   const out: TranscriptItem[] = [];

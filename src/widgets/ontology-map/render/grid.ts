@@ -1,36 +1,7 @@
 /**
- * ⚠️ Colour-gate exemption (the `ALLOWLIST` in `scripts/check-no-raw-color.mjs`,
- * 2026-08-04). The vignette's `rgba(3,3,4,…)` is a string consumed by
- * `CanvasGradient.addColorStop()`, which cannot resolve `var(--…)`, and its alpha
- * is recomputed every frame from camera depth (`farT`). It looks black but is
- * not exactly r=g=b, so it misses the automatic greyscale exemption too. Do not
- * add new colours here — if one is unavoidable, record why alongside it.
- *
- * Background + blueprint grid + vignette — ported from the B2+ prototype's
- * `buildGrid()`/`render()` background section
- * (`docs/prototypes/topology-b2plus.html` §8, §13).
- *
- * Three layered atmospheric effects, all driven by the single `farT` value
- * (no discrete branch, `docs/design/ontology-map.md` §3.1):
- * - background: `lerpColor(canvasBgNear, canvasBgFar, farT)` fill.
- * - blueprint grid: a tiled 24px-minor/120px-major pattern
- *   (`--map-grid-minor`/`-grid-major`), circuit-only —
- *   `globalAlpha = 1 - farT`, fully gone by farT≈0.98.
- * - vignette: radial gradient, transparent center → dark edges,
- *   `alpha = --map-vignette-base-alpha + farT * --map-vignette-far-alpha`
- *   (0.32 base, +0.18 at full far-field). Must stay a *transparent-center*
- *   gradient — the prototype's own source comment flags an earlier bug where
- *   an opaque full-canvas vignette erased the grid/dust layers underneath it.
- *
- * The grid pattern itself is built once (offscreen tile → `createPattern`),
- * not per-frame — `draw()` receives an already-built `CanvasPattern` rather
- * than rebuilding it every call.
- *
- * Two pieces of the background math ARE plain formula evaluation, not canvas
- * side effects, so they're extracted and unit-tested in `grid.test.ts`:
- * `lerpColorHex` (the background near→far crossfade) and
- * `computeVignetteAlpha`. The pattern tile itself still needs a real canvas
- * 2D context (`test.todo` — jsdom doesn't implement one meaningfully).
+ * Colour-gate exemption (`ALLOWLIST` in `scripts/check-no-raw-color.mjs`): the vignette's
+ * `rgba(3,3,4,...)` feeds `CanvasGradient.addColorStop()`, which cannot resolve `var(--...)`.
+ * Do not add colours here. The vignette keeps a transparent centre so grid and dust show through.
  */
 
 export interface GridPatternBuildInput {
@@ -113,31 +84,15 @@ export function computeVignetteAlpha(baseAlpha: number, farAlpha: number, farT: 
 }
 
 /**
- * The canvas background set. `dot` is the blueprint grid (the static default);
- * the rest are the cursor-reactive particle background
- * (`render/animated-background.ts`). Two older static tiles (constellation and
- * contour) were retired by owner decision on 2026-07-29.
+ * The canvas background set: `dot` is the static blueprint grid; the rest are the
+ * cursor-reactive particle background (`render/animated-background.ts`).
  */
 export type CanvasBackgroundVariant = "dot" | "web" | "depth";
 
 /**
- * The three depth-dot layers — parallax factor, dot spacing (px), dot radius,
- * alpha multiplier (design council 2026-07-29).
- *
- * All eleven rejected background candidates were made of lines or closed shapes,
- * i.e. the **same grammar** as nodes and edges, so they read as more data rather
- * than as background. Dots survived because they do not pretend to be data — so
- * this third background **introduces no new primitive**, it just stacks the
- * already-approved dot in three layers.
- *
- * **All motion comes from the user's hand.** Each layer has a different parallax
- * factor, so they separate **only while the camera moves** and freeze completely
- * when it stops. Zero autonomous motion makes idle burn structurally impossible
- * — satisfying the workbench seat's 2026-07-28 P0 through **form** rather than
- * wiring, and staying inside WCAG 2.2 §2.3.3's user-initiated exception.
- *
- * No factor exceeds 1: above 1 the background would move faster than the content
- * and read as the nearer layer, which is the opposite of depth.
+ * Three depth-dot layers (parallax factor, spacing px, radius, alpha multiplier). All motion comes
+ * from the camera: layers separate only while it moves and freeze when it stops. No factor exceeds
+ * 1: above 1 the background would read as the nearer layer, the opposite of depth.
  */
 export const DEPTH_DOT_LAYERS = [
   { parallax: 0.55, spacing: 132, radius: 0.9, alphaScale: 0.55 },
@@ -192,13 +147,8 @@ export interface BackgroundDrawState {
    */
   paintAnimated?: ((ctx: CanvasRenderingContext2D, width: number, height: number) => void) | null;
   /**
-   * Screen position of the world origin, so the blueprint grid is anchored to
-   * the WORLD instead of the display.
-   *
-   * AUDIT FINDING this fixes (Guardian 2026-07-20 B3): `draw()` took no camera
-   * at all and laid the pattern down with `fillRect(0,0,w,h)`. Panning slid
-   * the nodes across a grid welded to the monitor — zero parallax, so the map
-   * read as marks sliding on glass rather than a camera moving over terrain.
+   * Screen position of the world origin, anchoring the blueprint grid to the world, not the display,
+   * so panning gives parallax instead of marks sliding on glass.
    */
   originX: number;
   originY: number;
@@ -222,13 +172,8 @@ export interface BackgroundTokens {
 
 /** Draws the background fill, the selected background layer, and the vignette, in that order (bottom-most layer). */
 /*
- * perf 2026-08-19 — two caches for frame-invariant results.
- *
- * The base colour string (`lerpColorHex`) and the vignette gradient are functions
- * of (colour tokens, farT, viewport) alone, yet were rebuilt every frame. When
- * the inputs match the previous frame the same value is reused — identical value,
- * identical pixels — and any input change (zoom, resize, theme) rebuilds
- * immediately in that frame.
+ * Caches the base colour string and the vignette gradient: both depend only on the colour
+ * tokens, farT and viewport, so they are rebuilt only when an input changes.
  */
 let bgBaseCacheKeyNear = "";
 let bgBaseCacheKeyFar = "";

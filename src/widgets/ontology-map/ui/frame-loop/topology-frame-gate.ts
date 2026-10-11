@@ -320,21 +320,8 @@ export function createFrameGate({
                         domeRt.drag !== null ||
                         domeRt.poseTween !== null ||
                         /*
-                         * ★ **Every motion in flight must be named here.** These two
-                         * were missing and the screen actually froze mid-animation
-                         * (measured 2026-08-18):
-                         *
-                         * - `yawSnap`: the landing target keeps closing the remaining gap
-                         *   exponentially after velocity reaches 0. A gate that watched
-                         *   velocity alone read that stretch as "stopped" and cut the
-                         *   frames, leaving the dome 0.073 rad short of its target.
-                         * - `entryArmed`: the entry sweep's clock (1500 ms) is longer
-                         *   than the assembly clock (1120 ms). A gate that watched only
-                         *   the ramp missed the last 380 ms.
-                         *
-                         * Generally: forgetting to register a new motion with the idle
-                         * gate produces "it sometimes stops halfway", which is the most
-                         * expensive class of symptom to trace back to its cause.
+                         * Every motion in flight must be named here or the idle gate freezes mid-animation: `yawSnap` keeps
+                         * closing after velocity is 0, and `entryArmed` (1500 ms) outlasts the assembly clock (1120 ms).
                          */
                         domeRt.yawSnap !== null ||
                         domeRt.morph !== null ||
@@ -344,19 +331,8 @@ export function createFrameGate({
                         domeFocusPendingRef.current !== null ||
                         Math.abs(domeRt.lag.domain) + Math.abs(domeRt.lag.capability) + Math.abs(domeRt.lag.element) > 1e-4 ||
                         domeRt.pitch !== clampDomePitch(domeRt.pitch) ||
-                        // Keep rAF awake only while the auto-spin could actually run. A
-                        // dome whose `spinArmed` was lowered by interaction is a still
-                        // frame and belongs to the idle gate.
-                        //
-                        // ★ **Why `!ambientAsleep` belongs here** (measured 2026-08-19):
-                        // the auto-spin is ambient motion of the same family as the
-                        // always-on comets and the fresh breathe, yet it alone sat
-                        // outside the `ambient-sleep.ts` contract. So 3D **never fell
-                        // asleep, even 45 s after the last input** — at 2,000 nodes it
-                        // burned 520 ms per second (half a core) forever, where 2D in the
-                        // same state burned 3 ms/s, a factor of 170. Given that this
-                        // app's typical scenario is "leave it open beside the agent
-                        // terminal", this was the most expensive state available.
+                        // Keep rAF awake only while auto-spin can run; `!ambientAsleep` ties it to the `ambient-sleep.ts`
+                        // contract so 3D can fall asleep.
                         (!domeRt.orbiting &&
                             isDomeSpinAnimating({
                                 domeOn: domeTargetOn,
@@ -384,16 +360,8 @@ export function createFrameGate({
                 homing: homingActiveRef.current,
                 selectionPulseActive: selectionPulseRef.current !== null &&
                     now - selectionPulseRef.current.startAtMs < tokens.selectPulseDurationMs,
-                // ★ The three branches are composed by a pure function in
-                // `idle-gate.ts`, not by an inline OR here. While it was inline,
-                // ambient sleep applied to the **`depends` branch only**, so leaving
-                // a node selected and letting go meant the app never slept.
-                //
-                // The branches: with `depends` edges present and reduced-motion off,
-                // comets flow regardless of focus (owner's instruction that they be
-                // always-on), so the canvas is never idle; the focused `contains`
-                // comets and the hover pulses raise the same flag. When the document
-                // is hidden the browser stops rAF itself, which protects the battery.
+                // Composed by a pure function in `idle-gate.ts` so ambient sleep applies to every branch, not only
+                // the `depends` one.
                 growthReplaying: growthReplayRef.current !== null,
                 egoTailAnimating: isEgoTailAnimating({
                     reducedMotion: reducedMotionRef.current,
@@ -426,10 +394,8 @@ export function createFrameGate({
                 trailMotionActive: (trailLensPropRef.current?.current ?? false) &&
                     !reducedMotionRef.current &&
                     visitedTrailRef.current.length > 1,
-                // The fresh breathe is almost always true in this product's **normal
-                // state**, where an agent edits the vault daily (council
-                // measurement), which made this flag one of the two causes of the
-                // idle gate staying open forever. Hence the ambient-sleep guard.
+                // The fresh breathe is nearly always true when an agent edits the vault, so it needs the
+                // ambient-sleep guard for the idle gate to close.
                 breathing: !reducedMotionRef.current && !ambientAsleep && world.nodes.some((n) => n.fresh),
                 cameraMoving,
                 // Deselect fade: with no live focus but a retained colorFocus still

@@ -50,15 +50,9 @@ export function ProjectSourceRemedy({
       data-remedy-mode={
         onAction ? (showProposal ? "proposed" : "actionable") : "degraded"
       }
-      // `keep-all` — Korean breaks at any character. The three sentences in this
-      // box are guaranteed to wrap at the panel's narrow width, and with default
-      // line breaking a word splits down the middle, as in "Here / Found it".
-      // (The action strip already uses the same grammar for the same reason —
-      // zero values added.)
-      //
-      // No top margin: inside a `RowDisclosure` a child's margin collapses out of the
-      // measured body, so the pinned height came up 2px short and clipped this box's
-      // bottom border (interaction audit, 2026-09-25).
+      // `keep-all`: Korean breaks at any character and these sentences wrap at the panel's narrow width.
+      // No top margin: in a `RowDisclosure` a child's margin collapses out of the measured body, so the
+      // pinned height comes up 2px short and clips this box's bottom border.
       className="flex flex-col gap-2 rounded-chip border border-[color:var(--map-panel-action-border)] bg-[color:var(--map-panel-action-surface)] px-2.5 py-2 [word-break:keep-all]"
     >
       {why ? (

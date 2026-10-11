@@ -1,23 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
 /**
- * The **wiring** contract for ambient sleep (council "Workbench" P0,
- * 2026-07-28).
- *
- * `ambient-sleep.ts`'s unit test only checks that the factor curve is right. What
- * this file holds is whether that factor **actually multiplies the comet speed** —
- * however correct the pure function is, if the physics step does not use it the idle
- * burn is unchanged.
- *
- * Why here rather than in a browser: real sleep is a 30s delay plus a 2s ramp, so
- * waiting for it in e2e costs CI 35 seconds every run. The multiplication contract
- * can be measured without time, and "do the repaints really stop" was already
- * confirmed by browser measurement (awake distinct 4 → asleep distinct 1 → after
- * input distinct 4).
- *
- * `updateParticles` is mocked so only **what speed it was called with** is observed —
- * the correctness of the phase advance itself belongs to
- * `render/edge-fireflies.test.ts` and is not duplicated here.
+ * `updateParticles` is mocked so the test observes only the speed it receives, verifying the ambient
+ * factor multiplies comet speed.
  */
 vi.mock("../../render/edge-fireflies", async () => {
   const actual = await vi.importActual<typeof import("../../render/edge-fireflies")>(

@@ -5,15 +5,8 @@ import { AgentProposalCard } from "./AgentProposalCard";
 import type { AgentProposal } from "@/features/vault-agent/model/types";
 
 /**
- * **It locks while the write is running.**
- *
- * The draft left the status `pending` throughout `await applyProposal`. So pressing
- * "Apply" twice sent **two simultaneous vault writes**, and "Cancel"
- * could be pressed in between. The screen had **no indication at all** that it was
- * applying — meaning a double click was not an exception for the user but
- * **expected behaviour**. With no response, pressing again is normal.
- *
- * (The design council's "Interaction" rejection rationale, 2026-07-29.)
+ * Locks while the write runs: the status stayed `pending` through `await applyProposal`, so a second
+ * Apply sent a second vault write.
  */
 
 const baseProposal = (status: AgentProposal["status"]): AgentProposal =>

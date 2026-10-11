@@ -21,19 +21,9 @@ interface Point {
 }
 
 /**
- * The depth term — an optional argument to `worldToScreen`.
- *
- * `z` is how far a node has receded behind the layout plane (world units) and
- * `focal` is the focal length of the weak perspective: `s = focal / (focal + z)`.
- * `lift` is layer separation — a fixed tilt encoded as a constant plane spacing
- * (world units) — so deeper layers settle lower on screen. (A leftover API from
- * the 2026-08-18 z-lift mockup: the current 3D dome uses the offset path in
- * `model/dome-view/` and does not use this term, but `dome-view.test.ts` pins it
- * along with the byte-identical contract for when it is omitted.)
- *
- * **Omitted (the default path), the output is byte-identical to before** — it
- * takes the original two-line formula, and `topology-camera-math.test.ts` pins
- * that invariant as a contract.
+ * Optional depth argument to `worldToScreen`: `z` is recession behind the layout plane, `focal` the
+ * weak-perspective focal length (`s = focal / (focal + z)`), `lift` a constant plane spacing.
+ * Omitted, the output is the original formula (`topology-camera-math.test.ts`, `dome-view.test.ts`).
  */
 export interface DepthTerm {
   z: number;
@@ -115,13 +105,9 @@ export function hitTestWorld(
    */
   radiusScaleForNode?: (node: WorldNode) => number,
   /**
-   * 3D view — the node's normalised depth (0 near → 1 far, `DomeNodeFrame.u`).
-   * Given, **the nearer node wins** when discs overlap: in the dome the front and
-   * back rings overlap on screen constantly, and the old «distance to centre»
-   * decision alone handed back the far node in the fog instead of the large bright
-   * near node under the cursor — dragging that reads on screen as «clicking does
-   * not move the right thing» (owner report, 2026-08-18). Distance remains the
-   * tiebreak among equal depths. Omitted keeps the previous behaviour.
+   * 3D view: the node's normalised depth (0 near, 1 far, `DomeNodeFrame.u`). When given, the
+   * nearer node wins overlapping discs and distance breaks ties among equal depths. Omitted,
+   * distance alone decides.
    */
   depthForNode?: (node: WorldNode) => number,
 ): string | null {
@@ -151,26 +137,9 @@ export function hitTestWorld(
     const onInk = distance <= drawnRadius;
     const depth = depthForNode ? depthForNode(node) : 0;
     /*
-     * Rank: ink first, then depth, then distance.
-     *
-     * ## Why ink outranks depth (measured 2026-09-06)
-     *
-     * The slack ring is a courtesy for small targets; it is not an occluder. It
-     * used to compete on equal terms with the painted disc, and because depth was
-     * decided before distance, a near domain (drawn r≈10 px, hit r≈15) swallowed
-     * the **centres** of the far elements drawn beside it: on the sample vault,
-     * pointing at each drawn centre in turn, 4 of 125 nodes in Cone at 1512×982
-     * and 12 of 125 at 834×1112 handed back a different node — dead centre on a
-     * dot you can see, with the answer coming from a shape 15 px away. Two of
-     * them then resolved to a relation, because the edge candidate list uses the
-     * same body radius to decide "node beats line".
-     *
-     * With ink first, whatever the frame painted under the cursor wins, and the
-     * slack ring only decides among points that are on no node's ink at all.
-     * Depth still orders the overlaps that are real (both discs cover the point:
-     * the nearer, brighter, larger one is on top and wins) and distance still
-     * breaks ties inside one depth — the 2026-08-18 rule, now scoped to the
-     * pixels it was describing.
+     * Rank: ink first, then depth, then distance. The slack ring is a courtesy for small targets,
+     * not an occluder, so it decides only among points on no painted disc; depth orders real
+     * overlaps.
      */
     const better = onInk === bestOnInk
       ? depth < bestDepth - 1e-6 || (Math.abs(depth - bestDepth) <= 1e-6 && distance < bestDistance)
@@ -186,24 +155,9 @@ export function hitTestWorld(
 }
 
 /**
- * DECOUPLING (ontology-map axis split): `farT` (visual expression) and tier
- * visibility used to ride the same camera scale. `overviewScaleRef` feeds
- * `model/altitude.ts`'s `farHigh`/`farLow` as the "100%" anchor —
- * `farHigh = overviewScale * 0.92`, `farLow = overviewScale * 0.62`.
- *
- * The redesign wants the DEFAULT overview to read as CIRCUIT (`farT ≈ 0`) — a
- * machined, engraved-numeral look, not the flat constellation — while still
- * showing only the project/domain/hub spine (no fan-arc soup). Circuit needs
- * the camera at/above `farHigh`; the anti-soup behavior now comes from a
- * SEPARATE zoom-ratio gate (`model/tier-visibility.ts`), not from `farT`.
- *
- * So the entry scale is the tight fit × `--map-overview-entry-ratio`
- * (0.95), kept ABOVE the far-high ratio (0.92) so `farT` lands at 0 on load by
- * construction, for every dataset. The tight fit itself is unchanged and still
- * anchors `overviewScaleRef` (the altitude band's 100% reference) AND the
- * zoom-ratio's `overviewEntryScale = fit.tscale × overviewEntryRatio`. Zooming
- * OUT from here still crosses `farHigh`→`farLow`, so the far-field
- * constellation/diffraction expression still appears when the user pulls back.
+ * The overview entry scale is the tight fit times `--map-overview-entry-ratio` (0.95), kept
+ * above the far-high ratio (0.92) so `farT` lands at 0 on load. It anchors `overviewScaleRef`;
+ * zooming out still crosses `farHigh` to `farLow`.
  */
 /**
  * Fixed-chrome safe insets (px) — the left ReaderLens panel, right popover rail,
@@ -226,34 +180,16 @@ export type SafeInsetTokens = Partial<
 };
 
 /**
- * The share of an axis the fit may reserve for chrome.
- *
- * The side insets are absolute pixels (376 + 112 by default since 2026-09-25,
- * 350 + 120 before), so they do not shrink with the window. Measured 2026-09-20:
- * on an 820-wide canvas they take 57% of it and the graph spans 31% of the width;
- * on a 390-wide canvas they total more than the canvas, the free width collapses
- * to one pixel and only `cameraScaleMin` saves the frame — the map draws at its
- * floor zoom, its nodes spanning 118 px of 390. The pair asks for 40% of a
- * 1216-wide canvas and exactly half of a 1040 window's 976 px one, where the
- * ceiling does not yet bind; the widest any test pins is 46%. So a half-canvas
- * ceiling leaves every desktop width from 1040 up untouched and binds only where
- * the chrome would otherwise take more of the frame than the map.
+ * The share of an axis the fit may reserve for chrome. Side insets are absolute pixels, so a
+ * half-canvas ceiling leaves every desktop width from 1040 up untouched and binds only where
+ * chrome would take more of the frame than the map.
  */
 export const MAX_FIT_CHROME_SHARE = 0.5;
 
 /**
- * How the two insets of one axis give way when they pass the ceiling.
- *
- * - `equal` — the side lanes. Each is the chrome's footprint plus one air, the
- *   same air on both sides (`tests/contract/map-fit-side-air.contract.test.ts`),
- *   and the fit centres the drawing between them. Cutting both by the same number
- *   of pixels keeps that centre where the chrome puts it. Cutting in proportion
- *   did not: without a measured rail the right lane's give is its whole 112 px
- *   against INDEX's 52 above the panel, so the right lane gave twice as much and
- *   the overview slid toward the rail — +6.6 px at 900 wide and +15.4 px at 800,
- *   measured 2026-09-26 with INDEX open.
- * - `proportional` — the top and bottom bands, which are not footprint plus a
- *   shared air, so there is no centre between them to hold.
+ * How the two insets of one axis give way past the ceiling. `equal`: side lanes cut by the same
+ * pixels, keeping the drawing centred (`tests/contract/map-fit-side-air.contract.test.ts`).
+ * `proportional`: top and bottom bands, which have no shared air to centre.
  */
 export type FitInsetShare = "equal" | "proportional";
 
@@ -327,20 +263,9 @@ export function centerForInsets(
 }
 
 /**
- * Review pass B defect 1 (2026-07-23) — the overview fit matched only the nodes'
- * geometry bounds into the safe area, so the bottom-most spine node's label anchor
- * (= `radius + LABEL_OFFSET` below the node, frame-draw:794 — the cull looks at the
- * anchor, not the font height) was pushed just outside the label safe-rect's cull
- * line and vanished silently, but only in the 1440×900 default view (1920 is a
- * width-constrained fit, so vertical slack remained and it never surfaced).
- * Allowance is reserved on the bottom inset **in the fit calculation only** — the
- * label cull rect and the camera's movable area are unchanged.
- *
- * The value derives from `LABEL_OFFSET` in `render/labels.ts` — max LABEL_OFFSET
- * (currently project 20) plus 4 slack. Keeping a literal 24 alongside would let
- * this reservation drift silently whenever LABEL_OFFSET changes (Guardian
- * follow-up), so it is derived per frame rather than held as a constant, which
- * guarantees it stays in sync.
+ * The overview fit reserves a bottom allowance so the bottom-most spine node's label anchor
+ * (`radius + LABEL_OFFSET`) stays inside the label cull line. Derived from `LABEL_OFFSET` (max
+ * plus 4 slack) so it cannot drift; applied to the fit only, not to the cull rect or movable area.
  */
 const OVERVIEW_LABEL_BOTTOM_ALLOWANCE = Math.max(...Object.values(LABEL_OFFSET)) + 4;
 
@@ -443,16 +368,9 @@ export function computeOverviewCameraTarget(
 }
 
 /**
- * **The lens fit** — expand-all and the recent-changes spotlight. Fits the lens
- * bounds into the width left beside the side panels and centres them there.
- *
- * Measured 2026-09-19 at 1512×806 with the INDEX panel open: this fit used the
- * raw viewport, so expand-all put the graph's centre at x 719 while the area
- * beside the panel is centred at 835 — and the very next "fit" press moved the
- * map, because that fit does read the panels. The top and bottom lanes are
- * deliberately not reserved here: the lens bounds already carry their own 18 %
- * padding (`runSpotlightFit`), and reserving both on top of it cut the fill from
- * 75 % to 49 % of the height. With zero insets this is exactly `fitWorldTarget`.
+ * The lens fit (expand-all, recent-changes spotlight): fits the lens bounds into the width beside
+ * the side panels and centres them. Top and bottom lanes are not reserved: the lens bounds carry
+ * their own 18% padding (`runSpotlightFit`). With zero insets this is exactly `fitWorldTarget`.
  */
 export function computeLensFitTarget(
   bounds: { minX: number; minY: number; maxX: number; maxY: number },
@@ -472,37 +390,9 @@ export function computeLensFitTarget(
 }
 
 /**
- * **The cone's own fit** — fill the free canvas, not the safe rect.
- *
- * ## Why the overview fit could not do this (measured 2026-09-05, sample vault)
- *
- * `computeOverviewCameraTarget` was fitting the cone, and it reserves the 2D
- * map's promises: `safeInsetTop` 148 (the tool lane plus the docking chips),
- * `safeInsetBottom` 96 plus the label allowance, `safeInsetLeft` 350 and
- * `safeInsetRight` 120 — 268 px of the height and 470 px of the width before a
- * dot is drawn. On top of that the caller padded the bounds by 15% a side and the
- * overview entry ratio took another 5%. The arithmetic lands exactly where the
- * screen did: at 1920x1080 the cone came out 602 x 620 px, **18.6% of the canvas
- * and 22.6% of the free area**, an object adrift in the middle of an empty stage.
- *
- * None of those reservations describes the cone. The docking chips are a 2D
- * density device and are not drawn in 3D; the label allowance is a 2D bottom-row
- * reservation; the left and right numbers are static guesses at panels this
- * function is handed the *measured* width of.
- *
- * ## What this fits into
- *
- * The free canvas — the canvas minus the panels actually covering it
- * (`interaction/free-area.ts#measureCanvasInsets`, the same measurement the
- * camera already consumes) — minus a top band for the floating tool lane and a
- * bottom band for the instrument readout, both passed in as `insets`. The scale
- * then fills `fill` of whichever axis binds. `nodeRadiusPx` is subtracted because
- * the outline is the discs, not the centres, and a cone node is a fixed number of
- * screen pixels (`DOME_NODE_PX`) — which is what keeps this fit buying spacing
- * instead of ink.
- *
- * There is no padding term beyond `fill`: two multiplied paddings is how the old
- * number got small without anyone choosing it.
+ * The cone's own fit: fill the free canvas, not the safe rect, since the overview fit's static insets
+ * describe the 2D map. Free canvas = canvas minus measured panels (`interaction/free-area.ts`) minus
+ * the `insets` bands; `nodeRadiusPx` is subtracted (`DOME_NODE_PX`). No padding beyond `fill`.
  */
 export function computeDomeFitCameraTarget(
   /** The projected bounds of the node **centres** (world units). */
@@ -532,27 +422,9 @@ export function computeDomeFitCameraTarget(
 }
 
 /**
- * The pan envelope with no focus — **around the fit when a leash is set, otherwise
- * the world bbox plus slack, as before**.
- *
- * ## Why the leash was needed (gateway measurement, 2026-07-29)
- *
- * The map on the `/download` stage is the gateway's only sales argument, and one
- * hard drag to the left pushed the whole graph behind the reserved column so **the
- * stage went empty** (ink in the 0..520 band +12.6%, unchanged 12 seconds later —
- * zero damping). On the workbench "fit the map" brings it back, but
- * the gateway has no such chrome. **Allowing an irreversible gesture on a screen
- * with no way back** is the defect.
- *
- * The old envelope (world bbox ± 320) widens with the graph, so no value could ever
- * guarantee "outside the reserved column". The leash takes **the fit itself as its
- * reference point** instead — the fit already reflects the safe insets (see
- * `computeOverviewCameraTarget` above), so the leash radius becomes the movement
- * limit on screen and stops depending on vault size. It is **the same shape** the
- * focus pan clamp (`cameraFocusPanMargin`) uses, so no new mechanism is invented.
- *
- * With `leash <= 0` the behaviour is unchanged — the workbench's token default of 0
- * leaves it not one pixel different.
+ * Pan envelope with no focus: around the fit when `cameraPanLeash` is set, else the world bbox
+ * plus slack. The leash serves surfaces with no Fit Map control; it takes the fit as its
+ * reference, so it does not depend on vault size. With `leash <= 0` the bbox envelope applies.
  */
 export function computeUnfocusedPanBounds(
   bounds: { minX: number; minY: number; maxX: number; maxY: number },
@@ -575,22 +447,9 @@ export function computeUnfocusedPanBounds(
 }
 
 /**
- * C1 A1 — the camera's REAL (interactive) zoom-in ceiling, viewport-relative.
- *
- * Audit finding: the overview entry scale is viewport-proportional (≈1.5 at
- * 1512×917), while `--map-camera-scale-max` is an ABSOLUTE number
- * (2.6). Binding the camera's zoom-in clamp to that absolute value caps
- * `zoomRatio` at ≈1.8 regardless of what the tier-reveal bands need — the
- * capability band (1.5→2.0) never finishes revealing (max ~40% alpha, below
- * the 0.5 hit threshold, so it's unclickable) and the element band
- * (2.3→2.85) is never reachable at all. Worse on larger viewports, where the
- * entry scale is smaller still.
- *
- * The fix: the effective max is `overviewEntryScale × maxZoomRatio` — constant
- * in RATIO terms across every viewport/dataset, not in absolute scale terms.
- * `--map-camera-scale-max` is RETIRED as the binding constraint and
- * kept only as a safety fallback for the degenerate case where
- * `overviewEntryScale` is somehow non-positive (camera not yet initialized).
+ * The camera's interactive zoom-in ceiling, viewport-relative: `overviewEntryScale x
+ * maxZoomRatio`, constant in ratio terms so the tier-reveal bands can finish.
+ * `--map-camera-scale-max` is only the fallback when `overviewEntryScale` is non-positive.
  */
 export function computeEffectiveCameraScaleMax(
   overviewEntryScale: number,
@@ -603,17 +462,9 @@ export function computeEffectiveCameraScaleMax(
 }
 
 /**
- * C1 A1 follow-up (owner feedback — wheel zoom-OUT floor) — the symmetric
- * fix for `computeEffectiveCameraScaleMax`, in the other direction. The same
- * absolute-vs-ratio mismatch applies to the zoom-OUT floor
- * (`--map-camera-scale-min`, 0.24): on a large viewport the
- * interactive zoom-out range is squeezed to almost nothing, and on a small
- * viewport it can shrink the spine to a speck before the far-field
- * constellation crossfade even engages. `--map-camera-min-zoom-ratio`
- * (0.5, i.e. half the overview entry scale) replaces the absolute floor as
- * the binding constraint for the same three call sites (spring clamp, wheel
- * clamp) — the fit-scale computations keep the absolute floor as their own
- * sanity bound, same reasoning as `computeEffectiveCameraScaleMax`.
+ * The camera's interactive zoom-out floor, viewport-relative: `overviewEntryScale x minZoomRatio`
+ * (`--map-camera-min-zoom-ratio`) replaces the absolute `--map-camera-scale-min` for the spring
+ * and wheel clamps. The fit computations keep the absolute floor as their own sanity bound.
  */
 export function computeEffectiveCameraScaleMin(
   overviewEntryScale: number,
@@ -625,29 +476,9 @@ export function computeEffectiveCameraScaleMin(
 }
 
 /**
- * Camera target for the current focus state — the full-graph overview fit
- * when `focusedSlug` is `null`, or the clicked node + its 1-hop ego bbox
- * (`--map-focus-bbox-margin`) otherwise (`docs/design/ontology-map.md`
- * §3.2 "the camera spring-dives to the node plus its 1-hop neighbour bbox"). `null` only if `focusedSlug`
- * doesn't resolve to a known node.
- *
- * Dive-framing fix (owner symptom: "clicking a node dives TOO deep —
- * over-zoomed, cluttered, labels colliding; pleasant view only after zooming
- * way out"). C1 A3's `revealFloor = overviewEntryScale × capability.fullRatio`
- * forced EVERY dive to zoomRatio ≥ 2.0 regardless of the ego cluster's own
- * size — a wide-fan domain (many spread-out neighbors) got zoomed in far past
- * what fitting that fan actually needed. The floor is also redundant: C1 A2's
- * ego-tier exemption (`model/tier-visibility.ts#effectiveNodeAlpha`) already
- * keeps the focused node + its 1-hop neighbors visible/clickable at ANY zoom,
- * so nothing needs a minimum zoom-in to "reveal" them anymore.
- *
- * The dive target is now simply `clamp(fitScale(egoBounds × marginRatio),
- * overviewEntryScale, effectiveMax)`: fit the WHOLE ego set (padded by
- * `--map-focus-bbox-margin`, a multiplicative ratio ~1.15 so the
- * padding grows with cluster size instead of a fixed px pad), floored at the
- * overview's OWN entry zoom (a "dive" never zooms OUT past the overview
- * itself), capped at the ratio-based effective max (the degenerate tiny-ego
- * case, where the raw fit would zoom in far past readable).
+ * Camera target for the current focus: the full-graph overview fit when `focusedSlug` is `null`, else
+ * the node plus its 1-hop ego bbox (`--map-focus-bbox-margin`, `docs/design/ontology-map.md` 3.2).
+ * Floored at the overview entry zoom, capped at the effective max. `null` if the slug is unknown.
  */
 /**
  * The focused node stays at least this far inside the free area's edge under
@@ -662,14 +493,9 @@ export interface FocusLeashPx {
 }
 
 /**
- * How far, in screen pixels, the camera centre may sit from the focused node
- * on each axis: half of the free extent (the canvas minus its panels and bars)
- * less the edge pad. A leash sized to the screen keeps the promise the leash
- * exists for — the subject never leaves the frame — while letting a wide ego
- * graph be centred in the free area. The fixed token alone (180 world units,
- * 157 px at the overview scale) held the camera so close that a capability's
- * neighbours in other domains landed under the detail panel (measured
- * 2026-09-19 at 1512×806: neighbours at x 1349 and 1369, panel from 1128).
+ * How far, in screen pixels, the camera centre may sit from the focused node on each axis:
+ * half the free extent (canvas minus panels and bars) less the edge pad. Sized to the screen,
+ * it keeps the subject in frame while letting a wide ego graph be centred in the free area.
  */
 export function focusLeashPx(
   viewportWidth: number,
@@ -739,21 +565,8 @@ export function computeFocusCameraTarget(
   const w = Math.max(1, (egoBounds.maxX - egoBounds.minX) * marginRatio);
   const h = Math.max(1, (egoBounds.maxY - egoBounds.minY) * marginRatio);
   /*
-   * **Use the safe insets the same way the overview path does** (owner call,
-   * 2026-08-10: *"It must not be covered; centre it in the space left by the panel."* — it must not be
-   * covered; centre it in the space left by the panel).
-   *
-   * ⚠️ This function used to use the insets **not at all** — it returned
-   * `tx: centerX` verbatim and fitted the zoom against the whole viewport. So
-   * choosing a node could put it **behind the panel that explains it**. Measured
-   * (1512×982): opening the popover covers 384px on the right while the target was
-   * still the screen's centre.
-   *
-   * The overview path (`computeOverviewCameraTarget`) was **already** solving the
-   * same problem with insets, so the prescription is not a new correction system
-   * but bringing this function onto that mechanism — a day earlier I did the
-   * opposite (stacking a second shift at the call site), and that produced a 188px
-   * misalignment and a 64px over-correction.
+   * Uses the safe insets the same way the overview path does (`computeOverviewCameraTarget`), so the
+   * selected node is centred in the space the panel leaves instead of ending up behind it.
    */
   const insets = readSafeInsets(tokens, viewportWidth, viewportHeight);
   const effW = Math.max(1, viewportWidth - insets.left - insets.right);
@@ -777,11 +590,9 @@ export function computeFocusCameraTarget(
         leashFit(focus.y - (centerY - h / 2), centerY + h / 2 - focus.y, { lo: insets.top, hi: viewportHeight - insets.bottom }, viewportHeight / 2, leashPx.y),
       )
     : Number.POSITIVE_INFINITY;
-  // The physics holds the focus leash only while the camera is zoomed in past
-  // the overview scale; at or below it the wider unfocused leash applies. So a
-  // fit that would land inside the focus leash zooms out until the leash fits,
-  // but never past the overview scale — below it the leash no longer binds.
-  // (`overviewEntryScale` is `overviewScale × overviewEntryRatio`.)
+  // The physics holds the focus leash only while zoomed in past the overview scale; at or below it
+  // the wider unfocused leash applies. A fit inside the focus leash zooms out until it fits, never
+  // past the overview scale. (`overviewEntryScale` is `overviewScale x overviewEntryRatio`.)
   const overviewScale = overviewEntryScale / Math.max(tokens.overviewEntryRatio || 1, 1e-6);
   let fitScale = Math.min(effW / w, effH / h);
   if (fitScale > overviewScale && leashFitScale < fitScale) {
@@ -790,11 +601,9 @@ export function computeFocusCameraTarget(
     fitScale = Math.max(leashFitScale, overviewScale * (1 - 1e-6));
   }
   const effectiveMax = computeEffectiveCameraScaleMax(overviewEntryScale, tokens.cameraMaxZoomRatio, tokens.cameraScaleMax, dialFrame ? world.dialScaleMax ?? undefined : undefined);
-  // Owner report (2026-07-24) — with neighbours hidden (spotlight and the like) the
-  // ego bbox is small and the fit shoots up into a microscope zoom. Zooming in for
-  // selection framing is capped at overviewEntryScale × focusMaxZoomRatio — ego
-  // members are tier-exempt so they are all visible even at that zoom, and fitting
-  // in the zoom-out direction is not limited.
+  // Zooming in for selection framing is capped at `overviewEntryScale x focusMaxZoomRatio`: ego
+  // members are tier-exempt so they stay visible at that zoom, and zooming out to fit is not
+  // limited.
   const focusZoomInCeiling = Math.max(overviewEntryScale * (tokens.focusMaxZoomRatio ?? Number.POSITIVE_INFINITY), dialFrame?.nameScale ?? 0);
   const scale = Math.min(effectiveMax, focusZoomInCeiling, Math.max(overviewEntryScale, fitScale));
 
@@ -803,13 +612,9 @@ export function computeFocusCameraTarget(
    * (`(left - right) / (2 × scale)`). Divide by the zoom factor because the same
    * screen offset is a shorter world distance the further in you are zoomed.
    */
-  // The physics keeps a focused camera inside `cameraFocusPanMargin` of the
-  // focused node (`topology-physics-step.ts`). A target outside that box can
-  // never be reached: the spring pushes, the clamp pulls back, and the idle
-  // gate reads "camera moving" for as long as the node stays selected.
-  // Measured 2026-09-19 on a capability whose neighbours sat in two folded
-  // domains far to the right: target 370 world units from the node, leash 180,
-  // camera jittering by 0.01 at 120 frames per second indefinitely.
+  // The physics keeps a focused camera inside `cameraFocusPanMargin` of the focused node
+  // (`topology-physics-step.ts`). A target outside that box is unreachable: the spring pushes, the
+  // clamp pulls back, and the idle gate reads "camera moving" for as long as the node stays selected.
   const centred = centerForInsets(centerX, centerY, insets, scale);
   if (!focus) return { ...centred, tscale: scale };
   // The same rule as `topology-physics-step`: the focus leash past the overview
@@ -903,48 +708,30 @@ export function computeClusterFitTarget(
   const w = Math.max(1, (disc.maxX - disc.minX) * marginRatio);
   const h = Math.max(1, (disc.maxY - disc.minY) * marginRatio);
   /*
-   * **The fan is fitted into the region a person can see, not into the window**
-   * (2026-09-21). This branch measured against the raw viewport and centred on the raw
-   * centre, so it was the only fit in this file that did not know about the INDEX panel,
-   * the inspector or a popover; its caller was also the only camera move that did not
-   * go through `cameraTokens`, so even a measured inset never reached it. Measured at
-   * 1000×700 with the inspector open: the visible strip was 236 px of a 995 px canvas
-   * and thirteen of seventeen opened children sat under the panel. Every other fit
-   * already goes through `readSafeInsets` + `centerForInsets`, which fold in the live
-   * obstacle insets, so this one now does too.
-   *
-   * What this cannot do by itself: a double-click both selects and expands, and the
-   * selection dive runs a frame later (`use-topology-loop`, the focus effect's
-   * `requestAnimationFrame`), so it lands last and this target is overwritten. This is
-   * the camera a chip press moves on its own.
+   * The fan is fitted into the region a person can see (`readSafeInsets` + `centerForInsets`), like
+   * every other fit. A double-click selects and expands; the selection dive runs a frame later
+   * (`use-topology-loop`) and overwrites this target, so this is the camera a chip press moves alone.
    */
   const insets = readSafeInsets(tokens, viewportWidth, viewportHeight);
   const effW = Math.max(1, viewportWidth - insets.left - insets.right);
   const effH = Math.max(1, viewportHeight - insets.top - insets.bottom);
   const fitScale = Math.min(effW / w, effH / h);
   const effectiveMax = computeEffectiveCameraScaleMax(overviewEntryScale, tokens.cameraMaxZoomRatio, tokens.cameraScaleMax);
-  // Owner report (2026-07-24) — with neighbours hidden (spotlight and the like) the
-  // ego bbox is small and the fit shoots up into a microscope zoom. Zooming in for
-  // selection framing is capped at overviewEntryScale × focusMaxZoomRatio — ego
-  // members are tier-exempt so they are all visible even at that zoom, and fitting
-  // in the zoom-out direction is not limited.
+  // Zooming in for selection framing is capped at `overviewEntryScale x focusMaxZoomRatio`: ego
+  // members are tier-exempt so they stay visible at that zoom, and zooming out to fit is not
+  // limited.
   const focusZoomInCeiling = overviewEntryScale * (tokens.focusMaxZoomRatio ?? Number.POSITIVE_INFINITY);
   /*
-   * A dive used to be floored at `overviewEntryScale` — "a dive never zooms out past
-   * the overview". That floor is what made the promise breakable: a fan wider than the
-   * visible region at that altitude simply hung outside it. Containing what the press
-   * just opened is the older promise of the two, so the floor gives way to the camera's
-   * own minimum and the fan is held instead of half-shown.
+   * A dive is floored at the camera's own minimum, not `overviewEntryScale`: a fan wider than
+   * the visible region at that altitude must be held in frame instead of half-shown.
    */
   const scaleMin = computeEffectiveCameraScaleMin(overviewEntryScale, tokens.cameraMinZoomRatio, tokens.cameraScaleMin);
   const scale = Math.min(effectiveMax, focusZoomInCeiling, Math.max(scaleMin, fitScale));
   const target = { ...centerForInsets(centerX, centerY, insets, scale), tscale: scale };
   /*
-   * The focus leash (#1728) keeps a focused camera within `cameraFocusPanMargin` of its
-   * subject, and a target outside that envelope is pulled back after the tween arrives —
-   * the fan would slide out of frame the moment it landed. The parent is the subject
-   * here, and the disc is drawn around it, so the clamp only ever shortens a reach the
-   * leash would have undone anyway.
+   * The focus leash keeps a focused camera within `cameraFocusPanMargin` of its subject and
+   * pulls back a target outside it after the tween arrives. The parent is the subject, so the
+   * clamp only shortens a reach the leash would have undone anyway.
    */
   const parent = world.nodeById.get(parentId);
   if (parent && tokens.cameraFocusPanMargin > 0) {
@@ -956,20 +743,9 @@ export function computeClusterFitTarget(
 }
 
 /**
- * Has the camera pushed every node off screen (#71)?
- *
- * Why it is needed: moving the window to another monitor, or resizing it heavily,
- * changes the viewport and DPR together while the camera stays put. In that
- * combination, with every node outside the viewport, the user sees **an empty map**
- * — only pressing "fit the whole map" brings it back (codex
- * audit P1 report).
- *
- * The safety net's discipline:
- * - **It does not force a full fit on every resize.** The zoom and position the
- *   user set are intent, and erasing them is a different kind of defect.
- * - It corrects only in the unambiguous state "not one node is on screen".
- * - A margin counts a node barely clipping the edge as 'visible' — which stops the
- *   camera flickering and jumping at the boundary.
+ * Whether any node is on screen. Moving the window to another monitor or resizing it changes viewport
+ * and DPR while the camera stays put, possibly leaving an empty map. It corrects only when no node is
+ * visible, so a user-set zoom survives. `marginPx` counts a barely clipped node as visible.
  */
 export function hasAnyNodeOnScreen(
   camera: CameraAxes,

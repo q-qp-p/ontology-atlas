@@ -18,9 +18,6 @@ describe("normalizeWheelDeltaY", () => {
   });
 
   it("scales line-mode (deltaMode 1) deltas up by the line height", () => {
-    // A mouse notch commonly reports deltaMode=1, deltaY≈3 — under the old raw
-    // path that was near-zero zoom (the owner's *"Wheel zoom not working"* bug — the wheel
-    // does not zoom).
     expect(normalizeWheelDeltaY(3, 1, 900)).toBe(3 * WHEEL_LINE_HEIGHT_PX);
     expect(normalizeWheelDeltaY(-1, 1, 900)).toBe(-WHEEL_LINE_HEIGHT_PX);
   });
