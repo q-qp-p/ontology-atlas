@@ -30,7 +30,7 @@ export { formatAgentPostChangeSyncPacket } from "./agent-readiness";
 export {
   AGENT_GRAPH_DB_RUNTIME_GATE_COMMAND,
   AGENT_GRAPH_DB_RUNTIME_GATE_CHECK_COUNT,
-} from "./agent-query-recipes";
+} from "./agent-readiness";
 export type { OntologyChangeset } from "./ontology-changeset";
 export { computeOntologyChangeset } from "./ontology-changeset";
 export {
