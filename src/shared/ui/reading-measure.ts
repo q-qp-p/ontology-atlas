@@ -27,7 +27,6 @@ export const DOC_COLUMN_GUTTER_PX = 40;
 /** The measure in rem (66 × 0.5957), for consumers that can express a length in `rem`. */
 export const PROSE_MEASURE_REM = PROSE_MEASURE_STEPS * PROSE_ZERO_ADVANCE_EM;
 
-
 /**
  * Not exported: gates assert the line cap as a ratio, because `1ch` depends on the rendering
  * face and a pinned pixel would be a font assertion.

@@ -3,9 +3,11 @@ import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ko from '../../../../messages/ko.json';
-import type { AppUpdateValue } from '@/features/app-update';
-import type { UpdatePhase } from '@/features/app-update';
+import type { useAppUpdateContext } from '@/features/app-update';
 import { AppUpdateSettings } from './AppUpdateSettings';
+
+type AppUpdateValue = NonNullable<ReturnType<typeof useAppUpdateContext>>;
+type UpdatePhase = AppUpdateValue['phase'];
 
 const checkNow = vi.fn();
 let contextValue: AppUpdateValue | null = null;

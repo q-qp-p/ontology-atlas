@@ -8,7 +8,6 @@ import {
   availableDemoClips,
   demoPoster,
   demoSources,
-  hasDemoClips,
 } from '../model/demo-clips';
 
 /** Playback properties only; length and framing are checked against footage by `/motion-verify`. */
@@ -41,7 +40,6 @@ describe('DemoStage', () => {
   it('renders no section without assets, since a player with nothing to play is dead UI', () => {
     render(wrap(<DemoStage available={[]} />));
     expect(screen.queryByTestId('demo-stage')).toBeNull();
-    expect(hasDemoClips([])).toBe(false);
   });
 
   it('plays one clip with no picker, since choosing what to watch costs a first impression', () => {

@@ -387,7 +387,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 ### Dead-code and dependency lint
 
 **Run**: `pnpm knip`
-**Proves**: No unused file, dependency, or export/type exists in frontend, scripts, CLI, or MCP scope; a configuration hint or an empty subject lane is a fail-closed setup error.
+**Proves**: No unused file, dependency, or export/type exists in frontend, scripts, CLI, or MCP scope; in the frontend a test file is not a runtime entry, so code only a test reaches counts as unused. A configuration hint or an empty subject lane is a fail-closed setup error.
 **Escalate**: none.
 **Fix**: Exports/types ratchet downward only; exact witnessed exceptions are the only exclusions, and it never auto-fixes.
 
