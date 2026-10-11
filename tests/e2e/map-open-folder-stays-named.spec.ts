@@ -3,19 +3,8 @@ import { installDesktopRailRuntime } from "./desktop-rail-arrival-harness";
 import { waitForMapStill } from "./settle";
 
 /**
- * **Re-reading a folder that is already open is not opening one.**
- *
- * The vault watch re-reads the folder whenever its fingerprint moves, and that
- * rebuild used to drop the session back to `loading`. Everything the screen
- * derives from "loaded" went with it. Measured on the map at 1512x982 with
- * nothing touched, sampling twice a second for 22 seconds: the INDEX lost the
- * folder's name and its document count for about 3.5 s out of every 8.6 s —
- * roughly two fifths of the time — and while it was gone the recent filter claimed nothing at
- * all in seven days on a folder where 20 of 20 documents had changed that day.
- *
- * A zero that is false is worse than one that is stale, and a person should not
- * have to wonder which folder they are looking at. This watches the settled
- * screen and asserts it never blinks.
+ * Re-reading an already open folder must not drop the session to `loading`: the INDEX must
+ * keep the folder name and document count while the watch re-reads.
  */
 test("the open folder keeps its name and its count while the watch re-reads", async ({ page }) => {
   test.setTimeout(180_000);

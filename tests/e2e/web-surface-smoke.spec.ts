@@ -4,24 +4,8 @@ import { stubDirectoryPicker } from "./vault-picker-stub";
 import ko from "../../messages/ko.json";
 
 /**
- * Web surface smoke — the only eye on an unattended surface.
- *
- * The 2026-07-27 surface-split decision (`docs/DECISIONS.md`) stopped promising
- * that web and app show the same screens: desktop capabilities ship without a web
- * equivalent, and the owner uses only the app. The **one structural cost** of that
- * decision is unattended decay on the web — nobody is looking, yet the web is
- * currently the only inbound path (14-day unique visitors: 35, all web).
- *
- * So this file asks only whether the web still does its own two jobs. It does not
- * check pixel equivalence or compare against the app; that round-trip
- * verification was retired by the same decision.
- *
- *   ① Gateway  — the first screen opens as a usable map with no vault
- *   ② Fallback — a picked folder is really read, and browsers that cannot pick
- *                degrade honestly
- *   ③ Degrade  — app-only capabilities state "why + where" (zero dead CTAs)
- *
- * Any one of the three going red means the web is not doing its gateway job.
+ * Web surface smoke: asks only whether the web still does its own jobs (gateway map, folder fallback,
+ * honest degradation of app-only capabilities). Pixel equivalence with the app is not checked.
  */
 
 // ── Shared ──────────────────────────────────────────────────────────────────
@@ -91,17 +75,8 @@ const SEED_VAULT: Record<string, string> = {
 // ── ① Gateway — the face and the map are each alive at their own address ────
 
 /**
- * **This section's addresses split on 2026-07-30.**
- *
- * `/` alone used to guard "the first screen opened without a vault renders a real
- * map". With the owner's sign-off (2026-07-29, decision ledger: reversing
- * 「root-first-open」) `/` became the web visitor's **face** and the map moved to
- * `/topology`.
- *
- * So the check was **moved, not deleted.** The guarantee that the map is alive
- * with a non-zero count still stands; only the address asking it changed. Deleting
- * instead of moving would have made that transition remove one of the gateway's
- * eyes.
+ * The gateway face is at `/` and the map at `/topology`; the map-alive check with a non-zero count
+ * runs at the map's address.
  */
 test.describe("웹 스모크 ① 관문", () => {
   test("`/` 가 얼굴로 뜬다 — 무엇인지 말하고, 받는 길과 보는 길을 함께 준다", async ({
@@ -112,14 +87,7 @@ test.describe("웹 스모크 ① 관문", () => {
     // Gateway chrome — the face's top bar, not the workbench rail.
     await expect(page.getByTestId("download-gnb")).toBeVisible({ timeout: 15_000 });
 
-    // The visitor's two available actions are alive: download, and look without
-    // installing.
-    //
-    // Re-aimed 2026-08-19: both used to live inside the install panel
-    // (`download-hero-actions` · `download-web-cta`), which the owner removed
-    // wholesale — *"The last section seems unnecessary; it is all at the top anyway."*
-    // (the last section seems unnecessary; it is all at the top anyway). The hero now
-    // carries both destinations, which was also the basis for that decision.
+    // The face's two actions are alive: download, and look without installing; both live in the hero.
     await expect(page.getByTestId("gateway-hero-cta")).toBeVisible();
     const toMap = page.getByTestId("gateway-hero-web-cta");
     await expect(toMap).toBeVisible();
@@ -147,16 +115,8 @@ test.describe("웹 스모크 ① 관문", () => {
     const starter = page.getByTestId("first-run-starter");
     await expect(starter).toBeVisible();
 
-    // The number must come from **real data**. A 0 means the map mounted but drew
-    // nothing — a dead screen as far as the gateway is concerned.
-    //
-    // The marker moved from a "span holding only a number" inside the card to the
-    // sample-size caption (2026-08-02). The previous marker leaned on the markup of a
-    // three-part instrument cell (`<span>112</span>`); when that instrument was
-    // demoted to a one-line caption the number moved inside a sentence and the marker
-    // **outlived its component** — the exact failure mode that cost a release in
-    // 2026-08. The marker now points at one surface with its own testid, and if that
-    // surface disappears the gate breaks first.
+    // The number must come from real data: 0 means the map mounted but drew nothing. The marker is the
+    // sample-size caption's own testid, so the gate breaks first if that surface disappears.
     const scale = starter.getByTestId("first-run-starter-sample-scale");
     await expect(scale).toBeVisible();
     const counts = (((await scale.textContent()) ?? "").match(/\d+/g) ?? []).map(Number);
@@ -175,7 +135,7 @@ test.describe("웹 스모크 ① 관문", () => {
 test.describe("웹 스모크 ② 차선 워크벤치", () => {
   test("폴더를 고르면 웹이 그 폴더를 실제로 읽어 지도로 바꾼다", async ({ page }) => {
     await stubDirectoryPicker(page, SEED_VAULT);
-    // Testing the workbench, so go to the map address — since 2026-07-30 `/` is the gateway.
+    // The workbench is at the map address; `/` is the gateway.
     await gotoSettled(page, "/ko/topology/");
 
     await page.getByTestId("first-run-starter-open").click();
@@ -205,7 +165,7 @@ test.describe("웹 스모크 ② 차선 워크벤치", () => {
         /* non-configurable — the assertion below fails on its own */
       }
     });
-    // Testing the workbench, so go to the map address — since 2026-07-30 `/` is the gateway.
+    // The workbench is at the map address; `/` is the gateway.
     await gotoSettled(page, "/ko/topology/");
 
     const notice = page.getByTestId("first-run-starter-unsupported");
@@ -234,14 +194,8 @@ test.describe("웹 스모크 ② 차선 워크벤치", () => {
  * add a row here, nobody ever looks at that capability's web degradation. A new
  * bridge gets a row (the `.claude/rules/surfaces.md` contract).
  */
-// This registry is for the **web↔app axis** only — each row claims "the browser
-// cannot do this in principle → the only destination is /download/". Degradation
-// on the **viewport-width axis** (a surface the same web build opens on wide
-// screens; first case: the studio below lg) does not belong here. Putting it here
-// would make the row assert the falsehood "the web cannot do this", and the next
-// auditor reads it as written. The width axis is gated by
-// `responsive-overflow-audit.spec.ts`, where width is the independent variable
-// (see `.claude/rules/surfaces.md` "degradation has two axes", 2026-07-28).
+// This registry is for the web-versus-app axis only: each row claims the browser cannot do this in
+// principle. Width-axis degradation belongs to the responsive overflow spec (`surfaces.md`).
 type DegradedSurface = {
   name: string;
   url: string;
@@ -272,30 +226,13 @@ type DegradedSurface = {
    */
   destinationText?: RegExp;
   /**
-   * ③ **What does work on this screen** (when anything does). Saying something is
-   * unavailable when it works is the same species of lie as "coming soon"
-   * (2026-08-01, `surfaces.md`), so once written it is locked against quietly
-   * disappearing.
-   *
-   * ⚠️ **Measure whether the named place exists, not the wording** (2026-08-17).
-   * This used to pin whole sentences like `/connect-my-agent/`; when the wording
-   * changed it went red, and **that red could not distinguish "the wording is
-   * stale" from "it points nowhere"**. It was in fact both — the card pointed at an
-   * "MCP" section, and no section by that name existed in the sheet.
-   * `documentation.md`: *do not pin sentences a human wrote; check only what a
-   * machine can generate.*
-   *
-   * So this checks only **whether the name inside 「…」 is a real section name on
-   * this screen**. The equivalent check on the translation files is
-   * `tests/contract/settings-section-reference.contract.test.ts`.
+   * What does work on this screen. Checks only that the quoted section name exists on this screen, not
+   * the wording; the translation-file equivalent is `settings-section-reference.contract.test.ts`.
    */
   alsoHereNamesSettingsSection?: true;
   /**
-   * The other half of ③ once **the place that works is another destination**
-   * (2026-09-05). `alsoHereNamesSettingsSection` can only check a name against this
-   * screen's own headings, and the MCP pane left `/agents` for `/mcp`. A name alone
-   * would then be a dead pointer, so the card carries the way there and this asserts
-   * the link is on screen and resolves to that destination.
+   * For when the working place is another destination: the card carries the link, and this asserts it
+   * is on screen and resolves there.
    */
   alsoHereLink?: { testId: string; href: RegExp };
   /** This card only renders after a vault is open — attach the fixture folder first. */
@@ -326,9 +263,8 @@ const DEGRADED_SURFACES: readonly DegradedSurface[] = [
     destination: "atlas-git-web-get-app",
   },
   {
-    // Rounds (2026-09-17) keep a clock and open a headless agent session while the
-    // person is away; a browser tab can do neither, so the tab explains and points at
-    // the app. Registering a round on the web would be a promise nothing could keep.
+    // Registering it on the web would promise nothing could keep: it keeps a clock and opens a headless
+    // agent session while the person is away, which a browser tab cannot do.
     name: "순회 — 브라우저는 자리를 비운 동안 시계를 지키거나 에이전트를 열 수 없다",
     url: "/ko/library/?tab=rounds",
     card: "library-rounds-app-required",
@@ -336,23 +272,8 @@ const DEGRADED_SURFACES: readonly DegradedSurface[] = [
     destination: "library-rounds-get-app",
   },
   {
-    // ⚠️ **This row claims "cannot save automatically", not "cannot connect"**
-    // (2026-08-01). The previous wording was "You cannot connect on this screen" and it was false — MCP attaches to the folder,
-    // not to Atlas, and the agent starts the server in its own session, so web users
-    // do connect. The one thing a browser cannot do is **write the config file for
-    // you**, because it does not know the absolute path. A degradation card
-    // understating the capability is also an honesty violation, so this regex targets
-    // the narrow claim (automatic saving). Whether the path that ends right there is
-    // alive is checked by a separate spec below.
-    //
-    // ⚠️ **Re-aimed 2026-08-21** (ledger 90), then again 2026-09-05. This card used to
-    // be opened by the connect sheet, which was retired; it then moved to the "Agent"
-    // destination's "MCP connection" section, and now stands on its own destination
-    // `/mcp` — **after a vault is open.**
-    //
-    // Owner's call: *"It is right to draw it only when a vault exists."* It is also more accurate: **with no vault there is no config
-    // to save.** In the sheet era this card showed without a vault, and the sentence
-    // was then saying it could not act on a file that did not yet exist.
+    // Claims only that the browser cannot save the config automatically (it does not know the absolute
+    // path); connecting works. Drawn only after a vault is open: with no vault there is no config.
     name: "에이전트 연결 — 브라우저는 폴더의 절대 경로를 몰라 설정을 대신 저장하지 못한다",
     url: "/ko/topology/",
     open: async (page) => {
@@ -361,7 +282,6 @@ const DEGRADED_SURFACES: readonly DegradedSurface[] = [
       await page.getByTestId("vault-guide-pick-existing").click();
       await page.getByTestId("first-run-starter").waitFor({ state: "detached", timeout: 20_000 });
       await page.getByTestId("app-nav-rail").getByRole("link", { name: "에이전트" }).click();
-      // MCP is the Agents page's second tab since 2026-09-19: press it.
       await page.getByTestId("agents-tab-mcp").click();
       await page.getByTestId("agent-setup-section").waitFor({ timeout: 15_000 });
     },
@@ -371,46 +291,20 @@ const DEGRADED_SURFACES: readonly DegradedSurface[] = [
     destination: "agent-connect-web-get-app",
   },
   {
-    // **The "Runtimes" section** (registered 2026-08-16) — the screen that
-    // finds coding agents installed on this machine and launches them inside the app.
-    // A browser has no permission to launch programs on this computer, so the
-    // rejection is in principle and the card states a reason rather than "coming
-    // soon".
-    //
-    // **The first row whose destination is prose** — this section has no link element
-    // today.
-    //
-    // **Also the first row where item ③ actually exists.** Before registration the
-    // wording was only "The browser cannot run tools", and a web user reading just that sentence concludes the web cannot
-    // use agents at all — precisely the falsehood `agent-server-unavailable` was
-    // corrected for on 2026-08-01. Web users can attach an agent they started
-    // themselves to this folder, and that path ("MCP") is in the same sheet. So that
-    // sentence went into the card and is locked here.
-    //
-    // ⚠️ **Re-aimed 2026-08-21** (ledger 90). This section left the settings sheet
-    // and became the "Agent" destination. The check is **re-addressed, not
-    // deleted** — whether the degradation sentence is alive is a question worth asking
-    // wherever the surface moves. Opening a sheet is no longer needed: the destination
-    // opens directly by address.
+    // Runtimes: a browser cannot launch programs on this computer, so the card states a reason. It must
+    // also say a web user can attach an agent they started themselves (the MCP path).
     name: "실행기 — 브라우저는 이 컴퓨터의 프로그램을 띄우지 못한다",
     url: "/ko/agents/",
     card: "app-settings-runtimes-web",
     reason: /브라우저는[\s\S]*권한이 없어요/,
-    // ⚠️ **A press, not a sentence** (2026-09-25). The card said "get the Mac app" in prose
-    // only; it now carries the download press itself, and the page lede says what the app
-    // changes, so the destination is checked as a visible link to /download/.
+    // The card carries the download press, so the destination is checked as a link to /download/.
     destination: "app-settings-runtimes-get-app",
-    // ⚠️ **Re-aimed 2026-09-05.** The sentence used to name a section of this same
-    // screen; MCP became its own destination, so the row now names the place *and*
-    // carries a link to it. A name with no way there is the dead pointer this whole
-    // registry exists to prevent.
+    // The row names the MCP place and links to it: a name with no way there is a dead pointer.
     alsoHereLink: { testId: "app-settings-runtimes-mcp-link", href: /\/agents\/\?tab=mcp/ },
   },
   {
-    // **"Models"** (registered 2026-09-25) — API keys, local runners and the experimental Jev
-    // check, moved from the settings sheet to the Agents destination's own tab. Keeping a key
-    // needs an OS keychain and calling a runner needs a program on this computer; the tab
-    // exists on the web and says so, with no sample rows standing in for data it does not have.
+    // Models: keeping a key needs an OS keychain and calling a runner needs a program on this computer;
+    // the tab exists on the web and says so, with no sample rows for data it does not have.
     name: "모델 — 브라우저는 키를 안전하게 보관하지 못한다",
     url: "/ko/agents/?tab=models",
     card: "ai-connection-web-degraded",
@@ -418,14 +312,8 @@ const DEGRADED_SURFACES: readonly DegradedSurface[] = [
     destination: "ai-connection-download-link",
   },
   {
-    // **"Connectors"** (registered 2026-09-05) — external MCP servers a person lets the
-    // in-app agent reach.
-    //
-    // Two abilities are app-only here and **neither is the feature itself**: reading
-    // `~/.claude.json` to find what is already registered needs a program on this computer,
-    // and keeping a token needs an OS keychain. The list lives in the vault folder, which a
-    // browser holds, so adding and removing connectors work here — and the card has to say
-    // that, or it repeats the 2026-08-01 falsehood of calling a working path unavailable.
+    // Connectors: reading `~/.claude.json` needs a program on this computer and keeping a token needs an
+    // OS keychain, but adding and removing work on the web, so the card must not call them unavailable.
     name: "연결 도구 — 웹은 이미 등록된 MCP 서버를 찾아 주지 못한다",
     url: "/ko/topology/",
     open: async (page) => {
@@ -433,22 +321,11 @@ const DEGRADED_SURFACES: readonly DegradedSurface[] = [
       await page.getByTestId("vault-guide-pick-existing").click();
       await page.getByTestId("first-run-starter").waitFor({ state: "detached", timeout: 20_000 });
       await page.getByTestId("app-nav-rail").getByRole("link", { name: "에이전트" }).click();
-      // MCP is the Agents page's second tab since 2026-09-19: press it.
       await page.getByTestId("agents-tab-mcp").click();
-      /*
-       * ⚠️ **One press further in since 2026-09-05.** This card moved into the "add a connector"
-       * dialog — finding what is already registered is what happens there, and a card about that
-       * step reads as a verdict on the whole panel when it stands outside it. The claim is
-       * unchanged; the address of the claim is not. Connectors were a second tab of the MCP
-       * screen until 2026-09-19; they are its second group now, on the same tab.
-       */
+      /* The card sits inside the add-a-connector dialog, where finding what is already registered happens. */
       await page.getByTestId("connectors-panel").waitFor({ timeout: 15_000 });
       await page.getByTestId("connectors-add-open").click();
-      /*
-       * ⚠️ **No tab any more (2026-09-07, afternoon).** The dialog is one list, and the card
-       * stands inline where the scan of this machine would be, after the catalogue. It still
-       * carries a reason and a place to go, which is the claim; where it sits is not.
-       */
+      /* The dialog is one list; the card stands inline where the machine scan would be, after the catalogue. */
     },
     needsVault: true,
     card: "connectors-discovery-unavailable",
@@ -460,16 +337,9 @@ const DEGRADED_SURFACES: readonly DegradedSurface[] = [
   },
   {
     /*
-     * **Bringing documents in from a service** (registered 2026-09-07). The connection itself is
-     * written into the folder and works on either surface — it is a line in a file a browser
-     * holds. What a browser cannot do is start the coding tool that goes and fetches the
-     * documents, so the last step of that errand offers no press here and says what did happen
-     * instead: the connection is saved and switched on, and any coding tool pointed at this
-     * folder can already use it.
-     *
-     * Registered because a cold walkthrough on 2026-09-07 pressed that button on the web and got
-     * nothing at all — no window, no message, no change behind the dialog. This row is what
-     * stops that from coming back.
+     * Importing from a service: the connection is written into the folder and works on either surface,
+     * but a browser cannot start the tool that fetches, so the last step offers no press and says what
+     * happened.
      */
     name: "서비스에서 가져오기 — 브라우저는 문서를 받아 올 코딩 도구를 띄우지 못한다",
     url: "/ko/topology/",
@@ -484,10 +354,8 @@ const DEGRADED_SURFACES: readonly DegradedSurface[] = [
         .locator('[data-testid="library-import-service"][data-service="notion"]')
         .click();
       /*
-       * Notion is a program with a token now (2026-09-07, evening): the hosted address that
-       * asked nothing left the catalogue because the in-app session cannot open its sign-in
-       * window. The press waits for a value, so the walk types one; what it proves is
-       * unchanged — the browser cannot start the coding tool that fetches, and says so.
+       * Notion needs a token, so the walk types one; the claim is unchanged: the browser cannot start the
+       * tool that fetches, and says so.
        */
       await page.getByTestId("library-import-token").fill("ntn_smoke_value");
       await page.getByTestId("library-import-connect").click();
@@ -504,22 +372,12 @@ const DEGRADED_SURFACES: readonly DegradedSurface[] = [
   },
   {
     /*
-     * **Finding documents outside the open folder** (registered 2026-09-05). "Find
-     * documents" walks the folder a person opened *and* the project roots they bound
-     * themselves — and a binding is an absolute path, which a browser does not have and
-     * cannot be given.
-     *
-     * The claim is deliberately narrow, the same way `agent-server-unavailable` was
-     * narrowed on 2026-08-01. The browser is **not** unable to find documents: it walks
-     * the open folder and proposes what it finds there, and the list under this sentence
-     * is that walk's result. What it cannot reach is a second folder, so that is what the
-     * sentence says.
+     * Finding documents outside the open folder: a binding is an absolute path a browser cannot be given.
+     * The claim is narrow: the browser does walk the open folder, but cannot reach a second one.
      */
     /*
-     * ⚠️ **Re-addressed 2026-09-06.** The claim did not change; the screen carrying it
-     * did. Sources and Wiki left `/docs` for `/library`, and with no folder open that
-     * destination is a single stage whose one control is the picker — so the two presses
-     * this row used to need became one.
+     * With no folder open the Library is a single stage whose one control is the picker, so one press
+     * opens it.
      */
     name: "문서 찾기 — 브라우저는 연결해 둔 프로젝트 폴더까지 훑지 못한다",
     url: "/ko/library/",
@@ -565,13 +423,8 @@ test.describe("웹 스모크 ③ 정직한 강등", () => {
       }
       if (surface.alsoHereNamesSettingsSection) {
         /*
-         * The name inside 「…」 must be **a place that really exists on the same screen**.
-         * Wording may change freely; this only breaks when it points at something absent.
-         *
-         * ⚠️ **Re-aimed 2026-08-21**: it used to look in the settings sheet's section
-         * list. When this section moved to a destination, the referent became **this
-         * page's section headings** — a stronger contract too. If the card says something
-         * also works here, that place must be on **this** screen.
+         * The name inside the quotes must be a place that exists on this page, checked against its section
+         * headings. Wording may change freely; this breaks only when the name points at something absent.
          */
         const quoted = [...(await card.innerText()).matchAll(/[「“]([^」”]+)[」”]/gu)].map((m) =>
           m[1].trim(),
@@ -589,27 +442,18 @@ test.describe("웹 스모크 ③ 정직한 강등", () => {
   }
 
   /**
-   * **The far side of degradation** — a card with only a reason and a destination,
-   * and nothing that *works here*, is honest but a dead end. This card's only
-   * alternative used to be a long docs link, and someone trying to connect lost the
-   * sheet and landed in the middle of a document (reported by the owner).
-   *
-   * The value the browser does not know (the absolute path) is **asked of the person
-   * who does**, and a runnable config is built on the spot. What this spec guards is
-   * not the existence of input fields but the contract that **a half-filled config
-   * is never handed over**.
+   * The absolute path is asked of the person and a runnable config is built on the spot. The guard
+   * is that a half-filled config is never handed over.
    */
   test("에이전트 연결 — 웹에서도 그 자리에서 붙는 설정을 만든다", async ({ page }) => {
-    // 2026-08-21 — the connect sheet was retired (ledger 90). This path lives in the
-    // destination's "MCP Connect" section and is drawn after a vault is open (with no
-    // vault there is no config to build).
+    // This path lives in the destination's MCP Connect section and is drawn after a vault is open;
+    // with no vault there is no config to build.
     await stubDirectoryPicker(page, SEED_VAULT);
     await gotoSettled(page, "/ko/topology/");
     await page.getByTestId("first-run-starter-open").click();
     await page.getByTestId("vault-guide-pick-existing").click();
     await page.getByTestId("first-run-starter").waitFor({ state: "detached", timeout: 20_000 });
     await page.getByTestId("app-nav-rail").getByRole("link", { name: "에이전트" }).click();
-    // MCP is the Agents page's second tab since 2026-09-19: press it.
     await page.getByTestId("agents-tab-mcp").click();
     await page.getByTestId("agent-setup-section").waitFor({ timeout: 15_000 });
 
@@ -623,14 +467,8 @@ test.describe("웹 스모크 ③ 정직한 강등", () => {
     await expect(page.getByTestId("web-manual-connect-copy-config")).toBeDisabled();
 
     /*
-     * Never claim to have verified something that was never verified.
-     *
-     * **Read the sentence from the catalogue, do not retype it.** A hand-typed
-     * excerpt (`Cannot prove it`) broke on 2026-08-22 when the copy was made plainer
-     * — `Unable to prove` — which changed nothing about the claim, and a regex written
-     * to cover both missed it again on the verb ending. What this proves is that the
-     * screen renders *that* note; whether the note is well worded is the glossary
-     * gate's job (`ui-copy-glossary.contract.test.ts`), not this spec's.
+     * Read the note from the catalogue instead of retyping it: a hand-typed excerpt breaks when wording
+     * changes. Wording quality is the glossary gate's job (`ui-copy-glossary.contract.test.ts`).
      */
     await expect(page.getByTestId("web-manual-connect-shape-only")).toContainText(
       ko.agentConnect.manualShapeOnlyNote,
@@ -652,31 +490,17 @@ test.describe("웹 스모크 ③ 정직한 강등", () => {
     await expect(page.getByTestId("web-manual-connect-copy-cli")).toBeEnabled();
 
     /*
-     * The docs link stays but is **not the main path** — the task finishes without
-     * leaving this place.
-     *
-     * 2026-08-21: what is measured moved from the sheet to the **destination**
-     * (ledger 90). The locked meaning is unchanged — someone building a config must
-     * not be dropped into the middle of a document halfway through.
+     * The docs link is not the main path: the task finishes without leaving this place, and building a
+     * config must not drop someone into the middle of a document.
      */
     await expect(page.getByTestId("agent-setup-section")).toBeVisible();
-    // 2026-09-05: the pane moved to its own destination.
     expect(new URL(page.url()).pathname).toBe("/ko/agents/");
   });
 
   /**
-   * Skill-copy comparison is **correctly absent on the web** — the manifest walker
-   * filters dot directories, so `.claude/skills` is invisible in a browser in
-   * principle, and an FSA handle has no absolute path to work around it.
-   *
-   * This assertion exists because of the **opposite defect**: pretending to have a
-   * capability that is absent (rendering 0 as "all match") makes the screen claim to
-   * have verified something it never did. `-` means "this surface lacks the
-   * capability" and `0/0` means "the capability works and found nothing" — the two
-   * must not collapse into one value.
-   *
-   * The installed-app counterpart: the same attribute produced `11/3`, matching the
-   * CLI `agent-files` verdict (11 shared skills, 3 diverged) — measured 2026-07-29.
+   * Skill-copy comparison is absent on the web (the manifest walker filters dot directories). `-`
+   * means the surface lacks the capability; `0/0` means it works and found nothing; the two must not
+   * collapse.
    */
   test("문서함이 웹에서는 스킬 사본 판정을 하지 않는다 — 없는 능력을 있는 척하지 않는다", async ({
     page,
@@ -686,24 +510,8 @@ test.describe("웹 스모크 ③ 정직한 강등", () => {
   });
 
   test("다운로드 화면이 웹의 두 번째 일을 숨기지 않는다 (Windows 방문자)", async ({ page }) => {
-    // The reverse-direction defect — writing that something works nowhere when it
-    // works here. Measured 2026-07-27: this screen said "opening a folder directly is
-    // only possible in the installed app", and smoke ② directly above proves that
-    // false. Not sending away a visitor whose OS has no app is the web's second job.
-    //
-    // ⚠️ 2026-07-29 — this spec had **already been sitting red** (found while
-    // applying a council verdict). Both sentences it targeted were gone: "Chrome·Edge"
-    // is in no locale catalogue, and "Signed installer" (`windowsPolicy`) is policy
-    // prose that moved inside a disclosure and is **invisible in the default state**.
-    //
-    // Rather than resurrect the strings, **the claim was rewritten**. What must hold
-    // is not a particular wording but "a visitor on an OS with no app does not leave
-    // empty-handed".
-    //
-    // Re-aimed 2026-08-19: the place that answer lived in (the platform section inside
-    // the panel) disappeared with the install section. The hero's second row does that
-    // job now — the Windows file button stands **together with** the unsigned marker,
-    // and beside it is somewhere that works today.
+    // A visitor on an OS with no app must not leave empty-handed: the Windows file button stands with the
+    // unsigned marker at the point of download, and beside it is somewhere that works today.
     await gotoSettled(page, "/ko/download/");
 
     // ① The state of the file for your OS is known **at the point of download** —
@@ -714,28 +522,15 @@ test.describe("웹 스모크 ③ 정직한 강등", () => {
     await expect(windows).toContainText(/미서명/);
     await expect(windows).toHaveAttribute("href", /github\.com/);
 
-    // ② The path to **what works today** is on the same row.
-    //
-    // ⚠️ 2026-07-29 (night) — the destination changed from `/ko/` to `/ko/topology/`
-    // because the owner's decision made `/` a **marketing page** (ledger: reversing
-    // "root-first-open"). This assertion means *"a visitor on an OS with no app can
-    // reach something that works today"*, and that place is the **web product**, not
-    // the intro screen — `/topology`.
-    //
-    // The label-destination pairing is guarded separately at source level by
-    // `tests/contract/map-destination-route.contract.test.ts`.
-    //
-    // Deleted 2026-08-19: "Track to follow" (`download-platform-windows-track`) — that
-    // link was degradation guidance shown only while the Windows build was
-    // **unpublished**, and it went with the panel. A real file exists now, so the
-    // destination is the file rather than a tracking issue.
+    // The path to what works today is on the same row: the web product at `/topology`. The
+    // label-destination pairing is guarded by `tests/contract/map-destination-route.contract.test.ts`.
     const web = page.getByTestId("gateway-hero-web-cta");
     await expect(web).toBeVisible();
     await expect(web).toHaveAttribute("href", /\/ko\/topology\/?$/);
   });
 
   test("설정의 키 자리는 에이전트 → 모델로 가고, 그곳이 브라우저에서 키를 받지 않는 이유를 말한다", async ({ page }) => {
-    // Testing the workbench, so go to the map address — since 2026-07-30 `/` is the gateway.
+    // The workbench is at the map address; `/` is the gateway.
     await gotoSettled(page, "/ko/topology/");
 
     // The settings trigger exists in both the rail and the map chrome — narrow to the rail.
@@ -749,8 +544,8 @@ test.describe("웹 스모크 ③ 정직한 강등", () => {
 
     const card = page.getByTestId("ai-connection-web-degraded");
     await expect(card).toBeVisible({ timeout: 15_000 });
-    // A rejection in principle, so a reason must stand — not "coming soon". The reason is
-    // written in plain words now (2026-09-01): scripts from another site could take the key.
+    // A rejection in principle needs a reason in plain words: scripts from another site could take the
+    // key.
     await expect(card).toContainText("악성 코드");
     await expect(page.getByTestId("ai-connection-download-link")).toHaveAttribute(
       "href",

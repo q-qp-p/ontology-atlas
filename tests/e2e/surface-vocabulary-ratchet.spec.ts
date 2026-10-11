@@ -6,53 +6,13 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForAnimationsDone } from "./settle";
 
 /**
- * **Surface vocabulary ratchet — stops the number of box appearances growing.**
- *
- * **What was measured (2026-08-09).** This repository has specs for things you press
- * (`controlClass`), inputs (`fieldClass`), and the page frame (`page-frame`). But the
- * **boxes in between** — cards, panels, sections, notices — have no owner.
- * `surface.tsx`, despite its name, owns **motion only** (enter and exit classes).
- *
- * Measuring the 76 boxes rendered across 10 screens at the time found **30 distinct
- * combinations**. Every value is on the ramp (radius 6/9/12px, all colours tokens) —
- * what diverges is the **combination**. The same 9px card appears as
- * `border-soft + panel`, as `border-soft + overlay-1`, and as
- * `border-soft + rgba(16,17,24,.96)`.
- *
- * **Why 30 is not reduced to 4 now.** Which combination folds into which role is a
- * **design verdict** per site and touches dozens of files. The repository's method for
- * that is a ratchet — pin today's number as the ceiling so it **cannot grow**, while
- * reductions are welcome at any time.
- *
- ## ⚠️ When probing this ratchet (two false starts on 2026-08-09)
- *
- * **Swapping a combination is not caught — adding one is.** If a combination exists on
- * only one screen, replacing it with a new one is −1 +1 and the total is unchanged.
- * That produced two "passes" that led to suspecting the gate, and the gate was right.
- *
- * Also **confirm the build actually succeeded after the change** — with `pnpm build`
- * output silenced, you measure the old result of a failed build and conclude "it is not
- * caught".
- *
- * ⚠️ **When the count falls, lower the ceiling with it.** Otherwise the ratchet
- * loosens again and the slack won by the reduction is handed straight back to the next
- * person.
+ * Counts distinct surface box combinations (cards, panels, notices); today's count is a ceiling.
+ * Swapping one combination for another is -1 +1, not caught; lower the ceiling when the count falls.
  */
 
 /**
- * **Surfaces and controls are counted separately** (corrected 2026-08-09).
- *
- * The first count included every box with a radius plus a border or background and
- * reported **30 combinations**. But **17 of them were buttons and chips** — a layer
- * `controlClass` already owns, where 8 tone steps × 8 shapes producing many
- * combinations is **correct**.
- *
- * Mixing two layers made 30 a number that said nothing about the problem. What has no
- * owner is **15 surface combinations**, and those 15 are what this ratchet locks.
- *
- * ⚠️ **The control count is tracked too** — splitting them and then watching only one
- * side lets new combinations hide on the control side. Controls are owned by the value
- * layer so their ceiling is looser, but it is not unbounded.
+ * Surfaces and controls are counted separately: `controlClass` owns controls, so many combinations
+ * there are expected. Both counts are ratcheted so new ones cannot hide on either side.
  */
 const BASELINE_SURFACE_COMBOS = 7;
 const BASELINE_CONTROL_COMBOS = 17;

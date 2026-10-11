@@ -4,16 +4,8 @@ import type { Page } from '@playwright/test';
 const SAMPLE_SOURCE_KEY = 'demo:sample-source:v1';
 
 /**
- * Declares that this spec must run against the **dogfood sample** (this app's own code
- * map).
- *
- * On 2026-07-26 the default sample changed from dogfood to an example business, and
- * three specs broke at once — all of them pinned dogfood-only data (document titles,
- * project names, `?p=` deep-link slugs) while **quietly relying on that being the
- * default**. A test's subject is not "the default is dogfood" but "this works on
- * dogfood data", so it selects explicitly instead of relying on it.
- *
- * Must be called before `goto` — the app reads this value on first render.
+ * Declares that this spec runs against the dogfood sample (this app's own code map). A test's
+ * subject is "this works on dogfood data", not "the default is dogfood". Call before `goto`.
  */
 export async function useDogfoodSample(page: Page): Promise<void> {
   await page.addInitScript(

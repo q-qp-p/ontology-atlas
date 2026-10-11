@@ -4,25 +4,9 @@ import { FIXTURE_VAULT } from "./fixture-vault";
 import { seedFirstRunSeen } from "./first-run-seed";
 
 /**
- * **The installed app's rail, reproduced in a browser, with the native answers slow on purpose.**
- *
- * Why this file exists: the flicker the owner reported on 2026-09-12 — *"when this right-hand
- * area switches it loads with a strange flicker"* — is invisible to every web gate. On the web
- * `useAtlasGitContext` resolves `vaultPath` to `null` (an FSA handle has no path), so History
- * renders its honest `web` degradation card and never enters the state that flashes. The screen
- * the owner photographed is the **desktop** one: arriving at History paints the loading skeleton
- * and the connect stepper, then replaces both with the workbench.
- *
- * The app is a WKWebView shipping the same static export, so injecting the Tauri runtime signal
- * exercises the same render boundary (`desktop-shell-rail.spec.ts` established that reasoning).
- * What this harness adds is **latency**: every native answer is delayed by
- * `NATIVE_LATENCY_MS`, because a stub that resolves in the same microtask hides exactly the
- * window a flash lives in. A real `git_status` + `git_history` + `git_diff` on a vault-sized
- * repository costs tens to hundreds of milliseconds; 120 ms is inside that range and is long
- * enough for a fallback to reach the screen on any machine.
- *
- * The vault content is `fixture-vault.ts` — the same deterministic fixture the accessibility and
- * contrast gates measure with — served through the native file commands rather than OPFS.
+ * Every native answer is delayed by `NATIVE_LATENCY_MS`: a stub that resolves in the same
+ * microtask hides the window a flash lives in. The Tauri runtime signal is injected because
+ * the app ships the same export.
  */
 
 /**
@@ -112,11 +96,8 @@ export interface DesktopRuntimeOptions {
    */
   gitStatus?: Record<string, unknown>;
   /**
-   * The models tab's native answers (2026-09-25): Keychain state, local runners by address, the
-   * experimental Jev bridge, and the sent log. Without it only `secret_status` answers (no key),
-   * as before. Every stubbed transfer appends a line to `.ontology-atlas/llm-audit.jsonl` in the
-   * served vault, the way `llm_audit::reserve` + `finalize` do, so the tab's count is read back
-   * through the same file path the app reads.
+   * The models tab's native answers: Keychain state, local runners, the Jev bridge and the sent log.
+   * Each stubbed transfer appends a line to `.ontology-atlas/llm-audit.jsonl` in the served vault.
    */
   models?: ModelsStubOptions;
   /**

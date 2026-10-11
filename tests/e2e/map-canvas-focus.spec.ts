@@ -60,8 +60,7 @@ test.describe("map canvas focus on the dogfood vault", () => {
         await expect(panel).toBeVisible();
         await expect(panel).toHaveAttribute("aria-label", "지도에 추가");
         await expect(page.getByTestId("ontology-bootstrap-title")).toHaveCount(0);
-        // Round 2: with the name field gone, focus still opens inside the dialog, on the first
-        // folder choice, never on <body> with the backdrop as the first Tab stop.
+        // Focus opens inside the dialog on the first folder choice, never on body.
         await expect
             .poll(() => page.evaluate(() => !!document.activeElement?.closest('[data-testid="ontology-bootstrap-panel"]')))
             .toBe(true);

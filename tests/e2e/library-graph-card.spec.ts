@@ -6,29 +6,8 @@ import { stubDirectoryPicker } from "./vault-picker-stub";
 import { waitFrames } from "./settle";
 
 /**
- * **A press on a mark opens a card beside it — the claims only a browser can settle.**
- *
- * The owner, 2026-09-12: *"when I click it just navigates straight to the page. I want a
- * press to raise a popup that shows me something … and for the motion to show knowledge
- * flowing."* Direction B answers that, and this file owns the half of it that is geometry
- * and gesture rather than arithmetic:
- *
- * 1. a press opens a card **beside** the mark, and **no mark moves** — the standing rule
- *    of 2026-09-08, which this slice must not spend;
- * 2. the card never covers its own mark, and never reaches the caption row or the strip
- *    above the picture — both stated falsifiers of the direction;
- * 3. it flips to the other side of a mark at the canvas's edge, instead of spilling out;
- * 4. Escape closes it and gives the canvas its keyboard back, with the walk's position
- *    intact; a second press on the same mark closes it; a double press is still the
- *    shortcut to the page, and `Open` inside the card is the same commit, named;
- * 5. the citations of the open card's mark are the ones drifting, and under
- *    `prefers-reduced-motion` the canvas is byte-identical frame to frame **with a card
- *    open** — the static equivalent is a chevron and a full amber dot, not an animation
- *    nobody asked for;
- * 6. a frame with a card open stays inside its budget on a three-hundred-file folder.
- *
- * ⚠️ **Aiming is done through `window.__atlasLibraryGraph`, never by sweeping pixels** —
- * the map lost six measurement rounds to specs that were silently panning the background.
+ * Claims only a browser can settle: the card opens beside the mark, no mark moves, it never covers
+ * its mark or the strip, flips at the edge. Aim via `window.__atlasLibraryGraph`.
  */
 
 const SOURCES = [
@@ -165,10 +144,7 @@ test.describe("a press on a mark opens a card beside it", () => {
     // The declaration the sweeping surface check measures, rather than guessing.
     expect(await card.getAttribute("data-transient-surface")).toBe("anchored");
 
-    /*
-     * ⚠️ **The rule this slice must not spend.** Every mark's position, before the press
-     * and after it: the picture stands still (`docs/DECISIONS.md`, 2026-09-08).
-     */
+    /* No mark moves on the press. */
     const after = await marks(page);
     for (const mark of before) {
       const now = after.find((candidate) => candidate.id === mark.id)!;
@@ -244,11 +220,7 @@ test.describe("a press on a mark opens a card beside it", () => {
 
     await pressMark(page, target);
     await expect(page.getByTestId("library-graph-card")).toBeVisible();
-    /*
-     * The browser has no Finder: a source card's reveal door hands over the file it was
-     * granted, and says so with the source pane's own word. Measured 2026-09-19: the card
-     * said "Show in Finder" on the web while the pane beside it said "Open a copy".
-     */
+    /* The browser has no Finder: a source card's reveal door says "Open a copy", as the source pane does. */
     await expect(page.getByTestId("library-graph-card-reveal")).toHaveText("Open a copy");
     // The card took the keyboard, so Tab reaches its doors.
     await expect
@@ -295,8 +267,7 @@ test.describe("a press on a mark opens a card beside it", () => {
 
     await pressMark(page, target);
     await page.getByTestId("library-graph-card-open").click();
-    // The card closed and the reader took the document column: the same outcome the press
-    // used to have, reached from a door that says what it does.
+    // The card closes and the reader takes the document column.
     await expect(page.getByTestId("library-graph-card")).toHaveCount(0);
     await expect(page.getByTestId("library-reading-pane")).toBeVisible();
   });
@@ -334,30 +305,15 @@ test.describe("a press on a mark opens a card beside it", () => {
     expect(flow.stale.length).toBeGreaterThan(0);
     expect(flow.stale.length).toBeLessThanOrEqual(flow.edges.length);
 
-    /*
-     * The drift has words **in the card**, beside the lines — three cold walkers read the
-     * travelling dashes as "loading" when the only sentence about them was at the foot of
-     * the window (2026-09-12). The legend under the canvas keeps teaching the marks.
-     */
+    /* The card carries words for the drift, beside the lines. */
     await expect(page.getByTestId("library-graph-card-flow")).toContainText("flow from each original");
-    /*
-     * And the slot below the canvas is still the picture's. With the pointer off the marks
-     * it is the legend again — the key a walker reported losing when the card took this
-     * line for its own sentence (2026-09-12).
-     */
+    /* With the pointer off the marks the slot below the canvas is the legend again. */
     const box = (await page.getByTestId("library-graph-canvas").boundingBox())!;
     await page.mouse.move(box.x + 3, box.y + 3);
     await expect(page.getByTestId("library-graph-hint")).toContainText("A filled circle is a page");
   });
 
-  /**
-   * **The home's one breath, and that it is one.**
-   *
-   * Every citation the folder cannot vouch for pulses once as the picture arrives — the
-   * only thing on this home that moves with nobody's hand on it. A loop there would spend
-   * the 2026-09-08 promise outright, so what is measured is that it *ends*: frames during
-   * the breath, none after it.
-   */
+  /** The arrival breath is one pulse and ends: frames during it, none after it. */
   test("the arrival breath runs once and the canvas then goes quiet", async ({ page }) => {
     await seedFirstRunSeen(page);
     await stubDirectoryPicker(page, seedVault());
@@ -391,11 +347,8 @@ test.describe("a press on a mark opens a card beside it", () => {
       })
       .toBe(false);
     /*
-     * The frame that clears the timestamp is not the breath's last paint: the loop draws
-     * the resting picture once more on the next frame and then stops. Measured 2026-09-26:
-     * exactly one paint 5-10ms after `pulsing` turns false, and none in the three seconds
-     * after it. A poll that lands in that one-frame gap counted the breath's own last frame
-     * as a loop (2 of 4 runs), so the window opens once two more frames have passed.
+     * The frame that clears the timestamp is not the last paint: one more resting paint follows,
+     * so the window opens after two more frames.
      */
     await waitFrames(page, 2);
     await reset();
@@ -427,9 +380,8 @@ test.describe("a press on a mark opens a card beside it", () => {
     });
     // The drift is running, so the loop is awake: a measurement over no frames would pass.
     expect(paint.frames, "the card's drift scheduled no frames").toBeGreaterThan(20);
-    // A product budget with 5x headroom: the mean measured 0.74-0.90 ms on a four-core
-    // runner (2026-09-27), so 4.5 ms catches a card that makes every frame expensive
-    // without failing on a busy machine.
+    // A product budget with 5x headroom, so a card that makes every frame expensive fails but a busy
+    // machine does not.
     console.log(`[library-graph-card] paint mean ${paint.mean.toFixed(2)} ms over ${paint.frames} frames`);
     expect(paint.mean).toBeLessThan(4.5);
   });
@@ -480,10 +432,7 @@ test.describe("with reduced motion", () => {
     const target = all.find((node) => node.kind === "page" && node.label === "Settlement")!;
     await pressMark(page, target);
     await expect(page.getByTestId("library-graph-card")).toBeVisible();
-    /*
-     * Past the ink ramp, which reduced motion keeps at 120 ms by decision (2026-09-12) —
-     * seen rather than budgeted for: two identical frames are the ramp having finished.
-     */
+    /* The ink ramp stays at 120 ms under reduced motion; two identical frames mean it has finished. */
     await expect
       .poll(
         async () => {
@@ -496,9 +445,8 @@ test.describe("with reduced motion", () => {
       .toBe(true);
 
     /*
-     * The static equivalent is a chevron on each citation and a full amber dot in each
-     * break — one paint, nothing travelling. So three frames a third of a second apart are
-     * the same bytes, which is the 2026-09-08 stillness promise holding with a card open.
+     * The static equivalent is a chevron per citation and a full amber dot per break: one paint,
+     * so three frames a third of a second apart are identical.
      */
     // Three **measurement** samples a third of a second apart: the claim is about a
     // stretch of real time in which nothing may change.
@@ -519,11 +467,7 @@ test("the keyboard walks the flow picture in reading order: the third arrow land
   const canvas = page.getByTestId("library-graph-canvas");
   await canvas.focus();
   for (let i = 0; i < 3; i += 1) await page.keyboard.press("ArrowRight");
-  /*
-   * Measured 2026-09-19 before the fix: the walk followed the model's order and three
-   * presses from the top landed on the seventh source from the top. The picture is read
-   * column by column, top to bottom, and the keyboard follows the picture.
-   */
+  /* The keyboard follows the picture: columns top to bottom, not the model's order. */
   const expected = await page.evaluate(() => {
     const sources = window.__atlasLibraryGraph!.nodes().filter((node) => node.kind === "source");
     return [...sources].sort((a, b) => a.y - b.y || a.x - b.x)[2]!.id;

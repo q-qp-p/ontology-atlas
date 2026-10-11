@@ -4,22 +4,8 @@ import { installDesktopRailRuntime } from "./desktop-rail-arrival-harness";
 import { waitForBoxStill, waitForMapStill } from "./settle";
 
 /**
- * **The constellation popover hangs from its trigger and stays in the free map**
- * (owner report, 2026-09-25, installed app at 1512).
- *
- * The popover was pinned to the trigger's right edge at a fixed 320px. From `xl` the
- * search lane that holds the trigger sits at the free map's left edge, so the popover ran
- * about 284px left of its trigger: measured 260-580 with the trigger at 544-580 and the
- * INDEX panel ending at 388, and over the collapsed INDEX tab when INDEX was folded. The
- * same screen said "could not read your saved constellations" for a vault that had never
- * saved one, because this harness (like every capture made through it) left
- * `read_library_collections` unstubbed.
- *
- * Claims, at 1040, 1280 and 1512 with INDEX open and collapsed:
- * - the popover stays inside the free map (right of INDEX or its tab, inside the canvas),
- * - it intersects neither the INDEX panel nor the INDEX tab,
- * - its top hangs under the trigger and its horizontal span covers the trigger's centre,
- * - an absent constellations file reads as the empty state, not a read failure.
+ * The popover hangs under its trigger and stays in the free map at 1040, 1280 and 1512,
+ * INDEX open and collapsed. An absent constellations file reads as empty, not a failure.
  */
 
 const WIDTHS = [1040, 1280, 1512] as const;

@@ -9,25 +9,8 @@ import {
   waitFrames } from "./settle";
 
 /**
- * **Map canvas surfaces stand where they belong and keep one grammar**
- * (interaction audit, 2026-09-25). Each case is a defect measured on the product's own vault
- * (`docs/ontology`) and is judged here the way it was found: by rects, computed styles and
- * `document.activeElement`, never by eye.
- *
- * - the edge hover card never lands on the INDEX panel or the utility tiles;
- * - the lit 3D legend holds no drawn node;
- * - in Territories the legend stands between the panels, the selected name stays clear of the
- *   inspector, the element list leaves its domain's title readable, and the evidence note is
- *   never cut off;
- * - the detail panel's action row is one height and one radius, the edge panel shares its width
- *   and primary grammar, and "+N more" is set in body type on the row text's column;
- * - the tour's first step offers no dead [back], and its relation/datasheet cards leave the
- *   nodes they explain in view.
- *
- * Focus and address behaviour lives in `map-canvas-focus.spec.ts`.
- *
- * Captures are written only when `MAP_CANVAS_CAPTURE_DIR` names a folder outside the repository;
- * a gate run takes none, because a screenshot per step was time spent on evidence nobody read.
+ * Judged by rects, computed styles and `document.activeElement`, never by eye.
+ * Captures are written only when `MAP_CANVAS_CAPTURE_DIR` names a folder outside the repo.
  */
 
 const intersects = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
@@ -35,10 +18,7 @@ const contains = (b: Box, p: {
     x: number;
     y: number;
 }) => p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h;
-/**
- * Enters the realm of a drawn domain through its panel's own action. The Flat overview
- * picks no line (the flat dial, 2026-10-02); inside a realm each relation is drawn and picked.
- */
+/** Enters a domain's realm through its panel action; the Flat overview picks no line. */
 async function enterRealmOf(page: Page, domain: {
     x: number;
     y: number;
@@ -84,7 +64,6 @@ test.describe("map canvas interactions on the dogfood vault", () => {
                 .filter((e) => e.visible && !e.hidden)
                 .map((e) => ({ x: c.x + 0.25 * e.ax + 0.5 * e.controlX + 0.25 * e.bx, y: c.y + 0.25 * e.ay + 0.5 * e.controlY + 0.25 * e.by }));
         });
-        // Every edge midpoint on the free map — the ones near INDEX are the ones that used to fail.
         const free = midpoints.filter((p) => !chrome.some((r) => contains(r, p)) && p.x > 0 && p.x < 1040 && p.y > 0 && p.y < 720);
         expect(free.length, "edges to hover").toBeGreaterThan(3);
         let hovered = 0;
@@ -201,8 +180,7 @@ test.describe("map canvas interactions on the dogfood vault", () => {
         expect(row.length).toBeGreaterThanOrEqual(2);
         expect(new Set(row.map((r) => r.h)).size, `heights ${JSON.stringify(row)}`).toBe(1);
         expect(new Set(row.map((r) => r.radius)).size, `radii ${JSON.stringify(row)}`).toBe(1);
-        // Round 2: the labelled controls set their words in one size ("Edit" was 11px beside a
-        // 14px primary), and the footer's full-detail control wears the row's radius, not 9px.
+        // Labelled controls share one type size; the footer's full-detail control wears the row's radius.
         expect(new Set(row.map((r) => r.text).filter(Boolean)).size, `type sizes ${JSON.stringify(row)}`).toBe(1);
         const fullDetailRadius = await page
             .getByTestId("map-detail-panel-open-full-detail")
@@ -295,9 +273,7 @@ test.describe("map canvas interactions on the dogfood vault", () => {
             if (step === "nodes") {
                 // [next] keeps its place in the card when [back] appears beside it on step 2.
                 expect(await nextInset(), "[next] holds the card's trailing corner").toEqual(nextBefore);
-                // And the card stands beside the node the step names, never on it. This used to pass
-                // only by accident: a map at rest never wrote the anchor probe, so the card centred on
-                // the project node exactly where step 1's card stood.
+                // The card stands beside the node the step names, never on it.
                 const cutout = (await rectOf(page, "topology-tour-anchor"))!;
                 expect(cutout, "the anchor probe is projected onto the project node").not.toBeNull();
                 const project = (await drawnNodes(page)).find((n) => n.id.startsWith("project:"))!;
@@ -406,11 +382,8 @@ test.describe("map canvas interactions on the dogfood vault", () => {
         });
     }
     /*
-     * Round 2 (2026-09-25). Escape closes the inspector and keeps the selection; INDEX unfolds
-     * again. The map must measure again: the legend stretches back between the panels, and the
-     * camera returns to the room so no drawn name stands under INDEX. With INDEX folded and the
-     * inspector open, the dependency the selection's arrow points at is drawn whole, not cut by
-     * the canvas edge.
+     * After Escape closes the inspector and INDEX unfolds, the map must re-measure:
+     * legend between the panels and no drawn name under INDEX.
      */
     test("MC-02/MC-03 round 2: Territories measures again when the chrome moves", async ({ page }) => {
         await arrive(page, { width: 1040, height: 720 });

@@ -4,71 +4,9 @@ import { openLibraryWorkScenario } from "./library-work-harness";
 import { waitForAnimationsDone, waitForBoxStill, waitForPageSettled } from "./settle";
 
 /**
- * Accessibility ratchet — **open surfaces**.
- *
- * ════════════════════════════════════════════════════════════════════
- * ## Why this file is separate (2026-08-04)
- * ════════════════════════════════════════════════════════════════════
- *
- * `a11y-ratchet.spec.ts` opens the audited URLs and measures **the first screen
- * only**, so surfaces that **appear on a press** — overlays, panels, sheets, menus —
- * had never been measured at all. Its three baselines really are 0, but that 0 was
- * «the closed screen's 0». The sentence `audited-routes.ts`'s preamble records about
- * routes applies to surfaces unchanged: **a screen that was not measured is not a
- * screen that passed.**
- *
- * This file exists because the 2026-08-04 system audit found AA failures in that
- * blind spot. Its first run produced **7** immediately, all of them elements that do
- * not exist on a closed screen.
- *
- * ### First sweep — 5 surfaces, 7 violations (2026-08-04, 1512×900)
- *
- * | Surface | Rule | Measured | What |
- * |---|---|---:|---|
- * | settings sheet | `color-contrast` | 2 | `#7170ff` (marker indigo) at **4.1:1** on `#1f2230` and **3.9:1** on `#232634` |
- * | global search | `color-contrast` | 3 | `#82828a` (`--color-text-quaternary`) at **4.38 · 4.14 · 4.38** on overlays |
- * | next-action row menu | `target-size` | 2→0 | the menu covered the row actions, leaving 81.8×17 and 32×17; the 2026-08-13 one-step lift of the analysis prose (11→12.5px) grew the row height and recovered 24×24 |
- * | shortcut sheet · document sort menu | — | 0 | |
- *
- * **That round fixed none of the three, because they are the spec's work.** The spec
- * round (the design-systems ink round, 2026-08-04) then repaid two of them: the 5 indigo
- * findings were covered by the exhaustive migration of 23 hand-written accent×tint
- * sites (`accent-ink-contrast` baseline 23 → 0), and the 3 `#82828a` findings were
- * replaced under the "text on a raised background starts at tertiary" licence
- * (`tests/contract/quaternary-ink-surface.contract.test.ts`). Hence the
- * `color-contrast` baseline below is 5 → 0. The 2 `target-size` findings also reached
- * 0 when the 2026-08-13 one-step type lift grew the row.
- *
- * - The 5 indigo findings are an **ink ramp verdict**. `--color-indigo-accent` is
- *   licensed for "darkest backgrounds only" (`accent-ink-contrast.contract.test.ts`)
- *   and here it sits on a tint. Whether each site is replaced or the value lifted is
- *   a matter for convening design-systems, and .claude/rules/design.md names that list
- *   explicitly.
- * - The 3 `#82828a` findings are an **already known limit**.
- *   `a11y-ratchet.spec.ts`'s preamble records *"⚠️ still failing on hover/selected
- *   (overlay-2, 4.36) — text on a pressable row starts at tertiary"*, and this gate
- *   **confirmed that sentence on a real screen for the first time**. A warning that
- *   existed only in prose now has numbers.
- * - The 2 `target-size` findings are overlap, so they are a **layout** decision, not
- *   a value one.
- *
- * So they are **registered as a ratchet**: today's counts are locked as the ceiling
- * and no new violation may enter. Demanding 0 without clearing them first would be
- * red from day one, and a red gate is soon switched off.
- *
- * ════════════════════════════════════════════════════════════════════
- * ## Proof that this gate is not idling
- * ════════════════════════════════════════════════════════════════════
- *
- * "0 violations on open surfaces" and "in fact nothing was opened" are
- * indistinguishable on screen — which is the very reason this round exists. So every
- * surface carries **two layers**:
- *
- * 1. **Evidence that it opened** — after pressing the trigger, that surface's selector
- *    must actually be visible. This blocks the accident where a testid outlives its
- *    component (the 2026-08 release).
- * 2. **Collection is alive** — the number of rules axe applied to the content and
- *    passed must be above a floor. On an empty document that number is 2.
+ * Accessibility ratchet for open surfaces. A closed screen that measures 0 says nothing about surfaces
+ * that appear on a press, so each surface needs evidence it opened and a floor on rules axe applied
+ * and passed (an empty document gives 2).
  */
 
 const AXE_PATH = require.resolve("axe-core/axe.min.js");
@@ -202,7 +140,7 @@ const OPENERS: readonly Opener[] = [
   },
   {
     name: "Architecture analysis history",
-    // The blueprint is a view of the Harness destination, not its default (2026-09-13).
+    // The blueprint is a view of the Harness destination, not its default.
     route: "/ko/architecture/?view=architecture",
     trigger: "architecture-review-open",
     surface: '[data-testid="analysis-workbench"]',
@@ -253,10 +191,10 @@ async function openAndAudit(page: Page, o: Opener) {
       window.localStorage.setItem("demo:sample-source:v1", "dogfood");
     });
   }
-  /* A route may already carry a query — `/ko/architecture/` needs `?view=architecture` now that the
-     blueprint is a view rather than the destination's default — so the separator is chosen rather
-     than assumed. Appending a second `?` made `view=architecture?guides=off`, which parses as no view
-     at all and opened the coverage matrix instead (measured 2026-09-13). */
+  /*
+   * A route may already carry a query, so the separator is chosen rather than assumed: appending a
+   * second `?` yields a malformed view parameter that opens the wrong view.
+   */
   if (!o.libraryWorkReceipt) {
     const separator = o.route.includes("?") ? "&" : "?";
     await page.goto(`${o.route}${separator}guides=off`, { waitUntil: "domcontentloaded" });

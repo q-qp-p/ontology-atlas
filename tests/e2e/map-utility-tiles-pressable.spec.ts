@@ -25,8 +25,8 @@ test("no map utility tile is left visible under an open panel", async ({ page })
   await page.goto("/ko/?guides=off&e2e=1", { waitUntil: "domcontentloaded" });
   await page.getByTestId("first-run-open").click();
   await waitForMapStill(page);
-  // The Flat overview picks no line (the flat dial, 2026-10-02): the relation card is opened
-  // inside a domain's realm, entered from its panel, with everything there expanded.
+  // The Flat overview picks no line: the relation card opens inside a domain's realm, entered
+  // from its panel, with everything there expanded.
   const domain = await page.evaluate(() => {
     const m = (window as unknown as { __atlasMap: { nodes: () => Array<{ kind: string; hidden: boolean; x: number; y: number }> } }).__atlasMap;
     const c = document.querySelector('[data-testid="ontology-map-canvas"]')!.getBoundingClientRect();

@@ -2,28 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { seedFirstRunSeen } from "./first-run-seed";
 
-/**
- * **The promise image must not become a ribbon.**
- *
- * The right-hand preview on the history setup screen ("this is how the screen fills
- * once connected") has a **content-fixed height** of 229px but had no width cap. The
- * left explanatory column is capped at 520px while the right one consumed all
- * remaining width, so the wider the screen the more the ratio collapsed. The owner's
- * report: *"the proportions are off — the right-hand one is far too wide."* (the proportions are
- * off — the right-hand one is far too wide).
- *
- * | Window width | Preview | Ratio |
- * |---|---|---|
- * | 1280 | 536×229 | 2.3 |
- * | 1440 | 696×229 | 3.0 |
- * | 1920 | 1176×229 | **5.1** |
- * | 2560 | 1810×229 | **7.9** |
- *
- * ⚠️ **Lock the ratio, not the width.** Pinning the width makes this test break
- * spuriously when one extra line of content changes the height, and then the next
- * person deletes the cap. What collapsed was not the width but whether it still reads
- * as a screen, so that is what is measured.
- */
+/** Lock the ratio, not the width: a pinned width breaks whenever the content height changes. */
 
 /** The cap at which it still reads as a screen preview. Measured: legible up to 3.0 (at 1440 wide) and collapsing above that. */
 const MAX_RATIO = 3.2;

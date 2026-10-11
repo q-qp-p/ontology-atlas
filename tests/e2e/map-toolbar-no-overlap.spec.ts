@@ -3,21 +3,8 @@ import { installDesktopRailRuntime } from "./desktop-rail-arrival-harness";
 import { waitForAnimationsDone, waitForBoxStill, waitForMapStill, waitFrames } from "./settle";
 
 /**
- * **No control in the map's top toolbar is drawn over another** (owner report,
- * 2026-09-24, installed app at 1512x949).
- *
- * With the meaning-review panel open (about 430px of the window), a path chosen and
- * one node visited, the right half of the toolbar collapsed into itself: refresh,
- * focus, automations, conversation, history, search and the mascot were painted on
- * top of one another with stray glyph fragments between them. The cause was
- * structural: the search lane centred itself on the map and the utility lane pinned
- * itself to the right edge, as two absolute boxes that never measured each other.
- *
- * The invariant is written per control rather than per lane: every button, link and
- * status chip in the toolbar keeps its own rectangle, stays inside the map it sits
- * on (not under the rail, not under the panel), and every tile keeps the chrome
- * tile height. It runs with the panel closed and open, because opening the panel is
- * what takes the width away.
+ * Every button, link and status chip keeps its own rectangle inside the map it sits on, and
+ * every tile keeps the chrome tile height, with the panel closed and open.
  */
 
 const WIDTHS = [1040, 1280, 1512, 2560] as const;
@@ -129,8 +116,7 @@ test("the map's top toolbar never draws one control over another, with or withou
   await page.getByTestId("first-run-open").click();
   await waitForMapStill(page).catch(() => {});
 
-  // The owner's state: a path source chosen (which is also the first visit on the
-  // trail), then its target picked on the map.
+  // A path source chosen (also the first visit on the trail), then its target picked on the map.
   await page.goto("/ko/topology/?guides=off&e2e=1&mode=path&pathFrom=capabilities/checkout&p=capabilities/checkout", {
     waitUntil: "domcontentloaded",
   });
@@ -187,15 +173,8 @@ test("the map's top toolbar never draws one control over another, with or withou
 });
 
 /*
- * **The toolbar comes to rest at every width, not only at the fixed ones above** (2026-09-24).
- *
- * When the agent status joined the bell inside the utility row, a reserve that hid the
- * status whenever the search lane did not fit beside it became a loop: hiding it
- * shrank the row, so the lane fit, so the status came back, so the lane no longer
- * fit. It oscillated only in a band a few pixels wide where the lane's text width sat
- * on that edge, which is why the fixed widths above passed locally and one of them
- * failed on CI's fonts ("box never stopped moving"). A sweep across the band where
- * the lanes meet with the panel open finds the edge whatever the fonts measure.
+ * The toolbar must come to rest at every width: a sweep across the band where the lanes meet
+ * finds an edge where a lane's visibility toggles with its own width and reflows forever.
  */
 test("the toolbar settles at every width while the panel is open — no lane reflows forever", async ({ page }) => {
   test.setTimeout(240_000);
@@ -210,7 +189,7 @@ test("the toolbar settles at every width while the panel is open — no lane ref
   });
   await expect(page.getByTestId("topology-trail-chip")).toBeVisible({ timeout: 30_000 });
   await waitForMapStill(page).catch(() => {});
-  // The owner's state, as above: the path's target picked on the map.
+  // The path's target picked on the map.
   const canvasBox = (await page.getByTestId("ontology-map-canvas").boundingBox())!;
   const target = await page.evaluate(() => {
     const map = (window as unknown as { __atlasMap?: { nodes(): Array<{ id: string; x: number; y: number }> } }).__atlasMap;

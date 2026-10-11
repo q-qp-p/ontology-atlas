@@ -11,25 +11,8 @@ const LONG_PAGE = [
 ].join("\n");
 
 /**
- * **A home popup returns focus to its door, and the picture behind it does not move.**
- *
- * This case used to measure the `Graph` dialog opened from an open page: whether it gave
- * the reading position and the opener back, including on an immediate reopen. Half of that
- * subject is gone with the dialog — the picture is the Library's home and a document
- * *replaces* it (owner, 2026-09-12; `docs/DECISIONS.md` 2026-09-06 `:587`, restored), so
- * there is no longer a surface a person can raise **over** an open page and come back
- * from. Measured on the rewrite: leaving the page for the home and reopening it starts the
- * reader at the top, because the pane unmounted; no record ever promised otherwise, and
- * inventing a scroll memory here would be a feature, not a repair.
- *
- * What survives is the invariant this file was really written for — an immediate reopen
- * must not lose the surface's owner — read where the surfaces now are:
- *
- *  1. every home popup hands focus back to its own door, on Escape, on its `✕`, and on an
- *     outside press, and an immediate reopen from the door the keyboard just took back
- *     works;
- *  2. the canvas keeps its camera and its marks throughout, because "the Library graph
- *     stands still" (2026-09-08) is about every state, not just hover.
+ * Every home popup hands focus back to its door on Escape, its close button and an outside press,
+ * and an immediate reopen works. The canvas keeps its camera and marks throughout.
  */
 test("a home popup returns its door on every close, and the canvas stands still", async ({ page }) => {
   await seedFirstRunSeen(page);

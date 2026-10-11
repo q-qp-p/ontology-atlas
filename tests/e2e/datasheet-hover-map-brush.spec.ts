@@ -4,33 +4,9 @@ import type {} from "./atlas-map-probe";
 import { waitForMapStill, waitFrames } from "./settle";
 
 /**
- * **Hovering a datasheet row makes the map beside it point at that node.**
- *
- * Owner request 2026-08-17: *"It would be good if
- * hovering each of these highlighted it on the map beside them — right now nothing
- * responds."* (it would be good if
- * hovering each of these highlighted it on the map beside them — right now nothing
- * responds).
- *
- * **Why both state and pixels are measured.** Measuring only one of the two lets
- * this feature **die while staying green**, and it really was dead that way when
- * this spec was written:
- *
- * | What is measured | What it misses |
- * |---|---|
- * | State only (`__atlasMap.hover()`) | The value is right while **nothing is drawn on screen**. While a node is selected the emphasis ramp is 0, so the hover ring's alpha was 0 too — measured **0 pixels** |
- * | Pixels only | It says only "something changed". Pointing at **the wrong node** still passes |
- *
- * So state (does `hover()` return that node) and screen (do canvas pixels really
- * change) are measured in the same step.
- *
- * **Is the instrument idling.** Each step is preceded by a **noise measurement**
- * (two captures with nothing done in between). If noise is non-zero, the claim "N
- * pixels changed because of the hover" does not hold, so the threshold becomes a
- * multiple of the noise. Measuring under `reducedMotion` is for the same reason —
- * the map's ambient animation (comets, breathing) must be off to isolate the
- * pixels a hover changed, and it simultaneously proves **the highlight does not
- * rely on movement** (this repository forbids blinking and glow).
+ * State and pixels are measured together: state alone can be right while nothing is drawn,
+ * and pixels alone cannot tell the wrong node. reducedMotion removes ambient animation;
+ * the noise measurement sets the threshold.
  */
 test("데이터시트 줄 호버 — 지도가 그 노드를 가리키고, 떼면 되돌아온다", async ({ page }) => {
   test.setTimeout(120_000);
@@ -62,19 +38,8 @@ test("데이터시트 줄 호버 — 지도가 그 노드를 가리키고, 떼�
   const hover = () => page.evaluate(() => window.__atlasMap!.hover());
 
   /**
-   * **The comparison happens in the page; only the count crosses.**
-   *
-   * The evidence is still raw canvas pixels — that has not changed. What changed is
-   * where they are counted. Shipping `Array.from(getImageData(...).data)` over the
-   * CDP bridge serialises 5,164,544 array entries per capture, measured at
-   * **12.2 s each** against **3 ms** for the identical reduction run in the page.
-   * Four captures made this one spec spend ~49 s of its 120 s budget on transport,
-   * so it passed on a fast machine and timed out on a slow runner — it failed three
-   * times on `main` between 2026-09-10 and 09-11, every retry included, while the
-   * feature it guards was fine.
-   *
-   * The baseline stays in the page as a handle rather than a `window` global, so
-   * nothing is added to the page the product does not have.
+   * Compare in the page and send only the count:
+   * raw pixels over the CDP bridge cost about 12s per capture.
    */
   const captureBaseline = () =>
     page.evaluateHandle(() => {

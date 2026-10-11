@@ -3,14 +3,8 @@ import { installDesktopRailRuntime } from "./desktop-rail-arrival-harness";
 import { waitForMapStill } from "./settle";
 
 /**
- * **A name does not cross a changed node's ring** (2026-09-19).
- *
- * With the recent-changes lens on, every changed node wears a dashed ring six
- * pixels outside its disc. The label placer reserved only the disc, so names
- * were laid across the rings of neighbouring changed nodes: on the fixture
- * vault two names crossed a ring by four pixels or more, and the corner under
- * the settlement domain read as a pile. The reservation now includes the ring
- * while the node wears one.
+ * The label placer must reserve the dashed ring six pixels outside a changed node's disc,
+ * so no name crosses a ring.
  */
 test("under the spotlight, no name crosses another node's ring", async ({ page }) => {
   test.setTimeout(90_000);

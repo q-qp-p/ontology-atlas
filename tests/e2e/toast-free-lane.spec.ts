@@ -4,24 +4,8 @@ import { waitForAnimationsDone, waitForBoxStill } from "./settle";
 import { stubDirectoryPicker } from "./vault-picker-stub";
 
 /**
- * **A toast and the agent status never stand over the map's own chrome** (owner,
- * 2026-09-24: *"the toast at the top — the design is poor, the colour too, and the
- * position"*).
- *
- * Measured before this spec, with a folder open and an agent heartbeat live:
- *
- * - at 1040 the top-centred toast lay over the expanded INDEX (310–730 over 88–388) and,
- *   with the meaning panel open, over the panel by 114px;
- * - at 1040 the status line hanging under the toolbar lay across the search lane's
- *   second row (832–918 × 74–98 over 804–1016 × 76–112);
- * - at 1512 with the panel open the toast covered that status line.
- *
- * The claims are geometric, so they are measured as rects across three widths with the
- * right panel closed and open: the toast's box intersects none of the toolbar rows, INDEX
- * or the panel, and stays inside the window; the status is a segment of the toolbar row,
- * joined to the bell, and intersects no other lane.
- *
- * Only the picker is stubbed; everything behind it is real code.
+ * Geometric claims, measured as rects at three widths with the right panel closed and open: the toast
+ * and agent status intersect no toolbar row, INDEX or panel. Only the picker is stubbed.
  */
 
 type Rect = { x: number; y: number; width: number; height: number };

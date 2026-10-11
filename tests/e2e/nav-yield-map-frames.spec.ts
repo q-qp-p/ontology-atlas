@@ -8,63 +8,9 @@ import { NAVIGATION_YIELD_MS } from "../../src/shared/lib/navigation/navigation-
 import { seedFirstRunSeen } from "./first-run-seed";
 
 /**
- * **A screen you have decided to leave does not draw** (measured 2026-08-19).
- *
- * **What happened.** The time for a new screen to appear after pressing a rail tab
- * **differed by where you started from.** To the docs surface, at 4× CPU throttling:
- *
- * | Starting state | Before | After |
- * |---|---|---|
- * | 2D, 2,000 nodes | 194ms | 194ms |
- * | 3D, 2,000 nodes (dome auto-rotating) | **529ms** | 373ms |
- * | 3D, 3,000 nodes | **745ms** | 502ms |
- *
- * The new screen was not slow. The map's rAF loop was repainting fully every frame
- * **right up to the moment of leaving**, so the new screen's first render was
- * competing with those frames for the frame budget — frames nobody looks at.
- *
- * **Why the contract is measured rather than the navigation time.** The first
- * attempt actually pressed the rail and counted "working frames" between click and
- * address change. **That check returned 10 even with the fix in place** — the rAF
- * wrapper wraps every callback on the page, so from outside there is no way to tell
- * whether those 10 belong to the map or to the incoming docs screen. A number that
- * cannot be attributed guards nothing.
- *
- * So the contract is measured directly: **on a navigation signal the map stops
- * drawing, and it returns when the signal expires or a hand moves over the map.**
- * The signal is a single window event in the shared layer
- * (`shared/lib/navigation/navigation-intent.ts`), so it can be fired from outside and the
- * incoming screen never contaminates the sample. Whether the rail actually fires it
- * is guarded separately by `AppNavRail.test.tsx` — the circuit closes only with
- * both.
- *
- * **Thresholds must be machine-independent** (2026-08-20, caught by CI). The first
- * version asserted **absolute frame counts** such as "more than 10 frames in a
- * 400ms window". That number is not a property of the contract but **that machine's
- * rAF rate** — a shared runner produced 9 in the same window and went red with the
- * fix perfectly intact. This is `architecture.md`'s discipline: a gate built on
- * milliseconds or frame counts fails erratically per machine. "Zero draws while
- * closed" is true on every machine.
- *
- * All three parts are now machine-independent:
- *
- * - **Premise (was it drawing)** — waits **until N working frames are observed**
- *   rather than counting a fixed window. A slow machine only takes longer to reach
- *   the same conclusion, and a genuinely idle map never reaches N no matter how long
- *   it waits, failing on the spot.
- * - **Yield (did it stop)** — checks **working frames ≤ 2** inside the yield window.
- *   That 2 is a **count of events**, not of machine speed (frames already in flight
- *   before the signal arrived). A map that did not stop spends nearly every frame in
- *   the window working, so the two states do not overlap even on a machine that
- *   produces only 6 frames.
- * - **Return (did it release)** — waits **until N working frames are observed**
- *   again. A frozen map never reaches N however much time it is given.
- *
- * If the sample is too small (the yield window is a finite 900ms, so "wait longer"
- * is impossible) the cycle is **retried rather than skipped** — move the hand to
- * release the yield, confirm drawing, fire the signal again. Failing three times
- * means the measurement is invalid, and it fails outright rather than stamping
- * green.
+ * Measures the contract directly: on a navigation signal the map stops drawing, and returns when
+ * the signal expires or a hand moves. The signal is a window event in `navigation-intent.ts`;
+ * the rail firing it is guarded by `AppNavRail.test.tsx`. Thresholds count events, not machine speed.
  */
 
 /** The threshold for a "working" frame — synchronous time (ms) spent in the rAF callback. */
@@ -75,7 +21,7 @@ const MIN_BUSY_PROOF = 10;
 const SIGNAL_SETTLE_MS = 120;
 /** End of the yield sampling window — it must close *before* expiry (900ms) so return frames do not mix in. */
 const YIELD_WINDOW_END_MS = NAVIGATION_YIELD_MS - 80;
-/** Below this many samples in the yield window the verdict is invalid — retry the cycle. */
+/** Below this many samples in the yield window the reading is invalid, so retry the cycle. */
 const MIN_YIELD_SAMPLE = 6;
 
 test("이동 신호가 오면 지도가 그리기를 멈추고, 손이 움직이면 돌아온다", async ({ page }) => {

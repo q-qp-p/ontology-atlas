@@ -1,25 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 /**
- * **Does the Korean page play the Korean video?**
- *
- * Found on 2026-08-20 while measuring playback on `/ko/download/`: the `poster` was
- * `atlas-tour.ko-poster.png` while the `currentSrc` actually playing was
- * `atlas-tour.en.webm`. The cause is that `DemoStage`'s locale comes from
- * `document.documentElement.lang` and **its server snapshot is `'en'`** — the first
- * paint ships English assets, and although React swaps `poster` and `<source>` to
- * Korean during hydration, **a `<video>` does not re-select its source because its
- * children changed.**
- *
- * **Why e2e rather than a contract test.** This defect **leaves no value in the
- * code**. `demoSources(clip, 'ko')` always returns the correct Korean paths and the
- * JSX uses them verbatim. What is wrong is the interaction with the HTML rule for
- * *when a browser re-selects a source*, and there is no way to see it other than
- * reading `currentSrc` after it has actually loaded.
- *
- * **Evidence it is not idling.** For both locales it first asserts that a video
- * element was found and a source really loaded. Without that, deleting the whole demo
- * section would still be green.
+ * A `<video>` does not re-select its source when its children change, so `currentSrc` is read
+ * after load. Each locale first asserts a video loaded, so deleting the demo cannot stay green.
  */
 
 const CASES = [

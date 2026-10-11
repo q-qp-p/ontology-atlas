@@ -1,16 +1,8 @@
 import { expect, test } from "@playwright/test";
 
 /**
- * **The reading column keeps its measure at laptop widths.**
- *
- * Measured 2026-09-25: the guide and changelog grid turned on at `lg` (1024) as
- * `15rem · 1fr · 15rem` inside a page column the 200px gateway gutter had already cut to
- * 640px at 1040. The article was **64px** wide at 1040 (a Korean title broke two syllables
- * per line, the changelog grew to 133,603px) and 304px at 1280. Nothing failed because
- * every class was legitimate on its own; the defect is the sum of three widths.
- *
- * The article must be at least `min(measure, 90% of the page column)` wide, and at 1512 and
- * 1920 it must still sit on the page's true centre (the owner's "bunched on the left" fix).
+ * The article must be at least `min(measure, 90% of the page column)` wide,
+ * and centred on the page at 1512 and 1920.
  */
 const ROUTES = ["/ko/guide/", "/ko/changelog/"] as const;
 const WIDTHS = [1040, 1512, 1920] as const;
@@ -58,11 +50,7 @@ test("changelog entry titles never start with the date separator", async ({ page
   expect(titles.filter((title) => /^[\s·—–-]/u.test(title))).toEqual([]);
 });
 
-/*
- * The table of contents shares the brand's start line. With the list end-aligned in its
- * `1fr` track it began at x=381 at 1920 while the brand began at 200, so its left edge moved
- * with the viewport (review of PR #1839); on the gutter it matches at every width.
- */
+/* The table of contents starts on the brand's line at every width. */
 for (const [route, testId] of [
   ["/ko/guide/", "guide-sidebar"],
   ["/ko/changelog/", "entry-sidebar"],

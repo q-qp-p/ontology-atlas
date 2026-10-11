@@ -285,8 +285,7 @@ test.describe("Harness tab layout", () => {
     console.info('GUIDANCE_MISSING_WIDTH', JSON.stringify(entry));
   });
 
-  /* Ten domains overflow the field, which is the state the text mode has to page through: at the
-     owner's desk width in normal type and at the app's minimum window with doubled text. */
+  /* Ten domains overflow the field, which is the state the text mode has to page through. */
   for (const locale of ['ko', 'en'] as const) {
     for (const sample of [
       { zoom: false, width: 1512, height: 949 },

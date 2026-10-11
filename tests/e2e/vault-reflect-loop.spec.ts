@@ -8,27 +8,8 @@ const SEED: Record<string, string> = {
 };
 
 /**
- * **"Fix it and the map follows"** — measures this product's core promise as a round
- * trip (2026-08-11).
- *
- * **Why this spec exists.** Walking the north-star journey revealed that **no gate at
- * all** measured this. Opening a vault is covered by web smoke ②, and drawing the map
- * by the map specs. But **the screen following after the disk changes** was watched by
- * nobody — even though that is exactly the sentence this product sells.
- *
- * Only the picker is stubbed; everything behind it is real code
- * (`vault-picker-stub`). So what this spec measures is not an imitation but **the path
- * by which the web re-reads the folder**.
- *
- * **It does not lock on time.** The measurement was 5.6 s (the web polls every 5 s
- * when idle — .claude/rules/surfaces.md), but that number is not pinned as a ceiling.
- * Making a gate out of a value that varies with machine and load measures the runner
- * rather than the product (this repository has failed that way twice). The property
- * locked is **whether it eventually follows**.
- *
- * **The deletion direction is measured too.** A file that is gone but still on screen
- * makes the user reason from a node that does not exist — worse than a missing
- * addition. Measuring one direction leaves the other half unwatched.
+ * Edit the disk and the map follows, in both add and delete directions. No time ceiling is pinned:
+ * the web polls every 5 s when idle (`.claude/rules/surfaces.md`); it asserts only that it follows.
  */
 test("고치면 지도가 따라온다 — 더할 때와 지울 때 모두", async ({ page }) => {
   test.setTimeout(300_000);

@@ -3,41 +3,9 @@ import { expect, test } from "@playwright/test";
 import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForPageSettled } from "./settle";
 
-/**
- * **Korean sentences must not break mid-word** (2026-08-12).
- *
- * ## Where it came from
- *
- * Looking at the insights screen (`/ontology/insights`) by eye showed
- * "…for I / am doing" — the word "divided" split across two lines. The cause was
- * `word-break: normal` on that paragraph, while this repository already used
- * `break-keep` elsewhere: the spec existed but was not applied there.
- *
- * ## A layer lint cannot see in principle
- *
- * The violation **leaves no value in the code**: not using `break-keep` is the
- * *absence* of a class, and absence cannot be caught by a selector (demanding that
- * class on all several thousand paragraphs would be noise, not a spec). And the real
- * criterion is not the class but **whether it actually broke** — with enough width,
- * `normal` does not break either.
- *
- * ## How it is measured
- *
- * A `Range` is taken per character to read its y coordinate, and at each y change (a
- * line break) the **characters on either side** are examined. If both are Hangul with
- * no space between them, the break is mid-word. Breaks at a space are correct and are
- * not counted.
- *
- * ## Idling guard
- *
- * "0 broken places" is also true **when no line ever wrapped**. So this spec asserts
- * a second number alongside: how many multi-line Korean sentences were actually
- * seen. Zero means nothing was measured (`/gate-probe`).
- */
-
 const ROUTES = [
-  // The to-do question, because the board lands on the brief and the group toggles this spec
-  // measures live under the concepts subject (2026-09-20).
+  // The board lands on the brief, and the group toggles this spec measures live
+  // under the concepts subject.
   "/ko/ontology/insights/?tab=do-next",
   "/ko/architecture/",
   "/ko/agents/",
@@ -45,24 +13,13 @@ const ROUTES = [
   "/ko/docs/",
   "/ko/",
   /*
-   * Project detail (grade S in the 2026-08-12 inventory). **The slug query is
-   * required**: bare `/ko/project/fallback/` makes `resolveProjectFallbackRoute`
-   * return null and redirects to `/projects`, so without it this route would idle by
-   * measuring `/ko/projects/` above a second time. `storefront` is the build-time
-   * dogfood demo project, always present even without a vault. 4 breaks measured here:
-   * body markdown 「cart」 · the empty-connections state 「appears here」
-   * (280px) · the handoff 「map of this project」 (362px) · one more.
+   * The slug query is required: bare `/ko/project/fallback/` redirects to `/projects` and would
+   * measure it twice. `storefront` is the build-time demo project, present without a vault.
    */
   "/ko/project/fallback/?slug=storefront",
   /*
-   * 404 (inventory: 「will change」 at 382px). The address must actually render a 404 —
-   * dev renders the root `app/not-found.tsx` for unresolved paths, and the static
-   * export serves the `/404.html` built from the same component via
-   * `scripts/serve-static-export.mjs` (locale is detected client-side from the first
-   * URL segment → Korean copy).
-   * ⚠️ `/ko/project/<missing-slug>/` cannot be used — in dev the dynamic [slug] route
-   * returns 500 rather than 404 (output:'export' with an ungenerated param, measured
-   * 2026-08-12).
+   * The address must render a 404; `/ko/project/<missing-slug>/` returns 500 in dev
+   * under `output:'export'`.
    */
   "/ko/이런-주소는-없다/",
 ] as const;

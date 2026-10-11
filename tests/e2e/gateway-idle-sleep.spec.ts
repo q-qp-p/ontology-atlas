@@ -3,37 +3,8 @@ import { expect, test } from "@playwright/test";
 import { seedFirstRunSeen } from "./first-run-seed";
 
 /**
- * **The gateway sleeps when you put it down** (2026-08-19, measured defect).
- *
- * **What happened.** The gateway (`/`, `/download`) burned 55–68 ms per second
- * forever, even 40 s after the last input — the exact opposite of the same app's map
- * screen, which sleeps completely 32 s after input stops (0 busy frames, 1.7 ms/s).
- * There were three rAF loops (the electric field, the hero dome, and the evidence
- * section's map engine — 900 callbacks in a 5 s window = 60 Hz × 3), and the two
- * owned by the gateway had no ambient-sleep wiring at all (`ambient-sleep.ts` —
- * "alive in your hand, asleep when you put it down"). This is the gateway's instance
- * of the accident `idle-gate.ts`'s doc-block warns about: forgetting to register new
- * motion with the gate.
- *
- * The fix: merge the gateway's own two loops into `gateway-frame-loop.ts` and let
- * that driver put them to sleep on the same constants as the map (30 s delay, 2 s
- * ramp).
- *
- * **What is measured.** The same discipline as `map-hover-release.spec.ts` — measure
- * the **effect**, not the cause (which flag is open): the per-second time rAF
- * callbacks spent *synchronously*, judged as a fraction of the awake cost from the
- * same page. It catches any loop that keeps drawing after sleep when that loop costs
- * a sizeable share of the awake page (below, the gateway's own loop left awake reads
- * 0.67-0.71 of awake). A small extra canvas that stays awake but costs under the
- * bound's share of the awake page would pass unseen.
- *
- * Three assertions: ① it really works while awake (proof the instrument is not
- * idling — "a check that has never once turned red is the same as no check") ② after
- * 30 s of no input plus the 2 s ramp, frame cost reaches the floor ③ one input
- * revives it from the next frame.
- *
- * The sleep verdict is a ratio against the awake measurement from the same page;
- * the measured range sits above that assertion.
+ * Measures the effect, not the cause: per-second rAF callback time as a fraction of the awake
+ * cost from the same page. A small extra canvas left awake under the bound's share would pass unseen.
  */
 test("관문은 무입력이 이어지면 프레임 일을 그만두고, 입력 하나에 되살아난다", async ({ page }) => {
   // 30 s delay + 2 s ramp + measurement window — the default 60 s timeout is not enough.
@@ -73,15 +44,8 @@ test("관문은 무입력이 이어지면 프레임 일을 그만두고, 입력 
   await page.mouse.move(4, 4);
 
   /*
-   * ① While awake, the electric field and dome really work. Without this floor the
-   *    sleep assertion below would also be green on a page that draws nothing.
-   *
-   * ⚠️ **These three waits stay in milliseconds on purpose** (2026-09-13 sweep of the
-   * fixed sleeps that gate an assertion). They are not waiting for a settle: the
-   * subject of every claim here is elapsed real time against the gateway's own sleep
-   * delay (30 s) and ramp (2 s), and `idleCost` measures CPU per second over a window.
-   * A condition wait would have nothing to wait for — the page's whole promise is that
-   * it *stops* doing anything after a fixed stretch of no input.
+   * The waits stay in milliseconds: the claims are about elapsed time against the 30 s sleep delay
+   * and 2 s ramp. The awake floor keeps the sleep assertion from passing on a page that draws nothing.
    */
   await page.waitForTimeout(6_000);
   const awake = await idleCost(4_000);
@@ -96,14 +60,8 @@ test("관문은 무입력이 이어지면 프레임 일을 그만두고, 입력 
   // If no frames arrived at all (a backgrounded tab, say), the measurement is void.
   expect(asleep.frames).toBeGreaterThan(20);
   /*
-   * Relative to the awake measurement ① from this same page, so load inflates both
-   * sides alike (the old absolute `< 10` read 10.2 and 12.2 on a busy machine).
-   * Measured 2026-09-27, 5 runs, headless static build: awake 120-124 ms/s, asleep
-   * 2.6-10.4 ms/s, ratio 0.021-0.086. With only the gateway's own loop kept awake
-   * (`gateway-frame-loop.ts` never sleeping) the ratio read 0.67-0.71 in the
-   * 2026-09-27 review; pinning `ambientSleepFactor` to 1 everywhere also keeps the
-   * embedded map awake and read 1.01. Both fail. The bound sits 3.5x over the worst
-   * healthy ratio.
+   * Relative to the awake measurement so load inflates both sides alike. The bound sits 3.5x over
+   * the worst healthy ratio (0.086); a gateway loop left awake reads 0.67-0.71.
    */
   expect(
     asleep.cpuMsPerSec,

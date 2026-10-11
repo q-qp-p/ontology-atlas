@@ -11,27 +11,6 @@ import { installLibraryWorkHarness, type LibraryWorkHarness } from './library-wo
 import { seedFirstRunSeen } from './first-run-seed';
 import { waitForBoxStill } from './settle';
 
-/**
- * **The comparison has to compare.**
- *
- * `library-answer-refresh.spec.ts` owns what the screen *does* — the draft is filed
- * exclusively, prior uncertainty survives, both versions stay reachable at 1024. This spec
- * owns whether a person can read the two versions against each other, which is geometry and
- * therefore cannot be asserted in jsdom:
- *
- * 1. every contract section sits on **one row**, so "Facts" on the left and "Facts" on the
- *    right start at the same y (measured on the owner's 2026-09-11 capture of the installed
- *    app: they differed by 61px and the reader did the aligning);
- * 2. each column is **one measure** wide, so neither side is a 90-character line;
- * 3. the **difference is stated above** the two versions rather than disclosed under the
- *    longer one;
- * 4. the save button stays reachable at every width the dialog is used at.
- *
- * Text is never rewritten to achieve this — the 2026-09-11 record "Local Compile approval
- * exposes the exact previous and proposed text" refuses selective diffs — so the alignment
- * comes from the five headings the wiki contract already fixes.
- */
-
 const SOURCE = 'sources/storage.md';
 const AUDIT = 'sources/audit.md';
 const ANSWER = 'wiki/answers/original.md';
@@ -136,12 +115,6 @@ async function openComparison(page: Page, locale: 'en' | 'ko', bodies: { old: st
   await page.goto(`/${locale}/docs/`);
   await page.getByRole('button', { name: /Open my folder|내 폴더 열기/i }).click();
   await page.getByTestId('app-nav-rail-item-library').click();
-  /*
-   * The home is the folder's graph, and at exactly one saved answer the questions door
-   * **is** that question — its title is the label and its press opens the page, which is
-   * what keeps the 2026-09-11 falsifier ("one press from the home") holding after the
-   * 2026-09-12 move. `library-spine.spec.ts` owns the list's own shape at two answers.
-   */
   await page.getByTestId('library-graph-canvas').waitFor();
   await page.getByTestId('library-questions-open').click();
   await harness.mutateSource(page, SOURCE, REVISED);
@@ -155,46 +128,21 @@ async function openComparison(page: Page, locale: 'en' | 'ko', bodies: { old: st
 }
 
 /**
- * ⚠️ **The column is a `ch` cap, so its pixel width belongs to the rasterizer.**
- *
- * `--measure-prose` is `60ch` and `1ch` is the advance of the digit `0`. macOS positions
- * subpixel (8.340px at `text-body-lg`, so the column resolves to 500.4px); CI's Linux
- * Chromium hints advances to whole pixels (9px, so the same column resolves to **540.0px** =
- * 60 × 9). Both are rendering Pretendard, the CSS is identical, and no reader sees a
- * difference — the first version of this spec asserted `<= 510` and failed on the runner at
- * 540, which was measuring FreeType, not the design.
- *
- * `prose-measure-calibration.spec.ts` (#1553) settled the shape: compare the `ch`-resolved
- * length against the **derived box** and allow one rounded pixel per `ch` step. The token
- * stays `ch` by that slice's decision — an absolute column here would be a second source for
- * the measure — so this spec carries the same band. `70ch`, the value that shipped until
- * 2026-09-11, resolves to 583.8px on macOS and 630px on the runner: outside the band on both,
- * which is what keeps this assertion a gate rather than a formality.
+ * `--measure-prose` is `60ch`: macOS positions subpixel and Linux Chromium hints to whole pixels,
+ * so one rounded pixel per `ch` step is allowed (see `prose-measure-calibration.spec.ts`).
  */
 const MAX_COLUMN_PX = PROSE_MEASURE_PX + PROSE_MEASURE_STEPS;
 
 /**
- * The calibrated ceiling for one line, from `prose-measure-calibration.spec.ts`: that gate's
- * band moved from 65–82 to **80–92** Latin characters on 2026-09-12 when the measure became
- * `66ch` spent at `--text-reading` (`docs/DECISIONS.md`, "The reading column is worth more of
- * its pane than the measure was buying"), so a column of this product's body text may not
- * exceed the top of the new band. The Korean ceiling follows the same step: the token's own
- * block documents ~46 syllables at `66ch`, plus the room a mixed line buys — spaces, digits
- * and Latin source names are all narrower than a syllable. Measured here after the move:
- * 87 Latin, 44 Hangul.
+ * Ceilings follow the `66ch` measure: 80-92 Latin characters per line. The Korean ceiling adds room
+ * for spaces, digits and Latin names, which are narrower than a syllable.
  */
 const MAX_LATIN_CHARS_PER_LINE = 92;
 const MAX_HANGUL_PER_LINE = 52;
 
 /**
- * ⚠️ **Prove the font before measuring the font** (the rule
- * `prose-measure-calibration.spec.ts` carries, for the same reason).
- *
- * Every width below is an advance in Pretendard Variable. If the face failed to load, the
- * numbers describe whatever fallback the machine has and the failure would read as a layout
- * defect in this dialog. `document.fonts.ready` is not enough: it resolves when loading has
- * settled, including settling on failure, so the registered face's own status carries the
- * verdict and `document.fonts.check` confirms the family can render.
+ * Prove the font before measuring: `document.fonts.ready` resolves even on failure,
+ * so the registered face's own status decides.
  */
 async function assertShippedFontIsRendering(page: Page) {
   await page.evaluate(() => document.fonts.ready);
@@ -335,13 +283,6 @@ test('the comparison keeps its measure and its footer in Korean and at every wid
   }
 });
 
-/**
- * **The two actions on this answer are not peers** (2026-09-11 record: a refresh button was
- * mistaken for a read-only review action). Asking an agent for a draft is an outlined control
- * inside a group with a lede; leaving for the list is a link below it. Proven by geometry and
- * paint rather than by class name: the link carries no filled or outlined box, and it sits
- * under both controls that act on the answer.
- */
 test('the answer page demotes leaving for the list below asking for a draft', async ({ page }) => {
   await page.setViewportSize({ width: 1512, height: 900 });
   await seedFirstRunSeen(page);
@@ -354,20 +295,13 @@ test('the answer page demotes leaving for the list below asking for a draft', as
   await page.goto('/en/docs/');
   await page.getByRole('button', { name: /Open my folder/i }).click();
   await page.getByTestId('app-nav-rail-item-library').click();
-  /*
-   * The home is the folder's graph, and at exactly one saved answer the questions door
-   * **is** that question — its title is the label and its press opens the page, which is
-   * what keeps the 2026-09-11 falsifier ("one press from the home") holding after the
-   * 2026-09-12 move. `library-spine.spec.ts` owns the list's own shape at two answers.
-   */
   await page.getByTestId('library-graph-canvas').waitFor();
   await page.getByTestId('library-questions-open').click();
   await expect(page.getByTestId('retained-answer-context')).toBeVisible();
 
   /*
-   * **The block's lines end where the answer's body ends** (2026-09-19). Each `p` wore the
-   * `ch` measure itself and, at 11px, stopped 197px short of the column the body fills: a
-   * second right edge over the answer. The column is the measure; no line carries its own.
+   * A `p` carrying the `ch` measure itself stops short of the body column and adds a second right edge;
+   * the column is the measure.
    */
   const lines = await page.evaluate(() => {
     const block = document.querySelector('[data-testid="retained-answer-context"]')!;
@@ -404,14 +338,8 @@ test('the answer page demotes leaving for the list below asking for a draft', as
   expect(hierarchy.groupLabelled).toBe(true);
   expect(hierarchy.homeInGroup).toBe(false);
   /*
-   * ⚠️ **Read before, which is no longer the same as above** (2026-09-12). The 2026-09-11
-   * decision this asserts is that the group says what pressing it does before a person
-   * presses it, and it was written when the lede was a caption paragraph stacked over the
-   * control. The lede is now the observation sentence itself, on the control's own line and
-   * to its left, because the stack of paragraphs it belonged to was what pushed the answer's
-   * own Summary to 84% of the viewport. So the assertion is the reading order rather than one
-   * axis of it: the lede is left of the control and never below it. A single `y` comparison
-   * would now fail on vertical centring alone (11px of text inside a 32px row).
+   * The lede is left of the control and never below it; a single y comparison would fail on
+   * vertical centring alone.
    */
   expect(hierarchy.lede.x).toBeLessThan(hierarchy.refresh.x);
   expect(hierarchy.lede.y).toBeLessThanOrEqual(hierarchy.refresh.y + hierarchy.refresh.height);
@@ -460,12 +388,6 @@ test('the answer page opens on the answer at 1512 and at the window floor', asyn
   await page.goto('/en/docs/');
   await page.getByRole('button', { name: /Open my folder/i }).click();
   await page.getByTestId('app-nav-rail-item-library').click();
-  /*
-   * The home is the folder's graph, and at exactly one saved answer the questions door
-   * **is** that question — its title is the label and its press opens the page, which is
-   * what keeps the 2026-09-11 falsifier ("one press from the home") holding after the
-   * 2026-09-12 move. `library-spine.spec.ts` owns the list's own shape at two answers.
-   */
   await page.getByTestId('library-graph-canvas').waitFor();
   await page.getByTestId('library-questions-open').click();
   await expect(page.getByTestId('retained-answer-context')).toBeVisible();

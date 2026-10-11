@@ -3,22 +3,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForDomeEntered, waitForMapStill, waitFrames } from "./settle";
 
 /**
- * **The 3D grip — inside the dome rotates, outside it pans** (2026-08-18, ledger
- * entry 80).
- *
- * The 3D view had **no e2e at all**. With this round adding one more interaction rule
- * on top (an empty-space drag splits by where it starts), that rule would be
- * unchecked from the moment it shipped — the state `/gate-probe` forbids.
- *
- * **Why an instrument rather than pixels.** Rotation and panning are
- * **indistinguishable on screen**: both look like "the dots moved", and a screenshot
- * comparison cannot separate them. What separates them is *what* changed — rotation
- * changes `dome().yaw` and leaves the camera, panning changes the camera and leaves
- * the yaw. So `__atlasMap` (via `?e2e=1`) is read instead.
- *
- * **Both directions are measured.** Measuring only "outside becomes a pan" stays
- * green even if orbit rotation is deleted entirely. Only measuring both places
- * verifies that they actually split.
+ * Rotation and panning look the same on screen, so read `__atlasMap` (`?e2e=1`): rotation changes
+ * `dome().yaw` and leaves the camera, panning does the reverse. Both places are measured.
  */
 
 /** This frame's camera and dome attitude — both axes read at once. */
@@ -58,11 +44,8 @@ async function domeScreenBox(page: import("@playwright/test").Page) {
     const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
     const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
     /*
-     * The inside point is the bbox centre **moved to the nearest empty spot**. On
-     * the cone tree (2026-09-02) a domain sits a few px from the centre, and a
-     * pointerdown on a node is a node drag, not an orbit — the test would then
-     * fail for a reason that is not the grip rule. Spiral out until nothing is
-     * within its disc plus a margin.
+     * The inside point is the bbox centre moved to the nearest empty spot: a pointerdown on a node is a
+     * node drag, not an orbit. Spiral out until nothing is within its disc plus a margin.
      */
     const clear = (x: number, y: number) => nodes.every((n) => Math.hypot(n.x - x, n.y - y) > n.radius + 10);
     let insideX = cx;

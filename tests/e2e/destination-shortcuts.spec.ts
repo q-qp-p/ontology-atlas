@@ -2,31 +2,15 @@ import { expect, test } from "@playwright/test";
 import { seedFirstRunSeen } from "./first-run-seed";
 import { waitFrames } from "./settle";
 
-/**
- * Destination shortcuts — **every destination reachable by keyboard alone.**
- *
- * This spec is the feature's worth. The owner asked for *"Able to move everywhere and be tested with shortcuts
- * alone."* (able to move everywhere and be tested with shortcuts
- * alone), and this is where that sentence is proven. Passing means a person or an
- * agent can move through this app without clicking a coordinate.
- *
- * ⚠️ **Never verify by clicking coordinates.** Doing so would prove this spec's
- * claim by the very means it exists to rule out.
- */
-
 /** Same order as the table — when the table changes this must too, and a contract test catches it. */
 const DESTINATIONS = [
   { key: "m", path: "/topology" },
   { key: "r", path: "/architecture" },
   { key: "d", path: "/library" },
-  // Library, 2026-09-06. MCP had been missing from this list since 2026-09-05 — the one
-  // proof that a destination can be reached without a pointer, and two destinations were
-  // not in it. Both are here now.
   { key: "l", path: "/library" },
   { key: "i", path: "/ontology/insights" },
   { key: "p", path: "/projects" },
   { key: "a", path: "/agents" },
-  // MCP is the Agents page's second tab since 2026-09-19; `G C` lands with that tab selected.
   { key: "c", path: "/agents/?tab=mcp" },
   { key: "g", path: "/git" },
 ] as const;
@@ -93,13 +77,7 @@ test.describe("목적지 이동 단축키", () => {
       }
       await expect(page, `G ${key.toUpperCase()} 가 ${path} 로 가지 않았다`).toHaveURL(expected);
 
-      /*
-       * ⚠️ **The address is not the arrival** (2026-09-20). For `G C` the destination is a tab,
-       * and `?tab=mcp` only selects it if the page reads the query — which this spec never
-       * checked. A regression in that parse would leave the URL right, land the person on the
-       * tool list, and keep this test green. Assert the pair: the tab it names is selected and
-       * the other is not.
-       */
+      /* Assert the selected tab as well as the URL: a broken query parse would leave the URL right. */
       if (key === "c") {
         await expect(page.getByTestId("agents-tab-mcp")).toHaveAttribute("aria-selected", "true");
         await expect(page.getByTestId("agents-tab-agents")).toHaveAttribute(
@@ -171,16 +149,7 @@ test.describe("목적지 이동 단축키", () => {
   });
 
   test("리더를 누른 지 오래되면 글자만으로는 이동하지 않는다", async ({ page }) => {
-    /*
-     * ⚠️ **To measure "it does not navigate" you must first prove "it navigates"**
-     * (full check audit, 2026-08-17).
-     *
-     * This test measures that the address does not change — but the address also does
-     * not change when the shortcuts are **not attached at all**. So it stayed green even
-     * with the feature entirely dead: the classic hole in a check that measures a
-     * negative. It now navigates for real first in the same session, then measures the
-     * time limit.
-     */
+    /* Navigate for real first: the address also stays unchanged when the shortcuts are not attached. */
     await page.goto("/ko/topology/?guides=off");
     await page.waitForLoadState("domcontentloaded");
     await dismissBlockingSurface(page);

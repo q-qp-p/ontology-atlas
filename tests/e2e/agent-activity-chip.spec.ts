@@ -2,24 +2,6 @@ import { expect, test } from "@playwright/test";
 import { seedFirstRunSeen } from "./first-run-seed";
 import { stubDirectoryPicker } from "./vault-picker-stub";
 
-/**
- * **Does the screen distinguish a verified live heartbeat from a recent write log?**
- *
- * **Why this spec exists.** The activity chip (`AgentActivityChip`) had no e2e at
- * all — unit tests swap the whole feed for a mock, so no gate had seen the full chain
- * "one line of the vault's `activity.jsonl` → parser → session grouping → feed →
- * on-screen wording". That chain just gained an `agent` name field (clientInfo.name
- * from the MCP connection greeting, PR #1066), and only this layer can measure whether
- * the new field really flows through to the screen.
- *
- * Only the picker is stubbed; everything behind it is real code (see the
- * `vault-picker-stub` preamble).
- *
- * **Timestamps are created at the moment the folder is picked.** `activity.jsonl`
- * records writes that already happened, so it does not prove live. Only a fresh
- * `agent-activity.json` heartbeat states the current step, and deleting it must drop
- * the same screen to `Change Detected` and remove the map's focus ring with it.
- */
 test("fresh heartbeat만 현재 단계와 지도 대상을 말하고, 제거되면 변경 감지로 내린다", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 900 });
@@ -63,7 +45,6 @@ test("fresh heartbeat만 현재 단계와 지도 대상을 말하고, 제거되�
     timeout: 30_000,
   });
   await expect(status).toHaveText("Codex · 검증 중");
-  // The node is named in the status view the row opens (2026-09-24), not in the row.
   await page.getByTestId("agent-activity-status-trigger").click();
   const current = page.getByTestId("agent-activity-current-work");
   await expect(current).toContainText("현재 대상");

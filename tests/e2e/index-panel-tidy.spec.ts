@@ -2,17 +2,6 @@ import { expect, test } from "@playwright/test";
 import { installDesktopRailRuntime } from "./desktop-rail-arrival-harness";
 import { waitForMapStill } from "./settle";
 
-/**
- * **The things to tidy are one list under the tree, not boxes on the floor**
- * (owner screenshot, 2026-09-19).
- *
- * On a seven-document vault the INDEX panel showed its list, then 60 % of
- * empty panel, then three separate cards of two different shapes hugging the
- * floor — the three most useful actions on the screen, read as furniture. They
- * are one titled list now, in one row grammar, placed right under the tree.
- * The tree shrinks and scrolls on a big vault instead of growing to push the
- * list away, so the list stays in view either way.
- */
 test("the tidy list follows the tree and wears one row grammar", async ({ page }) => {
   test.setTimeout(90_000);
   // Tall enough that the fixture tree never overflows, so the "follows the tree"

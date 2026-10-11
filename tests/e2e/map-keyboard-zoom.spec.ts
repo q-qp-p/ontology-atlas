@@ -3,16 +3,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForMapSettled, waitForMapStill } from "./settle";
 
 /**
- * **Keyboard zoom and fit** (2026-09-02, `interaction/keyboard-zoom.ts`).
- *
- * The map answered only the wheel; every reference it is measured against
- * (Obsidian, Figma, tldraw) also zooms from the keyboard. This spec reads the
- * camera through `?e2e=1` rather than pixels: a zoom and a pan look alike on
- * screen, and only the scale says which one happened.
- *
- * Every wait here is the camera spring coming to rest, never a duration
- * (`.claude/rules/testing.md`, the timing rule): a zoom step is over when the
- * scale stops changing, which is the same event on any machine.
+ * Reads the camera through `?e2e=1` rather than pixels: a zoom and a pan look alike and only
+ * the scale says which happened. Every wait is the camera spring coming to rest.
  */
 async function readScale(page: import("@playwright/test").Page): Promise<number> {
   return page.evaluate(() => {

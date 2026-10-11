@@ -6,21 +6,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { stubDirectoryPicker } from "./vault-picker-stub";
 
 /**
- * The Library destination — **Sources** and **Wiki**, and the reader beside them.
- *
- * A vault holds three kinds of file and only one is the graph (`docs/DECISIONS.md`,
- * 2026-09-05); the other two became `/library` on 2026-09-06. Unit tests prove the state
- * derivation and the discovery filter; this spec proves what only a rendered folder can:
- *
- * 1. a non-Markdown file in `sources/` reaches the screen as a row **and never the Docs
- *    document tree**, so the two lists cannot quietly merge — and that assertion is now
- *    across two destinations, which is the split itself;
- * 2. each state word is derived from the file on disk rather than declared — the fixture
- *    plants a page citing a hash that does not match, and the row must say so;
- * 3. "Find documents" proposes real files and **never a secret**, on the surface a
- *    person actually sees rather than in a filter function;
- * 4. the right pane branches on the kind of file: a wiki page renders, and a source shows
- *    the facts the folder holds about a file nothing ever opened.
+ * Proves what only a rendered folder can: a non-Markdown source is a Library row and never in the
+ * Docs tree, state words derive from disk, Find documents never proposes a secret.
  */
 
 const VAULT = {
@@ -193,11 +180,7 @@ async function openLibrary(
   const picker = page.getByTestId("library-open-vault");
   await picker.waitFor({ timeout: 25_000 });
   await picker.click();
-  /*
-   * The folder decides which shape arrives, so the wait is on the state rather than on a
-   * box that only one of them has: a folder with sources or pages opens the workbench,
-   * and one with neither opens the centred start stage (2026-09-06).
-   */
+  /* The folder decides which shape arrives, so wait on the state rather than on a box only one has. */
   await page
     .locator(
       '[data-testid="library-page"][data-library-state="nothing-open"], [data-testid="library-page"][data-library-state="empty-folder"]',
@@ -215,8 +198,7 @@ test.describe("the Library destination", () => {
     await expect(sources.getByRole("button")).toHaveCount(2);
     await expect(sources).toContainText("quarter-plan.pdf");
     await expect(sources).toContainText("budget.xlsx");
-    // Format comes from the listing, and a name that already ends in it is not followed by
-    // a second copy of it (design sweep round 2, 2026-09-25): the extension is the format.
+    // Format comes from the listing; a name already ending in it is not followed by a second copy.
     await expect(sources.getByTestId("library-source-format")).toHaveCount(0);
 
     // The one invariant the whole library rests on: a raw source is not a document. It is
@@ -244,14 +226,8 @@ test.describe("the Library destination", () => {
     await expect(budgetRow).toContainText("not compiled");
 
     /*
-     * The honest count, and the two states apart: one source nobody wrote up, one whose
-     * page has fallen behind its bytes. "2 not written up" was the sentence this line used
-     * to accept, and it was false for the cited one.
-     *
-     * ⚠️ **Where the line is read moved on 2026-09-12.** It was a caption at the foot of
-     * the Sources list, and the owner read it there: *"written like this, who is ever
-     * going to look at it?"* It is now under the press it is about — one press from the
-     * clause on the home that names the file Compile would start on.
+     * The count keeps two states apart: one source nobody wrote up and one whose page is behind its
+     * bytes. It is read under the strip's Compile press.
      */
     await page.getByTestId("library-strip-compile").click();
     const footer = page.getByTestId("library-needs-compile");
@@ -272,9 +248,7 @@ test.describe("the Library destination", () => {
     });
     await expect(row).not.toContainText("needs review");
 
-    // And the folder's own summary line counts it as work Compile can still do, in its own
-    // clause — never folded into "not written up yet", which is false of a file with a page.
-    // Under the press it is about since 2026-09-12; see the case above.
+    // The summary counts it as work Compile can still do, never folded into "not written up yet".
     await page.getByTestId("library-strip-compile").click();
     const footer = page.getByTestId("library-needs-compile");
     await expect(footer).toContainText("1 read only in part");
@@ -285,37 +259,26 @@ test.describe("the Library destination", () => {
     page,
   }) => {
     await openLibrary(page);
-    // The index draws one list and opens on Sources (2026-09-07); the wiki is one press.
+    // The index opens on Sources; the wiki is one press.
     await page.getByTestId("library-workspace-wiki").click();
 
     const wiki = page.getByTestId("library-wiki-list");
-    // Two spines; New page is the list's own last control (council 2026-09-07), not a page.
+    // Two spines; New page is the list's own last control, not a page.
     await expect(wiki.locator('[data-testid^="library-wiki-wiki/"]')).toHaveCount(2);
     await expect(wiki.getByTestId("library-new-page")).toBeVisible();
     await expect(wiki).toContainText("Quarter plan");
     await expect(wiki).toContainText("Handover notes");
 
     /*
-     * **The state is on the shelf, not behind a press.** `quarter-plan.md` records a hash
-     * these bytes cannot match, so its row is marked; `handover.md` cites nothing, so
-     * nothing has ever checked it against a file and nothing is wrong there. Both are
-     * derived from the folder, so this measures the derivation as well as the drawing.
-     *
-     * ⚠️ **The mark is a dot beside a word, not a coloured rim** (2026-09-09). The rim
-     * was a full-bleed amber bar across the row's head, and the owner read it — and a
-     * first repair that moved it to the row's start edge — as generic: *"that yellow line
-     * looks so AI… do it our way."* `docs/DESIGN-SYSTEM.md` lists full-height coloured
-     * rails among the Don'ts and asks for a small marker and a label instead.
+     * The state is on the shelf: `quarter-plan.md` records a hash these bytes cannot match, so its row is
+     * marked, while `handover.md` cites nothing. The mark is a dot beside a word, not a coloured rim.
      */
     const plan = page.getByTestId("library-wiki-wiki/quarter-plan");
     await expect(plan).toHaveAttribute("data-freshness", "stale");
     await expect(plan).toContainText("Source review needed");
     /*
-     * ⚠️ **A stale row carries no dot** (guardian, 2026-09-09). The dot shipped on
-     * `stale || ownProblem` and landed on 3 of 3 rows of the owner's folder: a folder
-     * somebody is working in *rests* stale, so the union puts the warning ink on every
-     * row and marks nothing. The word stays; only the marker contracted to the page's own
-     * defect, which is the fact this row's caption can lose to its own truncation.
+     * A stale row carries no dot: a folder in use rests stale, so a union with `ownProblem` would put the
+     * warning ink on every row. The word stays; only the page's own defect gets the marker.
      */
     await expect(plan.getByTestId("library-spine-attention-dot")).toHaveCount(0);
     await expect(page.getByTestId("library-wiki-wiki/handover")).toHaveAttribute(
@@ -339,17 +302,15 @@ test.describe("the Library destination", () => {
     expect(new Set(boxes.map((box) => box.h)).size).toBe(1);
 
     /*
-     * A row truncates, so the whole title and every mark it draws are in its accessible
-     * name — the reason the page missed the template included. `handover.md` has no
-     * `## Not in sources`, and the caption says so beside the source state rather than
-     * carrying it as a second coloured edge (2026-09-09).
+     * A row truncates, so the whole title and every mark are in its accessible name. `handover.md` has no
+     * `## Not in sources`, and the caption says so beside the source state.
      */
     const handover = page.getByTestId("library-wiki-wiki/handover");
     await expect(handover).toHaveAttribute("aria-label", /Handover notes/);
     await expect(handover).toHaveAttribute("aria-label", /section-order/);
     await expect(handover.getByTestId("library-spine-attention-dot")).toBeAttached();
     await expect(handover).toContainText("off-template");
-    // The card says it; the header strip counts it; no third copy under the shelf (2026-09-25).
+    // The card says it and the header strip counts it; there is no third copy under the shelf.
     await expect(page.getByTestId("library-off-template-count")).toHaveCount(0);
 
     /*
@@ -363,7 +324,7 @@ test.describe("the Library destination", () => {
 
   test("a wiki page opens in the reader, because it is ordinary Markdown", async ({ page }) => {
     await openLibrary(page);
-    // The index draws one list and opens on Sources (2026-09-07); the wiki is one press.
+    // The index opens on Sources; the wiki is one press.
     await page.getByTestId("library-workspace-wiki").click();
     await page.getByTestId("library-wiki-wiki/quarter-plan").click();
     const main = page.getByRole("main");
@@ -387,23 +348,11 @@ test.describe("the Library destination", () => {
     await expect(summary).toBeVisible();
     await expect(summary).toContainText("quarter-plan.pdf");
     await expect(summary).toContainText("sources/quarter-plan.pdf");
-    // The format is the extension the headline already ends in, so the pane does not
-    // print it a second time as a fact row (2026-09-25).
+    // The format is the extension the headline already ends in, so it is not printed again as a fact row.
     await expect(summary.locator('[data-fact="format"]')).toHaveCount(0);
     /*
-     * **Which page cites it, and whether that page still describes these bytes.**
-     *
-     * Until 2026-09-06 this pane listed the citing pages as slugs inside a `Cited by`
-     * fact row, and the assertion read `wiki/quarter-plan` out of the pane's text. The
-     * fact did not leave: it became a pressable row under `View write-up`, carrying the
-     * page's title — the name every other surface in this product uses for a page — and
-     * one word for how it stands to the file. The slug is still the row's `title`, so
-     * the address a person can copy did not go with the old spelling.
-     *
-     * This fixture's page records a 64-zero `source_hash`, which the frontmatter parser
-     * types as a number rather than a string, so no usable hash reaches the model: the
-     * source asks for review and its write-up reads `behind`. Neither can establish
-     * current coverage without a usable receipt. Both ends must expose that gap.
+     * Citing pages are pressable rows under `View write-up` with the page title and one word for how it
+     * stands to the file. A 64-zero `source_hash` parses as a number, so the write-up reads `behind`.
      */
     const writeUp = page.getByTestId("library-source-writeup-wiki/quarter-plan");
     await expect(writeUp).toBeVisible();
@@ -452,11 +401,8 @@ test.describe("the Library destination", () => {
 
 
 /**
- * Direction B keeps the reader and its guidance in the pane; the graph opens on request.
- * These probes retain the measurable contracts: one empty state, equal step anatomy,
- * graph labels and hit ownership, full graph height, stable focus, and independent narrow
- * index scrolling. The retired popup geometry is replaced by viewport-dialog geometry,
- * not waived. Closing a page restores guidance without starting a graph by itself.
+ * Measurable contracts for the narrow index: one empty state, equal step anatomy, graph labels and hit
+ * ownership, full graph height, stable focus, and independent index scrolling.
  */
 const NARROW_VAULT: Record<string, string> = {
   "project.md": ["---", "kind: project", "slug: narrow-demo", "title: Narrow demo", "---", "", "# Narrow demo", ""].join("\n"),
@@ -514,10 +460,7 @@ test.describe("the Library pane", () => {
     const stage = page.getByTestId("library-start-stage");
     await expect(stage).toBeVisible();
 
-    /*
-     * The whole point of the state: none of the five other surfaces that used to state
-     * the same emptiness is drawn, and the guide is not raised over anything.
-     */
+    /* None of the other surfaces that state emptiness is drawn, and the guide is not raised. */
     for (const gone of [
       "library-index",
       "library-graph",
@@ -538,9 +481,8 @@ test.describe("the Library pane", () => {
     await expect(stage.getByTestId("library-start-drop")).toContainText("sources/");
 
     /*
-     * Anchored, not spread to the walls — the 2026-08-12 empty-state verdict. The column
-     * is the repository's 640px stage, and its centre is the viewport's within a
-     * half-column, which is what "centred" means when a nav rail takes the left edge.
+     * The column is the 640px stage, and its centre is the viewport's within half a column, which is what
+     * centred means when a nav rail takes the left edge.
      */
     const box = (await stage.boundingBox())!;
     expect(box.width).toBeLessThanOrEqual(640);
@@ -553,16 +495,8 @@ test.describe("the Library pane", () => {
   });
 
   /**
-   * **The home is the folder's graph, and the guide is behind a door** (owner,
-   * 2026-09-12; `docs/DECISIONS.md` 2026-09-06 `:587`, restored).
-   *
-   * This case used to read the opposite way round — three guide cards drawn on every
-   * visit, the canvas absent until a `Graph` chip opened a viewport dialog. The owner read
-   * that: *"is this gather-compile-read screen just the main one? why does it come up
-   * every time…?"*, and of the dialog *"pressing a button gets an ugly popup, which is
-   * very poor."* So the claims invert: the canvas is present and fills the pane, the three
-   * steps are one press away, and the strip's clauses are the only place the step facts
-   * are stated.
+   * The home is the folder's graph: the canvas fills the pane, the three steps are one press away, and
+   * the strip's clauses are the only place step facts are stated.
    */
   test("opens on the folder's graph with the guide one press away", async ({ page }) => {
     await openLibrary(page);
@@ -656,21 +590,8 @@ test.describe("the Library pane", () => {
   });
 
   /**
-   * **The index is a switch, and it draws one list** (owner, 2026-09-07).
-   *
-   * > *"I hate this structure: sources on top, wiki underneath, one long scroll. A switch
-   * > at the top is better."*
-   *
-   * This case is the rewrite of the 2026-09-06 "one scrolling column with sticky heads"
-   * case, not its deletion: the claims that survived the stacking are the ones the owner
-   * never complained about — 280px, one scroller, whole 36px rows, nothing crossing the
-   * column's side edge, no overflow handed to the page. What replaces the sticky-head
-   * claim is the switch: the inactive list is **not in the document**, so the column's
-   * height and its tab order both belong to the list on screen.
-   *
-   * The folder here is the narrow fixture on purpose: it is the only one with enough rows
-   * to overflow 280px at a desktop height. A column that has nothing to scroll cannot fail
-   * any of this.
+   * The active tab draws one list; the inactive list is not in the document, so the column's height and
+   * tab order belong to the list on screen. The narrow fixture has enough rows to overflow 280px.
    */
   test("the active tab draws one list, and no row is cut", async ({ page }) => {
     /*
@@ -736,23 +657,8 @@ test.describe("the Library pane", () => {
     });
 
     /*
-     * 4 — every row is a whole row: 36px, none crosses the column's side edges, and every
-     * one of them can be brought fully into view.
-     *
-     * ⚠️ **This case first asked the wrong question and CI caught it** (2026-09-07). It
-     * counted rows straddling the column's **bottom** edge — which is the scroller's own
-     * fold, something every scrolled list has exactly one of, and whose presence depends
-     * on nothing but where the row grid happens to land. Measured on the built export at
-     * 1280 wide: 0 straddling rows at heights 700-800, 1 at 900 and 982, with the layout
-     * identical and no row ever past the right edge. It passed on macOS at Playwright's
-     * default 720 and failed on CI's chromium shard at the same width, because Linux font
-     * metrics move the header block a few pixels and the fold lands on a row instead of
-     * between two.
-     *
-     * The two claims that are actually about this column, and cannot pass by accident:
-     * a row must not cross the 280px column sideways, and — the owner's complaint, which
-     * was never about the fold but about rows two nested scrollers could not reach —
-     * every row must be scrollable fully into the box.
+     * Every row is a whole row: 36px, none crossing the column's side edges, each scrollable fully
+     * into the box. A row straddling the bottom fold is not a defect; it varies with font metrics.
      */
     const measureRows = async () => {
       const rows = await aside.evaluate((element) => {
@@ -799,10 +705,7 @@ test.describe("the Library pane", () => {
     ).toBe(false);
   });
 
-  /**
-   * **The three controls the column grew on 2026-09-07**, each from one owner sentence:
-   * the description behind a glyph, the fold, and the switch that is remembered.
-   */
+  /** The description behind a glyph, the fold to a rail, and the remembered switch. */
   test("the description is a tooltip, the column folds to a rail, and the switch is remembered", async ({
     page,
   }) => {
@@ -823,16 +726,8 @@ test.describe("the Library pane", () => {
     await expect(tip).toContainText("kept byte for byte");
 
     /*
-     * ⚠️ **The fold and the glyph stand in the strip, on the tabs' own line** (owner,
-     * 2026-09-12: *"the fold icon's size and position — why is it like this? It should be
-     * centred the same as the text beside it, and bigger"*; and 2026-09-17, twice: the strip
-     * carries no name, so the column's head lost its title row and its two controls moved
-     * up into the strip's right end, `library-strip-tools`, where the tabs are).
-     *
-     * Measured at 1512 before the 2026-09-12 change: a fold whose centre was **29.5px
-     * above** the text beside it and a right edge 4px past the box edge. The same three
-     * facts are measured against the new seat: the two glyphs are centred on the selected
-     * tab's row, the fold stops at the strip's inner edge, and the two are one size step.
+     * The fold and the glyph stand in the strip on the tabs' line: centred on the selected tab's row,
+     * the fold stops at the strip's inner edge, and the two are one size step.
      */
     const headGeometry = await page.evaluate(() => {
       const box = (el: Element | null) => {
@@ -947,20 +842,8 @@ test.describe("the Library pane", () => {
 });
 
 /**
- * **A toast stands in the corner of the pane it is about** (owner, 2026-09-12: *"the
- * toast at the top — its position is odd too, right? (and of course a toast should
- * adjust its position adaptively)"*).
- *
- * The two constants this replaced were the measurement of the problem rather than a cure
- * for it: a top-centred box on this surface had to be pushed 124px down (601px and up)
- * and 173px down (below it) just to miss the pane's own chrome, and at the end of that
- * push it was still a notification about the **right** pane's work resting above the
- * **left** column's title. `docs/DECISIONS.md`, 2026-09-12.
- *
- * Three things are measured, because each has its own way of going wrong: the corner (a plain `position` change), the pane (a box standing over the index
- * instead of the reader), and a full-surface dialog (a dismissible aside laid across a
- * surface a person is reading). The conversation dock's own wall is measured by
- * `library-compile-dock.spec.ts`, which is where a dock can be opened.
+ * A toast stands in the corner of the pane it is about, not top-centred over the index. Measured: the
+ * corner, the pane, and a full-surface dialog. The dock's wall is in `library-compile-dock.spec.ts`.
  */
 // The app's minimum window, where the index column leaves the reader pane the least room.
 for (const viewport of [{ label: "1040x720", width: 1040, height: 720 }]) {
@@ -995,21 +878,12 @@ for (const viewport of [{ label: "1040x720", width: 1040, height: 720 }]) {
     const head = (await page.getByTestId("library-header").boundingBox())!;
     // The pane it is about, not the column beside it.
     expect(box.x, "the toast starts inside the reader pane").toBeGreaterThanOrEqual(reader.x);
-    // And never over the page title, which is the whole of what the owner was reading.
+    // Never over the page title.
     expect(box.y, "the toast is below the index head").toBeGreaterThan(head.y + head.height);
 
     /*
-     * ⚠️ **A dialog that *asks* clears the toast instead of standing over it.**
-     * `handleFindDocuments` calls `useToast().dismiss()` before it opens, because a toast
-     * is an aside that dismisses itself while a blocking dialog is not — left standing it
-     * floats above the scrim of the surface asking the next question, which is the
-     * floating-box soup the design charter refuses. Clearing is the caller's job.
-     *
-     * The other direction — a full-surface dialog that *shows* something keeps the toast
-     * and takes it inside its own safe area — is measured in
-     * `library-answer-refresh.spec.ts`, because the answer comparison is the one
-     * `size="viewport"` dialog this view has left since the graph became the home
-     * (`docs/DECISIONS.md`, 2026-09-12).
+     * A dialog that asks clears the toast: `handleFindDocuments` calls `useToast().dismiss()` first, so
+     * no toast floats above the scrim. The `size="viewport"` case is in `library-answer-refresh.spec.ts`.
      */
     await page.getByTestId("library-workspace-sources").click();
     await page.getByTestId("library-find-documents").click();

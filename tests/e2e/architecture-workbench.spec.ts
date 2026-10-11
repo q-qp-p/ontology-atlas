@@ -8,11 +8,6 @@ test.use({ viewport: { width: 1512, height: 945 } });
 
 
 test('the agent task chooser offers a re-check and an improvement search beside the derived task', async ({ page }) => {
-  /*
-   * The button's task was decided for the person (conforms → plan, else inspect) and nothing on
-   * the screen could ask for a re-check or for where the reviewed structure needs a decision
-   * (owner, 2026-09-03). The chooser hands or copies the chosen task; Escape returns focus.
-   */
   await seedFirstRunSeen(page);
   await useDogfoodSample(page);
   await page.addInitScript(() => {
@@ -101,8 +96,6 @@ test('keyboard opens, closes, restores focus, and reopens the selected role', as
     'role',
   );
 
-  /* Escape closes the answer and lets go of the role (2026-09-03), and focus returns to the
-     face so Space chooses it again. */
   await page.keyboard.press('Escape');
   await expect(role).toBeFocused();
   await expect(role).toHaveAttribute('aria-pressed', 'false');
@@ -146,8 +139,7 @@ test('a link carries the chosen role, and refuses one the profile lacks', async 
    * and asserting that it depends on no role at all. A screen stating a dependency rule for a role
    * that does not exist is saying something false, and a crafted or stale link is enough to do it.
    */
-  /* A window that holds the whole chain: below this the canvas pans, and panning to a box is a
-     different subject than the address this test is about (2026-08-30). */
+  /* A window that holds the whole chain; below it the canvas pans, which is a different subject. */
   await page.setViewportSize({ width: 1512, height: 945 });
   await page.goto('/ko/architecture/?view=architecture');
 
@@ -178,11 +170,6 @@ test('a link carries the chosen role, and refuses one the profile lacks', async 
   await expect(notice).toBeVisible();
   await expect(notice).toContainText('not-a-real-role');
 
-  /*
-   * ⚠️ The three arrival states stay distinguishable, but the panel they live in is closed by
-   * default now (2026-08-30): a bare address is a canvas with no panel at all, a bad role opens
-   * the panel and is refused in it, a real role opens the panel and is answered in it.
-   */
   await page.goto('/ko/architecture/?view=architecture');
   await expect(page.getByTestId('architecture-inspector')).toHaveAttribute(
     'data-architecture-inspector',
@@ -207,20 +194,6 @@ test('a link carries the chosen role, and refuses one the profile lacks', async 
 });
 
 test('a chain is never cut in silence — it turns, or it says what is hidden', async ({ page }) => {
-  /*
-   * ⚠️ **This replaces four gates, and the claim is narrower than the one first written.** They
-   * each set up a drawing cut at one edge and checked that something said so: a fade, a count, a
-   * drag that reached the rest. A chain turns down when it stops fitting across, and the canvas
-   * row keeps a `min-content` floor, so for a chain a cut is no longer something this screen
-   * produces — it shows in full and the page scrolls if the window cannot hold it.
-   *
-   * **It holds for a chain and not for every profile**, which the first version of this comment
-   * claimed. `graph-layout.test.ts` proves the counter-shape: three roles at one rank are three
-   * lanes wide whichever way the chain runs, so no rotation makes them fit a narrow canvas. Both
-   * sample vaults are chains, which is why an end-to-end fixture cannot produce the fan and why
-   * the over-broad claim survived being written — the covered-edge machinery below is what serves
-   * that shape, and it is guarded by geometry rather than by a browser.
-   */
   const sizes = [
     [1920, 1200],
     [1440, 1000],
@@ -230,9 +203,7 @@ test('a chain is never cut in silence — it turns, or it says what is hidden', 
   ] as const;
 
   await page.goto('/ko/architecture/?view=architecture');
-  // Vault-backed routes prerender the neutral identity boundary now. Wait for hydration to replace
-  // that boundary before measuring the canvas; querying the layout during the fallback measures no
-  // product at all and used to throw on a null scroller.
+  // Wait for hydration to replace the neutral identity boundary before measuring the canvas.
   await expect(page.getByTestId('architecture-graph')).toBeVisible();
   for (const [width, height] of sizes) {
     await page.setViewportSize({ width, height });
@@ -241,14 +212,7 @@ test('a chain is never cut in silence — it turns, or it says what is hidden', 
        reports a role cut in silence even though the settled frame is whole — so the graph's box
        has to stop moving first, however many frames that takes on this runner. */
     await waitForBoxStill(page.getByTestId('architecture-graph'));
-    /*
-     * ⚠️ **The claim narrowed on 2026-08-30, and this is the half that survived.** It used to
-     * assert the canvas never overflows at any size, which held only because the *page* scrolled
-     * instead — and that page scroll is what buried the panels below the canvas in 64px slivers
-     * nobody could reach. At workbench width the layout no longer scrolls at all, so a window too
-     * short for the chain leaves the rest behind the canvas's own pan. That is allowed. Doing it
-     * without saying so is not: whatever is out of view is counted on screen and can be reached.
-     */
+    /* Whatever is out of view may pan, but it must be counted on screen and reachable. */
     const hidden = await page.evaluate(() => {
       const svg = document.querySelector('[data-testid="architecture-graph"]');
       const canvas = svg?.parentElement?.getBoundingClientRect();
@@ -283,8 +247,6 @@ test('a chain is never cut in silence — it turns, or it says what is hidden', 
       `the page scrolls sideways at ${width}x${height}`,
     ).toBe(0);
 
-    /* And at workbench width the layout itself never scrolls: the canvas holds the height and the
-       panels open beside it (the owner's ask, 2026-08-30). */
     if (width >= 1280) {
       expect(
         await page.evaluate(() => {
@@ -298,14 +260,8 @@ test('a chain is never cut in silence — it turns, or it says what is hidden', 
     }
 
     /*
-     * ⚠️ **The slack is shared, not dumped on one side.** The drawing keeps one width whatever the
-     * window does, so a wide screen has real slack — and all of it was landing on the right, the
-     * default of a row flex container. Measured on the built export 2026-08-29: left gap 0 with
-     * 544px spare at 1512, 952px at 1920, 1586px at 2560. A drawing pinned to one edge of an
-     * otherwise empty stage reads as a screen that has not finished loading.
-     *
-     * The tolerance is 2px for the odd-pixel split, and the assertion is skipped where there is no
-     * slack to share — the check above already proves nothing is cut there.
+     * Slack is shared between both sides, within 2px for the odd-pixel split;
+     * skipped where there is no slack.
      */
     const gaps = await page
       .locator('[data-testid="architecture-graph"]')
@@ -325,13 +281,7 @@ test('a chain is never cut in silence — it turns, or it says what is hidden', 
 });
 
 
-/*
- * ⚠️ **A caption never crosses its own outline, on either profile** (owner, 2026-08-30, pointing
- * at the Adapters pill: both lines of the sentence ran past the caps). The first caption gate
- * measured the 180px receipt box only; this one runs on the shipped four-role sample, whose boxes
- * are 148px and whose end roles are stadiums. For a stadium the allowed width at a line is the
- * straight middle plus the cap chord at that height, so a line lower in the box gets less room.
- */
+/* For a stadium the allowed line width is the straight middle plus the cap chord at that height. */
 test('a role sentence stays inside the drawn box, including a stadium cap', async ({ page }) => {
   await page.setViewportSize({ width: 1512, height: 945 });
   await page.goto('/en/architecture/?view=architecture&e2e=1&guides=off', { waitUntil: 'domcontentloaded' });
@@ -373,13 +323,6 @@ test('a role sentence stays inside the drawn box, including a stadium cap', asyn
 });
 
 
-/*
- * ⚠️ **Every stroke at rest says its sentence, and no sentence touches anything** (Direction B,
- * 2026-08-30). The sentences are the dock's own strings; a sentence with no room is held with a
- * reason rather than cropped, so the assertion is on what is drawn: no drawn sentence intersects a
- * box or another drawn sentence. And the hover recede is a transition, not a hard cut: the
- * unrelated box carries the feedback duration and settles at its receded opacity.
- */
 test('every drawn stroke says its sentence, and no sentence touches anything', async ({ page }) => {
   await page.setViewportSize({ width: 1512, height: 945 });
   await page.goto('/en/architecture/?view=architecture&e2e=1&guides=off', { waitUntil: 'domcontentloaded' });
@@ -405,13 +348,6 @@ test('every drawn stroke says its sentence, and no sentence touches anything', a
 });
 
 
-/*
- * ⚠️ **Fixed-readable faces and connector space yield with the canvas before any role is hidden.**
- * Measured 2026-09-03 at 1280x800, the widest laptop this product ships to: the canvas column is
- * 638px tall while the roomy ladder asks for 684, so the seventh role fell past the fold and the
- * canvas answered "1 more below". The tight density draws the same 280/72/240 comparison on 58px
- * rows, and the whole role set stays inside the scroller.
- */
 test('the ladder tightens its rows rather than hiding the seventh role at 1280x800', async ({
   page,
 }) => {
@@ -459,25 +395,6 @@ for (const locale of ['ko', 'en'] as const) {
      size, so a failure has to name which build it is, and a `use`-prefixed fixture helper may not
      be called in a loop body (`react-hooks/rules-of-hooks` reads it as a React hook). */
   test(`${locale}: 구조 사다리는 카드 폭을 쓰고, 층 판은 한 선에서 끝나며, 열 머리글이 면 위에 앉지 않는다`, async ({ page }) => {
-  /*
-   * Three defects the owner measured on the installed app at 1512×901 (2026-09-13), all three
-   * expressible as rects, so they are asserted here rather than judged by eye:
-   *
-   * 1. **The layer planes ended ragged.** Seven right edges across 84px (1336→1252) on the side the
-   *    stack does not recede from. Depth is the leftward stagger, the lit top face's lean and the
-   *    rank numeral; the right edge was carrying none of it.
-   * 2. **The drawing left the card empty.** The band was 872 of 1448px because the observation
-   *    lane's 360px skip-arc cap was reserved on a profile that declares no skip, while the
-   *    sentence lane it starved was cutting its sentences at 146px of room.
-   * 3. **The column note was drawn on the first face.** Heading box ending at 201 against a note
-   *    starting at 202, and the note ending at 215 over a face starting at 212. The notes left on
-   *    2026-09-26 with the fourteen per-role placeholders under them: before any inspection the
-   *    measured columns are one empty state (owner review), and it is the thing that must sit
-   *    clear of the headings, the planes and the rule sentences, with its words inside it.
-   *
-   * Both locales, because Korean runs taller than English at the same size and a gap tuned on one
-   * build is the defect rather than the fix.
-   */
     await page.setViewportSize({ width: 1512, height: 901 });
     await seedFirstRunSeen(page);
     await useDogfoodSample(page);

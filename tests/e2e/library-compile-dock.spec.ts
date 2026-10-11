@@ -3,31 +3,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { seedFirstRunSeen } from "./first-run-seed";
 
 /**
- * **Compile opens a dock a person can see.**
- *
- * Measured in the installed app on 2026-09-05: the Compile chip rendered enabled with
- * four sources waiting, and pressing it — pointer twice, then keyboard with the focus
- * ring visible — changed nothing on screen. The handler ran; the dock was in the DOM.
- * It had been placed after the layout row, inside the page's flex **column**, and its
- * surface is `absolute inset-y-3 right-3`, so the frame collapsed to zero height and its
- * own `overflow-hidden` finished the job. A press that does nothing is the worst possible
- * report, because nothing about it says whether the product is broken or the person is.
- *
- * The regression is **geometry**, so this spec measures geometry: the dock must be
- * visible, hold a real rect, and sit inside the same row as `<main>` rather than below
- * it. A `toBeVisible()` alone would have passed on the broken build — `visible` in
- * Playwright means a non-empty bounding box, which the zero-height frame technically had
- * once its inner surface painted, and it is the frame that has to have the height.
- *
- * **Why the desktop bridge is stubbed in a browser.** The app is a WKWebView running this
- * same static export, so injecting the runtime signal exercises exactly this render
- * boundary — the same reasoning `desktop-shell-rail.spec.ts` records. What stays with
- * installed-app measurement is everything downstream of the dock: the real adapter
- * launch, the turn, and the writes.
- *
- * The brief's own content is not asserted here. `compile-brief.test.ts` pins all six
- * rules and the verbatim template against the schema module; this spec proves the press
- * reaches the dock carrying a `compile` request, which is the link that was missing.
+ * The dock must have a real rect inside the same row as `<main>`: `toBeVisible()` alone passes on a
+ * collapsed frame. The desktop bridge is stubbed because the app runs this same static export.
  */
 
 const VAULT_ROOT = "/Users/probe/Ontology Atlas/launch";
@@ -178,15 +155,8 @@ async function installDesktopBridge(page: Page) {
 }
 
 /**
- * With the runtime signal injected, Docs opens on the installed app's own first screen —
- * "Open a folder to start working" — rather than the read-only sample. Its middle door
- * calls the native picker, which the stub answers with an absolute path.
- *
- * ⚠️ **The folder is still opened from Docs, and that is deliberate.** The Library moved
- * to its own destination on 2026-09-06, but the app's first-run card lives on the docs
- * intent, and this spec's subject is the dock rather than the picker. Walking in the way a
- * person does — open the folder, then cross the rail — also proves the rail tile reaches
- * the new destination with the session's folder still attached.
+ * The folder is opened from Docs because the first-run card lives on the docs intent;
+ * crossing the rail proves the session's folder stays attached.
  */
 async function openFolder(page: Page) {
   await page.goto("/en/docs/");
@@ -202,11 +172,7 @@ async function openFolder(page: Page) {
   // open folder in the session instead of asking the restore to find it again.
   await page.getByTestId("app-nav-rail").getByRole("link", { name: "Library" }).click();
   await page.getByTestId("library-sources").waitFor({ timeout: 30_000 });
-  /*
-   * Compile is the Wiki half's own door since 2026-09-07: the index draws one list at a
-   * time and the switch decides which. The column opens on Sources — the first half of the
-   * work — so this presses the switch, the same press a person makes.
-   */
+  /* Compile is the Wiki half's door; the column opens on Sources, so press the switch first. */
   await page.getByTestId("library-workspace-wiki").click();
   await page.getByTestId("library-wiki").waitFor({ timeout: 30_000 });
 }
@@ -224,25 +190,13 @@ test.describe("Compile opens the agent dock", () => {
     await expect(page.getByTestId("library-compile")).toBeVisible({ timeout: 25_000 });
     await expect(page.getByTestId("library-compile")).toBeEnabled();
     await page.getByTestId("library-workspace-sources").click();
-    /*
-     * Four sources, none written up, so the chip has work to do and says so.
-     *
-     * ⚠️ **Where that count is read moved on 2026-09-12.** It used to be a caption at the
-     * foot of the Sources list, and the owner read it there: *"this 'one source version
-     * needs review' line — written like this, who is ever going to look at it?"* The home
-     * is the folder's graph now, and the strip above it names the **file** Compile would
-     * start on; the count is under that clause's own press, which is where the person who
-     * is about to compile is looking.
-     */
+    /* The needs-compile count is read under the strip's Compile press. */
     await page.getByTestId("library-strip-compile").click();
     await expect(page.getByTestId("library-needs-compile")).toContainText("4");
     await page.keyboard.press("Escape");
     /*
-     * The home is the folder's graph, and `Compile next: <source>` on its strip opens the
-     * popover that carries the press and its brain picker. On the **agent** route what
-     * that press owes a person is the blocked reason and nothing else since 2026-09-12:
-     * the sentence about provider traffic says Atlas is not in the path at all, and the
-     * next case is where that sentence's one home is measured.
+     * On the agent route the Compile press owes only the blocked reason; the provider-traffic sentence
+     * has one home, measured in the next case.
      */
     await expect(page.getByTestId("library-stage")).toHaveCount(0);
     await page.getByTestId("library-strip-compile").click();
@@ -256,29 +210,7 @@ test.describe("Compile opens the agent dock", () => {
     page,
   }) => {
     await openFolder(page);
-    /*
-     * **A fact is said once per screen, and this one is said on demand** (owner,
-     * 2026-09-12: *"text like 'the coding agent sends requests directly to its provider
-     * and Atlas does not record that traffic…' — shouldn't that be handled as a
-     * tooltip?"*).
-     *
-     * The history is three moves. It began in the index column; on 2026-09-06 it followed
-     * Compile onto step two, because a disclosure has to answer the control above it; on
-     * 2026-09-07 it also followed the source pane's own Compile, because with the switch
-     * the column can be drawing Sources while a page is open. Each move was right about
-     * placement and wrong about count: measured on the owner's folder, one journey printed
-     * the same paragraph in up to three places, and four wrapped lines of 11px between a
-     * button group and a list is how a reader learns to skip a disclosure.
-     *
-     * So it left every inline slot. `.claude/rules/local-first.md` asks for one place to
-     * say what leaves this computer, at the press — and on this route nothing leaves
-     * through Atlas: the sentence exists to say exactly that, which is a standing fact
-     * about the place rather than about a press. The local runner's own sentence, which
-     * *is* a transfer Atlas performs, still sits under the button that performs it.
-     *
-     * This test therefore measures the count in both directions: zero inline, and one in
-     * the panel, reachable by keyboard.
-     */
+    /* The provider-traffic sentence is printed once per screen, on demand: zero inline, one in the panel. */
     // The home: the picture and its strip print nothing about transfers, and neither does
     // the popup behind either door.
     const inlineDisclosure = page.getByText(/Atlas does not record that traffic/);
@@ -288,13 +220,7 @@ test.describe("Compile opens the agent dock", () => {
     await expect(inlineDisclosure).toHaveCount(0);
     await page.getByTestId("library-workspace-sources").click();
 
-    /*
-     * The two popups the home's strip opens (`docs/DECISIONS.md`, 2026-09-12 — "The
-     * Library's home is the folder's graph"). Each carried a copy: the Compile popover in
-     * its own slot under the press, and the guide's step two in the row that holds
-     * Compile. Both were right about placement under the earlier reading and both are
-     * empty of this sentence now.
-     */
+    /* Neither popup the home's strip opens carries the transfer sentence. */
     await page.getByTestId("library-strip-compile").click();
     const compilePopover = page.getByTestId("library-compile-popover");
     await expect(compilePopover).toBeVisible();
@@ -328,11 +254,7 @@ test.describe("Compile opens the agent dock", () => {
     await expect(page.getByTestId("library-transfer")).toHaveCount(0);
     await expect(inlineDisclosure).toHaveCount(0);
 
-    /*
-     * And the one home. Focus opens it, which is what makes a keyboard equal to a
-     * pointer here; Escape closes it, which is what a transient surface owes
-     * (`docs/DECISIONS.md`, 2026-08-11).
-     */
+    /* Focus opens the one home for the sentence, and Escape closes it. */
     const info = page.getByTestId("library-lede-info");
     await info.focus();
     const panel = page.getByRole("tooltip");
@@ -416,14 +338,8 @@ test.describe("Compile opens the agent dock", () => {
   });
 
   /**
-   * **The pane's right-hand wall is the conversation's left edge, not the window's.**
-   *
-   * The toast anchors to this pane's bottom-right corner (`docs/DECISIONS.md`,
-   * 2026-09-12), and with the conversation open that corner belongs to the dock. The
-   * reserve is `--app-right-dock-width`, which this view already publishes for exactly
-   * this class of surface (`right-dock-reserve.ts`), read through a `xl`-gated variable —
-   * below `xl` the dock is a full-width overlay with no reader beside it, and a transient
-   * drawn above a dock is the judgement the map's own placement already accepted.
+   * The toast anchors to the pane's bottom-right corner; with the conversation open the reserve is
+   * `--app-right-dock-width` (`right-dock-reserve.ts`), read through an `xl`-gated variable.
    */
   test("with the conversation open, the toast stops at the dock's edge", async ({ page }) => {
     await page.setViewportSize({ width: 1512, height: 901 });

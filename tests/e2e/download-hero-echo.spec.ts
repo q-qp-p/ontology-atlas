@@ -2,19 +2,6 @@ import { expect, test, type Page } from "@playwright/test";
 import { seedFirstRunSeen } from "./first-run-seed";
 import { waitFrames } from "./settle";
 
-/**
- * **The typing echo** (Direction B, owner, 2026-08-30): the hero object assembles as the headline
- * is typed. What this gate measures is the falsifier the decision was recorded with — **the dots
- * lit are the characters typed**, read from two independent sources: the typed count from the
- * headline's DOM (`.gateway-type-ch.is-on`) and the lit count from the engine's own ledger
- * (`window.__heroEcho`, attached under `?e2e=1`). If the object ever goes back to a clock of its
- * own — a stage fade, a per-tier timer — the two counts stop agreeing mid-sentence.
- *
- * The second half is the pointer: a fine pointer on a dot prints one fact in the caption line, and
- * the line is **reserved** — its box is the same height empty and full, so a fact appearing never
- * moves the CTA column beside the stage.
- */
-
 interface EchoWindow {
   lit: () => number;
   nodes: () => { s: string; k: string; x: number; y: number }[];
@@ -48,16 +35,8 @@ test.describe("download hero — the typing echo", () => {
 
     const samples: { typed: number; lit: number; count: number; total: number }[] = [];
     /*
-     * ⚠️ **This is a timeout, not a measurement, and at 4000 ms it was doing the second job.**
-     * The headline is capped at `BUDGET_MS` = 1800 ms by design, so four seconds looks like more
-     * than twice the room it needs — but the clock is wall time and the sampling runs inside it.
-     * Each turn of this loop is a `page.evaluate` that calls `getComputedStyle` on every one of
-     * the 59 characters, plus a 40 ms wait; on a loaded runner the instrument spends the budget
-     * it is measuring against. It failed three attempts in a row at 51 of 59 characters on CI and
-     * passed on a re-run of the identical commit (2026-09-10).
-     *
-     * The loop already breaks the instant the echo completes, so a healthy run still exits at
-     * about 1.9 s and a generous ceiling costs nothing. What stays strict is the assertion below.
+     * The ceiling is generous because sampling itself spends wall time on a loaded runner;
+     * the loop breaks as soon as the echo completes.
      */
     const deadline = Date.now() + 12_000;
     while (Date.now() < deadline) {
@@ -95,12 +74,8 @@ test.describe("download hero — the typing echo", () => {
   });
 
   /**
-   * **The headline lands inside its budget on wall-clock time** (2026-09-25). The typewriter used
-   * to add one character per timer callback, so every late callback delayed the rest of the
-   * sentence: sampled at 1512 the 31-character Korean headline finished 3.7s after arrival and
-   * at 1920 5.0s — still typing through the first read. The sampler lives inside the page (a rAF
-   * loop installed before any app script) because a sampler driven from the runner spends the
-   * very budget it measures (the note in the test above).
+   * The sampler lives in the page (rAF loop installed before any app script) because a
+   * runner-driven sampler spends the budget it measures.
    */
   test("the headline finishes typing within its budget of the first character", async ({ page }) => {
     await page.addInitScript(() => {

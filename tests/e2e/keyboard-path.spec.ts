@@ -3,27 +3,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { FIRST_RUN_STARTER_DISMISSED_KEY } from "../../src/features/first-run-starter/model/first-run-starter-dismiss";
 
 /**
- * Keyboard path contract — **the layer synthetic events cannot measure**.
- *
- * ## Why this file exists
- *
- * The 2026-07-28 design council's interaction seat reported three keyboard defects.
- * On verification at least two were **artifacts of the measurement technique**:
- *
- * - "Enter opens nothing in the hub" — hub items are `<button type="button">`, so
- *   **Enter → click fires natively**. A synthetic `KeyboardEvent` does not reproduce
- *   native activation, so nothing opens by that method whatever you press.
- * - "the datasheet has `role=null`" — the panel carries `role="group"` plus an
- *   `aria-label`. The measurement grabbed the **positioner wrapper** (the trap
- *   `design.md` names explicitly: measure the wrong element and the conclusion
- *   inverts entirely).
- *
- * So this layer is judged only with **tools that send trusted events**. Playwright's
- * `keyboard.press` sends real key events through CDP, so native button activation,
- * focus movement, and shortcuts genuinely work.
- *
- * Three things are guarded here — when extending the list, add only what synthetic
- * events cannot measure.
+ * Only trusted key events: a synthetic `KeyboardEvent` does not trigger native button activation,
+ * while Playwright's `keyboard.press` does.
  */
 
 test.use({ viewport: { width: 1512, height: 950 } });
@@ -60,9 +41,7 @@ test.describe("키보드 경로 (신뢰 이벤트)", () => {
     await openTopology(page);
     await openDatasheetByKeyboard(page);
 
-    // Look at **the panel inside, not the positioner** — a layout wrapper having no
-    // role is correct, and measuring it produces the false conclusion that the panel is
-    // silent (the council's failure case).
+    // Look at the panel inside, not the positioner: a layout wrapper with no role is correct.
     const named = page
       .getByTestId("topology-node-popover-positioner")
       .locator('[role="group"][aria-label]');
@@ -83,26 +62,7 @@ test.describe("키보드 경로 (신뢰 이벤트)", () => {
   });
 });
 
-/**
- * **Focus never falls to `<body>`.**
- *
- * Two places found by the 2026-07-29 keyboard measurement. Both showed the same
- * symptom — closing sends focus to body — with causes on opposite sides.
- *
- * - **The studio socket picker**: the global Escape handler called
- *   `setOpenRelation(null)` directly, skipping the focus-return code. The comment
- *   above it promised focus stays on the socket trigger. The search text being typed
- *   was lost with it, so the loss was twofold.
- * - **The shortcut sheet**: the opening button unmounted the moment the sheet turned
- *   on, so by the time the trap captured focus `document.activeElement === body`
- *   already. `body.isConnected` is always true, so the restore branch looked
- *   successful while **planting focus back on body.** The visible symptom and the
- *   cause were on opposite sides, so every attempt to fix the closing path missed.
- *
- * When the place to return to is gone, focus goes to **the start of the content**
- * (`<main>`) — better than walking the page from the top again. A surviving trigger
- * always wins over the fallback.
- */
+/** When the return target is gone, focus goes to `<main>`; a surviving trigger always wins. */
 test.describe("포커스 반환", () => {
   test("단축키 시트를 닫으면 body 가 아니라 본문으로 간다", async ({ page }) => {
     await seedFirstRunSeen(page);
@@ -111,13 +71,7 @@ test.describe("포커스 반환", () => {
 
     const opener = page.getByTestId("topology-shortcuts-help-button");
     await expect(opener).toBeVisible({ timeout: 30_000 });
-    /*
-     * ⚠️ **Visible ≠ keys attached** (2026-08-17, the spot that flaked in CI).
-     *
-     * Enter was pressed as soon as the button appeared, but on a slow runner hydration
-     * had not happened and the Enter reached nothing — the sheet never opened and it
-     * died after the full 15 seconds (measured 16.0s). Press again until it opens.
-     */
+    /* Visible is not hydrated: press again until the sheet opens, since an early Enter reaches nothing. */
     const sheetClose = page.getByTestId("shortcut-sheet-close");
     await expect
       .poll(

@@ -2,20 +2,6 @@ import { expect, test } from "@playwright/test";
 import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForBoxStill } from "./settle";
 
-/**
- * **The rail follows a real vault, not merely the installed-app runtime.**
- *
- * The installed app used to paint its bundled sample before restoring local state, and the
- * always-visible rail made those sample destinations look like a usable workspace. The first-run
- * screen now owns `/` until a real vault is mounted, so that state intentionally keeps the
- * persistent rail hidden. `local-vault-route-identity.spec.ts` holds the positive counterpart:
- * once a real local vault is mounted, the installed-shell branch exposes the rail and every
- * transition stays inside that vault.
- *
- * **Why desktop is reproduced in a browser.** The app is a WKWebView and ships the same static
- * export as the web. Injecting the Tauri runtime signal therefore exercises this render boundary;
- * native capabilities remain covered by installed-app verification.
- */
 const DESKTOP_INIT = () => {
   (window as unknown as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__ = {
     invoke: () => Promise.reject(new Error("stub")),
@@ -92,17 +78,7 @@ test.describe("데스크톱 셸의 좌측 레일", () => {
     expect((await railState(page)).width).toBeGreaterThan(0);
   });
 
-  /**
-   * **Rail tiles speak through surface and ink only, with no border.**
-   *
-   * #961 (bulk migration of hand controls into the value layer) applied `shape:"card"`
-   * to the outer `<a>` of the destination tiles, which put the 1px hairline that shape
-   * carries onto all seven tiles — the pre-migration hand classes had no border, and that
-   * commit's premise was an exact conversion that changes no pixels. The owner caught it
-   * on the real thing (2026-08-08). A value-layer migration leaves only legitimate token
-   * values in the code, so no value lint can see this class of defect — the only way is
-   * to measure the rendered border width.
-   */
+  /** Measures the rendered border width; no value lint can see a border that a shape adds. */
   test("레일 목적지 타일에 그려진 테두리가 없다", async ({ page }) => {
     await page.goto("/ko/topology/?guides=off");
     await expect(page.getByTestId("app-nav-rail-item-map")).toBeVisible();

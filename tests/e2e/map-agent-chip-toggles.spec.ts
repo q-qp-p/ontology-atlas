@@ -2,19 +2,6 @@ import { expect, test } from "@playwright/test";
 import { installDesktopRailRuntime } from "./desktop-rail-arrival-harness";
 import { waitForMapStill } from "./settle";
 
-/**
- * **The agent chip closes what it opened** (map round, 2026-09-20).
- *
- * It wears the active tone, reports `aria-expanded`, and calls only
- * `openVaultAgent`. Measured with a folder open at 1512 wide: the first press
- * opened the dock and narrowed the map's canvas from 1448 to 1055, and every
- * press after that left `aria-expanded="true"` and the canvas at 1055. A
- * control that says "expanded" while ignoring the press is the same shape the
- * meaning-review chip had a few slots away.
- *
- * The dock keeps its own close button; this is the second way in, and the one
- * a person reaches for after pressing the chip to open it.
- */
 test("에이전트 칩을 다시 누르면 닫히고, 지도가 폭을 되찾는다", async ({ page }) => {
   test.setTimeout(180_000);
   await page.setViewportSize({ width: 1512, height: 900 });

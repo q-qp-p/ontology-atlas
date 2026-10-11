@@ -3,25 +3,6 @@ import { expect, test, type Page } from '@playwright/test';
 import { seedFirstRunSeen } from './first-run-seed';
 import { installLibraryWorkHarness } from './library-work-harness';
 
-/**
- * **Every error card offers the thing its own sentence asks for.**
- *
- * The retry was added to the card on 2026-08-24 because five of the six kinds ended in 「press New
- * chat」 and New chat was a pencil glyph two hundred pixels away — *"if this is normal I still would
- * not know what to do"*. `launch` was deliberately left without a retry, and correctly: another
- * attempt at a start we already know cannot work teaches people to distrust the button.
- *
- * ⚠️ **What that left behind was the same dead end it had just closed.** Rendered for the first
- * time on 2026-09-20 (the harness could not fail a start until this round): the `launch` card told
- * the reader to check this tool's state on the Agents screen "on the left", and carried exactly one
- * control — the connection check, which the panel's own comment calls the row's *second* action. The only
- * action on the card was not the one the sentence asked for, and the screen it named had to be
- * found by hand. The direction was a guess too: the rail that holds Agents is hidden below `lg`.
- *
- * This is an end-to-end gate rather than a unit one because the error card is reached through a
- * failing start, which is a bridge fact, not a prop.
- */
-
 /** Each message is the one `readAcpTrouble` classifies into that kind. */
 const LAUNCH = 'spawn npx ENOENT';
 const NETWORK = 'fetch failed: ECONNREFUSED';

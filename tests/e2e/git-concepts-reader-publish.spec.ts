@@ -3,22 +3,6 @@ import { expect, test, type Page } from "@playwright/test";
 import { installDesktopRailRuntime, mountDesktopVault } from "./desktop-rail-arrival-harness";
 import { FIXTURE_VAULT } from "./fixture-vault";
 
-/**
- * **The Git screen reads a step's change in its default lens, and a saved remote is not a dead
- * end** (real-bridge QA, 2026-09-25).
- *
- * Three defects, measured in the rendered page:
- *
- * - The concepts lens (the default) drew a concept's card and its other steps but never the
- *   change itself; the whole document with its changed line was one lens away. The reader now
- *   sits between the card and the document's own steps, on the card's start line, uncovered.
- * - The vault README (`vault-readme`) counted as a concept of the step that touched it.
- * - After "Connect a remote" the header still said there was no remote and offered nothing to
- *   press: only a first push creates the upstream, and nothing here could make one. A saved
- *   origin now reads as "never sent" (`describeRemoteState`), with the first send in the slot
- *   Fetch, Pull and Push arrive in — one row, its hint under it.
- */
-
 const README = [
   "---",
   "uid: 7e4c2a10-5b9d-4c3e-8f21-0a6b3c9d2e41",

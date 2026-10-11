@@ -23,18 +23,8 @@ export const DAY_ONE_BINARY_BASE64: Record<string, string> = {
 };
 
 /**
- * **What `acp_detect_runtimes` really answers on a computer with no coding tool.**
- *
- * ⚠️ The stub returned `[]` and that is not the empty state (design-lead, council
- * 2026-09-11). The Rust side walks the **whole committed registry** and reports a state per
- * agent, so a machine with nothing installed answers forty rows of `cli-missing`, not
- * nothing — and the difference is the screen the door lands on: with `[]` the page says
- * "Nothing found yet — the install guides are in the list below" **with no list below**,
- * while the real answer draws the 「other tools」 chip that opens those guides. A capture of
- * the first is a capture of a screen the app never shows.
- *
- * The rows are read from `src-tauri/src/acp-registry.json`, the same snapshot the app
- * compiles in, so the count and the names cannot drift from the product by hand.
+ * The real `acp_detect_runtimes` reports a state per registry agent, so an empty machine answers
+ * `cli-missing` rows rather than `[]`. Rows come from `src-tauri/src/acp-registry.json`.
  */
 export function dayOneRuntimes(): unknown[] {
   const snapshot = JSON.parse(

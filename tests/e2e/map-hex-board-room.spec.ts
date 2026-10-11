@@ -4,25 +4,8 @@ import { dogfoodEvidenceVault } from "./hex-board-vaults";
 import { waitForAnimationsDone, waitForBoxStill, waitForCanvasStill } from "./settle";
 
 /**
- * **The hex board fits the free map it opens in, whatever is selected.**
- *
- * Measured 2026-09-25 through the app's own bridge, on the product's vault at 1512x949:
- *
- * - Opened with a node already selected — a `?view=hex&p=…` link, or a switch of view with a node
- *   chosen — the board drew none of its 37 tiles while the inspector and the footer stood beside
- *   an empty canvas. It read its room only while nothing was selected, so it had no layout and no
- *   camera until the selection cleared.
- * - Opened by its address with nothing selected, the board sat in a strip 277 px tall in the
- *   bottom third. It read its room while INDEX was still fading in: the full-height slot did not
- *   count yet, the panel inside it ends under its last row (shorter than 60% of the canvas, so not
- *   a panel by shape), and the board took it for chrome in the tool lane, pushing the room's top
- *   edge down to the panel's bottom. Nothing made it read again once INDEX had arrived.
- *
- * Claims at 1512x949: opened by its address the room starts right of the open INDEX
- * and keeps most of the window's height; entered with a node selected, every tile is drawn, the
- * canvas is inked and no tile stands under the inspector; closing the inspector reads the room at
- * rest again. Only 1512 is measured: at 1280 INDEX is tall enough to read as a panel by shape,
- * so that width never failed, and running it too tripled the cost of the same claim.
+ * The board fits the free map whether opened with a node selected or with nothing selected
+ * while INDEX is still fading in. Only 1512 is measured: at 1280 INDEX reads as a panel.
  */
 
 const NODE = "capability:vault-git-history";

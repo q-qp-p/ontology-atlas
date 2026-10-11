@@ -3,17 +3,8 @@ import { installDesktopRailRuntime, mountDesktopVault } from "./desktop-rail-arr
 import { waitForBoxStill } from "./settle";
 
 /**
- * **The node inspector's header speaks one chip grammar** (owner report, 2026-09-25,
- * installed app: the invoice capability with its kind chip and the domain chip under it).
- *
- * Measured before the fix at 1512: the kind badge was 24px tall at a 6px radius, the
- * domain chip 34px at the card's 9px radius, the close button 24px ending 4px past the
- * domain chip's right edge (1469 vs 1465). Two shapes that mean the same kind of thing
- * ("a fact about this node you can read, one of them pressable") read as unrelated.
- *
- * Claims at 1512 (the owner's window; the chips' grammar does not change with width): the kind chip and the domain chip share height, radius and
- * type size; the close button matches that height; the rows end on one right edge; each
- * row's controls share a vertical centre; the title stays the largest type in the header.
+ * The kind chip and domain chip share height, radius and type size; the close button matches
+ * that height, rows end on one right edge, and the title stays the largest type.
  */
 
 for (const width of [1512] as const) {

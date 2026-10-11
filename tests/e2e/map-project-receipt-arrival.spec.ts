@@ -4,21 +4,9 @@ import { installDesktopRailRuntime, mountDesktopVault } from "./desktop-rail-arr
 import { waitForAnimationsDone, waitForBoxStill } from "./settle";
 
 /**
- * **The project inspector is the project's from its first frame** (2026-09-25 sweep).
- *
- * Measured before the fix against the real bridge: the panel was on screen at 1895 ms in the
- * plain layout — "changed today", a footer slug, no code evidence — and at 2605 ms rebuilt
- * itself: a code-evidence block inserted above the buttons, the meta line rewritten to "Concept
- * document · changed today", the relations folded, and every button pushed down in one frame.
- * The receipt comes from a native read that always lands after the panel, so the panel must hold
- * its place rather than draw another layout first.
- *
- * The read of `.ontology-atlas/project-sources.json` is **held until the test releases it**, so the
- * order "panel on screen, then receipt" is a condition, not a race: nothing here depends on how fast
- * this machine is.
- *
- * The folder is bound with no receipt yet (`needs_evidence` / `measure_source`), the state the
- * sweep found: a gap line and a remedy box arrive with the receipt.
+ * The project inspector must hold one layout from its first frame, even though the receipt
+ * arrives from a native read after the panel. The sidecar read is held until released, so
+ * the order is a condition, not a race.
  */
 const SIDECAR = ".ontology-atlas/project-sources.json";
 const BINDING = `${JSON.stringify(
@@ -145,13 +133,7 @@ for (const viewport of [{ width: 1512, height: 949 }] as const) {
   });
 }
 
-/**
- * **From the project page to the control that connects its code folder** (2026-09-25 sweep).
- *
- * The page's "View topology" sent a bare slug, which opens the project drawer: no code evidence,
- * no connect control, and only a chip labelled like the button just pressed leading on. It now
- * lands on the project's own node, whose inspector carries the connect control.
- */
+/** "View topology" must land on the project's own node, whose inspector carries the connect control. */
 test("the project page's map door lands where the code folder is connected", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 949 });

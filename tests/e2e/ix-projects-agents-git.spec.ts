@@ -3,14 +3,6 @@ import { expect, test } from "@playwright/test";
 import { installDesktopRailRuntime, mountDesktopVault } from "./desktop-rail-arrival-harness";
 import { RUNTIME, activeTestId, box } from "./ix-projects-agents-git-harness";
 
-/**
- * Interaction sweep, 2026-09-25 — Projects, Agents and Git.
- *
- * Every assertion here is geometry, computed style or `document.activeElement`, measured in the
- * rendered page: the defects were a dock taller than the window, confirms that drop focus to
- * `<body>`, one decision drawn in five button shapes, and a Push that committed silently. The
- * screenshots land in `output/` for a person to judge; the numbers are the gate.
- */
 test.describe("interaction sweep — projects, agents, git", () => {
   test.beforeEach(async ({ page }) => {
     await installDesktopRailRuntime(page, {}, { fast: [RUNTIME], probed: [RUNTIME] });

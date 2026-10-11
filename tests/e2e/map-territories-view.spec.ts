@@ -8,18 +8,9 @@ import { installDesktopRailRuntime, type StubPathChange } from "./desktop-rail-a
 import { waitForMapStill } from "./settle";
 
 /**
- * **Territories names every capability, keeps every name clear, and counts stale honestly.**
- *
- * The view's whole claim is that at this scale nothing has to be folded: a reader sees each
- * capability's name in its own domain's territory and can tell from the ring which ones stand
- * on moved code. This opens the product's own dogfood vault (`docs/ontology`) through the
- * installed-app runtime, with the Git walk answered from this repository's real history, and
- * checks the claim on the drawn result:
- *
- * - every capability in the vault has a name on screen, and no two drawn names or marks overlap;
- * - the stale count the view shows equals the count this spec computes itself, from the same
- *   rule (`shared/lib/git/evidence-verdict.mjs`) over the same Git times;
- * - clicking a capability opens the same inspector the flat map opens.
+ * Opens the dogfood vault (`docs/ontology`) through the installed-app runtime, with the Git
+ * walk answered from this repository's history. The stale count is recomputed here by the
+ * shared Git evidence rule over the same Git times.
  */
 
 const REPO = path.resolve(__dirname, "../..");
@@ -130,7 +121,7 @@ async function readDrawn(page: Page) {
 const overlap = (a: { x: number; y: number; w: number; h: number }, b: { x: number; y: number; w: number; h: number }) =>
   a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 
-// A Retina display, as the owner reads the app: hairlines must land on whole device pixels.
+// Retina: hairlines must land on whole device pixels.
 test.use({ deviceScaleFactor: 2 });
 
 // The installed app's 14-inch window; a second desktop size repeated the same claims.
@@ -143,11 +134,8 @@ for (const viewport of [{ width: 1512, height: 982 }]) {
     await installDesktopRailRuntime(page, vault.files, undefined, { replaceFixture: true, gitPathChanges: vault.changes });
     await page.goto("/ko/?guides=off&e2e=1", { waitUntil: "domcontentloaded" });
     await page.getByTestId("first-run-open").click();
-    // Opening the dogfood vault reads each of its files through the native stub, one answer at a
-    // time and 120 ms apart, so the map arrives about 14 s after the press (measured 2026-09-26:
-    // the view chip turned visible at 14.0 s). Clicking the chip at once spent the default 15 s
-    // action timeout on that arrival, and on a slower runner the click timed out after scrolling
-    // (CI, three attempts in a row). Wait for the map itself instead.
+    // Opening the vault reads each file through the native stub 120 ms apart, so the map arrives
+    // about 14 s later; wait for the map itself rather than spending the default action timeout.
     await waitForMapStill(page);
 
     await page.getByTestId("topology-view-3d").click();

@@ -3,21 +3,6 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { stubDirectoryPicker } from "./vault-picker-stub";
 import { HEALTHY_VAULT } from "./fixtures/broken-vault";
 
-/**
- * **Renaming and deleting a document are doors on the page, and they open the product's own
- * dialogs** (map-edit QA D9, 2026-09-26).
- *
- * Both actions lived only in the command palette — invisible until a person typed `> ` and a
- * query — and answered through `window.prompt` / `window.confirm`: light, unstyled browser
- * boxes outside the dialog system (no scrim, no focus return), asking for a raw slug path, and a
- * delete confirmation that never named the documents still pointing at the file.
- *
- * This measures the two doors where a person looks for them — beside the file's address, on
- * top at their centre, at least 24px — and that each opens a modal `Dialog` rather than a
- * browser box. The writes themselves are asserted against a real vault in the QA bridge proof;
- * here the fixture folder is an OPFS handle, so nothing is confirmed.
- */
-
 async function openCheckout(page: Page) {
   await stubDirectoryPicker(page, HEALTHY_VAULT);
   await seedFirstRunSeen(page);

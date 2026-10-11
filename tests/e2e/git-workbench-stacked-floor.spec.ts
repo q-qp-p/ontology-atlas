@@ -3,18 +3,8 @@ import { expect, test } from "@playwright/test";
 import { installDesktopRailRuntime, mountDesktopVault } from "./desktop-rail-arrival-harness";
 
 /**
- * **At the app's own floor the stacked reader is reachable.**
- *
- * `src-tauri/tauri.conf.json` allows a 1040x720 window, and below `xl` the Git workbench
- * stacks its two columns. It used to keep splitting one window-sized height between them:
- * measured 2026-09-25 with an eleven-step history, the step list took 534px and the stacked
- * reader (`atlas-git-evidence`) got a rect 0px tall while its children still painted below
- * the fold. A click on a changed document's chip timed out after 15s because the dock and
- * the scroll frame sat on top of it. Two steps hid the defect (the reader got 320px), so
- * this runs with a real-length history.
- *
- * What is measured is the promise, not a height: the reader has height, and the element at
- * the centre of a change chip is that chip once it is scrolled to.
+ * Runs with an eleven-step history; two steps hide the defect because the reader gets 320px.
+ * Asserts the reader has height and the element at a chip's centre is that chip.
  */
 
 const STEPS = Array.from({ length: 11 }, (_, i) => ({

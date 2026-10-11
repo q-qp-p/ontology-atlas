@@ -104,12 +104,8 @@ async function openLocalCompile(page: Page, selectPage = false, options: Paramet
   await page.getByTestId("library-workspace-wiki").click();
   await expect(page.getByTestId("library-wiki")).toBeVisible({ timeout: 30_000 });
   /*
-   * A retained question hides first-run guidance. Compile must still expose its review.
-   *
-   * ⚠️ **Read on the strip's door since 2026-09-12**: the home is the folder's graph and
-   * the saved questions are a door on the row above it — at exactly one saved answer that
-   * door *is* the question, which is what keeps reopening it one press. The region itself
-   * lives inside the anchored surface behind it.
+   * A retained question hides first-run guidance but Compile still exposes its review. The saved
+   * questions are a door on the strip; at one saved answer that door is the question.
    */
   await expect(page.getByTestId('library-questions-open')).toBeVisible();
   if (selectPage) {
@@ -118,11 +114,8 @@ async function openLocalCompile(page: Page, selectPage = false, options: Paramet
   }
   await expect(page.getByTestId("library-compile")).toBeEnabled({ timeout: 30_000 });
   /*
-   * ⚠️ **The brain picker moved with the press it belongs to** (2026-09-12). It used to
-   * stand in step two of the always-drawn stage; the home is the picture now, so it is in
-   * the Compile popover the strip's `Compile next: <file>` clause opens — one control per
-   * setting per screen, beside the button that spends it. Escape leaves the walk on the
-   * home, where it was.
+   * The brain picker is in the Compile popover the strip's `Compile next: <file>` clause opens;
+   * Escape leaves the walk on the home.
    */
   if (options?.detectedRuntime) {
     await page.getByTestId('library-workspace-sources').click();

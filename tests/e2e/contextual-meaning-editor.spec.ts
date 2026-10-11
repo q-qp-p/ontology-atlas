@@ -105,12 +105,8 @@ test('map relation editor previews, reviews, and writes one relation without lea
   ).toBe(true);
 
   /*
-   * ⚠️ The relation rows (from · relation · to · why) used to be **one grid each**, aligned only because
-   * `4.5rem` was written four times. 72px held four 11px two-character labels — about 22px of text —
-   * and the 50px left over read as a gap between a label and its own value (owner, on the installed
-   * rc.13 build). They share one grid now, so this measures the property that replaced the number:
-   * every label starts at the same x, every value starts at the same x, and neither column is
-   * mostly empty.
+   * Every label starts at the same x, every value starts at the same x,
+   * and neither column is mostly empty.
    */
   const relationFit = await review.evaluate((element) => {
     const list = element.querySelector<HTMLElement>('dl');

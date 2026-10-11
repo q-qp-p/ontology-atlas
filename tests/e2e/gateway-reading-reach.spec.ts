@@ -8,31 +8,8 @@ async function settled(page: import("@playwright/test").Page) {
 }
 
 /**
- * **Is the gateway's reading material reachable on narrow screens?**
- *
- * **What happened** (measured 2026-08-07, static export, no vault):
- *
- * | | 1512 | 768 | 390 |
- * |---|---|---|---|
- * | Guide and changelog links visible on `/ko/` | 1·1 | 1·1 | **0·0** |
- * | Guide chapters visible on `/ko/guide/*` | 13 | **1** | **0** |
- *
- * For someone who received a link on a phone and opened one guide chapter, the 13
- * chapters were **13 dead ends with no way between them**. Two of those chapters are
- * "connect your agent" and "CLI", so what was blocked is not reading material but
- * **the path to attaching an agent**.
- *
- * **Why code cannot catch it.** The violation **leaves no value in the code.** Both
- * `hidden … sm:flex` and `hidden lg:block` are legitimate responsive notation on
- * their own, and the defect is **a relation between different files**: is there a
- * replacement after the collapse? Two code comments actually promised a replacement
- * and **both were false** — the chrome's "guide" chip (which collapses below `sm`
- * too) and the gateway footer (zero links at any width). **A comment is not a gate.**
- *
- * **What is measured**: not "is it visible" but **"is it reachable"**. A link inside
- * a closed disclosure is correctly invisible but is not a dead end, so when a
- * disclosure exists it is **opened once** and the count retaken. Reachable in one
- * interaction passes.
+ * Reachable in one interaction passes: a link in a closed disclosure is invisible but not a dead end,
+ * so a disclosure is opened once and the count retaken.
  */
 
 /** The four gateway surfaces. This list is the reach. */
@@ -44,10 +21,7 @@ const GATEWAY_ROUTES = [
   "/ko/changelog/",
 ] as const;
 
-/**
- * The desk width. The narrow widths that first broke (2026-08-07) left this file on 2026-09-27: the
- * one phone check the public gateway keeps is `public-surface-health.spec.ts` at 390.
- */
+/** The desk width only; the phone check lives in `public-surface-health.spec.ts` at 390. */
 const WIDTHS = [{ w: 1512, h: 900 }] as const;
 
 const PAINTED = `(el) => {

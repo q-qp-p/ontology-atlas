@@ -4,134 +4,26 @@ import { test, expect } from "@playwright/test";
 import { AUDITED_ROUTES } from "./audited-routes";
 
 /**
- * Screen hierarchy — **is what the eye should land on first actually the largest,
- * and is there exactly one filled accent?**
- *
- * ## Why this layer has to exist
- *
- * On 2026-08-06 the design lead seat named two defects on
- * `/project/new`, and both were **confirmed by measurement**:
- *
- * | Defect | Measured |
- * |---|---|
- * | The side panel's "0%" **ties** with the page title | both 30px |
- * | An amber banner says *"you need to open a folder"* but **there is no way to open one** | **0** folder-opening controls |
- *
- * Both are **defects that leave no value in the code** — "0%" was using a
- * legitimate ramp step (`text-hero`), and the banner's wording was fine. Neither a
- * value lint nor a source-scanning contract can see them. **They are visible only
- * on the rendered screen.**
- *
- * ## Why the render rather than the source
- *
- * "nothing is larger than the title" is a **relation between two elements**, and
- * those two live in different files (the title in the page, the statistic in a
- * form widget). A check that reads one file's syntax tree cannot express it in
- * principle.
- *
- * ## Why every route rather than one (2026-08-08)
- *
- * At birth this file looked at **one route, `/project/new`**. The sibling gate born
- * the same day (`open-vault-cta.spec.ts`) was widened to the full set for exactly
- * that reason, and widening it immediately found the same disease in **two more
- * places**. This repository has already paid for this failure mode
- * (`design-gates.md`): **a check built from an allowlist fails on what is not on
- * the list, and what is not on the list is always what was just created.**
- *
- * So the route list is not hand-written here — the authoritative one
- * (`audited-routes.ts`) is imported, and any route left out is recorded below as
- * **an exception with its measurement and what measures it instead**, never as
- * silence.
- *
- * ## Full measurement (2026-08-08 · static export · 1512×900 · `?guides=off`)
- *
- * | Route | Title | Title≥ violations | Filled accents | Notes |
- * |---|---|---|---|---|
- * | `/ko/` | 34px | 0 | 1 (`gateway-hero-cta`) | ② renamed 2026-08-19 |
- * | `/ko/topology/` | **none** (h1 = `sr-only` 1×1) | — | 1 (`first-run-starter-open`) | ① exception |
- * | `/ko/docs/` | **none** (h1 = `sr-only` 1×1) | — | 0 | ① exception |
- * | `/ko/ontology/insights/` | 23px | 1 (`analysis-finding-heading`) | 0 | ① figures |
- * | `/ko/projects/` | 23px | 0 | 0 | the 10 capacity bars are data-marks (h≤8) |
- * | `/ko/project/storefront/` | 23px | 0 | 0 | two h1s (23·16) — an a11y matter |
- * | `/ko/project/storefront/edit/` | 30px | 0 | 1 (`project-save-top`) | fixed from 2 on 2026-08-08 |
- * | `/ko/project/new/` | 30px | 0 | 1 (`project-save`) | where this file was born |
- * | `/ko/project/fallback/` | 23px | 0 | 0 | same screen as `/projects` |
- * | `/ko/git/` | 23px | 0 | 1 (`atlas-git-web-get-app`) | |
- * | `/ko/download/` | 34px | 0 | 1 (`gateway-hero-cta`) | ② renamed 2026-08-19 |
- * | `/ko/guide/` | 34px | 0 | 0 | |
- * | `/ko/guide/what-is-atlas/` | 34px | 0 | 0 | |
- * | `/ko/changelog/` | 34px | 0 | 0 | 225 text nodes scanned |
- * | `/ko/this-route-does-not-exist/` | 23px | 0 | 1 | |
- * | `/this-route-does-not-exist/` | 23px | 0 | 1 | same root file |
- *
- * ② 2026-08-19: deleting the install section removed the panel's
- * `download-primary-cta`. There is still exactly one filled accent per route and
- * it is the hero CTA — the count did not change, only the name.
- *
- * The old Studio addresses became map-compatibility redirects with no screen of
- * their own, so they left this table and the shared audit list. The map's
- * contextual editor is covered separately by the vault-backed state audit.
- *
- * ## Exceptions went from three to two (2026-08-08, same day)
- *
- * Two of the "① exception (registered by measurement)" rows above were
- * **violations awaiting a verdict**, and an owner-delegated verdict fixed them, so
- * they entered as rules rather than exceptions:
- *
- * | Fixed | Before | After |
- * |---|---|---|
- * | Studio h1 "What shall we do?" | `text-body-lg` 14px + secondary (tied with the entry card labels and losing on colour) | `text-title` 16px + primary (0 ties) |
- * | Save at the end of the edit form | filled indigo 142×40 (a twin of the top sticky one) | `outline` — the only filled accent is the top sticky |
- *
- * The remaining exceptions are the two screens with no rendered title (map, docs),
- * and those are held by "a screen with no title really has no title" below.
+ * Is what the eye should land on first the largest, and is there exactly one filled accent?
+ * Both are relations between rendered elements in different files, visible only on the rendered
+ * screen. The route list is imported from `audited-routes.ts`; exceptions carry their measurement.
  */
 
 /** Interactive controls — the things that can own a filled accent surface. */
 const CONTROL = 'a[href],button,[role="button"],[role="link"],input,select,summary';
 
 /**
- * **The size floor that separates a filled accent from a data-mark.**
- *
- * Not a hard-coded design judgement but a gap found by measurement (2026-08-08):
- * the tallest accent-coloured data-mark is **8px** (`domain-capacity-bar-*` · node
- * hint dots 6 · studio suggestion dots 4 · docs h2 underline), and the smallest
- * real CTA is **36×85** (`atlas-git-web-get-app`). 24×44 sits between them, and the
- * lower value equals WCAG 2.5.8's minimum target.
- *
- * The colours themselves are never hard-coded — they are read from `:root` (see
- * `readAccents` below). A stale colour list calls the healthy broken and the
- * broken healthy.
+ * The tallest accent-coloured data-mark is 8px (`domain-capacity-bar-*`) and the smallest real CTA
+ * is 36x85 (`atlas-git-web-get-app`); 24x44 sits between them, and 24 equals WCAG 2.5.8's minimum
+ * target. Colours are read from `:root` (`readAccents`), never hard-coded.
  */
 const ACCENT_MIN_HEIGHT = 24;
 const ACCENT_MIN_WIDTH = 44;
 
 /**
- * **Probe hook — it only ever *adds* defects.**
- *
- * `HIERARCHY_PROBE=title` / `=accent` / `=h1` / `=blind-accent` / `=blind-title`
- * (comma-combinable) plants a violating element on each route or blinds the
- * detector. It is never a path that makes the check **pass** (it only adds
- * violations), so it is not a hole in the gate — the worst it can do is "always
- * red". It lives in the file so that `/gate-probe` need not be reproduced by hand
- * every time the gate changes.
- *
- * The third one, `h1`, **aims at the exceptions themselves**: it plants a rendered
- * h1 on the title-less screens (map, docs) to check whether "the exception turns
- * red when it goes stale" is actually true. Registering an exception without
- * measuring whether it can turn red leaves it indistinguishable from a check that
- * is green forever.
- *
- * Measured 2026-08-08:
- *
- * | Probe | What turned red |
- * |---|---|
- * | `title` | ① on **15/15 non-exception** routes (the 2 exceptions stayed green — by design) |
- * | `accent` | ② on the **8 routes** that already had one accent |
- * | `accent` | the "the edit screen's primary CTA is the top sticky" guard, on seeing a second accent |
- * | `h1` | the title-less exception guard, on map and docs |
- * | `blind-accent` | ② treating "0 accents (all routes)" as a **measurement failure, not a pass** |
- * | `blind-title` | ① on "no baseline" at the first non-exception route (`/ko/`) |
+ * Probe hook: `HIERARCHY_PROBE=title|accent|h1|blind-accent|blind-title` (comma-combinable) plants a
+ * violating element or blinds the detector. It only adds violations, so it can never make the
+ * check pass; `h1` aims at the title-less exceptions to prove they turn red when stale.
  */
 const PROBE = (process.env.HIERARCHY_PROBE ?? "").split(",").map((s) => s.trim());
 
@@ -173,11 +65,9 @@ async function measureRoute(
     ).toBeVisible();
   }
   if (route === "/ko/ontology/insights/") {
-    // The dynamic entry paints a real h1 inside its loading shell. Measuring that
-    // shell makes the title baseline look valid while the registered analytical finding
-    // has not mounted yet, so the stale-exception guard reports a product defect
-    // that never existed. Wait for the route's actual subject, not for a size or
-    // expected hierarchy result, then require the loading owner to be gone.
+    // The dynamic entry paints a real h1 inside its loading shell, which would make the title baseline
+    // look valid before the analytical finding mounts. Wait for the route's subject, then require
+    // the loading shell to be gone.
     await expect(page.getByTestId("analysis-workspace")).toBeVisible();
     await expect(page.getByTestId("insights-loading")).toHaveCount(0);
   }
@@ -264,13 +154,9 @@ async function measureRoute(
         return !el.closest("details:not([open])");
       };
 
-      // ── ① Text at or above the title's size ─────────────────────────
-      //
-      // The baseline is **the largest rendered h1**, not `querySelector("h1")`:
-      // measured 2026-08-08, two cases betrayed that selector — on map/docs the
-      // h1 is `sr-only` (1×1, inherited 16px), so an invisible 16px would become
-      // the baseline; on project detail there are two h1s (a 23px visible title
-      // plus a 16px second one), so the baseline would hang on DOM order.
+      // Text at or above the title's size. The baseline is the largest rendered h1, not
+      // `querySelector("h1")`: on map/docs the h1 is `sr-only` (1x1, inherited 16px), and project
+      // detail has two h1s, so the first-in-DOM baseline would hang on order.
       const h1s = [...document.querySelectorAll("h1")];
       const paintedH1s = h1s.filter(painted);
       let base: Element | null = null;
@@ -375,13 +261,9 @@ async function measureRoute(
 }
 
 /**
- * **Exceptions to ① — one route per row, with its measurement and what measures
- * it instead.**
- *
- * ⚠️ Adding a row here switches the rule off for that screen. So every row carries
- * **its own check** (the `titleGuard` describe) — when an exception goes stale that
- * check turns red first and sends a person back to this list. No exception is kept
- * whose reason is "pending" (`open-vault-cta` paid that price on 2026-08-08).
+ * Exceptions to the title rule, one route per row with its measurement and what measures it
+ * instead. Adding a row switches the rule off for that screen, so each row carries its own check
+ * (the `titleGuard` describe). No exception is kept whose reason is "pending".
  */
 const TITLE_EXEMPT: ReadonlyArray<{ route: string; why: string }> = [
   {
@@ -423,15 +305,8 @@ const TITLE_FIGURE_IDS = new Map(TITLE_FIGURES.map((f) => [f.route, new Set(f.te
  */
 const ACCENT_EXEMPT: ReadonlyArray<{ route: string; why: string }> = [
   /*
-   * The edit exception (`/ko/project/storefront/edit/`) was **deleted** on
-   * 2026-08-08 when the hierarchy (design-lead) verdict was applied.
-   * `project-save-top` (sticky header) and `project-save` (end of form) were **two
-   * filled indigos** with the same action, the same label, and the same 142×40. The
-   * sticky one is visible at any scroll position so it carries the primary CTA, and
-   * the repeat at the end of the form dropped to `Button`'s existing `outline` — in
-   * edit mode only. The create screen (`/ko/project/new/`) has no sticky bar, so
-   * there that button is the only primary CTA and stays filled (which is why the
-   * rule holds as "exactly 1" on both routes).
+   * The edit screen has a sticky header CTA, so its end-of-form button is `outline`; the create
+   * screen has no sticky bar, so its button is the only primary CTA and stays filled.
    */
 ];
 const ACCENT_EXEMPT_ROUTES = new Set(ACCENT_EXEMPT.map((e) => e.route));
@@ -439,10 +314,7 @@ const ACCENT_EXEMPT_ROUTES = new Set(ACCENT_EXEMPT.map((e) => e.route));
 test.describe("화면 위계 — 감사 대상 전 라우트", () => {
   test.use({ viewport: { width: 1512, height: 900 } });
 
-  /*
-   * ① and ② read the same `measureRoute` result, so one walk over the audited routes serves
-   * both (it used to be two walks, loading every route twice).
-   */
+  /* Both rules read the same `measureRoute` result, so one walk serves both. */
   test("① 페이지 제목보다 크거나 같은 글자가 제목 밖에 없다 · ② 채워진 강조색 면이 화면에 최대 하나다", async ({ page }) => {
     test.setTimeout(240_000);
 
@@ -498,9 +370,8 @@ test.describe("화면 위계 — 감사 대상 전 라우트", () => {
       totalFilled,
       "채워진 악센트 컨트롤을 전 라우트에서 하나도 못 찾았다 — 판정기가 죽었다(측정 실패)",
     ).toBeGreaterThan(5);
-    // Measured 2974 (2026-08-08). The floor comes from measurement, not a guess —
-    // the first attempt pinned 3000 and turned a healthy state red (a false red is
-    // a gate defect too).
+    // The floor comes from measurement (2974 considered), not a guess: pinning higher turns a
+    // healthy state red.
     expect(totalConsidered, "그려진 원소를 거의 못 봤다 — 스윕이 죽었다").toBeGreaterThan(2000);
 
     expect(

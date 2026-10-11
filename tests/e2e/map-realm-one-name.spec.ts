@@ -2,16 +2,7 @@ import { expect, test } from "@playwright/test";
 import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForMapStill } from "./settle";
 
-/**
- * **One thing, one name — including inside a realm** (map round, 2026-09-20).
- *
- * Entering a realm names its root in four places at once: the chip, the chip's
- * own title, the node on the canvas, and the ledger's header. Measured on the
- * sample map: the first three read the vault's `display_ko` and the ledger
- * header read the canonical `title` ("Payments"), so one screen called the same
- * domain by two names in two languages. Its boundary rows and subtree were
- * already localized — only the header reached past `display`.
- */
+/** One thing, one name inside a realm: the ledger header reads the localized `display`, not `title`. */
 test("영역 안에서도 한 사물에 한 이름", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 900 });

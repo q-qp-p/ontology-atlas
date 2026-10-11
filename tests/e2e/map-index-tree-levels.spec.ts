@@ -3,15 +3,8 @@ import { seedFirstRunSeen } from "./first-run-seed";
 import { waitForMapStill } from "./settle";
 
 /**
- * **The INDEX tree says its own shape on the real screen** (map round,
- * 2026-09-20).
- *
- * The rows are siblings in the DOM — no nested `role="group"` — and the
- * hierarchy is drawn with a left margin. Measured before the fix on the sample
- * map: 10 rows, 0 groups and not one `aria-level`, so a screen reader announced
- * the project and its nine domains as ten peers. This walks the live panel
- * rather than a fixture, because the levels have to survive the real tree the
- * map builds.
+ * Rows are DOM siblings with no nested `role="group"`, so each needs `aria-level` to announce
+ * its depth. Walks the live panel because levels must survive the real tree.
  */
 test("INDEX 트리의 모든 행이 자기 단계를 말한다", async ({ page }) => {
   test.setTimeout(120_000);
