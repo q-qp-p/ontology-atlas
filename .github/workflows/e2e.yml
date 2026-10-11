@@ -156,13 +156,14 @@ jobs:
         if: env.ACTIVE != 'true' && needs.changes.result == 'success'
         run: echo "Static-export-only behavior is untouched"
 
-      - name: Upload Playwright report on failure
-        if: failure()
+      - name: Upload failure evidence or retry traces
+        if: always() && env.ACTIVE == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-report-static-export
-          path: output/playwright
-          retention-days: 1
+          path: ${{ job.status == 'failure' && 'output/playwright' || 'output/playwright/**/trace.zip' }}
+          if-no-files-found: ignore
+          retention-days: 7
 
   web-smoke:
     name: Playwright (web surface)
@@ -216,13 +217,14 @@ jobs:
         if: env.ACTIVE != 'true' && needs.changes.result == 'success'
         run: echo "The unattended web gateway is untouched"
 
-      - name: Upload Playwright report on failure
-        if: failure()
+      - name: Upload failure evidence or retry traces
+        if: always() && env.ACTIVE == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-report-web-smoke
-          path: output/playwright
-          retention-days: 1
+          path: ${{ job.status == 'failure' && 'output/playwright' || 'output/playwright/**/trace.zip' }}
+          if-no-files-found: ignore
+          retention-days: 7
 
   # Five runners, not more workers. A runner here has four vCPUs, but the suite is
   # CPU-bound: on the same four cores (2026-09-27) four workers ran a 129-test sample
@@ -285,13 +287,14 @@ jobs:
         if: env.ACTIVE != 'true' && needs.changes.result == 'success'
         run: echo "No browser evidence assigned to this shard"
 
-      - name: Upload Playwright report on failure
-        if: failure()
+      - name: Upload failure evidence or retry traces
+        if: always() && env.ACTIVE == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-report-shard-${{ matrix.shard }}
-          path: output/playwright
-          retention-days: 1
+          path: ${{ job.status == 'failure' && 'output/playwright' || 'output/playwright/**/trace.zip' }}
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Upload timing evidence
         continue-on-error: true

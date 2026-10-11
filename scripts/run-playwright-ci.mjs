@@ -7,17 +7,19 @@ import { fileURLToPath } from 'node:url';
 
 const CI_MAX_FAILURES = 5;
 
+function* specsIn(suite) {
+  yield* suite.specs ?? [];
+  for (const child of suite.suites ?? []) yield* specsIn(child);
+}
+
 export function inventoryFiles(report) {
   if (report.errors?.length) throw new Error('Playwright discovery reported errors');
   const files = new Map();
-  const visit = (suite) => {
-    for (const spec of suite.specs ?? []) {
-      if (typeof spec.file !== 'string' || spec.file.match(/^(?:[\w-]+\/)*[\w-]+\.spec\.ts$/)?.[0] !== spec.file) throw new Error(`unsupported spec path: ${spec.file}`);
-      files.set(spec.file, (files.get(spec.file) ?? 0) + spec.tests.length);
-    }
-    for (const child of suite.suites ?? []) visit(child);
-  };
-  visit(report);
+  for (const spec of specsIn(report)) {
+    if (typeof spec.file !== 'string' || spec.file.match(/^(?:[\w-]+\/)*[\w-]+\.spec\.ts$/)?.[0] !== spec.file) throw new Error(`unsupported spec path: ${spec.file}`);
+    if (!Array.isArray(spec.tests) || spec.tests.length === 0) throw new Error(`zero tests in ${spec.file}`);
+    files.set(spec.file, (files.get(spec.file) ?? 0) + spec.tests.length);
+  }
   if (files.size === 0) throw new Error('Playwright discovery collected zero files');
   return [...files].map(([file, tests]) => ({ file, tests }));
 }
@@ -41,21 +43,73 @@ export function balanceFiles(files, history, total) {
   return shards;
 }
 
-export function runPlaywrightCi(argv, { spawn = spawnSync, cwd = process.cwd(), env = process.env } = {}) {
-  const shard = argv.find((arg) => arg.startsWith('--shard='))?.slice(8) ?? '1/3';
+function parseArguments(argv) {
+  const options = { shard: '1/3', project: [], excluded: [], help: false };
+  const seen = new Set();
+  for (const arg of argv) {
+    if (arg === '--help' || arg === '-h') {
+      if (argv.length !== 1) throw new Error('--help must be used alone');
+      options.help = true;
+      continue;
+    }
+    const match = /^(--shard|--project|--exclude)=(.+)$/.exec(arg);
+    if (!match) throw new Error(`unknown or malformed argument: ${arg}; use --help`);
+    const [, key, value] = match;
+    const identity = key === '--exclude' ? arg : key;
+    if (seen.has(identity)) throw new Error(`duplicate argument: ${key}`);
+    seen.add(identity);
+    if (key === '--shard') options.shard = value;
+    if (key === '--project') {
+      if (!['smoke', 'post-merge'].includes(value)) throw new Error(`unsupported project: ${value}`);
+      options.project = [arg];
+    }
+    if (key === '--exclude') {
+      if (!['web-surface-smoke.spec.ts', 'contextual-meaning-editor.spec.ts'].includes(value)) {
+        throw new Error('only separately protected surface specs may be excluded');
+      }
+      options.excluded.push(value);
+    }
+  }
+  const { shard } = options;
   if (!/^[1-9]\d*\/[1-9]\d*$/.test(shard)) throw new Error('invalid shard');
   const [index, total] = shard.split('/').map(Number);
+  if (!Number.isSafeInteger(index) || !Number.isSafeInteger(total)) throw new Error('invalid shard');
   if (index > total) throw new Error('shard index exceeds total');
-  const project = argv.includes('--project=smoke') ? ['--project=smoke'] : [];
-  const excluded = argv.filter((arg) => arg.startsWith('--exclude=')).map((arg) => arg.slice(10));
-  if (excluded.some((file) => !['web-surface-smoke.spec.ts', 'contextual-meaning-editor.spec.ts'].includes(file))) {
-    throw new Error('only separately protected surface specs may be excluded');
+  return { ...options, index, total };
+}
+
+function executionSummary(report) {
+  const summary = { expected: 0, flaky: 0, skipped: 0 };
+  for (const spec of specsIn(report)) {
+    for (const test of spec.tests) {
+      const subject = `${spec.file}: ${spec.title ?? 'test'}`;
+      if (!Array.isArray(test.results) || test.results.length === 0) throw new Error(`missing execution results for ${subject}`);
+      const last = test.results.at(-1);
+      if (test.status === 'skipped') {
+        if (test.expectedStatus !== 'skipped' || last.status !== 'skipped') throw new Error(`unexpected skipped outcome for ${subject}`);
+      } else if (!['expected', 'flaky'].includes(test.status)
+        || !['passed', 'failed', 'timedOut'].includes(last.status)
+        || last.status !== test.expectedStatus) {
+        throw new Error(`unsuccessful execution outcome for ${subject}`);
+      }
+      summary[test.status]++;
+    }
+  }
+  return summary;
+}
+
+export function runPlaywrightCi(argv, { spawn = spawnSync, cwd = process.cwd(), env = process.env } = {}) {
+  const { shard, index, total, project, excluded, help } = parseArguments(argv);
+  if (help) {
+    console.log('Usage: node scripts/run-playwright-ci.mjs [--shard=N/M] [--project=smoke|post-merge] [--exclude=SPEC]\nDefaults: shard 1/3, both projects. Exclusions: web-surface-smoke.spec.ts, contextual-meaning-editor.spec.ts.\nUse --help or -h alone to display this help without running tests.');
+    return 0;
   }
   const discovered = spawn('pnpm', ['exec', 'playwright', 'test', ...project, '--list', '--reporter=json'], {
     cwd, env, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024,
   });
   if (discovered.status !== 0) throw new Error(`Playwright discovery failed: ${discovered.stderr ?? ''}`);
-  const inventory = inventoryFiles(JSON.parse(discovered.stdout));
+  const discovery = JSON.parse(discovered.stdout);
+  const inventory = inventoryFiles(discovery);
   const files = inventory.filter((row) => !excluded.includes(row.file));
   if (files.length === 0) throw new Error('no suite files remain after surface allocation');
   const history = JSON.parse(readFileSync(new URL('./data/playwright-file-durations.json', import.meta.url), 'utf8'));
@@ -86,9 +140,18 @@ export function runPlaywrightCi(argv, { spawn = spawnSync, cwd = process.cwd(), 
     cwd, env: { ...env, PLAYWRIGHT_JSON_OUTPUT_NAME: reportFile }, stdio: 'inherit',
   });
   if (result.status === 0) {
-    const actual = inventoryFiles(JSON.parse(readFileSync(reportFile, 'utf8'))).sort((a, b) => a.file.localeCompare(b.file));
+    const report = JSON.parse(readFileSync(reportFile, 'utf8'));
+    const actual = inventoryFiles(report).sort((a, b) => a.file.localeCompare(b.file));
     const expected = files.filter((row) => selected.files.includes(row.file)).sort((a, b) => a.file.localeCompare(b.file));
     if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error('executed test inventory differs from assigned files');
+    const summary = executionSummary(report);
+    console.log(`[playwright-ci] outcomes: expected=${summary.expected}, flaky=${summary.flaky}, skipped=${summary.skipped}`);
+    if (summary.expected + summary.flaky === 0) {
+      const runnable = [...specsIn(discovery)].some((spec) => selected.files.includes(spec.file)
+        && spec.tests.some((test) => test.expectedStatus !== 'skipped'));
+      if (runnable) throw new Error('assigned runnable tests were all skipped; no execution evidence');
+      console.log('[playwright-ci] no runnable tests were assigned at discovery; explicit skips provide no execution evidence');
+    }
   }
   return result.status ?? 1;
 }

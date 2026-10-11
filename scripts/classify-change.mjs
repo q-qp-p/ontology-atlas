@@ -128,6 +128,8 @@ const MCP_FULL_INPUTS = [
   /^mcp\/(?:package(?:-lock)?\.json|pnpm-lock\.yaml)$/,
 ];
 
+const PLAYWRIGHT_SPEC_PATH = /^tests\/e2e\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\.spec\.ts$/;
+
 const E2E_FULL_INPUTS = [
   ...BROWSER_EXECUTION_SURFACE_PATTERNS,
   /^playwright\.config\.ts$/,
@@ -135,7 +137,6 @@ const E2E_FULL_INPUTS = [
   /^postcss\.config\.mjs$/,
   /^\.github\/actions\/setup-playwright\//,
   /^scripts\/(?:serve-static-export|run-with-retry)(?:\.test)?\.mjs$/,
-  /^tests\/e2e\/(?![^/]+\.spec\.ts$)/,
 ];
 
 const KNOWN_PATHS = [
@@ -246,7 +247,7 @@ function playwrightSpecs(command) {
     .slice(PLAYWRIGHT_PREFIX.length)
     .trim()
     .split(/\s+/)
-    .filter((token) => /^tests\/e2e\/[A-Za-z0-9._-]+\.spec\.ts$/.test(token));
+    .filter((token) => PLAYWRIGHT_SPEC_PATH.test(token));
 }
 
 /** The file arguments of a single Vitest selection, or none for any other command. */
@@ -449,7 +450,10 @@ export function buildImpactPlan({ files = [], deletedFiles = [], forceFull = fal
   const e2e = e2ePlan({
     paths,
     suggestions,
-    full: full || paths.some((path) => matchesAny(path, E2E_FULL_INPUTS)),
+    full: full || paths.some((path) =>
+      matchesAny(path, E2E_FULL_INPUTS) ||
+      (path.startsWith('tests/e2e/') && !PLAYWRIGHT_SPEC_PATH.test(path)),
+    ),
   });
   const gates = gatesPlan({ suggestions, full });
   const perf = perfPlan({ paths, existingPaths: existing, deletedPaths: deleted, full });

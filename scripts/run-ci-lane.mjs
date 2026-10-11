@@ -168,7 +168,7 @@ export function commandsForLane({
       const sweep = `${build}PLAYWRIGHT_STATIC=1 node scripts/run-playwright-ci.mjs${project} --shard=${shard}${exclusions}`;
       const mapped = e2e.specs.filter((file) => !dedicated.includes(file.split('/').at(-1)));
       if (e2e.mode !== 'smoke' || shardIndex !== 1 || mapped.length === 0) return [sweep];
-      return [sweep, `PLAYWRIGHT_STATIC=1 pnpm exec playwright test ${mapped.join(' ')} --project=post-merge --pass-with-no-tests`];
+      return [sweep, `PLAYWRIGHT_STATIC=1 pnpm exec playwright test ${mapped.join(' ')} --project=post-merge --pass-with-no-tests --output=output/playwright/mapped-post-merge`];
     }
     return [];
   }

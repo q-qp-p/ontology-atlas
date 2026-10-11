@@ -1,14 +1,92 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, rmSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { inventoryFiles, balanceFiles, runPlaywrightCi } from './run-playwright-ci.mjs';
 import { measureReport, mergeDurations } from './refresh-playwright-durations.mjs';
 
-const report = (names) => ({ suites: [{ specs: names.map((file) => ({ file, tests: [{}] })) }] });
+const passed = { expectedStatus: 'passed', status: 'expected', results: [{ status: 'passed' }] };
+const skipped = { expectedStatus: 'skipped', status: 'skipped', results: [{ status: 'skipped' }] };
+const report = (names, tests = [passed]) => ({ suites: [{ specs: names.map((file) => ({ file, tests })) }] });
+
+test('help and invalid arguments cannot start discovery or write an assignment', (t) => {
+  const cwd = mkdtempSync(join(tmpdir(), 'atlas-playwright-cli-'));
+  const spawn = t.mock.fn(() => { throw new Error('unexpected spawn'); });
+  t.mock.method(console, 'log', () => {});
+  try {
+    for (const flag of ['--help', '-h']) assert.equal(runPlaywrightCi([flag], { cwd, spawn }), 0);
+    for (const argv of [
+      ['--shards=1/3'], ['--project=unknown'], ['--project'], ['--shard=0/3'], ['--shard=4/3'],
+      ['--shard=1/2', '--shard=1/3'], ['--project=smoke', '--project=post-merge'],
+      ['--exclude=web-surface-smoke.spec.ts', '--exclude=web-surface-smoke.spec.ts'],
+      ['--exclude=a.spec.ts'], ['--help', '--project=smoke'], ['--shard=1/9007199254740992'],
+    ]) assert.throws(() => runPlaywrightCi(argv, { cwd, spawn }), /argument|project|shard|duplicate|separately|help/i, argv.join(' '));
+    assert.equal(spawn.mock.callCount(), 0);
+    assert.deepEqual(readdirSync(cwd), []);
+  } finally { rmSync(cwd, { recursive: true, force: true }); }
+});
+
+test('both named projects constrain discovery and execution without broadening the selection', () => {
+  const cwd = mkdtempSync(join(tmpdir(), 'atlas-playwright-project-'));
+  try {
+    for (const project of ['smoke', 'post-merge']) {
+      const calls = [];
+      const spawn = (_bin, args, options) => {
+        calls.push(args);
+        if (args.includes('--list')) return { status: 0, stdout: JSON.stringify(report(['a.spec.ts'])) };
+        writeFileSync(options.env.PLAYWRIGHT_JSON_OUTPUT_NAME, JSON.stringify(report(['a.spec.ts'])));
+        return { status: 0 };
+      };
+      assert.equal(runPlaywrightCi([`--project=${project}`, '--shard=1/1'], { cwd, spawn }), 0);
+      assert.ok(calls.every((args) => args.includes(`--project=${project}`)));
+    }
+  } finally { rmSync(cwd, { recursive: true, force: true }); }
+});
+
+test('success requires execution evidence for assigned runnable tests, not just their definitions', () => {
+  const cwd = mkdtempSync(join(tmpdir(), 'atlas-playwright-results-'));
+  try {
+    for (const tests of [
+      [{}], [{ ...passed, results: [] }], [skipped],
+      [{ ...passed, results: [{ status: 'interrupted' }] }],
+      [{ ...passed, status: 'unexpected', results: [{ status: 'failed' }] }],
+      [{ ...skipped, expectedStatus: 'passed' }],
+    ]) {
+      const spawn = (_bin, args, options) => {
+        if (args.includes('--list')) return { status: 0, stdout: JSON.stringify(report(['a.spec.ts'])) };
+        writeFileSync(options.env.PLAYWRIGHT_JSON_OUTPUT_NAME, JSON.stringify(report(['a.spec.ts'], tests)));
+        return { status: 0 };
+      };
+      assert.throws(() => runPlaywrightCi(['--shard=1/1'], { cwd, spawn }), /execution|skipped|outcome/, JSON.stringify(tests));
+    }
+  } finally { rmSync(cwd, { recursive: true, force: true }); }
+});
+
+test('explicit skips and retry successes stay visible without blocking unrelated development', (t) => {
+  const cwd = mkdtempSync(join(tmpdir(), 'atlas-playwright-outcomes-'));
+  const lines = [];
+  t.mock.method(console, 'log', (line) => lines.push(line));
+  try {
+    const tests = [passed, skipped, { ...passed, status: 'flaky', results: [{ status: 'failed' }, { status: 'passed' }] }];
+    let discovery = report(['a.spec.ts'], tests);
+    let actual = discovery;
+    const spawn = (_bin, args, options) => {
+      if (args.includes('--list')) return { status: 0, stdout: JSON.stringify(discovery) };
+      writeFileSync(options.env.PLAYWRIGHT_JSON_OUTPUT_NAME, JSON.stringify(actual));
+      return { status: 0 };
+    };
+    assert.equal(runPlaywrightCi(['--shard=1/1'], { cwd, spawn }), 0);
+    assert.ok(lines.some((line) => /expected=1.*flaky=1.*skipped=1/.test(line)));
+    discovery = actual = report(['a.spec.ts'], [skipped]);
+    assert.equal(runPlaywrightCi(['--shard=1/1'], { cwd, spawn }), 0);
+    assert.ok(lines.some((line) => /expected=0.*flaky=0.*skipped=1/.test(line)));
+    assert.ok(lines.some((line) => /no runnable.*discovery/i.test(line)));
+  } finally { rmSync(cwd, { recursive: true, force: true }); }
+});
 test('discovery rejects errors, empty subjects and unsupported paths', () => {
   assert.throws(() => inventoryFiles({ suites: [] }), /zero/);
+  assert.throws(() => inventoryFiles(report(['a.spec.ts'], [])), /zero tests/);
   assert.throws(() => inventoryFiles({ errors: ['broken import'] }), /errors/);
   assert.throws(() => inventoryFiles(report(['../escape.spec.ts'])), /unsupported/);
   assert.deepEqual(inventoryFiles(report(['a.spec.ts', 'a.spec.ts'])), [{file:'a.spec.ts',tests:2}]);

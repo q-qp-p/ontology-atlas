@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readdirSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import test from 'node:test';
 
+import { suggestFocusedChecks } from './lib/focused-check-suggestions.mjs';
+import { commandsForLane } from './run-ci-lane.mjs';
 import {
   buildImpactPlan,
   decide,
@@ -152,6 +154,24 @@ test('an unmapped rendered dependency fails closed to the smoke suite', () => {
   ]);
 });
 
+test('an owner mapped to nested browser specs runs exactly those specs', () => {
+  const owner = 'src/features/gray-area/ui/GrayAreaInspector.tsx';
+  const specs = [
+    'tests/e2e/gray-area/panel-layout.spec.ts',
+    'tests/e2e/gray-area/text-scale.spec.ts',
+  ];
+  for (const file of [owner, ...specs]) assert.ok(existsSync(file), `${file} moved; update its owner mapping`);
+  const focused = suggestFocusedChecks([owner]).commands.map((row) => row.command);
+  for (const spec of specs) assert.ok(focused.includes(`pnpm exec playwright test ${spec}`));
+
+  const plan = buildImpactPlan({ files: [owner] });
+  assert.equal(plan.lanes.e2e.mode, 'targeted');
+  assert.deepEqual(plan.lanes.e2e.specs, specs);
+  assert.deepEqual(commandsForLane({ lane: 'e2e', plan, prebuilt: true }), [
+    'PLAYWRIGHT_STATIC=1 pnpm exec playwright test tests/e2e/gray-area/panel-layout.spec.ts tests/e2e/gray-area/text-scale.spec.ts',
+  ]);
+});
+
 test('an additive sweep joins a page root plan without standing in for its smoke suite', () => {
   const unmapped = buildImpactPlan({ files: ['src/views/git/ui/GitPage.tsx'] }).lanes.e2e;
   assert.equal(unmapped.mode, 'smoke');
@@ -216,12 +236,34 @@ test('MCP dependency changes promote only the MCP boundary to its exhaustive lan
 });
 
 test('direct Playwright spec edits run that spec, including post-merge instruments', () => {
-  const plan = buildImpactPlan({
-    files: ['tests/e2e/camera-transition.spec.ts'],
-  });
+  for (const spec of ['tests/e2e/camera-transition.spec.ts', 'tests/e2e/gray-area/panel-layout.spec.ts']) {
+    const focused = suggestFocusedChecks([spec]).commands.map((row) => row.command);
+    assert.ok(focused.includes(`pnpm exec playwright test ${spec}`));
+    const plan = buildImpactPlan({ files: [spec] });
+    assert.equal(plan.lanes.e2e.mode, 'targeted', spec);
+    assert.deepEqual(plan.lanes.e2e.specs, [spec]);
+    assert.deepEqual(commandsForLane({ lane: 'e2e', plan, prebuilt: true }), [
+      `PLAYWRIGHT_STATIC=1 pnpm exec playwright test ${spec}`,
+    ]);
+  }
+});
 
-  assert.equal(plan.lanes.e2e.mode, 'targeted');
-  assert.deepEqual(plan.lanes.e2e.specs, ['tests/e2e/camera-transition.spec.ts']);
+test('unsafe spec paths never become browser command arguments', () => {
+  for (const path of [
+    '/tests/e2e/outside.spec.ts',
+    'tests/e2e/../outside.spec.ts',
+    'tests/e2e/gray-area/./panel-layout.spec.ts',
+    'tests/e2e/gray-area//panel-layout.spec.ts',
+    'tests/e2e/gray area/panel-layout.spec.ts',
+    'tests/e2e/gray-area/;echo-injected.spec.ts',
+  ]) {
+    const plan = buildImpactPlan({ files: [path] });
+    assert.equal(plan.lanes.e2e.mode, 'full', path);
+    assert.deepEqual(plan.lanes.e2e.specs, [], path);
+    for (const command of commandsForLane({ lane: 'e2e', plan, prebuilt: true })) {
+      assert.ok(!command.includes(path), command);
+    }
+  }
 });
 
 test('Playwright helpers and configuration run every browser project', () => {
