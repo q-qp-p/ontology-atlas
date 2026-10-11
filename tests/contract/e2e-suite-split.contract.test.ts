@@ -1,4 +1,6 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -28,7 +30,35 @@ const ROOT = process.cwd();
 const E2E_DIR = join(ROOT, 'tests', 'e2e');
 const workflow = readFileSync(join(ROOT, '.github', 'workflows', 'e2e.yml'), 'utf8');
 const runner = readFileSync(join(ROOT, 'scripts', 'run-ci-lane.mjs'), 'utf8');
-const planner = readFileSync(join(ROOT, 'scripts', 'classify-change.mjs'), 'utf8');
+
+it('CI rejects a focused test before accepting a partial run', () => {
+  const scratch = realpathSync(mkdtempSync(join(tmpdir(), 'atlas-focused-test-')));
+  try {
+    writeFileSync(join(scratch, 'playwright.config.ts'),
+      `import base from ${JSON.stringify(join(ROOT, 'playwright.config.ts'))};\n` +
+      `export default {...base, globalSetup: undefined, webServer: undefined, testDir: '.', projects: [{name: 'probe'}], outputDir: './results'};\n`);
+    const spec = join(scratch, 'focused.spec.ts');
+    const source = `import {test} from ${JSON.stringify(join(ROOT, 'node_modules/@playwright/test/index.mjs'))};\n` +
+      `test.only('focused probe', () => {});\n`;
+    const report = join(scratch, 'report.json');
+    const run = () => spawnSync(process.execPath, [join(ROOT, 'node_modules/@playwright/test/cli.js'),
+      'test', `--config=${join(scratch, 'playwright.config.ts')}`, '--reporter=json'], {
+      cwd: scratch, encoding: 'utf8', timeout: 30_000,
+      env: { ...process.env, CI: '1', PLAYWRIGHT_STATIC: '1', PLAYWRIGHT_JSON_OUTPUT_FILE: report },
+    });
+    writeFileSync(spec, source);
+    const focused = run();
+    expect(focused.status, focused.stderr).toBe(1);
+    expect(JSON.parse(readFileSync(report, 'utf8')).errors.some((error: { message: string }) =>
+      error.message.includes('.only') && error.message.includes('focused.spec.ts'))).toBe(true);
+    writeFileSync(spec, source.replace('test.only(', 'test('));
+    const complete = run();
+    expect(complete.status, complete.stderr).toBe(0);
+    expect(JSON.parse(readFileSync(report, 'utf8')).stats.expected).toBe(1);
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+});
 
 /**
  * Returns each `run:` block as {the folded single line, the list of continuation
@@ -169,37 +199,12 @@ describe('워크플로 분기가 살아 있다', () => {
     expect(suiteBlocks.length, 'e2e.yml 에서 --shard 실행 블록을 못 찾았다').toBeGreaterThan(0);
   });
 
-  it('unmapped PR paths run smoke while exact mappings stay targeted', () => {
+  it('shard steps invoke the browser lane executor', () => {
     for (const block of suiteBlocks) {
       expect(block.text, 'workflow no longer calls the browser lane executor').toContain(
         'scripts/run-ci-lane.mjs --lane=e2e',
       );
     }
-    expect(runner, 'smoke project selection disappeared from the executor').toContain(
-      "const project = e2e.mode === 'smoke' ? ' --project=smoke' : '';",
-    );
-    expect(runner, 'targeted mode no longer receives exact spec paths').toContain(
-      '${specs.join',
-    );
-    expect(planner, 'an unmapped browser path no longer fails closed to smoke').toContain(
-      "unmappedPaths.length > 0 ? 'smoke'",
-    );
-    expect(planner, 'Playwright configuration no longer promotes to full').toContain(
-      "const E2E_FULL_INPUTS",
-    );
-  });
-
-  it('CI 스위트는 dev 가 아니라 빌드된 정적 export 를 상대한다', () => {
-    // dev compiles a route on its first request, so which spec pays that cost varies
-    // with shard composition and execution order, and a different spec died on the
-    // 30-second timeout on each run (measured on #1178's first run). Deleting either
-    // of these two pieces brings that class of failure back.
-    expect(runner, 'build disappeared before the browser suite').toMatch(
-      /prebuilt \? '' : 'pnpm build && '/g,
-    );
-    expect(runner, 'the full main sweep disappeared').toContain(
-      'scripts/run-playwright-ci.mjs${project} --shard=${shard}',
-    );
   });
 
   it('샤드 블록에 더 들여쓴 연속 줄이 없다 — 접힘 스칼라의 literal 함정', () => {

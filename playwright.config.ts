@@ -6,6 +6,7 @@ import { POST_MERGE_SPECS } from './tests/e2e/post-merge-specs';
 import { foreignServer } from './scripts/lib/playwright-server-owner.mjs';
 
 const servesStaticExport = Boolean(process.env.PLAYWRIGHT_STATIC);
+const isCI = process.env.CI === 'true' || process.env.CI === '1';
 // The static export gets its own port so it never reuses a dev server left on 3100.
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || (servesStaticExport ? 'http://127.0.0.1:3110' : 'http://127.0.0.1:3100');
 const webServerOrigin = new URL(baseURL).origin;
@@ -37,6 +38,7 @@ export default defineConfig({
     timeout: 15_000,
   },
   fullyParallel: false,
+  forbidOnly: isCI,
   // Local/dev remains sequential because Turbopack compiles routes on demand. CI's read-only
   // static export has no compilation race or shared writable state, so it runs two workers.
   // Pre-enable proof (2026-09-01): the same slowest 107-test shard passed with zero retries
@@ -47,7 +49,7 @@ export default defineConfig({
   workers: resolvePlaywrightWorkers(process.env),
   // CI retries absorb runner variance but remain visible in the report; true regressions fail
   // after every attempt. Local runs keep retries at zero so flakiness is exposed directly.
-  retries: process.env.CI ? 2 : 0,
+  retries: isCI ? 2 : 0,
   reporter: [['list']],
   /**
    * PR gate / post-merge sweep — two projects, one list.
@@ -86,7 +88,7 @@ export default defineConfig({
      */
     actionTimeout: 15_000,
     headless: true,
-    trace: 'off',
+    trace: isCI ? 'on-first-retry' : 'off',
     video: 'off',
     screenshot: 'off',
   },
