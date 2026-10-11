@@ -842,9 +842,16 @@ check, the same live fingerprint and revision). Any mismatch detected by the
 exact-file guards or that final recheck withdraws the batch and downgrades
 outer source/meaning/readiness rather than mixing snapshots. The capability is
 selected from its persisted Definition/Includes/Excludes, its own title, slug,
-and path, and the names of the elements it declares; a document that states no
-Definition/Includes/Excludes (or only the older `Inclusions / Exclusions`
-bullets) is read on its first paragraph, never its whole body. A ready
+and path, and the names of the elements it declares. Only authored paragraphs
+and list items enter claim compatibility and the short Definition statement;
+code blocks, HTML blocks/comments and blockquotes supply neither ownership nor
+exclusions. Legacy Inclusions/Exclusions headings and Included/Excluded list
+fields retain their authored continuations and nested boundaries. Without any
+claim section, the first authored prose paragraph can corroborate the name;
+a literal-only body or an empty claim section never falls back to raw examples
+or unrelated sections. Formatted section headings retain the same complete
+conditions in the handoff; retained units and full-body recovery preserve the
+original Markdown. A ready
 handoff batches any verified runner manifest, asks for separately named
 positive/negative regressions with exact observable output, and avoids
 overlapping full checks.

@@ -184,7 +184,12 @@ boundary conflict, an unsupported claim, or a tied top claim returns no
 capability. Definition prose describes what a capability touches, so it
 corroborates but never selects on its own: at least one desired word must reach
 the capability's own title, slug, path, or `Includes`, and one shared word is
-never enough.
+never enough. Claim selection and its short Definition statement use authored
+paragraphs and list items, excluding code blocks, HTML blocks/comments and
+blockquotes. Literal examples cannot supply ownership or exclusions. Legacy
+Included/Excluded fields retain genuine continuations and nested boundaries;
+an empty claim section cannot fall back to unrelated prose. Formatting a section
+heading does not drop its conditions from the handoff.
 Whole recorded uncertainty travels in `focus.unknowns`; additive
 `focus.uncertainty` names each scoped document, omitted-unit counts and string
 indices, separately from system gaps. The full-body read includes the project
