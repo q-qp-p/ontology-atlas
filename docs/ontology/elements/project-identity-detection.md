@@ -10,10 +10,11 @@ path: mcp/src/analyze/project-detection.mjs
 created_by: "agent:claude-code"
 ---
 
-Works out who a repository says it is, from its package manifest, its build configuration, or the first heading of its README, and what domain candidates its section headings suggest.
+Works out who a repository says it is, from its package manifest, its build configuration, or the first authored heading of its README, and what domain candidates its section headings suggest.
 
 ## Includes
 - Project name and description taken from a declared manifest rather than a folder name.
+- Markdown identity and section candidates exclude literal examples, blockquotes and HTML comment/container content; standalone authored headings retain source coordinates.
 - Domain candidates read from README section headings, and the nodes an existing vault already contributes.
 
 ## Excludes
