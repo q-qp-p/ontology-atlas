@@ -2,7 +2,7 @@
 
 import { cn } from '@/shared/lib/cn';
 import type { ArchitectureGraph } from '../model/graph-layout';
-import { EDGE_STROKE, VIOLATED_STROKE } from './ArchitectureSketch';
+import { EDGE_STROKE, VIOLATED_STROKE } from './sketch/ink';
 
 /**
  * Everything the drawing means, in words: the key for every mark and the direction dependencies
