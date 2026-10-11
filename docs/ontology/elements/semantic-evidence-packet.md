@@ -13,7 +13,7 @@ created_by: "agent:claude-code"
 Decides which of a repository's documents are worth quoting, pulls the headings and excerpts that say something, and downgrades trust when a document reads like marketing or an unfilled template.
 
 ## Includes
-- Document discovery, per-document heading and excerpt extraction inside a fixed character budget, using authored Markdown while excluding literal code, quotations and comment/container content.
+- Document discovery, per-document heading and excerpt extraction inside a fixed character budget, using authored Markdown while excluding fenced and indented code blocks, blockquotes and HTML comment/container content.
 - Initial document rows expose selected-prose omissions and the first omitted physical line; the next bounded source read is guarded by the original SHA-256. Truncated excerpts require claim review and hostile-instruction precedence remains intact.
 - A risk scan that flags negated, future-tense or deprecated prose and holds it back as review-only.
 
