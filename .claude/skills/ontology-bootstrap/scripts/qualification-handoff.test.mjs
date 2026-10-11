@@ -7,19 +7,15 @@ import { join } from 'node:path';
 import { promisify } from 'node:util';
 import { describe, test } from 'node:test';
 
-import {
-  EXIT,
-  HANDOFF_SCHEMA,
-  acceptQualification,
-  buildAuditFragment,
-  buildHiddenPacket,
-  canonicalJson,
-  chunkWriterCalls,
-  digestJson,
-  joinQualification,
-  prepareRelease,
-  sealCandidate,
-} from './qualification-handoff.mjs';
+import { EXIT } from './qualification-handoff/contracts.mjs';
+import { canonicalJson, digestJson } from './qualification-handoff/primitives.mjs';
+import { HANDOFF_SCHEMA } from './qualification-handoff/schema.mjs';
+import { sealCandidate } from './qualification-handoff/seal.mjs';
+import { buildHiddenPacket } from './qualification-handoff/hidden.mjs';
+import { buildAuditFragment } from './qualification-handoff/audit.mjs';
+import { joinQualification } from './qualification-handoff/join.mjs';
+import { acceptQualification } from './qualification-handoff/accept.mjs';
+import { chunkWriterCalls, prepareRelease } from './qualification-handoff/release.mjs';
 import {
   CONSTRUCTION_QUALIFICATION_INPUT_SCHEMA,
   CONSTRUCTION_QUALITY_AXES,
