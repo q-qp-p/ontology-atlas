@@ -181,9 +181,15 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 ### Browser allocation and coverage
 
 **Run**: `node --test scripts/run-playwright-ci.test.mjs`
-**Proves**: Live test files are assigned once, unknown files stay included, discovery errors and failed test processes cannot pass, and measured weights distribute work without changing coverage.
+**Proves**: Live test files are assigned once, unknown files stay included, discovery errors and failed test processes cannot pass, and measured weights distribute work without changing coverage. Unsupported options fail before discovery; `node scripts/run-playwright-ci.mjs --help` starts no tests. Successful execution reports distinguish passed, retried and skipped tests; skips declared during discovery remain allowed.
 **Escalate**: `pnpm test:ci:impact` when command ownership or workflow wiring changes
 **Fix**: repair the allocator or its report verification; timing estimates must never suppress tests.
+
+CI rejects focused `.only` tests on every execution path. It records a trace on
+the first retry, preserves that trace even when the retry passes, and uploads
+full failure evidence for failed jobs. These artifacts last seven days; ordinary
+passing tests produce no automatic trace. A retry passing is evidence of an
+intermittent failure, not evidence that its cause was fixed.
 
 ### Bundled MCP sidecar binary parity
 
@@ -213,7 +219,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 ### CI impact plan
 
 **Run**: `pnpm test:ci:impact`
-**Proves**: `scripts/classify-change.mjs` and `scripts/run-ci-lane.mjs` route every changed path to evidence or a full-boundary promotion, with no unexplained green skip; main uses the verified push-before range, while scheduled/manual runs are exhaustive.
+**Proves**: `scripts/classify-change.mjs` and `scripts/run-ci-lane.mjs` route every changed path to evidence or a full-boundary promotion, with no unexplained green skip. Nested spec paths retain their source mappings and test-only changes stay targeted; shared test helpers still promote to a full browser run. Main uses the verified push-before range, while scheduled/manual runs are exhaustive.
 **Escalate**: `pnpm exec vitest run tests/contract/workflow-budgets.contract.test.ts tests/contract/workflow-security.contract.test.ts` when workflow wiring changes
 **Fix**: update `scripts/classify-change.mjs`'s path-to-check rules so the new or moved path is classified instead of falling through as unknown.
 

@@ -4,141 +4,45 @@ import { FIXTURE_VAULT } from "./fixture-vault";
 import { seedFirstRunSeen } from "./first-run-seed";
 import { stubDirectoryPicker } from "./vault-picker-stub";
 
-/**
- * Locks the first screen of the MCP connect pane (formerly "connect from the
- * terminal") against becoming complicated again.
- *
- * **Why** (2026-08-17). Owner: *"Isn't this complicated to use?"* (isn't this
- * complicated to use?). Answering from the source alone was wrong — the file is
- * 1,468 lines with 11 copy-state hooks, which read as "11 copy buttons in a row",
- * but **opening it and measuring found 4 copy buttons on screen and 1 on the first
- * screen**, because the advanced block was already collapsed (`advancedOpen`
- * defaults to false).
- *
- * > **A hook count is not a screen.** Conditional renders and collapsed blocks are
- * > all visible when counted in source and invisible on screen. Same lesson this
- * > repository has learned several times: to judge, measure **what was drawn**.
- *
- * So this spec is a **ratchet**, not a record of the current state. It turns red on
- * anything worse than today's values — growth is blocked, shrinking is free.
- *
- * ⚠️ **This is the web screen.** In the installed app the connect button actually
- * writes files, so something different is drawn. Proof of desktop-only behaviour is
- * accepted only from an installed build (`.claude/rules/surfaces.md`) — this spec
- * locks the web side only.
- */
+// Keep the web connection pane within two screens, with at most one copy action
+// in the first viewport and four overall. Native setup needs installed-app proof.
+const CEILING = { copyVisibleFirstScreen: 1, copyTotal: 4, scrollRatio: 2 };
 
-/** Measured today (1512×900, fixture vault). Shrinking is allowed; growing is not. */
-const CEILING = {
-  /** Copy buttons visible at once on the first screen */
-  copyVisibleFirstScreen: 1,
-  /** Copy buttons in the whole pane */
-  copyTotal: 4,
-  /** How many screens of scrolling — 2.0 means two screens */
-  scrollRatio: 2.0,
-};
-
-/**
- * When the pane does not scroll itself (as a destination, where the page scrolls),
- * the scroll multiple is measured as **pane height ÷ viewport** — the intended
- * meaning was always "how many screens until the end".
- */
-test("「MCP 연결」 칸의 첫 화면 인구조사", async ({ page }, testInfo) => {
-  test.setTimeout(300_000);
+test("the connection pane keeps its first screen simple and its content within reach", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1512, height: 900 });
   await stubDirectoryPicker(page, { ...FIXTURE_VAULT });
   await seedFirstRunSeen(page);
   await page.goto("/ko/topology/?guides=off");
-  await page.waitForLoadState("networkidle");
   await page.getByTestId("first-run-starter-open").click();
   await expect(page.getByTestId("vault-guide-sheet")).toBeVisible();
   await page.getByTestId("vault-guide-pick-existing").click();
-  await expect(
-    page.getByTestId("first-run-starter"),
-    "볼트가 안 물렸다 — 아래 측정은 전부 무의미하다.",
-  ).toHaveCount(0, { timeout: 30_000 });
-
-  /*
-   * ⚠️ **Re-aimed twice.** 2026-08-21 (ledger 90): the pane left the settings sheet for
-   * the Agents destination, and the old `app-settings-nav-agent` control disappeared —
-   * the check broke in CI and **the check was right**. 2026-09-05: the pane left again,
-   * for its own `/mcp` destination, so the rail tile it travels through is MCP.
-   *
-   * An attached vault is still required (otherwise the panel is not drawn). After
-   * attaching, it navigates via the rail — the same path a user takes.
-   */
-  // MCP is the second tab of the Agents page since 2026-09-19 (a section below the tool list
-  // the day before, a header tab the day before that).
+  await expect(page.getByTestId("first-run-starter"), "the fixture vault must be attached before measuring").toHaveCount(0);
   await page.getByTestId("app-nav-rail").getByRole("link", { name: "에이전트" }).click();
   await page.getByTestId("agents-tab-mcp").click();
-  await expect(page.getByTestId("mcp-page")).toBeVisible({ timeout: 10_000 });
 
   const pane = page.getByTestId("agent-setup-section");
-  await expect(pane).toBeVisible({ timeout: 10_000 });
-
+  await expect(pane).toBeVisible();
   const census = await pane.evaluate((root) => {
-    /*
-     * ⚠️ **The reference for "first screen" changed on 2026-08-21** (ledger 90).
-     *
-     * As a sheet, **the pane scrolled**, so intersecting the pane's visible area was
-     * the same as "visible without scrolling". As a destination **the page scrolls**
-     * and the pane grows to its content — with the pane as the reference, everything
-     * inside it counts as the first screen (measured: 4/4 were reported visible while
-     * actually outside the viewport).
-     *
-     * The intended measurement is unchanged: **what a user meets without scrolling.**
-     * Only the reference moves to the viewport.
-     */
-    const viewportHeight = window.innerHeight;
-    const visibleInPane = (el: Element) => {
-      const r = el.getBoundingClientRect();
-      if (r.width === 0 || r.height === 0) return false;
-      return r.bottom > 0 && r.top < viewportHeight;
-    };
-    const buttons = [...root.querySelectorAll("button")];
-    const copyish = buttons.filter((b) =>
-      /복사|copy/i.test(`${b.textContent ?? ""} ${b.getAttribute("aria-label") ?? ""}`),
+    const copyButtons = [...root.querySelectorAll("button")].filter((button) =>
+      /복사|copy/i.test(`${button.textContent ?? ""} ${button.getAttribute("aria-label") ?? ""}`),
     );
-    const filled = buttons.filter((b) => {
-      const bg = getComputedStyle(b).backgroundColor;
-      const m = bg.match(/rgba?\(([^)]+)\)/);
-      if (!m) return false;
-      const parts = m[1].split(",").map((n) => Number.parseFloat(n));
-      const alpha = parts.length > 3 ? parts[3] : 1;
-      // A filled brand surface = near-opaque with blue clearly dominant.
-      return alpha > 0.9 && parts[2] > parts[0] + 30 && parts[2] > 120;
-    });
     return {
-      buttonsTotal: buttons.length,
-      buttonsVisible: buttons.filter(visibleInPane).length,
-      copyTotal: copyish.length,
-      copyVisibleFirstScreen: copyish.filter(visibleInPane).length,
-      filledPrimary: filled.length,
-      sectionLabels: [...root.querySelectorAll("h2, h3, [class*='SectionLabel']")]
-        .map((el) => (el.textContent ?? "").trim())
-        .filter(Boolean),
-      scrollHeight: Math.round(root.scrollHeight),
-      clientHeight: Math.round(root.clientHeight),
+      copyTotal: copyButtons.length,
+      copyVisibleFirstScreen: copyButtons.filter((button) => {
+        const box = button.getBoundingClientRect();
+        return box.width > 0 && box.height > 0 && box.bottom > 0 && box.top < window.innerHeight;
+      }).length,
+      scrollHeight: root.scrollHeight,
+      visibleHeight: Math.min(root.clientHeight, window.innerHeight),
     };
   });
-
   await testInfo.attach("agent-connect-census.json", {
     body: JSON.stringify(census, null, 2),
     contentType: "application/json",
   });
-  console.log("[census]", JSON.stringify(census));
-
-  // Idling guard — finding nothing and passing green makes this ratchet the same as no ratchet.
-  expect(census.buttonsTotal, "칸에서 버튼을 하나도 못 찾았다 — 셀렉터가 죽었다").toBeGreaterThan(3);
-  expect(census.copyTotal, "복사 버튼을 하나도 못 찾았다 — 판별식이 죽었다").toBeGreaterThan(0);
-
-  expect(
-    census.copyVisibleFirstScreen,
-    "첫 화면의 복사 버튼이 늘었다. 늘려야 한다면 접는 것을 먼저 검토하라",
-  ).toBeLessThanOrEqual(CEILING.copyVisibleFirstScreen);
+  expect(census.copyTotal, "the pane must contain copy actions before measuring their density").toBeGreaterThan(0);
+  expect(census.visibleHeight, "the pane must occupy visible space").toBeGreaterThan(0);
+  expect(census.copyVisibleFirstScreen, "fold secondary copy actions below the first screen").toBeLessThanOrEqual(CEILING.copyVisibleFirstScreen);
   expect(census.copyTotal).toBeLessThanOrEqual(CEILING.copyTotal);
-  expect(
-    census.scrollHeight / census.clientHeight,
-    "칸이 더 길어졌다 — 새 내용은 접힌 블록으로 간다",
-  ).toBeLessThanOrEqual(CEILING.scrollRatio);
+  expect(census.scrollHeight / census.visibleHeight, "the pane must fit within two visible screens").toBeLessThanOrEqual(CEILING.scrollRatio);
 });
