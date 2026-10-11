@@ -27,6 +27,7 @@ export const ANALYZE_REPO_STRUCTURE_TOOL = {
     '  - apps/* and packages/* members with package.json → implementation element candidates\n\n' +
     '  - README.rst + bounded static setup.py → Python project/package evidence without execution\n' +
     '  - mixed current and future/negated/deprecated README prose → exact current candidate excerpt plus bounded line-scoped `reviewRequiredEvidence`; review units stay visible but cannot support a proposal claim\n' +
+    '  - document excerpts expose `excerptInfo` for selected prose only. `excerpt-truncated` keeps incomplete excerpts review-required; replay its hash-bound `nextSourceRead` with sourceOnly:true, then follow sourceEvidence continuations before claiming an omitted condition\n' +
     '  - selected safe README sections share the existing 1,200-character budget deterministically; no document, heading, or excerpt cap grows\n' +
     '  - root Python packages plus at most 12 import-connected implementation boundaries → direct modules plus up to 2 exact security/policy/risk file anchors; unused files are not mirrored and no capability is inferred from imports\n' +
     '  - bounded root Cargo package or repo-contained literal direct workspace members → typed feature declaration + literal cfg/cfg_attr source provenance; predicates are not evaluated and no runtime/import/semantic dependency is inferred\n' +

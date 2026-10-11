@@ -2,9 +2,8 @@ import { fromMarkdown } from 'mdast-util-from-markdown';
 import { cleanHeadingLabel } from './text.mjs';
 
 export function authoredMarkdownLines(text) {
-  const rawLines = text.split(/\r?\n/);
+  const rawLines = text.split(/\r\n|\r|\n/);
   const lines = rawLines.map(() => '');
-  // Blank frontmatter without changing the original source line coordinates.
   const content = [...rawLines];
   if (content[0]?.trim() === '---') {
     let index = 0;
@@ -23,7 +22,6 @@ export function authoredMarkdownLines(text) {
       const end = node.position.end;
       const fragments = [];
       let offset = start.offset;
-      // Inline comments/tags are not authored text, even in an admitted paragraph.
       const inline = [...(node.children ?? [])].reverse();
       const omitted = [];
       while (inline.length) {
@@ -49,7 +47,6 @@ export function authoredMarkdownLines(text) {
     } else if (node.type === 'list' || node.type === 'listItem') {
       for (let index = node.children.length - 1; index >= 0; index--) pending.push({ node: node.children[index], root: false });
     } else if (root && node.type === 'html' && /^<h[1-3]\b[^>]*>[^<>]*<\/h[1-3]>\s*$/i.test(node.value)) {
-      // Retain the existing standalone HTML title form, never an HTML container.
       lines[node.position.start.line - 1] = node.value;
     }
   }
