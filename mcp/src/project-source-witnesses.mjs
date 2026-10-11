@@ -15,7 +15,7 @@ const CODE_PATH_PREFIX =
   /^(src|app|cli|mcp|tests?|scripts?|docs|packages?|lib|apps?|internal|pkg)\//;
 
 /** Mirror of `looksLikeCodePath` in `src/shared/lib/humanize-code-path-title.ts`. */
-export function looksLikeCodePath(title) {
+function looksLikeCodePath(title) {
   const value = String(title ?? '').trim();
   if (!value.includes('/') || /\s/.test(value)) return false;
   return KNOWN_CODE_EXT.test(value) || CODE_PATH_PREFIX.test(value);

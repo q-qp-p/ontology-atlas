@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it, vi } from "vitest";
 import enMessages from "../../../../../messages/en.json";
@@ -91,6 +91,15 @@ describe("DocFrontmatterBlock", () => {
     renderBlock("en");
     const summary = within(screen.getByTestId("doc-frontmatter-summary"));
     expect(summary.getByText("6 fields")).toBeInTheDocument();
+  });
+
+  it("says under relation fields what reads them, and nothing without one", () => {
+    const help = enMessages.docsVault.frontmatterBlock.relationsConsumerHelp;
+    renderBlock("en");
+    expect(screen.getByTestId("doc-frontmatter-relations-help")).toHaveTextContent(help);
+    cleanup();
+    renderBlock("en", { frontmatter: { kind: "capability", title: "CLI Developer Entry" } });
+    expect(screen.queryByText(help)).not.toBeInTheDocument();
   });
 
   it("linkifies resolvable reference slugs and navigates on click, leaving unresolved ones plain", () => {
@@ -525,6 +534,7 @@ describe("DocFrontmatterBlock code location section", () => {
     const section = screen.getByTestId("doc-frontmatter-code-locations");
     expect(within(section).getByText("mcp/src/index.js")).toBeInTheDocument();
     expect(within(section).getByText("mcp/src/verify.mjs")).toBeInTheDocument();
+    expect(section).toHaveTextContent(koMessages.docsVault.frontmatterBlock.codeLocationsConsumerHelp);
   });
 
   it("omits the section when the document has no `elements` frontmatter", () => {

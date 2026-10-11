@@ -1,98 +1,203 @@
-import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-const ROOT = resolve(__dirname, '../..');
-const read = (relative: string) => readFileSync(resolve(ROOT, relative), 'utf8');
-const en = JSON.parse(read('messages/en.json'));
-const ko = JSON.parse(read('messages/ko.json'));
+import { applyFrontmatterUpdates } from '@/entities/docs-vault';
+import {
+  buildOntologyRelationEditPlan,
+  RELATION_EDGE_TYPE,
+  type MeaningEditRelation,
+} from '@/entities/knowledge-graph';
+import { looksLikeCodePath } from '@/shared/lib/humanize-code-path-title';
+import { parseFrontmatter } from '@/shared/lib/parse-frontmatter';
+
+import { buildCompactAgentBrief } from '../../mcp/src/agent-brief-compact.mjs';
+import { compileOntology } from '../../mcp/src/ontology-compiler.mjs';
+import { queryCompiledOntology } from '../../mcp/src/ontology-engine.mjs';
+import { buildProjectSourceReceipt } from '../../mcp/src/project-source-mint.mjs';
+import { deriveProjectSourceWitnessesFromDocs } from '../../mcp/src/project-source-witnesses.mjs';
+import { loadVaultDocs } from '../../mcp/src/vault/documents.mjs';
 
 /**
- * Field help that names a downstream consumer is only worth reading if the
- * consumer is real and does what the sentence says. Prose is not pinned here —
- * rewording is free. What is pinned is the code path each sentence points at,
- * and the one property of the sentence that would make it a lie: promising a
- * refusal where the implementation only warns.
- *
- * The brief that opened this round proposed "validate_vault refuses a target
- * that does not exist". It does not. `ontology-compiler.mjs` pushes
- * `dangling-graph-reference` at severity `warning` and the write lands, so the
- * copy says "reports"/"warns" and this file keeps it that way.
+ * Help naming a consumer is worth reading only if the consumer does what it says.
+ * Each case runs that consumer on a fixture, so moving code stays green and
+ * changing what the consumer does turns red.
  */
-describe('every consumer named in field help exists as a real code path', () => {
-  it('the compiler turns a relation key into an edge and reports one that does not resolve', () => {
-    const compiler = read('mcp/src/ontology-compiler.mjs');
-    expect(compiler).toContain("code: 'dangling-graph-reference'");
-    expect(compiler).toContain("severity: 'warning'");
-    // The finding names the key the person wrote, which is why the help can
-    // speak about "these lines" rather than about the compiler.
-    expect(compiler).toMatch(/does not resolve to a vault node/);
-    // validate_vault surfaces the same code, so "folder validation reports it"
-    // is true from either entry point.
-    expect(read('mcp/src/validate.mjs')).toContain("'dangling-graph-reference'");
-  });
 
-  it('a dangling reference is a warning, so no relation help may promise a refusal', () => {
-    const claims = [
-      en.meaningEditor?.relationHelp,
-      en.docsVault?.frontmatterBlock?.relationsConsumerHelp,
-    ];
-    expect(claims.every((claim) => typeof claim === 'string' && claim.length > 0)).toBe(true);
-    for (const claim of claims as string[]) {
-      expect(claim.toLowerCase()).not.toMatch(/\brefus|\breject|\bblocks the\b|\bprevent/);
+const ROOT = resolve(__dirname, '../..');
+const LOCALES = readdirSync(resolve(ROOT, 'messages'), { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name);
+const catalog = (locale: string) =>
+  JSON.parse(readFileSync(resolve(ROOT, `messages/${locale}.json`), 'utf8'));
+
+const EDITOR_RELATIONS = Object.keys(RELATION_EDGE_TYPE) as MeaningEditRelation[];
+const TARGET = 'capabilities/target';
+const sourceOf = (relation: MeaningEditRelation) => `capabilities/source-${relation.toLowerCase()}`;
+const goneOf = (relation: MeaningEditRelation) => `capabilities/gone-${relation.toLowerCase()}`;
+let uidSerial = 0;
+const doc = (title: string) =>
+  `---\nuid: 01890f3e-7b5d-4c0a-8f14-${String(++uidSerial).padStart(12, '0')}\nkind: capability\ntitle: ${title}\n---\n\n${title} body.\n`;
+
+/** Writes one relation line the way the map's editor does: plan, then patch the file. */
+function writeRelation(raw: string, sourceSlug: string, relation: MeaningEditRelation, targetSlug: string) {
+  const plan = buildOntologyRelationEditPlan({
+    sourceSlug,
+    targetSlug,
+    fromRelation: null,
+    toRelation: relation,
+    why: 'Fixture reason.',
+    frontmatter: parseFrontmatter(raw).frontmatter,
+  });
+  return applyFrontmatterUpdates(raw, plan.updates);
+}
+
+// Every editor relation points at a target that exists and at one whose file
+// was later deleted: the dangling line a person meets in a real folder.
+const vault = mkdtempSync(join(tmpdir(), 'field-help-'));
+mkdirSync(join(vault, 'capabilities'));
+writeFileSync(join(vault, `${TARGET}.md`), doc('Target'));
+for (const relation of EDITOR_RELATIONS) {
+  const slug = sourceOf(relation);
+  const raw = writeRelation(writeRelation(doc(slug), slug, relation, TARGET), slug, relation, goneOf(relation));
+  writeFileSync(join(vault, `${slug}.md`), raw);
+}
+const artifact = compileOntology(loadVaultDocs(vault)) as {
+  nodes: { slug: string }[];
+  edges: { from: string; to: string }[];
+  issues: { code: string; slug?: string; severity: string; ref?: string }[];
+};
+
+type ValidateReport = { problems: { slug: string; issues: { code: string; severity: string }[] }[] };
+let validateVaultReport: (input: object) => ValidateReport;
+beforeAll(async () => {
+  // validate_vault resolves its folder from OATLAS_VAULT when its module loads.
+  vi.stubEnv('OATLAS_VAULT', vault);
+  ({ validateVaultReport } = await import('../../mcp/src/tools/validate-vault.mjs'));
+});
+afterAll(() => {
+  vi.unstubAllEnvs();
+  rmSync(vault, { recursive: true, force: true });
+});
+
+describe('relation help: each line is one connection, and a missing target only warns', () => {
+  it.each(EDITOR_RELATIONS)('%s becomes one edge and its missing target is a warning', (relation) => {
+    const slug = sourceOf(relation);
+    expect(artifact.nodes.map((node) => node.slug)).toContain(slug);
+    expect(artifact.edges.filter((edge) => edge.from === slug && edge.to === TARGET)).toHaveLength(1);
+
+    const compiled = artifact.issues.filter(
+      (issue) => issue.code === 'dangling-graph-reference' && issue.slug === slug,
+    );
+    expect(compiled).toEqual([expect.objectContaining({ severity: 'warning', ref: goneOf(relation) })]);
+
+    const reported = validateVaultReport({}).problems.find((problem) => problem.slug === slug)?.issues ?? [];
+    const dangling = reported.filter((issue) => issue.code === 'dangling-graph-reference');
+    expect(dangling.map((issue) => issue.severity)).toEqual(['warning']);
+  });
+});
+
+describe('target help names exactly the relations an impact query follows', () => {
+  it('every locale names the walked relations and no other', () => {
+    const reached = new Set(
+      queryCompiledOntology(artifact, { operation: 'impact', slug: TARGET }).nodes.map(
+        (node: { slug: string }) => node.slug,
+      ),
+    );
+    const walked = EDITOR_RELATIONS.filter((relation) => reached.has(sourceOf(relation)));
+    expect(walked.length).toBeGreaterThan(0);
+
+    for (const locale of LOCALES) {
+      const editor = catalog(locale).meaningEditor;
+      // The label a person picks in the select, without its parenthetical gloss.
+      const label = (relation: MeaningEditRelation) =>
+        (editor.relationName[relation] as string).split(/ \(|（/)[0];
+      for (const relation of EDITOR_RELATIONS) {
+        expect([locale, relation, editor.targetHelp.includes(label(relation))])
+          .toEqual([locale, relation, walked.includes(relation)]);
+      }
     }
   });
+});
 
-  it('the source receipt really checks each declared path against the code folder', () => {
-    const witnesses = read('mcp/src/project-source-witnesses.mjs');
-    // `path:` frontmatter and code-shaped `elements:` entries both become witnesses.
-    expect(witnesses).toContain('frontmatter.path');
-    expect(witnesses).toContain('frontmatter.elements');
-    expect(witnesses).toContain('looksLikeCodePath');
+describe('code-location help: each listed path is checked against the connected code folder', () => {
+  // Both verdicts occur, so the page's filter and the witness filter are compared on each.
+  const ELEMENTS = ['src/b.ts', 'packages/core/index', 'notes/guide.md', 'elements/role', 'capabilities/x', 'readme.md', 'src/a b.ts'];
+  const docs = [
+    { slug: 'project', frontmatter: { kind: 'project', title: 'Project' }, body: '' },
+    { slug: 'capabilities/a', frontmatter: { kind: 'capability', title: 'A', path: 'src/a.ts', elements: ELEMENTS }, body: '' },
+  ];
+  const witnesses: { path: string }[] = deriveProjectSourceWitnessesFromDocs({ projectSlug: 'project', docs });
+  const witnessed = witnesses.map((witness) => witness.path);
+  const receipt = (files: string[]) =>
+    buildProjectSourceReceipt({
+      projectSlug: 'project',
+      probe: { sourceId: 'source', kind: 'git', revision: 'r1', fingerprint: 'f1', files, truncated: false },
+      witnesses,
+      graphHash: 'graph',
+      measuredAt: '2026-01-01T00:00:00.000Z',
+    });
 
-    const mint = read('mcp/src/project-source-mint.mjs');
-    // Supported is decided by membership in the connected folder's inventory…
-    expect(mint).toContain('supported: files.has(path)');
-    // …and a missing one is what turns the receipt to review, which is the
-    // consequence the help text states.
-    expect(mint).toContain("status = 'review_required'");
-    expect(mint).toContain("id: 'declared_source_path_missing'");
+  it('witnesses `path:` and exactly the `elements:` entries the page lists under the help', () => {
+    expect(new Set(ELEMENTS.map(looksLikeCodePath)).size).toBe(2);
+    expect(witnessed.sort()).toEqual(['src/a.ts', ...ELEMENTS.filter(looksLikeCodePath)].sort());
   });
 
-  it('an impact query walks relation edges, which is what the target help promises', () => {
-    const engine = read('mcp/src/ontology-engine/traversal-analysis.mjs');
-    expect(read('mcp/src/ontology-engine.mjs')).toContain('createTraversalAnalysis(');
-    expect(engine).toContain("function impact(");
-    expect(engine).toContain('traversalEdges(current.slug, direction, typeSet)');
+  it('a missing path leaves the document for review; all present confirms it', () => {
+    const missing = receipt(witnessed.filter((path) => path !== 'src/b.ts'));
+    expect(missing.status).toBe('review_required');
+    expect(missing.topGap).toEqual({ id: 'declared_source_path_missing', nodeSlug: 'capabilities/a' });
+    expect(receipt(witnessed).status).toBe('verified_current');
+  });
+});
+
+describe('the compact agent brief reads Definition, Includes and Excludes', () => {
+  const project = { slug: 'project', frontmatter: { kind: 'project', title: 'Operations' }, body: 'Local operations.' };
+  const focus = (title: string, body: string, task = 'Rotate encryption keys.') => {
+    const docs = [project, { slug: 'capabilities/catalog', frontmatter: { kind: 'capability', title }, body }];
+    return buildCompactAgentBrief({
+      brief: { projectSlug: 'project' },
+      artifact: { nodes: docs.map((d) => ({ slug: d.slug, ...d.frontmatter })), edges: [] },
+      docs,
+      task,
+    }).focus;
+  };
+
+  it('Definition supplies the statement', () => {
+    expect(focus('Encryption Keys', '## Definition\n\nRotate encryption keys.').capability?.statement)
+      .toBe('Rotate encryption keys.');
+    expect(focus('Encryption Keys', '## Notes\n\nRotate encryption keys.').capability?.statement).toBe('');
   });
 
-  it('the compact agent brief scores a capability on its Definition/Includes/Excludes sections', () => {
-    // Named here so a later help sentence about those headings has a pinned
-    // consumer. They are BODY headings, not frontmatter keys — the reason no
-    // help line was attached to the frontmatter `definition:` value this round.
-    const brief = read('mcp/src/agent-brief-compact.mjs');
-    expect(brief).toContain('readCapabilityClaim(doc?.body)');
-    const claim = read('mcp/src/agent-brief/reviewed-evidence.mjs');
-    expect(claim).toContain("section('definition')");
-    expect(claim).toContain("section('includes')");
-    expect(claim).toContain("section('excludes')");
+  it('Includes qualifies a capability its title alone would not', () => {
+    expect(focus('Archive Catalog', '## Includes\n\nRotate encryption keys.').capability?.slug)
+      .toBe('capabilities/catalog');
+    expect(focus('Archive Catalog', '## Notes\n\nRotate encryption keys.').capability?.slug).toBeUndefined();
   });
 
-  it('each help string is authored in both locales and attached to its field', () => {
-    for (const catalog of [en, ko]) {
-      expect(typeof catalog.meaningEditor.relationHelp).toBe('string');
-      expect(typeof catalog.meaningEditor.targetHelp).toBe('string');
-      expect(typeof catalog.docsVault.frontmatterBlock.relationsConsumerHelp).toBe('string');
-      expect(typeof catalog.docsVault.frontmatterBlock.codeLocationsConsumerHelp).toBe('string');
+  it('Excludes withdraws a claim and settles a stated non-goal', () => {
+    const includes = '## Includes\n\nRotate encryption keys. Send mail.';
+    const task = 'Rotate encryption keys. Do not send mail.';
+    expect(focus('Archive Catalog', includes, task).refusal?.reason).toBe('boundary_conflict');
+    expect(focus('Archive Catalog', `${includes}\n\n## Excludes\n\nSend mail.`, task).capability?.slug)
+      .toBe('capabilities/catalog');
+    expect(focus('Archive Catalog', '## Includes\n\nRotate encryption keys.\n\n## Excludes\n\nRotate encryption keys.')
+      .capability?.slug).toBeUndefined();
+  });
+});
+
+it('each consumer help string is authored in every locale', () => {
+  expect(LOCALES.length).toBeGreaterThan(1);
+  for (const locale of LOCALES) {
+    const messages = catalog(locale);
+    for (const help of [
+      messages.meaningEditor.relationHelp,
+      messages.meaningEditor.targetHelp,
+      messages.docsVault.frontmatterBlock.relationsConsumerHelp,
+      messages.docsVault.frontmatterBlock.codeLocationsConsumerHelp,
+    ]) {
+      expect([locale, typeof help === 'string' && help.length > 0]).toEqual([locale, true]);
     }
-    const editor = read('src/features/ontology-meaning-editor/ui/MeaningEditorPanel.tsx');
-    expect(editor).toContain("t('relationHelp')");
-    expect(editor).toContain("t('targetHelp')");
-    // The help must reach a screen reader as the field's description, not as
-    // loose text beside an unnamed select.
-    expect(editor).toContain('ariaDescribedby={describedBy}');
-    const block = read('src/views/docs-vault/ui/parts/DocFrontmatterBlock.tsx');
-    expect(block).toContain('t("relationsConsumerHelp")');
-    expect(block).toContain('t("codeLocationsConsumerHelp")');
-  });
+  }
 });

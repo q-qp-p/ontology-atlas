@@ -93,6 +93,35 @@ describe('MeaningEditorPanel', () => {
     expect(onApply.mock.calls[0]?.[0].changeSet.operation).toBe('remove');
   });
 
+  it('describes each select with the help line that names what reads it', () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={enMessages}>
+        <MeaningEditorPanel
+          open
+          source={{
+            id: 'capability:contextual-editing',
+            slug: 'capabilities/contextual-editing',
+            title: 'Contextual Meaning Editing',
+            kind: 'capability',
+            frontmatter: {},
+          }}
+          candidates={[
+            { id: 'capability:mcp-server', slug: 'capabilities/mcp-server', title: 'MCP Server', kind: 'capability' },
+          ]}
+          onPreview={vi.fn()}
+          onApply={vi.fn()}
+          onClose={vi.fn()}
+        />
+      </NextIntlClientProvider>,
+    );
+
+    const { meaningEditor } = enMessages;
+    expect(screen.getByRole('combobox', { name: meaningEditor.relation }))
+      .toHaveAccessibleDescription(meaningEditor.relationHelp);
+    expect(screen.getByRole('combobox', { name: meaningEditor.target }))
+      .toHaveAccessibleDescription(meaningEditor.targetHelp);
+  });
+
   it('explains why instead of showing an empty review when nothing changed', () => {
     render(
       <NextIntlClientProvider locale="ko" messages={koMessages}>
