@@ -266,14 +266,6 @@
   }
 }
 
-/*
- * [Removed 2026-09-03, council] The decoder ghost — a glyph drawn from the sentence into the
- * caret's slot before the real character landed. At the headline's size it read as a
- * misspelling of the page's one claim ("Agents write tlt", "the codelt"). The caret stays; the
- * landing above carries the type's arrival. Gate: the grid spec asserts no `[data-ghost]` and
- * `::after { content: none }` on the caret slot.
- */
-
 /* Cursor is left of the first untyped character = right of the last typed character.
  * Being a pseudo-element it takes no space so lines do not shift even as cursor moves. */
 .gateway-type-ch.is-cursor {

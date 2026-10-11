@@ -1,8 +1,8 @@
 @layer base {
   /*
-   * ontology-map (docs/design/ontology-map.md §2) — new token family
-   * extracted 1:1 from B2+ "Circuit × Constellation" prototype (docs/prototypes/topology-b2plus.html). Intentionally
-   * separated from existing 657 --topology-* tokens (prefix --map-) — consumed only behind feature flag `ontology-map`, and when removing the old engine in P6, grepping for `--map-` makes the scope of new/old replacement clear. Canvas 2D cannot read CSS variables directly,
+   * ontology-map (docs/design/ontology-map.md §2) — token family
+   * extracted 1:1 from B2+ "Circuit × Constellation" prototype (docs/prototypes/topology-b2plus.html).
+   * Canvas 2D cannot read CSS variables directly,
    * so `src/widgets/ontology-map/tokens/read-map-tokens.ts`
    * parses them once via `getComputedStyle` and caches — this block is the single source of truth for values.
    * Dark-only (2026-07-19 decision to fully retire light mode, .claude/rules/design.md).
@@ -589,7 +589,6 @@ Instrument detail panel appearing on the right when a node is clicked —
 denser than the old `TopologyNodePopover` (owner rejected "icons too large" +
 "information appears three times"). Colors use neutral 5-step + indigo signal only,
 kind miniatures reuse `--map-node-*` tokens shared with the canvas.
-When removing the old engine in P6, `--map-` grep will remove them together.
 
 RATIO-SYSTEM §4 FINAL scale-up (owner: "Information is good but too small",
 `docs/prototypes/chrome-datasheet-final.html`): 288→352px, padding
@@ -733,28 +732,15 @@ primary colors reference global monochrome/single indigo ladder (`--color-indigo
        on INDEX expand/collapse + invalidates cached tokens (`clearOntologyMapTokensCache`) +
        forces camera re-fit.
 
-       Owner live-QA defect (2026-07-18, v1): The 18px top inset was based on the false
-       assumption that there is no brand pill/chrome row — actually,
-       `topology-top-left-chrome-group` (Relief pill + census + workspace
-       icons) already occupies that space, causing INDEX width (300px) to overflow
-       the pill text behind the panel (for both expanded and collapsed tabs). The first fix
-       reused the clearance (88px) previously used by `TopologyAnalysisBar`.
-
        Owner chrome-recomposition confirmed spec (2026-07-18, v2,
        docs/prototypes/chrome-recomposition.html): Formalize the top as a 56px chrome lane
        (brand pill · embossed census single source · utility rail) and have INDEX/data sheet
        (`--topology-node-popover-top`)/collapsed tab all start below that
        lane — structurally preventing overlap. The two tokens must always change together.
 
-       84px (starter-polish empirical fix, 2026-07-19) — Empirical measurement of brand pill
-       (`topology-top-left-chrome-group`) bottom at 1x is 75.5px;
-       the previous 76px value left only a 0.5px gap, meaning it was already touching (today's pill is
-       not the slim 1-line pill assumed in the mockup, but a title+census subtitle 2-line
-       `HeroCollapsed`, making the previous "64px" assumption stale). 84px creates
-       an actual ~8.5px gap at 1x. Empirical `getBoundingClientRect` shows this
-       gap scales proportionally even at zoom breakpoints (1920px 1.15x → 0.9px, 2560px 1.3x → 1.3px)
-       — do not double-calculate with `--topology-ui-scale-factor`, as elements using this value
-       already carry `topology-ui-scale`, meaning zoom applies to its own top offset too. */
+       84px clears that lane at 1x. Elements using this value already carry
+       `topology-ui-scale`, whose zoom applies to their own top offset, so do not
+       multiply it by `--topology-ui-scale-factor`. */
     --topology-index-width: 300px;
     /* Expanded INDEX bottom inset — default matches left/top chrome insets. In <md sheet mode
        (media override below), it rises above the BottomTabBar reservation
