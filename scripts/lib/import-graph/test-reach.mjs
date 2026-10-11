@@ -12,11 +12,12 @@ const REPOSITORY_FILE = new RegExp(`^${PACKAGE_DIRECTORY}[^?#]+\\.(?:[cm]?[jt]sx
 const PATH_LITERAL = new RegExp(`(['"\`])((?:\\.{1,2}/|@/|${PACKAGE_DIRECTORY})[^'"\`\\s$]*)\\1`, 'g');
 const IMPORT_SPECIFIER = /(['"])((?:\.{1,2}\/|@\/)[^'"\s$]*)\1/g;
 const COMMENT_LINE = /^\s*(?:\/\/|\/\*|\*).*$/gm;
+const TOKEN = /\s+|\/\/[^\r\n]*|\/\*[\s\S]*?\*\/|"(?:\\[\s\S]|[^"\\\r\n])*"|'(?:\\[\s\S]|[^'\\\r\n])*'|[A-Za-z_$][\w$]*|[^\s]/g;
+const IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
 
 /**
- * The Vitest tests that can run each repository file. Any quoted specifier outside a comment
- * line is an edge, and code under `tests/` may also name a repository file it spawns or reads,
- * so the graph never misses an import. Textual because the CI planner runs before `pnpm install`.
+ * O(source bytes + edges), before dependency installation. Contracts retain textual and
+ * read/spawn edges; runtime tests omit only unambiguous explicit type-only declarations.
  */
 export function createTestReach(root = process.cwd()) {
   const fileCache = new Map();
@@ -25,8 +26,8 @@ export function createTestReach(root = process.cwd()) {
     return fileCache.get(path);
   };
   const aliases = readAliases(root);
-  const dependents = new Map();
-  const unresolvedImporters = new Map();
+  const full = { dependents: new Map(), unresolved: new Map() };
+  const runtime = { dependents: new Map(), unresolved: new Map() };
   const tests = TEST_DIRECTORIES.flatMap((directory) => listFiles(root, directory)).filter(testKind);
   const visited = new Set(tests);
   const queue = [...tests];
@@ -35,15 +36,22 @@ export function createTestReach(root = process.cwd()) {
     const from = queue.pop();
     if (!CODE_FILE.test(from)) continue;
     const literals = from.startsWith('tests/') ? PATH_LITERAL : IMPORT_SPECIFIER;
-    for (const [, , specifier] of readFileSync(join(root, from), 'utf8').replace(COMMENT_LINE, '').matchAll(literals)) {
+    const source = readFileSync(join(root, from), 'utf8');
+    const typeOnly = typeOnlySpecifierStarts(source);
+    const uncommented = source.replace(COMMENT_LINE, (comment) => ' '.repeat(comment.length));
+    for (const match of uncommented.matchAll(literals)) {
+      const specifier = match[2];
       const base = specifierBase(from, specifier, aliases);
       if (base === null) continue;
       const target = moduleCandidates(base, specifier).find(isFile);
+      const graphs = typeOnly.has(match.index) ? [full] : [full, runtime];
       if (!target) {
-        for (const candidate of moduleCandidates(base, specifier)) addEdge(unresolvedImporters, candidate, from);
+        for (const graph of graphs) {
+          for (const candidate of moduleCandidates(base, specifier)) addEdge(graph.unresolved, candidate, from);
+        }
         continue;
       }
-      addEdge(dependents, target, from);
+      for (const graph of graphs) addEdge(graph.dependents, target, from);
       if (!visited.has(target)) {
         visited.add(target);
         queue.push(target);
@@ -52,29 +60,95 @@ export function createTestReach(root = process.cwd()) {
   }
 
   /**
-   * Every test whose graph holds one of `paths`, grouped by Vitest project; O(files + edges).
+   * Each graph traverses O(files + edges), then sorts reached paths in O(files log files).
    * A path missing on disk (deleted, or a catalogue built at install) is reached through the
    * imports that would resolve to it.
    */
   function testsReaching(paths) {
-    const reached = new Set(paths.flatMap((path) => [path, ...(unresolvedImporters.get(path) ?? [])]));
-    const stack = [...reached];
-    while (stack.length > 0) {
-      for (const dependent of dependents.get(stack.pop()) ?? []) {
-        if (reached.has(dependent)) continue;
-        reached.add(dependent);
-        stack.push(dependent);
-      }
-    }
     const grouped = { contract: [], unit: [], perf: [] };
-    for (const path of [...reached].sort()) {
-      const kind = testKind(path);
-      if (kind) grouped[kind].push(path);
+    for (const [graph, contracts] of [[full, true], [runtime, false]]) {
+      for (const path of reachable(paths, graph)) {
+        const kind = testKind(path);
+        if (kind && (kind === 'contract') === contracts) grouped[kind].push(path);
+      }
     }
     return grouped;
   }
 
   return { testsReaching };
+}
+
+function reachable(paths, { dependents, unresolved }) {
+  const reached = new Set(paths.flatMap((path) => [path, ...(unresolved.get(path) ?? [])]));
+  const stack = [...reached];
+  while (stack.length > 0) {
+    for (const dependent of dependents.get(stack.pop()) ?? []) {
+      if (reached.has(dependent)) continue;
+      reached.add(dependent);
+      stack.push(dependent);
+    }
+  }
+  return [...reached].sort();
+}
+
+function typeOnlySpecifierStarts(source) {
+  const tokens = [];
+  for (const match of source.matchAll(TOKEN)) {
+    const value = match[0];
+    if (/^\s|^\/\//.test(value) || value.startsWith('/*')) continue;
+    // Templates, regex/division and JSX are retained, not partially parsed.
+    if (['`', '/', '<', '"', "'"].includes(value)) break;
+    tokens.push({ value, start: match.index });
+  }
+  const starts = new Set();
+  let depth = 0;
+  for (let i = 0; i < tokens.length; i++) {
+    const value = tokens[i].value;
+    if (depth === 0 && ['import', 'export'].includes(value) && tokens[i + 1]?.value === 'type') {
+      const end = typeOnlySpecifierAt(tokens, i);
+      if (end !== null) {
+        starts.add(tokens[end].start);
+        i = end;
+        continue;
+      }
+    }
+    if (['{', '(', '['].includes(value)) depth++;
+    if (['}', ')', ']'].includes(value)) depth--;
+  }
+  return starts;
+}
+
+function typeOnlySpecifierAt(tokens, start) {
+  let i = start + 2;
+  const value = () => tokens[i]?.value;
+  const identifier = () => IDENTIFIER.test(value() ?? '');
+  if (value() === '{') {
+    i++;
+    while (value() !== '}') {
+      if (!identifier()) return null;
+      i++;
+      if (value() === 'as') {
+        i++;
+        if (!identifier()) return null;
+        i++;
+      }
+      if (value() === ',') i++;
+      else if (value() !== '}') return null;
+    }
+    i++;
+  } else if (value() === '*') {
+    i++;
+    if (value() === 'as') {
+      i++;
+      if (!identifier()) return null;
+      i++;
+    } else if (tokens[start].value === 'import') return null;
+  } else if (tokens[start].value === 'import' && identifier() && value() !== 'from') {
+    i++;
+  } else return null;
+  if (value() !== 'from') return null;
+  i++;
+  return /^["']/.test(value() ?? '') ? i : null;
 }
 
 const reachByRoot = new Map();

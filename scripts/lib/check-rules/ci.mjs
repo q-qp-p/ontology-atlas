@@ -41,7 +41,7 @@ export const rules = [
     reason: 'the CI gate-yield report or its aggregation changed',
     matches: [/^scripts\/gate-yield(?:\.test)?\.mjs$/],
   },
-  { order: 60, command: 'node --test scripts/prepush.test.mjs', reason: 'pre-push scope or failure propagation changed', matches: [/^scripts\/prepush(?:-unit-plan)?(?:\.test)?\.mjs$/, /^\.githooks\/pre-push$/, /^scripts\/suggest-focused-checks\.mjs$/] },
+  { order: 60, command: 'node --test scripts/prepush.test.mjs', reason: 'pre-push scope or failure propagation changed', matches: [/^scripts\/prepush(?:-unit-plan)?(?:\.test)?\.mjs$/, /^scripts\/lib\/prepush\//, /^\.githooks\/pre-push$/, /^scripts\/suggest-focused-checks\.mjs$/] },
   {
     order: 70,
     command: 'pnpm test:ci:impact',

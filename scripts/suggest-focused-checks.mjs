@@ -239,7 +239,7 @@ export function collapsePlaywrightCommands(commands) {
   return out;
 }
 
-export function collapseCoveredContractCommands(commands, scripts = {}) {
+export function collapseCoveredContractCommands(commands, scripts = packageScripts(process.cwd())) {
   const result = { commands: [], covered: [] };
   let full = false;
   const nodeFiles = new Set();
@@ -262,7 +262,11 @@ export function collapseCoveredContractCommands(commands, scripts = {}) {
       /^(?:[A-Za-z0-9_.-]+\/)+[A-Za-z0-9_.-]+\.test\.mjs$/.test(path));
     const nodeCovered = exactNodeFiles && nodePaths.every((path) => nodeFiles.has(path));
     if ((full && subset) || nodeCovered) result.covered.push(row.command);
-    else result.commands.push(row);
+    else if (exactNodeFiles && nodePaths.some((path) => nodeFiles.has(path))) {
+      const remaining = [...new Set(nodePaths.filter((path) => !nodeFiles.has(path)))];
+      result.commands.push({ ...row, command: `node --test ${remaining.join(' ')}` });
+      result.covered.push(`node --test ${nodePaths.filter((path) => nodeFiles.has(path)).join(' ')}`);
+    } else result.commands.push(row);
     if (exactNodeFiles) for (const path of nodePaths) nodeFiles.add(path);
     if (row.command === 'pnpm test:contracts' && body === 'vitest run tests/contract') full = true;
   }

@@ -3,31 +3,25 @@ import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
+import { loadTestReach } from './lib/import-graph/test-reach.mjs';
+
 const SHA = /^[0-9a-f]{40}$/;
 const TEST = /^(?:app|src)\/.*\.(?:test|spec)\.(?:ts|tsx)$/;
-const APP_SOURCE = /^(?:app|src|messages)\//;
 const MESSAGE_PART = /^messages\/[^/]+\/[^/]+\.json$/;
 const quote = (value) => `'${String(value).replaceAll("'", `'"'"'`)}'`;
-const suffix = "--exclude='**/*.perf.test.*' --exclude='tests/contract/**' --passWithNoTests";
+const suffix = "--exclude='**/*.perf.test.*' --exclude='tests/contract/**'";
 
-export function prepushUnitCommand({ paths, base, exists = existsSync }) {
+export function prepushUnitCommand({ paths, base, exists = existsSync, reach }) {
   if (!SHA.test(base ?? '')) throw new Error('base must be a 40-character lowercase Git object id');
   if (!Array.isArray(paths) || paths.some((path) => typeof path !== 'string' || path.length === 0 || path.includes('\0'))) {
     throw new Error('paths must be non-empty Git path strings');
   }
-  const appPaths = paths.filter((path) => APP_SOURCE.test(path));
-  if (appPaths.length === 0) return ':';
-  if (appPaths.every((path) => TEST.test(path))) {
-    const present = [...new Set(appPaths.filter((path) => exists(path)))].sort();
-    if (present.length === 0) return ':';
-    return `pnpm exec vitest run ${present.map(quote).join(' ')} ${suffix}`;
-  }
-  const changed = `pnpm exec vitest run --changed=${quote(base)} ${suffix}`;
-  // No module imports a message part, so `--changed` cannot see a copy edit; the
-  // tests that import the ignored composite are named explicitly instead.
-  return appPaths.some((path) => MESSAGE_PART.test(path))
-    ? `${changed} && pnpm exec vitest related --run messages/en.json messages/ko.json ${suffix}`
-    : changed;
+  const composites = paths.filter((path) => MESSAGE_PART.test(path)).map((path) => `messages/${path.split('/')[1]}.json`);
+  const affected = (reach ?? loadTestReach()).testsReaching([...new Set([...paths, ...composites])]).unit;
+  const tests = [...new Set([...paths.filter((path) => TEST.test(path)), ...affected])]
+    .filter((path) => exists(path) && TEST.test(path) && !/\.perf\.test\.tsx?$/.test(path))
+    .sort();
+  return tests.length ? `pnpm exec vitest run ${tests.map(quote).join(' ')} ${suffix}` : ':';
 }
 
 function main(argv) {

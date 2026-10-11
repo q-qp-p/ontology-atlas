@@ -121,6 +121,12 @@ pnpm checks:changed -- --run
 `pnpm pr:land <number>` merges a reviewed pull request and keeps its original
 commits. [Development checks](docs/DEVELOPMENT-CHECKS.md) is the full gate reference.
 
+Pre-push checks the commit being pushed and runs affected lint, unit and Node
+tests in parallel with the relevant cheap checks. CI owns browser, full contract
+and dependency-graph verification. Test-only edits to CI tooling run their
+regressions without starting unrelated product suites; changes to the planner
+implementation still require exhaustive CI.
+
 <details>
 <summary><b>Repository commands</b></summary>
 

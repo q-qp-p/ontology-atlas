@@ -498,3 +498,12 @@ describe('hooksPathWarning', () => {
     });
   }
 });
+
+it('overlapping default Node invocations execute each file once without losing the remaining files', () => {
+  const scripts = { pair: 'node --test scripts/a.test.mjs scripts/b.test.mjs' };
+  const first = { command: 'pnpm exec node --test scripts/a.test.mjs' };
+  const pair = { command: 'pnpm pair', reason: 'both behaviors' };
+  const result = collapseCoveredContractCommands([first, pair], scripts);
+  assert.deepEqual(result.commands, [first, { ...pair, command: 'node --test scripts/b.test.mjs' }]);
+  assert.deepEqual(collapseCoveredContractCommands([first, pair], { ...scripts, prepair: 'node prepare.mjs' }).commands, [first, pair]);
+});
