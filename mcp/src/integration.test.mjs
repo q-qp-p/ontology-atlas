@@ -10512,7 +10512,7 @@ await test("query_ontology agent_brief: literal claims do not become a selected 
   const root = makeVault([
     { slug: "project", content: "---\nkind: project\ntitle: Operations\ndomains: [domains/catalog]\n---\nLocal operations.\n" },
     { slug: "domains/catalog", content: "---\nkind: domain\ntitle: Catalog\ncapabilities: [capabilities/catalog]\n---\nOwns archive indexes.\n" },
-    { slug: "capabilities/catalog", content: "---\nkind: capability\ntitle: Archive Catalog\ndomain: domains/catalog\n---\n## Includes\n\n<!--\nRotate encryption keys.\n-->\n\n- Index archive records.\n" },
+    { slug: "capabilities/catalog", content: "---\nkind: capability\ntitle: Archive Catalog\ndomain: domains/catalog\n---\n## **Includes**\n\n<!--\nRotate encryption keys.\n-->\n\n- Index archive records only after approval.\n" },
   ]);
   try {
     const { responses } = await rpc(root, [
@@ -10526,7 +10526,10 @@ await test("query_ontology agent_brief: literal claims do not become a selected 
     assert.equal(refused.focus.taskNavigation.primary, null);
     assert.equal(refused.safety.automaticWrite, false);
     assert.equal(getCallText(responses, 2), refused.handoffPrompt);
-    assert.equal(getCallParsed(responses, 3).focus.capability?.slug, "capabilities/catalog");
+    const selected = getCallParsed(responses, 3);
+    assert.equal(selected.focus.capability?.slug, "capabilities/catalog");
+    assert.ok(selected.focus.qualifiers.units.some((unit) => unit.text.includes("only after approval")));
+    assert.ok(getCallText(responses, 3).includes("only after approval"));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

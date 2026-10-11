@@ -6896,7 +6896,7 @@ await test('agent-brief --compact — refuses literal-only ownership and preserv
   const vault = withVault([
     { slug: 'project', content: '---\nkind: project\ntitle: Operations\ndomains: [domains/catalog]\n---\nLocal operations.\n' },
     { slug: 'domains/catalog', content: '---\nkind: domain\ntitle: Catalog\ncapabilities: [capabilities/catalog]\n---\nOwns archive indexes.\n' },
-    { slug: 'capabilities/catalog', content: '---\nkind: capability\ntitle: Archive Catalog\ndomain: domains/catalog\n---\n## Includes\n\n```md\nRotate encryption keys.\n```\n\n- Index archive records.\n' },
+    { slug: 'capabilities/catalog', content: '---\nkind: capability\ntitle: Archive Catalog\ndomain: domains/catalog\n---\n## Includes ##\n\n```md\nRotate encryption keys.\n```\n\n- Index archive records only after approval.\n' },
   ]);
   try {
     const args = ['agent-brief', vault, '--project', 'project', '--compact', '--exit-zero'];
@@ -6910,7 +6910,10 @@ await test('agent-brief --compact — refuses literal-only ownership and preserv
     assert.equal(prompt.stdout.trimEnd(), refused.handoffPrompt);
     const valid = await run([...args, '--task', 'Index archive records.', '--json']);
     assert.equal(valid.code, 0, valid.stderr);
-    assert.equal(JSON.parse(valid.stdout).focus.capability?.slug, 'capabilities/catalog');
+    const selected = JSON.parse(valid.stdout);
+    assert.equal(selected.focus.capability?.slug, 'capabilities/catalog');
+    assert.ok(selected.focus.qualifiers.units.some((unit) => unit.text.includes('only after approval')));
+    assert.ok(selected.handoffPrompt.includes('only after approval'));
   } finally {
     rmSync(vault, { recursive: true, force: true });
   }

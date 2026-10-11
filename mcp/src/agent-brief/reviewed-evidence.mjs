@@ -52,6 +52,14 @@ function prose(nodes) {
   return paragraphs(nodes).map((node) => inlineText(node.children)).filter(Boolean).join('\n');
 }
 
+export function readRecordedSection(body, heading) {
+  const { source, sections } = authoredSections(body);
+  const nodes = sections.get(String(heading).normalize('NFKC').trim().toLowerCase()) ?? [];
+  return nodes.length
+    ? source.slice(nodes[0].position.start.offset, nodes.at(-1).position.end.offset).trim()
+    : '';
+}
+
 function legacyBoundaries(nodes, source) {
   const result = { includes: [], excludes: [] };
   const pending = nodes.map((node) => ({ node, bucket: null, label: false })).reverse();

@@ -1,29 +1,6 @@
-export function markdownSection(body, heading) {
-  if (typeof body !== 'string' || body.length === 0) return '';
-  const lines = body.split('\n');
-  const wanted = String(heading).normalize('NFKC').toLocaleLowerCase('en-US');
-  let collecting = false;
-  let fence = null;
-  const rows = [];
-  for (const line of lines) {
-    const marker = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/u);
-    const opensFence = marker && (marker[1][0] === '~' || !marker[2].includes('`'));
-    if (fence || opensFence) {
-      if (!fence) fence = marker[1];
-      else if (marker && marker[1][0] === fence[0] && marker[1].length >= fence.length && !marker[2].trim()) fence = null;
-      if (collecting) rows.push(line);
-      continue;
-    }
-    const match = line.match(/^##\s+(.+?)\s*$/);
-    if (match) {
-      if (collecting) break;
-      collecting = match[1].normalize('NFKC').toLocaleLowerCase('en-US') === wanted;
-      continue;
-    }
-    if (collecting) rows.push(line);
-  }
-  return rows.join('\n').trim();
-}
+import { readRecordedSection as markdownSection } from './reviewed-evidence.mjs';
+
+export { markdownSection };
 
 export function completeMarkdownUnits(doc, section, role) {
   const source = markdownSection(doc?.body, section);

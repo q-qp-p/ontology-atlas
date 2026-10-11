@@ -104,4 +104,15 @@ describe('authored capability claims', () => {
     assert.equal(select([deep]).focus.capability?.slug, deep.slug);
     assert.equal(select([]).focus.capability, null);
   });
+
+  it('carries every selected formatted-heading condition into the handoff', () => {
+    const condition = 'Rotate encryption keys only after a human approves each rotation.';
+    for (const heading of ['## **Includes**', '## Includes ##', '   ## Includes', 'Includes\n---', '## Ｉｎｃｌｕｄｅｓ']) {
+      const candidate = capability('catalog', `${heading}\n\n${condition}\n\n## Excludes\n\nSend mail.`);
+      const result = select([candidate]);
+      assert.equal(result.focus.capability?.slug, candidate.slug, heading);
+      assert.ok(result.focus.qualifiers.units.some((unit) => unit.section === 'Includes' && unit.text === condition), heading);
+      assert.ok(result.handoffPrompt.includes(JSON.stringify(condition)), heading);
+    }
+  });
 });

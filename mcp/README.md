@@ -849,7 +849,9 @@ exclusions. Legacy Inclusions/Exclusions headings and Included/Excluded list
 fields retain their authored continuations and nested boundaries. Without any
 claim section, the first authored prose paragraph can corroborate the name;
 a literal-only body or an empty claim section never falls back to raw examples
-or unrelated sections. Full-body recovery retains the original Markdown. A ready
+or unrelated sections. Formatted section headings retain the same complete
+conditions in the handoff; retained units and full-body recovery preserve the
+original Markdown. A ready
 handoff batches any verified runner manifest, asks for separately named
 positive/negative regressions with exact observable output, and avoids
 overlapping full checks.
