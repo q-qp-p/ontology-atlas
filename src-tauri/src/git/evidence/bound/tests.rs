@@ -432,3 +432,105 @@ fn missing_documents_and_folder_only_anchors_never_supply_document_dates() {
     assert!(result.source_changes[0].is_dir);
     assert!(result.source_changes[0].last_changed_at.is_none());
 }
+
+#[test]
+fn the_path_budget_stops_metadata_inspection_even_after_unsafe_inputs() {
+    for first_result in [Some((true, false)), None] {
+        let mut remaining = 1;
+        let mut omitted = vec![];
+        let mut inspected = vec![];
+        let root = Path::new("/fixture");
+        let wanted = wanted_with(
+            root,
+            root,
+            &["first".into(), "beyond-budget".into()],
+            &mut remaining,
+            &mut omitted,
+            |_, path| {
+                inspected.push(path.to_string());
+                first_result
+            },
+        );
+        assert_eq!(
+            inspected,
+            vec!["first"],
+            "metadata reads must stop at the shared path budget"
+        );
+        assert_eq!(wanted.len(), usize::from(first_result.is_some()));
+        assert!(omitted.contains(&"beyond-budget".to_string()));
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn missing_promisor_objects_cannot_execute_a_repository_transport() {
+    use std::os::unix::fs::PermissionsExt;
+    let f = Fixture::new("promisor-read", false);
+    let sentinel = f.base.join("FETCH_EXECUTED");
+    let helper = f.base.join("transport-helper");
+    fs::write(
+        &helper,
+        format!("#!/bin/sh\ntouch '{}'\nexit 1\n", sentinel.display()),
+    )
+    .unwrap();
+    fs::set_permissions(&helper, fs::Permissions::from_mode(0o755)).unwrap();
+    git(&f.source, &["config", "core.repositoryformatversion", "1"]);
+    git(&f.source, &["config", "extensions.partialClone", "planted"]);
+    git(&f.source, &["config", "remote.planted.promisor", "true"]);
+    git(
+        &f.source,
+        &[
+            "config",
+            "remote.planted.url",
+            &format!("ext::{}", helper.display()),
+        ],
+    );
+    git(&f.source, &["config", "protocol.ext.allow", "always"]);
+    let tree = git(&f.source, &["rev-parse", "HEAD^{tree}"]);
+    fs::remove_file(
+        f.source
+            .join(".git/objects")
+            .join(&tree[..2])
+            .join(&tree[2..]),
+    )
+    .unwrap();
+    let _scope = crate::vault_grants::EnforcedScope::granting(std::slice::from_ref(&f.vault));
+    crate::vault_grants::grant_source_root(&f.source);
+    let result = git_bound_evidence_dates(
+        f.vault.to_string_lossy().into_owned(),
+        "fixture".into(),
+        vec!["capabilities/pay.md".into()],
+        vec!["capabilities/pay.md".into()],
+        None,
+    )
+    .unwrap();
+    assert_eq!(result.status, "unreadable");
+    assert!(
+        !sentinel.exists(),
+        "a local date read must never invoke a promisor transport"
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn a_replaced_source_root_invalidates_dates_even_at_the_same_commit() {
+    let f = Fixture::new("root-replacement", false);
+    let result = measure(
+        f.vault.to_str().unwrap(),
+        "fixture",
+        &["capabilities/pay.md".into()],
+        &["capabilities/pay.md".into()],
+        None,
+        || {
+            let prior = f.base.join("prior-source");
+            fs::rename(&f.source, &prior).unwrap();
+            fs::create_dir(&f.source).unwrap();
+            for path in [".git", "capabilities"] {
+                fs::rename(prior.join(path), f.source.join(path)).unwrap();
+            }
+        },
+    );
+    assert_eq!(result.status, "binding-changed");
+    assert!(result.vault_changes.is_empty() && result.source_changes.is_empty());
+    assert_eq!(f.measure().status, "measured");
+}

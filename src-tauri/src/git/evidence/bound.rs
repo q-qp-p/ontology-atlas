@@ -5,7 +5,7 @@ use std::path::{Component, Path, PathBuf};
 use serde::Serialize;
 
 use super::super::repo::{require_repo_root, vault_pathspec};
-use super::super::runner::{run_git, validate_vault_dir};
+use super::super::runner::{run_git_read as run_git, validate_vault_dir};
 use crate::gray_area_scope::{resolve_binding_metadata, verify_identity};
 
 #[derive(Debug, Serialize)]
@@ -149,6 +149,16 @@ fn wanted(
     remaining: &mut usize,
     omitted: &mut Vec<String>,
 ) -> Vec<Wanted> {
+    wanted_with(root, repo, paths, remaining, omitted, path_kind)
+}
+fn wanted_with(
+    root: &Path,
+    repo: &Path,
+    paths: &[String],
+    remaining: &mut usize,
+    omitted: &mut Vec<String>,
+    mut inspect: impl FnMut(&Path, &str) -> Option<(bool, bool)>,
+) -> Vec<Wanted> {
     let prefix = vault_pathspec(repo, root);
     let mut seen = HashSet::new();
     paths
@@ -157,13 +167,15 @@ fn wanted(
             if !seen.insert(raw) {
                 return None;
             }
-            let kind = path_kind(root, raw);
-            if *remaining == 0 || kind.is_none() {
+            if *remaining == 0 {
                 omitted.push(raw.clone());
                 return None;
             }
             *remaining -= 1;
-            let (exists, is_dir) = kind?;
+            let Some((exists, is_dir)) = inspect(root, raw) else {
+                omitted.push(raw.clone());
+                return None;
+            };
             Some(Wanted {
                 key: raw.clone(),
                 resolved: if prefix == "." {
