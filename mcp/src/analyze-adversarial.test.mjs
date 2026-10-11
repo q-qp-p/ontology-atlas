@@ -126,6 +126,31 @@ test('literal README headings cannot invent project identity or domain candidate
   }
 });
 
+test('standalone HTML headings retain Markdown indentation without admitting code or containers', () => {
+  for (const indentation of [0, 1, 2, 3, 4]) {
+    const root = mkdtempSync(join(tmpdir(), 'ontology-atlas-html-heading-'));
+    writeFileSync(join(root, 'README.md'), [
+      `${' '.repeat(indentation)}<h1>Recorded Identity</h1>`, '',
+      'Operators preserve records.', '',
+      '# Fallback Identity', '',
+      '<div><h2>Container Claim</h2></div>', '',
+      '<!-- <h2>Comment Claim</h2> -->',
+    ].join('\n'));
+    try {
+      const result = analyzeRepoStructure(root);
+      const evidence = result.semanticEvidence.find((row) => row.source === 'README.md');
+      const expectedTitle = indentation <= 3 ? 'Recorded Identity' : 'Fallback Identity';
+      assert.equal(result.project.title, expectedTitle);
+      assert.equal(evidence.title, expectedTitle);
+      assert.equal(evidence.headings.includes('Recorded Identity'), indentation <= 3);
+      assert.equal(evidence.headings.includes('Container Claim'), false);
+      assert.equal(evidence.headings.includes('Comment Claim'), false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  }
+});
+
 test('an excerpt that loses an approval condition exposes a hash-bound recovery read', () => {
   const paragraph = `Operators release the reviewed export. ${'The audit record retains the original source and operator context. '.repeat(25)}However, execution requires explicit human approval before release.`;
   const document = `# Review Workflow\r\n\r\n${paragraph}\r\n`;

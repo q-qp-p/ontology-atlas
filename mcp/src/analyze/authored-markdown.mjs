@@ -46,7 +46,7 @@ export function authoredMarkdownLines(text) {
       }
     } else if (node.type === 'list' || node.type === 'listItem') {
       for (let index = node.children.length - 1; index >= 0; index--) pending.push({ node: node.children[index], root: false });
-    } else if (root && node.type === 'html' && /^<h[1-3]\b[^>]*>[^<>]*<\/h[1-3]>\s*$/i.test(node.value)) {
+    } else if (root && node.type === 'html' && /^ {0,3}<h[1-3]\b[^>]*>[^<>]*<\/h[1-3]>\s*$/i.test(node.value)) {
       lines[node.position.start.line - 1] = node.value;
     }
   }
