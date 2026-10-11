@@ -14,10 +14,10 @@ export const SCOPE_CONFIGS = Object.freeze({
   frontend: Object.freeze({
     cwd: '.',
     runtime: source(
-      ['app/**/{page,layout,template,error,loading,not-found,global-error,default,route}.{ts,tsx}', 'app/**/{icon,apple-icon,opengraph-image,twitter-image,sitemap,robots}.{ts,tsx}', 'app/styles/*.css'],
+      ['app/**/{page,layout,template,error,loading,not-found,global-error,default,route}.{ts,tsx}', 'app/**/{icon,apple-icon,opengraph-image,twitter-image,sitemap,robots}.{ts,tsx}', 'app/styles/*.css', 'vitest.config.ts', 'vitest.setup.ts', 'playwright.config.ts'],
       ['app/**/*.{ts,tsx,css}', 'src/**/*.{ts,tsx}', '!**/*.{test,spec}.{ts,tsx}', '!src/entities/docs-vault/data/**'],
       ALL_ISSUES,
-      {},
+      { vitest: false, playwright: false, ignoreExportsUsedInFile: true },
     ),
     verification: source(['src/**/*.{test,spec}.{ts,tsx}', 'tests/**/*.{test,spec}.{ts,tsx}', 'app/globals.css', 'app/styles/*.css'], ['src/**/*.{test,spec}.{ts,tsx}', 'tests/**/*.{test,spec}.{ts,tsx}', 'app/**/*.css'], WITHOUT_MANIFEST, { next: false }),
   }),

@@ -85,13 +85,6 @@ export interface DocsSidebarBodyProps {
 // A preview, not a second listing: more rows would add a scroller beside the tree.
 const RECENTLY_CHANGED_STRIP_MAX = 5;
 
-/**
- * The row's widest state measured 301.3px;
- * 320 adds the next gap step so a label never appears with nowhere to go.
- * The className writes it out as `@min-[320px]`: Tailwind cannot read a template, and the test compares them.
- */
-export const DOCS_HEAD_LABEL_MIN_PX = 320;
-
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <h3 className="flex-none px-3 pb-1.5 pt-3 font-mono text-caption uppercase tracking-[var(--tracking-caps-16)] text-[color:var(--color-text-quaternary)]">
@@ -330,7 +323,8 @@ export function DocsSidebarBody({
                     }
                   >
                     {collectionIcons[option]}
-                    {/* `hidden` is the base and the container query turns it on, so the narrow case needs no override. */}
+                    {/* The row's widest state needs 301.3px; 320 adds the next gap step so a label never
+                        appears with nowhere to go. `hidden` is the base, so the narrow case needs no override. */}
                     {isActive ? (
                       <span className="hidden min-w-0 truncate @min-[320px]/docs-head:inline">
                         {t(`collection.${option}.label`)}
