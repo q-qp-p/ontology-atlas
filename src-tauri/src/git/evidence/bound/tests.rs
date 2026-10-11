@@ -101,6 +101,7 @@ fn commit(root: &Path, date: &str) {
     );
 }
 
+#[cfg(unix)]
 #[test]
 fn separate_roots_keep_identical_keys_and_source_read_grants() {
     let f = Fixture::new("separate", false);
@@ -133,6 +134,7 @@ fn separate_roots_keep_identical_keys_and_source_read_grants() {
     assert!(wrong.source_changes.is_empty());
 }
 
+#[cfg(unix)]
 #[test]
 fn nested_vault_keeps_coordinates_and_existing_containing_repo_authority() {
     let f = Fixture::new("nested", true);
@@ -146,6 +148,7 @@ fn nested_vault_keeps_coordinates_and_existing_containing_repo_authority() {
     );
 }
 
+#[cfg(unix)]
 #[test]
 fn receipt_and_head_changes_discard_both_maps() {
     for mutation in ["binding", "receipt", "source-head", "vault-head"] {
@@ -188,6 +191,7 @@ fn receipt_and_head_changes_discard_both_maps() {
     }
 }
 
+#[cfg(unix)]
 #[test]
 fn missing_dirty_untracked_and_unsafe_paths_remain_distinct() {
     let f = Fixture::new("unknowns", false);
@@ -217,6 +221,7 @@ fn missing_dirty_untracked_and_unsafe_paths_remain_distinct() {
     assert_eq!(result.omitted_source_paths.len(), 2);
 }
 
+#[cfg(unix)]
 #[test]
 fn literal_paths_and_korean_names_cannot_select_other_files() {
     let f = Fixture::new("literal", false);
@@ -245,6 +250,7 @@ fn literal_paths_and_korean_names_cannot_select_other_files() {
     assert!(!result.source_changes[2].exists);
 }
 
+#[cfg(unix)]
 #[test]
 fn shared_budget_prioritizes_documents_and_discloses_omissions() {
     let f = Fixture::new("budget", false);
@@ -267,6 +273,7 @@ fn shared_budget_prioritizes_documents_and_discloses_omissions() {
     );
 }
 
+#[cfg(unix)]
 #[test]
 fn malformed_duplicate_and_missing_receipt_bindings_are_unavailable() {
     for case in ["malformed", "duplicate", "missing", "identity"] {
@@ -302,6 +309,7 @@ fn malformed_duplicate_and_missing_receipt_bindings_are_unavailable() {
     }
 }
 
+#[cfg(unix)]
 #[test]
 fn a_late_uncommitted_change_cannot_reuse_the_clean_commit_date() {
     let f = Fixture::new("late-dirty", false);
@@ -354,6 +362,7 @@ fn evidence_reads_never_execute_repository_controlled_programs() {
     assert!(!sentinel.exists());
 }
 
+#[cfg(unix)]
 #[test]
 fn folder_sources_and_sources_without_commits_have_no_dates() {
     for case in ["folder", "unborn"] {
@@ -376,6 +385,7 @@ fn folder_sources_and_sources_without_commits_have_no_dates() {
     }
 }
 
+#[cfg(unix)]
 #[test]
 fn dates_outside_the_history_window_stay_unknown() {
     use std::io::Write;
@@ -415,6 +425,7 @@ fn dates_outside_the_history_window_stay_unknown() {
     println!("bound evidence history fixture: 3002 commits, 3000-commit walk, old path unknown");
 }
 
+#[cfg(unix)]
 #[test]
 fn missing_documents_and_folder_only_anchors_never_supply_document_dates() {
     let f = Fixture::new("missing-document", false);
@@ -533,4 +544,31 @@ fn a_replaced_source_root_invalidates_dates_even_at_the_same_commit() {
     assert_eq!(result.status, "binding-changed");
     assert!(result.vault_changes.is_empty() && result.source_changes.is_empty());
     assert_eq!(f.measure().status, "measured");
+}
+
+#[cfg(not(unix))]
+#[test]
+fn unavailable_confined_reads_never_publish_bound_dates() {
+    let f = Fixture::new("unsupported-reader", false);
+    let _scope = crate::vault_grants::EnforcedScope::granting(std::slice::from_ref(&f.vault));
+    crate::vault_grants::grant_source_root(&f.source);
+    assert_eq!(
+        crate::gray_area_scope::read_text(
+            &f.vault,
+            Path::new(".ontology-atlas/project-sources.json"),
+        )
+        .unwrap_err(),
+        "unsupported_platform"
+    );
+    let result = git_bound_evidence_dates(
+        f.vault.to_string_lossy().into_owned(),
+        "fixture".into(),
+        vec!["capabilities/pay.md".into()],
+        vec!["capabilities/pay.md".into()],
+        Some(f.source.to_string_lossy().into_owned()),
+    )
+    .unwrap();
+    assert_eq!(result.status, "unreadable");
+    assert!(result.vault_changes.is_empty() && result.source_changes.is_empty());
+    assert!(result.omitted_vault_paths.is_empty() && result.omitted_source_paths.is_empty());
 }
