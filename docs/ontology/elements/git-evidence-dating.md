@@ -17,6 +17,7 @@ Dates cited source files and concept documents from their respective Git histori
 ## Includes
 - Bounded date reads with distinct vault-document and source-path maps. The native Analysis command resolves the existing project binding and performs a guarded walk for each authoritative repository (`src-tauri/src/git/evidence/bound.rs`); MCP dating remains in `mcp/src/evidence-drift.mjs`.
 - Native checks for grants, binding and receipt identity, repository HEAD and root identity around the read. The renderer discards an obsolete binding or scope before using returned dates (`src/views/ontology-insights/lib/use-ontology-evidence.ts`).
+- Native binding reads use a Unix-only confined reader, with macOS as the verified app surface. Windows returns unreadable with empty date maps and leaves the comparison unknown.
 - Explicit unknowns for unavailable history, missing authority, ambiguous bindings, dirty files and omitted paths. A picker selection must match the existing bound folder before date comparison resumes.
 
 ## Excludes
