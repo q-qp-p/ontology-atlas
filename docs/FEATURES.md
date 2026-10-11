@@ -39,6 +39,10 @@ completion artwork share the same traveler proportions and equipment.
 | MCP | JSON-RPC server an agent registers against a vault | [`mcp/README.md`](../mcp/README.md); the tool list is the server's `tools/list` answer; optional first-construction discovery exposes 20 existing tools, with full discovery as the default; exact `sourceOnly` continuations reuse bounded evidence without rescanning |
 | Website | Static export; `/` is the gateway until a vault is loaded | [Gateway](features/gateway.md) |
 
+Project source-path repair opens the exact affected concept and its recorded
+relative path. Missing, stale or out-of-project targets require remeasurement;
+copied handoffs keep that target without disclosing the private source root.
+
 Meaning review previews a nonblank authored description or a complete opening
 prose paragraph within 320 characters. The full-document action exposes the
 remaining sections and boundaries, including when no preview is eligible.
