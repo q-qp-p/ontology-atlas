@@ -2,14 +2,6 @@
  * Contrast measurement — sweeps the rendered DOM and names **text that is not
  * legible**.
  *
- * **Why this file exists.** `/design-council` (retired 2026-09-27) instructed the "infoviz" (infoviz) seat
- * that it *"must measure contrast"*, and that seat's brief made the measurement a
- * precondition of any verdict. **But there was no instrument** — as of 2026-08-03 no
- * script in this repository computed contrast, and `/design-audit` only **checked
- * colours against the token set**. Whether a token was used and whether it is legible
- * are different questions: two legitimate tokens can fail to separate from each
- * other.
- *
  * **What this file does — collection, not judgement.** The computation lives in
  * `scripts/lib/contrast.mjs` (pure functions with fixture probes in
  * `tests/contract/contrast.contract.test.ts`). What happens here is **resolving the

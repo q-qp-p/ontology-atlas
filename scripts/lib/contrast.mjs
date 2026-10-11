@@ -2,23 +2,6 @@
  * Contrast calculation — **pure functions**. It knows nothing of the DOM or the
  * browser.
  *
- * **Why this file exists.** `/design-council` (retired 2026-09-27) instructed the "infoviz" (infoviz)
- * seat that *"design-infoviz must measure contrast"*, and that seat's brief made
- * *"measure contrast — take the composited contrast of adjacent segments, and below
- * 3:1 there must be a colour-independent distinguisher"* a precondition of any
- * verdict. **But there was no instrument to measure with.** As of 2026-08-03 no
- * script in this repository computed contrast, and `/ui-proof` only **checked
- * colours against the token set** without producing a ratio — whether a token was
- * used and whether it is legible are different questions.
- *
- * An instruction with no instrument turns that seat into eyeballing, with "looks
- * fine" called a measurement. That cost was paid on 2026-07-26: the amber /
- * eucalyptus pair had a composited contrast of **1.14:1** on the track, so they did
- * not separate by luminance at all and separated only by hue — and hue is precisely
- * the axis red-green colour blindness (about 8% of men) separates worst. The premise
- * that colour carried identity was itself wrong, and what revealed it was a number,
- * not an eye.
- *
  * **Basis:** WCAG 2.2's relative luminance and contrast ratio definitions
  * (§ Relative luminance · Contrast ratio). Thresholds are 1.4.3 Contrast (Minimum)
  * — body text 4.5:1, large text (18.66px+bold or 24px+) 3:1 — and 1.4.11 Non-text

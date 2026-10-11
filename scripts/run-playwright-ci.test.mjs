@@ -192,15 +192,15 @@ test('executed inventory must equal the assigned inventory before success is acc
   } finally {rmSync(cwd,{recursive:true,force:true});}
 });
 
-test('refreshed weights count every attempt, keep unmeasured files, and never record an empty file', () => {
+test('refreshed weights count every attempt, keep unmeasured files that exist, and never record an empty file', () => {
   const attempt = (duration) => ({ duration });
   const report = { suites: [{ specs: [
     { file: 'a.spec.ts', tests: [{ results: [attempt(1500), attempt(500)] }, { results: [attempt(1000)] }] },
   ], suites: [{ specs: [{ file: 'b.spec.ts', tests: [] }] }] }] };
   const measured = measureReport(report);
   assert.deepEqual(measured.get('a.spec.ts'), { seconds: 3, tests: 2 });
-  const history = { sourceRuns: [1, 2], files: { 'b.spec.ts': { seconds: 9, tests: 1 }, 'a.spec.ts': { seconds: 99, tests: 9 } } };
-  const merged = mergeDurations(history, measured, '7');
+  const history = { sourceRuns: [1, 2], files: { 'b.spec.ts': { seconds: 9, tests: 1 }, 'a.spec.ts': { seconds: 99, tests: 9 }, 'gone.spec.ts': { seconds: 5, tests: 1 } } };
+  const merged = mergeDurations(history, measured, '7', (file) => file !== 'gone.spec.ts');
   assert.deepEqual(merged.files, { 'a.spec.ts': { seconds: 3, tests: 2 }, 'b.spec.ts': { seconds: 9, tests: 1 } });
   assert.deepEqual(merged.sourceRuns, [7, 1, 2]);
 });

@@ -53,25 +53,9 @@ test.describe("ontology view UI", () => {
     // the Apple Silicon DMG once published, the browser map before that.
     // Asserting the label would pin this spec to one state and break on
     // release day — assert the role the element plays.
-    //
-    // [re-aimed 2026-08-19] This site used to be the panel (`download-primary-cta`).
-    // After the owner removed the install section entirely (*"the last section is probably unnecessary, it is
-    // all at the top anyway"* — the last section is probably unnecessary, it is
-    // all at the top anyway), the hero CTA carries the same role.
     const primary = page.getByTestId("gateway-hero-cta");
     await expect(primary).toBeVisible();
 
-    /*
-     * [deleted 2026-08-19] The subjects that disappeared with it — the repository exit
-     * link (`download-repo-link`), the two platform sections (`download-platform-macos`,
-     * `download-platform-windows`), the verification rail (`download-trust`, Developer ID,
-     * SHA-256), and the architecture guidance (`About This Mac`). All lived inside the
-     * download panel and the verification rail. `docs/DECISIONS.md` 2026-08-19 records the
-     * cost.
-     *
-     * The signing and notarisation claim survives as the hero's single trust line, so that
-     * is all this measures.
-     */
     await expect(page.getByText(/Signed and notarized by Apple/i).first()).toBeVisible();
     await expect(page.getByText(/Open Anyway/i)).toHaveCount(0);
     await expect(page.getByText(/Not signed yet/i)).toHaveCount(0);

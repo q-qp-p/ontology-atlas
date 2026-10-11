@@ -78,15 +78,5 @@ test.describe("문서 스크롤 잠금 — 셸이 뷰포트를 소유한다", ()
       });
     }
 
-    /*
-     * [Deleted 2026-08-19] "the gateway's trust section … does not grow the
-     * document".
-     *
-     * Its subject (the `download-trust` verification rail and the checksum copy button
-     * inside it) disappeared along with the install section — owner: *"This last one can probably go; it is all
-     * at the top anyway."* The property this test guarded (zero document scroll slack
-     * even in the gateway's tallest state) is now carried by the `/ko/?guides=off` test
-     * in the loop above — the gateway's tallest state is now its first paint.
-     */
   }
 });

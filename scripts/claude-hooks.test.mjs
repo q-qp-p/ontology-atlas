@@ -32,8 +32,7 @@ const HOOK_CONFIGS = [
       '"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-unsafe-git.sh"',
       '"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/fast-sensor.sh"',
       // Once: a matcher-less SessionStart also fires for the `compact` source,
-      // and PreCompact stdout never reaches the model (its one-day wiring was
-      // removed 2026-09-02; the census header records the observation).
+      // and PreCompact stdout never reaches the model.
       '"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/inject-ontology-summary.sh"',
       '"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/session-length.sh"',
     ],
