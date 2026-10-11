@@ -2569,6 +2569,38 @@ await test("analyze_repo_structure — bootstrap candidates expose structuredCon
   }
 });
 
+await test("analyze_repo_structure — authored Markdown alone supplies initial evidence over MCP", async () => {
+  const vaultRoot = makeVault();
+  const repoRoot = realpathSync(mkdtempSync(join(tmpdir(), "ontology-atlas-authored-evidence-")));
+  try {
+    writeFileSync(join(repoRoot, 'README.md'), [
+      '<!--', '# Hidden Identity', '## Billing', 'Hidden claim creates every invoice.', '-->', '',
+      '    Indented claim authorizes all payments.', '',
+      '> Quoted claim rotates every encryption key.', '',
+      '# Authored Workflow', '', 'Operators preserve audit evidence.', '',
+      '## Features', '- Operators inspect retained records.',
+      '  - Human approval is required before export.',
+    ].join('\n'));
+    const { responses } = await rpcForRepo(vaultRoot, repoRoot, [
+      ...INIT_REQUESTS,
+      callTool(2, 'analyze_repo_structure', { rootPath: repoRoot }),
+    ]);
+    const result = getCallParsed(responses, 2);
+    assert.deepEqual(getCallStructured(responses, 2), result);
+    assert.equal(result.project.title, 'Authored Workflow');
+    const evidence = result.semanticEvidence.find((row) => row.source === 'README.md');
+    assert.equal(evidence.trust, 'candidate-evidence');
+    assert.match(evidence.excerpt, /Operators inspect retained records/);
+    assert.match(evidence.excerpt, /Human approval is required before export/);
+    assert.doesNotMatch(evidence.excerpt, /Hidden claim|Indented claim|Quoted claim/);
+    assert.equal(result.domains.some((row) => row.title === 'Billing'), false);
+    assert.equal(result.proposalValidation.canWrite, false);
+  } finally {
+    rmSync(vaultRoot, { recursive: true, force: true });
+    rmSync(repoRoot, { recursive: true, force: true });
+  }
+});
+
 await test("analyze_repo_structure — source-only preserves exact evidence and skips candidate delivery", async () => {
   const root = makeVault();
   writeFileSync(join(root, 'index.ts'), 'export function readSetting(value = 2) { return value; }\n');

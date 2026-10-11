@@ -4,6 +4,7 @@
 
 import { readFileSync, readdirSync, statSync, existsSync, realpathSync } from 'node:fs';
 import { join, basename, relative } from 'node:path';
+import { authoredMarkdownLines } from './authored-markdown.mjs';
 import {
   CARGO_MANIFEST_MAX_BYTES,
   NODE_PACKAGE_MANIFEST_MAX_BYTES,
@@ -112,7 +113,7 @@ export function collectSemanticEvidence(rootPath, skipped = []) {
             ? extractPythonPyprojectPackageContract(text)
           : nodePackageContract
             ? extractNodePackageContract(text)
-          : extractSemanticDocument(text);
+          : extractSemanticDocument(text, source);
       if (extracted.skipReason) {
         if (
           !(
@@ -424,8 +425,9 @@ function semanticContentScore({ title, headings, excerpt }) {
   return score;
 }
 
-function extractSemanticDocument(text) {
-  const lines = text.split(/\r?\n/);
+
+function extractSemanticDocument(text, source) {
+  const lines = /\.rst$/i.test(source) ? text.split(/\r?\n/) : authoredMarkdownLines(text);
   let title = null;
   let fence = null;
   let rstLiteralBlock = false;

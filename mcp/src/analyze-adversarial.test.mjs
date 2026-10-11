@@ -59,6 +59,71 @@ test('instructions inside code fences never enter the semantic evidence packet',
   }
 });
 
+test('literal Markdown blocks cannot supply candidate claims or headings', () => {
+  const root = withAdversarialRepo([
+    '# Authored Evidence',
+    '',
+    'The product preserves audit evidence.',
+    '',
+    '<!--',
+    '## Features',
+    'Hidden claim rotates encryption keys.',
+    '-->',
+    '',
+    '    ## Architecture',
+    '    Indented claim exports billing records.',
+    '',
+    '> ## Mission',
+    '> Quoted claim approves every payment.',
+    'Lazy quoted continuation releases every invoice.',
+    '',
+    '````text',
+    '```',
+    'Fenced claim owns all account recovery.',
+    '````',
+    '',
+    '## Features',
+    '- Operators inspect **audit records**.',
+    '  - Human approval remains required for export.',
+    '    Nested continuation retains the source boundary.',
+    '',
+    'Inline authored claim <!-- hidden inline ownership --> retains provenance.',
+  ].join('\n'));
+  try {
+    const evidence = analyzeRepoStructure(root).semanticEvidence
+      .find((row) => row.source === 'README.md');
+    assert.equal(evidence.trust, 'candidate-evidence');
+    assert.match(evidence.excerpt, /preserves audit evidence/);
+    assert.match(evidence.excerpt, /audit records/);
+    assert.match(evidence.excerpt, /Human approval remains required/);
+    assert.match(evidence.excerpt, /Nested continuation retains/);
+    assert.match(evidence.excerpt, /Inline authored claim.*retains provenance/);
+    assert.doesNotMatch(evidence.excerpt, /Hidden claim|Indented claim|Quoted claim|Lazy quoted|Fenced claim|hidden inline ownership/);
+    assert.deepEqual(evidence.headings, ['Authored Evidence', 'Features']);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('literal README headings cannot invent project identity or domain candidates', () => {
+  const root = mkdtempSync(join(tmpdir(), 'ontology-atlas-authored-identity-'));
+  writeFileSync(join(root, 'README.md'), [
+    '<!--', '# Hidden Identity', '## Billing', '-->', '',
+    '```text', '## Recovery', '```', '',
+    '    ## Keys', '',
+    '> ## Payments', '',
+    '# Recorded Identity', '', 'Current operators preserve audit evidence.', '',
+    '## Audit', '', 'Operators inspect retained audit records.',
+  ].join('\n'));
+  try {
+    const result = analyzeRepoStructure(root);
+    assert.equal(result.project.title, 'Recorded Identity');
+    assert.deepEqual(result.domains.map((row) => row.title), ['Audit']);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('Cargo comments stay out while allowlisted hostile values remain untrusted', () => {
   const root = withAdversarialRepo(
     '# Cargo Hostile Fixture\n\nThe package exposes optional behavior.\n',
