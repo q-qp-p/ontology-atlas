@@ -95,9 +95,8 @@ afterEach(() => {
 
 describe("a dock mounted while already open", () => {
   /*
-   * The page remounts the dock when it drops and regains its folder; the frame is born at
-   * full width, so no width transition ends. Measured on the installed app 2026-09-06: at
-   * xl the session waited on that `transitionend` forever and the panel sat on "Connecting".
+   * A dock mounted already open is born at full width, so no width transition ends; the session must
+   * not wait on `transitionend`.
    */
   it("enables the session when opened with no request at all — the Conversation chip", async () => {
     vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
@@ -138,10 +137,8 @@ describe("terminal tool observations", () => {
 });
 
 /**
- * Owner, installed app, 2026-09-08: *"if I press X while it is working, the work seems to just
- * stop."* It did. `Surface` unmounts its children when its exit window closes, and the panel's ACP
- * session stops itself on unmount — so the press killed the adapter process and the transcript.
- * These cases measure the mount, which is what the session's life hangs on.
+ * `Surface` unmounts its children after the exit window and the panel's session stops on unmount, so
+ * these cases measure the mount.
  */
 describe("closing the dock puts the conversation away", () => {
   function settleFrames() {
@@ -222,9 +219,8 @@ describe("closing the dock puts the conversation away", () => {
 });
 
 /**
- * **A free question can be filed** (installed app, 2026-09-19): the composer's text went out
- * with no citation rule, so "Save answer" refused the answer as `no-cited-fact`. The rule now
- * rides on the session, and a refusal stays under the chip instead of leaving with a toast.
+ * The citation rule rides on the session so Save answer is not refused as `no-cited-fact`; a refusal
+ * stays under the chip.
  */
 describe("the Library's own paragraph and the filing refusal", () => {
   it("hands the citation rule to the session with every conversation", () => {

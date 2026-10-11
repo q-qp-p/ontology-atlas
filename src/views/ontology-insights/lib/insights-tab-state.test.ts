@@ -131,7 +131,6 @@ describe("parseInsightsTabHref", () => {
   it("answers with the tab for a destination on this same board", () => {
     expect(parseInsightsTabHref("/ontology/insights/?tab=do-next")).toBe("do-next");
     expect(parseInsightsTabHref("/ontology/insights/?tab=growth")).toBe("growth");
-    // No query is the default tab; a retired name resolves through the aliases.
     expect(parseInsightsTabHref("/ontology/insights/")).toBe("connections");
     expect(parseInsightsTabHref("/ontology/insights/?tab=freshness")).toBe("growth");
   });

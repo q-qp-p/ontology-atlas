@@ -1,50 +1,7 @@
 /**
- * **The Library's constellation — the folder as an object, before it has one.**
- *
- * The owner, 2026-09-09, on the Library's empty screen and its half-dead stage: *"this
- * screen isn't pretty… redesign it, make it cool! something with motion or animation
- * too… you can use three.js or whatever! something cool like geometric shapes!"*
- *
- * The answer this module takes is that the backdrop is not decoration. Atlas already
- * refuses a mark that carries no fact (`widgets/ontology-map/expressive/README.md`), and
- * a Library whose empty state showed abstract art would be teaching a newcomer nothing on
- * the one screen where they know least. So the object **is** the Library's own shape:
- *
- * | Mark | What it is |
- * |---|---|
- * | cube | a source — a document kept verbatim, the same square the Library's 2D graph draws |
- * | sphere | a wiki page — a write-up, the same filled circle that graph draws |
- * | line | a citation — a page and the document it was written from |
- *
- * It is drawn on **one** screen: the Library with no folder open. There is nothing true
- * to draw there, so the object is explicitly **anonymous** — a deterministic seeded folder
- * saying *this is the shape of the thing you are about to make*, never a claim about files
- * the person has. It is not drawn once a folder is open, and that is deliberate: a working
- * folder's object is small (the frame that settled it had ten marks), and ten marks behind
- * a working screen read as debris rather than as a picture. The Library already draws the
- * real folder properly, in 2D, in the graph the `Graph` chip opens.
- *
- * `buildConstellation` still takes a folder because the anonymous one **is** a folder —
- * one code path, one set of rules — and because the tests state the object's contract in
- * terms of folders rather than of one frozen constant.
- *
- * ## Why the maths lives here and not in the scene
- *
- * Same contract as the map's expressive folder: plain data in, plain numbers out, no
- * three.js, no React, no DOM, no clock. Placement is deterministic given its input, so it
- * is testable without a GPU, and `constellation-scene.ts` is left owning nothing but
- * materials, the camera and the frame. Delete the scene and this still answers "what
- * shape is this folder"; delete both and the Library is back to a flat panel.
- *
- * ## Placement
- *
- * Pages sit on an inner shell and sources on an outer one, both on a Fibonacci spiral so
- * the marks spread evenly rather than clumping at the poles the way a naive random
- * spherical pick does. A source is then pulled toward the page that cites it, which is
- * what makes the object read as *documents gathered around what was written from them*
- * instead of two abstract shells. A source nothing cites keeps its place on the outer
- * shell, which is a fact worth seeing: the Library's own list calls such a document
- * not-compiled, and the object says the same thing by leaving it out on the rim.
+ * The anonymous, deterministic seeded folder drawn only when no folder is open: cube is a source,
+ * sphere a wiki page, line a citation. Plain data in, plain numbers out, so placement is testable
+ * without a GPU.
  */
 
 /** One mark in the object, in a unit-radius space the scene scales as it likes. */

@@ -7,18 +7,8 @@ import { OntologyMapKindGlyph } from '@/shared/ui/map-kind-glyph';
 import styles from './constellations-starting-point.module.css';
 
 /**
- * Shows the ontology concepts a working scope can be picked from, before one is saved.
- *
- * The rows are a **preview, not a picker**: each carries the kind glyph the tree and the map
- * draw, never a radio-shaped mark, because nothing here selects. Measured 2026-09-25: three
- * rows under a heading that counted nineteen, each with a circle-dot that looked pressable and
- * did nothing. The list now says how many it did not show and offers the one real door, the
- * map, as its last row, so the count in the head and the rows below agree.
- *
- * Round four: the how-to left the intro paragraph for the band under both columns, the same
- * ruled band Check history draws before its first run, so the two empty tabs are one sheet
- * with one geometry. The paragraph that used to end by naming the button under it is now one
- * fact the steps do not say.
+ * A preview, not a picker: rows carry the kind glyph, never a radio-shaped mark, because nothing
+ * here selects. The list says how many it did not show and ends with the map as the one real door.
  */
 export function ConstellationsStartingPoint({ title, description, action, sourceLabel, sourceCount, concepts, noConcepts, more, stepsLabel, steps }: {
   title: string;

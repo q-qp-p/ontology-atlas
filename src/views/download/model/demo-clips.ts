@@ -1,8 +1,7 @@
 /**
- * The demo clip registry (`docs/DECISIONS.md`, 2026-07-29 front-page demo video). Whether footage
- * exists is decided here in data, so with none attached the section does not render: a player
- * with nothing to play is dead UI (`.claude/rules/surfaces.md`). One clip, no captions, one take
- * per locale, since the text in the frame is localized.
+ * The demo clip registry. Whether footage exists is decided here in data, so with none attached
+ * the section does not render (`.claude/rules/surfaces.md`). One clip, no captions, one take per
+ * locale.
  */
 
 export interface DemoClip {

@@ -8,18 +8,6 @@ import type { CitedPassage } from "@/shared/lib/library/source-passage";
 import type { CitedPassageState } from "../../lib/use-cited-passage";
 import { SourceSummary } from "./SourceSummary";
 
-/**
- * **The four answers a pressed citation may get, and the one that must never appear.**
- *
- * The whole value of this section is that a person can believe what it shows. The failure
- * that would destroy that is not an empty pane — it is a *passage shown for an address the
- * file no longer holds*, which reads as evidence and is not. `citedPassage` refuses to
- * guess (its own contract is pinned in `tests/contract/source-passage-parity.contract.test.ts`),
- * so what is left to pin here is the rendering: that the unresolved and text-less states
- * carry their sentence and **no** source text, and that the pane stops claiming the file
- * was never opened the moment it has been.
- */
-
 const ROW: LibrarySourceRow = {
   path: "sources/settlement-policy.md",
   name: "settlement-policy.md",
@@ -152,19 +140,7 @@ describe("the passage a pressed citation shows", () => {
     expect(screen.getByTestId("library-source-citation").textContent).toBe("#l28");
   });
 
-  /**
-   * **Atlas's own sentence may not wear the voice of the file's words** (guardian
-   * decision, 2026-09-11 council).
-   *
-   * Measured on the built export, the unresolved sentence was byte-identical to the
-   * verbatim quote — 14px · 23.8px · rgb(247,248,248) · 500.391px — which is the pair
-   * this section reserves for text it read out of the file. The other seat's remedy,
-   * `text-label` with secondary ink, is byte-identical to the facts `dd` (11px · 16px ·
-   * rgb(208,214,224)), so it hides the answer to the press among the metadata. The
-   * decided value collides with neither, and the assertion is that relationship rather
-   * than a class string: what may never drift is that Atlas's sentence and the file's
-   * words differ in type, leading and ink at once.
-   */
+  /** Atlas's unresolved sentence must differ from the quote and the facts in type, leading and ink. */
   it("keeps the unresolved sentence out of both the quote's voice and the facts' voice", () => {
     const quote = renderPane(
       passageState({
@@ -179,9 +155,6 @@ describe("the passage a pressed citation shows", () => {
     const missing = screen.getByTestId("library-source-passage-missing");
     const missingClasses = new Set(missing.className.split(/\s+/));
 
-    /* Not the quote's step, not the quote's leading, not a quotation's card. The quote's
-       step became `text-reading` (16px) on 2026-09-12, when the reading bodies left
-       `text-body-lg` — which widens the separation this asserts from 1.5px to 3.5px. */
     expect(citedClasses.has("text-reading")).toBe(true);
     expect(missingClasses.has("text-reading")).toBe(false);
     expect(missingClasses.has("text-body-lg")).toBe(false);
@@ -208,14 +181,7 @@ describe("the passage a pressed citation shows", () => {
     expect(missing.parentElement?.className ?? "").not.toContain("rounded-card");
   });
 
-  /**
-   * **The address Atlas prints is not an address Atlas chose.** `keep-all` on its own
-   * left a 40-syllable unspaced Korean slug with no break opportunity: `scrollWidth 387`
-   * against `clientWidth 342` at 390 and `272` at 320, which made the reading pane
-   * scroll sideways (design-responsive, 2026-09-11). Every sentence here that
-   * interpolates a string from the file or the reader carries the same pair
-   * `PassageLine` does.
-   */
+  /** Interpolated addresses need `overflow-wrap`; an unspaced Korean slug otherwise scrolls sideways. */
   it("gives every interpolated address a break of last resort", () => {
     const cases: Array<[string, CitedPassageState]> = [
       ["library-source-passage-missing", passageState({ state: "unresolved", anchor: "l28" })],

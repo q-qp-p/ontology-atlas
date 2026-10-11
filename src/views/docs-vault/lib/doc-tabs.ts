@@ -1,6 +1,6 @@
 /**
- * Open document tabs: pure state plus localStorage. A working set, not a mode; the
- * URL `?slug=` is the active source of truth. Tabs persist across app restarts by owner decision.
+ * Open document tabs: pure state plus localStorage. A working set, not a mode; the URL `?slug=` is
+ * the active source of truth.
  */
 
 export interface DocTab {

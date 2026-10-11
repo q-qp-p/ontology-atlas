@@ -26,7 +26,7 @@ export function DocMetaBar({
   review,
 }: {
   doc: VaultDoc;
-  /** Passed in so the sidebar and the document share one drift verdict (a hash comparison). */
+  /** Passed in so the sidebar and the document share one drift result (a hash comparison). */
   reviewRow?: ReviewQueueRow;
   /**
    * Present only for a writable local folder. The lane the MCP server refuses an agent, not
@@ -58,8 +58,8 @@ export function DocMetaBar({
   // Every node kind has a map node; `buildTopologyDeeplinkForDoc` handles each.
   const topologyHref = buildTopologyDeeplinkForDoc(doc);
   /**
-   * One verdict for chip, body and CTA: a document the deeplink builder cannot address has no
-   * place on the map.
+   * One result for chip, body and CTA: a document the deeplink builder cannot address has no place
+   * on the map.
    */
   const inGraph = topologyHref != null;
   // The explanation shows only for documents not on the map; for the rest the chip and link

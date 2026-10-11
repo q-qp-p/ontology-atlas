@@ -35,39 +35,9 @@ import { Input } from "@/shared/ui/input";
 import { capitalize, serviceExample, unusedRoundName } from "../../lib/round-presentation";
 
 /**
- * **New round** — one sentence, one list of places, one rail.
- *
- * Specs: `docs/specs/2026-09-17-library-rounds-design.md` §9.3 and
- * `docs/specs/2026-09-21-round-cadence-and-scope.md` §2–§3.
- *
- * ## What the owner rejected, and what replaced it
- *
- * The first sheet was box soup: every question wore the same 40px bordered rectangle, the
- * readback sat in a box that read as a text field, and the selected chip was barely darker
- * than its siblings, so nothing on the screen said which thing was the point. Three moves fix
- * the hierarchy without adding a primitive:
- *
- * 1. **The readback is the lead paragraph**, unboxed, at `text-body-lg`. The words each
- *    control changes — the cadence, the places, the stale action — are inked
- *    `--color-indigo-text-soft`, so every press is visible *in the sentence* rather than only
- *    in the control that made it.
- * 2. **The name is the title.** An `h2` you click to edit, the way the project page's name
- *    works, instead of a separate field at the bottom of a form asking what to call a thing
- *    the sheet has already described.
- * 3. **The rail is the protagonist.** The unit is a compact segmented control and the track
- *    below it fills the column, because "how often" is the choice the owner came to make.
- *
- * ## The kind is derived, never chosen
- *
- * "What to check" used to be a two-chip question whose answer a person had to translate into
- * consequences. It is now "what to look at": a list of places. A round that names a service
- * spends an agent turn per pass and is a service round; one that names none is the local
- * check. `deriveRoundKind` is the only place that decides, and the legacy `connectorId`,
- * `connectorName` and `query` are still written from the first service place so a build older
- * than 2026-09-21 reads the record it finds.
- *
- * The form's state lives in this component and starts fresh on mount; the parent gives the
- * sheet a new `key` each time it opens, so a cancelled draft never leaks into the next one.
+ * A scheduled check as one sentence, one list of places and one rail. `deriveRoundKind` alone
+ * decides the kind: naming a service place makes a service check. State starts fresh on mount; the
+ * parent passes a new `key` per open.
  */
 
 export interface NewRoundSheetProps {
@@ -307,18 +277,14 @@ export function NewRoundSheet({
       labelledBy={titleId}
       testId="library-rounds-sheet"
       /*
-       * **Focus lands on the sheet, not on its name.** The name is a click-to-edit title, so
-       * taking focus on open drew a full field ring around it — the "this is a text box" look
-       * the owner objected to in the first sheet. The container takes focus instead; the title
-       * is the first thing Tab reaches and shows its ring only then.
+       * Focus lands on the container, not the name: the name is a click-to-edit title and focusing it on
+       * open would draw a full field ring.
        */
       initialFocus="container"
       /*
-       * Capped at the window and scrolling inside: a round with two service places, its
-       * folder chips and the scope list runs past a 720px window, and the shared dialog has
-       * no height cap of its own, so "Allow and save" stood below the window with no way to
-       * reach it (measured in the rounds spec, 2026-09-20). The cap uses the same chrome
-       * inset the viewport-sized dialog keeps.
+       * Capped at the window and scrolling inside, since the shared dialog has no height cap and a long
+       * form would push the save button below the window; same chrome inset the viewport-sized dialog
+       * keeps.
        */
       className="flex max-h-[calc(100dvh-var(--chrome-inset)*2)] flex-col gap-4 overflow-hidden break-keep"
     >
@@ -390,13 +356,9 @@ export function NewRoundSheet({
 
       </header>
       <DialogBody className="flex flex-col gap-5 pr-1">
-      {/*
-        **The sheet reads back what it will do, as one sentence, before anything is saved**
-        (owner on the installed app, 2026-09-19: the screen was "hard to operate", compared
-        with tools that show the result of each choice as it is made). It is a paragraph, not
-        a boxed field: a box around a sentence a person cannot type into is a lie about what
-        the control is. The inked words are exactly the ones the controls below change.
-      */}
+      {/* The sheet reads back what it will do as one sentence before anything is saved. It is a paragraph,
+         not a boxed field, since a box around text a person cannot type is false about the control; the
+         inked words are the ones the controls below change. */}
       <p
         data-testid="library-rounds-readback"
         role="status"

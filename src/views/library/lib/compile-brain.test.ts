@@ -9,10 +9,8 @@ import {
 } from "./compile-brain";
 
 /**
- * The table this file exists for is the one where the three facts disagree: a stored
- * answer naming a brain the machine no longer offers. Honouring it would run the wrong
- * brain; ignoring it silently would leave the preference pointing at nothing for the next
- * folder, and the next machine, through a synced profile.
+ * Covers a stored answer naming a brain the machine no longer offers: it must fall back, not run the
+ * wrong brain or stay stored.
  */
 
 function storage(initial?: string): Storage {

@@ -182,7 +182,7 @@ describe('the new round sheet', () => {
     fireEvent.change(screen.getByTestId('library-rounds-place-1-where'), { target: { value: 'ENG space' } });
     chooseFolder('sources/planning');
 
-    // 40% across the five-detent minute rail is ten minutes — the owner's own example.
+    // 40% across the five-detent minute rail is ten minutes.
     switchUnit('Minutes');
     dragRailTo(0.4);
 

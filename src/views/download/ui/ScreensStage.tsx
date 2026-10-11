@@ -38,10 +38,9 @@ const CAPTURE_HEIGHT = 860;
 const COLUMN_FROM_PX = 1440;
 
 /**
- * The app's other destinations as tabs in the rail's order and labels (`docs/DECISIONS.md`,
- * 2026-09-24 direction B). Every panel stays mounted in one grid cell, invisible when inactive, so
- * lazy images are ready and a swap moves nothing; captions stack the same way. Names form a strip
- * below 90rem and a column above, where from 112rem the section head joins them.
+ * The app's other destinations as tabs in the rail's order. Every panel stays mounted in one grid
+ * cell, invisible when inactive, so lazy images are ready and a swap moves nothing. Strip below
+ * 90rem, column above.
  */
 export function ScreensStage({ intro }: { intro: ReactNode }) {
   const t = useTranslations('download.screens');

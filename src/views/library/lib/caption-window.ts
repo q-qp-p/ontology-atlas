@@ -1,25 +1,7 @@
 /**
- * **Show the part of the line the person actually searched for.**
- *
- * The index column's search caption prints one unit of a document, clipped to one line by
- * `truncate`. Measured across fourteen widths on 2026-09-11 (design-responsive, U2
- * council): the caption fits about **33 characters from the start of the unit** at the
- * column's own width, so a phrase further in than that is invisible while its row claims a
- * match. The fixture's own `fee-schedule.csv` record is the case: `T+2` sits past the
- * method and region columns.
- *
- * So the window moves to the phrase instead of the phrase having to be near the start.
- * The string stays the file's own text — nothing is rewritten, only left out, and the
- * leading ellipsis says so. The full unit is still the caption's `title` and the pane
- * below it.
- *
- * Two rules hold the cut honest:
- *
- * - **A few words of run-up.** Landing exactly on the match reads as a fragment; the cut
- *   is `LEAD_CHARS` earlier, so the phrase arrives with the words that introduce it.
- * - **Never mid-word.** The cut walks back to the nearest space inside `WORD_SNAP_CHARS`.
- *   A window opening on `…hedule` is the broken-word defect this repository already
- *   rejects for wrapping, and it costs nothing to avoid.
+ * Shows the part of the line the person searched for: the caption fits about 33 characters, so the
+ * window moves to the phrase. Text is only left out, with a leading ellipsis. The cut starts
+ * `LEAD_CHARS` early and snaps back to a space within `WORD_SNAP_CHARS`, never mid-word.
  */
 
 /** What one caption line shows, measured at the index column's width. */

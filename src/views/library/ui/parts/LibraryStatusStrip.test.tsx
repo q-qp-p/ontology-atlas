@@ -7,15 +7,8 @@ import type { LibraryUiModel } from "@/features/library";
 import { LibraryStatusStrip } from "./LibraryStatusStrip";
 
 /**
- * **"3 broken links" must mean three links.**
- *
- * The clause counted *pages* (measured 2026-09-09): a folder holding six broken links
- * across three pages said **3**. A person reading it goes looking for three, fixes those
- * three, and the header still says 3 — the number never moves toward zero because it was
- * never counting the thing it names.
- *
- * Its neighbour is genuinely per-page and stays that way: *off-template* is a property of
- * a page, and one page with four shape problems is still one row to open.
+ * The broken-links clause counts links, not pages; off-template stays per page, since one page with
+ * four shape problems is still one row to open.
  */
 
 type Verdict = LibraryUiModel["verdicts"] extends Map<string, infer V> ? V : never;
@@ -113,11 +106,8 @@ describe("LibraryStatusStrip — the off-template clause still counts pages", ()
 });
 
 /**
- * **The reader's header counts what the home counts.**
- *
- * Measured 2026-09-19 on the small wiki fixture: the home strip said *10 sources changed*
- * beside an index chip saying *not compiled 2*, and this strip, one press later, said
- * *12 waiting*. The sum was right and the sentence was a third opinion.
+ * The reader's header counts what the home counts: not-compiled and changed are printed apart under
+ * the home's words, never summed.
  */
 describe("LibraryStatusStrip — the waiting clauses are the home's own", () => {
   it("prints not-compiled and changed apart, under the home's words, never their sum", () => {
@@ -144,13 +134,8 @@ describe("LibraryStatusStrip — the waiting clauses are the home's own", () => 
 });
 
 /**
- * **A thousand is written the same way on every surface** (2026-09-19, 3,000-file fixture).
- *
- * The index chip formatted by hand ("not compiled 1,400") while this strip and the home's
- * clauses printed the bare argument ("not compiled 1400", "1600 sources changed"): one
- * screen, two ways of writing the same number. A bare `{count}` is printed as typed; only
- * `{count, number}` and the plural forms group, which is why the English messages already
- * read "1,600".
+ * A count past a thousand is grouped the same way on every surface: a bare `{count}` prints as
+ * typed, only `{count, number}` and plural forms group.
  */
 describe("LibraryStatusStrip — counts past a thousand are grouped", () => {
   it("groups the not-compiled and changed counts the way the index chip does", () => {
@@ -161,12 +146,7 @@ describe("LibraryStatusStrip — counts past a thousand are grouped", () => {
   });
 });
 
-/**
- * **"Compile next" names its object, and a count the index shows is said once**
- * (design sweep, 2026-09-25). In the reader the strip read *Compile next · 2 not compiled*
- * while the home said *Compile next: chargeback-runbook.md* and the Sources index beside it
- * already said *not compiled 2*.
- */
+/** Compile next names its object, and a count the index already shows is said once. */
 describe("LibraryStatusStrip — the next step names its file", () => {
   const withSources = (indexShowsSourceStates: boolean) => {
     const value = {
@@ -202,8 +182,8 @@ describe("LibraryStatusStrip — the next step names its file", () => {
 });
 
 /**
- * **One fact, one grammar** (2026-09-25). The home draws the next file as an accent link
- * that opens the Compile popover; the reader's strip printed the same words as text.
+ * The next file is the home's press: a button that opens the Compile popover, with the rest of the
+ * strip as text.
  */
 describe("LibraryStatusStrip — the next file is the home's press", () => {
   it("draws the clause as a button that runs the same press, and keeps the rest as text", () => {
@@ -231,12 +211,7 @@ describe("LibraryStatusStrip — the next file is the home's press", () => {
   });
 });
 
-/**
- * **One file named by the lead clause is not counted again beside it** (2026-09-25).
- *
- * The page header read *Compile next: new-uncompiled-notes.md · 1 not compiled*, the same
- * single file twice, while the home strip a press away named it once.
- */
+/** A file named by the lead clause is not counted again beside it. */
 describe("LibraryStatusStrip — the named file is said once", () => {
   const withNotCompiled = (notCompiled: number) => {
     const sources = [

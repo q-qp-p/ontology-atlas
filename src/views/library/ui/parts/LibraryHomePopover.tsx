@@ -17,30 +17,9 @@ import { CloseButton, Surface } from "@/shared/ui";
 import { transientSurface } from "@/shared/ui/transient-surface";
 
 /**
- * **The Library home's one popup shape** — hung from the door that opened it.
- *
- * The home is the folder's graph (`docs/DECISIONS.md`, 2026-09-06 "The Library pane is
- * the graph; the shelf is a popup", restored 2026-09-12). Everything the three guide
- * cards used to say on every visit now lives behind a door on the strip above the canvas,
- * and this is what a door opens: `transientSurface("anchored")` on the shared `Surface`,
- * so the sweeping surface check measures it as the kind it is and owes it the three
- * properties that kind owes — beside its cause, closes on Escape, returns focus.
- *
- * ## Why a portal and `fixed`, not an absolute box in the pane
- *
- * The pane the strip sits in is `overflow-hidden` with its own scrollers inside it, so an
- * absolutely positioned panel is clipped by the first ancestor that scrolls — the defect
- * `shared/ui/select.tsx` records for its own listbox and solves the same way. The
- * coordinates are the door's own viewport rect, so the panel still stands beside its
- * cause; it is re-read on scroll and resize rather than frozen at open time.
- *
- * ## Not a modal, deliberately
- *
- * No scrim and no focus trap: `.claude/rules/design.md` requires a modal to prove its
- * modality, and the guide is a thing to read beside the picture rather than an errand
- * with a beginning and an end. The canvas keeps working behind it. What it does owe is
- * the anchored contract, and all three parts are here — Escape, an outside press, and
- * focus back on the door.
+ * A portal and `fixed`, because the pane is `overflow-hidden` and an absolute panel would be
+ * clipped; coordinates are the door's viewport rect, re-read on scroll and resize. Not modal: no
+ * scrim or focus trap, but Escape, outside press and focus back on the door.
  */
 /** The free area a Library popup may occupy: the reader pane its door sits in. */
 const BOUNDARY_SELECTOR = '[data-testid="library-reader"]';
@@ -61,15 +40,8 @@ export function LibraryHomePopover({
   /** The door. Its rect places this panel, and focus returns to it on close. */
   anchorRef: RefObject<HTMLElement | null>;
   /**
-   * The door to hang from when {@link anchorRef} is not drawn at this width.
-   *
-   * ⚠️ **Because below `lg` the strip's doors are `display:none`** and everything they
-   * opened is reached through the one `…` door instead. Measured 2026-09-12
-   * (design-responsive, council): a hidden anchor reports a 0×0 rect, so `place()`
-   * computed top 8 / left 16 and the panel detached to the screen's corner with nothing
-   * connecting it to the press — and `anchorRef.current?.focus()` on close no-opped,
-   * leaving focus on `body`. The same arithmetic fires when a window crosses `lg` with a
-   * panel already open.
+   * The door to hang from when `anchorRef` is not drawn at this width: below `lg` the strip's doors
+   * are `display:none`, and a hidden anchor has a 0x0 rect and cannot take focus back.
    */
   fallbackAnchorRef?: RefObject<HTMLElement | null>;
   title: string;
@@ -110,12 +82,8 @@ export function LibraryHomePopover({
        good placement instead of throwing the panel into the corner. */
     if (rect.width === 0 && rect.height === 0) return;
     /*
-     * ⚠️ **Clamped to the reader pane, not only to the window** (2026-09-25). The doors sit
-     * at the right of the reader, and the index column is the reader's left neighbour. At
-     * 1040 the 560px guide measured x 310 against an index spanning 64–344: a window-only
-     * clamp let it lie 34px across the wiki rows. The pane is the free area this panel may
-     * use, so both its left edge and its width come from the pane; a pane narrower than
-     * 560 + 32 narrows the panel instead of spilling it.
+     * Clamped to the reader pane, not only the window: the index column is the reader's left neighbour,
+     * so the pane gives both the left edge and the width; a narrow pane narrows the panel.
      */
     const pane = anchor.closest<HTMLElement>(BOUNDARY_SELECTOR)?.getBoundingClientRect();
     const floor = pane ? Math.max(16, pane.left + 16) : 16;
@@ -145,16 +113,9 @@ export function LibraryHomePopover({
   }, [align, anchorNow]);
 
   /*
-   * ⚠️ **Placed after every render, not once on open** (measured 2026-09-12).
-   *
-   * The guide raises itself on the home's first paint, and the strip it hangs from is
-   * still growing at that moment: the canvas caption goes from `0 pages` to the folder's
-   * real counts as the pages are read, which pushes the doors ~68px to the right. Placed
-   * once, the panel stayed where the door *had been* and stood unhooked over the canvas.
-   * A rAF chase would have worked and would also have been an idle loop; React already
-   * re-renders on the state that moves the door, so this is the same correction for free.
-   * `place` writes nothing when the numbers match, so a render that does not move the
-   * door costs one `getBoundingClientRect`.
+   * Placed after every render, not once on open: the strip the panel hangs from keeps growing as pages
+   * are read. `place` writes nothing when the numbers match, so an unmoved door costs one
+   * `getBoundingClientRect`.
    */
   useLayoutEffect(() => {
     if (open) place();
@@ -199,20 +160,9 @@ export function LibraryHomePopover({
   }, [anchorNow, onClose, open]);
 
   /*
-   * Focus moves into the panel on open. Not a trap — the canvas behind stays live — but
-   * the panel is what a person just asked for, and a popup nobody's keyboard can reach is
-   * an anchored surface in name only. On close the door takes it back (below).
-   *
-   * ⚠️ **The panel itself, not its first control.** The first focusable child is the
-   * header's `✕`, so focusing it charged one extra Tab to reach the content and made
-   * Enter-on-open dismiss what had just been opened (design-interaction, council
-   * 2026-09-12, recorded as a cost). The panel carries `tabIndex={-1}` for exactly this.
-   *
-   * ⚠️ **And it waits for `box`.** Until the first placement lands this component renders
-   * `null`, so a run keyed on `open` alone found `panelRef.current` empty and never tried
-   * again — measured 2026-09-12: `library-reader-graph.spec.ts` polled fifteen seconds for
-   * the panel to contain the active element and never saw it. `focusedRef` keeps it to one
-   * move per open, so a scroll or a resize re-placing the box does not steal focus back.
+   * Focus moves to the panel itself, not its first control: the first focusable child is the close
+   * button, and focusing it would make Enter dismiss the panel. It waits for `box`, since until
+   * placement the component renders `null`; `focusedRef` keeps it to one move per open.
    */
   const focusedRef = useRef(false);
   useEffect(() => {
@@ -261,18 +211,9 @@ export function LibraryHomePopover({
 
   return createPortal(
     /*
-     * ⚠️ **The wrapper carries the size, and that is what keeps the stepper's fold alive.**
-     *
-     * `library-spine-scope` is `container-type: size`, which needs a box definite in
-     * *both* axes — so the 560px cap and the room-under-the-door height live here rather
-     * than on the panel, and the panel is `w-full max-h-full` inside it. Put the scope on
-     * the panel itself and size containment measures its own auto height as zero.
-     *
-     * The fold it enables (`app/globals.css`, `--library-spine-collapse-height`) was
-     * written for the landing pane the three steps used to be drawn in. They are in this
-     * popup now, and the quantity the fold wants is the same one: how much room the
-     * surface has. `pointer-events-none`, because the wrapper is a measuring box that
-     * reaches past the panel's own bottom edge and must not swallow a press on the canvas.
+     * The wrapper carries the size: `library-spine-scope` is `container-type: size`, which needs a box
+     * definite in both axes, so the cap and the height live here. `pointer-events-none` because it
+     * reaches past the panel's bottom edge and must not swallow canvas presses.
      */
     <div
       className="library-spine-scope pointer-events-none fixed z-40"

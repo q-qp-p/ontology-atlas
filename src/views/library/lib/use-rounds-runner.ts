@@ -69,30 +69,9 @@ import { useLatestRef } from "@/shared/lib/use-latest-ref";
 import { runHeadlessTurn } from "./headless-turn";
 
 /**
- * **The clock and the hands** — the one place a round actually runs.
- *
- * Spec: `docs/specs/2026-09-17-library-rounds-design.md` §5, §6. Decision:
- * `docs/records/decisions/2026-09-17-library-rounds-standing-scope-*.md`.
- *
- * Mounted once, app-wide, through `LibraryRoundsProvider`, so a round runs whichever screen
- * is open. Every minute it asks `planTick` what to do and does exactly that: records a sleep gap,
- * runs the rounds that are due one at a time, local ones first. A pass is either the local
- * consistency check alone (no agent, no cost) or that check followed by one agent turn, or, for a
- * service round, one agent turn. The agent session is headless: it opens for the pass, its
- * permission requests are answered by the standing scope, and it is stopped when the turn ends.
- *
- * Nothing here decides *what* a pass may do; `judgeRoundScope` does, and this hook only wires
- * the judge into `useAcpSession`'s `autoDecide` and writes what it saw into the ledger.
- *
- * ## Why the WebView and not Rust
- *
- * The measured session and permission path is this one (`use-acp-session.ts`), and the page
- * judge, the compile brief and the library model are TypeScript. A Rust scheduler would have to
- * carry all four across the bridge, and it would only buy running with the window closed, which
- * this slice does not promise (§5, "only while open").
- *
- * A clone can arrive with a round on, overdue, its focus bound for an unattended brief, so a
- * round runs only once this Mac allowed its exact definition (`roundFingerprint`).
+ * Mounted once app-wide through `LibraryRoundsProvider`. Every minute it asks `planTick` what to do
+ * and runs due rounds one at a time with a headless session. `judgeRoundScope` decides what a pass
+ * may do. A round runs only once this Mac allowed its exact definition (`roundFingerprint`).
  */
 
 interface PassData {
@@ -194,9 +173,8 @@ export function useRoundsRunner(): RoundsRunnerValue {
       setRuntime(usable ? { id: usable.id, label: usable.label } : null);
     };
     /*
-     * The same two-step scan the Library runs: the fast pass names the tools on disk, and
-     * only the login probe turns `login-unknown` into `ready`. Measured in the installed
-     * app on 2026-09-17: with the fast pass alone every redraft was skipped as "no agent".
+     * The same two-step scan the Library runs: the fast pass names tools on disk and only the login
+     * probe turns `login-unknown` into `ready`.
      */
     void detectAcpRuntimes()
       .then((fast) => {

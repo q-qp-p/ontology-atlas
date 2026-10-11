@@ -119,29 +119,6 @@ describe("the wiki list at rest is a shelf, and every spine carries its freshnes
     );
   });
 
-  /*
-   * ⚠️ **The amber rims were deleted on 2026-09-09, both of them.**
-   *
-   * They shipped as a full-bleed bar across the row's head and foot over an amber border
-   * around the card, and the owner read the head bar as *"that yellow line looks so AI"*.
-   * The first repair moved the same bar to the row's start edge and got the same reading:
-   * *"what even is that line on the left… do it our way."* Our way is written down —
-   * `docs/DESIGN-SYSTEM.md` lists **full-height coloured rails** among the canonical
-   * Don'ts and prescribes a neutral surface with a small marker and a label — and a rail
-   * moved from one edge to another is still a rail.
-   *
-   * So the state is a word on the caption line that already carried it, with one dot in
-   * front of the rows a person can act on. These cases pin that the dot stays a state and
-   * not a texture: exactly the rows that need work wear it.
-   *
-   * ⚠️ **And "can act on" is the page's own defect, not staleness** (guardian,
-   * 2026-09-09). The first shape was `stale || ownProblem`, which on the owner's folder
-   * put the warning ink on 3 of 3 rows — staleness is the resting state of a folder
-   * somebody is working in, so the union trends to every row. Nothing on this shelf has a
-   * template problem, so nothing here wears a dot; the state is still in words on every
-   * row and in every accessible name, and `library.spec.ts` holds the positive case on a
-   * page that really does miss the template.
-   */
   it("leaves a stale page's dot off, because staleness is where a live folder rests", () => {
     mount(<Harness />);
     expect(screen.queryAllByTestId("library-spine-attention-dot")).toHaveLength(0);

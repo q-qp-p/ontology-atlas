@@ -3,33 +3,9 @@ import { useEffect, useState } from 'react';
 import { citedPassage, type CitedPassage } from '@/shared/lib/library/source-passage';
 
 /**
- * **Read one file, because a person pressed the citation that names it.**
- *
- * A wiki fact ends in `[[src:sources/settlement-policy.md#l14]]`. Until slice U1 pressing
- * it opened the file's card and the reader had to leave Atlas, open the document and
- * count to line 14 to check the claim. This hook is the read that makes the passage
- * appear instead, and every clause of `.claude/rules/local-first.md` it has to satisfy is
- * a property of *when* it runs:
- *
- * - **One file, named by the person.** Only the path in the citation they pressed. No
- *   walk, no scan, no neighbouring file, nothing speculative.
- * - **Through a handle already granted.** `sourceHandles` comes from the folder walk the
- *   person opened: a `TauriFileHandle` over `read_vault_binary_file` in the app, an FSA
- *   handle in the browser. `getFile()` is the same call on both surfaces, so this is not
- *   a bridge and does not belong in `DEGRADED_SURFACES` — the ability exists in both
- *   places (`.claude/rules/surfaces.md`, "Library sources").
- * - **Nothing kept.** The text lives in this hook's state and is dropped the moment the
- *   citation changes or the pane closes. No IndexedDB, no `.ontology-atlas/` record, no
- *   frontmatter: `docs/DECISIONS.md` 2026-09-07 — Atlas still keeps no converted copy.
- * - **Nothing sent.** No LLM, ACP or MCP path is touched. A read the person asked for is
- *   not a transfer, so there is no new disclosure sentence; what the pane does owe them
- *   is the truth that the file *was* opened, which is why `SourceSummary` stops saying it
- *   never was.
- *
- * The sha256 is measured from the same bytes when the platform can (`crypto.subtle` needs
- * a secure context, and a custom-scheme WebView is not guaranteed one). It is offered as
- * "measured just now" rather than silently filling the row the native hash owns: a hash
- * whose provenance a person cannot tell apart is a fact about nothing.
+ * Reads one file because a person pressed the citation that names it: only that path, through an
+ * already granted handle, nothing kept (dropped when the citation changes or the pane closes),
+ * nothing sent. The sha256 is offered as measured just now; `crypto.subtle` needs a secure context.
  */
 
 export interface CitedPassageState {

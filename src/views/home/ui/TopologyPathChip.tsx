@@ -29,8 +29,8 @@ const CHIP_ACTION_CLASS = controlClass({
 });
 
 /**
- * Top-centre path status chip beside `SearchHint`; path no longer claims the left slot
- * (`slot-ownership.ts`). Chrome only: canvas highlighting is untouched.
+ * Top-centre path status chip beside `SearchHint` (`slot-ownership.ts`). Chrome only: canvas
+ * highlighting is untouched.
  */
 export function TopologyPathChip({
   label,

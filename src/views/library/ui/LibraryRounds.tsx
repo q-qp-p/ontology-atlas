@@ -68,11 +68,8 @@ export function LibraryRounds() {
   const span = useMemo(() => sinceSpan(runnerState, new Date()), [runnerState, todayKey]);
   const summary = useMemo(() => summarizeSince(entries, span), [entries, span]);
   /*
-   * **A running round that is no longer in the index is not running.** Measured in the browser
-   * on 2026-09-21: removing a round mid-pass left the header saying "running now · <name>" for
-   * a round that was gone. The runner now ends that pass (`stopPassFor`), and this is the
-   * second half of the same promise: what the screen says is derived from the rounds that
-   * exist, so no race can leave a ghost on it.
+   * A running round that is no longer in the index is not running: what the screen says derives from
+   * the rounds that exist, so no race can leave a ghost.
    */
   const running = runner?.running && rounds.some((round) => round.id === runner.running?.roundId) ? runner.running : null;
   /** Slug → the title a person knows the page by; a page that is gone keeps its slug. */
@@ -243,13 +240,8 @@ export function LibraryRounds() {
       className="topology-ui-scale relative flex min-h-0 w-full flex-1 bg-[color:var(--color-canvas)] text-[color:var(--color-text-primary)]"
     >
       <section data-testid="library-rounds-stage" className="atlas-scroll-quiet min-h-0 min-w-0 flex-1 overflow-y-auto">
-        {/*
-          **The Library page tabs' one content frame** (2026-09-25). Check history and Work
-          scope both wear `PAGE_FRAME_FORM`, centred, with nothing beside it: the same width,
-          the same start line and the same top, so switching between the two moves nothing
-          but the words. Round three had shifted this frame toward an index column; with the
-          column folded into the page (below), the shift and the band it left are both gone.
-        */}
+        {/* One content frame for the Library page tabs: Check history and Work scope both wear
+           `PAGE_FRAME_FORM`, centred, so switching moves nothing but the words. */}
         <div className={cn(
           PAGE_FRAME_FORM,
           "flex flex-col gap-8 pb-[calc(var(--topology-mobile-bottom-tab-reserve)+var(--page-bottom-breath))]",
@@ -288,16 +280,8 @@ export function LibraryRounds() {
           ) : (
             <>
               <SinceYouLeft span={span} summary={summary} locale={locale} onOpenPage={openPage} onShowPass={showPass} titleFor={titleFor} />
-              {/*
-                **The schedules stand in the page, not in a column beside it** (2026-09-25,
-                round four). A 280px index column held two rows and then ~700px of empty
-                panel at 949 and 1080 tall, and it pushed this tab's headline 112px right of
-                Work scope's at 1512: switching tabs moved the page sideways. The rounds are
-                now a section of the same centred form frame every page tab wears, between the
-                away card (what happened) and the ledger (each run) it filters. The door to
-                Automations heads the section it manages; the help glyph that said the same
-                thing as the door's label is gone.
-              */}
+              {/* The schedules stand in the page as a section of the same centred form frame every page tab wears,
+                 between the away card and the ledger it filters; a side column shifted the headline between tabs. */}
               <section data-testid="library-rounds-index" aria-labelledby="library-rounds-index-title" className="flex flex-col gap-3">
                 <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-2">
                   <h2 id="library-rounds-index-title" className="text-body-lg leading-body font-[var(--font-weight-strong)] text-[color:var(--color-text-primary)]">

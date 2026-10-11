@@ -1,14 +1,7 @@
 /**
- * **What the Library adds to the vault handoff, so a free question can be filed.**
- *
- * Measured in the installed app on 2026-09-19 (two originals, Claude ACP): a question typed
- * into the Library's composer went out as bare text, the agent answered in prose ("states it
- * as a bare 14 days on line 3"), and "Save answer" refused it as `no-cited-fact`. The
- * question door's own brief (`ask-brief.ts`) carries the citation rule; the composer carried
- * nothing, and every free turn in the Library is classified as an ask (`LibraryPage`
- * `handleTurnStarted`) and offered the save chip. The rule belongs to the session, so it holds
- * for whatever the person types. English, like the handoff it follows; the answer-language
- * sentence already tells the agent which language to answer in.
+ * Adds the citation rule to the session so free questions typed in the Library composer can be
+ * filed: every free turn is classified as an ask and offered Save answer. English, like the handoff
+ * it follows.
  */
 export const LIBRARY_HANDOFF_APPENDIX = [
   "This folder is also a Library: `sources/` holds the originals as they arrived, and `wiki/` holds the pages written from them, one page per original.",

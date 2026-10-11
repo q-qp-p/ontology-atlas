@@ -11,37 +11,9 @@ import { PAGE_COLUMN_STAGE, PAGE_LEDE, PAGE_TITLE } from "@/shared/ui/page-frame
 import { libraryEyebrowClass } from "../../lib/page-eyebrow";
 
 /**
- * **An empty folder is an empty state, not a popup** (owner, 2026-09-06).
- *
- * The owner opened the installed app on a folder with **no sources at all** and read the
- * result as broken: a 560px guide raised itself over the right 48% of the pane, lying
- * across the graph's own *"Nothing to draw yet…"* sentence, while the header counted
- * *0 sources · 0 pages · 0 concepts* and the strip said *Gather next · Compile waiting ·
- * Read waiting*. Four surfaces, all of them saying the folder is empty, one of them on
- * top of another.
- *
- * This repository already had the answer for "nothing to open yet": `PAGE_COLUMN_STAGE`,
- * the 640px column stood in the middle of the screen (2026-08-12, after the same owner
- * called a top-anchored empty state *"severely barren"*). The Library's own no-folder
- * branch has used it since the destination shipped. So a folder that is open but empty
- * gets the same grammar rather than an emptier copy of the workbench.
- *
- * ## Why the whole screen, and not just the right pane
- *
- * Because the index is empty too. With no sources and no pages its two lists carry their
- * own "nothing here yet" copy **and the same two doors as this stage** — measured on the
- * baseline frame, `Add files` and `Find documents` appeared twice in one viewport, 900px
- * apart. `LibraryPage`'s own no-folder branch already states the rule this follows: an
- * index of nothing beside a reader of nothing is two empty boxes asking one question.
- *
- * ## Anatomy
- *
- * Eyebrow, **one** title, one sentence, the three doors, and one quiet line naming the
- * folder the drop goes into. The doors sit in the order of how far away the document is:
- * on this disk, in a folder the app was granted, and somewhere else entirely. The third
- * one exists because a person whose notes live in Notion has nothing to drop and nothing
- * to find (owner, 2026-09-07: *"connecting a service is mostly for the Library anyway"*).
- * The workspace label is navigation context rather than a heading, so this active panel owns h1.
+ * An empty folder is an empty state, not a popup: with no sources and no pages the index is empty
+ * too and would repeat the same doors, so this stage owns the whole screen. The doors are ordered by
+ * how far away the document is. This active panel owns h1.
  */
 export function LibraryStartStage({
   vaultLabel,
@@ -65,10 +37,8 @@ export function LibraryStartStage({
   const locale = useLocale();
   return (
     /*
-     * The card, not a band of three inks spread across the pane. The 2026-08-12 empty-state
-     * verdict is that "barren" is about whether the block is anchored: the stage column, a
-     * dashed edge and the first overlay anchor it. Dashed rather than solid because the last
-     * line of this stage says a folder is also a place to drop files into.
+     * The card is anchored by the stage column, a dashed edge and the first overlay; dashed because the
+     * stage's last line says a folder is also a place to drop files.
      */
     <div
       data-testid="library-start-stage"
@@ -77,16 +47,8 @@ export function LibraryStartStage({
       <p className={libraryEyebrowClass(locale)}>
         {t("eyebrow")}
       </p>
-      {/*
-        **The page headline pair, not the card-title one** (design-lead, 2026-09-06). At
-        `text-body-lg` nothing on this 1512×982 frame was larger than 14px, so the eye
-        reached the door before it had read what the screen was — a title-to-caption ratio
-        of 1.47 on a surface whose whole job is one sentence. `text-display` /
-        `leading-display` is this repository's page-headline pair and takes it to 2.42.
-        It is a step above the no-folder stage's own `h1`, and deliberately: there the
-        heading is the destination's name with the state sentence under it, here the
-        heading **is** the state and the rail carries the name.
-      */}
+      {/* The page headline pair (`text-display` / `leading-display`), not the card-title one: here the
+         heading is the state and the rail carries the destination's name. */}
       <h1 className={`mt-1 break-keep ${PAGE_TITLE}`}>
         {t("emptyTitle")}
       </h1>

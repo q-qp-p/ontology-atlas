@@ -11,54 +11,9 @@ import { ICON_SIZE } from "@/shared/ui/icon-size";
 type Translator = ReturnType<typeof useTranslations<"library">>;
 
 /**
- * **The strip is the stage's heir** — one `text-label` row above the folder's graph.
- *
- * The home is the picture (`docs/DECISIONS.md`, 2026-09-06 "The Library pane is the
- * graph; the shelf is a popup"; restored 2026-09-12 after the owner read the always-drawn
- * three-step stage as a first-run screen that never leaves). Everything those three cards
- * said is here, and the difference from the strip they replace is that **each clause is a
- * press**:
- *
- * | Fact | Clause | Press |
- * |---|---|---|
- * | Compile is next, and on which file | `Compile next: <source>` — the one accent clause | the Compile popover, hung from the clause |
- * | a citation the folder can no longer vouch for | `1 source changed` | ink-ramps the canvas onto that citation and its two ends — **no mark moves** (2026-09-08) |
- * | pages that miss the wiki's shape | `2 off-template` | the check report |
- *
- * The counts (`6 sources · 4 pages · 6 cites`) are **not** here: they are the canvas's own
- * caption, and this component is what `LibraryGraph`'s `headerEnd` slot puts **beside** it
- * on that one row. One row, one voice — the landing used to carry three header rows saying
- * overlapping halves of this.
- *
- * ## One text edge per column
- *
- * The pieces below are the header row's own children, not a right-anchored box inside it,
- * and that is the whole of how the edge holds (owner, 2026-09-12, against the rule slice A1
- * installed). Measured before: at 1512 the caption began at the pane's text edge, x=384,
- * and the wrapped clause line at **x=620**, because an `ml-auto … justify-end` wrapper
- * pulled it right. Now the clauses flow after the caption where they fit — 1512: caption
- * 384, clauses 664, one line — and wrap to **exactly** the caption's edge where they do not
- * — 1040 and 390: 384/384 and 20/20. The doors keep the right edge through `ml-auto` on
- * their own group, which is exact at every width (1512: tail right 1472 against a content
- * right of 1472).
- *
- * ## Why the clauses are `shape: "link"` and the doors are chips
- *
- * A clause is a sentence about the folder that happens to be pressable; a door is a place.
- * Drawing both as chips made four boxes in a row where two of them were prose (the
- * "floating-box soup" `docs/DESIGN-SYSTEM.md` names), and drawing both as text left the
- * doors indistinguishable from the status line they sat in. So the fact reads as a fact
- * and the place reads as a control, which is also the pair of grades the repository
- * already has for exactly this: `link`/`md` is `text-label`, the chrome label size the
- * chips carry too.
- *
- * ## Responsive
- *
- * The doors keep their words wherever they are drawn (see the note on the group below).
- * Below `lg` — where the index has folded and the pane is the whole row — only the lead
- * clause stays and the rest fold into one `…` door, because a row that wraps to three
- * lines is a header again. The clause line takes the caption's edge at every width it
- * wraps to.
+ * One `text-label` row above the folder graph where each clause is a press. Clauses are the header
+ * row own children so wrapped lines share the caption edge; doors keep the right edge through
+ * `ml-auto`. Below `lg` only the lead clause stays.
  */
 export interface LibraryHomeStripClause {
   /** `compile` is the lead; the other two are plain. */
@@ -74,9 +29,8 @@ export interface LibraryHomeStripClause {
 
 export interface LibraryHomeStripDoor {
   /*
-   * Two doors. The check report's is the index's own row, which slice 3 gave the live
-   * state — count, `running`, `unseen` — that a strip chip could not carry; the strip keeps
-   * the `N off-template` clause as the fact that presses into it (2026-09-12).
+   * Two doors. The check report's door is the index's own row, which carries live state a strip chip
+   * could not; the strip keeps the `N off-template` clause as the fact that presses into it.
    */
   id: "guide" | "questions";
   label: string;
@@ -136,13 +90,9 @@ export function LibraryHomeStrip({
         <p
           data-testid="library-home-strip"
           /*
-           * ⚠️ **At `lg` and up the sentence keeps its own width; the counts beside it give
-           * way instead** (design sweep round 2, 2026-09-25). The first cut let this `<p>`
-           * shrink with the counts, and at 1040 every clause lost its tail — *2 off-templ…*
-           * cut the one number a person acts on. So the sentence does not shrink here, the
-           * plain clauses never truncate, and only the lead clause's file name may, past a
-           * cap no ordinary name reaches. `LibraryGraph`'s counts are the one child that
-           * truncates, and they keep the whole caption in their `title`.
+           * At `lg` and up the sentence keeps its own width and the counts beside it give way, so a clause
+           * never loses its tail. Only the lead clause's file name may truncate; the counts keep the whole
+           * caption in their `title`.
            */
           className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-label leading-body text-[color:var(--color-text-secondary)] lg:flex-none lg:flex-nowrap"
         >
@@ -186,31 +136,10 @@ export function LibraryHomeStrip({
           ))}
         </p>
       ) : null}
-      {/*
-        The doors, worded at every width they are drawn at.
-
-        ⚠️ **`max-xl:sr-only` was here and is gone** (design-responsive, council
-        2026-09-12). It dropped the three words to a `title` between `lg` and `xl` — a
-        tooltip a finger never raises — so in that band the press that names the next step
-        and the press that reopens the saved answer were two unlabeled 34px glyphs 6px
-        apart, while `Conversation` beside them kept its word and proved the row had 71px
-        spare. Measured: the header row was **92px** at 1024 and 1040 wordless against
-        **84px** worded, because the worded group leaves the clause's line and shares
-        `Conversation`'s — so the words were costing a line rather than buying one. Below
-        `lg` the whole group folds into the `…` door instead, which is the fold that works.
-      */}
-      {/*
-        ⚠️ **One right-anchored group, not a right margin on each door.**
-
-        The clauses above are the header row's own children, so they keep the pane's text
-        edge and wrap to it (see `LibraryGraph`'s slot comment). Everything that belongs at
-        the right edge is *one* item in that row instead: `ml-auto` on a single group holds
-        the edge even when the group takes a line of its own. Measured 2026-09-12 after the
-        check report's door left this strip — with `ml-auto` on the doors alone, the
-        narrower group let `trailing` wrap past it onto a third line, where nothing anchored
-        it: the row went 60px to 68 and the conversation chip's right edge measured 489
-        against a content edge of 1472. As one group: 60px and 1472/1472.
-      */}
+      {/* The doors keep their words at every width they are drawn at; a tooltip title is not a label a
+         finger can raise. Below `lg` the whole group folds into the `...` door. */}
+      {/* One right-anchored group, not a margin on each door: the clauses keep the pane's text edge, and
+         `ml-auto` on a single group holds the right edge even when the group takes a line of its own. */}
       <span className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-x-1.5 gap-y-1 lg:flex-none">
       <span className="flex flex-none items-center gap-1.5 max-lg:hidden">
         {doors.map((door) => {
@@ -226,16 +155,9 @@ export function LibraryHomeStrip({
               aria-expanded={door.open === undefined ? undefined : door.open}
               title={door.label}
               /*
-               * ⚠️ **An open door draws its open state** (design-interaction, council
-               * 2026-09-12). Measured on the captures: with the guide up, the door that
-               * opened it drew a byte-identical fill `rgb(8,9,10)` and border
-               * `rgb(22,23,24)` to its rest state — only its ink had moved, and that was
-               * the `hover:` declaration with the pointer still parked on it. Move the
-               * pointer away and a 560px panel floated over the graph with nothing on the
-               * row claiming it, so the way out was guessed rather than seen. The
-               * `{shape:'chip', active:true}` compound already exists for exactly this;
-               * no new token, and the questions door at one saved answer is then the only
-               * chip that can never light, because its press takes you somewhere.
+               * An open door draws its open state with the `{shape:'chip', active:true}` compound, so a panel
+               * floating over the graph is claimed by the control that opened it even when the pointer has moved
+               * away.
                */
               className={controlClass({
                 shape: "chip",
@@ -270,8 +192,7 @@ export function LibraryHomeStrip({
           shape: "chip",
           tone: "muted",
           hoverInk: "strong",
-          /* Below `lg` this is the only door, so it is the one that most needs to say
-             whether the list it owns is up (design-interaction, council 2026-09-12). */
+          /* Below `lg` this is the only door, so it must say whether the list it owns is up. */
           active: overflowOpen,
           className: "flex-none lg:hidden",
         })}

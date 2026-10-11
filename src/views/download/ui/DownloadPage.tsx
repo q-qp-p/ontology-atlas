@@ -54,10 +54,9 @@ const THIRD_PARTY_LICENSES_HREF = withBasePath('/third-party-licenses.txt');
 const HERO_CTA_WRAP = 'min-w-0 whitespace-normal text-left sm:whitespace-nowrap';
 
 /**
- * Serves /download and / (`docs/DECISIONS.md` 2026-08-18): a hero on its own clock, then sections
- * whose scroll entrances (`animation-timeline: view()`) do not exist under reduced motion
- * (`tests/contract/reduced-motion-equivalent.contract.test.ts`). The install section went on
- * purpose (`docs/DECISIONS.md` 2026-08-19); the facts strip's hash links to the release page.
+ * Serves /download and /: a hero on its own clock, then sections whose scroll entrances
+ * (`animation-timeline: view()`) do not exist under reduced motion
+ * (`tests/contract/reduced-motion-equivalent.contract.test.ts`).
  */
 export function DownloadPage() {
   const pathname = usePathname() ?? '/';
@@ -171,8 +170,7 @@ function SectionIntro({
 }
 
 /**
- * Every entrance delay lives in CSS (`gateway-t***`); JS adds one `is-in` class after mount, and
- * the foreground is still afterwards. The headline is the owner's sentence verbatim, one line per
+ * Every entrance delay lives in CSS; JS adds one `is-in` class after mount. One headline line per
  * sentence at every width, so it measures against the full column.
  */
 function HeroSection({

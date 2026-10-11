@@ -18,53 +18,9 @@ import { resolveCompileBrain, useCompileBrainChoice } from "./compile-brain";
 import type { LibraryAgentOpeningRequest } from "../ui/parts/LibraryAgentDock";
 
 /**
- * Whether the Library can start an in-app agent turn, and everything needed to start one.
- *
- * The same wiring Analysis and Architecture already carry, and deliberately not a fourth
- * spelling of it: which runtimes are usable, which MCP servers the session gets, and
- * whether the folder's own server is up. Compile calls `start`; everything else here is
- * the honest answer to "can it".
- *
- * `route` is `agent` only when a verified runtime with an app-owned permission boundary
- * is ready **and** the folder has an absolute path **and** its MCP server can launch. Any
- * other combination returns `unavailable`, and the Compile button is simply not drawn —
- * a button that cannot act is worse than an absent one, because a person spends a click
- * finding that out.
- *
- * ## The local route (owner, 2026-09-06)
- *
- * *"for people who care about security, support a local LLM like Ollama … so it can run
- * on a local model."* The **address** for that already exists: Settings → AI connection's
- * connect-by-address path stores a base URL and a chosen model in
- * `@/shared/lib/llm-connection/local-endpoint`, and `llm_chat` sends to it with an audit line written
- * before the request leaves. So `route` gains `local`, and the shelf can name which brain
- * would answer instead of saying only that none can.
- *
- * ## `local` compiles (2026-09-06, second pass)
- *
- * The record above ended with its own reopening condition — *"a local tool catalogue that
- * reads a source and writes a page under one consent card reopens local Compile"* — and
- * that catalogue now exists: `read_source_text` opens a file this folder holds and this
- * bundle can decode, `propose_wiki_page` assembles a page and writes nothing, and one card
- * carries the page path, its sections, its citation count and both source lists before
- * anything lands. `useLocalCompile` runs that turn; `route` still decides only *who*
- * answers.
- *
- * Two boundaries stayed narrow, and both are visible on the shelf rather than assumed:
- * the live button needs a **loopback** runner, because after this pass whole documents
- * leave the process and "on this computer" has to be true rather than named; and a source
- * whose format needs a parser Atlas does not ship is not a target, so step two can reach
- * done instead of offering a turn it cannot finish.
- *
- * ## The brain is chosen, not ranked (owner, 2026-09-06)
- *
- * The first pass made the coding agent outrank the runner whenever both were installed.
- * On the owner's own machine both are, and the reason the runner is there at all is to be
- * chosen **deliberately for a folder whose documents should not leave it** — which a
- * precedence rule quietly takes away. So `resolveCompileBrain` turns the rank into a
- * default: both available draws one picker, the stored answer wins, and the coding agent
- * is what an unanswered folder gets. `route` follows that answer, and a stored answer
- * naming a brain this machine no longer offers falls back **and stops being stored**.
+ * Whether the Library can start an in-app agent turn. `route` is `agent` only when a verified
+ * runtime with an app-owned permission boundary is ready, the folder has an absolute path and its
+ * MCP server can launch; `local` needs a loopback runner. `resolveCompileBrain` picks between them.
  */
 
 
@@ -77,16 +33,9 @@ export interface LibraryLocalModel {
   /** `localhost:11434` — the host and port, which is the whole of where it goes. */
   host: string;
   /**
-   * Whether that host really is this machine.
-   *
-   * **The screen may not assume it.** `isLocalEndpointReady` asks only for a non-empty
-   * address and a chosen model, and Rust's own guard (`local_endpoint.rs`,
-   * `normalize_base_url`) refuses a plaintext non-loopback host but accepts an `https://`
-   * one — so a saved `https://gpu.example.com/v1` is a valid connect-by-address runner
-   * that is not on this computer. Printing "nothing leaves this computer" for it would be
-   * the one sentence `.claude/rules/local-first.md` exists to keep true (PO evidence and
-   * PO steward, 2026-09-06), so the sentence is chosen from this flag rather than from
-   * the fact that the path is called local.
+   * Whether that host really is this machine: Rust accepts `https://` non-loopback hosts, so the
+   * sentence "nothing leaves this computer" must be chosen from this flag
+   * (`.claude/rules/local-first.md`).
    */
   onThisComputer: boolean;
 }

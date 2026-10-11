@@ -18,8 +18,8 @@ export function useQuerySlugVerdict({
   const { normalizedQuerySlug, docsBySlug, staticVault } = vault;
   const { recentKey, source, vaultScopeSettled } = src;
   /**
-   * Said once: the unresolved slug leaves the address after capture, so the verdict does
-   * not reappear on every visit.
+   * The unresolved slug leaves the address after capture, so the result does not reappear on every
+   * visit.
    */
   const [missingQuerySlug, setMissingQuerySlug] = useState<string | null>(null);
   /**

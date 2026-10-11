@@ -66,9 +66,8 @@ describe("why Compile cannot run — one answer, in the order a person can act",
   });
 
   it("lets a loopback runner compile the formats it can read", () => {
-    // The 2026-09-06 record's own falsifier: a local catalogue that reads a source and
-    // writes a page under one consent card reopens local Compile. It exists, so this
-    // route stops being a reason.
+    // A local catalogue that reads a source and writes a page under one consent card makes local Compile
+    // available.
     expect(
       libraryCompileBlockedReason({ ...READY, route: "local", localModel: LOCAL }, t),
     ).toBeNull();

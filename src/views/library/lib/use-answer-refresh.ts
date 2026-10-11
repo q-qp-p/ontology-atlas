@@ -20,10 +20,8 @@ interface RefreshState {
   snapshot: AnswerRefreshSnapshot | null;
   proposal: ReturnType<typeof buildAnswerRevision> | null;
   /**
-   * **Not a string.** It used to be `error.message`, and on a Korean screen that meant
-   * "The retained question or its history cannot be read." in the page body (installed-app
-   * inspection before v1.2.2, B2). A `FailureCopy` carries the translated sentence and keeps the
-   * English where only a developer looks, and its type is what stops a raw message being put back.
+   * Not a string: a `FailureCopy` carries the translated sentence and keeps English where only a
+   * developer looks, so a raw message cannot be shown.
    */
   error: FailureCopy | null;
 }

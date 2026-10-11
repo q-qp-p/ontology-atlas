@@ -7,10 +7,9 @@ import { type DemoClip, availableDemoClips, demoPoster, demoSources } from '../m
 import { controlClass } from '@/shared/ui/control-class';
 
 /**
- * The demo section's playback contract: one per-locale clip, muted, no captions (each take is
- * already in its language). Reduced motion keeps the poster and a play button. The section owns
- * the `--gateway-stage-max` cap (`app/styles/tokens.css`), or the video and caption edges split; it is
- * left-aligned to its heading like the other stages (`docs/DECISIONS.md` 2026-08-23).
+ * Playback contract: one per-locale clip, muted, no captions. Reduced motion keeps the poster and
+ * a play button. The section owns the `--gateway-stage-max` cap (`app/styles/tokens.css`), or
+ * video and caption edges split.
  */
 export function DemoStage({ available }: { available?: readonly DemoClip['id'][] }) {
   const t = useTranslations('download');
@@ -80,13 +79,9 @@ function DemoPlayer({ clip }: { clip: DemoClip }) {
       className="mt-4 min-w-0"
     >
       <div className="relative min-w-0 overflow-hidden rounded-panel border border-[color:var(--color-border-soft)] bg-[color:var(--color-panel)]">
-        {/*
-         * The first bytes belong to the map and download button, hence no preload. No controls
-         * (nothing to scrub toward) and a loop for late arrivals (`docs/DECISIONS.md` 2026-08-30).
-         * Keyed on locale: a video does not re-select its source when its children change, or a
-         * Korean page plays the English take.
-         * Browsers autoplay inline only when `muted` and `playsInline` are both set.
-         */}
+        {/* No preload, so the first bytes belong to the map and download button. No controls; a loop for
+           late arrivals. Keyed on locale: a video does not re-select its source when its children change.
+           Autoplay inline needs both `muted` and `playsInline`. */}
         <video
           key={locale}
           ref={videoRef}

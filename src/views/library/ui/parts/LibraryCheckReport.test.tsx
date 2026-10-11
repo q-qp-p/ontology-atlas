@@ -7,12 +7,6 @@ import type { LintFinding, LintNodeCandidate } from "@/features/library";
 import { aggregateWikiFindings } from "@/shared/lib/library/wiki-report.mjs";
 import { LibraryCheckReport, advisoryReportSlugs, findingKey, reportOutline } from "./LibraryCheckReport";
 
-/**
- * The planted fixture, finding for finding: the nine `(code, page)` pairs
- * `node cli/src/index.mjs wiki-validate /Users/jinan/scratch/atlas-library-fixture-20260911/vault`
- * printed on 2026-09-12. Two of the six pages carry a finding in their own bytes; the
- * other four carry only advisory folder findings and therefore fit the template.
- */
 const STRUCTURAL = aggregateWikiFindings({
   pages: [
     {
@@ -218,10 +212,8 @@ describe("the computed half is the app's own, and it is the half that leads", ()
   it("keeps the blocking kinds open and folds the advisory ones behind their own count", () => {
     mount(<Harness structural={STRUCTURAL} />);
     /*
-     * The fold is closed in every state, including this one: the app's own copy says these
-     * rows are expected of a young wiki, so they are never the page to fix first, and the
-     * 413–473px they held put the agent's half below the fold at every width (council
-     * 2026-09-12, unanimous). The blocking kinds are never collapsible.
+     * Advisory rows are expected of a young wiki, so the fold is closed in every state; blocking kinds
+     * are never collapsible.
      */
     expect(
       screen.getAllByTestId("library-structural-group").map((node) => node.getAttribute("data-code")),
@@ -368,11 +360,6 @@ describe("the computed half is the app's own, and it is the half that leads", ()
     expect(chip.getAttribute("aria-describedby")).toBe("library-check-report-lint-blocked");
   });
 
-  /*
-   * With no coding agent on this computer the index draws one notice ending in the agents
-   * door; this page, one press away, kept a dead Check over a caption with no way out
-   * (2026-09-25). One missing agent now reads the same on both.
-   */
   it("draws the index's no-agent notice with its door instead of a dead check", () => {
     mount(
       <Harness
@@ -422,10 +409,8 @@ describe("the computed half is the app's own, and it is the half that leads", ()
   });
 
   /**
-   * ⚠️ Two of six rail entries were dead on the installed app (2026-09-13): the sections
-   * they name sit inside a fold that starts closed, so the press marked itself active and
-   * the page did not move. The rail lives above this component, so the fold's state has to
-   * be reachable from there.
+   * The rail sits above this component and its sections are inside a fold that starts closed, so the
+   * fold's state must be reachable from the rail.
    */
   it("names the advisory anchors so the rail can open the fold before it scrolls", () => {
     expect([...advisoryReportSlugs(STRUCTURAL)].sort()).toEqual([

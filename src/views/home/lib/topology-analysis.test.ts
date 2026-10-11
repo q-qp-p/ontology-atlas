@@ -361,7 +361,6 @@ describe("formatTopologyHealthBrief", () => {
     expect(buildTopologyHealthRepairHref("domain:views")).toBe(
       "/topology/?p=domain%3Aviews&workbench=edit",
     );
-    // Legacy multi-slash input is promoted to canonical form.
     expect(buildTopologyHealthRepairHref("capabilities/topology-analysis-modes")).toBe(
       "/topology/?p=capability%3Atopology-analysis-modes&workbench=edit",
     );

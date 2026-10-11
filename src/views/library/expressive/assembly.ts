@@ -1,35 +1,7 @@
 /**
- * **The object assembles itself** — where each mark comes from, and when it arrives.
- *
- * The owner, 2026-09-09: *"I do want the cool thing where the cubes assemble themselves…
- * various animation effects and motions… and in the Library the animation shown when data
- * accumulates inside it matters too."*
- *
- * So the constellation is no longer simply *there* when a screen opens. Each mark flies in
- * from outside the frame and settles into the place `constellation-model.ts` computed for
- * it, in an order that means something: **documents first, then the write-ups made from
- * them, then the citations between**. That is the Library's own sentence — gather, compile,
- * read — played as an arrival rather than printed as three steps.
- *
- * ## Why the schedule is here and not in the scene
- *
- * Same contract as the rest of this folder: plain numbers in, plain numbers out, no
- * three.js, no clock. A scene that owned its own schedule could only be checked by
- * watching it. This module answers "where is mark 12 at t=600ms" as arithmetic, so the
- * ordering, the overlap and the settling are unit-tested and the scene is left applying a
- * transform per frame.
- *
- * ## The shape of one mark's arrival
- *
- * A mark travels from a point on a sphere well outside the object to its final position,
- * on `easeOutCubic` — fast at first, asymptotically slow at the end, no overshoot. Overshoot
- * was available (the expression bans lifted on 2026-09-08) and is not used: a document
- * settling past its place and coming back reads as *bounce*, and this object is a folder
- * assembling, not a toy. It also spins as it flies, arriving at the fixed tumble the scene
- * already gives it, so the last thing that happens to a cube is that it stops turning.
- *
- * ⚠️ **Reduced motion has no schedule at all.** The host asks for `t = 1` and every mark is
- * home on the first frame — the same still object the same folder always draws.
+ * Plain numbers in and out, no three.js or clock, so ordering and settling are unit-tested. Marks
+ * arrive documents first, then write-ups, then citations. Reduced motion asks for `t = 1`: every
+ * mark is home.
  */
 
 /** Where a mark is, partway through its arrival. */

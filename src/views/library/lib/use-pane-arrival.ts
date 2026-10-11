@@ -6,22 +6,8 @@ import { MOTION } from "@/shared/motion";
 const ARRIVAL_RISE_PX = 6;
 
 /**
- * **The reader's pane arrives instead of appearing** (design sweep, 2026-09-25).
- *
- * Measured by polling `document.getAnimations()` every 16ms while opening a wiki row,
- * pressing *Close page* and switching tabs: only hover colour transitions ran. The graph
- * and the reading pane swapped in one frame, which is the hard cut `.claude/rules/design.md`
- * refuses.
- *
- * Each time `key` changes, the element that `ref` now points at plays one entrance on the
- * Web Animations API: opacity and a 6px rise on `--motion-base` with the entry curve, read
- * from the JS mirror of the CSS ramp (`src/shared/motion`). Under reduced motion it is the
- * crossfade alone — the axis that moves is the one reduced motion removes, the change is
- * still visible as a change. Nothing remounts: the pane keeps its scroll and its state, the
- * animation only restarts.
- *
- * The first render does not animate — a page that loads with a document open is arriving
- * as a page, not as a change inside one.
+ * The pane arrives instead of appearing: opacity and a 6px rise on `--motion-base`; under reduced
+ * motion crossfade only. The first render does not animate. Nothing remounts.
  */
 export function usePaneArrival(ref: RefObject<HTMLElement | null>, key: string): void {
   useEffect(() => {

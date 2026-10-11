@@ -8,27 +8,8 @@ import { ICON_SIZE } from "@/shared/ui/icon-size";
 import { AgentDoor } from "./AgentDoor";
 
 /**
- * **No agent on this computer: one notice with its way out, not dead doors** (design sweep,
- * 2026-09-25).
- *
- * Measured at 1512 on the no-agent folder, the index column's top 120px held Check and
- * Compile at opacity 0.55 (text about 2.3:1) over a two-line paragraph saying why. The
- * features are still named here — the sentence says what they would do — and the reason
- * keeps its one place, now with the press that removes it. "Availability is a state with
- * its reason" (`docs/DECISIONS.md`, 2026-09-11) holds: the state is this card, and it ends
- * in a door.
- *
- * ⚠️ **One card for one state, wherever the Library draws it** (2026-09-25). The index took
- * this card and the Check-results page it opens kept its own Check control on screen,
- * disabled, over a caption and with no door at all — one missing agent in two grammars a
- * press apart. Both now draw this component, so the state reads the same on both.
- *
- * ⚠️ **One box edge, one text line, and not the loudest thing around it** (design sweep
- * round 2, 2026-09-25). The door used to be a full-width white-ink outline button inside
- * this card's padding: its box stood at 87 while every other box in the column stood at 76,
- * and it out-shouted the selected page card. The card is the only box; its sentence and its
- * door both start on one text line after the glyph slot, and the door is the accent link a
- * pressable fact wears.
+ * One card for one state wherever the Library draws it: the index and the Check-results page both
+ * render this, so a missing agent reads the same on both.
  */
 export function AgentMissingNotice({
   id,

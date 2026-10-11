@@ -6,28 +6,15 @@ import { cn } from "@/shared/lib/cn";
 import { badgeClass } from "@/shared/ui/badge-class";
 
 /**
- * One state word. Geometry comes from the badge primitive; the colour is this route's own
- * verdict, which is the split `badge-class.ts` documents in its own header.
- *
- * **Why it is its own file** (design-infoviz, council 2026-09-11). It shipped inside
- * `LibrarySection`, where it drew the index's two grades — a quiet neutral word for
- * *nothing to act on* and the amber pill for *a row a person can fix*. The saved-question
- * rows on the landing needed the same two grades for the same reason: one bold mark was
- * drawing five `answerObservation` states, so *no change since source observation* was as
- * loud as *a cited original is missing*. A second spelling of the same badge is how two
- * lists come to disagree about what amber means, so both read this one.
+ * One state word; geometry comes from the badge primitive, colour is this route's own
+ * (see `badge-class.ts`).
  */
 export function StateBadge({
   tone,
   children,
   testId,
 }: {
-  /*
-   * ⚠️ **No third, dashed `quiet` tone** (design sweep round 2, 2026-09-25). It was added
-   * for a source still `checking`, and at 1x on the captures its dashed edge could not be
-   * told from the solid one — a variant nobody could see. `checking` wears `neutral`, and
-   * the word tells it from `not compiled`, which is the fact rather than a texture.
-   */
+  /* No dashed `quiet` tone: it cannot be told from the solid edge at 1x. `checking` wears `neutral`. */
   tone: "neutral" | "warning";
   children: ReactNode;
   testId?: string;

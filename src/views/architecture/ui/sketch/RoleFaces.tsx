@@ -367,7 +367,8 @@ export function RoleFaces({
                     role="img"
                     aria-label={ledger ? ledgerStatusLabel(ledger) : deltaUnknownLabel}
                   >
-                    {/* The tick is scoped: like the role face (`role-ledger.ts`), it carries the edge-shaped sentence, so it never reads as a per-role verdict. */}
+                    {/* The tick is scoped: like the role face (`role-ledger.ts`), it carries the edge-shaped sentence,
+                       so it never reads as a per-role result. */}
                     <title>{ledger ? ledgerStatusLabel(ledger) : deltaUnknownLabel}</title>
                     {ledger ? LEDGER_GLYPH[ledger.state] : '○'}
                   </text>

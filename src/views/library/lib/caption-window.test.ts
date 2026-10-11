@@ -3,12 +3,8 @@ import { describe, expect, it } from "vitest";
 import { captionWindow } from "./caption-window";
 
 /**
- * **A caption that says a file matched and shows a line where the match is not.**
- *
- * The window exists for one measured fact: about 33 characters of the unit are visible in
- * the index column, so a phrase further in than that is invisible while its row claims a
- * match (design-responsive, council 2026-09-11). What these cases pin is that moving the
- * window never changes the file's words — it only leaves some out, and says so.
+ * The window leaves some of the file's words out but never changes them; about 33 characters of the
+ * unit are visible in the index column.
  */
 
 const RECORD =
