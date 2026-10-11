@@ -169,7 +169,7 @@ describe('the structural check — the CLI, the MCP validators and the app enume
     expect(aggregateBridged).toBe(aggregateMcp);
     const bridge = resolve(__dirname, '../../src/shared/lib/library/wiki-report.mjs');
     const { readFileSync } = await import('node:fs');
-    expect(readFileSync(bridge, 'utf8')).toContain('export * from "../../../mcp/src/wiki-report.mjs"');
+    expect(readFileSync(bridge, 'utf8')).toContain('export * from "../../../../mcp/src/wiki-report.mjs"');
   });
 
   it('groups and rows are ordered deterministically, whatever order the pages arrive in', () => {
