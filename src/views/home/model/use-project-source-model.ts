@@ -27,6 +27,7 @@ import {
   pickTauriVaultDirectory,
   type ProjectSourceInspection,
 } from "@/shared/lib/tauri-vault-fs";
+import { resolveProjectSourceRepair } from "./project-source-repair";
 import { deriveProjectSourceWitnesses } from "../lib/project-source-witnesses";
 
 export type ProjectSourceModelError =
@@ -214,6 +215,28 @@ export function useProjectSourceModel(input: {
     key: string;
     value: ProjectSourceProposedRoot | null;
   } | null>(null);
+  const repairTarget = useMemo(() => resolveProjectSourceRepair({
+    view: snapshot?.view ?? null,
+    projectSlug: input.projectSlug,
+    graphHash,
+    nodes: input.nodes,
+    witnesses,
+  }), [snapshot, input.projectSlug, graphHash, input.nodes, witnesses]);
+  const repairUnavailable = Boolean(
+    snapshot?.view.projectSlug === input.projectSlug
+    && snapshot?.view.nextAction.id === "repair_source_path" && !repairTarget,
+  );
+  const currentView = useMemo<ProjectSourceView | null>(() => {
+    if (snapshot?.view.projectSlug !== input.projectSlug) return null;
+    if (!repairUnavailable) return snapshot?.view ?? null;
+    return {
+      ...snapshot.view,
+      status: "review_required",
+      currentness: "stale",
+      topGap: { id: snapshot.view.receipt?.graphHash === graphHash ? "receipt_malformed" : "ontology_changed" },
+      nextAction: { id: "remeasure_source" },
+    };
+  }, [snapshot, input.projectSlug, repairUnavailable, graphHash]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<ProjectSourceModelError | null>(null);
   const generation = useRef(0);
@@ -340,7 +363,7 @@ export function useProjectSourceModel(input: {
     setError(null);
     try {
       let rootPath: string | null = null;
-      if (sourceActionUsesPicker(snapshot.view)) {
+      if (sourceActionUsesPicker(currentView ?? snapshot.view)) {
         if (typeof options?.rootPath === "string" && options.rootPath.length > 0) {
           rootPath = options.rootPath;
         } else {
@@ -352,7 +375,7 @@ export function useProjectSourceModel(input: {
           }
           if (rootPath === null) return;
         }
-      } else if (sourceActionRemeasures(snapshot.view) && snapshot.bindings.length === 1) {
+      } else if (sourceActionRemeasures(currentView ?? snapshot.view) && snapshot.bindings.length === 1) {
         rootPath = snapshot.bindings[0].rootPath;
       } else {
         return;
@@ -422,6 +445,7 @@ export function useProjectSourceModel(input: {
     busy,
     runtime,
     witnesses,
+    currentView,
     input.pickerTitle,
   ]);
 
@@ -437,11 +461,13 @@ export function useProjectSourceModel(input: {
     && snapshotMatchesProject
     && snapshot.readStatus !== "malformed"
     && snapshot.readStatus !== "unavailable"
-    && (sourceActionUsesPicker(snapshot.view) || sourceActionRemeasures(snapshot.view)),
+    && (sourceActionUsesPicker(currentView ?? snapshot.view) || sourceActionRemeasures(currentView ?? snapshot.view)),
   );
 
   return {
-    view: snapshotMatchesProject ? snapshot?.view ?? null : null,
+    view: currentView,
+    repairTarget,
+    repairUnavailable,
     /** `view` stays null until this project's receipt lands. */
     loading,
     busy,

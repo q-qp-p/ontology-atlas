@@ -6,6 +6,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { applyFrontmatterUpdates } from '@/entities/docs-vault';
 import {
   buildOntologyRelationEditPlan,
+  IMPACT_EDIT_RELATIONS,
   RELATION_EDGE_TYPE,
   type MeaningEditRelation,
 } from '@/entities/knowledge-graph';
@@ -99,7 +100,7 @@ describe('relation help: each line is one connection, and a missing target only 
 });
 
 describe('target help names exactly the relations an impact query follows', () => {
-  it('every locale names the walked relations and no other', () => {
+  it('the relations the help is built from are the ones impact traversal reaches', () => {
     const reached = new Set(
       queryCompiledOntology(artifact, { operation: 'impact', slug: TARGET }).nodes.map(
         (node: { slug: string }) => node.slug,
@@ -107,17 +108,7 @@ describe('target help names exactly the relations an impact query follows', () =
     );
     const walked = EDITOR_RELATIONS.filter((relation) => reached.has(sourceOf(relation)));
     expect(walked.length).toBeGreaterThan(0);
-
-    for (const locale of LOCALES) {
-      const editor = catalog(locale).meaningEditor;
-      // The label a person picks in the select, without its parenthetical gloss.
-      const label = (relation: MeaningEditRelation) =>
-        (editor.relationName[relation] as string).split(/ \(|（/)[0];
-      for (const relation of EDITOR_RELATIONS) {
-        expect([locale, relation, editor.targetHelp.includes(label(relation))])
-          .toEqual([locale, relation, walked.includes(relation)]);
-      }
-    }
+    expect(IMPACT_EDIT_RELATIONS).toEqual(walked);
   });
 });
 

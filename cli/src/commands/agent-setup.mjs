@@ -45,7 +45,6 @@ const require_ = createRequire(import.meta.url);
 const ALLOWED_FLAGS = ['--root', '--vault', '--write', '--json', '--install-pre-commit-hook'];
 const WORKFLOW_GUIDE_PATH = 'docs/AGENT-GRAPH-WORKFLOW.md';
 const POST_CHANGE_SYNC_RULES = Object.freeze([
-  'After non-trivial code changes, sync docs/ontology before finishing so Claude Code and Codex see the same graph.',
   'Sync when a change introduces or renames a domain, capability, element, or relation.',
   'Skip ontology sync for typos, comments, style-only edits, lint config, and fixture-only changes.',
 ]);
@@ -202,7 +201,7 @@ function buildAgentSetup(parsed) {
       root: codebaseRoot,
       omotVault: rootVaultArg,
       repoRootArg: '.',
-      reason: 'open the codebase root while the ontology lives in a subfolder',
+      reason: 'open the codebase root while the ontology lives in another folder',
     });
   }
 
@@ -270,7 +269,10 @@ function buildAgentSetup(parsed) {
         'CLI-only use, MCP-connected use, graph DB differences, graph query pack, and verified setup checks.',
       modeComparison: SETUP_MODE_COMPARISON,
       firstContactProofContract: FIRST_CONTACT_PROOF_CONTRACT,
-      postChangeSync: POST_CHANGE_SYNC_RULES,
+      postChangeSync: [
+        `After non-trivial code changes, sync the configured vault ${JSON.stringify(vaultRoot)} before finishing so Claude Code and Codex see the same graph.`,
+        ...POST_CHANGE_SYNC_RULES,
+      ],
     },
   };
 }

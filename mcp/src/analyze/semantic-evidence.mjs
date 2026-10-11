@@ -3,7 +3,9 @@
 // document reads like marketing or a template.
 
 import { readFileSync, readdirSync, statSync, existsSync, realpathSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { join, basename, relative } from 'node:path';
+import { authoredMarkdownLines } from './authored-markdown.mjs';
 import {
   CARGO_MANIFEST_MAX_BYTES,
   NODE_PACKAGE_MANIFEST_MAX_BYTES,
@@ -103,7 +105,8 @@ export function collectSemanticEvidence(rootPath, skipped = []) {
           continue;
         }
       }
-      const text = readFileSync(path, 'utf-8');
+      const bytes = readFileSync(path);
+      const text = bytes.toString('utf-8');
       const extracted = source === 'Cargo.toml'
         ? extractCargoPackageContract(text)
         : source === 'setup.py'
@@ -112,7 +115,7 @@ export function collectSemanticEvidence(rootPath, skipped = []) {
             ? extractPythonPyprojectPackageContract(text)
           : nodePackageContract
             ? extractNodePackageContract(text)
-          : extractSemanticDocument(text);
+          : extractSemanticDocument(text, source);
       if (extracted.skipReason) {
         if (
           !(
@@ -134,6 +137,17 @@ export function collectSemanticEvidence(rootPath, skipped = []) {
         headings: extracted.headings,
         excerpt: extracted.excerpt,
         _reviewRequiredEvidence: extracted.reviewRequiredEvidence,
+        _excerptInfo: extracted.firstOmittedLine === undefined ? undefined : {
+          scope: 'selected_prose',
+          truncated: extracted.firstOmittedLine !== null,
+          firstOmittedLine: extracted.firstOmittedLine,
+          nextSourceRead: extracted.firstOmittedLine === null ? null : {
+            path: source,
+            startLine: extracted.firstOmittedLine,
+            maxLines: 200,
+            expectedSha256: createHash('sha256').update(bytes).digest('hex'),
+          },
+        },
         _riskText: extracted.riskText,
         _score: pathScore + semanticContentScore(extracted),
       });
@@ -176,6 +190,7 @@ export function collectSemanticEvidence(rootPath, skipped = []) {
   }
   return selected.map((row) => {
     const riskFlags = scanSemanticEvidenceRisks(row);
+    if (row._excerptInfo?.truncated) riskFlags.push('excerpt-truncated');
     return {
       source: row.source,
       role: row.role,
@@ -184,6 +199,7 @@ export function collectSemanticEvidence(rootPath, skipped = []) {
       excerpt: row.excerpt,
       trust: semanticEvidenceTrust(riskFlags),
       riskFlags,
+      ...(row._excerptInfo ? { excerptInfo: row._excerptInfo } : {}),
       ...(row._reviewRequiredEvidence?.length > 0
         ? { reviewRequiredEvidence: row._reviewRequiredEvidence }
         : {}),
@@ -424,8 +440,9 @@ function semanticContentScore({ title, headings, excerpt }) {
   return score;
 }
 
-function extractSemanticDocument(text) {
-  const lines = text.split(/\r?\n/);
+
+function extractSemanticDocument(text, source) {
+  const lines = /\.rst$/i.test(source) ? text.split(/\r\n|\r|\n/) : authoredMarkdownLines(text);
   let title = null;
   let fence = null;
   let rstLiteralBlock = false;
@@ -581,7 +598,8 @@ function extractSemanticDocument(text) {
   );
   const completeSectionTextRows = semanticSectionTextRows(orderedSections);
   const completeHeadings = semanticHeadingSelection(sections, orderedSections);
-  const completeExcerpt = buildSemanticExcerpt(completeSectionTextRows);
+  const completeSelection = buildSemanticExcerptSelection(completeSectionTextRows);
+  const completeExcerpt = completeSelection.excerpt;
   const completeRiskFlags = scanSemanticEvidenceRisks({
     headings: completeHeadings,
     excerpt: completeExcerpt,
@@ -594,6 +612,7 @@ function extractSemanticDocument(text) {
       title,
       headings: completeHeadings,
       excerpt: completeExcerpt,
+      firstOmittedLine: completeSelection.firstOmittedLine,
     };
   }
 
@@ -632,6 +651,7 @@ function extractSemanticDocument(text) {
         title,
         headings: safeHeadings,
         excerpt: safeSelection.excerpt,
+        firstOmittedLine: safeSelection.firstOmittedLine,
         reviewRequiredEvidence: reviewRequiredEvidence.sort(
           (a, b) => a.startLine - b.startLine,
         ),
@@ -681,6 +701,7 @@ function extractSemanticDocument(text) {
     title,
     headings: completeHeadings,
     excerpt: completeExcerpt,
+    firstOmittedLine: completeSelection.firstOmittedLine,
   };
 }
 
@@ -689,10 +710,6 @@ function semanticSectionTextRows(sections) {
     section,
     text: section.prose.map((row) => row.text).join(' '),
   }));
-}
-
-function buildSemanticExcerpt(sectionTextRows) {
-  return buildSemanticExcerptSelection(sectionTextRows).excerpt;
 }
 
 function buildSemanticExcerptSelection(sectionTextRows) {
@@ -742,7 +759,22 @@ function buildSemanticExcerptSelection(sectionTextRows) {
     .slice(0, SEMANTIC_EVIDENCE_MAX_EXCERPT)
     .trim();
 
-  return { excerpt, sectionSelections };
+  const returnedBySection = new Map(sectionSelections.map(({ section, text }) => [section, text.length]));
+  let firstOmittedLine = null;
+  for (const { section, text } of sectionTextRows) {
+    const returned = returnedBySection.get(section) ?? 0;
+    if (returned >= text.length) continue;
+    let offset = 0;
+    for (const row of section.prose) {
+      if (offset + row.text.length > returned) {
+        const line = row.lineIndex + 1;
+        firstOmittedLine = firstOmittedLine === null ? line : Math.min(firstOmittedLine, line);
+        break;
+      }
+      offset += row.text.length + 1;
+    }
+  }
+  return { excerpt, sectionSelections, firstOmittedLine };
 }
 
 function visibleSemanticProseRows(section, selectedText) {

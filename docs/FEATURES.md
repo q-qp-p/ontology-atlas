@@ -25,10 +25,17 @@ Markdown examples, HTML blocks/comments and blockquotes from their authored evid
 Capability selection applies the same authored-block boundary to ownership and
 exclusions, preserving genuine legacy fields and refusing unsupported claims.
 
+Initial repository analysis distinguishes authored Markdown from literal examples.
+Document excerpts report omitted prose with an exact, hash-bound source read;
+truncated evidence requires review and does not authorize meaning writes.
+
 The folder entry uses a static welcome portrait, and the missing-page screen
 uses a curious map-search portrait in its existing icon slot. These expressions
 leave the screen's labels and actions authoritative. Walking, reading and
 completion artwork share the same traveler proportions and equipment.
+
+Agent setup names the connected vault in its post-change sync guidance, including
+when the vault and codebase are separate folders.
 
 ## Surfaces
 
@@ -38,6 +45,10 @@ completion artwork share the same traveler proportions and equipment.
 | CLI | `node cli/src/index.mjs <command>` from a source checkout | [`cli/README.md`](../cli/README.md); the command list is `node cli/src/index.mjs --help` |
 | MCP | JSON-RPC server an agent registers against a vault | [`mcp/README.md`](../mcp/README.md); the tool list is the server's `tools/list` answer; optional first-construction discovery exposes 20 existing tools, with full discovery as the default; exact `sourceOnly` continuations reuse bounded evidence without rescanning |
 | Website | Static export; `/` is the gateway until a vault is loaded | [Gateway](features/gateway.md) |
+
+Project source-path repair opens the exact affected concept and its recorded
+relative path. Missing, stale or out-of-project targets require remeasurement;
+copied handoffs keep that target without disclosing the private source root.
 
 Meaning review previews a nonblank authored description or a complete opening
 prose paragraph within 320 characters. The full-document action exposes the

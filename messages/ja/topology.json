@@ -170,7 +170,9 @@
     "sourceErrorUnbound_sidecar_unavailable": "Atlasはローカルのレシートを読み取れなかったため、フォルダを接続しませんでした。",
     "sourceErrorUnbound_picker_failed": "Atlasはコードフォルダの選択画面を開けませんでした。もう一度押してください。",
     "sourceErrorUnbound_measurement_failed": "Atlasは選ばれたフォルダを計測できなかったため、接続しませんでした。",
-    "sourceErrorUnbound_persistence_failed": "Atlasはレシートを保存できなかったため、フォルダを接続しませんでした。"
+    "sourceErrorUnbound_persistence_failed": "Atlasはレシートを保存できなかったため、フォルダを接続しませんでした。",
+    "sourceRepairTarget": "{title}を開き、見つからないコードの場所を確認してください：{path}。",
+    "sourceRepairUnavailable": "記録された概念またはコードの場所が現在のプロジェクトと一致しません。修正対象を選ぶ前にコードフォルダーを再確認してください。"
   },
   "createNode": {
     "heading": "概念を追加",
