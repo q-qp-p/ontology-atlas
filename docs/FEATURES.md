@@ -30,6 +30,9 @@ uses a curious map-search portrait in its existing icon slot. These expressions
 leave the screen's labels and actions authoritative. Walking, reading and
 completion artwork share the same traveler proportions and equipment.
 
+Agent setup names the connected vault in its post-change sync guidance, including
+when the vault and codebase are separate folders.
+
 ## Surfaces
 
 | Surface | Entry | Reference |
