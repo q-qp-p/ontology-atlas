@@ -28,6 +28,9 @@ export const rules = [
     order: 810,
     command: 'pnpm exec playwright test tests/e2e/touch-target-contract.spec.ts',
     reason: 'selected-node panel touch targets changed',
-    matches: [/^src\/widgets\/ontology-map\/ui\/OntologyMapDetailPanel\.tsx$/],
+    matches: [
+      /^src\/widgets\/ontology-map\/ui\/OntologyMapDetailPanel\.tsx$/,
+      /^src\/widgets\/ontology-map\/ui\/detail-panel\/[\w-]+\.tsx?$/,
+    ],
   },
 ];

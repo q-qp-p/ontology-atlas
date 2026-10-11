@@ -2,7 +2,8 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ProjectSourceView } from "@/shared/lib/project-source-receipt";
-import { OntologyMapDetailPanel, type OntologyMapDetailPanelProps } from "./OntologyMapDetailPanel";
+import { OntologyMapDetailPanel } from "./OntologyMapDetailPanel";
+import type { OntologyMapDetailPanelProps } from "./detail-panel/types";
 
 // `@/i18n/navigation`'s Link wraps next-intl's `createNavigation`, which
 // pulls in `next/navigation` — unresolvable under vitest's module graph in

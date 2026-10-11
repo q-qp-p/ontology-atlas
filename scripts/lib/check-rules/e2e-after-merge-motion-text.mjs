@@ -98,6 +98,7 @@ export const rules = [
       /^src\/shared\/motion\/shared-element\.ts$/,
       /^app\/styles\/motion-morph\.css$/,
       /^src\/widgets\/ontology-map\/ui\/OntologyMapDetailPanel\.tsx$/,
+      /^src\/widgets\/ontology-map\/ui\/detail-panel\/[\w-]+\.tsx?$/,
     ],
   },
   {
