@@ -4,7 +4,8 @@ doc_type: spec
 status: current
 area: analysis
 date: 2026-10-11
-decisions: []
+decisions:
+  - 264bdb0a-5df6-4504-b240-f7cd69560844
 ---
 
 # Initial document evidence exposes omissions and the exact next read
