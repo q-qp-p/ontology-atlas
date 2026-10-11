@@ -6,7 +6,7 @@
  * (`model/force-layout.ts`) reflows its neighbors around the pinned position.
  *
  * These two pure functions isolate the coordinate algebra so it can be tested
- * without a camera/canvas; the caller (`topology-pointer-handlers.ts`)
+ * without a camera/canvas; the caller (`topology-pointer-move.ts`)
  * supplies pointer→world conversions via `topology-camera-math.ts#screenToWorld`.
  *
  * The grab offset (node position − pointer world position at grab time) is the

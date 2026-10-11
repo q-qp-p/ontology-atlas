@@ -47,7 +47,7 @@ import {
 import type { DomeViewKind } from "../../model/dome-view/types";
 import { createStrataLodState, type StrataLodState } from "../../model/strata-lod";
 import { DEFAULT_TIER_REVEAL } from "../../model/tier-visibility";
-import { type TopologyPointerHandlers } from "../input/topology-pointer-handlers";
+import type { TopologyPointerHandlers } from "../input/topology-pointer-types";
 
 import type { MapLayoutMark } from "@/shared/lib/map-layout-morph-store";
 import { readOntologyMapMarks } from "../../morph/map-marks";

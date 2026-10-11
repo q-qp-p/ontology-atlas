@@ -8,7 +8,7 @@ import {
 } from "../../expressive/release-offsets";
 import { type ForceSimulation } from "../../model/force-layout";
 import { type HomeSpringState } from "../../model/relayout-home";
-import type { NodeDragState } from "../input/topology-pointer-handlers";
+import type { NodeDragState } from "../input/topology-pointer-types";
 import { type TopologyWorld } from "./topology-world";
 
 /** Own simulation, drag deformation, and coordinate homing state. */

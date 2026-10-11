@@ -29,7 +29,7 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
  * classifies as "the value is right and nothing catches it").
  */
 describe('wheel intent — 스크롤하는 문서 안의 지도', () => {
-  const handlers = read('src/widgets/ontology-map/ui/input/topology-pointer-handlers.ts');
+  const handlers = read('src/widgets/ontology-map/ui/input/topology-pointer-zoom.ts');
 
   it('page-scroll 의도에서는 preventDefault 보다 먼저 빠져나간다', () => {
     const start = handlers.indexOf('const handleWheel');

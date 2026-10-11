@@ -38,8 +38,8 @@ import {
 import { type TierRevealConfig } from "../../model/tier-visibility";
 import type { ClusterBarLabels } from "../../render/cluster-chips";
 import { centerForInsets, computeEffectiveCameraScaleMax, computeEffectiveCameraScaleMin } from "../camera/topology-camera-math";
-import type { HoverAvoidRect, NodeDragState } from "./topology-pointer-handlers";
-import { createTopologyPointerHandlers, type TopologyPointerHandlers } from "./topology-pointer-handlers";
+import { createTopologyPointerHandlers } from "./topology-pointer-handlers";
+import type { HoverAvoidRect, NodeDragState, TopologyPointerHandlers } from "./topology-pointer-types";
 import { readOntologyMapTokensOrNull } from "../../tokens/topology-read-tokens";
 import { type TopologyWorld } from "../world/topology-world";
 

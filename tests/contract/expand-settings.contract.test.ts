@@ -252,7 +252,7 @@ describe("펼치기 표시 — 셋이 실제로 갈아끼워진다", () => {
   });
 
   /**
-   * Hit testing (`topology-pointer-handlers.ts`), label reservation, and drawing
+   * Hit tests (`topology-pointer-hit-tests.ts`), label reservation, and drawing
    * all read **the same decision function**. Without it, all three re-write their own
    * `if (expanded)` and eventually diverge — the path that produces a button that is
    * visible but unclickable.

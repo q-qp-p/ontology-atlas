@@ -28,7 +28,7 @@ import {
 import type { Pulse } from "../../render/edge-fireflies";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import type { OntologyMapProps } from "../OntologyMap";
-import type { NodeDragState } from "../input/topology-pointer-handlers";
+import type { NodeDragState } from "../input/topology-pointer-types";
 import { readOntologyMapTokensOrNull } from "../../tokens/topology-read-tokens";
 import { type TopologyWorld } from "../world/topology-world";
 
