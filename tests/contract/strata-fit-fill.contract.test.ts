@@ -10,7 +10,7 @@ import {
   domeWorldBounds,
 } from "@/widgets/ontology-map/model/dome-view/projection";
 import type { DomeInputNode } from "@/widgets/ontology-map/model/dome-view/types";
-import { computeDomeFitCameraTarget } from "@/widgets/ontology-map/ui/topology-camera-math";
+import { computeDomeFitCameraTarget } from "@/widgets/ontology-map/ui/camera/topology-camera-math";
 import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
 
 /**

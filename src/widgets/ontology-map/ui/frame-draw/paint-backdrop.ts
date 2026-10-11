@@ -1,7 +1,7 @@
 import { backgroundParallaxOrigin } from "../../model/background-parallax";
 import { DEPTH_DOT_LAYERS, draw as gridDraw } from "../../render/grid";
 import { drawRealmStars, drawStarDust } from "../../render/starfield";
-import { worldToScreen } from "../topology-camera-math";
+import { worldToScreen } from "../camera/topology-camera-math";
 import type { FrameInputs } from "./frame-begin";
 
 export function paintBackdrop(frame: FrameInputs): void {

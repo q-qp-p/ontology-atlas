@@ -13,7 +13,7 @@ import { DOME_RING_ALPHA } from "../../model/dome-view/ink";
 import type { DomeNodeFrame } from "../../model/dome-view/runtime";
 import { DEFAULT_TIER_REVEAL } from "../../model/tier-visibility";
 import { labelZoomScale } from "../../render/labels";
-import { worldToScreen } from "../topology-camera-math";
+import { worldToScreen } from "../camera/topology-camera-math";
 import { passState, ZERO_DOME_FRAME, domeNodeFrameReused } from "./frame-state";
 import { TRAIL_GLINT_PERIOD_MS } from "./trail-curves";
 import type { FrameDrawParams } from "./frame-draw-params";

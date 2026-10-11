@@ -15,7 +15,7 @@ const mapTokens = {
   safeInsetTop: 0, safeInsetBottom: 0, safeInsetLeft: 0, safeInsetRight: 0,
 } as unknown as OntologyMapTokens;
 
-vi.mock("../ui/topology-read-tokens", () => ({ readOntologyMapTokensOrNull: () => mapTokens }));
+vi.mock("../tokens/topology-read-tokens", () => ({ readOntologyMapTokensOrNull: () => mapTokens }));
 vi.mock("../dial/tokens", async (load) => ({ ...(await load<typeof import("../dial/tokens")>()), readDialTokens: () => dialTokens }));
 
 const { predictMapLayoutTarget } = await import("./map-marks");

@@ -1,7 +1,7 @@
 /**
  * Programmatic camera moves (focus dive, cluster dive, fit, recenter) ease in and out with
  * a distance-proportional duration, where the interactive camera rides a spring. The loop
- * (`ui/use-topology-loop.ts`) owns the tween state and hands back to the spring when a
+ * (`use-topology-loop.ts`) owns the tween state and hands back to the spring when a
  * gesture interrupts. Durations are feel constants, not themable `--map-*` tokens.
  */
 

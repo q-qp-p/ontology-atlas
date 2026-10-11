@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 import { collectDomeAncestry, collectDomeSubtree } from "../../model/dome-ancestry";
 import { domeFamily } from "./structure";
-import type { WorldNode } from "../topology-world";
+import type { WorldNode } from "../world/topology-world";
 
 it("avoids repeating large selected-subtree walks in steady frames", () => {
   const ids = Array.from({ length: 3000 }, (_, i) => `element:${i}`);

@@ -6,7 +6,7 @@ import type { DomeRuntime } from "../model/dome-view/runtime";
 import type { TopologyMapLensKind } from "../model/path-lens";
 import { hexToRgb } from "../render/dome-light";
 import type { OntologyMapTokens } from "../tokens/read-map-tokens";
-import type { TopologyWorld } from "../ui/topology-world";
+import type { TopologyWorld } from "../ui/world/topology-world";
 import type { LightBatch, LightLayer } from "./light-layer";
 import { installLightProbe, type LightProbe, type LightProbeBloom } from "./light-probe";
 import { LIGHT_SOURCES, type LightEmitter, type LightHead, type LightSourceInput } from "./light-sources";

@@ -14,7 +14,7 @@ import {
 } from "../../render/strata-lod";
 import { rollUpStrataDependencies } from "../../model/strata-lod";
 import { lerpColorHex } from "../../render/grid";
-import type { WorldEdge } from "../topology-world";
+import type { WorldEdge } from "../world/topology-world";
 import {
   passState,
   ZERO_DOME_FRAME,

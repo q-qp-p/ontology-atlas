@@ -3,7 +3,7 @@
  * with its capabilities and their elements), because nodes carry no creation dates. It only
  * drives each node's existing appear ramp; camera, focus and lenses are untouched. It is an
  * event, not a mode: no permanent scrub control. Deliberate stops only (second press, Escape,
- * a click, a canvas drag), wired in `ui/use-topology-loop.ts`; hover and wheel do not stop
+ * a click, a canvas drag), wired in `use-topology-loop.ts`; hover and wheel do not stop
  * it. Under reduced motion the caller ignores the request.
  */
 export interface GrowthReplayNode {

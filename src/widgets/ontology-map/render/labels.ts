@@ -25,7 +25,7 @@
  * - `capability`/`element`: eligibility now ramps with the node's own
  *   `revealAlpha` (its effective/tier alpha this frame — the SAME signal
  *   `model/tier-visibility.ts#effectiveNodeAlpha` computes and
- *   `ui/topology-pointer-handlers.ts`'s `HITTABLE_MIN_TIER_ALPHA` gates
+ *   `topology-pointer-handlers.ts`'s `HITTABLE_MIN_TIER_ALPHA` gates
  *   hit-testing on), not a raw camera-scale threshold. "if you can click it, you can read it" (if you can click it, you can read it) — an ego-revealed child
  *   now gets a label the instant it's clickable, ramping in together.
  * - The SELECTED (`egoState === "center"`) or currently HOVERED node's name

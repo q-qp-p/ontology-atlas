@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { domeFamily, indexedPulseEdges, rankedDiscChildren, rankedEgoNeighbors } from "./structure";
-import type { WorldEdge, WorldNode } from "../topology-world";
+import type { WorldEdge, WorldNode } from "../world/topology-world";
 
 function world(ids = ["element:a", "capability:b", "element:c"]) {
   return {

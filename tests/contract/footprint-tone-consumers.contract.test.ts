@@ -30,7 +30,7 @@ const TONES = Object.keys(FOOTPRINT_TONE_TOKEN);
 describe("걸어온 길 톤 — 모든 소비처가 모든 톤을 안다", () => {
   it("토큰 표와 폴백 표가 같은 톤을 가진다", () => {
     expect(TONES.length).toBeGreaterThan(0);
-    expect(read("src/widgets/ontology-map/ui/use-topology-loop.ts")).toContain("useTopologyAppearanceEffects({");
+    expect(read("src/widgets/ontology-map/ui/loop/use-topology-loop.ts")).toContain("useTopologyAppearanceEffects({");
     expect(Object.keys(FOOTPRINT_TONE_FALLBACK).sort()).toEqual([...TONES].sort());
   });
 
@@ -61,7 +61,7 @@ describe("걸어온 길 톤 — 모든 소비처가 모든 톤을 안다", () =>
    * their own. A hand-written `tone === "..."` in either file is how the divergence happened.
    */
   it.each([
-    ["src/widgets/ontology-map/ui/use-topology-appearance-effects.ts", "the map canvas"],
+    ["src/widgets/ontology-map/ui/loop/use-topology-appearance-effects.ts", "the map canvas"],
     ["src/widgets/app-settings-menu/ui/FootprintSettings.tsx", "the settings preview"],
   ])("%s 는 공유 표로 톤을 읽는다", (rel) => {
     const source = read(rel);

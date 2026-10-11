@@ -35,8 +35,8 @@ import { describe, expect, it } from "vitest";
  */
 
 const DRAW = join(process.cwd(), "src/widgets/ontology-map/ui/frame-draw/paint-nodes.ts");
-const REVEAL = join(process.cwd(), "src/widgets/ontology-map/ui/topology-reveal-frame-stage.ts");
-const SCHEDULER = join(process.cwd(), "src/widgets/ontology-map/ui/use-topology-frame-loop.ts");
+const REVEAL = join(process.cwd(), "src/widgets/ontology-map/ui/frame-loop/topology-reveal-frame-stage.ts");
+const SCHEDULER = join(process.cwd(), "src/widgets/ontology-map/ui/frame-loop/use-topology-frame-loop.ts");
 
 function read(path: string): string {
   return readFileSync(path, "utf8");

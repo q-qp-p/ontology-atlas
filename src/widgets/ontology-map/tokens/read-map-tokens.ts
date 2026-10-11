@@ -184,7 +184,7 @@ export interface OntologyMapTokens {
   overviewEntryRatio: number;
   /**
    * The fraction of the free canvas axis the fitted cone spans
-   * (`ui/topology-camera-math.ts#computeDomeFitCameraTarget`). The cone's only
+   * (`topology-camera-math.ts#computeDomeFitCameraTarget`). The cone's only
    * padding term — it replaces the 15% bounds pad plus 0.95 overview ratio it
    * used to inherit from the 2D overview fit.
    */
