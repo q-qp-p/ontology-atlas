@@ -35,7 +35,7 @@ reject each change as a Markdown diff.
 - **Your agent starts with context.** Claude Code, Codex, Cursor and Antigravity read the concepts, code paths, dependencies and open questions a task touches, over MCP.
 - **You own the record.** One Markdown file per concept in an `atlas/` folder, versioned and reviewed in Git like the code.
 - **You decide what is true.** Agent proposals stay proposals until you accept them.
-- **It says what it does not know.** A line on the map is a declared relationship, not proof of runtime impact; missing evidence shows as unknown, never as safe. Compact task handoffs preserve whole uncertainty statements or report omissions with the document reads needed to inspect them. Task matching and navigation use authored evidence; code examples, hidden comments and blockquotes cannot supply capability claims or work coordinates.
+- **It says what it does not know.** A line on the map is a declared relationship, not proof of runtime impact; missing evidence shows as unknown, never as safe. Compact task handoffs preserve whole uncertainty statements or report omissions with the document reads needed to inspect them. Initial analysis also excludes literal Markdown examples and marks truncated document evidence for review with a hash-bound original-source follow-up. Task matching and navigation use authored evidence; code examples, hidden comments and blockquotes cannot supply capability claims or work coordinates.
 
 ## See it
 
@@ -83,6 +83,8 @@ Your agent reaches the folder two ways:
 
 - **MCP:** the agent starts the Atlas MCP server, which reads and writes the folder on disk, even with the app closed. [Connect an agent](docs/guide/connect-agent.md) · [MCP reference](mcp/README.md)
 - **ACP:** Claude Agent and Codex also run in the app's own chat; each write waits until you allow it. [Agents](docs/features/agents.md)
+
+A project's source-path repair opens the affected concept and recorded relative path; stale or missing targets require remeasurement.
 
 Analysis compares recorded dependencies between responsibilities, then opens the exact concepts and declaring document beside the selected claim. Implementation records, unchecked source and missing explanations stay distinct. [Analysis](docs/features/analysis.md)
 

@@ -23,21 +23,18 @@ export function useTopologySourceActions({ toast, v2DatasheetModel, topologyPref
   const copyV2NodeHandoff = useCallback(
     async (text: string) => {
       await copyHandoffWithFeedback({
-        text,
+        text: text === v2DatasheetModel?.handoffText && projectSource.view
+          ? `${text}\n\n${formatProjectSourceHandoff(projectSource.view)}`
+          : text,
         copy: copyText,
         show: toast.show,
         copiedMessage: t("nodeDatasheet.handoffCopied"),
         failedMessage: t("nodeDatasheet.handoffCopyFailed"),
       });
     },
-    [t, toast],
+    [t, toast, v2DatasheetModel, projectSource.view],
   );
-  const projectAwareHandoffText = useMemo(() => {
-    if (!v2DatasheetModel) return "";
-    if (!projectSource.view) return v2DatasheetModel.handoffText;
-    return `${v2DatasheetModel.handoffText}\n\n${formatProjectSourceHandoff(projectSource.view)}`;
-  }, [v2DatasheetModel, projectSource.view]);
-  const handleProjectSourceAction = useCallback(async () => {
+  const handleProjectSourceAction = useCallback(async (selectNode: (nodeId: string) => void) => {
     const action = projectSource.view?.nextAction.id;
     if (!action || !v2DatasheetModel) return;
     if (projectSource.canRunSourceAction) {
@@ -45,17 +42,23 @@ export function useTopologySourceActions({ toast, v2DatasheetModel, topologyPref
       return;
     }
     if (action === "use_current_evidence") {
-      await copyV2NodeHandoff(projectAwareHandoffText);
+      await copyV2NodeHandoff(v2DatasheetModel.handoffText);
+      return;
+    }
+    if (action === "repair_source_path") {
+      if (projectSource.repairTarget) {
+        selectNode(projectSource.repairTarget.nodeId);
+        setFullDetailSlug(projectSource.repairTarget.nodeId);
+      }
       return;
     }
     if (
       action === "record_source_role"
-      || action === "repair_source_path"
       || action === "review_inventory_limit"
     ) {
       setFullDetailSlug(v2DatasheetModel.nodeId);
     }
-  }, [projectSource, v2DatasheetModel, copyV2NodeHandoff, projectAwareHandoffText, setFullDetailSlug]);
+  }, [projectSource, v2DatasheetModel, copyV2NodeHandoff, setFullDetailSlug]);
   const projectSourceNextAction = projectSource.view?.nextAction.id ?? null;
   const projectSourceNextActionAvailable = Boolean(
     // Nothing is prescribed until the proposal settles, or the button changes and shifts under the
@@ -87,11 +90,17 @@ export function useTopologySourceActions({ toast, v2DatasheetModel, topologyPref
       // Always an action label; `projectSourceDegraded` owns the notice for surfaces that cannot
       // act.
       action: t(`nodeDatasheet.sourceAction_${view.nextAction.id}`),
-      why: t(`nodeDatasheet.sourceWhy_${view.nextAction.id}`),
+      why: projectSource.repairUnavailable
+        ? t("nodeDatasheet.sourceRepairUnavailable")
+        : projectSource.repairTarget
+          ? t("nodeDatasheet.sourceRepairTarget", { title: projectSource.repairTarget.title, path: projectSource.repairTarget.path })
+          : t(`nodeDatasheet.sourceWhy_${view.nextAction.id}`),
       busy: t("nodeDatasheet.sourceBusy"),
     };
   }, [
     projectSource.view,
+    projectSource.repairTarget,
+    projectSource.repairUnavailable,
     projectSourceMeasuredAtLabel,
     t,
   ]);

@@ -96,6 +96,28 @@ const SEMANTIC_EVIDENCE_ROW_SCHEMA = Object.freeze({
       items: NON_BLANK_STRING_SCHEMA,
     },
     excerpt: { type: 'string', maxLength: 1200 },
+    excerptInfo: {
+      type: 'object',
+      description: 'Coverage of selected authored prose only, not the complete document. Replay nextSourceRead through analyze_repo_structure with sourceOnly:true; existing read bounds and refusals still apply.',
+      properties: {
+        scope: { type: 'string', enum: ['selected_prose'] },
+        truncated: { type: 'boolean' },
+        firstOmittedLine: { type: ['integer', 'null'], minimum: 1 },
+        nextSourceRead: {
+          type: ['object', 'null'],
+          properties: {
+            path: NON_BLANK_STRING_SCHEMA,
+            startLine: { type: 'integer', minimum: 1 },
+            maxLines: { type: 'integer', minimum: 1, maximum: 200 },
+            expectedSha256: { type: 'string', pattern: '^[a-f0-9]{64}$' },
+          },
+          required: ['path', 'startLine', 'maxLines', 'expectedSha256'],
+          additionalProperties: false,
+        },
+      },
+      required: ['scope', 'truncated', 'firstOmittedLine', 'nextSourceRead'],
+      additionalProperties: false,
+    },
     trust: {
       type: 'string',
       enum: [
@@ -115,6 +137,7 @@ const SEMANTIC_EVIDENCE_ROW_SCHEMA = Object.freeze({
           'future-state-claim',
           'negated-claim',
           'deprecated-state',
+          'excerpt-truncated',
         ],
       },
     },

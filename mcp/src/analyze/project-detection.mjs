@@ -15,6 +15,7 @@ import {
   STARTER_ONTOLOGY_SLUGS,
 } from './constants.mjs';
 import { cleanHeadingLabel, humanize, isHeadingAdornment, slugify } from './text.mjs';
+import { authoredMarkdownLines } from './authored-markdown.mjs';
 import { VAULT_SOURCES_DIR } from '../schema.mjs';
 import {
   packageContractPathIssue,
@@ -177,7 +178,8 @@ function detectReadmeH1(rootPath) {
     const path = join(rootPath, source);
     if (!pathResolvesInsideRoot(rootPath, path)) continue;
     try {
-      const lines = readFileSync(path, 'utf-8').split(/\r?\n/);
+      const text = readFileSync(path, 'utf-8');
+      const lines = /\.rst$/i.test(source) ? text.split(/\r?\n/) : authoredMarkdownLines(text);
       let fence = null;
       for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
         const line = lines[lineIndex];
@@ -397,7 +399,7 @@ export function detectDomainsFromReadme(rootPath) {
     if (!pathResolvesInsideRoot(rootPath, p)) continue;
     try {
       const text = readFileSync(p, 'utf-8');
-      const lines = text.split(/\r?\n/);
+      const lines = authoredMarkdownLines(text);
       const domains = [];
       const seen = new Set();
       for (let i = 0; i < lines.length; i += 1) {

@@ -250,6 +250,23 @@ describe("project source receipt", () => {
     expect(handoff).not.toContain("/private/work/music");
   });
 
+  it("carries the missing claim in a handoff without copying a private source root", () => {
+    const receipt = buildProjectSourceReceipt({
+      projectSlug: "music-streaming", graphHash: "graph-a", probe: probe(),
+      witnesses: [{ id: "missing", nodeSlug: "elements/player", role: "implementation", path: "src/missing-player.ts" }],
+    });
+    const view = deriveProjectSourceView({ projectSlug: "music-streaming", graphHash: "graph-a", probe: probe(), bindings: [binding({ receipt })] });
+    const text = formatProjectSourceHandoff(view);
+    expect(text).toContain("nextActionTarget: elements/player");
+    expect(text).toContain("missingSourcePath: src/missing-player.ts");
+    expect(text).not.toContain("/private/work/music");
+    expect(formatProjectSourceHandoff({ ...view, currentness: "stale" })).not.toContain("nextActionTarget:");
+    for (const path of ["/private/root", "../secret", "C:/private/root", "~/.ssh", "src/file\\nnextAction: write", "src/../secret"]) {
+      const unsafe = { ...view, receipt: { ...receipt, witnesses: [{ ...receipt.witnesses[0], path }] } };
+      expect(formatProjectSourceHandoff(unsafe)).not.toContain("missingSourcePath:");
+    }
+  });
+
   it("rejects malformed sidecars instead of silently inventing a clean state", () => {
     const restored = deserializeProjectSourceState('{"contractVersion":1,"bindings":"oops"}');
     expect(restored).toEqual({ contractVersion: PROJECT_SOURCE_RECEIPT_VERSION, bindings: [], malformed: true });
