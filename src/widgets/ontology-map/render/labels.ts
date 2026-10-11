@@ -1,44 +1,7 @@
 /**
- * Node label paint — ported from the B2+ prototype's `drawTracked()`/
- * `drawLabel()` (`docs/prototypes/topology-b2plus.html` §12-13).
- *
- * (label-clarity, 2026-07) — REDESIGNED per the 5-persona eval, which called it
- * "a map of nameless shapes" (a map of nameless shapes): domain/project chips at the
- * default circuit zoom showed only
- * an engraved COUNT numeral, no name — the name existed only as an
- * ultra-low-contrast far-field spaced-caps watermark two personas never
- * found. Ego-revealed children (capability/element, C1 A2's tier exemption)
- * drew as unlabeled dark circles. New per-kind contract:
- * - `project`: always visible, plain text, no letter-tracking (unchanged).
- * - `domain`: a COMPACT plain-case label that reads at EVERY zoom band,
- *   including the constellation altitude. It used to fade out toward the far
- *   field and hand its anchor to a tracked-caps "sky-chart" watermark; both the
- *   fade and the watermark were retired on 2026-08-29 (`docs/DECISIONS.md`).
- *   The watermark failed twice as a naming device: the label-clarity personas
- *   never found it, and under hover it destroyed the name it was standing in
- *   for — `computeLabelAlpha` floors a hovered label to 1 while the watermark
- *   kept its own alpha, so the two painted the same characters at one baseline
- *   (`I N M E N T O R Y` over `Inventory`, measured on the installed app). A
- *   name that cannot survive being pointed at is not a name. The domain now
- *   carries one form at every altitude, and the resting map says what its
- *   regions are called instead of showing anonymous circles.
- * - `capability`/`element`: eligibility now ramps with the node's own
- *   `revealAlpha` (its effective/tier alpha this frame — the SAME signal
- *   `model/tier-visibility.ts#effectiveNodeAlpha` computes and
- *   its `HITTABLE_MIN_TIER_ALPHA` gates
- *   hit-testing on), not a raw camera-scale threshold. "if you can click it, you can read it" (if you can click it, you can read it) — an ego-revealed child
- *   now gets a label the instant it's clickable, ramping in together.
- * - The SELECTED (`egoState === "center"`) or currently HOVERED node's name
- *   is now ALWAYS drawn at full contrast, any kind, any zoom band — no
- *   exclusion for capability/element (the old prototype-ported exclusion is
- *   retired; a selected/hovered node must never read as a nameless circle).
- * - `egoState === "dim"`: always 0, as before.
- *
- * `computeLabelAlpha` extracts the per-kind alpha formula above (a plain
- * function evaluation, unit-tested in `labels.test.ts` without a canvas).
- * `draw()` itself is Canvas 2D text painting — its visual legibility (light
- * mode contrast in particular) is left as `test.todo`, a Design Guardian
- * screenshot-review question rather than a formula this file gets wrong.
+ * Node label paint, ported from the B2+ prototype (`docs/prototypes/topology-b2plus.html`).
+ * Project and domain names read at every zoom band; capability and element names ramp with the node's
+ * own `revealAlpha`; a selected or hovered node is always full contrast; a dim node is 0.
  */
 
 import { smoothstep } from "../model/altitude";
@@ -50,7 +13,6 @@ export interface LabelDrawState {
   text: string;
   screenX: number;
   screenY: number;
-  /** World-space node radius × camera.scale (used to offset label below the node). */
   screenRadius: number;
   egoState: "center" | "neighbor" | "dim" | "normal";
   /** Whether this node is the currently-hovered node (no focus active). Floors its label to full contrast, same as `egoState === "center"`. */
@@ -60,10 +22,8 @@ export interface LabelDrawState {
   /** Explicit reading-scope emphasis, 0..1. Raises opacity without pretending the label is hovered or selected. */
   emphasisAlpha?: number;
   /**
-   * W6 agent visibility — true when this label belongs to the agent
-   * heartbeat's current focus node (mirrors `NodeShapeDrawState.agentFocus`
-   * in `render/node-shapes.ts`). Draws a small amber `drawActivityMark` dot
-   * just past the label's own text, per the owner spec "small Activity mark next to node label" — real heartbeat data only, `false` otherwise.
+   * True when this label belongs to the agent heartbeat's focus node; draws a small amber dot just
+   * past the label text. Real heartbeat data only, `false` otherwise.
    */
   agentFocus: boolean;
   /** Label zoom factor (`labelZoomScale(cameraScale)`), default 1. */
@@ -100,19 +60,9 @@ export interface LabelTokens {
 }
 
 /**
- * Half-width of the ground outline every name is stroked with, in CSS px.
- *
- * **The number comes from what crosses a name.** This canvas draws relations at
- * `lineWidth = 1`, and on a radial layout the diagonals always land on the labels of the
- * nodes they run to: measured at 1512x949 on the installed app 2026-09-09, the edges ran
- * through the glyphs of both "topology navigation" and "codebase architecture" on the
- * dogfood vault. Ink cannot separate them — a domain name and a relation line are both
- * drawn in the dim end of the neutral ramp — so only clearance can, and 2px clears the
- * widest line this canvas draws with a full 1px to spare.
- *
- * The same device, number and reasoning as the Library graph's `LABEL_OUTLINE_PX`
- * (2026-09-08, "a 2px ground halo wider than the line that crossed its glyphs"). It is
- * stroked *before* the fill so the glyph is never thickened by it, and it never animates.
+ * Half-width of the ground outline every name is stroked with, in CSS px. Relations are drawn at
+ * `lineWidth = 1` and radial diagonals land on labels, so 2px clears the widest line by 1px.
+ * Stroked before the fill so the glyph is never thickened.
  */
 export const LABEL_HALO_PX = 2;
 
@@ -128,7 +78,6 @@ const PROJECT_PLATE_PAD_Y = 2;
  * the project name is the Layer-0 anchor's own label and should read a full
  * step above domain/capability/element, not just barely above domain's 10px.
  */
-/** Approximate glyph height per kind (px) — used to build the label bbox for greedy suppression. */
 const LABEL_FONT_SIZE: Record<LabelDrawState["kind"], number> = {
   project: 15,
   domain: 10,
@@ -167,11 +116,7 @@ export function scaledLabelFont(kind: LabelDrawState["kind"], scale: number): st
   return `${LABEL_FONT_WEIGHT[kind]} ${scaledLabelFontSize(kind, scale)}px ${LABEL_FONT_FAMILY}`;
 }
 
-/**
- * Manual letter-tracking for the instrument caption's tracked caps
- * (`drawInstrumentCaption`). It was the domain watermark's tracking first; the
- * watermark is retired and the caption kept the grammar.
- */
+/** Letter-tracking for the instrument caption's tracked caps (`drawInstrumentCaption`). */
 const DOMAIN_TRACKING = 1.6;
 
 // Per-frame render-loop profile (perf sweep, 2026-07 —
@@ -196,10 +141,7 @@ function measureLabelWidthUncached(
   scale: number,
 ): number {
   ctx.font = scaledLabelFont(kind, scale);
-  // Every kind now measures the string it paints. A domain used to be measured
-  // as uppercase-plus-tracking because that was the watermark's form, so its
-  // suppression box described a label that is no longer drawn — wider than the
-  // compact label it was reserving space for.
+  // Every kind measures the string it paints, so the suppression box matches the drawn label.
   return ctx.measureText(text).width;
 }
 
@@ -236,36 +178,9 @@ const CHILD_LABEL_REVEAL_MIN = HITTABLE_MIN_TIER_ALPHA;
 const CHILD_LABEL_REVEAL_FULL = 0.85;
 
 /**
- * The label box's **vertical extent** — how much to reserve above and below the
- * baseline.
- *
- * Callers used to assume `ascent = fontSize` and a constant `descent = 2`. Both
- * were wrong, in opposite directions:
- *
- * - **ascent was too generous.** Latin cap height is roughly 0.7em, so
- *   reserving 1.0em creates unused space on top and labels push each other away
- *   more than they need to.
- * - **descent was too small**, and that is the real defect: `2` is a **constant
- *   while `fontSize` grows with zoom**, so the unreserved band below the
- *   baseline widens as you zoom in. Hangul jongseong and Latin descenders
- *   (g, y, p, j, q) spill out of it while the suppression check reports no
- *   overlap.
- *
- * `fontBoundingBox*` is a metric **of the font, not of the string**, so it is
- * constant for a given (kind, size) — hence measured once per font and cached.
- * It also keeps box height from varying with the string, matching `design.md`'s
- * dimensional regularity: the height of a repeated set is not a by-product of
- * its content.
- *
- * `actualBoundingBox*` (per-string ink) is rejected for the same reason: it
- * varies per string, and cross-engine differences are documented
- * (web-platform-tests/interop#159), making it unfit for pixel-precise
- * alignment. What is needed here is a **clearance box for overlap testing**.
- *
- * ⚠️ jsdom and some stub contexts return nothing here (0 or undefined). Those
- * fall back to the old approximation — no behaviour change, and no silently
- * zero-height box that would let every label overlap where measurement is
- * impossible.
+ * Vertical extent of the label box. `fontBoundingBox*` is a property of the font, not the string,
+ * so it is constant per kind and size and cached. jsdom and stub contexts return 0 or undefined;
+ * those fall back to an approximation so no box gets zero height.
  */
 export interface LabelVerticalMetrics {
   /** Pixels to reserve **above** the baseline. */
@@ -318,30 +233,12 @@ export interface LabelAlphaInput {
 }
 
 /**
- * Resolves a label's opacity for this frame. A `"dim"` project or domain keeps
- * `revealAlpha` of its name (the node's own alpha, which carries the sink) and a dimmed child `0`; `1` unconditionally for the
- * SELECTED node or the currently-hovered node, any kind (no more
- * unlabeled-circle selections/hovers); otherwise the per-kind formula:
- * project and domain always 1, capability/element ramp with the node's own
+ * Resolves a label's opacity: a dim project or domain keeps `revealAlpha`, a dim child 0; a selected
+ * or hovered node is 1; otherwise project and domain are 1 and capability or element ramp with
  * `revealAlpha`.
- *
- * ⚠️ **The domain's far-field fade was removed on 2026-08-29.** It expressed a
- * handoff to the tracked-caps watermark, and the watermark is gone (file
- * header). Keeping the fade without its partner would leave the spine
- * nameless at exactly the altitude a person meets first: measured on the
- * installed app, the storefront vault's resting camera painted about ninety
- * circles and passively named one of them, the project. Nine domain names is
- * the whole of what this restores — the children stay anonymous until their
- * own tier arrives, which is a separate question owned by the label budget.
  */
 export function computeLabelAlpha(input: LabelAlphaInput): number {
   const { kind, egoState, isHovered, revealAlpha } = input;
-  // A dimmed domain keeps a faint name: selecting one domain used to leave
-  // the others anonymous grey chips, and a person choosing where to go next
-  // had to hover each one (2026-09-19). Dimmed children stay unnamed — they
-  // were unnamed before the selection as well.
-  // A dimmed project or domain keeps its name; the node's own alpha, which the
-  // ego focus sank to `--map-ego-rest-alpha`, carries the dimming for both.
   if (egoState === "dim") return kind === "project" || kind === "domain" ? revealAlpha : 0;
   if (egoState === "center" || isHovered) return 1;
 
@@ -350,15 +247,9 @@ export function computeLabelAlpha(input: LabelAlphaInput): number {
 }
 
 /**
- * The same opacity **under a lens**: the per-kind formula on the node's own reveal alpha,
- * then the lens sink as one multiplier.
- *
- * ⚠️ The sink is a multiplier and **not** part of `revealAlpha`. Folding it in before this
- * formula charges it twice, and unevenly: a project or domain name ignores `revealAlpha`, so
- * it sank once, while a capability or element ran the sunk value through the child ramp's
- * smoothstep and then took the multiplier as well. Measured 2026-09-21 at the path lens's
- * rest (0.3): an off-path child name landed at 0.08 where the off-path domain beside it
- * rested at 0.3 — the two kinds disagreed about what "dimmed" means.
+ * The same opacity under a lens: the per-kind formula on the node's own reveal alpha, then the
+ * lens sink as one multiplier. The sink is not folded into `revealAlpha`, which would charge
+ * children twice.
  */
 export function computeLensLabelAlpha(input: LabelAlphaInput & { lensSink: number }): number {
   const sink = Math.min(1, Math.max(0, input.lensSink));
@@ -376,11 +267,8 @@ export const ACTIVITY_MARK_RADIUS = 2.4;
 export const ACTIVITY_MARK_GAP = 5;
 
 /**
- * The small solid amber dot marking a node's label as the agent heartbeat's
- * current focus (owner spec: "Small Activity mark beside the node label" — a small
- * activity mark beside the node label). A plain filled circle —
- * no glow/shadow (design.md) — positioned by the caller just past the
- * label's own measured text width so it never overlaps the glyphs.
+ * Small solid amber dot marking the agent heartbeat's focus node; no glow, placed just past the
+ * label's measured text width.
  */
 function drawActivityMark(
   ctx: CanvasRenderingContext2D,
@@ -509,15 +397,6 @@ export function drawInstrumentCaption(
   drawTrackedText(ctx, text.toUpperCase(), cx, cy, color, DOMAIN_TRACKING, alpha);
 }
 
-/**
- * Draws one node's label — **one form per node, at one anchor**.
- *
- * A domain used to draw two, a compact label and a tracked-caps watermark, kept
- * apart by a farT handoff. Hover was never party to that handoff: it floors the
- * compact label to 1 while the watermark keeps its own alpha, so pointing at a
- * domain painted its name twice, superimposed. The watermark is retired
- * (2026-08-29); nothing here can collide with itself any more.
- */
 export function draw(ctx: CanvasRenderingContext2D, state: LabelDrawState, tokens: LabelTokens): void {
   const { kind, text, screenX: x, screenY: y, screenRadius: r, egoState, isHovered, revealAlpha, agentFocus } = state;
   const fontScale = state.fontScale ?? 1;
@@ -526,9 +405,7 @@ export function draw(ctx: CanvasRenderingContext2D, state: LabelDrawState, token
   const ty = state.baselineY ?? resolveLabelBaselineY(kind, y, r, fontScale);
 
   const emphasisAlpha = Math.min(1, Math.max(0, state.emphasisAlpha ?? 0));
-  // The same rule the candidate pass applied, token included: without it the
-  // dimmed domain was placed but drawn at 0 (measured 2026-09-19, max
-  // luminance 14 under the name against 185 for a neighbour).
+  // Same rule as the candidate pass, token included, so a dimmed domain that was placed is also drawn.
   const alpha = Math.max(
     computeLabelAlpha({ kind, egoState, isHovered, revealAlpha }),
     emphasisAlpha,
@@ -564,18 +441,8 @@ export function draw(ctx: CanvasRenderingContext2D, state: LabelDrawState, token
   const fill = ctx.fillStyle;
   if (kind === "project" || kind === "domain") {
     /*
-     * Domains share the reason (2026-09-24, installed app, every domain expanded): each
-     * domain's name sits where its whole fan of relations converges, and "Human workbench"
-     * read through two dozen lines. Domains are few and are the map's anchors, so they take the
-     * plate too; capability and element names keep the glyph halo alone.
-     *
-     * The project sits at the centre with relations leaving in every direction, so the one
-     * running straight down to the domain below always crosses its own name. The glyph halo
-     * stops a line at the letterform but not in the gap between words or strokes: measured on
-     * the installed app 2026-09-24 at 1512x949, a vertical relation read through the middle of
-     * the dogfood project's two-word name. The anchor's name alone gets a ground plate the size
-     * of its box, in the halo's colour and alpha; smaller names keep the glyph halo, because a
-     * plate on every name would cut relations short across a dense map.
+     * Anchor names (project, domain) get a ground plate under the glyph: relations converge on them and
+     * the glyph halo alone leaves a line visible between words. Other names keep the halo alone.
      */
     const width = measureLabelWidth(ctx, kind, text, fontScale);
     const size = scaledLabelFontSize(kind, fontScale);

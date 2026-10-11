@@ -9,11 +9,8 @@ import { stepTopologyPhysics, type PhysicsStepInput } from "./topology-physics-s
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 
 /**
- * The focused camera's leash is a box the physics pulls the camera back into.
- * It used to be the token alone (180 world units): a wide ego graph could not
- * be centred beside an open panel, and the focus target and the physics
- * disagreed about where the camera may rest. The screen-sized leash from
- * `focusLeashPx` widens the box; the token stays its floor.
+ * The focus leash is a box the camera is pulled back into; `focusLeashPx` widens it and the token
+ * stays its floor.
  */
 const tokens = {
   edgePulseSpeed: 0,

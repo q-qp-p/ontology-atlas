@@ -41,29 +41,9 @@ export function useTopologyCameraPolicy({
 }: Dependencies) {
 
   /**
-   * Tokens for computing a camera target — **only the left and right safe
-   * insets are replaced with measured values.**
-   *
-   * `topology-camera-math` already dodges the panels via the safe insets, but
-   * those are CSS tokens and therefore static while the real geometry depends
-   * on state. Measured 2026-08-10 at 1512×982: the tokens say left 78 / right
-   * 120; the truth was **left 324 / right 0 before a selection** and **left 0 /
-   * right 384 after one** (selecting collapses INDEX and opens the popover).
-   *
-   * A first attempt added a *second* correction (a free-area shift) on the
-   * selection path only — a second system for one concern, landing 188 px short
-   * in one case and over-correcting by 64 px in another. The fix is not another
-   * shift but **feeding the existing insets true values**.
-   *
-   * Left and right only, and only here. `safeInsetTop` (148) is the tool lane
-   * plus docked chips and `safeInsetBottom` (96) is a **label reservation** —
-   * without it the bottom row of labels once silently disappeared. Those are
-   * layout promises, not covering panels, so measuring over them brings that
-   * defect back; and `safeInset*` is also read by label culling
-   * (`frame-draw/paint-labels`), which has nothing to do with the camera.
-   *
-   * Takes the **larger** of token and measurement, so width the token reserved
-   * for other reasons is never lost.
+   * Tokens for a camera target with only the left and right safe insets replaced by measured values:
+   * the CSS tokens are static while panel geometry depends on state. Top and bottom stay tokens
+   * (layout promises also read by label culling). Takes the larger of token and measurement.
    */
   const cameraTokens = useCallback(<T extends { safeInsetLeft: number; safeInsetRight: number; }>(tokens: T): T => {
     const canvasEl = canvasRef.current;
@@ -97,18 +77,9 @@ export function useTopologyCameraPolicy({
   }, [canvasRef, panelInsetsRef]);
 
   /**
-   * **The camera target that puts the cone on the canvas** — one function for the
-   * three moments that frame it (entry, auto-align/fit, deselect), so they cannot
-   * drift apart.
-   *
-   * It hands `computeDomeFitCameraTarget` the *measured* left and right panel
-   * obstruction (`measureCanvasInsets`, the same measurement the 2D camera
-   * consumes) plus the cone's own top and bottom bands, and no padding beyond
-   * `domeFitFill`. The three call sites previously padded the bounds 15% a side
-   * and then went through the 2D overview fit, which reserves the tool lane, the
-   * docking chips and the 2D label row on top — none of which the cone draws.
-   * Measured 2026-09-05 at 1920x1080, that stack left the cone at 22.6% of the
-   * free canvas.
+   * The camera target that puts the cone on the canvas: one function for entry, fit and deselect.
+   * It hands `computeDomeFitCameraTarget` the measured panel obstruction (`measureCanvasInsets`) plus
+   * the cone's own top and bottom bands, with no padding beyond `domeFitFill`.
    */
   const domeFitTarget = useCallback(
     (
@@ -141,18 +112,9 @@ export function useTopologyCameraPolicy({
         bottom: Math.max(tokens.domeFitInsetBottom, canvasEl ? measureBottomFitObstacle(canvasEl) : 0),
       };
       /*
-       * **The edge chrome's columns — the utility rail, the folded INDEX tab — where
-       * they cost the drawing nothing or the drawing would sit under them**
-       * (2026-09-26). They are not panels, but every other view centres its drawing
-       * between the chrome on both sides: fitted up to the canvas's edge instead,
-       * Neural sat 30 px right of the free map's centre at 1512×949 (half the rail's
-       * footprint) and at 1040×720 nine of its nodes stood under the tiles.
-       *
-       * Except where a column is width the drawing needs and the chrome covers none of
-       * it: Strata is narrow at the top, where the tiles stand, and at 1040×720 its width
-       * binds the fit — reserving the column there shrank it from 73.7% to 66.9% of the
-       * free canvas and fused two element pairs on one plane, the trade the 2026-09-07
-       * legend decision already refused. The drawing then keeps the width.
+       * The edge chrome's columns (utility rail, folded INDEX tab) are not panels, but drawings are centred
+       * between the chrome on both sides, so they count where they cost the drawing nothing. Strata keeps
+       * its width where a column covers none of it.
        */
       const chromed = {
         ...panels,

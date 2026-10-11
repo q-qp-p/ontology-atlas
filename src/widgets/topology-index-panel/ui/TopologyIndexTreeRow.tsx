@@ -214,8 +214,7 @@ export function TopologyIndexTreeRow({
                 {labels.capabilitiesShort} {subcounts.capabilityCount} · {labels.elementsShort}{" "}
                 {subcounts.elementCount}
               </span>
-              {/* Inset capacity meter — a recessed track under the label (the former
-                  full-basis grey meter is retired). Indigo ink: .45 unselected, .8 selected. */}
+              {/* Inset capacity meter: a recessed track under the label, indigo ink .45 unselected, .8 selected. */}
               {/* eslint-disable-next-line no-restricted-syntax -- the 1px hairline radius of a 2px-tall capacity meter track is an exception outside chip(6px). */}
               <span className="h-[2px] max-w-[76px] flex-1 overflow-hidden rounded-[1px] bg-[var(--color-overlay-recessed-a45)] shadow-[inset_0_1px_1px_var(--color-shadow-a50)]">
                 <span

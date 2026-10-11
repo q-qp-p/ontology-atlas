@@ -44,8 +44,6 @@ describe("placeHoverCard", () => {
   });
 
   it("gives up a clear view of a node before it covers chrome", () => {
-    // Interaction audit, 2026-09-25: at 1040 the card landed on the INDEX panel's counts.
-    // The lower left is clear of drawing but lies on INDEX; the lower right covers a node.
     const node = { x: 700, y: 440, w: 40, h: 40 };
     const index = { x: 300, y: 380, w: 290, h: 200 };
     const placement = placeHoverCard(anchor, size, [node], bounds, 14, [index]);

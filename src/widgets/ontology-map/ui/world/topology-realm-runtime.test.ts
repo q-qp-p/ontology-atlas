@@ -130,12 +130,6 @@ describe("buildRealmRuntimeData", () => {
   });
 });
 
-/**
- * Slice A — whether the realm ring derives from the subtree's maximum depth. A
- * shallow subtree (a capability root with 2 element children, maxDepth = 1) has to be
- * pulled in to 130 (`realmFillRadius1`) rather than the global spine ring of 250, or
- * an empty annulus is left (owner report, 2026-07-23).
- */
 describe("buildRealmRuntimeData — depth-derived realm ring fill (Slice A)", () => {
   function buildShallowCapabilityWorld() {
     const nodes: OntologyMapNode[] = [

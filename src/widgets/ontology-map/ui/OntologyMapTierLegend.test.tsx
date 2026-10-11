@@ -3,12 +3,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { OntologyMapTierLegend } from './OntologyMapTierLegend';
 
-/**
- * **Strata's tier names stand where the frame placed them, and nowhere else**
- * (2026-09-26). The frame decides from the drawn rims (`model/tier-names.ts`); this
- * draws those names at their boxes, measures every name for the next placement, and
- * gives the room back when it leaves.
- */
 const LABELS = {
   project: '프로젝트',
   domain: '도메인',

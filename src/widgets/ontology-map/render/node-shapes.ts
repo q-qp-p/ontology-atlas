@@ -24,10 +24,8 @@ import { computeHoverShimmer } from "../model/hover-shimmer";
 import { drawStarEmission } from "@/shared/lib/map-canvas/star-emission";
 
 /**
- * How far outside the disc the recent-changes ring is drawn. The label placer
- * reserves it too (`ui/frame-draw/paint-nodes.ts`), so a name is not laid across a
- * neighbour's ring: with the lens on, two names crossed rings on the fixture
- * vault while the placer reserved only the disc (measured 2026-09-19).
+ * How far outside the disc the recent-changes ring is drawn; the label placer reserves it too
+ * (`ui/frame-draw/paint-nodes.ts`), so a name is not laid across a neighbour's ring.
  */
 export const SPOTLIGHT_RING_OFFSET = 6;
 
@@ -167,15 +165,10 @@ export interface NodeShapeDrawState {
        */
     agentFocus: boolean;
     /**
-     * Spotlight ring for changed nodes. Owner, 2026-07-23: "Only the changed ones should have a rotating border." While the
-       * lens is on, nodes inside the mtime window get an amberHub **rotating dashed**
-       * kind-outline — the fix for a report that changed nodes were unreadable in
-       * the element view when settling contrast was the only cue. Zero glow/blur
-       * (material, not emission); amberHub follows the agent-focus ring's precedent
-       * as a signal tone. `alpha` is the lens fade in/out, `dashOffset` the rotation
-       * phase in px (the caller pins it to 0 under reduced-motion, giving a static
-       * dash). null hides it.
-       */
+     * Spotlight ring for nodes changed inside the lens window: a rotating dashed amber outline, no glow.
+     * `alpha` is the lens fade, `dashOffset` the rotation phase in px (0 under reduced motion).
+     * null hides it.
+     */
     spotlightRing: {
         alpha: number;
         dashOffset: number;
@@ -226,20 +219,9 @@ export interface NodeShapeDrawState {
      */
     detail?: number;
     /**
-     * 3D view — **the rim's floor against depth fog**, ≥ 1. At 1 (the default) the
-     * result is pixel-identical to before.
-     *
-     * Depth fog multiplies the whole node, rim included, and bottoms out at 0.09.
-     * Measured on the sample vault at 1920 (2026-09-05): the median node rim stood
-     * at 1.15 : 1 against the background beside it, 117 of 125 nodes were under
-     * 3 : 1, and 92 were under 1.5 : 1 — a hundred shapes whose edge you cannot
-     * see. The caller passes `max(1, DOME_RIM_FOG_FLOOR / fog)` here and the
-     * outline is drawn at that share of its unfogged alpha, overriding the
-     * far-side detail fade as well: a mark with no visible edge is not a mark.
-     *
-     * The fill, the depth shading, the halo, the line-width attenuation, the
-     * perspective size and the draw order all still carry depth, so this costs the
-     * cue nothing it was the only carrier of.
+     * 3D view: floor for the rim against depth fog, at least 1. The caller passes
+     * `max(1, DOME_RIM_FOG_FLOOR / fog)`; the outline is drawn at that share of its unfogged alpha,
+     * overriding the far-side detail fade, so a node always keeps a visible edge.
      */
     rimAlphaScale?: number;
 }
@@ -250,8 +232,6 @@ export interface GlyphStyleDescriptor {
     /** Body outline width multiplier — the line set is slightly lighter. */
     lineWidthScale: number;
 }
-// perf 2026-08-19 — two pure constants with no reason to be rebuilt per node.
-// Consumers only read them, so sharing one object each is pixel-identical.
 const GLYPH_STYLE_LINE: GlyphStyleDescriptor = { lineOnly: true, lineWidthScale: 0.8 };
 const GLYPH_STYLE_FILL: GlyphStyleDescriptor = { lineOnly: false, lineWidthScale: 1 };
 export function glyphStyleDescriptor(glyphStyle: "fill" | "line" | undefined): GlyphStyleDescriptor {
@@ -328,7 +308,7 @@ const SELECTION_RING_OUTER_OFFSET = 6;
 const SELECTION_PULSE_RING_OFFSET = 3;
 /** Hover preview ring sits just outside the body, inside the (mutually-exclusive, hover never fires under focus) selection ring's radius. */
 const HOVER_RING_OFFSET = 3;
-/** W6 agent visibility — agent-focus ring offset (owner spec: "Static 1px, r+8"), deliberately wider than the hub ring's r+4 so the two never visually merge on a hub node the agent is also focused on. */
+/** Agent-focus ring offset, wider than the hub ring's r+4 so the two never merge on a focused hub. */
 const AGENT_FOCUS_RING_OFFSET = 8;
 export interface PinTick {
     x1: number;
@@ -351,7 +331,7 @@ export function domainPinTicks(cx: number, cy: number, s: number): PinTick[] {
     }
     return ticks;
 }
-/** Fixed 6px leg length for the project hexagon's 4-direction pin ticks (owner spec, canvas-emphasis slice — "Pin ticks in 4 directions (up/down/left/right 6px line)": four ticks, up/down/left/right, 6px each), unlike domain's radius-proportional ticks. */
+/** Fixed leg length of the project hexagon's four pin ticks, unlike domain's radius-proportional ticks. */
 const PROJECT_PIN_TICK_LENGTH = 6;
 /**
  * The four "chassis leg" pin ticks on the project hexagon — one per cardinal
@@ -389,13 +369,8 @@ function resolveBodyFill(ctx: CanvasRenderingContext2D, x: number, y: number, r:
 }
 /** Ported from the prototype's `roundedPolygonPath()` — traces a closed polygon path with each corner rounded to `min(rad, adjacentEdgeLen*0.45)`. */
 /**
- * A path that can be traced into — a live context, or a `Path2D` being composed.
- *
- * ⚠️ This used to be a `CanvasRenderingContext2D` and used to call `beginPath()` itself, which
- * made the shape impossible to combine with anything. `drawStarEmission` clips to "the box
- * minus this node's body" so its halo can hug the real silhouette, and the silent `beginPath()`
- * threw the box away — the clip became the body alone, so the light landed *inside* the node in
- * concentric bands (2026-09-10). Starting the path is the caller's business now.
+ * A path that can be traced into: a live context or a `Path2D`. It does not call `beginPath()`;
+ * the caller starts the path, so `drawStarEmission` can clip to the box minus the node body.
  */
 type PathSink = Pick<Path2D, "moveTo" | "lineTo" | "quadraticCurveTo" | "closePath">;
 function roundedPolygonPath(ctx: PathSink, points: readonly Point[], rad: number): void {
@@ -428,10 +403,8 @@ function drawEngraved(ctx: CanvasRenderingContext2D, text: string, x: number, y:
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = `${FONT_WEIGHT.strong} ${size}px ui-monospace, SFMono-Regular, Menlo, monospace`;
-    // Multiply into the frame's alpha rather than replacing it — the caller has
-    // already folded tier, dim and the appear ramp into `ctx.globalAlpha`, and a
-    // numeral drawn at its own absolute alpha stayed visible on a node that was
-    // otherwise gone (measured 2026-09-02 during the growth replay).
+    // Multiplies into the frame's alpha: the caller already folded tier, dim and appear ramp into
+    // `ctx.globalAlpha`.
     const prevAlpha = ctx.globalAlpha;
     ctx.globalAlpha = prevAlpha * alpha;
     ctx.fillStyle = tokens.numeralShadow;
@@ -461,16 +434,8 @@ export function bodyPoints(kind: NodeShapeDrawState["kind"], x: number, y: numbe
     return null;
 }
 /*
- * perf 2026-08-19 — draw-internal scratch version of `bodyPoints`.
- *
- * `hexPoints`/`squarePoints` allocate 4–6 point objects plus an array per call.
- * The node body and the ring overlays each call them per node, so 2,000 nodes ×
- * 60fps is hundreds of thousands per second. The coordinate formulas here are
- * **exactly** those functions' (same angles, same ratios), and the result is
- * consumed immediately by `roundedPolygonPath`, so no state is shared across
- * frames — this file's draw path runs synchronously inside a single rAF loop.
- * The external contract (the `bodyPoints` export, contract test) keeps the
- * allocating version.
+ * Scratch version of `bodyPoints` that avoids per-node allocation; same formulas, consumed at once
+ * by `roundedPolygonPath`, so no state is shared across frames. The exported `bodyPoints` allocates.
  */
 const HEX_SCRATCH: Point[] = Array.from({ length: 6 }, () => ({ x: 0, y: 0 }));
 const SQUARE_SCRATCH: Point[] = Array.from({ length: 4 }, () => ({ x: 0, y: 0 }));
@@ -531,42 +496,9 @@ function minCornerRadius(kind: NodeShapeDrawState["kind"], r: number): number {
  * primitive at a different radius/color/width/alpha.
  */
 /**
- * **The walked path's star: the node, emitting.**
- *
- * ⚠️ Two builds got this wrong before it worked, and both failures were the same mistake in
- * different clothes — painting a *mark* instead of making the node *bright*.
- *
- * 1. A small star glyph beside the node. That is the footprint notation in another shape:
- *    still an object to find and tie back to what it belongs to.
- * 2. A pale outline stroke. The owner's verdict was exact — *"it's just dark grey"* — and it
- *    was, because paint on a dark canvas is paint. Light on a dark canvas has to **add**.
- *
- * So this composites with `lighter`, the one operation that turns strokes into emission, and
- * builds the star the way the map already builds one: a radial bloom for the light it
- * throws, `drawDiffractionSpike`'s four-point cross for the signature every bright node on
- * this canvas already wears, and the node's own kind outline for the edge. The face is never
- * filled — a wash covers the node's numeral, and a visited node ended up harder to read than
- * an unvisited one (measured 2026-09-10).
- *
- * ⚠️ That last sentence was **false for three days**. The bloom was a `createRadialGradient`
- * from `radius * 0.35` painted with `ctx.arc(x, y, reach)`, and a radial gradient fills
- * everything inside its inner circle with stop 0 — so the face took a solid additive wash at
- * α 0.62. design-infoviz measured a scanline through a walked node on 2026-09-10 and found
- * every sample from −15 px to +21 px at `rgb(255,255,255)`: the engraved child count against
- * its own face at **1.00:1**, erased, on exactly the nodes a person had just walked. The
- * defect the comment recorded as fixed was what shipped. The bloom is now an **annulus** —
- * the disc is cut back out of the path — so the sentence is true by construction rather than
- * by a gradient stop that happened to be low.
- *
- * `design.md` reserves node-outline overlays for material rather than emission, and that rule
- * stands for the five that mark state on a node you are already looking at. This one is not
- * state: it says the node *is a star*, on a canvas whose own `starfield.ts` says magnitude
- * by brightness, and only inside a lens the person opened.
- *
- * ⚠️ That sentence cited a rule which, until 2026-09-10, **existed in no rules file** — four
- * comments here had been quoting it for months while `docs:comment-refs` validated only the
- * path they cited, never the sentence. It is written down now, with a gate:
- * `tests/contract/canvas-composite-license.contract.test.ts`.
+ * The walked path's star: the node, emitting. Composites with `lighter` so light adds on a dark
+ * canvas; the face is never filled so the numeral stays readable (the bloom is an annulus).
+ * Licence for the composite: `tests/contract/canvas-composite-license.contract.test.ts`.
  */
 export function drawNodeStar(ctx: CanvasRenderingContext2D, kind: NodeShapeDrawState["kind"], x: number, y: number, radius: number, farT: number, ink: string, lit: number, swell = 1,
 /** How much of the interior burns — 0 for a lit node, 1 for a star. See `StarEmissionState`. */
@@ -682,12 +614,8 @@ export function draw(ctx: CanvasRenderingContext2D, state: NodeShapeDrawState, t
     const entryAlpha = ctx.globalAlpha;
     const { kind, screenX: x, screenY: y, screenRadius: r, farT, egoState, fill, stroke, lineWidth, dash, hub, sheenTop, countLabel, isHovered, hoverEmphasis, selectionPulse, agentFocus, spotlightRing, now, reducedMotion, glyphStyle, depthShade = 0, detail = 1, rimAlphaScale = 1, } = state;
     const { lineOnly, lineWidthScale } = glyphStyleDescriptor(glyphStyle);
-    // perf 2026-08-19 — nodes without a dash (the vast majority) issue no dash
-    // call at all. Every painter restores [] after using a dash (traces,
-    // cluster-chips, dome-rings, the frame-draw ring block, and this function
-    // itself), so the dash state on entry is always empty — the two native calls
-    // and the spread allocation per node now happen only on fresh/stale dashed
-    // nodes.
+    // Every painter restores the dash to [], so dash state on entry is empty; only dashed nodes make
+    // the native calls.
     const hasDash = dash.length > 0;
     if (hasDash)
         ctx.setLineDash([...dash]);
@@ -737,11 +665,8 @@ export function draw(ctx: CanvasRenderingContext2D, state: NodeShapeDrawState, t
                 shadeGradientCache.clear();
             shadeGradientCache.set(key, shade);
         }
-        // perf 2026-08-19 — undone by an inverse translate rather than save/restore
-        // of the whole state stack. The base transform is a pure DPR scale (tx = 0),
-        // so `translate(x, y)` followed by `translate(-x, -y)` restores it exactly,
-        // down to the float (0 + d - d = 0). The only other state this block touches
-        // is fillStyle, and the next stroke sets its own first anyway.
+        // Undone by an inverse translate instead of save/restore: the base transform is a pure DPR scale,
+        // so translate(x, y) then translate(-x, -y) restores it exactly.
         ctx.translate(x, y);
         ctx.fillStyle = shade;
         ctx.fill();
@@ -811,21 +736,12 @@ export function draw(ctx: CanvasRenderingContext2D, state: NodeShapeDrawState, t
     if (hub && egoState !== "dim") {
         strokeKindOutline(ctx, kind, x, y, r + 4, farT, tokens.amberHub, 1.4, 1);
     }
-    // W6 agent visibility — the fresh heartbeat's current target gets a static amber
-    // hairline ring (owner spec: "Static 1px, r+8", same signal tone as the hub
-    // ring/project hexagon amber — never a new color system). Independent of
-    // `hub`/`egoState === "center"` — an agent-focused node can simultaneously
-    // be a hub or the user's own selection; the rings stack at their own
-    // offsets (hub r+4, selection r/r+6, this one r+8) rather than replacing
-    // each other.
+    // Agent-focus ring at r+8 stacks with the hub (r+4) and selection rings instead of replacing them.
     if (agentFocus && egoState !== "dim") {
         strokeKindOutline(ctx, kind, x, y, r + AGENT_FOCUS_RING_OFFSET, farT, tokens.amberHub, 1, 1);
     }
-    // Spotlight ring for changed nodes — an amberHub **rotating dashed**
-    // kind-outline. The r+6 offset is its own slot between hub (r+4) and
-    // agentFocus (r+8), so all three stack rather than replace one another.
-    // lineDashOffset carries the rotation phase; under reduced-motion the caller
-    // pins dashOffset to 0, leaving a static dash. Zero glow.
+    // Spotlight ring sits at r+6, between hub (r+4) and agentFocus (r+8), so all three stack.
+    // Under reduced motion the caller pins `dashOffset` to 0 for a static dash.
     if (spotlightRing !== null && egoState !== "dim") {
         ctx.setLineDash([5, 4]);
         ctx.lineDashOffset = -spotlightRing.dashOffset;
@@ -875,13 +791,8 @@ export function draw(ctx: CanvasRenderingContext2D, state: NodeShapeDrawState, t
             drawHoverShimmer(ctx, kind, x, y, r + HOVER_RING_OFFSET, farT, now, tokens.hoverShimmerPeriodMs, tokens.hoverShimmerSeg, tokens.hoverShimmerColor);
         }
     }
-    // #5 — connected-neighbor ring. Every direct neighbor of the selected node
-    // gets a single THIN pale-indigo ring on its outline so "what this connects
-    // to" is visible as nodes, not only as highlighted edges (owner report: the
-    // relation lit up but the node on the other end stayed invisible). Same
-    // indigo hue as the center's ring, one value paler and thinner — the
-    // charter's value-only selection ladder, never a new blue hue. Sits below
-    // the `center` block so a node that is somehow both never double-draws.
+    // Connected-neighbor ring: a thin pale-indigo outline on every direct neighbor of the selection,
+    // one value paler than the center ring.
     if (egoState === "neighbor") {
         strokeKindOutline(ctx, kind, x, y, r, farT, tokens.neighborRing, 1.25, 1);
     }

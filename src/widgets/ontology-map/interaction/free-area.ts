@@ -1,40 +1,7 @@
 /**
- * Free area — **measure the space a panel does not cover** (owner call,
- * 2026-08-10: "It must not be covered; centre it in the space left after subtracting the panel".
- *
- * ## What this module does and does not do
- *
- * **Measures**: the canvas rectangle minus the panels covering it
- * (`computeFreeArea`), and how much width those panels eat on the left and right
- * (`measureCanvasInsets`).
- *
- * **Does not compute**: «so where does the camera go». That formula lives in
- * exactly one place, `centerForInsets` in `topology-camera-math.ts`. This
- * module used to carry its own copy (`freeAreaOffset` + `cameraCenteringNode`),
- * which made **two** formulas for deciding the camera target — and one of them
- * (the focus dive) had no formula at all, so a chosen node went behind the panel.
- * That is why measuring and deciding are kept apart.
- *
- * ## Why it is needed — measured
- *
- * Choosing a node with the arrow keys opens a popover on the right, while the
- * camera takes that node to **the viewport centre**. Measured (1512×982): the
- * canvas is x64 w1448 and the popover is x1128 w352 h813. So a node taken to the
- * centre (788) is only 340px from the popover's left edge (1128), and at a higher
- * zoom or a wider popover **the chosen node goes behind the panel explaining it**.
- * Not seeing what you chose is not "the scene is set".
- *
- * ## The specification
- *
- * The free area is **the canvas minus the panels covering it**, and the focused
- * node comes to its centre.
- *
- * **Shape decides** which side a panel is subtracted from — something occupying
- * most of the screen's height is a side panel, so it comes off the left or right;
- * something occupying most of the width is a top bar, so it comes off the top or
- * bottom. No value is baked in like "the left panel is N px": a baked value drifts
- * silently the day the panel's width changes, and this repository has paid that
- * bill several times already.
+ * Measures the space a panel does not cover: the canvas minus covering panels (`computeFreeArea`)
+ * and the width they take per side (`measureCanvasInsets`). Where the camera goes lives only in
+ * `centerForInsets`. Shape decides the side: a tall panel is a side panel, a wide one a top bar.
  */
 
 export interface Rect {
@@ -88,14 +55,8 @@ export function computeFreeArea(canvas: Rect, obstacles: readonly Rect[]): Rect 
     const explicitSidePanel = panel.cameraObstacle === "side-panel";
     const wideEnough = panel.width >= canvas.width * TOP_BAR_WIDTH_RATIO;
     /*
-     * The declaration says «I am edge-attached, treat me as a panel even though my
-     * content is short». It cannot also decide **which** edge: below `lg` the very
-     * same inspector is a bottom sheet spanning the whole column, and measured width
-     * is the evidence that settles that. Letting the declaration force `tallEnough`
-     * on a full-width rectangle put it in the «both» branch, which is subtracted from
-     * nothing — so the camera made no room and the sheet sat on top of the ego graph
-     * it was describing (measured 2026-09-05 at 390×844: 93 of 125 nodes under the
-     * sheet). Width first, then the declaration.
+     * The declaration cannot decide which edge: below `lg` the inspector is a full-width bottom sheet,
+     * so measured width settles the edge first, then the declaration.
      */
     const tallEnough =
       (explicitSidePanel && !wideEnough) ||
@@ -129,27 +90,9 @@ export function computeFreeArea(canvas: Rect, obstacles: readonly Rect[]): Rect 
 }
 
 /**
- * **Measure from the DOM** what is covering the canvas.
- *
- * The "is it visible" decision follows the discipline this repository already
- * settled (`/ui-proof`, "A rectangle coming back does not mean it is visible"): zero size, `visibility:hidden`,
- * `display:none`, near-transparent, inside a collapsed `<details>`, or under an
- * `aria-hidden` ancestor is not on screen and is not counted. Skip that and **a
- * panel mid-exit keeps pushing the camera left** in a state nobody can trace.
- *
- * The canvas itself and its ancestors and descendants are excluded — an ancestor
- * does not «cover» the canvas, it contains it.
- *
- * **A modal is not a panel** (2026-09-03). Picking a result in the search
- * palette closes it and selects the node in the same tick; the focus camera
- * measures the DOM one frame later, while the palette is still fading out
- * (`aria-modal` sheet, 60% of the canvas height, centred left of the middle).
- * It was subtracted as a *left* panel — a left inset of 915 px on a 1329 px
- * canvas — so the free area collapsed to a sliver at the right and the chosen
- * node was aimed under the detail panel (measured: node x 1090, panel edge
- * 955). A modal blocks the map instead of sharing the screen with it, so the
- * camera never has to make room for one; `data-topology-camera-obstacle="none"`
- * opts a non-modal transient surface out the same way.
+ * Measures from the DOM what covers the canvas. Hidden, zero-size, near-transparent, collapsed
+ * or `aria-hidden` boxes are skipped, as are the canvas's ancestors and descendants. A modal is
+ * not a panel; `data-topology-camera-obstacle="none"` opts a non-modal transient surface out.
  */
 export function collectCanvasObstacles(
   canvas: Element,
@@ -263,18 +206,9 @@ function isShownObstacle(el: Element, box: DOMRect): boolean {
 }
 
 /**
- * **Chrome that stands in a column on one edge of the canvas** — how far in from that edge
- * it reaches and the span it covers down the canvas, in canvas px — or `null` when none of
- * it is on screen.
- *
- * The utility rail's tiles are 36 px squares and the folded INDEX tab is 26 px wide: under
- * `collectCanvasObstacles`' 40 px floor and far too short to read as side panels, so no
- * shape rule finds them and every fit that measures panels treated their columns as free
- * map. Neural then centred between INDEX and the canvas's edge, 30 px right of the free
- * map's centre at 1512×949 (half the rail's 60 px footprint), and at 1040×720 nine of its
- * nodes stood under the tiles (measured 2026-09-26). Each piece says what it is
- * (`data-map-fit-obstacle="left"` or `"right"`), the way the lit legend declares the
- * bottom strip below, and this reads the declared boxes.
+ * Chrome standing in a column on one edge of the canvas: how far in it reaches and the span it covers,
+ * or `null`. The rail tiles and folded INDEX tab are under the 40px floor of
+ * `collectCanvasObstacles`, so each declares itself with `data-map-fit-obstacle` (`left` or `right`).
  */
 export interface EdgeFitObstacle {
   /** How far in from its edge of the canvas the column reaches, px. */
@@ -309,13 +243,8 @@ export function measureEdgeFitObstacle(canvas: Element, side: "left" | "right"):
 const BOTTOM_OBSTACLE_GAP_PX = 8;
 
 /**
- * **How much of the canvas's bottom a declared strip takes** (`data-map-fit-obstacle="bottom"`,
- * such as the lit 3D map's legend), in px from the canvas's bottom edge, or 0.
- *
- * Unlike a side panel this is not recognised by shape: a strip is too short to read as a
- * panel, and the label reservation along the bottom must not be confused with one. So the
- * strip's owner says what it is, and the fit keeps the drawing above it (the lit legend used to
- * stand over nine drawn nodes at 1040 — interaction audit, 2026-09-25).
+ * Bottom height taken by a strip declared with `data-map-fit-obstacle="bottom"`, in px, or 0.
+ * The strip declares itself because its size alone does not identify it as a panel.
  */
 export function measureBottomFitObstacle(canvas: Element): number {
   const c = canvas.getBoundingClientRect();

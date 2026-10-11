@@ -192,13 +192,8 @@ export function createWorldMotionFrameStage(sources: WorldMotionFrameStageSource
       homeTargetOverrideRef.current = null;
     }
 
-    // --- Warding invariant (owner bug report 2026-07-23, repro path ①): a
-    // realm member released **outside** the warding ring homes back to its
-    // realm target, like a rubber band. The ring is a boundary: dragging the
-    // root (whose target is the origin) out and dropping it there breaks the
-    // world's grammar into "a root outside its own ring". Releases inside
-    // keep free placement, and auto-arrange tidies whenever asked. Reuses the
-    // existing home springs plus the target override — no new motion. ---
+    // A realm member released outside the warding ring homes back to its realm target; reuses the home
+    // springs and target override.
     {
       const pinnedId = nodeDragRef.current?.nodeId ?? null;
       const releasedId = prevPinnedNodeIdRef.current !== null && pinnedId === null ? prevPinnedNodeIdRef.current : null;
@@ -266,26 +261,8 @@ export function createWorldMotionFrameStage(sources: WorldMotionFrameStageSource
       }
     }
     /*
-     * ★ **A fully assembled dome does not run 2D physics** (measured
-     * 2026-08-19).
-     *
-     * `updateDomeFrame`'s offset is `dx = (p.wx − node.x) · r` and the drawn
-     * coordinate is `node.x + dx`, so with the tier ramps full (r = 1) it
-     * **cancels exactly to `p.wx`**: no mark on an assembled dome depends on
-     * the 2D coordinates. `dome.model.coords` is rebuilt only when the
-     * `world` object's *identity* changes, so freezing those coordinates for
-     * a frame moves the dome by zero pixels.
-     *
-     * But a 3D node drag sets `nodeDragRef` (the handle for the dome's
-     * in-plane drag), making `pinned` true and running **the entire 2D
-     * physics pass where nothing could be seen** — FA2 plus separation over
-     * all 2,000 nodes, in its worst shape, since the dome path never sets
-     * `dragAffectedSetRef` and there was not even an active set. **73%** of
-     * the profile's drag samples were here (resolvePair 50.9% + iterate
-     * 22.6%), and 3D node-drag p95 was 52.1 ms (≈19 fps) against 2.7 ms in 2D.
-     *
-     * Leaving 3D finds the 2D layout exactly as it was on entry, which is the
-     * better contract anyway.
+     * An assembled dome does not run 2D physics: with full tier ramps the drawn position cancels to
+     * `p.wx`, so freezing 2D coordinates moves nothing, while a 3D node drag would run FA2 over all nodes.
      */
     const domeAssembled =
       view3dRef.current &&
@@ -314,20 +291,8 @@ export function createWorldMotionFrameStage(sources: WorldMotionFrameStageSource
         ? collectActiveMotionIds([affected.draggedId, ...affected.oneHop, ...affected.twoHop], clustered, dialAlphas, affected.draggedId)
         : null;
       const dialMotionIds = dialAlphas !== null ? restrictToIds : null;
-      // **The narrowed path wins only when the set is sparse** (measured per
-      // block, 2026-07-31).
-      //
-      // Three things write coordinates in this frame, and one of them — the
-      // neighbour tug — pushes the entire 1-/2-hop set, collapsed nodes
-      // included, every frame. So "nodes that moved" is not the ~30 the audit
-      // assumed but **the size of the tug's reach**: dragging the project
-      // root gives 975/3000 (33%), where the index detour was a net loss
-      // (geometry 0.4 → 0.6 ms), while dragging a domain gives 281/3000 (9%),
-      // where the sim block fell 2.1 → 1.5 ms.
-      //
-      // Hence one fork: narrow when sparse, otherwise take the original full
-      // path **without even taking the snapshot**. The point is to not pay
-      // the cost where there is no gain.
+      // Narrow only when the set is sparse: the neighbour tug pushes the whole 1-/2-hop set every frame,
+      // so a large reach makes the index detour a net loss. Otherwise take the full path without a snapshot.
       const nodeCount = world.nodes.length;
       const scoped =
         affected !== null &&
@@ -380,8 +345,6 @@ export function createWorldMotionFrameStage(sources: WorldMotionFrameStageSource
         const factors = { oneHop: tokens.dragTug1Hop, twoHop: tokens.dragTug2Hop };
         const tugIds = new Set<string>(dialMotionIds ?? [...affected.oneHop, ...affected.twoHop]);
         tugIds.delete(affected.draggedId);
-        // Mass (2026-09-08, direction B): a node's release spring comes from its degree
-        // (`expressive/release-offsets.ts`; the loop only owns the refs).
         const massTokens = {
           heavyDegree: tokens.massHeavyDegree,
           angFreq: tokens.massAngFreq,
@@ -486,15 +449,8 @@ export function createWorldMotionFrameStage(sources: WorldMotionFrameStageSource
                     world, tokens, clusteredIdsRef.current,
                     dialAlphas,
                 );
-                // **Only test what actually moved this frame.** A still-still pair
-                // did not overlap last frame, so it cannot overlap now.
-                //
-                // The force sim **already received** this set
-                // (`dragAffectedSetRef`); only separation did not. At 3,000 nodes,
-                // 99.99% of the 9 million distance computations per frame were
-                // "both still" (measured 2026-07-31: 109.3 ms, 78% of the frame).
-                // With no set — after a settle ends, say — it falls back to every
-                // node, identical to the previous behaviour.
+                // Test only nodes that moved this frame: a still-still pair did not overlap last frame. With no set
+                // (after a settle ends) it falls back to every node.
                 const sepActive = affected
                     ? new Set<string>([affected.draggedId, ...affected.oneHop, ...affected.twoHop])
                     : null;
@@ -578,9 +534,8 @@ export function createWorldMotionFrameStage(sources: WorldMotionFrameStageSource
           const t = homeOverride?.get(node.id);
           const targetX = t?.x ?? node.homeX;
           const targetY = t?.y ?? node.homeY;
-          // Homing has its own ω (7.5): a relayout is a layout
-          // CORRECTION and should end decisively, unlike the camera's
-          // cinematic transition spring (4.7) this used to borrow.
+          // Homing has its own angular frequency: a relayout is a layout correction and should end decisively,
+          // unlike the cinematic camera transition spring.
           const nextSpring = stepHomeSpring(spring, targetX, targetY, dt, tokens.nodeHomeSpringAngFreq, tokens.cameraDampingDefault);
           homeSpringsRef.current.set(node.id, nextSpring);
           node.x = nextSpring.x.value;
@@ -642,11 +597,8 @@ export function createWorldMotionFrameStage(sources: WorldMotionFrameStageSource
         }
         recomputeWorldGeometry(world, tokens);
       } else if (data && rt.phase === "active") {
-        // Settling: snap to the targets once, reseed the sim at the realm
-        // coordinates, and hand coordinate ownership to the ordinary paths
-        // (drag, sim, homing). Later active frames do not overwrite
-        // coordinates, so dragging works. Overwriting to the targets every
-        // frame fought the drag and nodes would not move (owner bug report).
+        // Settling: snap to the targets once, reseed the sim at realm coordinates, then hand coordinate
+        // ownership to the ordinary paths; overwriting every frame would fight the drag.
         if (!realmActiveHandedOffRef.current) {
           for (const node of world.nodes) {
             const target = data.insideTargets.get(node.id);
@@ -694,16 +646,8 @@ export function createWorldMotionFrameStage(sources: WorldMotionFrameStageSource
                     }
                 }
                 recomputeWorldGeometry(world, tokens);
-                // Exit framing defect (node audit 2026-07-24): in the collapsed
-                // realm layout at entry, `overviewScaleRef` froze at the collapsed
-                // spine fit (≈0.24), which pushed stepCamera's scale ceiling
-                // (overviewEntryScale × maxZoomRatio) down to ≈0.73 after exit. The
-                // camera then could not climb back to the canonical overview (≈1.14)
-                // and stuck in a shrunken frame. Reverse playback restores
-                // spineBounds a little more each frame as nodes return home, so the
-                // ceiling anchor is recomputed live and cannot suppress the target at
-                // the tween → spring handover — equivalent to the fresh and deselect
-                // paths.
+                // Recompute the overview anchor live on exit: frozen at the collapsed spine fit it would push the
+                // scale ceiling down and the camera could not climb back to the canonical overview.
                 overviewScaleRef.current = computeOverviewFitScale(overviewBoundsFor(overviewFitRef.current, world, tokens, expandedParentsRef.current, clusteredIdsRef.current), width, height, tokens, world.nodes.length, dialOverviewFit(world));
             }
             else if (rt.phase === "idle" && realmDataRef.current !== null) {

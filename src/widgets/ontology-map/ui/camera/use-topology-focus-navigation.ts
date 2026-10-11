@@ -106,21 +106,10 @@ export function useTopologyFocusNavigation({
     // skipped even if the camera-target computation bails out for some
     // reason.
     selectionPulseRef.current = focusedSlug !== null ? { nodeId: focusedSlug, startAtMs: performance.now() } : null;
-        // In 3D the camera target is NOT computed here. The 2D formula
-        // (`computeFocusCameraTarget`) works from a node's **2D coordinates**,
-        // which differ from where the dome drew it; and at this point the selection
-        // may still be expanding ancestor clusters while the world rebuilds, so it
-        // fails silently (measured 2026-08-18: selecting in 3D never moved the
-        // camera scale once). Record a ticket instead, and let the loop's dome step
-        // set up the yaw reframe and camera tween together against the live world.
         /*
-         * **In 3D a click only selects** (2026-09-25, lit 3D). The camera and the pose stay where
-         * the reader put them; flying to a node is its own gesture — a double-click or Enter,
-         * consumed by the dome frame (`DOME_FLY_MS`). A selection still stops the attention
-         * spin ("stop it turning after I click"), so nothing slides out from under a focus.
-         * The only click-made move, the nudge off the inspector, is undone on deselect.
-         * A deselect does not fly back either: Esc and Home do, and a click on empty space is a
-         * click.
+         * In 3D a click only selects: the camera and pose stay put, and flying to a node is its own gesture
+         * (double-click or Enter, consumed by the dome frame, `DOME_FLY_MS`). A selection stops the attention
+         * spin; the nudge off the inspector is undone on deselect. Esc and Home fly back, a click does not.
          */
         if (view3dRef.current && realmTransitionRef.current.phase === "idle" && domeRuntimeRef.current !== null) {
       const dome = domeRuntimeRef.current;
@@ -145,12 +134,9 @@ export function useTopologyFocusNavigation({
     // throw the camera off screen. The focus dive stays inside the ring.
     const realmActive = realmTransitionRef.current.phase !== "idle";
     const realmData = realmDataRef.current;
-    // Deselecting by clicking the floor inside a realm used to send the camera
-    // flying: `computeFocusCameraTarget`'s null branch works from the **global**
-    // spineBounds, which does not match the realm layout's coordinate space
-    // (origin 0,0). While a realm is active, the deselect return target is the
-    // realm's content bbox over its visible members — the current realm fit,
-    // not `entryCamera`, which belongs to leaving the realm.
+    // Deselecting inside a realm returns to the realm's content bbox over its visible members, not
+    // the global spineBounds (a different coordinate space, origin 0,0) and not `entryCamera`,
+    // which is for leaving the realm.
     /*
      * ⚠️ **The target computation itself waits one frame.**
      *
@@ -165,11 +151,9 @@ export function useTopologyFocusNavigation({
      */
     const raf = requestAnimationFrame(() => {
       /*
-       * The lanes are read in this frame too, not only the panels. A selection folds
-       * INDEX, and the page refreshes `--map-safe-inset-left` for it in an effect that
-       * runs after this one: read before the frame, the lane still said INDEX was open
-       * (376 against the tab's 78), so a path's source framed the map 150 px right of
-       * the free map's centre at 1512×949 (measured 2026-09-26).
+       * The lanes are read in this frame too: a selection folds INDEX and the page refreshes
+       * `--map-safe-inset-left` in an effect that runs after this one, so an earlier read still sees
+       * INDEX open.
        */
       const tokens = readOntologyMapTokensOrNull() ?? effectTokens;
       const overviewEntryScale = overviewScaleRef.current * tokens.overviewEntryRatio;
@@ -220,19 +204,9 @@ export function useTopologyFocusNavigation({
       }
       if (!target) return;
       /*
-       * **Aim at a spot the panel does not cover.** Owner, 2026-08-10:
-       * "It must not be covered — centre it in the space left over after the panel."
-       *
-       * Selecting a node opens a popover on the right while this target is
-       * computed against the **viewport centre**, so the selected node could end
-       * up behind the panel explaining it. Measured at 1512×982: canvas x64
-       * w1448, popover x1128 w352 — the free area's centre is **192 px left** of
-       * the screen centre. The overview path already dodged the panels; the
-       * selection path did not, and this is that one place.
-       *
-       * The panel width is measured from the DOM, not pinned: a pinned value
-       * drifts silently the day the panel changes. It runs per selection, not per
-       * frame.
+       * Aim at a spot the panel does not cover: the popover opens on the right, so the free area's
+       * centre is left of the screen centre. The panel width is measured from the DOM, not pinned,
+       * once per selection.
        */
       const finalTarget = target;
       dampingRef.current = tokens.cameraDampingDefault;

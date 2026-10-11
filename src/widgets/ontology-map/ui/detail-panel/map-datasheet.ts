@@ -1,32 +1,7 @@
 /**
- * Pure view-model helpers for the ontology-map "component datasheet" panel
- * (`docs/design/ontology-map.md` §5 — agent-handoff differentiation). No React,
- * no i18n, no DOM — so the grouping / metric line / handoff payload are
- * unit-testable on structure alone and stay locale-agnostic.
- *
- * The datasheet re-presents the SAME selection facts the shared popover already
- * derives (`TopologyNodeFocusModel`); the view maps that model into these
- * inputs. This module only groups + formats — it never recomputes counts.
- *
- * R+ unified count semantics: groups used to split by relation TYPE (containment
- * vs depends) while the metric line above counted by DIRECTION (incoming vs
- * outgoing) — the same words ("Contains"/"Depends" next to "Uses"/"Is Used By"), two
- * different axes, so the numbers never reconciled (persona finding: header
- * "used by 10 · depends on 73" vs groups "Contains 71 / Depends 12"). Groups are now
- * DIRECTION-based too, computed from the exact same connection set the metric
- * line counts — the header count and the group total are the SAME number by
- * construction, not just by convention. Relation TYPE (containment vs depends)
- * demotes to a per-row trace mark (`OntologyMapDetailPanel.tsx`'s `TraceMark`),
- * still visible, just no longer the grouping axis.
- *
- * R+ full-detail A1: the base connection derivation (`buildConnections`/
- * `groupConnectionsByDirection` + structural types) moved to
- * `entities/knowledge-graph/lib/ontology-tree/connections.ts` so the NEW `full-detail-a1` widget
- * (topology "Full Detail" / `/ontology` full-detail surface) can reuse
- * FSD forbids widget→widget imports, so shared derivation lives one layer
- * down. Re-exported here under the SAME `V2`-prefixed names so this file's
- * existing consumers (`HomePage.tsx`, `OntologyMapDetailPanel`, this module's
- * own tests) needed zero changes.
+ * Pure view-model helpers for the component datasheet panel (`docs/design/ontology-map.md` section
+ * 5): no React, i18n or DOM. Groups use the same connection set as the metric line, so counts
+ * agree. Base derivation lives in `entities/knowledge-graph`, re-exported here under `V2` names.
  */
 export {
   buildConnections as buildV2Connections,
@@ -75,9 +50,10 @@ function deepPrefixKey(id: string): string | null {
   return slug.slice(0, slash);
 }
 
-/** The first path segment (one level) — null with no slash. e.g.
- * `cli/src/commands/add` → `cli`, `.claude/skills/x` → `.claude`. Used to re-split
- * more coarsely when deep prefixes all scatter to count 1 and collapse into "Other". */
+/**
+ * The first path segment (one level), or null with no slash. Re-splits more coarsely when deep
+ * prefixes all scatter to count 1 and collapse into "Other".
+ */
 function coarsePrefixKey(id: string): string | null {
   const slug = idToSlug(id);
   const slash = slug.indexOf("/");
@@ -154,10 +130,8 @@ export interface V2ConnectionGroupView {
   rows: V2DatasheetConnection[];
   total: number;
   /**
-   * The uncapped full rows — the material that makes "+N" a door you open in place
-   * rather than a dead number (2026-08-13, the same lineage as rejecting the project
-   * detail's "N more capabilities"). It references the pre-cap array directly, so the extra
-   * cost is one reference.
+   * The uncapped full rows, so "+N" is a door opened in place rather than a dead number.
+   * It references the pre-cap array directly, so the extra cost is one reference.
    */
   allRows?: V2DatasheetConnection[];
   /**
@@ -175,14 +149,9 @@ export interface V2ConnectionGroupsView {
   /** Outgoing non-containment — plain "Is Used By" (places this leans on). */
   dependsOn: V2ConnectionGroupView;
   /**
-   * Incoming containment — plain "Belongs To" (the parent(s) this node belongs to).
-   *
-   * Scope correction (2026-07-26): for a while this bucket was neither rendered in the
-   * compact popover nor counted in the "Connected" (connections) total. So the popover
-   * for **a node with only a parent** (221 of the dogfood's 294 = 75%) said
-   * "Connected 0" — while showing a clickable domain chip directly above it. That is a
-   * checkable falsehood, so the popover now draws this group and counts it (the same
-   * four buckets and the same words as the full detail).
+   * Incoming containment, plain "Belongs To" (the parent(s) of this node). Drawn and counted so
+   * a node with only a parent does not read "Connected 0"; same four buckets and words as the
+   * full detail.
    */
   belongsTo: V2ConnectionGroupView;
 }
@@ -259,20 +228,9 @@ export interface V2MetricSegment {
 }
 
 /**
- * The ONE engraved metric line's segments — "Contains 18 · Uses 4 · Is Used By
- * 2 · Evidence 1". Replaces the old subtitle + count boxes (the owner's
- * *"Information appears three times"* — the same information appears three times); every fact
- * appears exactly once. M-2: the leading "Contains" segment appears ONLY for
- * container nodes (`contains > 0`) — a leaf's line stays "Uses · Is Used By ·
- * Evidence", so the typed split adds signal for domains without adding a "Contains 0"
- * to every element.
- *
- * Datasheet internal refinement (2026-07-23) — segments are exposed structured (not
- * only joined) so the panel can set label ink (tertiary) apart from value ink
- * (`--map-panel-metric-text`): the numbers are the data, the words
- * are the scale markings (Tufte data-ink). Each segment's ink pairing is the
- * SAME pairing the group headers use, which is what visually links a strip
- * count to its group below without any new interaction.
+ * The engraved metric line's segments, e.g. "Contains 18, Uses 4, Is Used By 2, Evidence 1".
+ * The "Contains" segment appears only for container nodes (`contains > 0`). Segments are
+ * structured so the panel can set label ink apart from value ink.
  */
 export function buildV2MetricSegments(
   values: V2MetricValues,
@@ -302,16 +260,11 @@ export function formatV2MetricLine(
     .join(" · ");
 }
 
-/** One row in the promoted evidence group — RATIO-SYSTEM §4 scale-up (owner:
- * *"The information is good but far too small."* — the information is good but far too small).
- * Built from `KnowledgeGraphNode.evidenceIds` (a vault slug like
- * "capabilities/product-owner-operating-system" — the node's own backing `.md`, see
- * `derivationToInsight`'s doc comment), split into a readable `title` (the last path
- * segment) and a `path` prefix (everything before it, trailing slash kept) so the row
- * reads like the mockup's doc-link ("PRODUCT-OWNER-OPERATING-SYSTEM.md" / "docs/").
- * Rows are read-only/informational — evidenceIds are vault slugs, a different
- * namespace than the canvas's graph node ids, so they are not wired to
- * `onSelectConnection`. */
+/**
+ * One row in the promoted evidence group, from `KnowledgeGraphNode.evidenceIds` (a vault slug naming
+ * the node's backing `.md`), split into `title` (last segment) and `path` prefix. Read-only: vault
+ * slugs are not canvas node ids, so rows are not wired to `onSelectConnection`.
+ */
 export interface V2EvidenceRow {
   id: string;
   title: string;
@@ -341,17 +294,9 @@ export function buildV2EvidenceRows(
 }
 
 /**
- * Take only the last segment of a path-like string (a slug or vault path) — the
- * cleanup of the sticky footer permanently exposing the whole slug
- * (`ontology/capabilities/mcp-server`), from the 2026-07-24 Toss C2 audience-language
- * pass. With no `/` it returns the source unchanged (already short enough to cut).
- * Pure and deterministic — it reuses the same "split at the last slash" rule as
- * `buildV2EvidenceRows`'s title/path split.
- *
- * Only this result is on screen and the full source folds into the native `title=`
- * tooltip — no information is lost, because the 「All Details」 (full detail) link already
- * owns that destination (for the panel-side render see the sticky footer and evidence
- * rows in `detail-panel/`).
+ * The last segment of a path-like string (a slug or vault path); with no `/` the source is
+ * returned unchanged. Same last-slash split as `buildV2EvidenceRows`. The full source folds
+ * into `title=`.
  */
 export function slugDisplaySegment(slug: string): string {
   const lastSlash = slug.lastIndexOf("/");
@@ -393,18 +338,9 @@ export interface V2HandoffInput {
 }
 
 /**
- * Agent-ready handoff payload (MCP/CLI-style) for a single node — the
- * 「Copy Next Action」 differentiation. Stable English field keys
- * + a suggested MCP call so it pastes cleanly into a coding agent regardless of UI
- * locale; the button label is localized, this payload is intentionally not.
- * Deterministic.
- *
- * M-2 payload shape change: containment is now its own `contains` /
- * `contains_names` fields, split OUT of `depends_on` / `depends_names` (which
- * previously folded containment children in via the direction-only grouping).
- * `used_by` no longer includes the parent either — the parent is its own
- * `belongs_to` / `belongs_to_names` pair (2026-07-26), so the payload carries
- * the same four typed buckets the panel and the full-detail surface render.
+ * Agent-ready handoff payload for a single node: stable English field keys plus a suggested MCP call,
+ * so it pastes into a coding agent in any UI locale (the button label is localized, this is not).
+ * Deterministic; carries the four typed buckets (`contains`, `depends_on`, `used_by`, `belongs_to`).
  */
 export function formatV2HandoffText(input: V2HandoffInput): string {
   const list = (names: readonly string[]) =>

@@ -2,34 +2,8 @@ import type { PointerEvent as ReactPointerEvent } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 /**
- * The cursor affordance contract — **each surface shows its own primary action**
- * (design council "Interaction" prescription plus a measured correction,
- * 2026-07-28).
- *
- * ## Why this contract was needed
- *
- * Measured (1512×950, grid hit test): the background hover cursor was `auto`. This
- * canvas's primary action is **panning**, and the screen never once said "you can
- * push this". Meanwhile `grab` appeared only over nodes, where the primary action is
- * a click — Norman's signifier, with each surface carrying a signal that was not its
- * own.
- *
- * (The council called this an "inversion", which is only half right. A node's `grab`
- * was not a lie — a node really does pin-drag. The defect was **the background's
- * silence**, so the prescription is not "take grab away from nodes" but "give each
- * surface its primary action". Node dragging still works and still answers with
- * `grabbing`.)
- *
- * ## The layer jsdom can measure
- *
- * This file looks only at **what the handler writes the cursor to**. The real cascade
- * (whether the class restores `grab` where the inline style was cleared) needs layout
- * and was measured in a browser — background `grab` · node `pointer` · `grabbing`
- * while pushing · `grab` after release, 4/4.
- *
- * One trap caught by that measurement survives here as a regression: the restore on
- * release ran **only in the node-drag branch**, so pushing the background and letting
- * go left the cursor as `grabbing` (released, while the screen still said it was held).
+ * jsdom checks only what the handler writes the cursor to; the real cascade needs layout.
+ * Background shows `grab` (pannable), nodes `pointer`; release must restore the cursor on every path.
  */
 // Wrapped **only to count** the function called once per edge while building
 // candidates — the behaviour is left as the real implementation (feeding it fake
@@ -173,20 +147,8 @@ describe("커서 어포던스 — 각 표면이 자기 1차 행동을 보여준�
 });
 
 /**
- * **Edge candidates are not built twice for the same input** (code review
- * prescription, 2026-07-28).
- *
- * `buildEdgeCandidates` filters every node, projects every edge and allocates whole
- * arrays. And its call site is **every `pointermove` that missed a node**, so simply
- * moving the mouse over the background walked the entire graph every frame. The
- * 97-node dogfood does not show it, but this engine is designed for 2–3k nodes.
- *
- * The gate is pinned on **a count, not milliseconds** — a performance budget differs
- * per machine, but "zero recomputations while the camera is still" is true on any
- * machine (`architecture.md` "A gate is locked on counts, not milliseconds").
- *
- * What is counted is `worldToScreen`: it is called three times per edge while
- * building one set of candidates, so zero calls means no candidates were built.
+ * Pinned on a count, not milliseconds: `worldToScreen` is called three times per edge when candidates
+ * are built, so zero calls means no rebuild while the camera is still.
  */
 describe("엣지 후보 캐시 — 정지한 카메라에서 재계산 0회", () => {
   function worldWithEdges(): PointerHandlerRefs["worldRef"]["current"] {

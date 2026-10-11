@@ -1,15 +1,6 @@
 /**
- * **Work that is still arriving reads as alive; work that has landed reads as still.**
- *
- * Owner report, 2026-09-24: while the agent worked, a running tool row, the work group and
- * the composer's 「thinking · 25s」 looked exactly like a finished transcript — static grey
- * text — so there was no way to tell at a glance whether anything was happening. The
- * answer is one mark with one meaning: a light band sweeping across the words of whatever
- * is in flight (`.acp-working-shimmer` in `app/globals.css`), and nothing on anything that
- * has finished.
- *
- * The decision of *which* state carries it lives here, as plain functions, so the mapping
- * is tested without rendering the panel and every caller asks the same question.
+ * Work still arriving shimmers (`.acp-working-shimmer`, `app/globals.css`); landed work is still.
+ * These functions pick the state, so every caller asks the same question and tests need no render.
  */
 export const WORKING_SHIMMER_CLASS = 'acp-working-shimmer';
 

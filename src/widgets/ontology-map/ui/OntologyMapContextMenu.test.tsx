@@ -156,9 +156,6 @@ describe("OntologyMapContextMenu", () => {
   });
 });
 
-// Design Guardian nice-to-have (W2-B review) — a right-click near the
-// viewport edge used to position the menu off-screen (raw clientX/clientY,
-// no clamp).
 describe("clampContextMenuPosition", () => {
   const viewport = { width: 1920, height: 1080 };
 

@@ -7,17 +7,8 @@ import type { Pulse } from "../../render/edge-fireflies";
 export function useTopologyActivityState() {
 
   /**
-   * Idle-gate instrumentation (e2e only) — **the names of the flags that last
-   * kept a frame awake**.
-   *
-   * Why it exists (2026-08-19 integration review): regressions of the "the map
-   * never falls back asleep after a drag" family show only their symptom (CPU
-   * per second); the cause — which activity flag stayed true — was invisible
-   * from outside the canvas, because pixels only ever say "something drew".
-   * The idle-gate doc-block's discipline (every motion in flight must have a
-   * name) is verifiable only if those names reach a window. Recorded only when
-   * the `?e2e=1` inspection window is attached (`idleDebugEnabledRef` below),
-   * so the product path pays nothing.
+   * Names of the flags that last kept a frame awake, so idle-gate regressions are diagnosable from
+   * outside the canvas. Recorded only with the `?e2e=1` window attached (`idleDebugEnabledRef`).
    */
   const lastActiveCausesRef = useRef<{ t: number; causes: string[]; } | null>(null);
 
@@ -56,12 +47,8 @@ export function useTopologyActivityState() {
   const hasDependsEdgesRef = useRef(false);
 
   /**
-   * Selecting a node also sends comets along its incident `contains` edges, so
-   * the idle gate must not freeze while a focus is set and the graph has any
-   * `contains` edge. Deliberately coarse — it does not ask "does *this* focused
-   * node have an incident edge inside the cap". A world-level flag of the same
-   * grain as `hasDependsEdgesRef` is enough, and with no focus there is nothing
-   * to stay awake for anyway.
+   * Selecting a node sends comets along its `contains` edges, so the idle gate must stay awake while
+   * focused and any `contains` edge exists. Deliberately coarse, like `hasDependsEdgesRef`.
    */
   const hasContainsEdgesRef = useRef(false);
 

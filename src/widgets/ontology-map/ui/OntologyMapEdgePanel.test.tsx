@@ -130,18 +130,6 @@ describe("OntologyMapEdgePanel — 공방 편집 딥링크 (Slice 6)", () => {
   });
 });
 
-/**
- * **The link to the source document carries no arrow** (map round, 2026-09-20).
- *
- * It read `storefront.md → Open doc`: an arrow between a file name and an
- * action, inside a link that navigates **inside** the app. `forbidden.md` keeps
- * arrows only for path, order, causality or an external destination, and the
- * label-decoration gate says the same in its own words — the label says where it
- * goes and the control says it is pressable. The glyph sat in JSX between two
- * expressions, which is the one shape neither of that gate's two scans can see:
- * one wants the arrow followed by a tag, the other wants it alone in an element.
- * The action stays in the accessible name, so a reader still hears it.
- */
 describe("OntologyMapEdgePanel — the source document link", () => {
   it("shows the document name and keeps the action in its accessible name", () => {
     renderPanel("/ontology/studio", { slug: "storefront", href: "/ko/docs/storefront" });

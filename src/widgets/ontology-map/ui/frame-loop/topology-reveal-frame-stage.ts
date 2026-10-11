@@ -38,10 +38,6 @@ export function createRevealFrameStage(sources: RevealFrameStageSources) {
     frameChips: readonly ClusterChip[],
     batchAppearVisible: ReadonlySet<string>,
   ): void {
-    // Step the cluster chip reveal ramp: parents expanded this frame (and
-    // not ego chips) converge to 1, other tracked parents to 0, at
-    // `clusterRevealTau`. Keys that reach ~0 and are no longer expanded are
-    // pruned. Reduced-motion snaps.
     {
       const revealMap = chipRevealRef.current;
       const expandedNow = new Set<string>();
@@ -62,20 +58,8 @@ export function createRevealFrameStage(sources: RevealFrameStageSources) {
       }
     }
 
-    // Step the appearance ramp for batched children, using
-    // `clusterRevealTau` (0.17) — the value the chip's own pill/badge fade
-    // uses, since the input producing this ramp is a chip click.
-    //
-    // ★ **This line, not the fifth channel, is where that fix lands.** An
-    // earlier attempt changed only `expandRevealRef`'s tau, and frame
-    // measurement (design-motion, 2026-07-31) still found children rising at
-    // τ 226–236 ms: children of a chip click are registered on **this batch
-    // path without exception** (all of `visibleOrdered`, even when
-    // `hidden.length === 0`), and `revealMul`'s ternary consults
-    // `batchAppear` first, so the other channel's branch is never taken.
-    //
-    // Keys not visible in this frame's batch (collapsed, or with a collapsed
-    // parent) are pruned. Reduced-motion snaps to 1 with no stagger.
+    // Batched children use `clusterRevealTau`. Chip-click children register on this path and `revealMul`
+    // consults `batchAppear` first, so the tau must be set here.
     {
       const appearMap = batchAppearRef.current;
       const startMap = batchAppearStartRef.current;
@@ -97,24 +81,8 @@ export function createRevealFrameStage(sources: RevealFrameStageSources) {
       }
     }
 
-    // Local re-relaxation for nodes that just **became visible** through an
-    // expand (2026-07-31).
-    //
-    // `relaxScope` is fixed at world-build time, against a state where
-    // nothing is expanded, so expanding a chip drops its children in at their
-    // **seed positions**. Phyllotaxis spacing keeps one parent's children
-    // apart (measured: zero overlap), but they **collide with other parents'
-    // fans**: 5 overlaps at 3 expands, 18 at 6, 70 at 12.
-    //
-    // Re-relaxing everything both accumulates cost (341 ms at 24 expands) and
-    // **moves nodes the user was already looking at** (up to 15 units). So
-    // only the newly visible ones plus their bbox neighbours are solved,
-    // which keeps items per click at 107–134 — **constant regardless of how
-    // many clicks have happened**.
-    //
-    // It runs inside the frame because the collapsed set is computed per
-    // frame, making this the only place that knows what just became visible.
-    // It runs once per expand.
+    // Re-relax only newly visible nodes and their bbox neighbours: `relaxScope` is fixed at world build,
+    // so expanded children collide with other fans, and a full re-relax moves nodes already in view.
     {
       const prevClustered = clusteredIdsRef.current;
       const newlyVisible = new Set<string>();

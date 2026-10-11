@@ -126,14 +126,8 @@ export function VaultAgentPanel({
    */
   const [meta, setMeta] = useState<'prompt' | 'handoff' | null>(null);
   /**
-   * A side branch gets **a way to collapse**. Opening is something the user pressed
-   * and closing is the same event, yet it used to be `{meta ? … : null}`, so opening
-   * grew through reflow while closing vanished in one frame — two directions of the
-   * same input in different grammars is a defect.
-   *
-   * `meta` is a primitive, so `useHeldValue` needs no separate key (an object would
-   * require one — a keyless object changes identity every render and produces React
-   * #301).
+   * A side branch collapses through `useHeldValue` instead of vanishing. `meta` is a primitive, so no
+   * key is needed (a keyless object changes identity every render and produces React #301).
    */
   const heldMeta = useHeldValue(meta);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -174,16 +168,8 @@ export function VaultAgentPanel({
   const [secretNonce, setSecretNonce] = useState(0);
 
   /*
-   * **Escape closes, and every close gives focus back** (2026-09-25). The dock was the
-   * one surface in the map's toolbar that ignored Escape (it stayed open at full
-   * opacity), and closing it with its ✕ dropped focus to BODY while the width
-   * animated to 0, because the focused ✕ went with it. Every other toolbar surface
-   * (view picker, trail, inbox, palette, shortcut sheet, companion) returns focus to
-   * its trigger.
-   *
-   * Escape counts only from inside the panel, and not while an IME is composing in
-   * the composer (Korean input ends a syllable with it); a nested surface that used
-   * the key first marks it with `preventDefault`.
+   * Escape counts only from inside the panel and not while an IME is composing; a nested surface that
+   * used the key marks it with `preventDefault`. Every close returns focus to the opener.
    */
   const panelRef = useRef<HTMLElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
@@ -552,14 +538,8 @@ export function VaultAgentPanel({
           ? 'scope'
           : 'chat';
   /**
-   * The first words — **computed locally. No model is called.**
-   *
-   * All the ingredients are already on screen: the concept being viewed (the screen
-   * context), the concepts in this folder with an empty meaning or owner (**the same
-   * judgement** as the "To-do" queue), and the map questions that can always be asked.
-   * So the suggestions are free (local) and only running them is opt-in — "nothing
-   * goes out before you send" becomes the basis of the first-words design rather than
-   * a constraint on it.
+   * The first words are computed locally; no model is called. They use the same judgement as the To-do
+   * queue, so only running them is opt-in.
    */
   const firstWordsChips = useMemo(
     () =>
@@ -725,9 +705,6 @@ export function VaultAgentPanel({
               chips={firstWordsChips}
             />
           ) : !provider ? (
-            // Owner reversal (2026-07-26) — the old structure told the route **in
-            // words**: "in the bottom-left settings (gear), under 'AI Connection'…". Making a
-            // person find somewhere the screen could take them is homework, not guidance.
             <AgentLockedState
               title={t('degraded.noKeyTitle')}
               body={t('degraded.noKeyBody')}
@@ -872,8 +849,6 @@ export function VaultAgentPanel({
             testId="vault-agent-open-settings"
             hint={t('placeholderFirst')}
             actionLabel={t('degraded.noKeyAction')}
-            // Keys live on the Agents destination's models tab since 2026-09-25; the door goes
-            // straight there rather than opening a settings pane that no longer exists.
             onAction={() => router.push(AGENTS_MODELS_HREF)}
           />
         ) : null}
@@ -1040,9 +1015,6 @@ export function VaultAgentPanel({
                   note={t('promptDisclosure.note')}
                 />
               ) : readableVaultPath ? (
-                // The boundary sentence is worth something only **where the handover
-                // happens** — the sentence that used to sit below the composer eating two
-                // lines through the whole conversation came down here.
                 <AgentHandoffPacket
                   vaultPath={readableVaultPath}
                   focusedSlug={screenContext.focusedSlug}

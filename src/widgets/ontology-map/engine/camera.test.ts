@@ -168,19 +168,6 @@ describe("stepCamera", () => {
     });
 
 
-    /**
-     * **The same amount comes back in the same time at any refresh rate** (2026-07-28).
-     *
-     * The old rubber band pulled 14% per frame and bled 15% of the velocity — values
-     * that assume 60Hz, so at 120Hz (ProMotion) it pulls twice as much in the same
-     * time and feels stiff, while dropping to 30fps pulls half as much and feels
-     * slack. Not divergence but a matter of **feel** — yet every other visual ramp in
-     * this engine is already of the form `1-exp(-dt/τ)`, leaving only this one
-     * frame-dependent.
-     *
-     * The assertion is made on **elapsed time**, not "how many frames" — that is
-     * precisely the axis the old implementation could not hold.
-     */
     it("복귀가 주사율이 아니라 시간을 따른다 — 60Hz 와 120Hz 가 같은 곳에 도착한다", () => {
       const elapsedSeconds = 0.2;
       const run = (frameSeconds: number) => {

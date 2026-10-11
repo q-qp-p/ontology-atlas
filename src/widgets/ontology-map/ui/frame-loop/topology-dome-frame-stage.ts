@@ -156,10 +156,6 @@ export function createDomeFrameStage(sources: DomeFrameStageSources) {
     width: number,
     height: number,
   ): boolean {
-    // --- Dome step: refresh pose, inertia, assembly clock and frame map each
-    // frame. Every value and physical property lives in `model/dome-view/`
-    // (owner's dispensation: 3D mode sits outside the app's motion
-    // conventions — `docs/DECISIONS.md`). ---
     {
       const domeTargetOn = view3dRef.current && realmTransitionRef.current.phase === "idle";
       let dome = domeRuntimeRef.current;
@@ -281,11 +277,6 @@ export function createDomeFrameStage(sources: DomeFrameStageSources) {
         // A reduced-motion first entry keeps the flat map until its layout is final.
         if (dome === null) return true;
         dome.active = domeTargetOn;
-        // Once, right after turning on: fit the camera so the cone fills the
-        // free canvas (`domeFitTarget`). It used to reserve the hero's "object
-        // centred, half of it air" 15% pad on top of the 2D overview fit's own
-        // reservations, which put the cone at 22.6% of the free area — an
-        // object adrift rather than a map (measured 2026-09-05).
         if (domeFitPendingRef.current && domeTargetOn) {
           domeFitPendingRef.current = false;
           const target = domeFitTarget(dome.model, dome.yaw, dome.pitch, width, height, tokens);
@@ -299,13 +290,8 @@ export function createDomeFrameStage(sources: DomeFrameStageSources) {
             dampingRef.current = tokens.cameraDampingDefault;
             cameraAngularFreqRef.current = tokens.cameraSpringAngFreqTransition;
             /*
-             * The fit rides the choreography's clock, not the 2D tween cap
-             * (measured 2026-09-02 on a real recording: the zoom-out finished
-             * in 300 ms while the rings were still at 33% of their rise, so
-             * one input read as two events — a whip, then a slow assembly).
-             * Entry takes the assembly length; an arrangement refit takes
-             * the morph length. `domeFitDurationRef` is set by whoever raised
-             * the pending flag.
+             * The fit rides the choreography clock: entry takes the assembly length, an arrangement refit the
+             * morph length (`domeFitDurationRef`).
              */
             beginCameraTween(target, domeFitDurationRef.current);
             domeFitDurationRef.current = undefined;
@@ -345,12 +331,8 @@ export function createDomeFrameStage(sources: DomeFrameStageSources) {
         }
 
         /*
-         * The return fit starts **with** the teardown and lasts exactly as
-         * long (measured 2026-09-02: it used to wait for the ramp to reach 0,
-         * so the concepts folded back at 3D zoom for 700 ms and only then
-         * the camera zoomed in — two events for one input). The target is the
-         * 2D overview, whose bounds do not depend on the ramp, so it is known
-         * on the first teardown frame; the tween and the ramp end together.
+         * The return fit starts with the teardown and lasts as long; the 2D overview bounds do not depend
+         * on the ramp, so the target is known on the first frame.
          */
         if (flatFitPendingRef.current && !domeTargetOn) {
           flatFitPendingRef.current = false;
@@ -478,13 +460,8 @@ export function createDomeFrameStage(sources: DomeFrameStageSources) {
           }
         }
         /*
-         * Fly-to (2026-09-25, `DOME_FLY_MS`): the explicit gesture that moves the view.
-         * A single click only selects; a double-click or Enter writes `flyRequest` and
-         * this frame carries that node to the front and frames its family, on one
-         * ease-out clock for pose and camera. Esc / Home write a null request, which
-         * flies back to the exact view the first fly-to left from (or, with no flight
-         * in effect, to the whole structure at the current pose). Gestures win, as
-         * with every programmatic move.
+         * Double-click or Enter writes `flyRequest`; Esc / Home write null, flying back to the view the
+         * first fly-to left from. Gestures win over programmatic moves.
          */
         if (
           dome.flyRequest !== null &&
@@ -526,11 +503,8 @@ export function createDomeFrameStage(sources: DomeFrameStageSources) {
               const lo = measured.safeInsetLeft + DOME_NUDGE_MARGIN_PX;
               const hi = vw - measured.safeInsetRight - DOME_NUDGE_MARGIN_PX;
               /*
-               * The node and what it lights up. Clearing only the node left a domain's own
-               * capabilities spreading right, under the panel it had just opened (interaction
-               * audit, 2026-09-25: two of its capability names were cut at the panel's edge in
-               * Strata at 1040). The slide takes the lit neighbourhood into the free area when it
-               * fits, centres it when it does not, and always keeps the node itself clear.
+               * The slide clears the node and its lit neighbourhood: into the free area if it fits, centred if
+               * not, always keeping the node itself clear.
                */
               let eMin = sx;
               let eMax = sx;
@@ -727,20 +701,8 @@ export function createDomeFrameStage(sources: DomeFrameStageSources) {
               dome.pitchVel = 0;
             }
           }
-          // Auto-spin (48 s per turn) is an attention loop, so it runs
-          // **only while armed**: any interaction — pan, orbit, zoom, pinch, node
-          // drag, selection — lowers `spinArmed` and it never turns by itself
-          // again. Owner: "Stop it turning after I click." It is rearmed by auto-align or by re-entering 3D.
-          // It also stops while the pointer is over the canvas, and stays 0
-          // under reduced-motion.
-          //
-          // Its speed is multiplied by the ambient sleep factor — put to
-          // sleep, not switched off (`model/ambient-sleep.ts`). 30 s after
-          // the hand lets go, rotation ramps to 0 over 2 s; the moment it
-          // reaches 0 the activity flag above drops and the idle gate closes.
-          // Any input wakes the loop and returns the factor to 1. A ramp rather than a
-          // step for the same reason as the comets: cutting it in one frame
-          // reads as the dome having seized.
+          // Auto-spin runs only while `spinArmed`; any interaction lowers it, and re-entering 3D or auto-align
+          // rearms it. Speed scales by the ambient sleep factor (`model/ambient-sleep.ts`); 0 if reduced motion.
           const spinFactor = ambientSleepFactor(now, lastInputMsRef.current, ambientSleepDelayRef.current);
           if (
             dome.yawVel === 0 &&

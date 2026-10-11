@@ -1,17 +1,7 @@
 /**
- * Node pin-drag world-coordinate math — the headline fix for the owner's report
- * "Click-dragging a node should move that node the way a force graph does, but instead the whole screen just pans". Grabbing a node pins it 1:1
- * to the cursor in *world*
- * space (respecting where inside the node you grabbed), and the force sim
- * (`model/force-layout.ts`) reflows its neighbors around the pinned position.
- *
- * These two pure functions isolate the coordinate algebra so it can be tested
- * without a camera/canvas; the caller (`topology-pointer-move.ts`)
- * supplies pointer→world conversions via `topology-camera-math.ts#screenToWorld`.
- *
- * The grab offset (node position − pointer world position at grab time) is the
- * "respect the grab point, no center-snap" rule from `docs/design/interaction.md`
- * §1 (Respect the grab point's offset, no centre snap).
+ * Node pin-drag world-coordinate math: grabbing pins the node 1:1 to the cursor in world space,
+ * keeping the grab offset (no centre snap, `docs/design/interaction.md` section 1); the force sim
+ * reflows its neighbours.
  */
 
 export interface WorldOffset {

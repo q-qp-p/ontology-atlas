@@ -1,18 +1,7 @@
 /**
- * Ego light — the two pieces of light a focus or hover puts on the map:
- *
- * - the **node bloom**: a blurred indigo disc under the focused or hovered node;
- * - the **edge glow**: a canvas shadow set around the ego lines while they draw.
- *
- * A third piece, a ground halo whose radius reached the farthest 1-hop neighbour,
- * was removed by the design council on 2026-09-08: measured over 36 focus states it
- * enclosed 410 nodes of which 290 (70.7%) were not neighbours, and a degree-3 and a
- * degree-15 node both produced R=620, so the disc asserted a reach the data did not
- * hold. The 1-hop fact is carried by the edge glow, which touches only real relations.
- *
- * Every piece takes a `ramp` (0..1, the host's focus or emphasis ramp) so it
- * arrives and leaves with the state it marks, and paints nothing at 0. Screen
- * coordinates in, canvas calls out; no world, camera, or React knowledge.
+ * Ego light: the node bloom (a blurred indigo disc under the focused or hovered node) and the
+ * edge glow (a canvas shadow around ego lines). Every piece takes a `ramp` (0..1), painting nothing
+ * at 0. Screen coordinates in, canvas calls out; no world, camera or React knowledge.
  */
 
 export interface EgoLightTokens {
@@ -46,11 +35,8 @@ export interface ScreenDisc {
 const clamp01 = (v: number): number => Math.min(1, Math.max(0, v));
 
 /**
- * The bloom under one node. Restores `shadowBlur` and `globalAlpha` before returning.
- *
- * `ink` overrides the indigo pair — the walked path lights its nodes in star ink so a node
- * a person visited reads as a star rather than as a second kind of focus (2026-09-10).
- * Omitted, the light is the ego indigo it has always been.
+ * The bloom under one node; restores `shadowBlur` and `globalAlpha`. `ink` overrides the
+ * indigo pair so a walked path lights its nodes as a star.
  */
 export function drawNodeBloom(
   ctx: CanvasRenderingContext2D,

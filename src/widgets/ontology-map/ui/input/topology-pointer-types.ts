@@ -30,23 +30,9 @@ interface Ref<T> {
 
 export interface PointerHandlerRefs {
   /**
-   * Who owns the wheel — **it differs per surface** (measured by the motion seat,
-   * 2026-07-28).
-   *
-   * `'zoom'` (default, the workbench): the map is the whole screen and there is no
-   * page to scroll, so every wheel is zoom and `preventDefault` rightly stops it
-   * leaking to the page.
-   *
-   * `'page-scroll'` (the gateway): the map is **a band inside a scrolling
-   * document**, and the same line inverts into a trap here — measured: `/download`'s
-   * canvas is **62.1%** of the viewport and swallowed the wheel unconditionally, so
-   * the first thing a visitor landing on the gateway does (scroll) did nothing and
-   * only zoomed the map. The entire sales argument sits below the fold and was
-   * unreachable. In this mode a plain wheel yields to the page and zoom responds
-   * only to an **explicit pinch** (`ctrlKey` wheel).
-   *
-   * A decision made for one surface leaked into a surface where its premise does not
-   * hold, so it is raised from a constant to a contract.
+   * Who owns the wheel. `zoom` (workbench): the map is the whole screen, every wheel zooms.
+   * `page-scroll` (gateway): the map is a band in a scrolling page, so a plain wheel yields to the page
+   * and only an explicit pinch (`ctrlKey` wheel) zooms.
    */
   wheelIntent?: "zoom" | "page-scroll";
   navigationSpeedRef?: Ref<MapNavigationSpeed>;
@@ -63,11 +49,8 @@ export interface PointerHandlerRefs {
   cameraTweenRef?: Ref<CameraTween | null>;
   dampingRef: Ref<number>;
   /**
-   * Dive-zoom fix (owner: *"Zoom in/out is slow"*) — `handleWheel` sets this to
-   * `--map-camera-spring-angfreq-interactive` on every live wheel
-   * tick, so the scale axis (and pan while wheel-zooming) settles crisp
-   * instead of at the slower cinematic rate programmatic camera moves use.
-   * `null` is a valid "not yet set" state (the rAF loop's own fallback).
+   * `handleWheel` sets this to `--map-camera-spring-angfreq-interactive` on every live wheel tick so
+   * zoom settles crisply. `null` means not yet set (the rAF loop's own fallback).
    */
   cameraAngularFreqRef: Ref<number | null>;
   viewportRef: Ref<{ width: number; height: number; dpr: number }>;
@@ -78,10 +61,8 @@ export interface PointerHandlerRefs {
     y: number;
   }>;
   /**
-   * Cached canvas bounding rect. `getBoundingClientRect()` forces a synchronous
-   * layout/reflow; calling it on every `pointermove` was a per-drag-frame
-   * reflow (a real source of the owner-reported "pan is janky"). We snapshot it
-   * once at `pointerdown` and reuse it for the whole gesture instead.
+   * Cached canvas rect, snapshotted at `pointerdown`: `getBoundingClientRect()` forces a synchronous
+   * reflow, so it is not called on every `pointermove`.
    */
   canvasRectRef: Ref<{
     left: number;
@@ -131,14 +112,10 @@ export interface PointerHandlerRefs {
     x: number;
     y: number;
   } | null>;
-  /** The altitude band's "100%" fit scale — used to derive farT for tier-aware (visible-only) hit-testing. */
   overviewScaleRef: Ref<number>;
   /**
-   * Touch pinch zoom (responsive audit rank4, 2026-07-23) — the active touch
-   * pointers (pointerId → canvas coordinates). It has to be a ref the hook owns:
-   * this factory is re-invoked on every render, so factory-local state evaporates on
-   * a re-render mid-gesture. Omitting it disables pinch (backwards compatible — no
-   * existing test or call site changes).
+   * Active touch pointers (pointerId to canvas coordinates). Must be a ref the hook owns: this factory
+   * re-runs every render. Omitting it disables pinch.
    */
   activeTouchesRef?: Ref<Map<number, { x: number; y: number }>>;
   /**
@@ -152,11 +129,8 @@ export interface PointerHandlerRefs {
   /** P3b — a click at a point with no node hit that is close to an edge. */
   onSelectEdge?: (edge: { sourceId: string; targetId: string; relationType: string; declaredBySlug: string | null }) => void;
   /**
-   * P3c — the edge hover microcard. Fires when an idle move lands on a
-   * node-miss point close to an edge (only when the identity changes) and null on
-   * leaving. The draw pass's hover ink emphasis reads the same ref. A light meaning
-   * preview separate from the click (P3b detail) — gated open after confirming usage
-   * signals (owner request).
+   * Edge hover card: fires when an idle move lands near an edge (only on identity change) and null on
+   * leaving. The draw pass's hover ink emphasis reads the same ref.
    */
   hoveredEdgeRef?: Ref<{ sourceId: string; targetId: string; relationType: string; declaredBySlug: string | null } | null>;
   /** Mirror of the edge-selection (pair focus) state — needed to decide ground-click deselection. */
@@ -208,12 +182,8 @@ export interface PointerHandlerRefs {
    */
   realmTierKindsRef?: Ref<ReadonlyMap<string, "project" | "domain" | "capability" | "element"> | null>;
   /**
-   * 3D view (2026-08-18) — the dome runtime the loop owns (`model/dome-view/`). The
-   * hit test reads the **same frame map** (`frame`) the draw last rendered, so clicks
-   * follow the drawn positions even mid-rotation. The state for both orbit dragging
-   * (empty space) and in-plane node dragging passes through this one box — the node
-   * vs empty-space decision is made by the same `hitTestWorld` as 2D (no second
-   * source of truth).
+   * The dome runtime the loop owns (`model/dome-view/`). The hit test reads the same `frame` map the
+   * draw last rendered; node vs empty-space is decided by the same `hitTestWorld` as 2D.
    */
   domeRuntimeRef?: Ref<DomeRuntime | null>;
   neuralRampRef?: Ref<number>;
@@ -273,14 +243,8 @@ export interface PointerHandlerRefs {
    */
   onContextMenuNode?: (slug: string, position: { x: number; y: number }) => void;
   /**
-   * **Right-click on empty canvas** — called at a point with no node (2026-08-03).
-   *
-   * This position used to be simply ignored (`if (!hitNodeId) return;`). But a
-   * right-click on empty canvas is the idiom for «create something here» in every
-   * tool, and above all **the clicked coordinate is where the new node goes**, which
-   * is more definite than a button in the top chrome.
-   *
-   * Omitted, it is a no-op as before, and the browser's default menu still appears.
+   * Right-click on empty canvas, at a point with no node; the coordinate is where a new node goes.
+   * Omitted, it is a no-op and the browser's default menu appears.
    */
   onContextMenuPane?: (position: {
     x: number;
@@ -299,10 +263,8 @@ export interface TopologyPointerHandlers {
   handlePointerUp: (e?: ReactPointerEvent<HTMLCanvasElement>) => void;
   handlePointerCancel: (e?: ReactPointerEvent<HTMLCanvasElement>) => void;
   /**
-   * The pointer left the canvas, most often for chrome drawn over it (the tool row, a
-   * panel). The edge card and the cluster tooltip explain what is under the pointer, so
-   * they go with it: they used to wait for the next move *on the canvas*, and a card
-   * hovered from a line straight onto a toolbar button stayed up over that button.
+   * The pointer left the canvas, often for overlaid chrome. The edge card and cluster tooltip go with it
+   * so a card does not stay up over a toolbar button.
    */
   handlePointerLeave: () => void;
   /**

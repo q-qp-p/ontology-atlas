@@ -31,16 +31,9 @@ import {
 } from "../render/territories";
 
 /**
- * **Territories** — the flat map with nothing folded (owner decision, 2026-09-24). Every
- * capability is named around its domain; see `model/territories-layout.ts` for the rules and
- * `render/territories.ts` for the paint. This component owns only the canvas, the camera (pan,
- * never zoom: labels keep one size), hit testing, and a DOM list that mirrors every mark for
- * assistive technology and for measurement.
- *
- * Selection is the page's: a click calls `onSelect` with the node id, exactly as the flat map
- * does, so the same inspector opens beside the map. The view only draws the ego focus — the
- * selected node and what it touches at full strength, the rest at the map's rest alpha — and,
- * for a capability, its elements as satellites and its own dependency arrows.
+ * Territories: the flat map with nothing folded (rules in `model/territories-layout.ts`, paint in
+ * `render/territories.ts`). Owns the canvas, a pan-only camera, hit testing and a DOM list mirroring
+ * every mark. A click calls `onSelect` with the node id; the view draws only the ego focus.
  */
 export interface OntologyTerritoriesMapProps {
   nodes: readonly OntologyMapNode[];
@@ -401,9 +394,8 @@ export function OntologyTerritoriesMap({
     const target = focusCapabilityOf(layout, selectedId);
     const domain = layout.domains.find((d) => d.id === selectedId) ?? null;
     /*
-     * What has to be seen whole: the disc with its name and its element list, or the domain's
-     * mark with its title and counts. Bringing only the disc's centre into view left the selected
-     * name cut at the inspector's edge (interaction audit, 2026-09-25).
+     * What has to be seen whole: the disc with its name and element list, or the domain's mark
+     * with its title and counts, so the selected name is not cut at the inspector's edge.
      */
     const union = (boxes: readonly Box[]) => {
       const x = Math.min(...boxes.map((b) => b.x));
@@ -491,11 +483,9 @@ export function OntologyTerritoriesMap({
   }, [selectedId, layout, clampOffset, moveCamera, requestDraw, clusterWidest, lit]);
 
   /*
-   * The chrome over the canvas changed without the wrapper changing size: INDEX unfolded, or
-   * the inspector closed on Escape while the selection stays. Measure again once the panels
-   * have moved: the legend's edges, the resting room, and, with a selection kept, where the
-   * camera stands. Closing the inspector returns the camera to the room, so the names at rest
-   * come out from under INDEX again (interaction audit round 2, 2026-09-25).
+   * The chrome over the canvas can change without the wrapper resizing (INDEX unfolds, the
+   * inspector closes). Measure again once panels move: legend edges, resting room and, with a
+   * kept selection, the camera.
    */
   const firstChromeRef = useRef(true);
   useEffect(() => {

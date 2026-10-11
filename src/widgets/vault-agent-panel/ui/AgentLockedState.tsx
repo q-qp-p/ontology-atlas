@@ -93,14 +93,8 @@ export function AgentLockedState({
           shrinks to 0 on overflow). */}
       <div aria-hidden="true" className="min-h-0 shrink grow" />
 
-      {/* Why it is locked — it explains what the door in the composer's position
-          **directly below** opens. These two lines sitting right above the door is the
-          design: the most important sentence in this state is "your key is not being
-          given to someone else", and it is worth something only if it is read just
-          before pressing. So it is secondary body text, not the old tertiary grey.
-          The strip below does not restate the same fact — the locked reason has one
-          owner, here, and the strip does only its own job (the composer's position
-          plus the door). */}
+      {/* Why it is locked sits directly above the door in the composer's position, so it is read just
+         before pressing; the strip below does not restate it. */}
       <div data-testid="vault-agent-notice" className="flex flex-col gap-1.5">
         <p className="text-body font-[var(--font-weight-emphasis)] text-[color:var(--color-text-primary)] [word-break:keep-all]">
           {title}
@@ -120,32 +114,8 @@ export function AgentLockedState({
 }
 
 /**
- * The composer's **position** — the same strip as the real composer (panel floor,
- * same divider), same width, same height (56px = a measured 2-row textarea), same
- * radius.
- *
- * Once a key arrives, this position becomes the composer itself. The same box only
- * changes state, so the user reads it as "this opened" rather than "a new screen
- * appeared".
- *
- * ## It uses a **placeholder**, not guidance
- *
- * The old copy restated the locked reason per state ("register a key and you can
- * talk right away"), while the block directly above was already saying the same
- * thing (the same point twice). Now the text in this position is **the placeholder
- * that will actually appear in the composer once a key arrives** — the same
- * sentence stays in the same place, so one string teaches what this strip is going
- * to become (without imitating a disabled input).
- *
- * ## Why no disabled input is drawn (reconfirmed 2026-07-27)
- *
- * That other tools do it is not an argument. What was measured here is that **the
- * only next step in this state** is "register a key / open a folder / get the app".
- * Drawing an unpressable input pushes the control that opens that step to **another
- * position**, and at that moment the screen has two controls (the dead one and the
- * real one). Trading one frustration and one extra entrance for teaching the shape
- * is a loss. So this position is still **a single control**, and the shape is taught
- * by the dashed border plus the placeholder.
+ * The composer's position: same strip, width, height (56px, a 2-row textarea) and radius as the real
+ * composer, showing its future placeholder. It is a single control; no disabled input is drawn.
  */
 export function AgentLockedComposer({
   hint,

@@ -185,23 +185,8 @@ export function createCameraFrameStage(sources: CameraFrameStageSources) {
     // check pass green on a state where the value is right and the screen is
     // not.
     drawnHoveredNodeIdRef.current = hoveredNodeId;
-    // Panel-row emphasis only bites while a node is focused (that's the only
-    // time the "Connected Nodes" list exists) — otherwise hover owns the ripple.
-    //
-    // ★ **The hover channel alone draws nothing** (measured 2026-08-17).
-    // While focused, `isNodeEmphasisActive` looks at this value only and
-    // filters out the rest. So even when side-panel hover fills
-    // `hoveredNodeId` correctly, the emphasis ramp stays at 0 — and the hover
-    // ring's alpha rides that ramp (`node-shapes.ts`:
-    // `ringAlpha = hoverEmphasis ?? 1`), so the ring is drawn **transparent**.
-    // Measured: with a node selected, hovering a relation row changed **zero
-    // pixels** on the canvas (reduced motion on, whole-canvas comparison).
-    //
-    // So the same ref feeds this input as well. It is not a new channel: this
-    // input was created to receive *"the one node hovered in the detail
-    // panel's connection list"* (`focus-state.ts`, `isNodeEmphasisActive`)
-    // and simply had nothing feeding it. The `emphasizedNeighborSlug` prop
-    // stays, so a render-based consumer can win later if one appears.
+    // While focused, `isNodeEmphasisActive` reads only this value, and the hover ring alpha rides that
+    // ramp (`ringAlpha = hoverEmphasis ?? 1`), so the panel hover ref must feed it too.
     const panelEmphasisNodeId = focusedNodeId
       ? (panelEmphasisNodeIdRef.current ?? panelHoverNodeId)
       : null;
@@ -287,11 +272,7 @@ export function createCameraFrameStage(sources: CameraFrameStageSources) {
       hoveredNodeId,
       panelEmphasisNodeId,
       isDragging: pointerMachineRef.current.phase === "dragging",
-      // In 3D, hand the pan leash its anchors from the *drawn* dome: its
-      // bbox and the focused node's drawn position. The 2D `world.bounds`
-      // anchor used to drag the camera toward the 2D centre on the first
-      // wheel-zoom tick (see the override JSDoc in
-      // `topology-physics-step.ts`).
+      // In 3D, anchor the pan leash to the drawn dome bounds and focused node, not the 2D `world.bounds`.
       worldBoundsOverride:
         domeRuntimeRef.current !== null && domeRuntimeRef.current.rampClock > 0
           ? domeRuntimeRef.current.drawnBounds

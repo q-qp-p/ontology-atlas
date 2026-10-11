@@ -46,11 +46,8 @@ function subscribe(onChange: () => void): () => void {
 }
 
 /**
- * ⚠️ **A stored width and a default width are folded differently** (2026-09-06). Both used to
- * go through `clampChatWidth`, so the default inherited the floor a *drag* may not cross:
- * raising it to 520 handed a 1040px window — the app's own minimum — a 480px map, which is
- * exactly `MAP_MIN_WIDTH`, and the map dropped a relation caption that had drawn the day
- * before. Nobody asked for that panel; `defaultChatWidth` yields the map more room instead.
+ * A stored width goes through `clampChatWidth`; a default goes through `defaultChatWidth`, which
+ * yields the map more room than the floor a drag may not cross.
  */
 function snapshot(): number {
   const stored = readStoredChatWidth(window.localStorage);

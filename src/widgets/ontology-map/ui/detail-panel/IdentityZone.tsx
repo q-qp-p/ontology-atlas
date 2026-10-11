@@ -43,13 +43,9 @@ export function IdentityZone({
           className="min-w-0 flex-1 truncate text-title font-[var(--font-weight-strong)] leading-title tracking-title text-[color:var(--map-panel-text-primary)]">
           {title}
         </h2>
-        {/* kind = a badge you read (glyph plus word), the counterweight on the right.
-            **One chip grammar with the domain chip below** (owner report, 2026-09-25):
-            this badge was 24px at a 6px radius and the domain chip 34px at the card's
-            9px, so the header's right column read as two unrelated shapes. Both are now
-            the chip `md` step (32px, `rounded-chip`, `text-label`), the close button is
-            the 32px icon step, and every row ends on the same right edge.
-            Gate: tests/e2e/map-inspector-header-chips.spec.ts */}
+        {/* Kind is a badge you read (glyph plus word), the counterweight on the right. One chip grammar
+           with the domain chip: both are the chip `md` step (32px, `rounded-chip`, `text-label`), the
+           close button is the 32px icon step. Gate: `tests/e2e/map-inspector-header-chips.spec.ts`. */}
         <span
           data-testid="map-detail-panel-kind"
           className={badgeClass({
@@ -81,8 +77,8 @@ export function IdentityZone({
       {!projectLayout || domain || updatedAtLabel ? (
         <div className="flex items-center justify-between gap-3">
           {!projectLayout ? (
-            // An empty label is a date still being read: the slot stays, and no
-            // fresh/idle verdict stands in for the date meanwhile.
+            // An empty label is a date still being read: the slot stays and no fresh or idle label stands
+            // in for it.
             updatedAtLabel != null ? (
               <span
                 data-testid="map-datasheet-updated-at"

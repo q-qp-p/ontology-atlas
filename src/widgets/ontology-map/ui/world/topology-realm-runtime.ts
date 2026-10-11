@@ -65,12 +65,9 @@ export interface RealmRuntimeData {
    */
   depthById: ReadonlyMap<string, number>;
   /**
-   * S8 defect 2 — the camera keyframe (x, y, scale) from just before realm entry.
-   * Leaving a realm tweens back to **these coordinates** rather than the overview
-   * fit, returning to "where I was looking" (owner report). The entry effect fills it
-   * (it starts null, because the camera is unknown at build time); with an
-   * uninitialised camera (a deeplink mount) it stays null and leaving falls back to
-   * the overview.
+   * Camera keyframe (x, y, scale) from just before realm entry; leaving tweens back to it instead of
+   * the overview fit. Filled by the entry effect; stays null for a deeplink mount, falling back to
+   * overview.
    */
   entryCamera: CameraTarget | null;
 }
@@ -104,9 +101,8 @@ function collectVisibleMemberTargets(
   const out: Array<[string, { x: number; y: number }]> = [];
   for (const id of memberIds) {
     if (clusteredIds.has(id)) {
-      // Keep the collapse only when the collapsing parent is a member **inside** the
-      // realm — a density gate on an outside parent (a shared element's primary owner,
-      // say) cannot hide anything within the realm.
+      // Keep the collapse only when the collapsing parent is a member inside the realm; a density gate on
+      // an outside parent cannot hide anything within the realm.
       const parentId = world.nodeById.get(id)?.parentId ?? null;
       if (parentId && memberIds.has(parentId)) continue;
     }
@@ -146,14 +142,8 @@ export function realmVisibleBounds(
 }
 
 /**
- * The camera fit bbox = the content bbox ∪ the warding circle's bbox. The warding
- * circle is the realm surface's frame (including the inventory engraved at its
- * bottom), so a clipped one reads as "an accidental arc" (owner report 2026-07-23:
- * *"I can't tell why the circle is there"* — I can't tell why the circle is there). S9's
- * "content is the protagonist, the warding may hang off the edge of the screen" was
- * the contract back when the radius was a phantom that counted collapsed children —
- * now that it is a visible-member radius (S9 defect 2) the warding is content +10%
- * margin, so holding the circle costs no over-shrink. Pure.
+ * Camera fit bbox is the content bbox plus the warding circle's bbox: the circle frames the realm
+ * surface, and a clipped one reads as an accidental arc. Pure.
  */
 function unionWithWardingCircle(bounds: RealmBounds, wardingRadius: number): RealmBounds {
   return {
@@ -184,12 +174,8 @@ export function buildRealmRuntimeData(
   expandedParents: ReadonlySet<string> = EMPTY_EXPANDED,
 ): RealmRuntimeData | null {
   if (!world.nodeById.has(rootId)) return null;
-  // Membership uses the same semantics as the ledger and the datasheet — it walks
-  // **every contains edge** so shared (multi-parent) elements come along too.
-  // `childrenByParent` is the density gate's single-parent map (last edge takes all),
-  // so a shared element primarily owned by another capability dropped out and left
-  // "Element 2, and a realm ring that is empty" (owner report 2026-07-23, demonstrated on
-  // capability:builder-deep-link-focus).
+  // Membership walks every `contains` edge, like the ledger and datasheet, so shared multi-parent
+  // elements come along. `childrenByParent` is single-parent and would drop them.
   const containsChildren = new Map<string, string[]>();
   for (const e of world.edges) {
     if (e.kind !== "contains") continue;

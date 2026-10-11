@@ -15,26 +15,6 @@ import {
   type LabelTokens,
 } from "./labels";
 
-/**
- * `render/labels.ts#draw`'s canvas text painting has no extractable
- * geometric invariant beyond the alpha formula below — its visual contrast/
- * legibility (light mode in particular) is a Design Guardian screenshot-review
- * question the design doc explicitly defers (§2.2 requires a screenshot for
- * light-mode contrast), left as `test.todo`.
- *
- * (label-clarity, 2026-07) — REDESIGN. Persona eval: domain names only
- * existed as an ultra-low-contrast far-field watermark; ego-revealed
- * children (capability/element) drew as unlabeled dark circles; the
- * selected/hovered node's own name never got a contrast floor. New contract:
- * - `project`/`domain`: readable at EVERY zoom band, farT included. The
- *   domain's far-field fade and the tracked-caps watermark it handed to were
- *   retired on 2026-08-29 (`docs/DECISIONS.md`).
- * - `capability`/`element`: eligibility ramps with the node's own
- *   `revealAlpha` (tier alpha, or the ego-reveal ramp when exempted) — 「If you can click it, you can read it」 (if you can click it, you can read it).
- * - `egoState === "center"` (selected) or `isHovered`: ALWAYS 1, any kind,
- *   any zoom band — overrides everything except `dim`.
- * - `egoState === "dim"`: always 0, regardless of anything else.
- */
 describe("computeLabelAlpha", () => {
   const base = { egoState: "normal" as const, isHovered: false, revealAlpha: 1 };
 
@@ -43,15 +23,6 @@ describe("computeLabelAlpha", () => {
     expect(computeLabelAlpha({ ...base, kind: "project", revealAlpha: 0 })).toBe(1);
   });
 
-  /*
-   * ⚠️ **The spine names itself at every altitude** (2026-08-29). The domain
-   * label used to fade to 0 by farT 0.5, handing its anchor to a tracked-caps
-   * watermark. Measured on the installed app, the storefront vault's resting
-   * camera painted ~90 circles and passively named exactly one, the project —
-   * the altitude a person meets first was the altitude with no names on it.
-   * Both the fade and its partner are gone; a domain reads wherever it is
-   * drawn. Rationale, cost, and falsifier: `docs/DECISIONS.md`, 2026-08-29.
-   */
   it("domain reads at every altitude — the formula no longer takes camera distance", () => {
     expect(computeLabelAlpha({ ...base, kind: "domain" })).toBe(1);
     expect(computeLabelAlpha({ ...base, kind: "domain", revealAlpha: 0 })).toBe(1);
@@ -60,17 +31,6 @@ describe("computeLabelAlpha", () => {
     expect("farT" in ({ ...base } as Record<string, unknown>)).toBe(false);
   });
 
-  /*
-   * ⚠️ The defect the owner found by hovering, 2026-08-29. `isHovered` floors a
-   * label to 1 for any kind — but the retired watermark kept its own alpha,
-   * which `egoState` alone never silenced, because hover is not an ego state.
-   * Pointing at a domain therefore painted its name twice at one baseline:
-   * `I N M E N T O R Y` over `Inventory`, and
-   * `FULFRuLlMfEiNlTm&e nDt E&L IDVeElRivYe r y`. A capability under the same
-   * hover drew one clean label. With one form left there is nothing to
-   * superimpose, and this pins that a hovered domain resolves to exactly one
-   * full-contrast label.
-   */
   it("a dimmed domain keeps its name at the node's own (sunk) alpha; a dimmed child keeps none", () => {
     expect(computeLabelAlpha({ ...base, kind: "domain", egoState: "dim" })).toBe(1);
     expect(computeLabelAlpha({ ...base, kind: "project", egoState: "dim" })).toBe(1);
@@ -82,14 +42,6 @@ describe("computeLabelAlpha", () => {
     expect(computeLabelAlpha({ ...base, kind: "domain", isHovered: true, revealAlpha: 0 })).toBe(1);
   });
 
-  /*
-   * ⚠️ **The floor is the hit floor, and the hit floor is the paint floor**
-   * (2026-08-29). This pinned 0.5 while the draw pass skipped marks at 0.02, so
-   * the first half of every reveal band painted circles that could not be named
-   * or clicked. Reading this constant from `tier-visibility` rather than
-   * repeating the number is the point: a future change that moves one and not
-   * the other has to fail here.
-   */
   it("a child is nameable exactly where it becomes hittable — one shared floor", () => {
     expect(HITTABLE_MIN_TIER_ALPHA).toBe(0.02);
     expect(computeLabelAlpha({ ...base, kind: "capability", revealAlpha: 0 })).toBe(0);
@@ -134,14 +86,6 @@ describe("computeLabelAlpha", () => {
   );
 });
 
-/**
- * **One sink, one meaning of dimmed.** Under the path and constellation lenses everything
- * outside the asked-for set sinks to the lens's rest alpha. The sink used to be folded into
- * `revealAlpha` *and* applied again as a multiplier: a domain name, which ignores
- * `revealAlpha`, sank once, while a capability name ran the sunk value through the child
- * ramp first and sank again — 0.08 against the domain's 0.3 at the path lens's rest
- * (`--map-path-rest-alpha`), so two kinds of "dimmed" sat side by side.
- */
 describe("computeLensLabelAlpha", () => {
   const base = { egoState: "normal" as const, isHovered: false, revealAlpha: 1 };
   const PATH_REST_ALPHA = 0.3;
@@ -277,19 +221,6 @@ describe("measureLabelVerticalMetrics — 세로 범위 실측", () => {
   });
 });
 
-/**
- * **A name has to survive the line that runs to it.**
- *
- * The map's layout is radial, so every diagonal relation lands on the label of the node it
- * runs to. Measured at 1512x949 on the installed app 2026-09-09: edges ran through the
- * glyphs of two domain names on the dogfood vault, and the two inks are close enough in
- * value that colour could never have separated them.
- *
- * The gate is on the device, not the picture: the ground is stroked **before** the fill,
- * wider than the widest line this canvas draws, in the ground's own colour, at the label's
- * own alpha. A halo painted after the fill would thicken the glyph; one painted at full
- * alpha over a faded name would leave a legible hole shaped like an unreadable word.
- */
 describe("label halo", () => {
   interface Call { op: string; args: unknown[] }
 
@@ -343,11 +274,6 @@ describe("label halo", () => {
     expect(LABEL_HALO_PX * 2).toBeGreaterThan(1);
   });
 
-  /*
-   * The project's name sits where a relation runs straight down from it; the glyph halo left
-   * the line visible between its two words (installed app, 2026-09-24). Only the anchor gets a
-   * plate, painted before the glyph and at the name's alpha; other names keep the halo alone.
-   */
   it("lays a ground plate under the anchor names (project, domain) only, before their glyph", () => {
     const { ctx, calls } = record();
     draw(ctx, { kind: "project", text: "Ontology Atlas", screenX: 100, screenY: 100, screenRadius: 20 } as never, tokens);

@@ -1,16 +1,9 @@
 import type { ConeCircle, ConeCoord, ConeInputNode, ConeKind } from '../cone-layout';
 
 /**
- * The opt-in 3D view: arrangements where height and bearing carry typed facts (height is
- * the kind's containment tier, bearing is ownership) or where relations place nodes
- * (`createCouplingCloudRelaxer`). Opt-in because 3D multiplies edge crossings, which dominate
- * readability (`docs/DECISIONS.md`, 2026-08-18). Coordinates project into world 2D through
- * weak perspective `s = f/(f+z)` and ride the existing camera; draw, hit test and
- * instrumentation share one frame map (`DomeRuntime.frame`), so a click during rotation
- * lands where the node was drawn. Idle spin stops under the pointer and under reduced
- * motion; orbit release coasts on the camera's momentum decay, and reduced motion keeps 1:1
- * tracking without momentum. A node drags only within its kind plane, or it would take an
- * arbitrary z. Constants are feel values, not theme tokens.
+ * The opt-in 3D view, where height and bearing carry typed facts or relations place nodes.
+ * Opt-in because 3D multiplies edge crossings (`docs/DECISIONS.md`). Draw, hit test and
+ * instrumentation share one frame map (`DomeRuntime.frame`). A node drags only within its kind plane.
  */
 export type DomeViewKind = ConeKind;
 export type DomeInputNode = ConeInputNode;

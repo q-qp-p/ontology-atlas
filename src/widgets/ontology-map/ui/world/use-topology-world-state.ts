@@ -37,11 +37,9 @@ export function useTopologyWorldState() {
   const dragStartPosRef = useRef<{ x: number; y: number; } | null>(null);
 
   /**
-   * Each tug-affected neighbour's current offset (world units) plus its velocity, added on
-   * top of its natural position. While the drag is live the offset lags on the exponential
-   * (`stepTugAxis`); after release it is a damped spring whose ζ and ω come from the node's
-   * mass (`expressive/release-offsets.ts`, 2026-09-08), so a hub rings once and a leaf snaps.
-   * The dragged node's own entry is its **drop**: seeded with the hand's velocity on release.
+   * Each tug-affected neighbour's offset (world units) plus velocity, added to its natural position.
+   * Live it lags exponentially (`stepTugAxis`); after release it is a damped spring from the node's mass
+   * (`expressive/release-offsets.ts`). The dragged node's entry is its drop.
    */
   const dragTugOffsetsRef = useRef<Map<string, SpringOffset>>(new Map());
 
@@ -58,9 +56,8 @@ export function useTopologyWorldState() {
   const hoverStartRef = useRef<{ id: string | null; at: number; }>({ id: null, at: 0 });
 
   /**
-   * The node the press just left. The draw keeps the press's own radius coefficient on
-   * it while its emphasis decays, so a hover-out eases instead of stepping down (design
-   * council, 2026-09-08).
+   * The node the press just left. The draw keeps the press radius coefficient on it while emphasis
+   * decays, so hover-out eases instead of stepping down.
    */
   const hoverReleasedRef = useRef<string | null>(null);
 
@@ -97,14 +94,9 @@ export function useTopologyWorldState() {
   const homingActiveRef = useRef(false);
 
   /**
-   * Per-node homing target override while a realm is active; null falls back to
-   * the global `homeX`/`homeY`, and inside a realm the targets are
-   * `insideTargets` (realm coordinate space). Cleared when homing converges or
+   * Per-node homing target override while a realm is active; null falls back to global
+   * `homeX`/`homeY`. Inside a realm the targets are `insideTargets`. Cleared when homing converges or
    * is cancelled.
-   *
-   * Owner bug report 2026-07-23: the root sat outside its own warding ring.
-   * Homing to global home left the ring at the realm origin while the nodes
-   * flew off to spine coordinates.
    */
   const homeTargetOverrideRef = useRef<ReadonlyMap<string, { x: number; y: number; }> | null>(null);
 

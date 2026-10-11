@@ -38,13 +38,8 @@ export function useTopologyRealmState({
   const realmDataRef = useRef<RealmRuntimeData | null>(null);
 
   /**
-   * Has coordinate ownership been handed back to the ordinary paths (drag, sim,
-   * homing) after the realm settled into `active`?
-   *
-   * Owner bug report: while the active phase overwrote `node.x = insideTargets`
-   * every frame it fought the drag and nodes would not move. Now the first
-   * settled frame snaps once, reseeds the sim, and sets this flag; later active
-   * frames leave coordinates alone. Reset to false on entry and exit.
+   * Whether coordinate ownership has been handed back to the ordinary paths (drag, sim, homing) after
+   * the realm settled into `active`. Reset to false on entry and exit.
    */
   const realmActiveHandedOffRef = useRef(false);
 

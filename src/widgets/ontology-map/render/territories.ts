@@ -1,19 +1,7 @@
 /**
- * Canvas 2D drawing for the Territories view (`model/territories-layout.ts`). Pure: it reads a
- * layout, a camera offset and what is selected, and paints. Every position comes from the
- * layout, so what the unit tests prove about overlap is what is drawn.
- *
- * Channels (spec "A v2" §7): disc size = element count; a dot in the disc = it depends on
- * something; the ring = evidence (solid current, amber stale, broken unknown); open shelf arcs
- * and the trunk = membership; soft tapered strokes with a count pill = rolled-up cross-domain
- * dependencies; indigo arrows (focus only) = what the focused capability needs, paler arrows =
- * who uses it.
- *
- * Finish (owner, 2026-09-25: "premium and refined"): material, not glow. A disc is a machined
- * part — the map's own vertical sheen, a hairline of light on its upper inner rim, a stroke
- * snapped to whole device pixels so the amber ring stays crisp. Domain titles are the loudest
- * text and read as territory names; their counts sit a step quieter. Rolled-up strokes taper
- * from source to target and stay under the data.
+ * Canvas 2D drawing for the Territories view (`model/territories-layout.ts`). Pure: every position
+ * comes from the layout. Channels: disc size = element count; ring = evidence; shelf arcs and trunk
+ * = membership; tapered strokes with a count pill = rolled-up dependencies; arrows = focus needs.
  */
 
 import type { OntologyMapTokens } from "../tokens/read-map-tokens";

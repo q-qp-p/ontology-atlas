@@ -1,42 +1,7 @@
 /**
- * **Walking the graph with the arrow keys** — option B (owner call, 2026-08-09).
- *
- * The arrow keys do not move the camera; they **move the focus to a neighbour**.
- * The camera follows only when the focus is about to leave the screen. This file
- * holds only the pure functions deciding «which neighbour» — it knows nothing of
- * the canvas or React.
- *
- * ## Why projection plus an orthogonal penalty rather than an angle
- *
- * What «the neighbour above» means is not self-evident. With nodes ringed around,
- * what a person calls «up» can differ from whatever has the smallest angle.
- *
- * So it uses what TV remotes and CSS spatial navigation use:
- *
- * 1. If the **projection** onto the pressed direction (how far it went that way)
- *    is 0 or less, it is **behind** and is discarded.
- * 2. Among the rest, take the smallest **projection + orthogonal distance ×
- *    penalty**.
- *
- * The orthogonal penalty is what stops a node that is «almost beside you, slightly
- * above» from beating the one «directly above». With distance alone, the arrow
- * keys feel unrelated to direction.
- *
- * ## Why a cone — and why ±60°
- *
- * Filtering by projection alone catches **a node almost exactly to the side as
- * "up"** (any projection above zero passes). Then pressing up moves sideways, and
- * the user stops trusting the arrow keys.
- *
- * Narrowing to ±45° leaves many neighbours unreachable in this graph — the nodes
- * sit where physics spread them, not on a grid. ±60° is the narrowest angle whose
- * four directions **cover the plane with no gap** (4 × 120° = 360°). Narrower and
- * some neighbours are reachable by no arrow key; wider and two directions fight
- * over the same neighbour.
- *
- * ⚠️ **With nothing there it does nothing — it does not wrap around.** Jumping to
- * the opposite side when that direction has no neighbour loses the user's sense of
- * where they are. Here, "nothing happens" is the honest response.
+ * Arrow keys move focus to a neighbour; the camera follows only when focus would leave the screen.
+ * Picks by projection plus an orthogonal penalty inside a 60 degree cone, the narrowest whose four
+ * directions cover the plane. With nothing there it does nothing and never wraps around.
  */
 
 export type WalkDirection = 'up' | 'down' | 'left' | 'right';
@@ -132,21 +97,8 @@ export function pickInitialFocus(
 }
 
 /**
- * **How often to say "dead end"** — so the same notice is not poured out repeatedly.
- *
- * ⚠️ At first, a direction with no neighbour did **nothing**. The "no wrapping"
- * judgement was right (jumping to the opposite side loses the user's position), but
- * **the silence was the problem**: after actually using it the owner said
- * "The arrow keys work, but I can't move freely between nodes". With no response to a press, the user cannot
- * tell «broken» from «nothing in that direction» — the same failure this repository
- * named "The Silent Wait".
- *
- * So the constraint stays and **it speaks**. But holding an arrow key would stack up
- * dozens of identical notices, so after saying it once it stays quiet for a while.
- *
- * Why measured in time: blocking only on «the same direction repeated» doubles the
- * flood when alternating left and right. The test is **«did I just say it»**, not
- * «what was pressed».
+ * How often to say "dead end": a direction with no neighbour speaks once, then stays quiet for
+ * a while, timed since the last notice rather than per direction, so alternating keys do not flood.
  */
 export const DEAD_END_NOTICE_COOLDOWN_MS = 1200;
 

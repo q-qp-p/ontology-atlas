@@ -65,15 +65,9 @@ export function useTopologyCameraState({
   const dampingRef = useRef(1.0);
 
   /**
-   * Dive-zoom fix. Owner: "Zooming in and out feels slow." Which spring angular frequency
-   * this frame's camera step uses. `null` until the first token read (the rAF
-   * loop falls back to `cameraSpringAngFreqTransition` for that first frame).
-   * Set to `cameraSpringAngFreqInteractive` on every live wheel tick
-   * (`topology-pointer-zoom.ts#handleWheel`); reset to
-   * `cameraSpringAngFreqTransition` by every PROGRAMMATIC camera move below
-   * (initial snap, fit/relayout, focus dive/deselect) so that move's whole
-   * settle plays out at the cinematic rate, not whatever the last wheel tick
-   * left behind.
+   * Which spring angular frequency this frame's camera step uses; `null` until the first token read
+   * (the rAF loop then uses `cameraSpringAngFreqTransition`). Set to `cameraSpringAngFreqInteractive`
+   * on every live wheel tick; reset to the transition value by every programmatic camera move.
    */
   const cameraAngularFreqRef = useRef<number | null>(null);
 
@@ -91,20 +85,9 @@ export function useTopologyCameraState({
   /** The last drawn altitude, for `__atlasMap.altitude()`. The canvas has no DOM to read it from. */
   const drawnFarTRef = useRef(0);
 
-  // `useEffect(fn, [relayoutToken, fitViewToken])` also fires once on mount
-  // (standard React behaviour, not only on token change). That used to be
-  // harmless because it recomputed the same tight-bounding fit target
-  // `trySnapInitialCamera` had just set. Once the initial camera deliberately
-  // started at the *simplified* overview scale (`computeOverviewCameraTarget`),
-  // the same mount-time fire immediately overwrote it back to the tight fit and
-  // the reduced-density fix never visibly took effect.
-  //
-  // Captured through a lazy initializer, which runs exactly once even under
-  // StrictMode's dev-only double-invoke of effects. A plain "have I run before"
-  // boolean ref does NOT survive that double-invoke, because the
-  // mount/cleanup/remount cycle flips it back and forth. The effect below skips
-  // while both tokens still equal their captured mount-time values — i.e. no
-  // real fit-view or relayout click has happened yet.
+  // The effect runs once on mount as well as on token change, and must not overwrite the initial
+  // camera. The mount-time tokens are captured by a lazy initializer, which survives StrictMode's
+  // double-invoke where a boolean ref does not; the effect skips while both tokens still equal them.
   const initialFitTokensRef = useRef({ relayout: relayoutToken, fitView: fitViewToken });
 
   // Starts empty so an initial deep-linked spotlight gets one fit. Afterwards the
@@ -112,18 +95,9 @@ export function useTopologyCameraState({
   const lastProcessedSpotlightFitTokenRef = useRef<number | null>(null);
 
   /*
-   * **Deferred fit** for deep-linked sessions (2026-08-02, caught by the motion
-   * seat's audit).
-   *
-   * Mounting with `?recent=` already in the URL bumps the token **once, right
-   * after mount** — at which point the map has not laid out yet, so the guard
-   * below (`!hasInitializedRef.current`) returns silently. The token never
-   * changes again, so the camera **never moves**: someone arriving from the
-   * history screen lands on the default overview with the spotlit node
-   * off-screen, which is the exact symptom this was meant to fix.
-   *
-   * So instead of dropping the fit when it cannot run, record it as debt and
-   * pay it once where initialization completes.
+   * Deferred fit for deep-linked sessions: with `?recent=` in the URL the token bumps once right
+   * after mount, before the map has laid out, so the `!hasInitializedRef.current` guard returns and
+   * the camera never moves. The fit is recorded as debt and paid where initialization completes.
    */
   const pendingSpotlightFitRef = useRef(false);
 
@@ -143,29 +117,9 @@ export function useTopologyCameraState({
   const panelInsetsRef = useRef<{ left: number; right: number; } | null>(null);
 
   /**
-   * Which bbox the overview fit uses. The workbench (`"spine"`, the default)
-   * draws only the spine tier on entry, so the spine bbox is the honest frame;
-   * the gateway's evidence section (`"full"`) draws every tier from entry via
-   * `GATEWAY_TIER_REVEAL`, so the all-node bbox is. Measured 2026-08-18 at 1512
-   * on the gateway: drawing every tier while fitting the spine bbox left 143 px
-   * empty above the frame and 17 px below, because the graph's mass sits below
-   * the spine centre — the owner's "It sits too low."
-   *
-   * Labels are not in the bbox; bottom clearance stays with
-   * `OVERVIEW_LABEL_BOTTOM_ALLOWANCE` in `topology-camera-math`. The
-   * `overviewScaleRef` anchor must use the same bbox or the entry zoomRatio
-   * stops being 1 — same contract as the warning in `trySnapInitialCamera`.
-   *
-   * A ref plus a module-level function, because lint blocks ref writes during
-   * render and component-local functions in effect deps, while a ref read and
-   * a pure function outside the hook trip neither.
-   *
-   * The ref follows the prop. It was once "frozen at mount" because both
-   * consumers passed a literal; the map now passes `full` while expand-all is
-   * on, and a frozen `spine` sent auto-arrange and the `0` key back to the
-   * spine bounds with 19 of 125 expanded nodes off screen (measured
-   * 2026-09-03). Expand-all itself was unaffected because its own refit reads
-   * the prop, which is how the two fits came to disagree.
+   * Which bbox the overview fit uses. The workbench (`"spine"`, default) draws only the spine tier on
+   * entry; the gateway evidence section (`"full"`) draws every tier (`GATEWAY_TIER_REVEAL`).
+   * `overviewScaleRef` must use the same bbox or entry zoomRatio stops being 1.
    */
   const overviewFitRef = useRef(overviewFit);
 

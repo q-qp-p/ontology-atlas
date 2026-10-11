@@ -1,57 +1,19 @@
 /**
- * The chat panel's **width** — one set of pure arithmetic plus where it is stored.
- *
- * ## Why a rule instead of a value
- *
- * The width used to be two literals, `w-[420px] xl:w-[480px]`. Those two numbers
- * were **nobody's answer** — too narrow for someone reading a long block of code,
- * too wide for someone glancing at the map and asking something short. Rather than
- * picking one number, **the user drags**, and we only decide the lines that drag
- * must not cross.
- *
- * ## The lines it must not cross
- *
- * This panel **never covers the map** (the 2026-07-27 "the map is primary" rule).
- * So the upper bound is not taste but arithmetic — whatever is left of the screen
- * after the rail's and the map's shares. The minimum width the map must keep
- * (`MAP_MIN_WIDTH`) is the same floor set when this panel was first introduced.
- *
- * The lower bound is **the width at which one line is readable**. Narrower than
- * this, bubbles and tool lines wrap every two or three characters, leaving the
- * panel alive but unreadable.
+ * The chat panel's width: pure arithmetic plus where it is stored. The user drags; this decides only
+ * the lines a drag must not cross. The panel never covers the map, so the upper bound is what is left
+ * after the rail and `MAP_MIN_WIDTH`; the lower bound is the width at which one line is readable.
  */
 
 /** The minimum width at which one line reads. Below it, the conversation becomes vertical text. */
 export const CHAT_WIDTH_MIN = 320;
 /**
- * The width when nobody has dragged. 420 carried the pre-resize default forward; the owner
- * read it as tight for a conversation (2026-09-06, installed app at 1512), so it took one
- * more 40px step to 460 — and then, the same day and in the same build, read the composer's
- * footer at that width with both pickers collapsed to their chevrons.
- *
- * 520 is that request taken one step further, and it is **half** the answer: it widens the
- * composer's own box from 368px to 428px, which is what the two pickers divide, so each
- * reads at about 211px instead of about 181px. The other half was
- * the footer's two-row shape, which left with the pickers on 2026-09-07 (they stand in the
- * panel's toolbar now).
- *
- * ⚠️ This is the **ceiling** of the default, not the default itself. `defaultChatWidth()`
- * takes the window into account; `MAP_COMFORT_WIDTH` records why.
+ * The width when nobody has dragged; 520 widens the composer box so both pickers read in full.
+ * Only the ceiling of the default: `defaultChatWidth()` accounts for the window (`MAP_COMFORT_WIDTH`).
  */
 export const CHAT_WIDTH_DEFAULT = 520;
 /**
- * **The map width a width nobody chose has to leave** — wider than `MAP_MIN_WIDTH`.
- *
- * The two are different promises. `MAP_MIN_WIDTH` is the floor a **drag** may not cross: the
- * person is holding the edge, watching the map narrow, and 480px is where we stop them. A
- * default is nobody watching anything, so it does not get to spend that last margin.
- *
- * Measured 2026-09-06, and it is why this constant exists: raising the default to 520 at the
- * app's own 1040px minimum window left the map exactly 480px, and at 480 the relation caption
- * on the map (`cart` → `product-detail`) no longer fits and is dropped —
- * `tests/e2e/analysis-workbench.spec.ts`, "showing a relationship reveals its hidden
- * endpoint at 1040px", went red on a change that never touched the map. 540 keeps that
- * caption drawing with room to spare and still leaves a 1040px window a 436px conversation.
+ * The map width a default must leave, wider than `MAP_MIN_WIDTH`, which only a drag may not cross.
+ * At 1040px with 520 the map was exactly 480 and dropped a relation caption; 540 keeps it drawing.
  */
 export const MAP_COMFORT_WIDTH = 540;
 /** The minimum width the map must keep. This panel's upper bound derives from it. */

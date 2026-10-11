@@ -35,21 +35,9 @@ export function TopologyEmptyState({
   docsFoundCount?: number;
   onStartFromDocs?: () => void;
   /**
-   * **Capability decides — not the runtime, and not "have they already opened one"**
-   * (2026-08-08 council).
-   *
-   * The old decision was `isTauriVaultRuntime() || hasOpenVault`. Someone who is
-   * neither — **a first-time web visitor on an FSA-capable browser** — got this panel
-   * answering 「install the macOS app」. That person's browser can open a folder right
-   * here, right now. Writing "you can't" where you can (`surfaces.md`) is the same
-   * illness the 2026-08-07 slice fixed in three places, still surviving here.
-   *
-   * The decision's single source is the same as `OpenVaultCta`'s:
-   * `vault.status !== 'unsupported'`. That `status` already includes the Tauri runtime
-   * inside `isSupported()`, so this one value **covers** both old conditions while
-   * also splitting web visitors correctly. It is passed in by `HomePage`, which
-   * already holds `useLocalVault()` — that also keeps this widget from being bound to
-   * a provider, which would stop its unit tests running without one.
+   * Capability decides, not the runtime: `vault.status !== 'unsupported'` (as in `OpenVaultCta`)
+   * covers Tauri and FSA-capable web browsers. Passed in by `HomePage` so this widget stays
+   * provider-free.
    */
   canPickFolder?: boolean;
 }) {

@@ -6,13 +6,7 @@ import koMessages from '../../../../messages/ko.json';
 import { AcpChatResizeHandle } from './AcpChatResizeHandle';
 import { CHAT_WIDTH_STEP, defaultChatWidth } from '../model/panel-width';
 
-/**
- * Dragging **could not be verified on screen.** A synthetic drag sent through the
- * accessibility layer answered "success" while changing the width by 0px (measured
- * 2026-08-16) — the real path goes through pointer capture. Something invisible to
- * the eye and unmeasurable by automation means the next person can break it
- * silently. So it is measured here.
- */
+/** Dragging cannot be verified through the accessibility layer, so it is measured here. */
 beforeAll(() => {
   // jsdom has no pointer capture — pretending it does is enough for the handlers to run.
   Object.assign(HTMLElement.prototype, {

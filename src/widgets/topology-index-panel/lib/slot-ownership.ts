@@ -8,9 +8,8 @@ import type { IndexPanelState } from "./index-panel-state";
 type LeftSlotAnalysisMode = "overview" | "focus" | "path" | "health";
 
 /**
- * INDEX owns the topology's left slot unconditionally since the analysis rail was retired.
- * The function `resolveLeftSlotOwner` stays a named seam
- * because `resolveRenderedIndexPanelState` reads it and a future mode would change the rule here.
+ * INDEX owns the topology's left slot unconditionally. `resolveLeftSlotOwner` stays a named seam
+ * because `resolveRenderedIndexPanelState` reads it.
  */
 export type LeftSlotOwner = "index" | "analysis-rail";
 

@@ -80,13 +80,6 @@ describe('AcpPresentationPanel outside Map', () => {
   });
 });
 
-/**
- * **The two arrows had no test anywhere in the repository** (checked 2026-09-20: every other
- * control on this panel — the citation, the ask, the map continuation — is referenced by a test,
- * and `acp-presentation-previous` and `acp-presentation-next` by none).
- *
- * They are the most pressed controls the panel has: walking a presentation is Next, Next, Next.
- */
 describe('walking the scenes', () => {
   const walk = (activeIndex: number, handlers: Partial<{ onChangeScene: () => void; onClose: () => void }> = {}) => {
     const onChangeScene = vi.fn();

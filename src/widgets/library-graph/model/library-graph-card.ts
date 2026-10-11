@@ -120,7 +120,6 @@ export function libraryGraphFlowEdges(
   return { flow, stale };
 }
 
-/** Every citation the folder can no longer vouch for — what the arrival pulse is about. */
 export function libraryGraphStaleEdges(graph: Pick<LibraryGraph, "edges">): Set<string> {
   const stale = new Set<string>();
   for (const edge of graph.edges) {

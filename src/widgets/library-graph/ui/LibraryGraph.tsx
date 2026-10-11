@@ -270,7 +270,6 @@ export function LibraryGraph({
     onDismiss: dismissCard,
   });
 
-  /** The open card's mark, or null once the folder no longer holds it. */
   const cardNode = useMemo(
     () => (cardId === null ? null : graph.nodes.find((node) => node.id === cardId) ?? null),
     [cardId, graph.nodes],

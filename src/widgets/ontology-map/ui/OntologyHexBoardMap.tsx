@@ -675,13 +675,9 @@ export function OntologyHexBoardMap({
   }, [relief, pose, requestDraw]);
 
   /*
-   * Size the backing store, and measure the room. The room is the map at rest: while something is
-   * selected the inspector is in and INDEX folds, and the camera makes room by moving (below), so
-   * a selection keeps the room it found. But a board that opens with something already selected —
-   * a `?p=` link, or a switch of view with a node chosen — has found none: with no room it had no
-   * layout and no camera, and drew none of its 37 tiles while the inspector and the footer stood
-   * beside the empty canvas (measured 2026-09-25). So the first reading is taken whatever is
-   * selected, and one taken under a selection is read again once the selection clears.
+   * Size the backing store and measure the room (the map at rest). The first reading is taken
+   * whatever is selected, since a board opening with a selection would otherwise have no layout or
+   * camera; a reading taken under a selection is redone once the selection clears.
    */
   useLayoutEffect(() => {
     const wrap = wrapRef.current;

@@ -27,7 +27,6 @@ export interface LibraryGraphInk {
   selectedRing: string;
   /** A real failed operation. This is not inferred from an absent completion. */
   danger: string;
-  /** The one amber: a citation the folder can no longer vouch for, in the strip clause's warning hue. */
   stale: string;
   /**
    * The ground a page clears around itself, a shade above the canvas so many meeting lines

@@ -2,17 +2,6 @@
 import { transientSurface } from "@/shared/ui/transient-surface";
 import { currentFloatingRightBound } from "@/shared/lib/overlays/right-dock-reserve";
 
-/**
- * S2 part 5C — the cluster chip hover microcard. Owner report: *"hovering a chip should tell me what it means in a tooltip"* (hovering a chip should tell me what it means
- * in a tooltip). Same contract as the edge hover card
- * (`OntologyMapEdgeHoverCard`): non-interactive (pointer-events-none — it never
- * steals a click), clamped to the viewport, modestly sized. One plain sentence,
- * differing only by collapsed or expanded.
- *
- * The copy is i18n (`topology.cluster.tooltipCollapsed/Expanded`) — HomePage
- * injects the finished sentence with the parent node's title and count, and this
- * card only displays it.
- */
 export interface OntologyMapClusterHoverCardProps {
   /** The finished plain sentence (i18n) — "63 elements of 'Onboarding & UX' are collapsed...". */
   sentence: string;
@@ -27,10 +16,8 @@ const EDGE_MARGIN = 8;
 
 export function OntologyMapClusterHoverCard({ sentence, x, y }: OntologyMapClusterHoverCardProps) {
   /*
-   * The right wall is **the map's edge, not the screen's** (review, 2026-08-16).
-   * With a conversation panel standing to the right of the map,
-   * `window.innerWidth` points past that panel, and this card — which explains
-   * the map — ends up written on top of it.
+   * The right wall is the map's edge, not the screen's: with a conversation panel to the right,
+   * `window.innerWidth` points past it and the card would cover that panel.
    */
   const left = Math.min(x + OFFSET, currentFloatingRightBound() - CARD_MAX_WIDTH - EDGE_MARGIN);
   const top = Math.min(y + OFFSET, (typeof window !== "undefined" ? window.innerHeight : 1080) - 72 - EDGE_MARGIN);

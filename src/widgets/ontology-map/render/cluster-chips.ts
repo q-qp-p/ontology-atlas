@@ -1,24 +1,7 @@
 /**
- * Cluster chips — pure Canvas 2D drawing of the "chip" that stands in for a
- * collapsed parent's children. Neutral surface plus the single indigo only
- * (`docs/DESIGN-SYSTEM.md` single-indigo charter) — no new hue, no glow.
- *
- * Owner report: "+63 reads like dust; I can't tell what it means" (the ＋63 reads
- * like dust; I can't tell what it means). The stacked node-glyph rendering it
- * describes measured ~1.1:1 contrast. Three consequences:
- * ① A single composite `＋N` in the leading zone (`＋` indigo, numeral neutral
- *    numeralFace mono tabular) so "N collapsed" reads as one mark.
- * ② Rest is a quiet neutral pill that never competes with the indigo of a real
- *    node selection; only hover wakes it to indigo (colour interpolation only,
- *    ~150ms — no transform, no zoom step, no glow).
- * ③ The parent→chip tether is textured unlike the depends dashes and pins a 2px
- *    indigo dot at the parent end, so membership reads without joining the
- *    'edge soup'.
- *
- * Hit-testing (`topology-pointer-hit-tests.ts`) and drawing must use the
- * **same rectangle** or clicks land off target, so `clusterChipRect` is the
- * single source (no ctx needed — font width is approximated deterministically),
- * as are `clusterChipLabel` and `clusterChipScale`.
+ * Pure Canvas 2D drawing of the chip standing in for a collapsed parent's children: neutral surface
+ * plus the single indigo (`docs/DESIGN-SYSTEM.md`). Hit-testing and drawing must use the same
+ * rectangle, so `clusterChipRect`, `clusterChipLabel` and `clusterChipScale` are the single source.
  */
 
 import type { ExpandAffordance } from "@/shared/lib/preferences/appearance-preferences";
@@ -58,12 +41,8 @@ export function clusterChipLabel(count: number, expanded: boolean): string {
 }
 
 /**
- * Badge label — the compact counterpart of the pill's `+N` (no space). The badge
- * is docked to the parent node and therefore tighter than the pill label.
- *
- * `expanded` arrived with the shoulder-badge affordance (2026-08-01), where the
- * badge is present **while collapsed too** and must say `+N`. It defaults to
- * `true`, so the earlier callers (expanded badge) are unchanged.
+ * Badge label, the compact counterpart of the pill's `+N`. `expanded` defaults to `true`; a collapsed
+ * shoulder badge must say `+N`.
  */
 export function clusterBadgeLabel(count: number, expanded: boolean = true): string {
   return expanded ? `−${count}` : `+${count}`;
@@ -151,16 +130,9 @@ export function estimateCanvasTextWidth(text: string, fontSize: number): number 
  */
 export interface ClusterBarLabels {
   /**
-   * One press opens **everything** left, so it carries no number — the node
-   * already engraves that count (`clusterBarLabel`).
-   *
-   * It is the bare verb, the mirror of `collapse`, and deliberately **not** the
-   * toolbar's "expand all": that button opens every folded node on the map and
-   * refits, while this bar opens one parent's children. Until 2026-09-20 both
-   * read the literal words "Expand all" in English, and two synonyms of it in
-   * Korean, with no way to tell the two scopes apart. The verb itself, and the
-   * rule that a count appears only when it differs from the engraved total,
-   * come from the 2026-08-02 ledger decision this narrows.
+   * One press opens everything left, so it carries no number: the node already engraves that count
+   * (`clusterBarLabel`). It is the bare verb, not the toolbar's "expand all", which opens every
+   * folded node.
    */
   expand: string;
   /** How many this press opens. Contains a `{count}` placeholder. */
@@ -180,18 +152,9 @@ const FALLBACK_CLUSTER_BAR_LABELS: ClusterBarLabels = {
 };
 
 /**
- * The bar's label — **one function for draw, hit-test, and label reservation**.
- *
- * **Why 「Expand all」 (Expand all) and not 「Expand N」 (Expand N)** — owner
- * report, 2026-08-02. The bar used to read `+17` while the node right below it
- * was engraved `17`: **the same number said twice, and never a verb.** The
- * engraving answers "how many are here" (the total), the bar answers "what
- * happens if I press" (how many this press opens) — different facts, but in the
- * common case where one press opens everything the two numbers coincide.
- *
- * So **the number is spoken only when it is information**: if this press opens
- * everything left, "Expand all" (no number — the engraving already said it); if
- * only some, "Expand N". Tufte's data-ink discipline applied to wording.
+ * The bar's label: one function for draw, hit-test and label reservation. The number is spoken
+ * only when it is information: "Expand all" when the press opens everything left, "Expand N"
+ * when only some.
  */
 export function clusterBarLabel(input: {
   expanded: boolean;
@@ -208,29 +171,9 @@ export function clusterBarLabel(input: {
 }
 
 /**
- * The overhead bar's rectangle — **directly above the parent's head. Always.**
- *
- * The pill *searches* for a free spot. When the search succeeds nothing
- * overlaps, but in dense regions it drifts away from its parent and the screen
- * stops saying **whose button this is**. The bar removes the search: something
- * always in the same place is something the eye never hunts for.
- *
- * Single source for draw, hit-test, and occupancy — all three call this one
- * function, so click coordinates cannot drift (the convention the pill and
- * badge already follow).
- *
- * **May the plate be wider than the node — yes, this plate only** (2026-08-02,
- * reversing an earlier call). The earlier call read "a control larger than its
- * data is an ink inversion" and squeezed the plate inside the node diameter
- * (41.6 within 48). Its premise was that the plate says **one number**, and that
- * was right at the time: a plate saying nothing more has no business being wide.
- * The plate now says a **sentence with a verb in it**, and data-ink is a
- * discipline about ink per unit of information rather than absolute size, so
- * widening to hold a sentence is not an inversion. This plate also exists **only
- * on the selected node**, the thing the user just summoned, so taking space is
- * correct. What stays forbidden is **empty width**: a zone that draws nothing,
- * like the pill's 14px leading glyph zone, does not come back (the width formula
- * below has no such zone).
+ * The overhead bar's rectangle, always directly above the parent's head, so the eye never hunts
+ * for it. One source for draw, hit-test and occupancy, so click coordinates cannot drift. The plate
+ * may be wider than the node because it holds a sentence; empty width is not allowed.
  */
 export function clusterBarRect(
   parentScreenX: number,
@@ -313,22 +256,14 @@ export interface ClusterControlInput {
   /** Is this parent currently expanded. */
   expanded: boolean;
   /**
-   * Is this parent the **selected node**. The `bar` affordance exists only then
-     — owner: *"Nothing at all until you select one."*
-     * A collapsed parent's count is already engraved on the node itself, so a
-     * permanently visible control would put the same fact on screen twice.
-     */
+   * Whether this parent is the selected node. The `bar` affordance exists only then: a collapsed
+   * parent's count is already engraved on the node, so a permanent control would repeat the fact.
+   */
   focused: boolean;
   /**
-   * Can this chip **dock to a node** — do we know the parent's screen position.
-   *
-   * Normally yes, but one case structurally cannot: the batch-reveal `+N more`
-   * chip has a synthetic parent id (`clusterMoreChipId`) that is not a node in
-   * the graph. So under a docked form (bar or badge) that chip was **neither
-   * drawn nor clickable** — measured 2026-08-02; batch reveal had been an
-   * entirely unreachable feature since #826 made the bar the default affordance.
-   * What cannot dock does not disappear: it **stays in the non-docking form
-   * (pill)**. Omitted means `true` (dockable).
+   * Whether the chip can dock to a node, i.e. the parent's screen position is known. The
+   * batch-reveal `+N more` chip has a synthetic parent id, so it stays in the non-docking form
+   * (pill). Omitted means `true`.
    */
   dockable?: boolean;
 }
@@ -369,27 +304,10 @@ const BADGE_PAD_X = 6;
  */
 const BADGE_NODE_CLEARANCE = 10;
 
-/* ── One node's controls use different bearings (measured 2026-08-02) ────────
- *
- * A selected node carries two controls: this file's expand control, and the DOM
- * orbit button "Show only this" (focus on this alone, `use-topology-loop.ts`).
- * Both anchor around the node, and both **used the same bearing (upper-right,
- * 45°)**. The result was not overlap but **occlusion** — measured at 1512×982,
- * sample vault "Marketing", shoulder badge:
- *
- * - **80% (513px²)** of the 33.6×19 badge sat under the 28×28 orbit button,
- * - `document.elementFromPoint(badge centre)` returned the orbit button's
- *   `<circle>` (= the badge is **never clickable**; clicking never changes
- *   `?open=`),
- * - the only part sticking out was the last glyph of `+17`, so it **read as
- *   "7"** — a false number.
- * - The default overhead bar was not safe either: the plate's lower-right corner
- *   16.5×4.8px (80px², 5% of the plate) was caught under the same button.
- *
- * So the bearings were split — **bar = north · badge = northwest · orbit button
- * = east**. The rule holds independent of size (the contract test below sweeps
- * radii 7–40), so overlap cannot return when nodes grow or shrink. That is what
- * separates it from bumping one value until "this screen" happens to be clear.
+/*
+ * A selected node has this expand control and the DOM orbit button "Show only this", so they take
+ * different bearings: bar = north, badge = northwest, orbit button = east. The contract test sweeps
+ * radii 7-40 (`tests/contract/expand-settings.contract.test.ts`).
  */
 /** Distance pushing the orbit button outside the node radius (screen px). */
 const ORBIT_BUTTON_CLEARANCE = 14;
@@ -416,13 +334,8 @@ export function orbitButtonRect(
 }
 
 /**
- * Owner report: the expanded `−N` pill collided with dashes and labels. The
- * floating pill was dropped, and the expanded badge is pushed out diagonally
- * (45°) by the node radius plus clearance, on the shoulder bearing named above.
- * Attached to the node it rides the camera, which removes the overlap at its
- * source. Single source for draw and hit — both take the same rectangle from
- * here so click coordinates cannot drift. `nodeScreenRadius` is the parent's
- * base screen radius (`radiusForKind × magnitudeScale × cameraScale`).
+ * The expanded `-N` badge sits 45 degrees out from the node by radius plus clearance, on the
+ * shoulder bearing above, riding the camera. Draw and hit take the same rectangle from here.
  */
 export function clusterBadgeRect(
   parentScreenX: number,
@@ -578,18 +491,9 @@ export function clusterChipRect(
 }
 
 /**
- * Owner report: "The +31 overlapping between nodes looks bad too." Chips are drawn **before** node labels
- * (`ui/frame-draw/paint-chips.ts`), and the label placer (`greedyPlaceLabels`) did not
- * know chips existed, so labels were painted straight over them. Handing the
- * placer a chip as a **reserved occupant** needs "the rectangle the chip
- * actually occupies this frame".
- *
- * This function's contract is to take the **same branches** as
- * `drawClusterChip` — null while fading out on the reveal ramp (an invisible
- * chip pushing labels away leaves a ghost gap), the shoulder badge when
- * expanded, the pill when collapsed. Divergent branches make labels dodge empty
- * space or overlap chips again, so draw and this function are always edited
- * together (`cluster-chips.test.ts` guards it).
+ * `greedyPlaceLabels` reserves the chip's rectangle, so this takes the same branches as
+ * `drawClusterChip`: null while fading out, the badge when expanded, the pill when collapsed.
+ * Edit both together (`cluster-chips.test.ts`), or labels dodge empty space or overlap chips.
  */
 export function clusterChipOccupancyRect(input: ClusterChipDrawInput): ClusterChipRect | null {
   const scale = input.scale ?? 1;
@@ -801,18 +705,8 @@ export function drawClusterChip(
     return;
   }
 
-  // Fade the current form's alpha in on the reveal ramp; omitted means 1
-  // (backward compatible). Multiplied into the baseAlpha the caller set.
-  //
-  // ⚠️ **Both forms are drawn while the ramp runs.** Branching on `expanded` and
-  // drawing only one form meant **there was no crossfade in either direction** —
-  // expanding, the pill vanished in one frame and the badge rode its ramp alone
-  // (frame measurement 2026-07-31: pill's last frame α=1.000 → absent the next
-  // frame, zero frames in between).
-  //
-  // Worse, that branch sat **before the travel code**. Expanding is
-  // `expanded=true` from the first frame, so `clusterChipTravelPoint` was
-  // **never reached** — the travel existed but never ran on expand.
+  // Both forms are drawn while the reveal ramp runs: branching on `expanded` and drawing one would
+  // skip the crossfade and never reach `clusterChipTravelPoint` on expand. Omitted `revealT` is 1.
   const baseAlpha = ctx.globalAlpha;
   const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
   const badgeAlpha =

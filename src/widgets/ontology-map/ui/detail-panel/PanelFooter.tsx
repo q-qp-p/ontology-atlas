@@ -43,13 +43,9 @@ export function PanelFooter({
           onClick={onOpenFullDetail}
           data-testid="map-detail-panel-open-full-detail"
           /*
-           * **One grammar for "full detail" on every kind** (interaction audit, 2026-09-25):
-           * domains and capabilities drew a 32px bordered card here, the project a 24px ghost
-           * link, so the same action changed shape by kind and the footer its height. Shape
-           * and size are now one; only the emphasis steps down on the project, whose source
-           * action (in the footer or beside the gap) is the filled control, so two never compete.
-           * It is the chip `lg` its footer neighbour (the project's source action) wears: one
-           * 32px height and the 6px chip radius, not the card's 9px (round 2, 2026-09-25).
+           * One grammar for "full detail" on every kind: the chip `lg` its footer neighbour (the
+           * project's source action) wears, 32px high with the chip radius. Only the emphasis steps down
+           * on the project, whose source action is the filled control, so two never compete.
            */
           className={controlClass({
             shape: "chip",

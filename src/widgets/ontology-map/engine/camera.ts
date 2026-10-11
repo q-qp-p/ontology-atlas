@@ -68,22 +68,8 @@ export interface CameraStepInput {
  */
 const SCALE_CRITICAL_DAMPING = 1.0;
 /**
- * The rubber-band return is **proportional to time** (code review fix, 2026-07-28).
- *
- * The prototype pulled 14% per frame and bled 15% of the velocity — values that
- * assume 60Hz, so **the feel diverges with the display's refresh rate**: at 120Hz
- * (ProMotion) it pulls twice as much in the same time and feels stiff, while
- * dropping to 30fps pulls half as much and feels slack. Not divergence but a matter
- * of feel — yet every other visual ramp in this repository is already of the form
- * `1-exp(-dt/τ)`, leaving only this one frame-dependent (the same species as fixing
- * `NODE_DRAG_HEAT_MS` from a frame count to ms).
- *
- * τ is derived **so that it matches the old value exactly at 60Hz** — that refresh
- * rate's feel is the reference and every other rate is aligned to it.
- * τ is back-computed from the old value rather than written as a decimal: a
- * hand-rounded constant diverges slightly from the old feel even at 60Hz (measured:
- * disagreeing at the fifth digit), and the next person cannot read where that
- * divergence came from.
+ * The rubber-band return is proportional to time, so the feel is the same at any refresh rate.
+ * `tau` is back-computed from the 60Hz values (14% pull, 15% velocity bleed), not a rounded decimal.
  */
 const REFERENCE_FRAME_SECONDS = 1 / 60;
 /** Prototype `updateCamera()` — 14% return per frame at 60Hz. */
@@ -117,11 +103,8 @@ export function computePanBounds(
 }
 
 /**
- * Hard-clamps a single world-space point into `panBounds` — used to cap a
- * flick's projected landing target (`topology-pointer-release.ts`) so the
- * spring is never asked to chase a point far outside the graph's content.
- * (The softer, per-frame `clampAxisToPanBounds` below handles the *live*
- * camera position elastically; this one is a hard ceiling on the *target*.)
+ * Hard-clamps one world-space point into `panBounds`, capping a flick's projected landing target
+ * (`topology-pointer-release.ts`); the per-frame `clampAxisToPanBounds` is the elastic live clamp.
  */
 export function clampPointToPanBounds(
   x: number,

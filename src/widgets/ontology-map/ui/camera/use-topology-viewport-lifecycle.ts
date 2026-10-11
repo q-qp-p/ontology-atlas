@@ -110,15 +110,9 @@ export function useTopologyViewportLifecycle({
     const measure = () => {
       const rect = container.getBoundingClientRect();
       /*
-       * **The layout size, not the painted one** (2026-09-25). `getBoundingClientRect`
-       * reports the box after transforms, and the map surface's entry fade scales
-       * its subtree from 0.995 (`topologyFade`), which is exactly when the mount-time
-       * read lands. Nothing measured again once it ended, so the viewport stayed 0.5%
-       * small for the whole session — measured at 1512×949: 1440.76 × 944.26 against
-       * a 1448 × 949 canvas. The bitmap was stretched across the canvas, a drawn node
-       * sat up to 7 px from where the camera and the hit test put it, and every fit
-       * worked in a width the screen did not have. The computed size carries no
-       * transform.
+       * The layout size, not the painted one: `getBoundingClientRect` reports the box after transforms, and
+       * the map surface's entry fade scales its subtree from 0.995 (`topologyFade`) when the mount-time
+       * read lands, leaving the viewport slightly small. The computed size carries no transform.
        */
       const style = getComputedStyle(container);
       // A browser resolves a rendered box's width to px; anything else (a DOM without

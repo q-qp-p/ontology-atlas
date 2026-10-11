@@ -5,19 +5,10 @@ import {
   OUTLINE_RAIL_WIDTH_CLASS,
   type OutlineRailFit,
 } from "../lib/outline-rail";
-/**
- * One entry in a document outline.
- *
- * Until 2026-07-28 this type lived in `DocsVaultDocOutlinePanel` (the document info inspector).
- * That panel's five actions (pin, copy link, print, edit, delete) were **all already in the ⌘K
- * palette** and the outline was already drawn by this rail, so the panel was removed. This file,
- * now the outline's sole owner, owns the type too.
- */
 export interface OutlineHeading {
   slug: string;
   text: string;
   depth: number;
-  /** Which occurrence of the same text this is — used to distinguish duplicate headings. */
   occurrence: number;
   duplicate: boolean;
 }

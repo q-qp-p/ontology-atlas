@@ -8,9 +8,8 @@ import { rootFontPx } from "@/shared/ui/root-font-size";
 import { resolveOutlineRailFit, type OutlineRailFit } from "./outline-rail";
 
 /**
- * Room the pane can spare for the outline rail, observed on the pane itself because a docked
- * conversation changes the pane without changing the window. State holds only the verdict, so a
- * dock transition costs at most two renders.
+ * Observed on the pane itself because a docked conversation changes the pane without changing the
+ * window. State holds only the fit, so a dock transition costs at most two renders.
  */
 export function useOutlineRailFit(): {
   /** Attach to the box the body actually lives in. */
