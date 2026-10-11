@@ -4,10 +4,8 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { MouseEventHandler, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { requestSettingsOpen } from '@/shared/lib/keyboard/surface-requests';
-import {
-  AGENT_GRAPH_WORKFLOW_HREF,
-  AppSettingsMenu,
-} from './AppSettingsMenu';
+import { AGENT_GRAPH_WORKFLOW_HREF } from '@/shared/config';
+import { AppSettingsMenu } from './AppSettingsMenu';
 
 const mocks = vi.hoisted(() => ({
   isDesktopRuntime: false,

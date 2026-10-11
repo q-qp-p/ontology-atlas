@@ -14,7 +14,6 @@ import { CloseButton } from '@/shared/ui/close-button';
 import { ICON_SIZE } from '@/shared/ui/icon-size';
 import { buildRouteFocusHref } from '@/shared/ui/route-focus-manager';
 import { transientSurface } from '@/shared/ui/transient-surface';
-import { AGENT_GRAPH_WORKFLOW_HREF } from '@/shared/config';
 
 import { SETTINGS_CATALOG } from '../model/catalog';
 import type { SettingsSectionId } from '../model/catalog/types';
@@ -41,8 +40,6 @@ import {
   useSettingsSearchCursor,
 } from './SettingsSearch';
 import { SettingsPaneHead } from './settings-primitives';
-
-export { AGENT_GRAPH_WORKFLOW_HREF };
 
 type SettingsTriggerVariant = 'header-pill' | 'rail-tile' | 'chrome-tile';
 

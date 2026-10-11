@@ -67,11 +67,6 @@ import { readArrivalMemory, writeArrivalMemory } from "./route-arrival-memory-st
  * The store itself is `route-arrival-memory-store.ts` — a separate file so the test setup can
  * forget it between cases without pulling React into every test file's setup graph.
  */
-export {
-  clearArrivalMemory,
-  readArrivalMemory,
-  writeArrivalMemory,
-} from "./route-arrival-memory-store";
 
 /**
  * A `useState` that survives the unmount a route change causes.

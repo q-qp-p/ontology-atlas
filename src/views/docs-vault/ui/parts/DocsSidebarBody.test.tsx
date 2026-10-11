@@ -6,7 +6,7 @@ import type { VaultDoc, VaultManifest } from "@/entities/docs-vault";
 import type { DocsTreeGroup, DocsTreeSort } from "@/widgets/docs-vault/lib/tree-order";
 import type { DocsVaultCollection } from "../../lib/docs-vault-collection";
 import type { AgentFilesUiModel } from "@/entities/agent-files";
-import { DOCS_HEAD_LABEL_MIN_PX, DocsSidebarBody } from "./DocsSidebarBody";
+import { DocsSidebarBody } from "./DocsSidebarBody";
 
 function makeDoc(
   slug: string,
@@ -263,10 +263,7 @@ describe("DocsSidebarBody icon row search toggle and count", () => {
     expect(active.getAttribute("aria-label")).toContain("3");
   });
 
-  /**
-   * Tailwind needs the `@min-[…px]/docs-head:` threshold written literally, so this checks it equals
-   * the constant; jsdom has no container queries (`docs-sidebar-head.spec.ts` measures the render).
-   */
+  /** jsdom has no container queries; `docs-sidebar-head.spec.ts` measures the threshold in a render. */
   it("draws the active name only when the row is wide enough", () => {
     const docs = [makeDoc("a", "A", new Date().toISOString())];
     renderSidebar(docs, {
@@ -275,7 +272,7 @@ describe("DocsSidebarBody icon row search toggle and count", () => {
     });
     const label = screen.getByText("전체 문서");
     expect(label.className).toContain("hidden");
-    expect(label.className).toContain(`@min-[${DOCS_HEAD_LABEL_MIN_PX}px]/docs-head:inline`);
+    expect(label.className).toMatch(/@min-\[\d+px\]\/docs-head:inline/);
     // The row, not the window, is the container: the pane renders at several widths in one viewport.
     const row = screen.getByTestId("docs-sidebar-head-row");
     expect(row.className).toContain("@container/docs-head");

@@ -5,7 +5,6 @@ import koMessages from '../../../../messages/ko.json';
 import {
   buildOntologyStarterCliVerifyCommands,
   buildOntologyStarterJsonGateCommand,
-  ONTOLOGY_STARTER_CLI_VERIFY_COMMANDS,
   ONTOLOGY_STARTER_JSON_GATE_COMMAND,
   OntologyStarterCta,
 } from './OntologyStarterCta';
@@ -112,7 +111,7 @@ describe('OntologyStarterCta', () => {
     fireEvent.click(screen.getByRole('button', { name: 'CLI 점검 복사' }));
 
     await waitFor(() => expect(copyTextMock).toHaveBeenCalledTimes(1));
-    expect(copyTextMock).toHaveBeenCalledWith(ONTOLOGY_STARTER_CLI_VERIFY_COMMANDS);
+    expect(copyTextMock).toHaveBeenCalledWith(buildOntologyStarterCliVerifyCommands());
     expect(copyTextMock).toHaveBeenCalledWith(
       expect.stringContaining('node $ATLAS/cli/src/index.mjs agent-brief . --graph-db-pack'),
     );

@@ -92,6 +92,42 @@
       "witness": "@formatjs/icu-messageformat-parser"
     },
     {
+      "key": "frontend:runtime:devDependencies:package.json:axe-core",
+      "reason": "The accessibility specs run axe-core in the browser; Playwright specs are not runtime entries, so the lane cannot see this consumer.",
+      "consumer": "tests/e2e/a11y-ratchet.spec.ts",
+      "witness": "axe-core"
+    },
+    {
+      "key": "frontend:runtime:exports:src/features/library/index.ts:retainedAnswerHeads",
+      "reason": "The questions list test builds real answer heads through the reducer instead of hand-made ones; test files are not runtime entries, so the lane cannot see this consumer.",
+      "consumer": "src/views/library/ui/parts/LibraryQuestions.test.tsx",
+      "witness": "retainedAnswerHeads"
+    },
+    {
+      "key": "frontend:runtime:exports:src/shared/lib/vault-folder/sample-source.ts:resetSampleSourceCacheForTests",
+      "reason": "Tests clear the module-level sample cache between cases; test files are not runtime entries, so the lane cannot see this consumer.",
+      "consumer": "src/features/first-run-starter/ui/FirstRunStarterModule.test.tsx",
+      "witness": "resetSampleSourceCacheForTests"
+    },
+    {
+      "key": "frontend:runtime:exports:src/shared/motion/stagger.ts:resetStaggerSessionForTests",
+      "reason": "Tests clear the once-per-session stagger memory between cases; test files are not runtime entries, so the lane cannot see this consumer.",
+      "consumer": "src/shared/motion/stagger.test.tsx",
+      "witness": "resetStaggerSessionForTests"
+    },
+    {
+      "key": "frontend:runtime:exports:src/shared/ui/reading-measure.ts:PROSE_MEASURE_PX",
+      "reason": "Three layout specs hold the rendered column to this default-root measure; test files are not runtime entries, so the lane cannot see this consumer.",
+      "consumer": "tests/e2e/prose-measure-calibration.spec.ts",
+      "witness": "PROSE_MEASURE_PX"
+    },
+    {
+      "key": "frontend:runtime:exports:src/views/download/ui/showpiece-player.ts:TEST_ENV",
+      "reason": "Figure tests build tracks against a fixed environment instead of computed styles jsdom cannot resolve; test files are not runtime entries, so the lane cannot see this consumer.",
+      "consumer": "src/views/download/ui/ChangeFigure.test.tsx",
+      "witness": "TEST_ENV"
+    },
+    {
       "key": "frontend:runtime:duplicates:src/shared/motion/tokens.ts:OVERLAY_SPRING_REDUCED|SCRIM_FADE_REDUCED",
       "reason": "The two reduced-motion tokens are named separately on purpose: each surface keeps its own reduced-motion equivalent even while their values coincide.",
       "consumer": "src/shared/motion/tokens.ts",
