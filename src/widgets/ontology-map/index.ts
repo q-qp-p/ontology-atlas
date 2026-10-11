@@ -11,15 +11,15 @@ export type { HexBoardLabels } from './ui/OntologyHexBoardMap';
 export type { HexPlacementRecord } from './model/hex-board';
 export type { DialLabels, DialMemory } from './dial/types';
 export { capabilityTierRead } from './dial/placement';
-export type { FlatRingMemoryStore } from './ui/topology-loop-contract';
+export type { FlatRingMemoryStore } from './ui/loop/topology-loop-contract';
 export type { OntologyMapNode, OntologyMapEdge, } from './ui/OntologyMap';
 export { OntologyMapDetailPanel } from './ui/OntologyMapDetailPanel';
 export { OntologyMapEdgeHoverCard } from './ui/OntologyMapEdgeHoverCard';
-export type { HoverAvoidRect } from './ui/topology-pointer-handlers';
+export type { HoverAvoidRect } from './ui/input/topology-pointer-handlers';
 export { OntologyMapClusterHoverCard } from './ui/OntologyMapClusterHoverCard';
 export { OntologyMapContextMenu } from './ui/OntologyMapContextMenu';
-export { requestOntologyMapFrame } from './ui/use-topology-frame-loop';
-export { buildV2Connections, buildV2ConnectionGroups, buildV2EvidenceRows, formatV2HandoffText, } from './ui/map-datasheet';
+export { requestOntologyMapFrame } from './ui/frame-loop/use-topology-frame-loop';
+export { buildV2Connections, buildV2ConnectionGroups, buildV2EvidenceRows, formatV2HandoffText, } from './ui/detail-panel/map-datasheet';
 /**
  * INDEX panel's expand/collapse toggles the DOM `data-topology-index`
  * attribute that drives `--map-safe-inset-left` (`app/globals.css`),
@@ -36,5 +36,5 @@ export type { ConeInputNode, ConeKind } from './model/cone-layout';
  * Where the last frame drew each node's name and disc, for chrome outside the map that must
  * leave what it explains in view (the guided tour's card).
  */
-export { readDrawnMapMarks } from './ui/drawn-map-marks';
+export { readDrawnMapMarks } from './ui/frame-draw/drawn-map-marks';
 export { DomainStructureMap } from "./structure/DomainStructureMap";

@@ -13,8 +13,8 @@ import type { ClusterChip } from "../../model/density-gate";
 import type { DustPoint } from "../../render/starfield";
 import type { Pulse } from "../../render/edge-fireflies";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
-import type { TopologyWorld, WorldEdge } from "../topology-world";
-import type { FlatDialFrameProps } from "../topology-loop-contract";
+import type { TopologyWorld, WorldEdge } from "../world/topology-world";
+import type { FlatDialFrameProps } from "../loop/topology-loop-contract";
 
 export interface FrameDrawParams {
   ctx: CanvasRenderingContext2D;

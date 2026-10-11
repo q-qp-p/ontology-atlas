@@ -8,7 +8,7 @@ import {
   drawClusterChip,
   clusterChipScale,
 } from "../../render/cluster-chips";
-import { radiusForKind } from "../topology-world";
+import { radiusForKind } from "../world/topology-world";
 import { BACKGROUND_DIM_WHEN_EXPANDED, ZERO_DOME_FRAME } from "./frame-state";
 import type { FrameInputs } from "./frame-begin";
 import type { FrameFocus } from "./frame-focus";

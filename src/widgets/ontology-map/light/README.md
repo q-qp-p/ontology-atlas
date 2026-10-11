@@ -10,7 +10,7 @@ reduced motion.
 |---|---|---|
 | `signal-plan.ts` | plans (focus, path), head position, arrival, bloom envelope, plan lifetime, the signalled-line registry | `planFocusSignal` · `planPathSignal` · `headAt` · `stepPlan` · `isPlanAlive` · `isEdgeSignalled` |
 | `light-sources.ts` | the sources: each turns map state plus time into lights | `LIGHT_SOURCES` (one entry per source) |
-| `light-frame-stage.ts` | creation in an idle callback, availability, per-frame prepare and render, the `lightActive` flag | `createLightFrameStage` from `ui/use-topology-frame-loop.ts` |
+| `light-frame-stage.ts` | creation in an idle callback, availability, per-frame prepare and render, the `lightActive` flag | `createLightFrameStage` from `ui/frame-loop/use-topology-frame-loop.ts` |
 | `light-layer.ts` · `light-shaders.ts` | the WebGL2 context, two instanced programs, the canvas beside the map canvas; lazily imported | `createLightLayer` |
 | `light-probe.ts` | `window.__atlasMapLight` under `?e2e=1` | `installLightProbe` |
 

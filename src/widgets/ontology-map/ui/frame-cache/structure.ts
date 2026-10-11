@@ -1,6 +1,6 @@
 import { rankEgoNeighborsByDOI } from "../../model/focus-state";
 import { collectDomeAncestry, collectDomeSubtree } from "../../model/dome-ancestry";
-import type { TopologyWorld, WorldEdge } from "../topology-world";
+import type { TopologyWorld, WorldEdge } from "../world/topology-world";
 
 type WorldStructure = Pick<TopologyWorld, "edges" | "nodeById" | "neighborMap" | "childrenByParent">;
 interface StructureCache {

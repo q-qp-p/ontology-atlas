@@ -1,15 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
-import type { HoverAvoidRect } from "./topology-pointer-handlers";
-import type { FlatDialState, FlatRingMemoryStore } from "./topology-loop-contract";
+import type { HoverAvoidRect } from "./input/topology-pointer-handlers";
+import type { FlatDialState, FlatRingMemoryStore } from "./loop/topology-loop-contract";
 import type { DialEvidence, DialLabels } from "../dial/types";
 import { Orbit } from "lucide-react";
 import { MAP_CANVAS_SURFACE_ROLE } from "@/shared/lib/focus-map-canvas";
 import { copyCanvasAtCssSize, isMapLayoutMorphArmed, publishMapLayoutSnapshot } from "@/shared/lib/map-layout-morph-store";
-import { readOntologyMapTokensOrNull } from "./topology-read-tokens";
+import { readOntologyMapTokensOrNull } from "../tokens/topology-read-tokens";
 import { ICON_SIZE } from "@/shared/ui/icon-size";
-import { useTopologyLoop } from "./use-topology-loop";
+import { useTopologyLoop } from "./loop/use-topology-loop";
 import { OntologyMapTierLegend } from "./OntologyMapTierLegend";
 import type { TierNameAnchor } from "../model/tier-names";
 import type { TierRevealConfig } from "../model/tier-visibility";

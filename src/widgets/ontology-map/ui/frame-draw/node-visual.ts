@@ -4,7 +4,7 @@ import type { DomeViewKind } from "../../model/dome-view/types";
 import { hexToRgb, mixRgbHex } from "../../render/dome-light";
 import { lerpColorHex } from "../../render/grid";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
-import type { WorldNode } from "../topology-world";
+import type { WorldNode } from "../world/topology-world";
 
 export const nodeVisualCache: (NodeVisual | undefined)[] = new Array(16);
 

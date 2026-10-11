@@ -3,7 +3,7 @@ import type {
   KnowledgeGraphEdge,
   KnowledgeGraphNode,
 } from "@/entities/knowledge-graph";
-import { buildTopologyWorld } from "@/widgets/ontology-map/ui/topology-world";
+import { buildTopologyWorld } from "@/widgets/ontology-map/ui/world/topology-world";
 import { buildOntologyMapGraph } from "./map-adapter";
 
 /** Only the values `buildTopologyWorld` reads to place and ring the nodes. */

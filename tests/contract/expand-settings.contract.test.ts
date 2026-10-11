@@ -665,8 +665,8 @@ describe("노드 컨트롤 방위 — 막대·배지·궤도 버튼이 자리를
    * overlaps again — so this also checks that the consumer calls the function.
    */
   it("궤도 버튼 DOM 배치가 같은 함수를 쓴다", () => {
-    const source = readFileSync("src/widgets/ontology-map/ui/topology-realm-frame-stage.ts", "utf8");
-    const scheduler = readFileSync("src/widgets/ontology-map/ui/use-topology-frame-loop.ts", "utf8");
+    const source = readFileSync("src/widgets/ontology-map/ui/frame-loop/topology-realm-frame-stage.ts", "utf8");
+    const scheduler = readFileSync("src/widgets/ontology-map/ui/frame-loop/use-topology-frame-loop.ts", "utf8");
     expect(scheduler).toContain("createRealmFrameStage(configuration.realmFrameStage)");
     expect(scheduler).toContain("runRealmFrameStage(");
     expect(source).toContain("orbitButtonRect(");
