@@ -34,9 +34,10 @@ interface AnchorMeasurements {
  * its opening paint: the tick is an effect and runs after that paint, which would otherwise
  * centre the card on the node for one frame.
  */
-function readCanvasAnchorBox(ref: RefObject<HTMLDivElement | null> | undefined): AnchorBox | null {
-  const el = ref?.current;
-  if (!el || typeof window === "undefined") return null;
+function readCanvasAnchorBox(el: HTMLDivElement | null): AnchorBox | null {
+  if (!el || typeof window === "undefined"
+    || !el.dataset.tourAnchorNode
+    || el.dataset.tourAnchorNode !== el.dataset.tourProjectedNode) return null;
   const r = el.getBoundingClientRect();
   return visibleAnchorBox(
     { top: r.top, left: r.left, width: r.width, height: r.height },
@@ -154,7 +155,7 @@ export function GuidedTourOverlay({
   // A layout effect, because only a layout effect is guaranteed to run before paint.
   useLayoutEffect(() => {
     if (!open || !step || step.anchor?.type !== "canvas-node" || !canvasAnchorRef) return;
-    const box = readCanvasAnchorBox(canvasAnchorRef);
+    const box = readCanvasAnchorBox(canvasAnchorRef.current);
     if (!box) return;
     setMeasurements((current) =>
       current.key === anchorKey && current.canvasRect === null ? { ...current, canvasRect: box } : current,
@@ -213,18 +214,10 @@ export function GuidedTourOverlay({
     if (!canvasAnchorRef) return undefined;
     let raf = 0;
     const tick = () => {
-      const el = canvasAnchorRef.current;
-      if (el) {
-        const r = el.getBoundingClientRect();
-        const box = visibleAnchorBox(
-          { top: r.top, left: r.left, width: r.width, height: r.height },
-          window.innerWidth,
-          window.innerHeight,
-        );
-        setMeasurements((current) =>
-          current.key === anchorKey ? { ...current, canvasRect: box } : current,
-        );
-      }
+      const box = readCanvasAnchorBox(canvasAnchorRef.current);
+      setMeasurements((current) =>
+        current.key === anchorKey ? { ...current, canvasRect: box } : current,
+      );
       raf = window.requestAnimationFrame(tick);
     };
     raf = window.requestAnimationFrame(tick);
@@ -289,17 +282,17 @@ export function GuidedTourOverlay({
         <>
           <div
             data-testid="guided-tour-blocker-strip"
-            className="pointer-events-auto fixed inset-x-0 top-0 z-[var(--z-tour)]"
+            className="pointer-events-auto fixed inset-x-0 top-0 transition-none z-[var(--z-tour)]"
             style={{ height: Math.max(0, interactiveHole.top) }}
           />
           <div
             data-testid="guided-tour-blocker-strip"
-            className="pointer-events-auto fixed left-0 z-[var(--z-tour)]"
+            className="pointer-events-auto fixed left-0 transition-none z-[var(--z-tour)]"
             style={{ top: interactiveHole.top, height: interactiveHole.height, width: Math.max(0, interactiveHole.left) }}
           />
           <div
             data-testid="guided-tour-blocker-strip"
-            className="pointer-events-auto fixed right-0 z-[var(--z-tour)]"
+            className="pointer-events-auto fixed right-0 transition-none z-[var(--z-tour)]"
             style={{
               top: interactiveHole.top,
               height: interactiveHole.height,
@@ -308,7 +301,7 @@ export function GuidedTourOverlay({
           />
           <div
             data-testid="guided-tour-blocker-strip"
-            className="pointer-events-auto fixed inset-x-0 bottom-0 z-[var(--z-tour)]"
+            className="pointer-events-auto fixed inset-x-0 bottom-0 transition-none z-[var(--z-tour)]"
             style={{ height: Math.max(0, viewport.height - (interactiveHole.top + interactiveHole.height)) }}
           />
         </>
@@ -337,7 +330,7 @@ export function GuidedTourOverlay({
             step.anchor.type === "canvas-node"
               ? // Follows worldToScreen every frame, so no CSS transition may fight the camera spring. The
                 // engine draws the visible ring on the canvas; this is only the dimming hole.
-                "rounded-full border-transparent"
+                "rounded-full border-transparent transition-none"
               : "rounded-[var(--chrome-radius)] border-[color:var(--color-border-strong)] transition-[top,left,width,height] duration-[var(--topology-tour-transition-ms)] ease-[var(--topology-motion-ease-out)] motion-reduce:transition-none",
           )}
           style={{

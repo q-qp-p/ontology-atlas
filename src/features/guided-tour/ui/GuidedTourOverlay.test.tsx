@@ -15,18 +15,21 @@ vi.mock("next-intl", () => ({
 function Harness({
   hasSelection = false,
   onActivateAnchor,
+  projectedNode,
 }: {
   hasSelection?: boolean;
   onActivateAnchor?: () => void;
+  projectedNode?: string;
 }) {
   const ref = createRef<HTMLDivElement>();
   const tour = useGuidedTour({ hasSelection, canResolveAnchor: () => true });
+  const anchorNode = tour.step?.anchor?.type === "canvas-node" ? tour.step.anchor.target : undefined;
   return (
     <div>
       <button type="button" data-testid="test-start" onClick={tour.start}>
         start
       </button>
-      <div ref={ref} data-testid="test-canvas-anchor" />
+      <div ref={ref} data-testid="test-canvas-anchor" data-tour-anchor-node={anchorNode} data-tour-projected-node={projectedNode ?? anchorNode} />
       <GuidedTourOverlay
         tour={tour}
         canvasAnchorRef={ref}
@@ -305,6 +308,16 @@ describe("GuidedTourOverlay · the interactive card opens clear of the lit node"
         toJSON: () => ({}),
       }) as DOMRect;
   }
+
+  it("refuses a box still projected for the previous canvas target", () => {
+    render(<Harness projectedNode="project" />);
+    act(() => screen.getByTestId("test-start").click());
+    stubProbe();
+    for (let index = 0; index < 3; index += 1) act(() => screen.getByTestId("guided-tour-next").click());
+    expect(screen.getByTestId("guided-tour-overlay")).toHaveAttribute("data-tour-step", "try-click");
+    expect(screen.queryByTestId("guided-tour-cutout")).not.toBeInTheDocument();
+    expect(screen.getByTestId("guided-tour-blocker")).toBeInTheDocument();
+  });
 
   it("places the opening card off the node instead of centring it on the window", () => {
     Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: 1200 });

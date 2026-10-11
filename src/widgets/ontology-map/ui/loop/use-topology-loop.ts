@@ -1,5 +1,6 @@
 "use client";
 import { useTopologyAppearanceEffects } from "./use-topology-appearance-effects";
+import { useTopologyTourAnchor } from "./use-topology-tour-anchor";
 import { useTopologyFrameLoop } from "../frame-loop/use-topology-frame-loop";
 import { useTopologyObserverBindings } from "./use-topology-observer-bindings";
 import { useTopologyOverviewNavigation } from "../camera/use-topology-overview-navigation";
@@ -195,6 +196,10 @@ export function useTopologyLoop(args: UseTopologyLoopArgs): UseTopologyLoopResul
     cameraTweenRef,
     cameraRef,
   });
+  useTopologyTourAnchor({
+    tourAnchorRef, tourAnchorNodeId, tourAnchorElRef, tourAnchorNodeIdRef,
+    worldRef, viewportRef, cameraRef, domeRuntimeRef, lastActiveMsRef,
+  });
   useTopologyObserverBindings({
         onGrowthReplayingChangeRef,
     onGrowthReplayingChange,
@@ -210,8 +215,6 @@ export function useTopologyLoop(args: UseTopologyLoopArgs): UseTopologyLoopResul
     onEnterRealm,
     realmEnterButtonElRef,
     realmEnterButtonRef,
-    tourAnchorElRef,
-    tourAnchorRef,
     trailLensPropRef,
     trailLensActiveRef,
     trailBrushPropRef,
@@ -225,8 +228,6 @@ export function useTopologyLoop(args: UseTopologyLoopArgs): UseTopologyLoopResul
     lastActiveMsRef,
     agentFocusNodeIdRef,
     agentFocusNodeId,
-    tourAnchorNodeIdRef,
-    tourAnchorNodeId,
     spotlightIdsRef,
     spotlightIds,
     mapLensKindRef,
