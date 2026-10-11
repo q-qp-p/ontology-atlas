@@ -98,19 +98,19 @@ export const rules = [
     order: 1090,
     command: 'pnpm test:mcp:verify:first-contact',
     reason: 'MCP verify first-contact helper changed',
-    matches: [/^mcp\/scripts\/verify\.mjs$/, /^mcp\/src\/verify-script\.test\.mjs$/],
+    matches: [/^mcp\/scripts\/verify(?:\.mjs|\/.+\.mjs)$/, /^mcp\/src\/verify-script\.test\.mjs$/],
   },
   {
     order: 1100,
     command: 'pnpm test:mcp:verify:timeout',
     reason: 'MCP verify timeout/startup diagnostics changed',
-    matches: [/^mcp\/scripts\/verify\.mjs$/, /^mcp\/src\/verify-script\.test\.mjs$/],
+    matches: [/^mcp\/scripts\/verify(?:\.mjs|\/.+\.mjs)$/, /^mcp\/src\/verify-script\.test\.mjs$/],
   },
   {
     order: 1110,
     command: 'pnpm test:mcp:verify',
     reason: 'MCP verify helper changed',
-    matches: [/^mcp\/scripts\/verify\.mjs$/, /^mcp\/src\/verify-script\.test\.mjs$/],
+    matches: [/^mcp\/scripts\/verify(?:\.mjs|\/.+\.mjs)$/, /^mcp\/src\/verify-script\.test\.mjs$/],
   },
   {
     order: 1130,

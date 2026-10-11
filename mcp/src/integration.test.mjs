@@ -12,11 +12,10 @@ import {
   EXPECTED_IDEMPOTENT_TOOLS,
   EXPECTED_READ_TOOLS,
   EXPECTED_TOOLS,
-  IMPORT_EDGE_KIND_VALUES,
-  IMPORT_UNRESOLVED_REASON_VALUES,
-  VAULT_ISSUE_CODE_VALUES,
   expectedToolTitle,
-} from "../scripts/verify.mjs";
+} from "../scripts/verify/tools-list/inventory.mjs";
+import { IMPORT_EDGE_KIND_VALUES, IMPORT_UNRESOLVED_REASON_VALUES } from "./infer-imports.mjs";
+import { VAULT_ISSUE_CODE_VALUES } from "./validate.mjs";
 import {
   EDGE_TARGET_KIND_VALUES,
   MAINTENANCE_KIND_VALUES,

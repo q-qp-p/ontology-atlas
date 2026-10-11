@@ -5,7 +5,7 @@
 import {
   structuredContentMismatchSummary,
   structuredContentParityStatus,
-} from "../../../mcp/scripts/verify.mjs";
+} from "../../../mcp/scripts/verify/checks/structured-content.mjs";
 import {
   isNonBlankString,
   matchRowsFailure,

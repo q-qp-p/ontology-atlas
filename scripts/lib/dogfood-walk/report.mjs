@@ -2,15 +2,15 @@
 // prints a header + status line per surface, evaluates the gate, and returns
 // the process exit code.
 // Split out of scripts/dogfood-mcp-walk.mjs (structural decomposition, logic unchanged).
+import { compileIndexesSummary } from "../../../mcp/scripts/verify/checks/compile.mjs";
+import { destructiveDryRunFailure } from "../../../mcp/scripts/verify/checks/write-dry-runs.mjs";
+import { formatCount } from "../../../mcp/scripts/verify/output.mjs";
 import {
-  compileIndexesSummary,
-  destructiveDryRunFailure,
-  formatCount,
   toolsListAnnotationSummary,
   toolsListInventoryFailure,
-  toolsListSchemaFailure,
-  workspaceBriefSummary,
-} from "../../../mcp/scripts/verify.mjs";
+} from "../../../mcp/scripts/verify/tools-list/inventory.mjs";
+import { toolsListSchemaFailure } from "../../../mcp/scripts/verify/tools-list/schema.mjs";
+import { workspaceBriefSummary } from "../../../mcp/scripts/verify/checks/diagnosis.mjs";
 import { COLORS } from "./colors.mjs";
 import {
   dogfoodTimeoutErrorMessage,

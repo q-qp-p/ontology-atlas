@@ -3,17 +3,29 @@
 // Split out of scripts/dogfood-mcp-walk.mjs (structural decomposition, logic unchanged).
 import {
   analyzeRepoStructureFailure,
+  inferImportsFailure,
+} from "../../../mcp/scripts/verify/checks/import-analysis.mjs";
+import {
   batchCapFailure,
   batchRowIsolationFailure,
+} from "../../../mcp/scripts/verify/checks/batch-writes.mjs";
+import {
   compileIndexesFailure,
   compileSummaryFailure,
-  destructiveDryRunFailure,
-  inferImportsFailure,
-  initializeInstructionsFailure,
-  listConceptsFailure,
+} from "../../../mcp/scripts/verify/checks/compile.mjs";
+import { destructiveDryRunFailure } from "../../../mcp/scripts/verify/checks/write-dry-runs.mjs";
+import { initializeInstructionsFailure } from "../../../mcp/scripts/verify/checks/initialize.mjs";
+import { listConceptsFailure } from "../../../mcp/scripts/verify/checks/concept-reads.mjs";
+import {
   listKindsFailure,
+  validateVaultFailure,
+  validationCodeSummary,
+} from "../../../mcp/scripts/verify/checks/vault-census.mjs";
+import {
   overviewFailure,
   projectMapQueryPlanFailure,
+} from "../../../mcp/scripts/verify/checks/query-plans.mjs";
+import {
   strictAddRelationFailure,
   strictArgsFailure,
   strictEnumFailure,
@@ -30,14 +42,14 @@ import {
   strictRelationCheckFailure as verifyStrictRelationCheckFailure,
   strictRelationFilterFailure,
   strictUnknownToolFailure,
+} from "../../../mcp/scripts/verify/checks/strict-arguments.mjs";
+import {
   structuredContentParityStatus,
-  toolsListInventoryFailure,
-  toolsListSchemaFailure,
-  validateVaultFailure,
-  validationCodeSummary,
-  formatCount,
-  workspaceBriefSummary,
-} from "../../../mcp/scripts/verify.mjs";
+} from "../../../mcp/scripts/verify/checks/structured-content.mjs";
+import { toolsListInventoryFailure } from "../../../mcp/scripts/verify/tools-list/inventory.mjs";
+import { toolsListSchemaFailure } from "../../../mcp/scripts/verify/tools-list/schema.mjs";
+import { formatCount } from "../../../mcp/scripts/verify/output.mjs";
+import { workspaceBriefSummary } from "../../../mcp/scripts/verify/checks/diagnosis.mjs";
 import {
   domainMatrixShapeFailure,
   domainProfileShapeFailure,

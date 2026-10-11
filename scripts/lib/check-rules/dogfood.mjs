@@ -13,7 +13,7 @@ export const rules = [
       /^scripts\/run-focused-node-test\.(?:mjs|test\.mjs)$/,
       /^scripts\/dogfood-mcp-walk\.(?:mjs|test\.mjs)$/,
       /^cli\/src\/commands\/mcp-verify\.mjs$/,
-      /^mcp\/scripts\/verify\.mjs$/,
+      /^mcp\/scripts\/verify(?:\.mjs|\/.+\.mjs)$/,
       /^README\.md$/,
       /^docs\/DEVELOPMENT-CHECKS\.md$/,
       /^docs\/benchmark\/README\.md$/,

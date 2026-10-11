@@ -31,7 +31,7 @@ import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { describe, it } from 'node:test';
 
-import { expectedToolsListAnnotationSummary } from '../mcp/scripts/verify.mjs';
+import { expectedToolsListAnnotationSummary } from '../mcp/scripts/verify/tools-list/inventory.mjs';
 import {
   MAINTENANCE_KIND_VALUES,
   MAINTENANCE_PHASE_VALUES,
