@@ -19,7 +19,7 @@ import { computeOverviewCameraTarget, computeOverviewFitScale } from "../camera/
 import {
   overviewBoundsFor
 } from "../camera/topology-overview-fit";
-import type { NodeDragState } from "../input/topology-pointer-handlers";
+import type { NodeDragState } from "../input/topology-pointer-types";
 import { readOntologyMapTokensOrNull } from "../../tokens/topology-read-tokens";
 import { buildRealmRuntimeData, realmCameraTarget, type RealmRuntimeData } from "./topology-realm-runtime";
 import { dialOverviewFit, type TopologyWorld } from "./topology-world";

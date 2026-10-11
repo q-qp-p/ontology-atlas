@@ -15,7 +15,7 @@ export type { FlatRingMemoryStore } from './ui/loop/topology-loop-contract';
 export type { OntologyMapNode, OntologyMapEdge, } from './ui/OntologyMap';
 export { OntologyMapDetailPanel } from './ui/OntologyMapDetailPanel';
 export { OntologyMapEdgeHoverCard } from './ui/OntologyMapEdgeHoverCard';
-export type { HoverAvoidRect } from './ui/input/topology-pointer-handlers';
+export type { HoverAvoidRect } from './ui/input/topology-pointer-types';
 export { OntologyMapClusterHoverCard } from './ui/OntologyMapClusterHoverCard';
 export { OntologyMapContextMenu } from './ui/OntologyMapContextMenu';
 export { requestOntologyMapFrame } from './ui/frame-loop/use-topology-frame-loop';

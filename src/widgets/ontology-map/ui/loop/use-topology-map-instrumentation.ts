@@ -26,7 +26,7 @@ import {
 import type {
   NodeDragState,
   TopologyPointerHandlers,
-} from "../input/topology-pointer-handlers";
+} from "../input/topology-pointer-types";
 import { lastTierPlanes } from "../frame-loop/topology-presentation-frame-stage";
 import { describeLastDialFrame } from "../../dial/frame/frame";
 import type { DialProbe } from "../../dial/types";
@@ -149,7 +149,7 @@ export function useTopologyMapInstrumentation({
    * **hover hit**, not **grabbable** — a grab must also pass
    * `sim.hasNode(pressedNodeId)`, and failing that it silently becomes a pan.
    * Node drag and pan then set **the same `grabbing`** cursor
-   * (`topology-pointer-handlers.ts`), so even checking afterwards was
+   * (`topology-pointer-move.ts`), so even checking afterwards was
    * impossible. Every run answered "it isn't slow here", until the owner looked
    * at the screen: *"You are shaking the background, not a node."*
    *

@@ -5,7 +5,9 @@ vi.mock("../../tokens/topology-read-tokens", () => ({
   readOntologyMapTokensOrNull: vi.fn(() => ({ hysteresisPx: 4 }) as unknown),
 }));
 
-import { createTopologyPointerHandlers, DOUBLE_TAP_WINDOW_MS, type PointerHandlerRefs } from "./topology-pointer-handlers";
+import { createTopologyPointerHandlers } from "./topology-pointer-handlers";
+import { DOUBLE_TAP_WINDOW_MS } from "./topology-pointer-release";
+import type { PointerHandlerRefs } from "./topology-pointer-types";
 
 function ref<T>(current: T): { current: T } {
   return { current };

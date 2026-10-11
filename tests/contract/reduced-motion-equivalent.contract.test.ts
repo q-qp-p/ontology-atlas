@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
 
@@ -403,7 +403,11 @@ describe('reduced-motion 동등물 계약', () => {
       '카메라 스냅이 사용자 개시 이동까지 자른다 (WCAG 2.3.3 예외 침범)',
     ).toBe(true);
 
-    const handlers = TS('src/widgets/ontology-map/ui/input/topology-pointer-handlers.ts');
+    const inputDir = 'src/widgets/ontology-map/ui/input';
+    const handlers = readdirSync(path.join(process.cwd(), inputDir))
+      .filter((name) => /^topology-pointer-[a-z-]+\.ts$/.test(name))
+      .map((name) => TS(`${inputDir}/${name}`))
+      .join('\n');
     expect(
       handlers.includes('userDrivenCameraRef'),
       '포인터 제스처가 사용자 개시 표시를 남기지 않는다',

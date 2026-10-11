@@ -11,7 +11,7 @@ import { currentFloatingRightBound } from "@/shared/lib/right-dock-reserve";
 /**
  * W2-B — node right-click context menu (`use-topology-loop.ts`'s
  * `handleContextMenu` opens this ONLY when the right-click hit a node,
- * `topology-pointer-handlers.ts#createTopologyPointerHandlers` doc). Popover
+ * `topology-pointer-types.ts#onContextMenuNode` doc). Popover
  * (click) = information, this menu (right-click) = actions — the same 4
  * action-row items from `OntologyMapDetailPanel` (W2-A) plus the opt-in
  * "full detail" (full detail) link, reachable without first selecting the node.

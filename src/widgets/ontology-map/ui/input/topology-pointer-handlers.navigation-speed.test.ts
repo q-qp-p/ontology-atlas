@@ -23,7 +23,8 @@ import { listenForGesturePinch } from "../../interaction/gesture-pinch";
 import { INITIAL_POINTER_MACHINE_STATE } from "../../interaction/pointer-state-machine";
 import { MOMENTUM_TAU_MS } from "../../model/motion-physics";
 import type { ZoomEase } from "../../model/camera-easing";
-import { createTopologyPointerHandlers, type PointerHandlerRefs } from "./topology-pointer-handlers";
+import { createTopologyPointerHandlers } from "./topology-pointer-handlers";
+import type { PointerHandlerRefs } from "./topology-pointer-types";
 
 function ref<T>(current: T): { current: T } {
   return { current };

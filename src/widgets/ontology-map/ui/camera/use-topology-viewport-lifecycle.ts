@@ -128,7 +128,7 @@ export function useTopologyViewportLifecycle({
       const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
       pendingViewportRef.current = { width, height, dpr };
       // Keep the cached pointer rect fresh whenever layout changes (see
-      // `canvasRectRef` in `topology-pointer-handlers.ts`). The entry fade scales
+      // `canvasRectRef` in `topology-pointer-types.ts`). The entry fade scales
       // about the box's centre, which stays where layout put it, so the laid-out
       // origin is the painted centre less half the layout size.
       canvasRectRef.current = {

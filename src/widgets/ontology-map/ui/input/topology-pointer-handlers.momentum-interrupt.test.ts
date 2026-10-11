@@ -21,7 +21,8 @@ vi.mock("../../tokens/topology-read-tokens", () => ({
   })),
 }));
 
-import { createTopologyPointerHandlers, type PointerHandlerRefs } from "./topology-pointer-handlers";
+import { createTopologyPointerHandlers } from "./topology-pointer-handlers";
+import type { PointerHandlerRefs } from "./topology-pointer-types";
 
 function ref<T>(current: T): { current: T } {
   return { current };

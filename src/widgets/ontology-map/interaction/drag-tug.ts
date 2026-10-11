@@ -1,7 +1,7 @@
 /**
  * C1 B1 — local spring tug during node drag. Pure math only (no DOM/canvas/
  * sim knowledge) so it's independently testable; the caller (`use-topology-
- * loop.ts`'s rAF loop, seeded by `topology-pointer-handlers.ts` at drag-start)
+ * loop.ts`'s rAF loop, seeded by `topology-pointer-move.ts` at drag-start)
  * owns applying the result to world node positions.
  *
  * AUDIT FINDING this replaces: FA2's global relax (`model/force-layout.ts`,

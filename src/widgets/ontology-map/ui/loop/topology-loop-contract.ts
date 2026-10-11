@@ -6,7 +6,7 @@ import type { TopologyMapLensKind } from "../../model/path-lens";
 import { type TierNameAnchor } from "../../model/tier-names";
 import { type TierRevealConfig, type ZoomTier } from "../../model/tier-visibility";
 import type { ClusterBarLabels } from "../../render/cluster-chips";
-import type { HoverAvoidRect } from "../input/topology-pointer-handlers";
+import type { HoverAvoidRect } from "../input/topology-pointer-types";
 
 import type { OntologyMapProps } from "../OntologyMap";
 
@@ -96,7 +96,7 @@ export interface UseTopologyLoopArgs {
    * never say "zoom in to see elements" while elements are already on screen.
    */
   onZoomTierChange?: (tier: ZoomTier) => void;
-  /** Node right-click context menu — see `topology-pointer-handlers.ts#createTopologyPointerHandlers`'s `onContextMenuNode` doc. */
+  /** Node right-click context menu — see `topology-pointer-types.ts#onContextMenuNode` doc. */
   onContextMenuNode?: (slug: string, position: { x: number; y: number; }) => void;
   /** Right-click on empty canvas — "create a concept here". */
   onContextMenuPane?: (position: { x: number; y: number; }) => void;
@@ -267,7 +267,7 @@ export interface UseTopologyLoopArgs {
    * together.
    */
   expand?: ExpandPreference;
-  /** Wheel / vertical-swipe ownership — see `wheelIntent` in `topology-pointer-handlers.ts`. */
+  /** Wheel / vertical-swipe ownership — see `wheelIntent` in `topology-pointer-types.ts`. */
   wheelIntent?: "zoom" | "page-scroll";
   navigationSpeed?: MapNavigationSpeed;
   /** Ambient sleep delay — see `ambientSleepDelayMs` on `OntologyMap`. */

@@ -8,7 +8,7 @@ import {
 import type { TopologyMapLensKind } from "../../model/path-lens";
 import { type TierNameAnchor } from "../../model/tier-names";
 import { type ZoomTier } from "../../model/tier-visibility";
-import type { HoverAvoidRect } from "../input/topology-pointer-handlers";
+import type { HoverAvoidRect } from "../input/topology-pointer-types";
 
 interface Dependencies {
     onGrowthReplayingChangeRef: RefObject<((running: boolean) => void) | undefined>;

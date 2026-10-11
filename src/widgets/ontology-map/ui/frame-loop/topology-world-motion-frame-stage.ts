@@ -45,7 +45,7 @@ import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import { computeOverviewFitScale } from "../camera/topology-camera-math";
 import { dialReleaseHoming } from "./topology-dial-release";
 import { overviewBoundsFor } from "../camera/topology-overview-fit";
-import type { NodeDragState } from "../input/topology-pointer-handlers";
+import type { NodeDragState } from "../input/topology-pointer-types";
 import type { RealmRuntimeData } from "../world/topology-realm-runtime";
 import { fallbackAngleFor } from "../world/topology-realm-runtime";
 import {

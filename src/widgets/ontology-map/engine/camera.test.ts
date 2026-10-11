@@ -259,7 +259,7 @@ describe("stepCamera", () => {
 // back out faster than a flat 14%/frame pull can rein it in. Manually
 // verified via chrome-devtools: even 5+ seconds after a release, the camera
 // never recovered. The robust fix is to also clamp the *target itself* at
-// the moment it's set (`topology-pointer-handlers.ts`'s `handlePointerUp`),
+// the moment it's set (`topology-pointer-release.ts`'s `handlePointerUp`),
 // so the spring is never asked to chase an unreachable point in the first
 // place. `computePanBounds`/`clampPointToPanBounds` are the shared pure
 // pieces both that call site and `topology-physics-step.ts` build on.
