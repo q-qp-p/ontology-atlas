@@ -35,6 +35,7 @@ export const rules = [
     matches: [
       /^src\/views\/architecture\/ui\/ArchitectureWorkbench\.tsx$/,
       /^src\/views\/architecture\/ui\/ArchitectureSketch\.tsx$/,
+      /^src\/views\/architecture\/ui\/sketch\/[\w-]+\.tsx?$/,
       /^src\/views\/architecture\/ui\/ArchitectureEvidenceRail\.tsx$/,
       /^src\/views\/architecture\/ui\/ArchitectureRoleDetail\.tsx$/,
     ],

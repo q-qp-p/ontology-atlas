@@ -26,7 +26,7 @@ import {
   SENTENCE_W,
   type DraftPreviewSource,
 } from '../model/draft-preview';
-import { EDGE_STROKE, VIOLATED_STROKE, VIOLATION_HALO_BLUR, VIOLATION_HALO_WIDTH } from './ArchitectureSketch';
+import { EDGE_STROKE, VIOLATED_STROKE, VIOLATION_HALO_BLUR, VIOLATION_HALO_WIDTH } from './sketch/ink';
 
 const cubicBezier = (points: readonly number[]) => `cubic-bezier(${points.join(', ')})`;
 

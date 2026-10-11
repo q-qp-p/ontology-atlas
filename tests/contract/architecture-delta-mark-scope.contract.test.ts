@@ -23,7 +23,7 @@ import { describe, expect, it } from "vitest";
  * green gate, so the check reads the element instead.
  */
 const SKETCH = readFileSync(
-  join(process.cwd(), "src", "views", "architecture", "ui", "ArchitectureSketch.tsx"),
+  join(process.cwd(), "src", "views", "architecture", "ui", "sketch", "RoleFaces.tsx"),
   "utf8",
 );
 
