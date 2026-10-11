@@ -734,10 +734,6 @@ or another MCP-connected coding agent:
 - **Workflow fit** — prefer simple composable workflows over long autonomous
   agent runs until the graph evidence supports more autonomy.
 
-This is now represented in the dogfood vault as
-`capabilities/agent-practitioner-concerns-map`, linked to MCP setup, graph
-readiness, onboarding brief, conflict guard, and SessionStart context injection.
-
 ### 🔁 Phase 4 — Shared decision atlas (v8 correction)
 
 R11 decided that "developers are the primary users." That decision remains correct for **the narrow entry point** (called a wedge in this document) — because those who can actually keep the vault of truth up-to-date are developers and their agents.
