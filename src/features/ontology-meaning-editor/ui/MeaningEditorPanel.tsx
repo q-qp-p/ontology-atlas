@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { GitBranch } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 
 import {
   buildOntologyRelationEditPlan,
   buildOntologyRelationRemovalPlan,
+  IMPACT_EDIT_RELATIONS,
   RELATION_EDGE_TYPE,
   type OntologyRelationEditPlan,
   type MeaningEditRelation,
@@ -84,6 +85,7 @@ export function MeaningEditorPanel({
   className?: string;
 }) {
   const t = useTranslations('meaningEditor');
+  const format = useFormatter();
   const [relation, setRelation] = useState<MeaningEditRelation>(initialRelation);
   const [targetId, setTargetId] = useState(initialTargetId ?? '');
   const [why, setWhy] = useState(initialWhy);
@@ -246,7 +248,10 @@ export function MeaningEditorPanel({
                     ariaDescribedby={describedBy}
                     options={RELATIONS.map((value) => ({
                       value,
-                      label: t(`relationName.${value}`),
+                      label: t('relationOption', {
+                        name: t(`relationName.${value}`),
+                        hint: t(`relationHint.${value}`),
+                      }),
                     }))}
                     data-testid="meaning-editor-relation"
                   />
@@ -255,7 +260,12 @@ export function MeaningEditorPanel({
               <FieldWithHelp
                 id="meaning-editor-target-field"
                 label={t('target')}
-                help={t('targetHelp')}
+                help={t('targetHelp', {
+                  relations: format.list(
+                    IMPACT_EDIT_RELATIONS.map((value) => t(`relationName.${value}`)),
+                    { type: 'conjunction' },
+                  ),
+                })}
                 testId="meaning-editor-target-help"
               >
                 {(id, describedBy) => (
