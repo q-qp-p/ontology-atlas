@@ -2569,6 +2569,92 @@ await test("analyze_repo_structure — bootstrap candidates expose structuredCon
   }
 });
 
+await test("analyze_repo_structure — authored Markdown alone supplies initial evidence over MCP", async () => {
+  const vaultRoot = makeVault();
+  const repoRoot = realpathSync(mkdtempSync(join(tmpdir(), "ontology-atlas-authored-evidence-")));
+  try {
+    writeFileSync(join(repoRoot, 'README.md'), [
+      '<!--', '# Hidden Identity', '## Billing', 'Hidden claim creates every invoice.', '-->', '',
+      '    Indented claim authorizes all payments.', '',
+      '> Quoted claim rotates every encryption key.', '',
+      '# Authored Workflow', '', 'Operators preserve audit evidence.', '',
+      '## Features', '- Operators inspect retained records.',
+      '  - Human approval is required before export.',
+    ].join('\n'));
+    const { responses } = await rpcForRepo(vaultRoot, repoRoot, [
+      ...INIT_REQUESTS,
+      callTool(2, 'analyze_repo_structure', { rootPath: repoRoot }),
+    ]);
+    const result = getCallParsed(responses, 2);
+    assert.deepEqual(getCallStructured(responses, 2), result);
+    assert.equal(result.project.title, 'Authored Workflow');
+    const evidence = result.semanticEvidence.find((row) => row.source === 'README.md');
+    assert.equal(evidence.trust, 'candidate-evidence');
+    assert.match(evidence.excerpt, /Operators inspect retained records/);
+    assert.match(evidence.excerpt, /Human approval is required before export/);
+    assert.doesNotMatch(evidence.excerpt, /Hidden claim|Indented claim|Quoted claim/);
+    assert.equal(result.domains.some((row) => row.title === 'Billing'), false);
+    assert.equal(result.proposalValidation.canWrite, false);
+  } finally {
+    rmSync(vaultRoot, { recursive: true, force: true });
+    rmSync(repoRoot, { recursive: true, force: true });
+  }
+});
+
+await test("analyze_repo_structure — truncated document evidence recovers its approval condition through the public read", async () => {
+  const vaultRoot = makeVault();
+  const repoRoot = realpathSync(mkdtempSync(join(tmpdir(), "ontology-atlas-excerpt-recovery-")));
+  const paragraph = `Operators release reviewed exports. ${'Every request retains source and operator context. '.repeat(40)}Execution requires explicit human approval.`;
+  const original = `# Review Workflow\r\n\r\n${paragraph}\r\n`;
+  const readme = join(repoRoot, 'README.md');
+  try {
+    writeFileSync(readme, original);
+    const initial = await rpcForRepo(vaultRoot, repoRoot, [
+      ...INIT_REQUESTS,
+      callTool(2, 'analyze_repo_structure', { rootPath: repoRoot }),
+    ]);
+    const analysis = getCallStructured(initial.responses, 2);
+    assert.deepEqual(getCallParsed(initial.responses, 2), analysis);
+    const evidence = analysis.semanticEvidence.find((row) => row.source === 'README.md');
+    assert.equal(evidence.trust, 'claim-review-required');
+    assert.ok(evidence.riskFlags.includes('excerpt-truncated'));
+    assert.equal(evidence.excerptInfo.scope, 'selected_prose');
+    assert.equal(evidence.excerptInfo.truncated, true);
+    assert.equal(evidence.excerptInfo.firstOmittedLine, 3);
+    assert.doesNotMatch(evidence.excerpt, /human approval/);
+    assert.equal(analysis.proposalValidation.canWrite, false);
+    const read = () => rpcForRepo(vaultRoot, repoRoot, [
+      ...INIT_REQUESTS,
+      callTool(2, 'analyze_repo_structure', {
+        rootPath: repoRoot, sourceOnly: true, sourceReads: [evidence.excerptInfo.nextSourceRead],
+      }),
+    ]);
+    const recovered = getCallStructured((await read()).responses, 2);
+    assert.equal(recovered.canWrite, false);
+    assert.equal(recovered.delivery, 'source_only');
+    assert.equal(recovered.sourceEvidence.rows[0].text, `${paragraph}\r\n`);
+    assert.equal(recovered.sourceEvidence.rows[0].requestComplete, true);
+    assert.equal(recovered.sourceEvidence.rows[0].next, null);
+    assert.match(recovered.sourceEvidence.rows[0].citation, /^source:README\.md#L3-L3@sha256:[a-f0-9]{64}$/);
+    writeFileSync(readme, original.replace('human approval', 'new authorization'));
+    const changed = getCallStructured((await read()).responses, 2);
+    assert.equal(changed.canWrite, false);
+    assert.equal(changed.sourceEvidence.rows[0].reason, 'hash_mismatch');
+    assert.equal(changed.sourceEvidence.rows[0].text, undefined);
+    assert.equal(changed.sourceEvidence.rows[0].citation, undefined);
+    rmSync(readme);
+    writeFileSync(join(repoRoot, 'other.md'), original);
+    symlinkSync(join(repoRoot, 'other.md'), readme);
+    const unsafe = getCallStructured((await read()).responses, 2);
+    assert.equal(unsafe.sourceEvidence.rows[0].reason, 'symlink_path');
+    assert.equal(unsafe.sourceEvidence.rows[0].text, undefined);
+    assert.equal(unsafe.sourceEvidence.rows[0].citation, undefined);
+  } finally {
+    rmSync(vaultRoot, { recursive: true, force: true });
+    rmSync(repoRoot, { recursive: true, force: true });
+  }
+});
+
 await test("analyze_repo_structure — source-only preserves exact evidence and skips candidate delivery", async () => {
   const root = makeVault();
   writeFileSync(join(root, 'index.ts'), 'export function readSetting(value = 2) { return value; }\n');

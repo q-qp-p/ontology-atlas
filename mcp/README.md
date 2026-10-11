@@ -1069,6 +1069,12 @@ implementation review evidence, so names such as UI, transport, policy, or
 telemetry do not become business concepts by folder shape alone. The analyzer
 never writes these proposals to the vault.
 
+Initial Markdown evidence comes from authored headings, paragraphs and nested
+list prose. Fenced and indented code, HTML comments/containers and blockquotes
+cannot supply project identity, domain headings or semantic claims. Standalone
+simple HTML title headings remain supported; reStructuredText uses its separate
+extractor. Source recovery always reads the original file bytes.
+
 For Markdown and reStructuredText evidence, the model-visible `headings` and
 `excerpt` prefer the document-title section plus explicitly classified purpose,
 architecture, and ability sections. A document with no named semantic category
@@ -1089,6 +1095,23 @@ the same claim; a partial answer may retain it only as an explicit gap.
 The fixed 1,200-character excerpt budget gives every selected safe section an
 initial deterministic share; short sections return unused capacity by semantic
 priority and source order. The document, heading, and excerpt caps do not grow.
+Authored document rows also return
+`excerptInfo: {scope:"selected_prose",truncated,firstOmittedLine,nextSourceRead}`.
+A truncated excerpt retains its bounded prefix, adds `excerpt-truncated` to
+`riskFlags`, and has `trust:"claim-review-required"` unless hostile content
+already requires `untrusted-instruction`. Its `nextSourceRead` is
+`{path,startLine,maxLines:200,expectedSha256}`: the original source path, the first
+partly or wholly omitted physical line, and the SHA-256 of the same file bytes
+used for the excerpt. Replay it with
+`analyze_repo_structure({rootPath,sourceOnly:true,sourceReads:[nextSourceRead]})`
+and follow the returned `sourceEvidence.rows[].next` while the condition remains
+unread. The existing complete-line, byte, path and no-follow guards still apply;
+a changed hash or unsafe path returns no replacement citation. An oversized line
+can still be refused. This metadata neither reads source automatically nor
+approves a proposal or write. When selected prose fits, `truncated` is false and
+both nullable fields are null; that does not establish complete document,
+repository or meaning coverage. Package-manifest evidence stays unchanged.
+
 One exact current candidate unit plus one matching implementation witness may
 support only a capability proposal below `0.8` confidence. The path is not a
 second semantic authority and cannot establish a domain, ownership,
