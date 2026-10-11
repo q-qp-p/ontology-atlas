@@ -14,7 +14,7 @@ import {
   realpathSync,
   symlinkSync,
 } from 'node:fs';
-import { join, dirname, resolve } from 'node:path';
+import { join, dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import {
@@ -984,6 +984,29 @@ await test('agent-setup — writes agent configs for an existing vault without s
   }
 });
 
+await test('agent-setup — sync guidance follows the resolved vault across working directories', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'cli-agent-guidance-'));
+  try {
+    const source = join(root, 'source project');
+    mkdirSync(source);
+    for (const vault of [source, join(source, 'custom ontology'), join(root, 'external vault')]) {
+      mkdirSync(vault, { recursive: true });
+      const result = await run(['agent-setup', relative(root, vault), '--root', relative(root, source), '--json'], { cwd: root });
+      assert.equal(result.code, 1, result.stderr);
+      const data = JSON.parse(result.stdout);
+      assert.equal(data.vaultRoot, realpathSync(vault));
+      assert.ok(data.docs.postChangeSync.some(line => line.includes(JSON.stringify(data.vaultRoot))),
+        'sync guidance identifies the same absolute vault as the configured binding');
+      const human = await run(['agent-setup', relative(root, vault), '--root', relative(root, source)], { cwd: root });
+      assert.ok(human.stdout.includes(JSON.stringify(data.vaultRoot)), 'human guidance retains the quoted target');
+      assert.equal(existsSyncTest(join(source, '.mcp.json')), false);
+      assert.equal(existsSyncTest(join(vault, '.codex')), false);
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 await test('agent-setup — retired npx configs require review instead of reporting ready', async () => {
   const root = mkdtempSync(join(tmpdir(), 'cli-agent-setup-retired-npx-'));
   try {
@@ -1147,7 +1170,7 @@ await test('agent-setup — terminal output points humans to the workflow guide'
     assert.match(clean, /JSON setup gate · agent-brief --verify-fallbacks --json --exit-zero returns ok\/performanceOk/);
     assert.match(clean, /Graph briefs · workspace-brief and agent-brief --graph-db-pack/);
     assert.match(clean, /After code changes:/);
-    assert.match(clean, /sync docs\/ontology before finishing/);
+    assert.ok(clean.includes(JSON.stringify(realpathSync(join(root, 'ontology')))));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -1637,7 +1660,7 @@ await test('agent-setup --write — rebinds only the Atlas entries and preserves
     const data = JSON.parse(r.stdout);
     assert.equal(data.summary.review, 0);
     assert.equal(data.summary.ready, 4);
-    assert.ok(data.docs.postChangeSync.some((line) => line.includes('sync docs/ontology before finishing')));
+    assert.ok(data.docs.postChangeSync.some((line) => line.includes(JSON.stringify(data.vaultRoot))));
     const repairedMcp = JSON.parse(readFileSync(join(root, '.mcp.json'), 'utf-8'));
     assert.equal(repairedMcp.mcpServers.other.command, 'node');
     assert.equal(repairedMcp.mcpServers['ontology-atlas'].env.OATLAS_VAULT, './ontology');
