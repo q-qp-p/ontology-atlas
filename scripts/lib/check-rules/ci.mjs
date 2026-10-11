@@ -22,6 +22,7 @@ export const CI_PLANNER_SURFACE_PATTERNS = Object.freeze([
   /^scripts\/run-ci-lane(?:\.test)?\.mjs$/,
   /^scripts\/lib\/focused-check-suggestions(?:\.test)?\.mjs$/,
   /^scripts\/lib\/check-rules\//,
+  /^scripts\/lib\/import-graph\//,
   /^scripts\/suggest-focused-checks(?:\.test)?\.mjs$/,
   /^\.github\/workflows\/(?:checks|e2e)\.yml$/,
   /^\.github\/actions\/setup-playwright\/action\.yml$/,
@@ -63,6 +64,7 @@ export const rules = [
       /^scripts\/lib\/focused-check-suggestions\.(?:mjs|test\.mjs)$/,
       /^scripts\/suggest-focused-checks\.(?:mjs|test\.mjs)$/,
       /^scripts\/lib\/check-rules\//,
+      /^scripts\/lib\/import-graph\//,
     ],
   },
   {
