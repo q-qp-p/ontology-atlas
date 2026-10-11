@@ -25,7 +25,7 @@ import {
   overviewBoundsFor,
   overviewFitTokens
 } from "../camera/topology-overview-fit";
-import type { NodeDragState } from "../input/topology-pointer-handlers";
+import type { NodeDragState } from "../input/topology-pointer-types";
 import { readOntologyMapTokensOrNull } from "../../tokens/topology-read-tokens";
 import { buildTopologyWorld, dialOverviewFit, recomputeWorldGeometry, type TopologyWorld } from "./topology-world";
 import type { FlatRingMemoryStore } from "../loop/topology-loop-contract";

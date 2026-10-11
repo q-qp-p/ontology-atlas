@@ -63,7 +63,7 @@ export interface CameraStepInput {
   scaleMax: number;
   /** World-space soft pan limits (world bounds + margin) — omit to skip the elastic clamp entirely (e.g. before the world is built). */
   panBounds?: PanBounds;
-  /** True while the pointer is actively dragging — the prototype's `updateCamera()` returns before ever reaching the clamp during a live drag, so the 1:1 tracking contract (`topology-pointer-handlers.ts`) never fights it. */
+  /** True while the pointer is actively dragging — the prototype's `updateCamera()` returns before ever reaching the clamp during a live drag, so the 1:1 tracking contract (`topology-pointer-move.ts`) never fights it. */
   isDragging?: boolean;
 }
 
@@ -109,7 +109,7 @@ const PAN_BOUNDS_VELOCITY_TAU_SECONDS =
  * Prototype `panBounds = bbox(allNodes, 320)` (`docs/prototypes/topology-
  * b2plus.html` line 602) — generous slack past the world's own node bbox.
  * No assigned `--map-*` token yet (same "no token" precedent as
- * `topology-pointer-handlers.ts`'s `RIPPLE_PER_NEIGHBOR_DELAY_MS`).
+ * `topology-pointer-move.ts`'s `RIPPLE_PER_NEIGHBOR_DELAY_MS`).
  */
 const DEFAULT_PAN_BOUNDS_MARGIN = 320;
 
@@ -128,7 +128,7 @@ export function computePanBounds(
 
 /**
  * Hard-clamps a single world-space point into `panBounds` — used to cap a
- * flick's projected landing target (`topology-pointer-handlers.ts`) so the
+ * flick's projected landing target (`topology-pointer-release.ts`) so the
  * spring is never asked to chase a point far outside the graph's content.
  * (The softer, per-frame `clampAxisToPanBounds` below handles the *live*
  * camera position elastically; this one is a hard ceiling on the *target*.)

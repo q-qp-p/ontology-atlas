@@ -15,7 +15,7 @@ export interface OntologyMapEdgeHoverCardProps {
   y: number;
   /**
    * What the card must not cover — the discs and names drawn near the pointer,
-   * in client coordinates (`topology-pointer-handlers.ts#collectHoverAvoidRects`).
+   * in client coordinates (`topology-pointer-hit-tests.ts#collectHoverAvoidRects`).
    * Empty keeps the card at the pointer's lower right.
    */
   avoid?: readonly Rect[];

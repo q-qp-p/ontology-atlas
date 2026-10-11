@@ -69,7 +69,7 @@ export function useTopologyCameraState({
    * this frame's camera step uses. `null` until the first token read (the rAF
    * loop falls back to `cameraSpringAngFreqTransition` for that first frame).
    * Set to `cameraSpringAngFreqInteractive` on every live wheel tick
-   * (`topology-pointer-handlers.ts#handleWheel`); reset to
+   * (`topology-pointer-zoom.ts#handleWheel`); reset to
    * `cameraSpringAngFreqTransition` by every PROGRAMMATIC camera move below
    * (initial snap, fit/relayout, focus dive/deselect) so that move's whole
    * settle plays out at the cinematic rate, not whatever the last wheel tick

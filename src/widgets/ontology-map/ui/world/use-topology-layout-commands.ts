@@ -13,7 +13,7 @@ import {
   type RealmTransitionState
 } from "../../model/realm-transition";
 import { initHomeSpring, type HomeSpringState } from "../../model/relayout-home";
-import type { NodeDragState } from "../input/topology-pointer-handlers";
+import type { NodeDragState } from "../input/topology-pointer-types";
 import { readOntologyMapTokensOrNull } from "../../tokens/topology-read-tokens";
 import { type RealmRuntimeData } from "./topology-realm-runtime";
 import { prepareRevealHome } from "./topology-reveal-home";

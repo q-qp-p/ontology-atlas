@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
-import type { HoverAvoidRect } from "./input/topology-pointer-handlers";
+import type { HoverAvoidRect } from "./input/topology-pointer-types";
 import type { FlatDialState, FlatRingMemoryStore } from "./loop/topology-loop-contract";
 import type { DialEvidence, DialLabels } from "../dial/types";
 import { Orbit } from "lucide-react";
@@ -427,7 +427,7 @@ export interface OntologyMapProps {
   expand?: ExpandPreference;
   /**
    * Who owns the wheel and a vertical swipe — see the `wheelIntent` documentation in
-   * `topology-pointer-handlers.ts`. The workbench omits it (= `"zoom"`, unchanged);
+   * `topology-pointer-types.ts`. The workbench omits it (= `"zoom"`, unchanged);
    * only a surface embedded as a band inside a scrolling document passes
    * `"page-scroll"`.
    */

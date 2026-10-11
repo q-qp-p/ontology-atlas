@@ -8,7 +8,8 @@ vi.mock("../../tokens/topology-read-tokens", () => ({
 import { buildDomeModel } from "../../model/dome-view/model-build";
 import { createDomeRuntime } from "../../model/dome-view/runtime";
 import type { DomeInputNode } from "../../model/dome-view/types";
-import { createTopologyPointerHandlers, type PointerHandlerRefs } from "./topology-pointer-handlers";
+import { createTopologyPointerHandlers } from "./topology-pointer-handlers";
+import type { PointerHandlerRefs } from "./topology-pointer-types";
 
 function ref<T>(current: T): { current: T } {
   return { current };
