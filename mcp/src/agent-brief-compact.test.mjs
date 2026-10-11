@@ -4,6 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
+import './agent-brief/capability-claims.test.mjs';
+
 import {
   AGENT_BRIEF_COMPACT_MAX_BYTES,
   AGENT_BRIEF_TASK_MAX_CHARS,

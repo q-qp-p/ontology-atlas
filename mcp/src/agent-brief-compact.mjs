@@ -4,7 +4,7 @@ import {
   completeMarkdownUnits, createUncertaintyPlan, formatUncertaintyLines,
   markdownSection, projectUncertainty,
 } from './agent-brief/recorded-evidence.mjs';
-import { readReviewedEvidence } from './agent-brief/reviewed-evidence.mjs';
+import { readCapabilityClaim, readReviewedEvidence } from './agent-brief/reviewed-evidence.mjs';
 import {
   buildTaskNavigationEvidence,
   verifyTaskNavigationEvidencePath,
@@ -219,47 +219,19 @@ function matchedTermsOnlyIn(terms, included, excluded) {
   return terms.filter((term) => included.has(term) && !excluded.has(term));
 }
 
-/**
- * The claim a capability makes about itself: `## Definition`, `## Includes`
- * and `## Excludes`, plus the older `## Inclusions` / `## Exclusions` shapes (and one
- * combined section with `Included:` / `Excluded:` bullets). Without any, it is
- * scored on its first prose paragraph, the get_concept excerpt, never the full
- * body, or a long document matches every task on generic nouns.
- */
 function claimSections(doc) {
-  const body = doc?.body;
-  const definition = markdownSection(body, 'Definition');
-  let includes = markdownSection(body, 'Includes') || markdownSection(body, 'Inclusions');
-  let excludes = markdownSection(body, 'Excludes') || markdownSection(body, 'Exclusions');
-  const combined = markdownSection(body, 'Inclusions / Exclusions') || markdownSection(body, 'Inclusions/Exclusions');
-  if (combined) {
-    const buckets = { includes: [], excludes: [] };
-    let bucket = null;
-    for (const line of combined.split('\n')) {
-      const bullet = line.match(/^\s*[-*]\s*(?:\*\*)?(Included|Includes|Inclusions?|Excluded|Excludes|Exclusions?)(?:\*\*)?\s*:\s*(.*)$/iu);
-      if (bullet) {
-        bucket = /^(inc|inclu)/iu.test(bullet[1]) ? 'includes' : 'excludes';
-        buckets[bucket].push(bullet[2]);
-        continue;
-      }
-      if (bucket && /^\s+\S/.test(line)) buckets[bucket].push(line.trim());
-      else if (/^\s*[-*]\s/.test(line)) bucket = null;
-    }
-    includes = [includes, buckets.includes.join(' ')].filter(Boolean).join(' ');
-    excludes = [excludes, buckets.excludes.join(' ')].filter(Boolean).join(' ');
-  }
-  const structured = Boolean(definition || includes || excludes);
+  const { definition, includes, excludes, excerpt } = readCapabilityClaim(doc?.body);
   return {
     definition: new Set(lexicalTokens(definition)),
     includes: new Set(lexicalTokens(includes)),
     excludes: new Set(lexicalTokens(excludes)),
-    excerpt: structured ? new Set() : new Set(lexicalTokens(extractSummaryExcerpt(body, 420))),
-    structured,
+    excerpt: new Set(lexicalTokens(extractSummaryExcerpt(excerpt, 420))),
+    definitionText: definition,
   };
 }
 
 function scoreCapabilityClaim(doc, intent) {
-  const { definition, includes, excludes, excerpt } = claimSections(doc);
+  const { definition, includes, excludes, excerpt, definitionText } = claimSections(doc);
   // The capability's name is part of its claim. Identity joins the positive set
   // before the Excludes subtraction, so a title never overrides an explicit
   // boundary, and it feeds the non-goal conflict check, so refusal only tightens.
@@ -313,6 +285,7 @@ function scoreCapabilityClaim(doc, intent) {
     + nonGoalExcluded.length * 4;
   return {
     score,
+    definitionText,
     excludes,
     matchedTerms: [...new Set([...desiredPositive, ...nonGoalExcluded])].sort(),
     matchedFields: [
@@ -335,8 +308,8 @@ function defensibleMatch(row) {
 }
 
 /**
- * One tokenising pass per capability and element body, O(vault bytes); each
- * task term is then a Set lookup, and candidates sort in O(C log C).
+ * Claims are parsed once; AST/token walks are linear and task terms use Sets.
+ * Candidate ranking sorts in O(C log C).
  */
 function selectCapability(docs, intent) {
   const capabilities = docs.filter((doc) => doc.frontmatter?.kind === 'capability');
@@ -375,6 +348,7 @@ function selectCapability(docs, intent) {
     }
     return {
       doc,
+      definitionText: claim.definitionText,
       score: claim.score + Math.min(childIdentityTerms.size, 4) * 3,
       matchedTerms,
       matchedChildren,
@@ -963,7 +937,7 @@ export function buildCompactAgentBrief({
             ...compactDoc(capabilityDoc),
             claimStatus: 'recorded_bounded_claim',
             matchedTerms: selected.matchedTerms,
-            statement: boundedSection(capabilityDoc.body, 'Definition', 240),
+            statement: extractSummaryExcerpt(selected.definitionText, 240),
           }
         : null,
       ...(selection.refusal ? { refusal: selection.refusal } : {}),

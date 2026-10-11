@@ -6892,6 +6892,33 @@ await test('agent-brief --project — selects one project in a multi-project vau
   }
 });
 
+await test('agent-brief --compact — refuses literal-only ownership and preserves the real claim', async () => {
+  const vault = withVault([
+    { slug: 'project', content: '---\nkind: project\ntitle: Operations\ndomains: [domains/catalog]\n---\nLocal operations.\n' },
+    { slug: 'domains/catalog', content: '---\nkind: domain\ntitle: Catalog\ncapabilities: [capabilities/catalog]\n---\nOwns archive indexes.\n' },
+    { slug: 'capabilities/catalog', content: '---\nkind: capability\ntitle: Archive Catalog\ndomain: domains/catalog\n---\n## Includes ##\n\n```md\nRotate encryption keys.\n```\n\n- Index archive records only after approval.\n' },
+  ]);
+  try {
+    const args = ['agent-brief', vault, '--project', 'project', '--compact', '--exit-zero'];
+    const invalid = await run([...args, '--task', 'Rotate encryption keys.', '--json']);
+    assert.equal(invalid.code, 0, invalid.stderr);
+    const refused = JSON.parse(invalid.stdout);
+    assert.equal(refused.focus.capability, null);
+    assert.equal(refused.focus.refusal.reason, 'no_match');
+    const prompt = await run([...args, '--task', 'Rotate encryption keys.', '--prompt']);
+    assert.equal(prompt.code, 0, prompt.stderr);
+    assert.equal(prompt.stdout.trimEnd(), refused.handoffPrompt);
+    const valid = await run([...args, '--task', 'Index archive records.', '--json']);
+    assert.equal(valid.code, 0, valid.stderr);
+    const selected = JSON.parse(valid.stdout);
+    assert.equal(selected.focus.capability?.slug, 'capabilities/catalog');
+    assert.ok(selected.focus.qualifiers.units.some((unit) => unit.text.includes('only after approval')));
+    assert.ok(selected.handoffPrompt.includes('only after approval'));
+  } finally {
+    rmSync(vault, { recursive: true, force: true });
+  }
+});
+
 await test('agent-brief --compact — prints current reviewed navigation before trust diagnostics', async () => {
   const vault = withVault([
     {

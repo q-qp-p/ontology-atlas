@@ -22,6 +22,8 @@ Compact MCP/CLI task handoffs carry whole uncertainty statements, per-document
 omissions and project-inclusive full-body recovery; see [MCP server](features/mcp-server.md).
 Exact navigation, scope boundaries and runner manifests exclude literal
 Markdown examples, HTML blocks/comments and blockquotes from their authored evidence.
+Capability selection applies the same authored-block boundary to ownership and
+exclusions, preserving genuine legacy fields and refusing unsupported claims.
 
 The folder entry uses a static welcome portrait, and the missing-page screen
 uses a curious map-search portrait in its existing icon slot. These expressions
