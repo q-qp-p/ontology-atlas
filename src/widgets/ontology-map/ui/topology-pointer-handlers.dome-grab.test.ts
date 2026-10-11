@@ -5,7 +5,9 @@ vi.mock("./topology-read-tokens", () => ({
   readOntologyMapTokensOrNull: vi.fn(() => ({ hysteresisPx: 4 }) as unknown),
 }));
 
-import { buildDomeModel, createDomeRuntime, type DomeInputNode } from "../model/dome-view";
+import { buildDomeModel } from "../model/dome-view/model-build";
+import { createDomeRuntime } from "../model/dome-view/runtime";
+import type { DomeInputNode } from "../model/dome-view/types";
 import { createTopologyPointerHandlers, type PointerHandlerRefs } from "./topology-pointer-handlers";
 
 function ref<T>(current: T): { current: T } {

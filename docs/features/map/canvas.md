@@ -249,7 +249,7 @@ The Flat overview is the dial: [`flat-dial.md`](flat-dial.md).
   same continuous morph — nodes travel, they do not cut — and the choice is
   remembered. Measured on the sample vault (2026-09-06): Strata leaves 2
   overlapping node pairs at 1512x982, and none of them are same-tier. Geometry:
-  `buildStrataTargets` in `src/widgets/ontology-map/model/dome-view.ts`; gates:
+  `buildStrataTargets` in `src/widgets/ontology-map/model/dome-view/strata.ts`; gates:
   `tests/e2e/map-3d-strata-drawing.spec.ts` and
   `tests/contract/strata-fit-fill.contract.test.ts`.
 - **The lit 3D map** (2026-09-25) — Strata and Neural are drawn as light in the

@@ -44,9 +44,7 @@ import {
   DEFAULT_MAP_ARRANGEMENT,
   DEFAULT_MAP_NAVIGATION_SPEED,
 } from "@/shared/lib/appearance-preferences";
-import {
-  type DomeViewKind
-} from "../model/dome-view";
+import type { DomeViewKind } from "../model/dome-view/types";
 import { createStrataLodState, type StrataLodState } from "../model/strata-lod";
 import { DEFAULT_TIER_REVEAL } from "../model/tier-visibility";
 import { type TopologyPointerHandlers } from "./topology-pointer-handlers";

@@ -15,7 +15,7 @@ import type { TierNameAnchor } from "../model/tier-names";
 import type { TierRevealConfig } from "../model/tier-visibility";
 import type { TopologyMapLensKind } from "../model/path-lens";
 import type { ClusterBarLabels } from "../render/cluster-chips";
-import type { DomeViewKind } from "../model/dome-view";
+import type { DomeViewKind } from "../model/dome-view/types";
 import { DEFAULT_EXPAND, DEFAULT_MAP_ARRANGEMENT, DEFAULT_MAP_NAVIGATION_SPEED } from "@/shared/lib/appearance-preferences";
 import type { CanvasBackground, ExpandPreference, FootprintPreference, GlyphSet, MapArrangement, MapNavigationSpeed } from "@/shared/lib/appearance-preferences";
 import { controlClass } from '@/shared/ui/control-class';
@@ -378,14 +378,14 @@ export interface OntologyMapProps {
   canvasBackground?: CanvasBackground;
   /**
    * 3D view (2026-08-18, opt-in) — the lit Strata planes or the relation-driven
-   * Neural cloud (`model/dome-view.ts`). The top toolbar's view picker turns it on;
+   * Neural cloud (`model/dome-view/`). The top toolbar's view picker turns it on;
    * omitted is false (2D, the default).
    */
   view3d?: boolean;
     /**
      * Which structural question places nodes in 3D — `strata` stacks the containment
      * tiers as lit planes (default); `coupling` lets relations determine all three
-     * Neural axes. The rationale and geometry live in `model/dome-view.ts`. Ignored
+     * Neural axes. The rationale and geometry live in `model/dome-view/`. Ignored
      * in 2D.
      */
     mapArrangement?: MapArrangement;

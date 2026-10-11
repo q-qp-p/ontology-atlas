@@ -1,4 +1,4 @@
-import type { DomeNodeFrame } from "../../model/dome-view";
+import type { DomeNodeFrame } from "../../model/dome-view/runtime";
 import type { EvidenceLight } from "../../render/dome-light";
 import { createStrataLodChords } from "../../model/strata-lod";
 import type { PlacedRelationCaption } from "../../render/relation-captions";

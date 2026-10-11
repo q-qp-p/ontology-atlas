@@ -216,7 +216,7 @@ export interface NodeShapeDrawState {
     depthShade?: number;
     /**
      * 3D view — **far-side detail factor**, 0..1
-     * (`model/dome-view.ts#domeDetailFactor`). At 1 (the default) the result is
+     * (`model/dome-view/ink.ts#domeDetailFactor`). At 1 (the default) the result is
      * pixel-identical to before. It folds to 0 on the rear hemisphere, and only
      * **supplementary strokes** recede: the outline stroke (fill set only — in the
      * line set the outline *is* the mark, so it never folds) and the domain pin

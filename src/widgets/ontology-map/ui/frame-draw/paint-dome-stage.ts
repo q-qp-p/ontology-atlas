@@ -3,8 +3,8 @@ import {
   DOME_RING_WIDTH_PX,
   domeFogAlpha,
   domeLineWidthFactor,
-  type DomeViewKind,
-} from "../../model/dome-view";
+} from "../../model/dome-view/ink";
+import type { DomeViewKind } from "../../model/dome-view/types";
 import { draw as domeRingsDraw } from "../../render/dome-rings";
 import { drawStrataStage, hexToRgb } from "../../render/dome-light";
 import {

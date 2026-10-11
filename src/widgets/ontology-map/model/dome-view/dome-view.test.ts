@@ -1,32 +1,49 @@
 import { describe, expect, it } from "vitest";
 
-import type { CameraAxes } from "../engine/camera";
-import { worldToScreen } from "../ui/topology-camera-math";
-import { findCouplingGroups } from "./coupling-groups";
+import type { CameraAxes } from "../../engine/camera";
+import { worldToScreen } from "../../ui/topology-camera-math";
+import { findCouplingGroups } from "../coupling-groups";
+import { DOME_PLANE } from "../cone-layout";
+import { CLOUD_ITERATIONS } from "./coupling-cloud";
+import {
+  DOME_ASSEMBLE_TOTAL_MS,
+  chargeTierLag,
+  commitDomeEntrySweep,
+  DOME_ENTRY_SWEEP_MS,
+  DOME_POSE_LAG_SCALE,
+  DOME_TIER_LAG,
+  domeTierRamp,
+  domeTierProgress,
+  setDomeFolding,
+  updateDomeFrame,
+  domeRingSampleCount,
+} from "./frame";
 import {
   DOME_EDGE_DEVICE_WIDTH_FLOOR,
   domeEdgeMinWidthPx,
-  buildDomeModel,
-  beginDomeModelBuild,
-  clampDomePitch,
-  createDomeRuntime,
-  decayOrbitVelocity,
-  DOME_ASSEMBLE_TOTAL_MS,
-  DOME_FOCAL,
-  DOME_PITCH_DEFAULT,
-  DOME_PITCH_MAX,
-  DOME_PITCH_MIN,
   DOME_NODE_PX,
-  DOME_PLANE,
-  domeEgoWorldBounds,
-  domeFocusYaw,
   DOME_HALO_MAX_PX,
   DOME_RING_ALPHA,
   DOME_RING_SAMPLES,
-  chargeTierLag,
-  CLOUD_ITERATIONS,
-  commitDomeEntrySweep,
-  DOME_FIT_RADIUS,
+  DOME_DETAIL_FADE_END,
+  DOME_DETAIL_FADE_START,
+  domeEdgeFogAlpha,
+  domeEdgeWidthFactor,
+  domeDetailFactor,
+  domeFogAlpha,
+  domeHaloPx,
+  domeLineWidthFactor,
+  DOME_STRATA_RING_ALPHA,
+  domeRingAlphaFor,
+} from "./ink";
+import { buildDomeModel, beginDomeModelBuild } from "./model-build";
+import {
+  clampDomePitch,
+  decayOrbitVelocity,
+  DOME_PITCH_DEFAULT,
+  DOME_PITCH_MAX,
+  DOME_PITCH_MIN,
+  domeFocusYaw,
   domeFacingYaws,
   ORBIT_DECAY_TRAVEL_MS,
   ORBIT_SNAP_ARRIVE_RAD,
@@ -38,42 +55,29 @@ import {
   clampOrbitReleaseVelocity,
   ORBIT_COAST_MAX_RAD,
   snapOrbitLanding,
-  DOME_ENTRY_SWEEP_MS,
+  domeNearestYawTurn,
+  resistDomePitch,
+  stepDomeDragSpring,
+} from "./orbit";
+import {
+  DOME_FOCAL,
+  domeEgoWorldBounds,
+  DOME_FIT_RADIUS,
   DOME_GRIP_MARGIN,
   isInsideDomeGrip,
-  DOME_POSE_LAG_SCALE,
-  DOME_TIER_LAG,
-  DOME_DETAIL_FADE_END,
-  DOME_DETAIL_FADE_START,
-  domeEdgeFogAlpha,
-  domeEdgeWidthFactor,
-  domeDetailFactor,
-  domeFogAlpha,
-  domeHaloPx,
-  domeLineWidthFactor,
-  domeNearestYawTurn,
   domeReachesRect,
-  domeTierRamp,
-  domeTierProgress,
   domeWorldBounds,
-  setDomeFolding,
-  KIND_DEPTH,
   projectDomeCoord,
-  resistDomePitch,
   solveDomePlanePoint,
-  stepDomeDragSpring,
-  updateDomeFrame,
+} from "./projection";
+import {
+  createDomeRuntime,
   beginDomeMorph,
-  domeRingSampleCount,
   settleDomeRuntimeOffscreen,
   type DomeRuntime,
-  buildStrataTargets,
-  DOME_STRATA_RING_ALPHA,
-  domeRingAlphaFor,
-  type DomeCoord,
-  type DomeInputNode,
-  type DomeViewKind,
-} from "./dome-view";
+} from "./runtime";
+import { buildStrataTargets } from "./strata";
+import { KIND_DEPTH, type DomeCoord, type DomeInputNode, type DomeViewKind } from "./types";
 
 const cam = (x: number, y: number, scale: number): CameraAxes => ({
   x: { value: x, velocity: 0 },

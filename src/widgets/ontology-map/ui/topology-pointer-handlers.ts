@@ -20,20 +20,18 @@ import { clusterBadgeLabel, clusterBadgeRect, clusterBarLabel, clusterBarRect, c
 import type { ClusterChip } from "../model/density-gate";
 import { DEFAULT_EXPAND, DEFAULT_MAP_NAVIGATION_SPEED, type ExpandPreference, type MapNavigationSpeed } from "@/shared/lib/appearance-preferences";
 import { depthParallaxOffsetFor, ZERO_PARALLAX, type DepthParallaxOffset } from "../model/realm-depth-parallax";
+import { commitDomeEntrySweep } from "../model/dome-view/frame";
 import {
-  commitDomeEntrySweep,
   clampOrbitReleaseVelocity,
   domeFacingYaws,
-  isInsideDomeGrip,
   projectOrbitLanding,
   snapOrbitLanding,
   ORBIT_PITCH_PER_PX,
   ORBIT_YAW_PER_PX,
   resistDomePitch,
-  solveDomePlanePoint,
-  type DomeNodeFrame,
-  type DomeRuntime,
-} from "../model/dome-view";
+} from "../model/dome-view/orbit";
+import { isInsideDomeGrip, solveDomePlanePoint } from "../model/dome-view/projection";
+import type { DomeNodeFrame, DomeRuntime } from "../model/dome-view/runtime";
 import { computeGrabOffsetWorld, computePinWorld, type WorldOffset } from "../interaction/node-drag";
 import {
   INITIAL_POINTER_MACHINE_STATE,
@@ -330,7 +328,7 @@ export interface PointerHandlerRefs {
    */
   realmTierKindsRef?: Ref<ReadonlyMap<string, "project" | "domain" | "capability" | "element"> | null>;
   /**
-   * 3D view (2026-08-18) — the dome runtime the loop owns (`model/dome-view.ts`). The
+   * 3D view (2026-08-18) — the dome runtime the loop owns (`model/dome-view/`). The
    * hit test reads the **same frame map** (`frame`) the draw last rendered, so clicks
    * follow the drawn positions even mid-rotation. The state for both orbit dragging
    * (empty space) and in-plane node dragging passes through this one box — the node
@@ -344,7 +342,7 @@ export interface PointerHandlerRefs {
    * **a camera pan** (false). `pointerdown` decides once and it does not change until
    * that gesture ends — deciding per move flips the gesture's identity whenever the
    * hand grazes the dome's boundary. The rule is `DOME_GRIP_MARGIN` in
-   * `model/dome-view.ts`.
+   * `model/dome-view/`.
    */
   domeGripRef?: Ref<boolean>;
   /**
@@ -933,7 +931,7 @@ export function createTopologyPointerHandlers(refs: PointerHandlerRefs): Topolog
          * dome's boundary (you are rotating and suddenly the map comes along). A
          * gesture's identity is fixed at the start and unchanged until the end — the
          * convention the pointer state machine already uses. The rule and its rationale:
-         * the `DOME_GRIP_MARGIN` doc-block in `model/dome-view.ts`.
+         * the `DOME_GRIP_MARGIN` doc-block in `model/dome-view/`.
          */
         {
             const dome = domeInteractive();

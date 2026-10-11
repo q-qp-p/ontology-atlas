@@ -1,6 +1,6 @@
 /**
  * Renderer for the 3D dome's **latitude rings**. Why the rings must exist at all
- * is in the `DOME_RING_KINDS` doc-block of `model/dome-view.ts` — in short,
+ * is in the `DOME_RING_KINDS` doc-block of `model/dome-view/` — in short,
  * without them the arrangement reads as a tent rather than a dome, and rotation
  * has no reference.
  *
@@ -13,7 +13,7 @@
  *
  * **This file knows nothing of tokens.** Per the `render/*` convention (set by
  * `node-shapes.ts`) every colour arrives as an argument; the values live in
- * `model/dome-view.ts` for the physics and in the token reader for the colours.
+ * `model/dome-view/` for the physics and in the token reader for the colours.
  */
 
 interface DomeRingScreenSample {

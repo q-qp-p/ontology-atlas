@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { CameraAxes } from "../engine/camera";
-import type { DomeRuntime } from "../model/dome-view";
+import type { DomeRuntime } from "../model/dome-view/runtime";
 import type { TopologyMapLensKind } from "../model/path-lens";
 import type { OntologyMapTokens } from "../tokens/read-map-tokens";
 import type { OntologyMapEdge, OntologyMapNode } from "../ui/OntologyMap";

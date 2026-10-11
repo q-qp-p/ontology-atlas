@@ -9,10 +9,8 @@ import {
 import { useLatestRef } from "@/shared/lib/use-latest-ref";
 import type { CameraAxes, CameraTarget } from "../engine/camera";
 import { type CameraTween } from "../model/camera-easing";
-import {
-  type DomeModel,
-  type DomeRuntime
-} from "../model/dome-view";
+import type { DomeRuntime } from "../model/dome-view/runtime";
+import type { DomeModel } from "../model/dome-view/types";
 import { isPathTargetPick, type TopologyMapLensKind } from "../model/path-lens";
 import {
   type RealmTransitionState

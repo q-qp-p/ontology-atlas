@@ -9,11 +9,9 @@ import { MAX_FRAME_DELTA_SECONDS } from "../engine/spring";
 import { type PointerMachineState } from "../interaction/pointer-state-machine";
 import { ambientSleepFactor, isAmbientAsleep } from "../model/ambient-sleep";
 import { easeInOutCubic } from "../model/camera-easing";
-import {
-  clampDomePitch,
-  DOME_ASSEMBLE_TOTAL_MS,
-  type DomeRuntime
-} from "../model/dome-view";
+import { DOME_ASSEMBLE_TOTAL_MS } from "../model/dome-view/frame";
+import { clampDomePitch } from "../model/dome-view/orbit";
+import type { DomeRuntime } from "../model/dome-view/runtime";
 import { stepGrowthReplay, type GrowthReplay } from "../model/growth-replay";
 import type { StrataLodState } from "../model/strata-lod";
 import {

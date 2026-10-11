@@ -7,10 +7,8 @@ import { measureCanvasInsets } from "../interaction/free-area";
 import type { PointerMachineState } from "../interaction/pointer-state-machine";
 import type { ClusterChip } from "../model/density-gate";
 import { projectDomeEdgeControl } from "../model/dome-edge";
-import {
-  DOME_ASSEMBLE_TOTAL_MS,
-  type DomeRuntime,
-} from "../model/dome-view";
+import { DOME_ASSEMBLE_TOTAL_MS } from "../model/dome-view/frame";
+import type { DomeRuntime } from "../model/dome-view/runtime";
 import type { ForceSimulation } from "../model/force-layout";
 import type { TopologyMapLensKind } from "../model/path-lens";
 import { isPreviewEndpoint, isPreviewEndpointHidden } from "../render/preview-edge";
@@ -451,7 +449,7 @@ export function useTopologyMapInstrumentation({
                     ramp: d.rampClock / DOME_ASSEMBLE_TOTAL_MS,
                     /*
                      * Is the entry sweep still putting the pose down? It has its **own**
-                     * clock, 1500 ms against the assembly's 1120 ms (`dome-view.ts`), so
+                     * clock, 1500 ms against the assembly's 1120 ms (`dome-view/`), so
                      * `ramp >= 1` is not "the dome has arrived" — the last 380 ms of turning
                      * happens after it. E2E had no way to see that and slept 4 seconds to
                      * cover both, which asserts the machine's speed rather than the dome's

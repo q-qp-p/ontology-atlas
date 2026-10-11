@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef } from "react";
 
-import type { DomeViewKind } from "../model/dome-view";
+import type { DomeViewKind } from "../model/dome-view/types";
 import { TIER_NAME_ROW_PX, type TierNameAnchor } from "../model/tier-names";
 
 /**

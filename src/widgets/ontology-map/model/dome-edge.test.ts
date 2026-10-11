@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { projectDomeEdgeControl } from './dome-edge';
-import type { DomeNodeFrame } from './dome-view';
+import type { DomeNodeFrame } from './dome-view/runtime';
 
 const edge = { sourceId: 'a', targetId: 'b', kind: 'depends' as const,
   ax: 0, ay: 0, bx: 400, by: 0, controlX: -300, controlY: 500 };
