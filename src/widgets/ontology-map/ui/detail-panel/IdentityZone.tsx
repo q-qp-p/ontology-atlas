@@ -1,0 +1,137 @@
+import { morphName, morphTargetProps } from "@/shared/motion/shared-element";
+import { CloseButton, controlClass } from "@/shared/ui";
+import { badgeClass } from "@/shared/ui/badge-class";
+import { OntologyMapKindGlyph } from "@/shared/ui/map-kind-glyph";
+import type { OntologyMapDetailPanelLabels, OntologyMapDetailPanelProps } from "./types";
+
+export function IdentityZone({
+  nodeId,
+  title,
+  sourceTitle,
+  kind,
+  domain,
+  powered,
+  updatedAtLabel,
+  labels,
+  onSelectConnection,
+  onHoverConnection,
+  onClose,
+  closeButtonRef,
+  showSourcePath,
+  projectLayout,
+}: {
+  nodeId: string;
+  title: string;
+  sourceTitle: string | null;
+  kind: string;
+  domain: OntologyMapDetailPanelProps["domain"];
+  powered: boolean;
+  updatedAtLabel: string | null;
+  labels: OntologyMapDetailPanelLabels;
+  onSelectConnection: OntologyMapDetailPanelProps["onSelectConnection"];
+  onHoverConnection: OntologyMapDetailPanelProps["onHoverConnection"];
+  onClose: OntologyMapDetailPanelProps["onClose"];
+  closeButtonRef: OntologyMapDetailPanelProps["closeButtonRef"];
+  showSourcePath: boolean;
+  projectLayout: boolean;
+}) {
+  return (
+    <div className="px-[var(--map-panel-pad)] pt-[15px] pb-4">
+      <div className="mb-[11px] flex items-center gap-2.5">
+        <h2
+          {...morphTargetProps(morphName("concept", nodeId))}
+          className="min-w-0 flex-1 truncate text-title font-[var(--font-weight-strong)] leading-title tracking-title text-[color:var(--map-panel-text-primary)]">
+          {title}
+        </h2>
+        {/* kind = a badge you read (glyph plus word), the counterweight on the right.
+            **One chip grammar with the domain chip below** (owner report, 2026-09-25):
+            this badge was 24px at a 6px radius and the domain chip 34px at the card's
+            9px, so the header's right column read as two unrelated shapes. Both are now
+            the chip `md` step (32px, `rounded-chip`, `text-label`), the close button is
+            the 32px icon step, and every row ends on the same right edge.
+            Gate: tests/e2e/map-inspector-header-chips.spec.ts */}
+        <span
+          data-testid="map-detail-panel-kind"
+          className={badgeClass({
+            shape: "tag",
+            className:
+              "min-h-8 shrink-0 gap-1.5 border border-[color:var(--map-panel-kind-badge-border)] bg-[color:var(--map-panel-kind-badge-surface)] px-2.5 font-[var(--font-weight-emphasis)] tracking-[var(--tracking-label)] text-[color:var(--map-panel-text-secondary)]",
+          })}
+        >
+          <OntologyMapKindGlyph kind={kind} size={12} />
+          {labels.kindLabel}
+        </span>
+        <CloseButton
+          ref={closeButtonRef}
+          label={labels.close}
+          onClick={onClose}
+          data-testid="map-detail-panel-close"
+          className="text-[color:var(--map-panel-text-tertiary)] hover:bg-[color:var(--map-panel-row-hover)] hover:text-[color:var(--map-panel-text-secondary)] active:bg-[color:var(--map-panel-row-active)]"
+        />
+      </div>
+      {showSourcePath && sourceTitle && sourceTitle !== title ? (
+        <div
+          data-testid="map-detail-panel-source-path"
+          className="mb-2 font-mono text-label text-[color:var(--map-panel-text-quaternary)] break-all"
+        >
+          {sourceTitle}
+        </div>
+      ) : null}
+      {/* For a project source, the OPS rail below takes over the meta position as well. */}
+      {!projectLayout || domain || updatedAtLabel ? (
+        <div className="flex items-center justify-between gap-3">
+          {!projectLayout ? (
+            // An empty label is a date still being read: the slot stays, and no
+            // fresh/idle verdict stands in for the date meanwhile.
+            updatedAtLabel != null ? (
+              <span
+                data-testid="map-datasheet-updated-at"
+                className="shrink-0 text-body text-[color:var(--map-panel-text-quaternary)]"
+              >
+                {updatedAtLabel}
+              </span>
+            ) : (
+              <span className="shrink-0 text-body text-[color:var(--map-panel-text-quaternary)]">
+                {powered ? labels.poweredOn : labels.poweredOff}
+              </span>
+            )
+          ) : updatedAtLabel ? (
+            <span
+              data-testid="map-datasheet-updated-at"
+              className="shrink-0 text-body text-[color:var(--map-panel-text-quaternary)]"
+            >
+              {labels.sourceOntologyDocument ? `${labels.sourceOntologyDocument} · ` : ""}
+              {updatedAtLabel}
+            </span>
+          ) : null}
+          {domain ? (
+            <button
+              type="button"
+              onClick={() => onSelectConnection(domain.id)}
+              /* **The same affordance** as a relation row (press it and you go to
+                 that node), so hover has to match — if only this line did not
+                 respond it becomes "why is this one line different". */
+              onPointerEnter={() => onHoverConnection?.(domain.id)}
+              onPointerLeave={() => onHoverConnection?.(null)}
+              aria-label={`${labels.domainLabel} ${domain.title}`}
+              data-testid="map-detail-panel-domain"
+              className={controlClass({
+                shape: "chip",
+                size: "md",
+                className:
+                  "min-w-0 text-left border-[color:var(--map-panel-domain-border)] bg-[color:var(--map-panel-domain-surface)] hover:border-[color:var(--map-panel-domain-border-hover)] hover:bg-[color:var(--map-panel-domain-surface-hover)]",
+              })}
+            >
+              <span className="shrink-0 text-[color:var(--map-panel-text-tertiary)]">
+                {labels.domainLabel}
+              </span>
+              <span className="truncate font-[var(--font-weight-emphasis)] text-[color:var(--map-panel-domain-text)]">
+                {domain.title}
+              </span>
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}

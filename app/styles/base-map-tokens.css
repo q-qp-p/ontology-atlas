@@ -596,7 +596,7 @@ RATIO-SYSTEM §4 FINAL scale-up (owner: "Information is good but too small",
 11→14px, group/section gap 10→14px. As width increased, evidence
 groups were promoted to a third group, filling space with information rather than whitespace
 (`map-datasheet.ts#buildV2EvidenceRows`,
-`OntologyMapDetailPanel.tsx`'s `renderEvidenceGroup`). Type sizes
+`detail-panel/EvidenceGroup.tsx`). Type sizes
 for each element next to it (individual JSX classes in §2.6 below) increased by one step: title 13.5→15px, row
 12→13px, metric 11.5→12.5px — this file holds only structural
 tokens, type sizes are owned by the component. */
