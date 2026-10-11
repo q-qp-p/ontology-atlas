@@ -5,7 +5,7 @@ import type { PointerMachineState } from "../interaction/pointer-state-machine";
 import { ambientSleepFactor } from "../model/ambient-sleep";
 import { createFocusRampClock } from "../model/focus-state";
 import { easeAnchoredZoom, easeCameraKeyframe, type CameraTween, type ZoomEase } from "../model/camera-easing";
-import type { DomeRuntime } from "../model/dome-view";
+import type { DomeRuntime } from "../model/dome-view/runtime";
 import type { GrowthReplay } from "../model/growth-replay";
 import {
   depthParallaxFactorForDepth,

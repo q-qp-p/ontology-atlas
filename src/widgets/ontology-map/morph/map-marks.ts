@@ -8,7 +8,7 @@ import { readDialTokens } from "../dial/tokens";
 import type { DialLabels, DialMemory, DialTokens, DialWorld } from "../dial/types";
 import type { CameraAxes } from "../engine/camera";
 import { measureCanvasInsets, measureEdgeFitObstacle } from "../interaction/free-area";
-import type { DomeNodeFrame, DomeRuntime } from "../model/dome-view";
+import type { DomeNodeFrame, DomeRuntime } from "../model/dome-view/runtime";
 import type { HexPlacementRecord } from "../model/hex-board";
 import { HITTABLE_MIN_TIER_ALPHA } from "../model/tier-visibility";
 import { readHexBoardTokensOrNull } from "../tokens/read-hex-board-tokens";

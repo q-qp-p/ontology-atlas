@@ -14,7 +14,8 @@ import {
 } from "../expressive/release-offsets";
 import { tugFactorForHop, tugFalloffForDistance } from "../interaction/drag-tug";
 import type { CameraTween, CameraTweenAltitude } from "../model/camera-easing";
-import { DOME_ASSEMBLE_TOTAL_MS, type DomeRuntime } from "../model/dome-view";
+import { DOME_ASSEMBLE_TOTAL_MS } from "../model/dome-view/frame";
+import type { DomeRuntime } from "../model/dome-view/runtime";
 import { createForceSimulation, type ForceSimulation } from "../model/force-layout";
 import {
   isRealmOutsideCulled,

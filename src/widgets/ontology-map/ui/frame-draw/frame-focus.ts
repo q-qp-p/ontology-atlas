@@ -1,4 +1,4 @@
-import type { DomeNodeFrame } from "../../model/dome-view";
+import type { DomeNodeFrame } from "../../model/dome-view/runtime";
 import { lerpColorHex } from "../../render/grid";
 import { worldToScreen } from "../topology-camera-math";
 import { domeFamily } from "../frame-cache/structure";

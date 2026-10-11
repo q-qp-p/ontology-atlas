@@ -1,14 +1,9 @@
 import { smoothstep } from "./altitude";
-import {
-  DOME_NODE_PX,
-  DOME_PLANE,
-  projectDomePlanePoint,
-  type DomeModel,
-  type DomeNodeFrame,
-  type DomePlaneSample,
-  type DomeRuntime,
-  type DomeViewKind,
-} from "./dome-view";
+import { DOME_PLANE } from "./cone-layout";
+import { projectDomePlanePoint, type DomePlaneSample } from "./dome-view/frame";
+import { DOME_NODE_PX } from "./dome-view/ink";
+import type { DomeNodeFrame, DomeRuntime } from "./dome-view/runtime";
+import type { DomeModel, DomeViewKind } from "./dome-view/types";
 
 export type StrataLodPlane = "capability" | "element";
 

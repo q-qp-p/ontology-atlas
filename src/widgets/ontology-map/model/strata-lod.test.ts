@@ -1,14 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  buildDomeModel,
-  createDomeRuntime,
-  DOME_ASSEMBLE_TOTAL_MS,
-  DOME_NODE_PX,
-  updateDomeFrame,
-  type DomeRuntime,
-  type DomeViewKind,
-} from "./dome-view";
+import { DOME_ASSEMBLE_TOTAL_MS, updateDomeFrame } from "./dome-view/frame";
+import { DOME_NODE_PX } from "./dome-view/ink";
+import { buildDomeModel } from "./dome-view/model-build";
+import { createDomeRuntime, type DomeRuntime } from "./dome-view/runtime";
+import type { DomeViewKind } from "./dome-view/types";
 import {
   buildStrataLodIndex,
   createStrataLodChords,

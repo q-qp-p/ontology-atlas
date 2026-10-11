@@ -281,7 +281,7 @@ export function useMapZoomSpeed(): MapSpeed {
  * the hero graph, 3.29×.
  * Crossing count dominates graph readability (Purchase 1997), so the default map
  * stays planar and 3D is opt-in for people who want to see structure as shape.
- * Geometry and cost: `src/widgets/ontology-map/model/dome-view.ts`,
+ * Geometry and cost: `src/widgets/ontology-map/model/dome-view/`,
  * `docs/DECISIONS.md`.
  */
 const VIEW_3D_KEY = "atlas.appearance.view3d";
@@ -386,7 +386,7 @@ export function useHexRelief(): boolean {
  * - `strata` (default since 2026-09-25) — *who contains what, read by level.*
  *   Four stacked, lit planes, one per kind, and every domain owns one sector of
  *   the planes under it, so "which level" and "which domain" are both a glance.
- *   `buildStrataTargets` in `src/widgets/ontology-map/model/dome-view.ts` is
+ *   `buildStrataTargets` in `src/widgets/ontology-map/model/dome-view/` is
  *   the geometry.
  * - `coupling` — *what attaches to what.* Every relation contributes to a free,
  *   deterministic 3D force cloud gathered around the domains. It releases the

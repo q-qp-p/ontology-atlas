@@ -29,10 +29,8 @@ import { createPinchWheelStream } from "../interaction/wheel";
 import { type PointerMachineState } from "../interaction/pointer-state-machine";
 import { type CameraTween, type ZoomEase } from "../model/camera-easing";
 import type { ClusterChip } from "../model/density-gate";
-import {
-  commitDomeEntrySweep,
-  type DomeRuntime
-} from "../model/dome-view";
+import { commitDomeEntrySweep } from "../model/dome-view/frame";
+import type { DomeRuntime } from "../model/dome-view/runtime";
 import { type ForceSimulation } from "../model/force-layout";
 import {
   type DepthParallaxOffset

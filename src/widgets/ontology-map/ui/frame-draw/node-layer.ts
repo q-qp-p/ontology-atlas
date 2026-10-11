@@ -1,4 +1,4 @@
-import { domeFogAlpha } from "../../model/dome-view";
+import { domeFogAlpha } from "../../model/dome-view/ink";
 import {
   addStrataLodDust,
   createStrataLodDust,

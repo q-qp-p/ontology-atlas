@@ -5,9 +5,7 @@ import {
   type RefObject
 } from "react";
 import type { CameraTarget } from "../engine/camera";
-import {
-  type DomeRuntime
-} from "../model/dome-view";
+import type { DomeRuntime } from "../model/dome-view/runtime";
 import { createGrowthReplay, type GrowthReplay } from "../model/growth-replay";
 import { computeZoomRatio, nodeTierAlpha, type TierRevealConfig } from "../model/tier-visibility";
 import { readOntologyMapTokensOrNull } from "./topology-read-tokens";

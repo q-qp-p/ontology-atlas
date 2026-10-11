@@ -5,14 +5,10 @@
  * domain's sector (`buildStrataTargets`), so a band draws a proven ownership fact. Geometry
  * only, through `projectDomePlanePoint` into reused arrays; paint is `render/dome-light.ts`.
  */
-import {
-  DOME_PLANE,
-  projectDomePlanePoint,
-  type DomePlaneSample,
-  type DomeRuntime,
-  type DomeSector,
-  type DomeViewKind,
-} from "./dome-view";
+import { DOME_PLANE } from "./cone-layout";
+import { projectDomePlanePoint, type DomePlaneSample } from "./dome-view/frame";
+import type { DomeRuntime } from "./dome-view/runtime";
+import type { DomeSector, DomeViewKind } from "./dome-view/types";
 
 const TAU = Math.PI * 2;
 
@@ -53,7 +49,7 @@ const SPOKE_INNER = 0.18;
 const BAND_INNER = 0.6;
 const BAND_OUTER = 0.965;
 const SAMPLES_PER_TURN = 72;
-/** Matches `STRATA_PROJECT_RING_R` in `dome-view.ts`. */
+/** Matches `STRATA_PROJECT_RING_R` in `dome-view/`. */
 const PROJECT_DISC_R = 34;
 
 const scratch: DomePlaneSample = { wx: 0, wy: 0, u: 0 };

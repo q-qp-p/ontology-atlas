@@ -11,7 +11,7 @@ import {
   domeEdgeMinWidthPx,
   domeEdgeWidthFactor,
   domeHaloPx,
-} from "../../model/dome-view";
+} from "../../model/dome-view/ink";
 import { focusFogFactor } from "../../render/dome-light";
 import {
   captionNormal,

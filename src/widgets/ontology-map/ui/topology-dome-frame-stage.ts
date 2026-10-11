@@ -12,37 +12,45 @@ import {
   type CameraTweenAltitude,
 } from "../model/camera-easing";
 import {
-  beginDomeModelBuild,
-  beginDomeMorph,
   chargeTierLag,
-  clampDomePitch,
   commitDomeEntrySweep,
-  createDomeRuntime,
   setDomeFolding,
-  decayOrbitVelocity,
   DOME_ASSEMBLE_TOTAL_MS,
-  DOME_BUILD_SLICE_MS,
   DOME_ENTRY_SWEEP_MS,
-  DOME_PERIOD_MS,
   DOME_POSE_LAG_SCALE,
-  DOME_POSE_MS,
   DOME_TIER_LAG_DECAY_PER_MS,
-  domeEgoWorldBounds,
+  updateDomeFrame,
+} from "../model/dome-view/frame";
+import {
+  beginDomeModelBuild,
+  DOME_BUILD_SLICE_MS,
+  sameDomeLayoutInputs,
+  type DomeModelBuild,
+} from "../model/dome-view/model-build";
+import {
+  clampDomePitch,
+  decayOrbitVelocity,
+  DOME_PERIOD_MS,
+  DOME_POSE_MS,
   domeFocusYaw,
   domeNearestYawTurn,
-  domeWorldBounds,
-  DOME_FLY_MS,
   ORBIT_SNAP_ARRIVE_RAD,
   orbitSnapTauMs,
-  projectDomeCoord,
-  sameDomeLayoutInputs,
-  settleDomeRuntimeOffscreen,
   stepDomeDragSpring,
-  updateDomeFrame,
-  type DomeModel,
-  type DomeModelBuild,
+} from "../model/dome-view/orbit";
+import {
+  domeEgoWorldBounds,
+  domeWorldBounds,
+  projectDomeCoord,
+} from "../model/dome-view/projection";
+import {
+  beginDomeMorph,
+  createDomeRuntime,
+  DOME_FLY_MS,
+  settleDomeRuntimeOffscreen,
   type DomeRuntime,
-} from "../model/dome-view";
+} from "../model/dome-view/runtime";
+import type { DomeModel } from "../model/dome-view/types";
 import { isDomeSpinAnimating } from "../model/idle-gate";
 import type { RealmTransitionState } from "../model/realm-transition";
 import type { OntologyMapTokens } from "../tokens/read-map-tokens";
@@ -149,7 +157,7 @@ export function createDomeFrameStage(sources: DomeFrameStageSources) {
     height: number,
   ): boolean {
     // --- Dome step: refresh pose, inertia, assembly clock and frame map each
-    // frame. Every value and physical property lives in `model/dome-view.ts`
+    // frame. Every value and physical property lives in `model/dome-view/`
     // (owner's dispensation: 3D mode sits outside the app's motion
     // conventions — `docs/DECISIONS.md`). ---
     {

@@ -5,11 +5,9 @@ import {
   useRef
 } from "react";
 import type { CameraTarget } from "../engine/camera";
-import {
-  type DomeModelBuild,
-  type DomeRuntime,
-  type DomeViewKind
-} from "../model/dome-view";
+import type { DomeModelBuild } from "../model/dome-view/model-build";
+import type { DomeRuntime } from "../model/dome-view/runtime";
+import type { DomeViewKind } from "../model/dome-view/types";
 import { type TierNameAnchor } from "../model/tier-names";
 interface Dependencies {
     view3d: boolean;
@@ -41,7 +39,7 @@ export function useTopologyDomeState({
   const mapArrangementRef = useRef<MapArrangement>(mapArrangement);
 
   /**
-   * Dome runtime (`model/dome-view.ts#DomeRuntime`) — one box holding the
+   * Dome runtime (`model/dome-view/runtime.ts#DomeRuntime`) — one box holding the
    * model, pose (yaw/pitch), inertia, assembly clock, and this frame's
    * projection map. The loop updates it each frame; the pointer handlers
    * (orbit, flat drag, hit-testing) and the instrumentation read the same box.

@@ -1,4 +1,5 @@
-import type { DomeArrangement, DomeNodeFrame } from './dome-view';
+import type { DomeNodeFrame } from './dome-view/runtime';
+import type { DomeArrangement } from './dome-view/types';
 
 interface EdgeCoordinates {
   sourceId: string;
