@@ -510,3 +510,27 @@ fn missing_promisor_objects_cannot_execute_a_repository_transport() {
         "a local date read must never invoke a promisor transport"
     );
 }
+
+#[cfg(unix)]
+#[test]
+fn a_replaced_source_root_invalidates_dates_even_at_the_same_commit() {
+    let f = Fixture::new("root-replacement", false);
+    let result = measure(
+        f.vault.to_str().unwrap(),
+        "fixture",
+        &["capabilities/pay.md".into()],
+        &["capabilities/pay.md".into()],
+        None,
+        || {
+            let prior = f.base.join("prior-source");
+            fs::rename(&f.source, &prior).unwrap();
+            fs::create_dir(&f.source).unwrap();
+            for path in [".git", "capabilities"] {
+                fs::rename(prior.join(path), f.source.join(path)).unwrap();
+            }
+        },
+    );
+    assert_eq!(result.status, "binding-changed");
+    assert!(result.vault_changes.is_empty() && result.source_changes.is_empty());
+    assert_eq!(f.measure().status, "measured");
+}

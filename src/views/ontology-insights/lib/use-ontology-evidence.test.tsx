@@ -73,7 +73,7 @@ describe('ontology evidence scope', () => {
     expect(mock.walk.mock.lastCall?.[4]).toBe('/other-repo');
   });
 
-  it('retires delayed responses when document paths or project scope change', async () => {
+  it('retires delayed responses when document paths change', async () => {
     let resolveOld!: (value: BoundEvidenceDates) => void;
     mock.walk.mockImplementationOnce(() => new Promise(resolve => { resolveOld = resolve; }))
       .mockResolvedValueOnce(rows('src/new.ts', '2026-01-03T00:00:00Z'));
@@ -83,6 +83,24 @@ describe('ontology evidence scope', () => {
     rerender({ docs: nextDocs }); expect(result.current.evidence).toBeNull();
     await waitFor(() => expect(result.current.evidence?.stale.has('pay')).toBe(true));
     await act(async () => resolveOld(rows('src/old.ts', '2026-01-01T00:00:00Z')));
+    expect(result.current.evidence?.stale.has('pay')).toBe(true);
+    expect(result.current.evidence?.current.has('pay')).toBe(false);
+  });
+
+  it.each(['project', 'vault'] as const)('retires delayed replies when only the %s scope changes', async changed => {
+    let finish!: (value: BoundEvidenceDates) => void;
+    mock.walk.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }))
+      .mockResolvedValueOnce(rows('src/pay.ts', '2026-01-03T00:00:00Z'));
+    const docs = [document('src/pay.ts')];
+    const initialProps = { projectSlugs: ['store'], nativeRootPath: base.nativeRootPath };
+    const { result, rerender } = renderHook(props => useOntologyEvidence({ ...base, ...props, docs }), { initialProps });
+    await waitFor(() => expect(mock.walk).toHaveBeenCalledTimes(1));
+    const projectSlugs = changed === 'project' ? ['other'] : ['store'];
+    mock.read.mockResolvedValue({ status: 'ok', bindings: [{ projectSlug: projectSlugs[0], rootPath: '/other-repo' }] });
+    rerender({ projectSlugs, nativeRootPath: changed === 'vault' ? '/next-vault' : base.nativeRootPath });
+    expect(result.current.evidence).toBeNull();
+    await waitFor(() => expect(result.current.evidence?.stale.has('pay')).toBe(true));
+    await act(async () => finish(rows('src/pay.ts', '2026-01-01T00:00:00Z')));
     expect(result.current.evidence?.stale.has('pay')).toBe(true);
     expect(result.current.evidence?.current.has('pay')).toBe(false);
   });
