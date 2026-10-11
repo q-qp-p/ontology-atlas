@@ -1,15 +1,15 @@
 import type { KnowledgeGraphEdge, KnowledgeGraphNode } from "../../model";
 import { buildAgentReadinessSummary, type AgentReadinessSummary } from "./agent-readiness";
 import {
-  buildAgentGraphDbQueryPack,
-  buildAgentHandoffPrompt,
-  buildAgentQueryRecipes,
-  buildAgentTraversalStrategies,
-  buildAgentWriteGuardrails,
   selectAgentProjectEntrypoint,
   selectAgentQueryEntrypoints,
-  type AgentQueryEntrypoint,
-} from "./agent-query-recipes";
+} from "./agent-query-recipes/entrypoints";
+import { buildAgentGraphDbQueryPack } from "./agent-query-recipes/graph-db-query-pack";
+import { buildAgentHandoffPrompt } from "./agent-query-recipes/handoff-prompt";
+import { buildAgentQueryRecipes } from "./agent-query-recipes/query-recipes";
+import { buildAgentTraversalStrategies } from "./agent-query-recipes/traversal-strategies";
+import type { AgentQueryEntrypoint } from "./agent-query-recipes/types";
+import { buildAgentWriteGuardrails } from "./agent-query-recipes/write-guardrails";
 import type { OntologyTreeBuildResult } from "./types";
 
 /**
