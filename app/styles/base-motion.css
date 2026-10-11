@@ -120,13 +120,6 @@
     animation-delay: 400ms;
   }
 
-  /* ── Insight Motion (Phase 3 #3, 2026-07-25) ──────────────────────────────
-     Tab transition content crossfade — short fade-in for the incoming tab panel. Bar fill and
-     count-up are handled by each component via transition/JS (reusing --motion-* tokens). */
-  .insights-tab-crossfade {
-    animation: panelCrossfadeIn var(--motion-fast) var(--motion-ease) both;
-  }
-
   /* The gateway's screens stage (2026-09-24): pressing a name crossfades one captured screen
      into the next **in the same slot**. Both pictures are stacked in one grid cell; the arriving
      one fades in on `--motion-base` while the leaving one fades out on 2/3 of it under its own
@@ -155,15 +148,6 @@
      downgraded to immediate replacement by the global rule in the base
      layer. */
   .insights-disclosure-in {
-    animation: panelCrossfadeIn var(--motion-fast) var(--motion-ease) both;
-  }
-
-  /* Instruction strip text swap — **the same strip becomes the next sentence.**
-     Frame measurement (2026-07-29): this area has the largest ink change on screen (diff
-     21.1), yet the transition was a **98.6% hard cut** with no easing, affecting only the progress dot (6px).
-     Uses the same keyframes and tokens — zero new vocabulary. Since `key` replacement
-     triggers playback forward, it avoids the reverse rewind trap. */
-  .practice-step-crossfade {
     animation: panelCrossfadeIn var(--motion-fast) var(--motion-ease) both;
   }
 

@@ -56,13 +56,6 @@
     zoom: 1;
   }
 
-  .topology-overview-proof-summary {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: var(--topology-overview-proof-summary-lines);
-  }
-
   /*
    * Prose link contract — Links within the markdown body flow (2026-08-04 prose foundation).
    *
@@ -298,15 +291,6 @@
     }
   }
 
-  @media (max-width: 640px) {
-    [data-read-layer-surface-restore="phone-read-layer-landmark"] {
-      position: fixed !important;
-      left: 50% !important;
-      top: calc(100vh - var(--topology-floating-control-phone-bottom) - 28px) !important;
-      transform: translate(-50%, -50%) !important;
-    }
-  }
-
   /*
    * Overview analysis rail density contract.
    * At short desktop heights the map's primary copy handoff must remain visible;
@@ -315,11 +299,6 @@
   
 
   
-
-  /* [Deleted, 2026-07-18] Old SigmaTopology connector animation
-     (topology-connector-flow / topology-relation-inspector-enter keyframes,
-     .topology-connector-path rule + reduced-motion override) — consumer 0,
-     dead CSS after #344. */
 
   @media (min-width: 1920px) {
     :root {
@@ -436,7 +415,6 @@
    */
   @media (prefers-reduced-motion: reduce) {
     /* ① Already opacity-only — revert time only. */
-    .insights-tab-crossfade,
     .insights-disclosure-in,
     .gateway-screen-in,
     .gateway-screen-out,
@@ -466,7 +444,6 @@
     }
 
     /* ① Already opacity-only — restores time only. */
-    .practice-step-crossfade,
     .settings-section-in,
     .route-loading-in {
       animation-duration: var(--motion-fast) !important;
