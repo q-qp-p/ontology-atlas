@@ -1,15 +1,15 @@
 
 import { describe, expect, it } from "vitest";
 
+import { CONE_HEIGHT_SCALE } from "@/widgets/ontology-map/model/cone-layout";
+import { DOME_NODE_PX } from "@/widgets/ontology-map/model/dome-view/ink";
+import { buildDomeModel } from "@/widgets/ontology-map/model/dome-view/model-build";
+import { DOME_PITCH_DEFAULT } from "@/widgets/ontology-map/model/dome-view/orbit";
 import {
-  buildDomeModel,
-  CONE_HEIGHT_SCALE,
   DOME_NODE_FIT_ALLOWANCE_PX,
-  DOME_NODE_PX,
-  DOME_PITCH_DEFAULT,
   domeWorldBounds,
-  type DomeInputNode,
-} from "@/widgets/ontology-map/model/dome-view";
+} from "@/widgets/ontology-map/model/dome-view/projection";
+import type { DomeInputNode } from "@/widgets/ontology-map/model/dome-view/types";
 import { computeDomeFitCameraTarget } from "@/widgets/ontology-map/ui/topology-camera-math";
 import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
 

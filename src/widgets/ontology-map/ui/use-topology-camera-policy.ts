@@ -16,8 +16,8 @@ import {
   DOME_NODE_FIT_ALLOWANCE_PX,
   domeReachesRect,
   domeWorldBounds,
-  type DomeModel
-} from "../model/dome-view";
+} from "../model/dome-view/projection";
+import type { DomeModel } from "../model/dome-view/types";
 import type { OntologyMapTokens } from "../tokens/read-map-tokens";
 import { computeDomeFitCameraTarget } from "./topology-camera-math";
 

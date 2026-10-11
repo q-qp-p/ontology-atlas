@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { buildDomeModel, type DomeInputNode } from "./dome-view";
+import { buildDomeModel } from "./model-build";
+import type { DomeInputNode } from "./types";
 
 function vault(size: number): { nodes: DomeInputNode[]; edges: { sourceId: string; targetId: string }[] } {
   const domainCount = Math.max(1, Math.round(Math.sqrt(size) / 3));

@@ -152,7 +152,7 @@ export interface TraceDrawState {
   /**
    * 3D view — **the smallest stroke this line may be drawn at, in CSS px**, after
    * the depth multiplier. The caller derives it from the ratio the canvas is
-   * rasterising at (`model/dome-view.ts#domeEdgeMinWidthPx`), so what is really
+   * rasterising at (`model/dome-view/ink.ts#domeEdgeMinWidthPx`), so what is really
    * held is a width in *device* pixels: below one device pixel the rasteriser
    * spreads the stroke's alpha over the two pixel rows it straddles and the peak
    * contrast collapses, which is how the depth-ink floor's whole gain disappeared
@@ -173,7 +173,7 @@ export interface TraceDrawState {
    * 3D view — **depth halo**. Just before the ink, the same curve is stroked
    * once in the canvas background colour slightly wider, cutting that much out
    * of whatever was already drawn behind it. Rationale, values, and why this is
-   * not a glow: `domeHaloPx` in `model/dome-view.ts`
+   * not a glow: `domeHaloPx` in `model/dome-view/`
    * (Everts et al. 2009, IEEE TVCG 15(6)).
    *
    * `px` is the **half-width in screen px**; `alpha` is the final opacity at

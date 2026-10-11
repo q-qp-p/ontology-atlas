@@ -244,7 +244,7 @@ export interface UseTopologyLoopArgs {
   canvasBackground?: CanvasBackground;
   /**
    * 3D view (2026-08-18, opt-in) — relays the map into lit Strata or the
-   * relation-driven Neural cloud (`model/dome-view.ts`). Draw, hit-testing, DOM
+   * relation-driven Neural cloud (`model/dome-view/`). Draw, hit-testing, DOM
    * anchors, and the inspection hook all read the same frame map. Omitted keeps 2D.
    */
   view3d?: boolean;

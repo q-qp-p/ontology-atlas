@@ -6,12 +6,10 @@ import {
 import type { CameraAxes } from "../engine/camera";
 import { ambientSleepFactor } from "../model/ambient-sleep";
 import type { ClusterChip } from "../model/density-gate";
-import {
-  DOME_ASSEMBLE_TOTAL_MS,
-  domeRingAlphaFor,
-  type DomeRuntime,
-  type DomeViewKind
-} from "../model/dome-view";
+import { DOME_ASSEMBLE_TOTAL_MS } from "../model/dome-view/frame";
+import { domeRingAlphaFor } from "../model/dome-view/ink";
+import type { DomeRuntime } from "../model/dome-view/runtime";
+import type { DomeViewKind } from "../model/dome-view/types";
 import { stepFocusRamp } from "../model/focus-state";
 import { fadeStrataLodOut, restStrataLod, stepStrataLod, type StrataLodState } from "../model/strata-lod";
 import { createStrataStage, sampleStrataStage } from "../model/strata-stage";

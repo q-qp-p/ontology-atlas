@@ -1,10 +1,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import {
-  domeFogAlpha,
-  DOME_RIM_FOG_FLOOR,
-} from "@/widgets/ontology-map/model/dome-view";
+import { domeFogAlpha, DOME_RIM_FOG_FLOOR } from "@/widgets/ontology-map/model/dome-view/ink";
 import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
 
 /**

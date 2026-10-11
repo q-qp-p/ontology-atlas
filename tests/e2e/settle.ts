@@ -263,7 +263,7 @@ export async function waitFrames(page: Page, count = 2): Promise<void> {
  * that value; four seconds was one machine's guess at it.
  *
  * The pose is deliberately not part of this: the dome arrives **armed to spin**
- * (`dome-view.ts`), so "assembled" and "still" are different states and only the
+ * (`dome-view/`), so "assembled" and "still" are different states and only the
  * first one is what arriving in 3D means.
  */
 export async function waitForDomeAssembled(page: Page, timeout = HANG_TIMEOUT_MS): Promise<void> {
@@ -299,7 +299,7 @@ export async function waitForFlatMap(page: Page, timeout = HANG_TIMEOUT_MS): Pro
  * Resolve once the 3D dome has assembled, swept in **and** settled its layout.
  *
  * The two have separate clocks — the sweep outlives the assembly by 380 ms
- * (`model/dome-view.ts`) — so "arrived in 3D" is both flags, and while the sweep
+ * (`model/dome-view/`) — so "arrived in 3D" is both flags, and while the sweep
  * is alive the drawn attitude keeps moving and cannot be told apart from what a
  * drag changed.
  *

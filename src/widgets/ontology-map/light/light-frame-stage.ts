@@ -2,7 +2,7 @@ import type { RefObject } from "react";
 
 import type { CameraAxes } from "../engine/camera";
 import { edgeRevealProgress, type Point } from "../expressive/edge-reveal";
-import type { DomeRuntime } from "../model/dome-view";
+import type { DomeRuntime } from "../model/dome-view/runtime";
 import type { TopologyMapLensKind } from "../model/path-lens";
 import { hexToRgb } from "../render/dome-light";
 import type { OntologyMapTokens } from "../tokens/read-map-tokens";

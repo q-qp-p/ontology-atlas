@@ -32,7 +32,7 @@ interface Point {
  * `lift` is layer separation — a fixed tilt encoded as a constant plane spacing
  * (world units) — so deeper layers settle lower on screen. (A leftover API from
  * the 2026-08-18 z-lift mockup: the current 3D dome uses the offset path in
- * `model/dome-view.ts` and does not use this term, but `dome-view.test.ts` pins it
+ * `model/dome-view/` and does not use this term, but `dome-view.test.ts` pins it
  * along with the byte-identical contract for when it is omitted.)
  *
  * **Omitted (the default path), the output is byte-identical to before** — it
@@ -831,7 +831,7 @@ export function computeFocusCameraTarget(
  * ego-fit branch of `computeFocusCameraTarget` (`focusBboxMargin` multiplicative
  * padding, the same safe-inset grammar, the same zoom-in ceiling), with different
  * inputs: the bbox is not the 2D ego but the **dome ego bbox projected at the
- * target pose** (`model/dome-view.ts#domeEgoWorldBounds`), and the zoom-out floor
+ * target pose** (`model/dome-view/projection.ts#domeEgoWorldBounds`), and the zoom-out floor
  * is not 2D's `overviewEntryScale` but the **dome fit zoom** (`scaleFloor`) —
  * because the dome's projected bbox is wider than the 2D spine, so its fit zoom
  * lives below the 2D floor (see the `DomeRuntime.fitScale` JSDoc). The insets are

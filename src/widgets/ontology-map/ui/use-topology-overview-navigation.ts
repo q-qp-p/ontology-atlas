@@ -5,13 +5,9 @@ import {
   type RefObject
 } from "react";
 import type { CameraTarget } from "../engine/camera";
-import {
-  DOME_PITCH_DEFAULT,
-  DOME_POSE_MS,
-  domeNearestYawTurn,
-  type DomeModel,
-  type DomeRuntime
-} from "../model/dome-view";
+import { DOME_PITCH_DEFAULT, DOME_POSE_MS, domeNearestYawTurn } from "../model/dome-view/orbit";
+import type { DomeRuntime } from "../model/dome-view/runtime";
+import type { DomeModel } from "../model/dome-view/types";
 import {
   type RealmTransitionState
 } from "../model/realm-transition";

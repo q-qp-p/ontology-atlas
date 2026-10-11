@@ -32,7 +32,7 @@ import { seedFirstRunSeen } from "./first-run-seed";
  * Strata crowds **less** than the cone at both sizes, and two things earn that: a
  * plane spreads its tier across a whole disc instead of packing it under one
  * parent, and each plane alternates two radii so neighbours from different
- * parents cannot fuse (`applyLanes` in `model/dome-view.ts`). What it pays is
+ * parents cannot fuse (`applyLanes` in `model/dome-view/`). What it pays is
  * silhouette width, which is why the fill floors below are not simply the cone's.
  *
  * The floors are set a few points under the measured value and the ceilings a few

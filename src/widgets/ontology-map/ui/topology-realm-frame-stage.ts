@@ -1,6 +1,6 @@
 import type { CameraAxes } from "../engine/camera";
 import type { ClusterChip } from "../model/density-gate";
-import type { DomeRuntime } from "../model/dome-view";
+import type { DomeRuntime } from "../model/dome-view/runtime";
 import { parseClusterMoreChipId } from "../model/focus-state";
 import { computeVisibleWardingRadius } from "../model/realm";
 import type { DepthParallaxOffset } from "../model/realm-depth-parallax";

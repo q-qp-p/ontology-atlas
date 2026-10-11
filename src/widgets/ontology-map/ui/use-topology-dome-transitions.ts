@@ -6,10 +6,8 @@ import {
   useRef,
   type RefObject
 } from "react";
-import {
-  DOME_ASSEMBLE_TOTAL_MS,
-  type DomeRuntime
-} from "../model/dome-view";
+import { DOME_ASSEMBLE_TOTAL_MS } from "../model/dome-view/frame";
+import type { DomeRuntime } from "../model/dome-view/runtime";
 import {
   type RealmTransitionState
 } from "../model/realm-transition";

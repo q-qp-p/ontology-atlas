@@ -5,7 +5,8 @@ import {
   type RefObject
 } from "react";
 import type { CameraTarget } from "../engine/camera";
-import { commitDomeEntrySweep, type DomeRuntime } from "../model/dome-view";
+import { commitDomeEntrySweep } from "../model/dome-view/frame";
+import type { DomeRuntime } from "../model/dome-view/runtime";
 import { isPathTargetPick, type TopologyMapLensKind } from "../model/path-lens";
 import {
   type RealmTransitionState

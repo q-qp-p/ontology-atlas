@@ -8,7 +8,7 @@ import {
   domeFogAlpha,
   DOME_RIM_FOG_FLOOR,
   domeHaloPx,
-} from "../../model/dome-view";
+} from "../../model/dome-view/ink";
 import {
   drawEmissiveHalo,
   drawEvidenceRing,
