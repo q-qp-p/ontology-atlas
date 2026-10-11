@@ -12,7 +12,7 @@ const CONSUMERS = [
   'src/widgets/search-palette/ui/SearchPalette.tsx',
   'src/widgets/global-search/ui/GlobalSearch.tsx',
   'src/widgets/shortcut-sheet/ui/ShortcutSheet.tsx',
-  'src/widgets/ontology-map/ui/OntologyMapDetailPanel.tsx',
+  'src/widgets/ontology-map/ui/detail-panel/IdentityZone.tsx',
   'src/widgets/ontology-map/ui/OntologyMapEdgePanel.tsx',
   'src/widgets/vault-agent-panel/ui/VaultAgentPanel.tsx',
   'src/widgets/analysis-workbench/ui/AnalysisWorkbench.tsx',

@@ -40,6 +40,7 @@ export const rules = [
     reason: "where map canvas surfaces and panel rows stand changed",
     matches: [
       /^src\/widgets\/ontology-map\/ui\/OntologyMapDetailPanel\.tsx$/,
+      /^src\/widgets\/ontology-map\/ui\/detail-panel\/[\w-]+\.tsx?$/,
       /^src\/widgets\/ontology-map\/ui\/OntologyMapEdgePanel\.tsx$/,
     ],
   },
@@ -147,6 +148,7 @@ export const rules = [
     reason: "the node inspector header chips changed",
     matches: [
       /^src\/widgets\/ontology-map\/ui\/OntologyMapDetailPanel\.tsx$/,
+      /^src\/widgets\/ontology-map\/ui\/detail-panel\/[\w-]+\.tsx?$/,
     ],
   },
   {
@@ -201,6 +203,7 @@ export const rules = [
     matches: [
       /^src\/features\/first-run-starter\/ui\/FirstRunStarterModule\.tsx$/,
       /^src\/widgets\/ontology-map\/ui\/OntologyMapDetailPanel\.tsx$/,
+      /^src\/widgets\/ontology-map\/ui\/detail-panel\/[\w-]+\.tsx?$/,
     ],
   },
   {
@@ -227,6 +230,7 @@ export const rules = [
     reason: "the project inspector's first layout changed",
     matches: [
       /^src\/widgets\/ontology-map\/ui\/OntologyMapDetailPanel\.tsx$/,
+      /^src\/widgets\/ontology-map\/ui\/detail-panel\/[\w-]+\.tsx?$/,
     ],
   },
   {

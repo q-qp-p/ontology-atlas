@@ -351,7 +351,7 @@ export function buildV2EvidenceRows(
  * Only this result is on screen and the full source folds into the native `title=`
  * tooltip — no information is lost, because the 「All Details」 (full detail) link already
  * owns that destination (for the panel-side render see the sticky footer and evidence
- * rows in `OntologyMapDetailPanel.tsx`).
+ * rows in `detail-panel/`).
  */
 export function slugDisplaySegment(slug: string): string {
   const lastSlash = slug.lastIndexOf("/");
