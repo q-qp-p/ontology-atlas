@@ -58,27 +58,6 @@ import { waitForAnimationsDone, waitForBoxStill, waitFrames } from "./settle";
  *    viewport — watching for a recurrence of the defect in the owner's 2560
  *    screenshot, where the stage was pinned at 30% of the viewport and the screen
  *    looked empty.
- *
- * **[Deleted 2026-08-19] four assertions whose subject was the plate or the
- * three-step install.** The owner removed the install section entirely (*"this last one can probably go; it
- * is all at the top anyway"* — this last one can probably go; it
- * is all at the top anyway). Removed with it:
- *
- * - The **plate** and the **install strip** from the seven elements (subject gone)
- * - **Plate/map non-overlap** — with both sections gone there is nothing to overlap
- * - **The plate does not exceed its width token (`--gateway-plate-width`)**
- * - **The three-step install does not wrap**, **controls inside the plate do not
- *   break out of it**, and **the plate's controls honour their declared margins**
- *   (zero crushed margin)
- *
- * Only "both addresses show the same thing" was kept, with a new vessel — that is a
- * property of **address unification** rather than of the three-step install, and
- * its subject (`demo-stage`) is still alive.
- *
- * ⚠️ **Confusing the vessel with the content makes a gate wrong in both
- * directions.** Guarding only the vessel turns it red on a legitimate design
- * change; deleting the vessel takes the content with it. If you cannot write in a
- * sentence what a test guards, it is not yet a property.
  */
 
 /**

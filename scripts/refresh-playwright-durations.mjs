@@ -6,7 +6,7 @@
 //
 // Usage: gh run download <run-id> -p 'playwright-timings-*' -D output/timings
 //        pnpm e2e:durations -- output/timings [--run=<run-id>]
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -30,9 +30,9 @@ export function measureReport(report) {
   return files;
 }
 
-/** Measured files replace their old weight; files this run did not execute keep theirs. */
-export function mergeDurations(history, measured, runId) {
-  const files = { ...(history.files ?? {}) };
+/** Measured files replace their old weight; files this run did not execute keep theirs while they exist. */
+export function mergeDurations(history, measured, runId, isLive = () => true) {
+  const files = Object.fromEntries(Object.entries(history.files ?? {}).filter(([file]) => isLive(file)));
   for (const [file, row] of measured) {
     if (row.tests === 0) continue;
     files[file] = { seconds: Number(row.seconds.toFixed(3)), tests: row.tests };
@@ -63,7 +63,8 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       for (const [file, row] of measureReport(JSON.parse(readFileSync(path, 'utf8')))) measured.set(file, row);
     }
     const history = JSON.parse(readFileSync(HISTORY, 'utf8'));
-    writeFileSync(HISTORY, `${JSON.stringify(mergeDurations(history, measured, runId), null, 2)}\n`);
+    const specExists = (file) => existsSync(new URL(`../tests/e2e/${file}`, import.meta.url));
+    writeFileSync(HISTORY, `${JSON.stringify(mergeDurations(history, measured, runId, specExists), null, 2)}\n`);
     console.log(`[e2e:durations] ${measured.size} files measured from ${paths.length} report(s)`);
   }
 }

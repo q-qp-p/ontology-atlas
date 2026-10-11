@@ -236,6 +236,6 @@ function printUsage(stream = process.stderr) {
       `  --max-hops 0-${MAX_HOPS_CAP}, --limit 1-${LIMIT_CAP}, --search-budget 1-${SEARCH_BUDGET_CAP}\n\n` +
       `${COLORS.bold}Example:${COLORS.reset}\n` +
       `  ontology-atlas all-paths capabilities/session domains/auth --plan --max-hops 3 --types depends_on,relates\n` +
-      `  ontology-atlas all-paths project elements/sigma-graphology --limit 10 --search-budget 1000 --json\n`,
+      `  ontology-atlas all-paths project elements/graph-engine --limit 10 --search-budget 1000 --json\n`,
   );
 }

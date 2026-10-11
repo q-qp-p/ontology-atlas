@@ -35,13 +35,7 @@ const LOCAL_SPEC_POINTER = `${SPEC_PATH}${SPEC_ANCHOR}`;
 describe("Atlas meta-model — one public canon reaches every authoring channel", () => {
   it("schema mirrors expose one public reference and five authorable kinds", () => {
     expect(MCP_META_MODEL_REFERENCE).toContain(LOCAL_SPEC_POINTER);
-    /*
-     * CLI == MCP is this file's own fact and nothing else checks it. The literal
-     * `["project", "domain", ...]` that used to sit here is owned by
-     * `vault-schema.contract.test.ts`, which holds the schema those names come from;
-     * re-typing it here meant a kind change had to be edited in two tests and could
-     * disagree between them (removed 2026-09-12).
-     */
+    // `vault-schema.contract.test.ts` owns the kind list; this checks only that CLI and MCP agree.
     expect(CLI_VAULT_KINDS).toEqual(MCP_VAULT_KINDS);
   });
 
