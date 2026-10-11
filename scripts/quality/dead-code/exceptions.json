@@ -176,12 +176,6 @@
       "witness": "serializeProjectSourceState"
     },
     {
-      "key": "mcp:runtime:exports:src/project-source-witnesses.mjs:looksLikeCodePath",
-      "reason": "The field-help consumer contract test checks path detection; the export is consumed outside its Knip scope, where the lane cannot see it.",
-      "consumer": "tests/contract/field-help-consumers.contract.test.ts",
-      "witness": "looksLikeCodePath"
-    },
-    {
       "key": "mcp:runtime:exports:src/schema.mjs:CREATED_BY_AGENT_PREFIX",
       "reason": "The CLI schema shim re-exports the provenance prefix; the export is consumed outside its Knip scope, where the lane cannot see it.",
       "consumer": "cli/src/lib/schema.mjs",
