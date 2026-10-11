@@ -71,9 +71,11 @@ describe('every consumer named in field help exists as a real code path', () => 
     // consumer. They are BODY headings, not frontmatter keys — the reason no
     // help line was attached to the frontmatter `definition:` value this round.
     const brief = read('mcp/src/agent-brief-compact.mjs');
-    expect(brief).toContain("markdownSection(body, 'Definition')");
-    expect(brief).toContain("markdownSection(body, 'Includes')");
-    expect(brief).toContain("markdownSection(body, 'Excludes')");
+    expect(brief).toContain('readCapabilityClaim(doc?.body)');
+    const claim = read('mcp/src/agent-brief/reviewed-evidence.mjs');
+    expect(claim).toContain("section('definition')");
+    expect(claim).toContain("section('includes')");
+    expect(claim).toContain("section('excludes')");
   });
 
   it('each help string is authored in both locales and attached to its field', () => {
