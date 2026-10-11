@@ -34,9 +34,8 @@ import { describe, expect, it } from "vitest";
  *
  * **Inventory before switching on** (`design.md`, "always measure before enabling
  * a rule"): scanning 1,906 files caught **5**, all the same pattern (a separator
- * in a composite or sort key): `DocsVaultEditor.tsx`, `duplicate-pairs.ts`,
- * `interop-format.mjs`, `detect-drift.mjs`, `reconcile-imports.mjs`. Small enough
- * to clear in one PR, so the rule was enabled (it does not become noise).
+ * in a composite or sort key). Small enough to clear in one PR, so the rule was
+ * enabled (it does not become noise).
  *
  * There are two replacements. For **Set/Map keys**, `JSON.stringify([...])` —
  * printable and unambiguous (a space separator makes `["a b","c"]` and

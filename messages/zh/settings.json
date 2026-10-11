@@ -92,7 +92,6 @@
         "invalidUrl": "第 {index} 行链接：请输入有效的网址。"
       },
       "demoModeBanner": "需先打开 Markdown 文件夹才能保存。",
-      "demoModeSaveFailed": "演示模式下无法保存。请先打开 Markdown 文件夹。",
       "demoModeBannerHint": "在地图界面选择文件夹即可启用保存"
     },
     "actions": {

@@ -41,8 +41,6 @@
       "missing": "原文缺失"
     },
     "ask": "带着这些线索询问智能体",
-    "askNote": "任务说明要求智能体重新阅读且不写入任何内容。应用的自动批准已关闭；任何写入仍需许可。",
-    "askUnavailable": "请在已安装的应用中连接智能体后再提问。上方的本地依据和来源链接仍可使用。",
     "report": {
       "summarize": "汇总为报告",
       "investigate": "调查原文",
@@ -51,7 +49,6 @@
       "masthead": "ONTOLOGY ATLAS / 知识报告",
       "title": "问题报告",
       "caveat": "接受任何论断之前，请先阅读所引用的原文。此草稿尚未经过复核，也未保存到文件夹。",
-      "leadsTitle": "检索到的依据线索",
       "file": "归档为 Wiki 答案",
       "filing": "正在归档…",
       "fileRefused": {
@@ -141,7 +138,6 @@
   "emptyTitle": "尚未收集任何内容",
   "emptyBody": "把项目已有的文档带进来：规格说明、演示文稿、电子表格、导出的页面。Atlas 会原样复制到 sources/，在你提出之前绝不会打开它们。",
   "sources": {
-    "header": "来源 · {count, number}",
     "listAria": "此文件夹中的原始来源",
     "add": "添加文件",
     "addTooltip": "将文档复制到此文件夹的 sources/",
@@ -190,7 +186,6 @@
     "pagesNeedReview": "{count} 个现有页面需要重新检查"
   },
   "wiki": {
-    "header": "Wiki 页面 · {count, number}",
     "listAria": "此文件夹中的 Wiki 页面",
     "compile": "请智能体整理",
     "compileTooltip": "读取来源并更新对应的整理内容。保留的答案会另行报告，供单独复核和刷新。",
@@ -232,7 +227,6 @@
       "draft": "草稿",
       "reviewed": "已复核"
     },
-    "viewOriginal": "查看原文",
     "viewOriginalCount": "{count} 份原文",
     "viewOriginalOne": "查看原文：{name}",
     "originalMissing": "引用了 {name}，但它不在此文件夹中。",
@@ -271,7 +265,6 @@
     "newPageTitle": "页面标题",
     "newPageTitleExample": "例如：季度规划笔记",
     "newPageExampleTitle": "季度规划笔记",
-    "newPageMake": "创建",
     "newPageCreate": "创建文档",
     "newPageCancel": "取消",
     "newPagePreviewTitle": "将创建的内容",
@@ -567,7 +560,6 @@
     "blockedNoSources": "还没有可整理的内容。第一步是导入文档。",
     "blockedNothingWaiting": "每份来源都已有与其字节一致的整理内容。",
     "transferLocalRemote": "此处保存的运行器是 {host}，它不在本机，因此不会运行整理：那样会把你的文档内容发送过去。{file} 记录 Atlas 实际发出的每一次请求。",
-    "open": "下一步该做什么",
     "close": "关闭",
     "status": "{step}{state}",
     "statusNotCompiled": "{count} 个未整理",
@@ -607,7 +599,6 @@
     "after": "提议的页面",
     "refusedTitle": "暂时无法写入此页面",
     "refusedLede": "此页面没有可提供的内容。请再次整理，或自己撰写。",
-    "allow": "允许一次",
     "allowCount": "允许一次（{count, number}）",
     "deny": "不要",
     "dismiss": "关闭",
@@ -674,7 +665,6 @@
   },
   "conversation": {
     "open": "对话",
-    "running": "{phase} · {target}",
     "runningLabel": "打开对话。{agent} 仍在工作：{phase}。"
   },
   "answers": {
@@ -787,11 +777,6 @@
     "startingMore": "另有 {count, number} 个 · 在地图上查看全部",
     "memberCount": "{count} 个概念",
     "referenceCount": "{count} 条引用",
-    "shape": {
-      "name": "名称",
-      "members": "概念",
-      "purpose": "用途"
-    },
     "viewInMap": "在地图上查看",
     "viewInMapNamed": "在地图上查看 {name}",
     "membersNamed": "{name} 中的概念",
@@ -809,9 +794,7 @@
     "eyebrow": "来自自动化",
     "title": "检查记录",
     "lede": "查看在“自动化”中安排的文档检查。计划和执行设置请在那里管理。",
-    "indexHeader": "巡检 · {count, number}",
     "indexAria": "这台 Mac 为此文件夹保存的巡检",
-    "newRound": "新建巡检",
     "manageAutomations": "在自动化中管理",
     "limit": "仅在这台 Mac 上的 Ontology Atlas 打开时运行。睡眠会暂停；下一轮会补跑一次。",
     "appRequiredTitle": "巡检在桌面应用中运行",
@@ -849,16 +832,10 @@
       "6h": "每 6 小时",
       "daily": "每天 {time}",
       "weekdays": "工作日 {time}",
-      "dailyShort": "每天 {time}",
-      "weekdaysShort": "工作日 {time}",
-      "hourShort": "每小时",
-      "6hShort": "每 6 小时",
       "dailyChip": "每天",
       "weekdaysChip": "工作日",
       "everyMinutes": "每 {count} 分钟",
-      "everyHours": "每 {count} 小时",
-      "everyMinutesShort": "每 {count, number} 分钟",
-      "everyHoursShort": "每 {count, number} 小时"
+      "everyHours": "每 {count} 小时"
     },
     "state": {
       "on": "开启",
@@ -885,13 +862,10 @@
       "waitingHere": "等待这台 Mac 在“自动化”中允许"
     },
     "runNow": "立即运行",
-    "runNowNamed": "立即运行 {name}",
     "pause": "暂停",
     "resume": "继续",
     "remove": "移除",
     "removeNamed": "移除 {name}",
-    "pauseAll": "全部暂停",
-    "resumeAll": "全部继续",
     "since": {
       "title": "你离开之后",
       "todayTitle": "今天",
@@ -949,11 +923,6 @@
       "leftAsIs": "{page} 在这一轮写入后又被修改，Atlas 保持原样。"
     },
     "sheet": {
-      "readbackConsistency": "{cadence}，检查每个页面是否仍与其原文一致，并对已过时的页面 {onStale}。保存后会立即运行一次。",
-      "readbackConsistencyQueued": "{cadence}，检查每个页面是否仍与其原文一致，并对已过时的页面 {onStale}。另一个巡检正在运行，所以这个会在它下次到期时开始。",
-      "readbackService": "{cadence}，重新读取 {service} 发来的内容，导入新增内容，并重写有变化的页面。每轮一次智能体对话。",
-      "readbackRedraft": "重写",
-      "readbackMark": "只做标记",
       "readbackHour": "每小时",
       "readback6h": "每六小时",
       "readbackDaily": "每天 {time}",
@@ -965,7 +934,6 @@
       "savingChanges": "正在保存…",
       "editWidens": "此更改会让巡检能做的事超出这台 Mac 先前的许可。保存即表示在这台 Mac 上允许新版本。",
       "readbackEditNext": "下次运行时间：{time}。",
-      "what": "检查什么",
       "how": "计划",
       "time": "时间",
       "onStale": "来源变更时",
@@ -973,13 +941,9 @@
       "redraftHint": "仅针对过时的来源进行一次智能体对话；新页面作为草稿等待。",
       "mark": "标记待复核",
       "markHint": "“来源”中的该行变为琥珀色。不会写入任何内容。",
-      "service": "服务",
-      "noConnectors": "此文件夹还没有关联任何服务。从服务导入过一次文档后，它就会出现在这里。",
       "noAgent": "这台 Mac 上没有就绪的编码智能体，所以服务巡检暂时无法运行；一致性巡检可以。",
       "query": "查找什么",
       "queryPlaceholder": "ENG 空间中最近一天有变更的页面",
-      "queryHint": "留空则只重新读取这里已有的内容。",
-      "name": "名称",
       "may": "允许的操作",
       "mayReadVault": "读取此文件夹及其地图",
       "mayCallConnector": "请 {service} 读取，绝不在那里写入",
@@ -991,8 +955,6 @@
       "costOnStale": "仅在某一轮发现过时内容时才进行一次智能体对话。",
       "allowAndSave": "允许并安排",
       "cancel": "取消",
-      "saved": "{name} 将于 {time} 首次运行。",
-      "savedRunningNow": "正在立即运行一次 {name}；下一轮在 {time}。",
       "saving": "正在安排…",
       "saveFailed": "无法保存巡检：{reason}",
       "places": "复查对象",

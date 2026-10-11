@@ -6,24 +6,18 @@
   "header": {
     "openTreeAriaLabel": "문서 목록 열기",
     "openTreeTitle": "문서 목록",
-    "backToWorkspaceAriaLabel": "의미 지도로 돌아가기",
     "backToReviewAriaLabel": "분석 검토로 돌아가기",
     "reviewBack": "← 분석 검토",
-    "back": "의미 지도",
     "title": "온톨로지",
     "docCount": "문서 {count}개",
     "localBadge": "로컬",
     "paletteTooltip": "검색 · 명령 · 태그 (⌘K)",
     "paletteAriaLabel": "팔레트 열기 (검색 · 명령 · 태그)",
-    "inspector": "문서 정보",
     "sourceAriaLabel": "폴더 선택",
-    "vaultToolsTooltip": "온톨로지 문서 도구",
-    "vaultToolsAriaLabel": "온톨로지 문서 도구 메뉴 열기",
     "vaultToolsMovedHint": "AI 에이전트 설정·검증 도구는 설정으로 이동했어요. 오른쪽 위 설정(⚙)에서 열어요.",
     "contractToggleLabel": "폴더 점검",
     "contractToggleHide": "폴더 점검 닫기",
     "contractToggleShow": "폴더 점검 보기",
-    "crumbBack": "온톨로지 폴더",
     "vaultPillFolders": "{count}개 폴더",
     "vaultPillSwap": "폴더 바꾸기",
     "vaultPillSampleLabel": "내장 샘플 (이 도구 자신의 문서)",
@@ -43,8 +37,7 @@
   "editorHeader": {
     "previewTab": "미리보기",
     "editTab": "편집",
-    "localSynced": "동기화됨 · 로컬",
-    "readOnlySample": "읽기 전용 샘플"
+    "localSynced": "동기화됨 · 로컬"
   },
   "frontmatterBlock": {
     "note": "파일 맨 위 정보칸이 곧 지도예요: 이 칸이 지도의 동그라미와 연결이 돼요.",
@@ -198,13 +191,10 @@
     "dogfoodDirectBody": "설치 앱에서 바로 docs/ontology를 열어 Atlas가 자기 자신을 분석하게 해요.",
     "createTitle": "새 폴더 만들기",
     "createBody": "빈 폴더를 만들거나 선택한 뒤, 열리면 시작 문서를 만들어요.",
-    "sampleTitle": "샘플 폴더 보기",
-    "sampleBody": "로컬 폴더를 고르기 전에 읽기 전용 문서로 둘러봐요.",
     "recentTitle": "최근 저장소",
     "recentEmpty": "아직 최근 저장소가 없어요. 폴더를 열거나 만들면 여기에 고정돼요."
   },
   "sourceContract": {
-    "ariaLabel": "지금 어느 폴더를 읽고 있나",
     "filesLabel": "폴더 파일",
     "filesLocalValue": "로컬 문서 {count}개",
     "filesSampleValue": "샘플 마크다운 {count}개",
@@ -231,20 +221,10 @@
     "filesPruned": "빌드·의존성 폴더 {count}개는 건너뛰었어요({names})."
   },
   "advanced": {
-    "sourceServer": "샘플",
-    "sourceLocal": "로컬",
-    "newDoc": "새 문서"
-  },
-  "vaultReveal": {
-    "errorFallback": "Finder에서 온톨로지 폴더를 열지 못했어요.",
-    "error": "Finder 열기 실패: {message}"
+    "sourceServer": "샘플"
   },
   "agentSetup": {
     "ariaLabel": "MCP 연결",
-    "title": "내 MCP 연결",
-    "ready": "준비됨",
-    "missing": "누락",
-    "rootSummaryBlocked": "실행할 수 있는 서버가 없어요 · 소스 체크아웃으로만 설정할 수 있어요",
     "statusSummary": "{tools} 연결 파일 {ready}/{total}개 준비됨",
     "rootSummaryReady": "이 폴더의 연결 파일은 폴더 자신을 가리키도록 준비됐어요",
     "rootSummaryMissing": "이 폴더 기준으로 설정돼요 · 다른 코드 폴더에서 열려면 절대경로가 필요해요",
@@ -253,8 +233,6 @@
     "connectionClaudeCursorCheck": "/mcp로 확인",
     "connectionCodex": "Codex",
     "connectionCodexCheck": "codex mcp list로 확인",
-    "connectionCodebaseRoot": "다른 코드 폴더",
-    "connectionCodebaseRootCheck": "본보기 복사 후 다시 켜기",
     "connectionReady": "파일 준비됨",
     "connectionNeedsReview": "점검",
     "connectionHint": ".mcp.json.example은 다른 폴더에서 쓸 본보기라 연결 파일 수에 넣지 않아요. 여기는 실행 방식과 이 폴더 경로까지만 확인하므로, 다시 켠 뒤 각 도구에서 실제 연결을 확인하세요.",
@@ -383,13 +361,9 @@
     "copyCodexCliCopied": "Codex 명령 복사됨",
     "copyCodexCliFailed": "복사 실패",
     "copyCodexCliTitle": "어느 코드 폴더에서든 이 폴더를 등록하는 codex mcp add 한 줄 명령을 복사해요. 실행 전에 폴더 경로 자리를 바꿔야 해요.",
-    "errorFallback": "연결 파일을 만들지 못했어요",
-    "serverStatusSummary": "설치한 앱에서 열면 버튼 한 번으로 연결 설정을 만들어 드려요.",
     "serverMissingReason": "이 앱 안에서 MCP 서버 파일을 찾지 못했어요. 연결할 대상이 없어서 에이전트를 붙일 수 없어요. 앱을 다시 설치하면 대개 해결돼요. 앱이 알려 준 까닭: {reason}",
     "writeFailed": "{files} 파일을 쓰지 못했어요. 폴더 안은 그대로예요. 이 폴더에 쓸 수 있는지 확인한 뒤 버튼을 다시 눌러 주세요. ({detail})",
     "writeFailedNoDetail": "{files} 파일을 쓰지 못했어요. 폴더 안은 그대로예요. 이 폴더에 쓸 수 있는지 확인한 뒤 버튼을 다시 눌러 주세요.",
-    "stepStateDone": "완료",
-    "stepListAriaLabel": "연결 3단계",
     "troubleshootToggle": "잘 안 되나요?",
     "serverHintLabel": "서버는 어떻게 도나요",
     "troubleshootAriaLabel": "연결이 안 될 때 볼 것",

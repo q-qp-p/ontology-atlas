@@ -53,7 +53,7 @@ const closureScopeSelectors = [
   },
 ];
 
-// ── Indigo Ink License (2026-08-03 Che Gye-seok) ────────────────────────
+// ── Indigo Ink License (2026-08-03) ─────────────────────────────────────
 // `tone accent` (#7170ff, mark indigo) is only AA (4.5:1) down to the darkest background —
 // when indigo/amber tints are applied, composite contrast drops to 3.5~4.4 (measured:
 // tests/contract/accent-ink-contrast.contract.test.ts). Controls with tinted backgrounds
@@ -482,8 +482,8 @@ const accentTintPairingSelectors = [
  * The 2026-07-26 hex gate looks only inside Tailwind arbitrary values (`-[#…]`), so a hex in a
  * style object, an `rgba()` anywhere, a named `ease-*` class, and a mask stencil were never seen.
  * Inventory before enabling (design-system-audit, 2026-09-08): 41 hex outside brackets and 41
- * `rgb()/rgba()` in code lines, most of them one qualitative kind palette (`tone.ts`, now the
- * `--color-kind-*` tokens with a mirror-tested paint copy), a documented JS indigo mirror, and
+ * `rgb()/rgba()` in code lines, most of them one qualitative kind palette (now the
+ * `--color-kind-*` tokens), a documented JS indigo mirror, and
  * surfaces a CSS variable cannot reach (Satori, standalone HTML, canvas). Those keep their
  * scope blocks or a per-line disable with a reason; everything else moved to a token first,
  * so this array enables at 0 violations.
@@ -542,16 +542,14 @@ export const arbitrarySizeSelectors = [
    * We exclude `rounded-full` — perfect circles (dots/avatars/pills) are not questions the linear 3-step ramp
    * can answer.
    *
-   * Che Gye-seok's prescription on 2026-08-03 established gates for these holes:
+   * The 2026-08-03 design review closed these holes:
    *
    * - `rounded-sm`(4px) and un-suffixed `rounded`(4px, 37 instances) were **not drift
    *   but steps missing from the ramp** — a value repeating 96 times is not an exception.
    *   After listing `--radius-micro`(4px) and performing full machine replacement (pixel shift 0), we
    *   enabled the selector below (violations 0 upon enabling).
-   * - `rounded-2xl`(19) · `text-base|lg|xl|2xl|3xl`(total 8) require pixel-moving replacements,
-   *   needing per-location judgment — a per-family ratchet
-   *   (`tests/contract/named-offramp-utility-ratchet.contract.test.ts`) keeps movement only below the baseline. This ratchet counts named utilities and **does not skip covered directories** — `ARBITRARY_SIZE` ratchet
-   *   skips covered directories by looking only at bracket patterns, correcting this hole that was long false (12 instances initially, then 20, yet nothing turned red).
+   * - `rounded-2xl`(19) · `text-base|lg|xl|2xl|3xl`(total 8) needed pixel-moving, per-site
+   *   replacements; once paid down they joined the named-step selectors further below.
    */
   {
     selector: 'Literal[value=/(^|[^-\\w])text-(xs|sm)([^-\\w]|$)/]',
@@ -940,101 +938,6 @@ export const rampDebtExemptions = [
 // Tests assert rendered className strings, so exclude from ramp rules.
 const codexTestIgnores = ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'];
 
-// Prevent regression of local-first first paint firebase 0 promise (after PR #99).
-//
-// The main barrel for `@/entities/<x>` must have no firebase dependency (type / lib /
-// pure helper only). Firestore subscription/mutation functions should be imported directly via `@/entities/<x>/api` so chunks download only at cloud-mode entry points.
-//
-// Importing the names below in the main barrel blocks with "use api path" message. When adding new api functions, never export them in the main barrel either — if you do, add the names to this list to block regression.
-//
-// **Reason for shared array**: flat config does not merge options but **replaces** them when redefining the same rule later. If a narrower scope block lists only its own restrictions, this firestore guard quietly disappears from that path. Scope blocks must always spread this array before adding their own items.
-//
-// Details: `@.claude/rules/architecture.md`.
-const sliceEntryPointPatterns = [
-  {
-    group: ['@/views/*/*', '@/widgets/*/*', '@/features/*/*', '@/entities/*/*'],
-    message:
-      'Import a slice through its public API (`@/<layer>/<slice>`), not a file inside it. Add the export to that slice\'s index.ts if it is missing; a slice with no index.ts has no public API yet — create one. Tests may still reach inside.',
-  },
-];
-
-const firestoreApiRestrictedPaths = [
-  {
-    name: '@/entities/project',
-    importNames: [
-      'listProjects',
-      'getProject',
-      'upsertProject',
-      'upsertProjectPositions',
-      'deleteProject',
-      'deleteProjects',
-      'subscribeProjects',
-      'fetchAllProjectsAtBuild',
-      'uploadScreenshot',
-      'deleteScreenshot',
-    ],
-    message:
-      "firestore api 는 '@/entities/project/api' 로 직접 import 하세요 (local-first 첫 paint 청크 firebase 0 보장).",
-  },
-  {
-    name: '@/entities/category',
-    importNames: [
-      'subscribeCategories',
-      'upsertCategory',
-      'deleteCategory',
-      'seedDefaultCategoriesIfEmpty',
-    ],
-    message: "firestore api 는 '@/entities/category/api' 로 직접 import 하세요.",
-  },
-  {
-    name: '@/entities/status',
-    importNames: [
-      'subscribeStatuses',
-      'upsertStatus',
-      'deleteStatus',
-      'seedDefaultStatusesIfEmpty',
-    ],
-    message: "firestore api 는 '@/entities/status/api' 로 직접 import 하세요.",
-  },
-  {
-    name: '@/entities/admin',
-    importNames: ['isAdmin'],
-    message: "firestore api 는 '@/entities/admin/api' 로 직접 import 하세요.",
-  },
-  {
-    name: '@/entities/ontology-class',
-    importNames: [
-      'subscribeOntologyClasses',
-      'upsertOntologyClass',
-      'seedDefaultOntologyClassesIfEmpty',
-    ],
-    message: "firestore api 는 '@/entities/ontology-class/api' 로 직접 import 하세요.",
-  },
-  {
-    name: '@/entities/ontology-relation',
-    importNames: [
-      'subscribeOntologyRelations',
-      'upsertOntologyRelation',
-      'seedDefaultOntologyRelationsIfEmpty',
-    ],
-    message: "firestore api 는 '@/entities/ontology-relation/api' 로 직접 import 하세요.",
-  },
-  {
-    name: '@/entities/knowledge-graph',
-    importNames: [
-      'listKnowledgeProjectInsight',
-      'subscribeKnowledgeProjectInsight',
-      'subscribeKnowledgePublicGraph',
-      'subscribeKnowledgeApprovedGraph',
-      'subscribeKnowledgePublicMeta',
-      'addManualKnowledgeNode',
-      'addManualKnowledgeEdge',
-    ],
-    message:
-      "firestore api 는 '@/entities/knowledge-graph/api' 로 직접 import 하세요. (lazy hook `useKnowledgePublic*` 은 메인 barrel 그대로 OK.)",
-  },
-];
-
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
@@ -1136,48 +1039,23 @@ const eslintConfig = defineConfig([
       ],
     },
   },
-  // Firestore api path guard — list source is `firestoreApiRestrictedPaths`.
   // Slice public API — a slice is imported through its `index.ts`, never through
   // `@/<layer>/<slice>/<segment>/…`. Measured 2026-08-30 before the rule: 64 files
   // reached past a barrel (33 in views, 21 in widgets, 12 in features), and two
   // features (`acp-session`, `acp-doctor`) had no public API at all because every
-  // consumer read their model files directly. Tests keep deep access (next block).
+  // consumer read their model files directly. Tests keep deep access.
   {
     files: ['src/**/*.{ts,tsx}', 'app/**/*.{ts,tsx}'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        { paths: firestoreApiRestrictedPaths, patterns: sliceEntryPointPatterns },
-      ],
-    },
-  },
-  {
-    files: ['src/**/*.{test,spec}.{ts,tsx}', 'app/**/*.{test,spec}.{ts,tsx}'],
-    rules: {
-      'no-restricted-imports': ['error', { paths: firestoreApiRestrictedPaths }],
-    },
-  },
-  // Domain capacity bars do not use the kind palette (owner confirmed 2026-07-26,
-  // 2026-07-26 owner confirmation — measurements and evidence are in `.claude/rules/design.md` 「Bar Coloring」 section. Original work file is gitignored in `.qa-scratch/`, so not in the repo).
-  //
-  // The two pieces of this bar already carry identity via order (capacity increases left) + unit word + adjacent number. Adding kind color on top would be redundant ink; moreover, that pair (amber rgba(211,159,73) · eucalyptus rgba(124,166,141)) has a track composite contrast of 1.14:1, so they are distinguished only by hue, not brightness — the axis most difficult for red-green color blindness to distinguish. So it was lowered to the app-wide bar syntax (achromatic + one indigo + 1px core).
-  //
-  // Without this rule, this spec is not maintained — `getOntologyKindTone` reverts to a one-line import. The kind palette remains only in places where color carries identity (**the only** channel: unlabeled stacks in type census, map dots, tree chips).
-  //
-  // ⚠️ Flat config does not merge rule options but **replaces** them — spread the same array to prevent the above block's firestore guard from disappearing from this path.
-  {
-    files: ['src/widgets/domain-capacity-bar/**/*.{ts,tsx}'],
+    ignores: codexTestIgnores,
     rules: {
       'no-restricted-imports': [
         'error',
         {
-          paths: firestoreApiRestrictedPaths,
           patterns: [
-            ...sliceEntryPointPatterns,
             {
-              group: ['@/entities/ontology-class', '@/entities/ontology-class/**'],
+              group: ['@/views/*/*', '@/widgets/*/*', '@/features/*/*', '@/entities/*/*'],
               message:
-                '도메인 용량 막대는 kind 팔레트를 쓰지 않습니다 — 조각의 정체는 순서·단위어·숫자가 나르고, 채색은 `--color-indigo-brand` + `--color-text-quaternary` + 1px 심입니다. 근거: `.claude/rules/design.md` 「막대 채색」 문단(2026-07-26 소유자 확정).',
+                'Import a slice through its public API (`@/<layer>/<slice>`), not a file inside it. Add the export to that slice\'s index.ts if it is missing; a slice with no index.ts has no public API yet — create one. Tests may still reach inside.',
             },
           ],
         },
@@ -1232,8 +1110,6 @@ const eslintConfig = defineConfig([
   // wholesale, so it reloads every ramp selector and drops only `colorLiteralSelectors`.
   // Census on enabling (design-system-audit, 2026-09-08), every one a copy of a token or a
   // canvas fallback for one:
-  //   - `src/entities/ontology-class/model/tone.ts` — the paint copy of `--color-kind-*`,
-  //     held equal to the token by `tests/contract/kind-tone-mirror.contract.test.ts`.
   //   - `src/shared/config/indigo-tokens.ts` — the documented JS mirror of `--color-indigo-*`.
   //   - `src/views/docs-vault/lib/popout-template.ts` — a standalone HTML document with no
   //     stylesheet of ours to read.
@@ -1242,7 +1118,6 @@ const eslintConfig = defineConfig([
   // A new file here is a new exception and needs the same sentence.
   {
     files: [
-      'src/entities/ontology-class/model/tone.ts',
       'src/shared/config/indigo-tokens.ts',
       'src/views/docs-vault/lib/popout-template.ts',
       'src/widgets/ontology-map/render/**/*.{ts,tsx}',
@@ -1289,8 +1164,7 @@ const eslintConfig = defineConfig([
       ],
     },
   },
-  // Prohibit `--color-amber-docs-*` isolation tokens in settings sheet (2026-08-02, Design
-  // Council S3 · Che Gye-seok).
+  // Prohibit `--color-amber-docs-*` isolation tokens in settings sheet (2026-08-02 design review).
   //
   // `VaultAgentSetupPanel` was mixing two amber lineages **within the same badge**:
   // background used `--color-amber-source-a12`(warning ladder, normal) but text used

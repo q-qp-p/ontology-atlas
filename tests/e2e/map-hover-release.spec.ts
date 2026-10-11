@@ -129,8 +129,8 @@ test("커서가 캔버스를 벗어나면 지도가 프레임을 그만 그린�
 
   /*
    * Three alternating hover / release rounds. Each round yields one awake and one
-   * released frame-cost sample; the backstop compares the minimum of each side
-   * (the duplicate-pairs model), so one noisy window does not decide it.
+   * released frame-cost sample; the backstop compares the minimum of each side,
+   * so one noisy window does not decide it.
    */
   const awakeSamples: number[] = [];
   const releasedSamples: number[] = [];

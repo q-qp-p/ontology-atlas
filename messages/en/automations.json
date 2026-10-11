@@ -111,16 +111,31 @@
     "time": "Time"
   },
   "ontology": {
-    "indexTitle": "Ontology · {count}",
-    "info": "Read-only ACP passes that inspect the ontology and source evidence, then leave a bounded review packet.",
     "new": "New ontology review",
-    "count": "{count, plural, =0 {No ontology reviews} one {# ontology review} other {# ontology reviews}}",
     "title": "Ontology refinement",
     "guard": "Read-only · never changes the ontology",
-    "facts": { "runs": { "title": "What it does", "body": "The in-app coding agent reads the graph and its source links, then leaves one bounded improvement proposal." }, "when": { "title": "When it runs", "body": "On the cadence you pick, such as hourly, every six hours or daily. A run missed while the app was closed runs once when it next opens." }, "writes": { "title": "What it may change", "body": "Nothing. You review each proposal and apply it on the map yourself." } },
+    "facts": {
+      "runs": {
+        "title": "What it does",
+        "body": "The in-app coding agent reads the graph and its source links, then leaves one bounded improvement proposal."
+      },
+      "when": {
+        "title": "When it runs",
+        "body": "On the cadence you pick, such as hourly, every six hours or daily. A run missed while the app was closed runs once when it next opens."
+      },
+      "writes": {
+        "title": "What it may change",
+        "body": "Nothing. You review each proposal and apply it on the map yourself."
+      }
+    },
     "emptyTitle": "No ontology review is scheduled yet",
     "emptyDescription": "All it needs is a name and a cadence. The focus area is optional.",
-    "preview": { "title": "Schedules", "name": "Name", "cadence": "Cadence", "next": "Next run" },
+    "preview": {
+      "title": "Schedules",
+      "name": "Name",
+      "cadence": "Cadence",
+      "next": "Next run"
+    },
     "defaultName": "Ontology refinement",
     "sheet": {
       "title": "Schedule an ontology review",
@@ -136,16 +151,30 @@
     }
   },
   "documents": {
-    "indexTitle": "Documents · {count}",
-    "info": "Existing Library rounds refresh sources and redraft wiki pages under their approved standing scope.",
     "new": "New document round",
-    "count": "{count, plural, =0 {No document rounds} one {# document round} other {# document rounds}}",
-    "title": "Document analysis",
     "guard": "Changes only the approved Library scope · never the ontology",
-    "facts": { "runs": { "title": "What it does", "body": "Checks that sources and wiki pages still match, and pulls changed pages from a connected service." }, "when": { "title": "When it runs", "body": "On the cadence you pick, such as hourly, every six hours or daily. A run missed while the app was closed runs once when it next opens." }, "writes": { "title": "What it may change", "body": "Only sources and wiki drafts inside the approved Library scope. Never the ontology." } },
+    "facts": {
+      "runs": {
+        "title": "What it does",
+        "body": "Checks that sources and wiki pages still match, and pulls changed pages from a connected service."
+      },
+      "when": {
+        "title": "When it runs",
+        "body": "On the cadence you pick, such as hourly, every six hours or daily. A run missed while the app was closed runs once when it next opens."
+      },
+      "writes": {
+        "title": "What it may change",
+        "body": "Only sources and wiki drafts inside the approved Library scope. Never the ontology."
+      }
+    },
     "emptyTitle": "No document round is scheduled yet",
     "emptyDescription": "Page-by-page review and the full run ledger continue in the Library.",
-    "preview": { "title": "Schedules", "name": "Name", "cadence": "Cadence", "next": "Next run" },
+    "preview": {
+      "title": "Schedules",
+      "name": "Name",
+      "cadence": "Cadence",
+      "next": "Next run"
+    },
     "openRounds": "Open Library check history"
   }
 }

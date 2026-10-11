@@ -92,7 +92,6 @@
         "invalidUrl": "リンク{index}行目：正しいURLを入力してください。"
       },
       "demoModeBanner": "保存するには、先にMarkdownフォルダを開く必要があります。",
-      "demoModeSaveFailed": "デモモードでは保存できません。先にMarkdownフォルダを開いてください。",
       "demoModeBannerHint": "マップ画面でフォルダを選ぶと保存できるようになります"
     },
     "actions": {

@@ -88,8 +88,6 @@ describe('i18n message catalog', () => {
       assert.equal(ko.download[gone], undefined, `download.${gone} must stay removed`);
     }
 
-    // Two states, both honest: a real download once published, an honest link
-    // to the releases page before that.
     // 2026-07-29 — the size **left the translation string** (council verdict ④).
     // With `· {size}` inside the label, a `whitespace-nowrap` button overflows the
     // panel at 320px (measured, en: 22px over), and an interpolation inside the
@@ -110,20 +108,6 @@ describe('i18n message catalog', () => {
       assert.doesNotMatch(value, /\{size\}/, `${locale}: 크기는 스팬이 그린다`);
       assert.doesNotMatch(value, /\bMB\b|\bGB\b/, `${locale}: 크기 리터럴 금지`);
     }
-    assert.match(en.download.primaryCtaPending, /releases page/i);
-    assert.match(ko.download.primaryCtaPending, /릴리스 페이지/);
-    assert.equal(en.download.sourceCta, 'Go to GitHub');
-    assert.equal(ko.download.sourceCta, 'GitHub로 이동하기');
-
-    // The CTA must never depend on a /releases/latest URL — asset names carry
-    // the version, so "latest" silently breaks on the next release.
-    assert.doesNotMatch(en.download.primaryCtaPending, /latest/i);
-    assert.doesNotMatch(ko.download.primaryCtaPending, /최신/);
-
-    // Signing and notarization are properties of the release path, never a
-    // gate that "requires" them at some future point.
-    assert.doesNotMatch(en.download.proofSigned, /Release gate requires/);
-    assert.doesNotMatch(ko.download.proofSigned, /게이트가/);
     assert.match(en.download.factShaLink, /\{file\}/);
 
     // 2026-07-27 — the Developer ID certificate exists (docs/DECISIONS.md),
@@ -136,19 +120,8 @@ describe('i18n message catalog', () => {
     const downloadCopy = { en: JSON.stringify(en.download), ko: JSON.stringify(ko.download) };
     assert.doesNotMatch(downloadCopy.en, /Not signed yet|Open Anyway|certificate pending/i);
     assert.doesNotMatch(downloadCopy.ko, /아직 서명되지 않음|확인 없이 열기|인증서 준비 중/);
-    assert.match(en.download.proofSigned, /Developer ID/);
-    assert.match(ko.download.proofSigned, /Developer ID/);
-
-    // Local-first describes Atlas storage, not provider-owned agent traffic.
-    // The page must state both boundaries instead of promising zero network.
-    assert.match(en.download.trustPrivacyNote, /No Atlas account or backend/i);
-    assert.match(en.download.trustPrivacyNote, /does not upload/i);
-    assert.match(en.download.trustPrivacyNote, /coding agent.*provider/i);
-    assert.match(ko.download.trustPrivacyNote, /Atlas 계정도 백엔드도 없어요/);
-    assert.match(ko.download.trustPrivacyNote, /Atlas가 업로드하지 않아요/);
-    assert.match(ko.download.trustPrivacyNote, /코딩 에이전트.*제공자/);
-    assert.doesNotMatch(en.download.trustPrivacyNote, /never transmitted|nothing sent/i);
-    assert.doesNotMatch(ko.download.trustPrivacyNote, /어디로도 전송되지|아무것도 보내지/);
+    assert.match(en.download.trustLine, /Signed and notarized by Apple/);
+    assert.match(ko.download.trustLine, /Apple 서명·공증/);
 
     // The release-notes excerpt used to be a hand-maintained Korean constant
     // rendered verbatim on the English page. Whatever replaces it must not
@@ -158,21 +131,14 @@ describe('i18n message catalog', () => {
       assert.equal(ko.download[gone], undefined, `download.${gone} must stay removed`);
     }
 
-    // Windows is named rather than omitted, so a Windows visitor learns where
-    // they stand instead of guessing whether the product excludes them.
-    //
-    // 2026-07-29 — that fact **moved** (the claim is unchanged). It used to be its own
-    // row under a disclosure (`windowsPendingBadge`/`windowsPendingBody`); knowing it at
-    // the point of download is what makes it timely, so it moved up into a single line
-    // inside the panel (`platformStatus`), while the policy prose ("when it passes the
-    // same bar") went to the guide's On trust chapter since it is not decision material. What the gate guards is not the key names but that **both facts
-    // exist somewhere**.
-    assert.match(en.download.platformStatus, /Windows/);
-    assert.match(ko.download.platformStatus, /Windows/);
-    assert.match(en.download.windowsUnsignedWarning, /not code-signed/i);
-    assert.match(en.download.windowsUnsignedWarning, /SmartScreen/i);
-    assert.match(ko.download.windowsUnsignedWarning, /코드 서명되지 않았어요/);
-    assert.match(ko.download.windowsUnsignedWarning, /SmartScreen/i);
+    // Windows is named rather than omitted, and its unsigned build says so where
+    // the visitor downloads it.
+    assert.match(en.download.heroWindowsCta, /Windows/);
+    assert.match(ko.download.heroWindowsCta, /Windows/);
+    assert.match(en.download.trustLineWindows, /unsigned/i);
+    assert.match(en.download.trustLineWindows, /SmartScreen/i);
+    assert.match(ko.download.trustLineWindows, /미서명/);
+    assert.match(ko.download.trustLineWindows, /SmartScreen/i);
 
     // A domain that does not resolve must not be cited as fact.
     assert.doesNotMatch(JSON.stringify(en.download), /ontology-atlas\.dev/);
@@ -280,15 +246,9 @@ describe('i18n message catalog', () => {
     // its accessible name from the word on screen, so a second name could only differ
     // from it (WCAG 2.5.3).
     assert.equal(ko.topologyWidgets.controls.fitViewTooltip, '지도 전체 맞추기');
-    assert.equal(ko.topology.analysis.overviewAgentReadiness, 'AI가 이어서 작업할 준비');
-    assert.equal(ko.topology.analysis.overviewAgentReadinessReady, '준비됨');
-    assert.equal(ko.topology.analysis.overviewAgentReadinessPreflight, '사전 점검');
     assert.doesNotMatch(
       [
         ko.topologyWidgets.controls.fitViewTooltip,
-        ko.topology.analysis.overviewAgentReadiness,
-        ko.topology.analysis.overviewAgentReadinessReady,
-        ko.topology.analysis.overviewAgentReadinessPreflight,
       ].join('\n'),
       /\b(Agent|agent|handoff|preflight|Depth|Local graph|HOP)\b/,
     );
@@ -303,9 +263,6 @@ describe('i18n message catalog', () => {
         ko.settingsFolder.documentsCtaLocal,
         ko.settingsFolder.documentsCtaStatic,
         ko.rootEntry.openingLocalVaultPicker,
-        ko.searchWidgets.hero.ontologyAriaLabel,
-        ko.searchWidgets.workspaceStrip.ontologyTitle,
-        ko.searchWidgets.workspaceStrip.stubTitle,
       ].join('\n'),
       /frontmatter|vault|Vault|토폴로지|source|Source/,
     );
@@ -346,87 +303,6 @@ describe('i18n message catalog', () => {
 
   // (Removed 2026-09-01) The liveActivity namespace had no renderer anywhere in src/
   // or app/ and was deleted from both catalogs; this block was its last reader.
-
-  it('keeps the topology overview agent handoff brief readable (분석 패널 완전 소멸 2단계 — TopologyAnalysisBar 삭제 후 INDEX 푸터 인계 메뉴가 유일한 소비처)', async () => {
-    const en = await readJson(path.join(MESSAGES_DIR, 'en.json'));
-    const ko = await readJson(path.join(MESSAGES_DIR, 'ko.json'));
-
-    assert.ok(
-      en.topology.controls.docsLabel.includes(en.navRail.docs),
-      'the compatible Docs control must name the Ontology section',
-    );
-    assert.ok(
-      en.topology.controls.docsTooltip.includes(en.topology.controls.docsLabel),
-      'the tooltip and visible Docs control must name the same section',
-    );
-    assert.ok(
-      en.topology.controls.docsAriaLabel.includes(en.topology.controls.docsLabel),
-      'the accessible and visible Docs control names must agree',
-    );
-    assert.match(en.topology.controls.docsTooltip, /\(D\)$/);
-    assert.match(en.topology.controls.docsAriaLabel, /\(D\)$/);
-    assert.doesNotMatch(
-      [
-        en.topology.controls.docsTooltip,
-        en.topology.controls.docsAriaLabel,
-        en.topology.controls.docsLabel,
-      ].join('\n'),
-      // `Quick view` came back in the 2026-07-26 plain-language pass. Unlike the rest of
-      // the old ban list (vague labels of the See all / Pick one kind) it names its
-      // object ("Quick view of Docs"). It conflicts with the current rule that
-      // "Ontology" is not used outside brand positions, so this one entry is released.
-      /See all|Pick one|See links|Clean up health|Source vault|source vault|^Source$/m,
-    );
-
-    assert.equal(ko.topology.analysis.overviewBriefCopyAriaLabel, '지도 요약 복사');
-    assert.equal(ko.topology.analysis.overviewBriefCopiedAriaLabel, '지도 요약 복사됨');
-    assert.equal(ko.topology.analysis.overviewBriefTitle, '지도 요약');
-    assert.equal(ko.topology.analysis.overviewBriefHealthSignals, '상태 신호');
-    assert.equal(ko.topology.analysis.overviewBriefHealthUrl, '상태 점검 URL');
-    assert.equal(ko.topology.analysis.overviewBriefInsightsUrl, '연결·검증 URL');
-    assert.equal(ko.topology.analysis.overviewBriefAgentCheck, '에이전트 전체 점검');
-    assert.equal(ko.topology.analysis.overviewBriefMcpCheck, 'MCP 전체 점검');
-    assert.equal(ko.topology.analysis.overviewBriefMcpQueryPlan, 'MCP 질의 계획');
-    assert.equal(ko.topology.analysis.overviewBriefWorkspaceCheck, '작업공간 점검');
-    assert.equal(ko.topology.analysis.overviewBriefMcpWorkspaceCheck, 'MCP 작업공간 점검');
-    assert.ok(
-      ko.topology.controls.docsLabel.includes(ko.navRail.docs),
-      '호환 Docs 컨트롤은 온톨로지 섹션을 이름으로 말해야 한다',
-    );
-    assert.ok(
-      ko.topology.controls.docsTooltip.includes(ko.topology.controls.docsLabel),
-      '툴팁과 화면의 Docs 컨트롤은 같은 섹션을 말해야 한다',
-    );
-    assert.ok(
-      ko.topology.controls.docsAriaLabel.includes(ko.topology.controls.docsLabel),
-      '접근성 이름과 화면의 Docs 컨트롤 이름이 같아야 한다',
-    );
-    assert.match(ko.topology.controls.docsTooltip, /\(D\)$/);
-    assert.match(ko.topology.controls.docsAriaLabel, /\(D\)$/);
-    assert.equal(ko.topology.controls.relayoutToast, '지도를 다시 정렬해요');
-    assert.doesNotMatch(
-      [
-        ko.topology.analysis.overviewBriefCopyAriaLabel,
-        ko.topology.analysis.overviewBriefCopiedAriaLabel,
-        ko.topology.analysis.overviewBriefTitle,
-        ko.topology.analysis.overviewBriefHealthSignals,
-        ko.topology.analysis.overviewBriefAgentCheck,
-        ko.topology.analysis.overviewBriefMcpCheck,
-        ko.topology.analysis.overviewBriefMcpQueryPlan,
-        ko.topology.analysis.overviewBriefWorkspaceCheck,
-        ko.topology.analysis.overviewBriefMcpWorkspaceCheck,
-        ko.topology.controls.relayoutToast,
-        ko.topology.controls.docsTooltip,
-        ko.topology.controls.docsAriaLabel,
-        ko.topology.controls.docsLabel,
-      ].join('\n'),
-      // `Document Room` is the plain Korean the 2026-07-26 pass chose. An earlier round grouped
-      // it with the vague labels, but it is now this surface's official name, so only this
-      // entry is released. The rest — jargon of the Topology / overview kind and
-      // vague labels like 'View All' — stays blocked.
-      /전체 보기|하나 선택|연결 보기|상태 정리|^문서$|토폴로지|Topology|overview brief|overview|query plan|Workspace|workspace|Health 신호/m,
-    );
-  });
 
   it('keeps the topology path chip copy readable (분석 패널 완전 소멸 2단계 §b — replaces the retired path panel copy)', async () => {
     const en = await readJson(path.join(MESSAGES_DIR, 'en.json'));
@@ -512,20 +388,14 @@ describe('i18n message catalog', () => {
     const header = ko.docsVault.header;
     const docsUi = ko.vaultWidgets;
 
-    assert.equal(header.back, '의미 지도');
-    assert.equal(header.backToWorkspaceAriaLabel, '의미 지도로 돌아가기');
     assert.equal(header.openTreeTitle, '문서 목록');
     assert.equal(header.openTreeAriaLabel, '문서 목록 열기');
-    assert.equal(docsUi.parts.sidebar.treeHeader, '문서 목록');
     assert.equal(docsUi.parts.sidebar.searchLabel, '문서 검색');
     assert.equal(docsUi.tree.navAria, '문서 목록');
-    assert.doesNotMatch(header.back, /워크스페이스|토폴로지/);
-    assert.doesNotMatch(header.backToWorkspaceAriaLabel, /워크스페이스|토폴로지/);
     assert.doesNotMatch(
       [
         header.openTreeTitle,
         header.openTreeAriaLabel,
-        docsUi.parts.sidebar.treeHeader,
         docsUi.parts.sidebar.searchLabel,
         docsUi.tree.navAria,
       ].join('\n'),
@@ -555,7 +425,6 @@ describe('i18n message catalog', () => {
       ko.docsVault.desktopWelcome.contractAgentBody,
       ko.docsVault.desktopWelcome.contractGraphValue,
       ko.docsVault.desktopWelcome.actionsAriaLabel,
-      ko.docsVault.sourceContract.ariaLabel,
       ko.docsVault.sourceContract.filesLabel,
       ko.docsVault.desktopWelcome.contractGraphBody,
       ko.docsVault.sourceContract.filesBody,
@@ -614,9 +483,6 @@ describe('i18n message catalog', () => {
       en.searchWidgets.shortcuts.rows.localVault,
       en.searchWidgets.shortcuts.rows.manualRefresh,
       en.searchWidgets.shortcuts.rows.focusRefresh,
-      en.searchWidgets.hero.docsVault,
-      en.searchWidgets.hero.docsVaultAriaLabel,
-      en.searchWidgets.hero.openDocsVault,
       en.vaultWidgets.docsDrawer.ariaLabel,
       en.vaultWidgets.docsDrawer.eyebrow,
       en.vaultWidgets.docsDrawer.openAllAriaLabel,
@@ -634,7 +500,6 @@ describe('i18n message catalog', () => {
       en.docsVault.desktopWelcome.contractAgentLabel,
       en.docsVault.desktopWelcome.contractAgentBody,
       en.docsVault.desktopWelcome.actionsAriaLabel,
-      en.docsVault.sourceContract.ariaLabel,
       en.docsVault.sourceContract.filesLabel,
       en.docsVault.sourceContract.filesBody,
       en.docsVault.sourceContract.graphValue,
@@ -675,13 +540,10 @@ describe('i18n message catalog', () => {
     assert.doesNotMatch(en.docsVault.desktopWelcome.contractGraphValue, /frontmatter/i);
     assert.equal(en.docsVault.desktopWelcome.contractAgentLabel, 'AI check');
     assert.equal(en.docsVault.desktopWelcome.actionsAriaLabel, 'Workspace setup actions');
-    assert.doesNotMatch(en.docsVault.sourceContract.ariaLabel, /\bcontract\b/i);
     assert.equal(en.docsVault.sourceContract.filesLabel, 'Workspace files');
     assert.equal(en.docsVault.sourceContract.graphValue, '{nodes} concepts · {edges} relations');
     assert.equal(en.docsVault.sourceContract.agentLabel, 'AI check');
     assert.equal(en.docsVault.sourceContract.agentCopyGate, 'Copy graph check');
-    assert.equal(en.searchWidgets.hero.docsVault, 'Ontology workspace');
-    assert.equal(en.searchWidgets.hero.openDocsVault, 'Open workspace');
     assert.equal(en.vaultWidgets.docsDrawer.eyebrow, 'Ontology workspace');
     assert.equal(en.vaultWidgets.palette.dialogAriaLabel, 'Ontology workspace palette');
     assert.doesNotMatch(
@@ -843,10 +705,9 @@ function isPlainObject(value) {
 
 it('모든 메시지가 ICU 로 컴파일된다 — 꺾쇠 태그 오파싱이 raw 키 폴백을 만들지 않게 (리텐션 P2/P4 회귀)', async () => {
   // next-intl parses `<tag>` as a rich-text tag. A literal `<...>` inside a message
-  // consumed through plain t() is a runtime error, and the user sees the raw key
-  // (the agentConnect.manualPathHint incident). This compiles every message in
-  // tag-enabled mode to catch broken syntax (unclosed tags, invalid ICU); it does not
-  // check whether a tag-using key is consumed through t.rich (a separate convention).
+  // consumed through plain t() is a runtime error, and the user sees the raw key.
+  // This compiles every message in tag-enabled mode to catch broken syntax (unclosed
+  // tags, invalid ICU); whether a tagged key goes through t.rich is a separate check.
   const { createRequire } = await import('node:module');
   const require_ = createRequire(new URL(import.meta.url));
   const pnpmDir = (await import('node:fs')).readdirSync('node_modules/.pnpm').find((d) => d.startsWith('intl-messageformat@'));

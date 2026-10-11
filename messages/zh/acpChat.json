@@ -68,7 +68,6 @@
       "incomplete": "语义审阅不完整 · 已记录的 {total} 个语义单元中显示 {inspected} 个 · 省略 {omitted} 个。完整请求见“详情”。",
       "coverageNone": "此请求没有可摘要的值。完整请求见“详情”。",
       "beforeUnavailable": "仅显示此请求中的值，不会编造之前的状态。",
-      "beforeUnknown": "之前 · 不可用",
       "before": "之前",
       "after": "提议",
       "absent": "无",

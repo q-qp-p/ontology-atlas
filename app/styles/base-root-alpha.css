@@ -25,7 +25,6 @@
     --color-indigo-a32: rgba(94, 106, 210, 0.32);
     --color-indigo-a38: rgba(94, 106, 210, 0.38);
     --color-indigo-a40: rgba(94, 106, 210, 0.4);
-    --color-indigo-a42: rgba(94, 106, 210, 0.42);
     --color-indigo-a46: rgba(94, 106, 210, 0.46);
     --color-indigo-focus-ring: rgb(94, 106, 210);
     --color-indigo-a50: rgba(94, 106, 210, 0.5);
@@ -202,8 +201,8 @@
      * Rail bottom utility tier(activity·history·settings) icon ladder — one step below destination
      * tier(24px + label)(18px = lucide default, the value already declared as `size={18}` per tile).
      * Owner measurement 2026-07-23: utility icons(24px) were larger than the settings gear(16px),
-     * making the visual weight of the three bottom rail tiles uneven. The three utility tiles
-     * sit on this token + `--app-nav-rail-tile-*` geometry alone (`AppNavRail.tsx` · `GitStatusTile.tsx` ·
+     * making the visual weight of the three bottom rail tiles uneven. The utility tiles
+     * sit on this token + `--app-nav-rail-tile-*` geometry alone (`AppNavRail.tsx` ·
      * `AppSettingsMenu.tsx` rail-tile trigger variant).
      */
     --app-nav-rail-utility-icon-size: var(--app-nav-rail-icon-size);
@@ -317,10 +316,6 @@
     --topology-utility-lane-compact-width: var(--topology-chrome-control-height);
     --topology-utility-lane-surface: rgba(15, 16, 17, 0.92);
     --topology-utility-lane-border: rgba(255, 255, 255, 0.07);
-    --topology-utility-lane-accent-surface: var(--color-indigo-a12);
-    --topology-utility-lane-accent-border: var(--color-indigo-a38);
-    --topology-utility-lane-accent-hover-surface: var(--color-indigo-a18);
-    --topology-utility-lane-focus-ring: var(--color-indigo-a46);
     --topology-utility-lane-count-surface: var(--color-indigo-a28);
     --topology-utility-lane-count-text: var(--color-indigo-accent);
 

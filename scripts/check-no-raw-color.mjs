@@ -68,8 +68,7 @@ const HUE_FAMILIES = [
       [126, 134, 216],
       [74, 177, 196],
       [211, 159, 73],
-      [105, 177, 121],
-      [196, 92, 92],
+      [124, 166, 141],
     ],
   },
 ];
@@ -115,7 +114,7 @@ function isAchromatic(r, g, b) {
 const RGBA_LITERAL = /rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,/g;
 
 // Single sources of truth in contexts CSS variables cannot reach (canvas, WebGL,
-// OG image, tone.ts). Each cited file states the reason in its own doc-block; a new
+// OG image). Each cited file states the reason in its own doc-block; a new
 // exemption must leave the same evidence at the top of its file.
 export const ALLOWLIST = new Set([
   // `shared/config/indigo-tokens.ts` **left this list** on 2026-08-04. Under the
@@ -124,11 +123,6 @@ export const ALLOWLIST = new Set([
   // matches it. Leaving a row that exempts nothing blurs what the list actually
   // forgives (gate: "every ALLOWLIST entry actually contains a literal", below).
   "views/docs-vault/lib/popout-template.ts",
-  // tone.ts — the single source for kind datamarks. Canvas fillStyle consumes the
-  // computed rgba string directly, so it cannot become a var() (Design Guardian
-  // verdict §② "kind-tone: CLEAN — tone.ts is already the sanctioned kind-tone
-  // source").
-  "entities/ontology-class/model/tone.ts",
   // The two below are the canvas files the 2026-08-04 inversion (achromatics only)
   // caught for the first time. `ctx.fillStyle` and `CanvasGradient.addColorStop`
   // take **strings only** and do not resolve `var()` — a 2D context is not the DOM,
@@ -157,8 +151,8 @@ export const ALLOWLIST = new Set([
  * moves 0 pixels and leaves 0 violations; it blocks only **future re-entry**.
  *
  * If a canvas file genuinely needs a raw literal, register it in `ALLOWLIST` as
- * **one file plus the reason in that file's doc-block** — `tone.ts` is the
- * precedent.
+ * **one file plus the reason in that file's doc-block** — `starfield.ts` and
+ * `grid.ts` are the precedent.
  */
 function shouldSkipDir(name) {
   return name === "node_modules";

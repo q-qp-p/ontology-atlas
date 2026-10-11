@@ -9,9 +9,7 @@
   "linksShown": "{shown, number} of {total, number} links shown",
   "reading": "Reading {read, number} of {total, number} files",
   "settling": "Rings settle when every file is read",
-  "legendFlows": "Line = dependencies · number = count",
   "legendNeeds": "needs",
   "legendUsers": "used by",
-  "legendStale": "stale",
-  "legendRings": "Closer to the centre: more other domains depend on it"
+  "legendStale": "stale"
 }

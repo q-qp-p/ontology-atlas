@@ -39,7 +39,6 @@ export const rules = [
     reason: 'insights copy feedback and fill motion changed',
     matches: [
       /^src\/views\/ontology-insights\/ui\/tabs\/FlowTab\.tsx$/,
-      /^src\/views\/ontology-insights\/ui\/parts\/InsightsBar\.tsx$/,
       /^src\/shared\/motion\/feedback-glyph\.tsx$/,
       /^app\/styles\/motion-feedback\.css$/,
     ],

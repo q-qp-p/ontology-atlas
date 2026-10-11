@@ -80,7 +80,6 @@ const REGISTERED: ReadonlyArray<readonly [file: string, why: string]> = [
    * So container convergence waits **until the hover axis is decided**. The behaviour
    * is fully attached now.
    */
-  ["src/views/ontology-insights/ui/tabs/MeaningGapSection.tsx", "비활성 칩 hover — 값 층에 칩 hover 가 없다"],
   ["src/features/ontology-blocks/ui/BlockImportModule.tsx", "p-1/gap-1 인셋 + 비활성 세그먼트 hover"],
   ["src/features/first-run-starter/ui/FirstRunStarterModule.tsx", "패널 스코프 hover 잉크"],
 ];
@@ -95,12 +94,12 @@ const REGISTERED: ReadonlyArray<readonly [file: string, why: string]> = [
  * still leaves the file calling the hook** and it stayed green. Wherever the
  * ratchet's unit is coarser than the defect's unit, that much goes unseen.
  *
- * Today it is **11 sites across 10 registered files** (only `AppearancePickers` has
+ * Today it is **10 sites across 9 registered files** (only `AppearancePickers` has
  * two groups). The primitive's own file is on the exemption list and does not count
  * here; whether the primitive uses the hook is asserted separately by the idling
  * guard — locked in two places.
  */
-const HOOK_ADOPTION_FLOOR = 11;
+const HOOK_ADOPTION_FLOOR = 10;
 
 /**
  * **The debt ledger** — hand-written radiogroups that have neither migrated nor put

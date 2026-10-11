@@ -16,15 +16,8 @@ import ko from '../../messages/ko.json';
  * that line and it fails — with no way to learn that the cause lives on a screen they
  * never saw. **Dead-end guidance is worse than no guidance.**
  *
- * **Why "same namespace" and not "same string".** The inventory before switching on
- * was 2 per locale, and one of the two was legitimate:
- * `projectPages.selector.nextSlotCliCommand` uses `$ATLAS`, and right beside it
- * `projectPages.selector.cliPlaceholderHint` gives `export ATLAS="…"`. They are read
- * side by side in the same panel, so it is not a dead end.
- *
- * Requiring the definition inside the same string would catch that legitimate pair,
- * making the rule noise rather than a rule. With the namespace as the unit of
- * judgement, only the one real defect remains.
+ * The namespace, not the string, is the unit: a command and the hint defining its
+ * variable are read side by side in one panel, which is not a dead end.
  */
 
 type Json = { [key: string]: string | Json };

@@ -32,7 +32,6 @@ export {
 export type { MeaningEditRelation } from "./lib/ontology-node-href";
 export {
   buildOntologyHealthActionTarget,
-  buildOntologyHealthSignals,
   PROMOTION_MIN_FAN_IN,
   type OntologyHealthActionTarget,
 } from "./lib/ontology-health-signals";
@@ -47,11 +46,7 @@ export {
 export {
   buildMeaningDiff,
   buildProposalBinding,
-  type ComparisonBasis,
   type MeaningDiffItem,
-  type TaskReviewIdentity,
-  type TaskReviewRequest,
-  type TrustedBeforeSnapshot,
 } from "./lib/task-meaning-review";
 export {
   buildOntologyRelationEditPlan,
@@ -62,18 +57,14 @@ export {
 } from "./lib/ontology-relation-edit";
 export { deriveCodeLocations } from "./lib/code-locations";
 export { buildChatNodeIndex } from "./lib/chat-node-index";
-export { isEvidenceOnlyConcept, resolveNodeDocument } from "./lib/node-document";
+export { resolveNodeDocument } from "./lib/node-document";
 export {
   resolveNodeAgentTarget,
   stripVaultSlugPrefix,
 } from "./lib/node-agent-target";
 export {
-  detectMeaningFindingGaps,
   detectMeaningGaps,
-  MEANING_FINDING_GAP_KINDS,
   type ConceptDocFacts,
-  type MeaningFindingGapKind,
-  type MeaningGapKind,
 } from "./lib/meaning-gaps";
 export {
   capabilitiesWithoutImplementationEvidence,
@@ -106,10 +97,6 @@ export {
   computeOntologyChangeset,
   filterTreeExcludeKind,
   useChangeBaseline,
-  computeKindDistribution,
-  rankAllByDegree,
-  computeDomainCouplingMatrix,
-  buildReachabilityIndex,
   computeEdgeTypeDistribution,
   computeDegreeCentrality,
   formatAgentPostChangeSyncPacket,
@@ -130,7 +117,6 @@ export type {
 export { computeCanonicalCensus, isCanonicalConcept } from "./lib/ontology-tree/canonical-census";
 export { buildProjectOntologyMetrics } from "./lib/project-ontology-metrics";
 export type { ProjectOntologyMetrics } from "./lib/project-ontology-metrics";
-export type { CanonicalCensus } from "./lib/ontology-tree/canonical-census";
 export { buildConnections, groupConnectionsByRole, groupConnectionsByDirection } from "./lib/ontology-tree/connections";
 export type { ConnectionSourceEdge, ConnectionSourceNode, DatasheetConnection } from "./lib/ontology-tree/connections";
 export { isDirectionalRelation } from "./lib/ontology-tree/relations";

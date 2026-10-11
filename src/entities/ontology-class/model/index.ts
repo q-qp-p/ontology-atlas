@@ -1,1 +1,0 @@
-export { getOntologyKindTone } from './tone';

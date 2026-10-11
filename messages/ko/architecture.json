@@ -14,7 +14,6 @@
   "observationLabel": "소스 관찰",
   "observationTrackLabel": "코드에서 관찰한 것",
   "observationRecorded": "검사 기록",
-  "observationMissing": "아직 검사하지 않음",
   "observationMissingShort": "아직 검사 안 함",
   "observationEmptyTitle": "아직 소스를 검사하지 않았어요",
   "observationEmptyBody": "「소스 검사」를 하면 에이전트가 실제 import를 읽어, 역할마다 관찰한 의존과 차이를 여기에 채워요.",
@@ -33,7 +32,6 @@
   "profileList": "적용 범위",
   "profileCurrent": "현재 적용",
   "sourceCheckRequired": "소스 확인 필요",
-  "sourceCheckBody": "이 규칙은 사람이 승인한 것이고, 실제 코드의 import는 Atlas가 MCP 연결이나 CLI로 따로 검사해요. 근거가 없으면 통과로 표시하지 않아요.",
   "sourceCheckNext": "아키텍처 작업 버튼으로 연결된 에이전트에게 검사를 요청하거나, 저장소에서 atlas architecture --record를 실행하세요. 검사는 승인 구조를 바꾸지 않고, --record는 .ontology-atlas/architecture/profile-slug.json 로컬 기록 하나만 덮어써요. 그 파일을 지워도 승인 구조는 그대로예요.",
   "recordStatus": {
     "conforms": "규칙 준수",
@@ -85,8 +83,6 @@
   "reachNone": "아무 역할에도 의존하지 않아요",
   "ladderDirection": "화살표는 의존 방향이에요. 의존은 한 역할의 코드가 다른 역할의 코드를 가져다 쓰는 것이에요.",
   "reachInline": "{targets}에 의존 가능",
-  "legendDependency": "리뷰된 개념 의존",
-  "legendRelated": "관련(리뷰됨)",
   "layerConcepts": "이 역할의 리뷰된 개념 {count}개",
   "conceptCount": "개념 {count}개",
   "moduleCount": "모듈 {count}개",
@@ -101,26 +97,19 @@
   "roleLedgerImports": "import {count}개",
   "moreOccupants": "+{count}개 더 보기",
   "fewerOccupants": "접기",
-  "statRoles": "역할",
   "railRoles": "역할 {count}개",
-  "statModules": "소스 모듈",
-  "statEvidence": "근거 파일",
   "patternsUndeclared": "선언된 패턴 없음",
   "patternAxes": {
     "source-organization": {
-      "label": "소스 조직",
       "body": "소스 조직은 파일이 어느 폴더에 속하는지를 말해요. 시스템이 실행될 때의 모양은 아니에요."
     },
     "dependency": {
-      "label": "의존 규칙",
       "body": "의존 규칙은 어느 역할에서 어느 역할까지 닿아도 되는지를 말해요."
     },
     "presentation": {
-      "label": "표현 분리",
       "body": "표현 분리는 화면이 보여주는 쪽과 결정하는 쪽으로 어떻게 나뉘는지를 말해요."
     }
   },
-  "roleUndescribed": "이 역할에는 아직 설명이 없어요.",
   "dependencySameRole": "같은 역할 안에서는 모듈끼리 언제나 서로 참조할 수 있어요.",
   "legendPermitted": "프로필이 허용한 리뷰된 의존",
   "hiddenLeft": "왼쪽에 {count}개 더",
@@ -136,14 +125,11 @@
   "sourceListingUnavailable": "소스 모듈은 소스 폴더가 연결돼야 표시돼요. 브라우저는 소스 폴더를 읽을 수 없으니, 설치된 Atlas 앱에서 이 온톨로지 폴더를 열면 여기가 채워져요.",
   "getInstalledApp": "앱 받기",
   "sourceListingUnbound": "아직 연결된 소스 폴더가 없어요. 이 프로필이 설명하는 폴더를 열면 각 밴드가 글롭이 실제로 담고 있는 모듈로 채워져요.",
-  "draftFromCode": "코드에서 초안 만들기",
   "connectedAgent": "연결된 에이전트",
   "draftWithAgent": "{agent}와 초안 만들기",
   "checkingAgent": "보호된 에이전트 확인 중…",
   "inspectSourceAction": "소스 검사",
-  "reviewDeltaAction": "차이 검토",
   "planChangeAction": "변경 계획",
-  "copyAgentTask": "에이전트 작업 문장 복사",
   "draftNoAgentBody": "지금은 연결된 에이전트가 없어 이 화면에서 바로 시작할 수 없어요. 아래 문장을 복사해 쓰시는 코딩 에이전트에 붙여 넣으세요.",
   "agentTaskMenu": "다른 에이전트 작업 고르기",
   "recheckSourceAction": "소스 다시 검사",

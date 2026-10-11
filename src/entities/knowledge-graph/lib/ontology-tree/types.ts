@@ -1,24 +1,4 @@
-import type { KnowledgeGraphEdge, KnowledgeGraphNode } from "../../model";
-
-/** One neighbour in an ego graph, with its hop distance from the centre. */
-export interface OntologyEgoNeighbor {
-  /** `null` when the edge points at a node that does not exist. */
-  node: KnowledgeGraphNode | null;
-  /** Kept even when `node` is null, so the dangling reference stays visible. */
-  neighborId: string;
-  edge: KnowledgeGraphEdge;
-  /** Centre → neighbour; at hop 2, the direction of the edge from the intermediate node. */
-  direction: "outgoing" | "incoming";
-  hop: 1 | 2;
-  /** The intermediate node for `hop: 2`; undefined at hop 1. */
-  viaNeighborId?: string;
-}
-
-export interface OntologyEgoSubgraph {
-  centerId: string;
-  /** Hop 1 (outgoing, then incoming) before hop 2, in input edge order. */
-  neighbors: OntologyEgoNeighbor[];
-}
+import type { KnowledgeGraphNode } from "../../model";
 
 export interface OntologyTreeNode {
   node: KnowledgeGraphNode;

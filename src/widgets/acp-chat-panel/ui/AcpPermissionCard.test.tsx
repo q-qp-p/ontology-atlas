@@ -258,8 +258,6 @@ describe('작업에 묶인 의미 검토 — 실행 권한과 의미 판단을 �
     expect(compare).toHaveTextContent(taskReview.beforeUnavailable);
     expect(compare.textContent!.split(taskReview.beforeUnavailable).length - 1).toBe(1);
 
-    expect(compare).not.toHaveTextContent(taskReview.beforeUnknown);
-
     expect(compare).toHaveTextContent('Refund only after capture.');
     expect(compare.textContent!.split(taskReview.after).length - 1).toBeGreaterThan(1);
   });

@@ -10,7 +10,7 @@ const HELPER_MODULE = '@/shared/lib/keyboard/ime-composition';
 const ENTER_KEYS = new Set(['Enter', 'NumpadEnter']);
 const LEGACY_KEY_CODE_PROPERTIES = new Set(['keyCode', 'which']);
 const ENTER_KEY_CODE = 13;
-const GUARDED_FLOOR = 23;
+const GUARDED_FLOOR = 21;
 
 const NOT_TEXT_ENTRY: ReadonlyArray<readonly [file: string, sites: number, target: string]> = [
   ['src/shared/ui/inline-editable.tsx', 1, 'the read-mode element Enter switches into editing'],

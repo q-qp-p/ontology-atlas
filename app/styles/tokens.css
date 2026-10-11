@@ -104,38 +104,14 @@
   /*
    * Kind tone — the one qualitative data mark (docs/DESIGN-SYSTEM.md "Kind tone", 2026-09-08).
    *
-   * Five hues, one per ontology kind, allowed only where colour is the sole identity channel:
-   * the kind-census strip, map dots, tree chips. They lived as rgba literals in
-   * `src/entities/ontology-class/model/tone.ts` and were invisible to every colour gate; the
-   * triplet is the source, the four alphas beneath it are the only steps a consumer may draw.
-   * `tone.ts` keeps a JS copy for canvas paint; `kind-tone-mirror.contract.test.ts` holds the
-   * two equal.
+   * Four hues, one per authored kind, allowed only where colour is the sole identity channel:
+   * the map's kind light and its legend dots. The triplet is the source; a consumer draws it
+   * through `rgb(var(--color-kind-<kind>-rgb) / <alpha>)`.
    */
   --color-kind-project-rgb: 126 134 216;
   --color-kind-domain-rgb: 74 177 196;
   --color-kind-capability-rgb: 211 159 73;
   --color-kind-element-rgb: 124 166 141;
-  --color-kind-unknown-rgb: 196 92 92;
-  --color-kind-project-fill: rgb(var(--color-kind-project-rgb) / 0.94);
-  --color-kind-project-border: rgb(var(--color-kind-project-rgb) / 0.88);
-  --color-kind-project-chip-bg: rgb(var(--color-kind-project-rgb) / 0.12);
-  --color-kind-project-chip-border: rgb(var(--color-kind-project-rgb) / 0.46);
-  --color-kind-domain-fill: rgb(var(--color-kind-domain-rgb) / 0.94);
-  --color-kind-domain-border: rgb(var(--color-kind-domain-rgb) / 0.88);
-  --color-kind-domain-chip-bg: rgb(var(--color-kind-domain-rgb) / 0.11);
-  --color-kind-domain-chip-border: rgb(var(--color-kind-domain-rgb) / 0.44);
-  --color-kind-capability-fill: rgb(var(--color-kind-capability-rgb) / 0.94);
-  --color-kind-capability-border: rgb(var(--color-kind-capability-rgb) / 0.88);
-  --color-kind-capability-chip-bg: rgb(var(--color-kind-capability-rgb) / 0.12);
-  --color-kind-capability-chip-border: rgb(var(--color-kind-capability-rgb) / 0.46);
-  --color-kind-element-fill: rgb(var(--color-kind-element-rgb) / 0.94);
-  --color-kind-element-border: rgb(var(--color-kind-element-rgb) / 0.88);
-  --color-kind-element-chip-bg: rgb(var(--color-kind-element-rgb) / 0.11);
-  --color-kind-element-chip-border: rgb(var(--color-kind-element-rgb) / 0.44);
-  --color-kind-unknown-fill: rgb(var(--color-kind-unknown-rgb) / 0.94);
-  --color-kind-unknown-border: rgb(var(--color-kind-unknown-rgb) / 0.88);
-  --color-kind-unknown-chip-bg: rgb(var(--color-kind-unknown-rgb) / 0.12);
-  --color-kind-unknown-chip-border: rgb(var(--color-kind-unknown-rgb) / 0.46);
 
   /* Indigo accent (system's only color) */
   --color-indigo-brand: #5e6ad2;
@@ -196,7 +172,6 @@
   --color-indigo-a32: rgba(94, 106, 210, 0.32);
   --color-indigo-a38: rgba(94, 106, 210, 0.38);
   --color-indigo-a40: rgba(94, 106, 210, 0.4);
-  --color-indigo-a42: rgba(94, 106, 210, 0.42);
   --color-indigo-a46: rgba(94, 106, 210, 0.46);
   /* For border/hover:border only. */
   /*
@@ -752,14 +727,6 @@
    */
   --measure-note-column: 560px;
 
-  /*
-   * Insights row label — the leading label cell of a kind/domain row (2026-09-08). The
-   * Overview and Freshness tabs used 136 and the Connections tab 104 for the identical
-   * job, so a reader moving between tabs saw the bars start at two different places.
-   * 136 is the value two of the three tabs already carried and the one long Korean kind
-   * names fit in; Connections widens by 32px.
-   */
-  --insights-row-label-w: 136px;
   --page-bottom-breath: 40px;
 
   /*
@@ -984,11 +951,6 @@
   /* modal/sheet background scrim — existing a54/a56 siblings. */
   --color-scrim-a50: rgba(0, 0, 0, 0.5);
   --color-scrim-a58: rgba(0, 0, 0, 0.58);
-
-  /* kind-tone mirror — single source of truth is entities/ontology-class/model/tone.ts
-     (computed rgba string consumed by canvas fillStyle, so tone.ts literals are
-     kept as-is, registered in check-no-raw-color.mjs allowlist). Below are
-     r,g,b mirrors usable in CSS/JSX in the form `rgba(var(--kind-tone-domain), 0.11)` — always keep in sync with tone.ts. */
 
   /*
    * ── Geometry & Type Codex (R5, 2026-07) ─────────────────────────────

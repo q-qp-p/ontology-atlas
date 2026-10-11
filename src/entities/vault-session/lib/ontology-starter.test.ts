@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
-  ONTOLOGY_STARTER_FILES,
   buildCodexConfigToml,
   buildCodexConfigTomlTemplate,
   buildCodexMcpAddCommandTemplate,
@@ -15,6 +14,7 @@ import {
 } from "./ontology-starter";
 
 const ROOT = path.resolve(__dirname, "../../../..");
+const ONTOLOGY_STARTER_FILES = starterFilesForLocale("en");
 
 describe("ONTOLOGY_STARTER_FILES", () => {
   it("5 시드 파일 제공 — README + project + 3 example (domain/capability/element)", () => {

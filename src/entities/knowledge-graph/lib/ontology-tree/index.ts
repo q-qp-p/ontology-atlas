@@ -5,7 +5,6 @@ export type {
 export { buildOntologyTree, flattenTree } from "./build-tree";
 export {
   buildOntologyReachability,
-  buildReachabilityIndex,
   computeOntologyDependents,
   IMPACT_RELATION_TYPES,
 } from "./reachability";
@@ -19,10 +18,7 @@ export {
   isContainmentRelation,
 } from "./relations";
 export {
-  computeDomainCouplingMatrix,
-  computeKindDistribution,
   computeDegreeCentrality,
-  rankAllByDegree,
   buildContainmentParents,
   nearestDomainId,
 } from "./insights";

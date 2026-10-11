@@ -14,7 +14,6 @@
   "observationLabel": "ソースの観測",
   "observationTrackLabel": "コードで観測",
   "observationRecorded": "検査の記録",
-  "observationMissing": "まだ検査していません",
   "observationMissingShort": "未検査",
   "observationEmptyTitle": "ソースはまだ検査されていません",
   "observationEmptyBody": "「ソースを検査」を実行すると、エージェントが実際のimportを読み、各ロールの依存関係とそのずれを記入します。",
@@ -33,7 +32,6 @@
   "profileList": "適用範囲",
   "profileCurrent": "現在",
   "sourceCheckRequired": "ソースの確認が必要です",
-  "sourceCheckBody": "このルールは人が承認しました。コード内の実際のimportは、AtlasがMCPまたはCLIで別途確認します。根拠がない場合に、合格と表示することはありません。",
   "sourceCheckNext": "アーキテクチャの操作から接続中のエージェントに依頼するか、リポジトリで`atlas architecture --record`を実行してください。検査でレビュー済みの構造が変わることはありません。`--record` は、ローカルの `.ontology-atlas/architecture/profile-slug.json` の記録を1つ置き換えるだけで、この記録は単独で削除できます。",
   "recordStatus": {
     "conforms": "準拠",
@@ -85,8 +83,6 @@
   "reachNone": "ほかのロールに依存しない",
   "ladderDirection": "矢印は依存の向きを示します。あるロールのコードが、別のロールのコードを使うという意味です。",
   "reachInline": "依存してよい先：{targets}",
-  "legendDependency": "レビュー済みの概念の依存",
-  "legendRelated": "関連（レビュー済み）",
   "layerConcepts": "このロールのレビュー済み概念：{count}",
   "conceptCount": "概念{count}件",
   "moduleCount": "モジュール{count}件",
@@ -101,26 +97,19 @@
   "roleLedgerImports": "import {count}件",
   "moreOccupants": "ほか{count}件",
   "fewerOccupants": "表示を減らす",
-  "statRoles": "ロール",
   "railRoles": "ロール{count}個",
-  "statModules": "ソースモジュール",
-  "statEvidence": "根拠ファイル",
   "patternsUndeclared": "パターン未宣言",
   "patternAxes": {
     "source-organization": {
-      "label": "ソースの構成",
       "body": "ソースの構成は、ファイルをどのフォルダに置くかを決めます。システムの実行時の形ではありません。"
     },
     "dependency": {
-      "label": "依存",
       "body": "依存は、変更が今の位置からどのロールに届いてよいかを決めます。"
     },
     "presentation": {
-      "label": "プレゼンテーション",
       "body": "プレゼンテーションは、画面を表示する部分と判断する部分にどう分けるかを決めます。"
     }
   },
-  "roleUndescribed": "このロールには、まだ説明がありません。",
   "dependencySameRole": "同じロール内のモジュールは、常に互いを参照できます。",
   "legendPermitted": "プロファイルが許可する、レビュー済みの依存",
   "hiddenLeft": "左にさらに{count}件",
@@ -136,14 +125,11 @@
   "sourceListingUnavailable": "ソースモジュールは、プロジェクトのソースフォルダを接続すると表示されます。ブラウザはソースフォルダを読み取れません。このオントロジーフォルダをデスクトップアプリで開くと、ここが埋まります。",
   "getInstalledApp": "アプリを入手",
   "sourceListingUnbound": "ソースフォルダがまだ接続されていません。このプロファイルが対象とするフォルダを開くと、帯に、グロブが実際に含むモジュールが表示されます。",
-  "draftFromCode": "このコードベースから草案を作成",
   "connectedAgent": "接続中のエージェント",
   "draftWithAgent": "{agent}で草案を作成",
   "checkingAgent": "保護されたエージェントを確認中…",
   "inspectSourceAction": "ソースを検査",
-  "reviewDeltaAction": "差分をレビュー",
   "planChangeAction": "変更を計画",
-  "copyAgentTask": "エージェント向けのタスクをコピー",
   "draftNoAgentBody": "エージェントが接続されていないため、ここから開始できません。下の文をコピーして、お使いのコーディングエージェントに貼り付けてください。",
   "agentTaskMenu": "別のエージェントタスクを選ぶ",
   "recheckSourceAction": "ソースを再検査",

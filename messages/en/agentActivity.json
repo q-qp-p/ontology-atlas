@@ -1,6 +1,5 @@
 {
   "writing": "Working",
-  "writingAgent": "{agent} working",
   "liveAgent": "{agent} · {phase}",
   "phase": {
     "planning": "Planning",
@@ -34,15 +33,8 @@
   "nextStepLabel": "Next",
   "toolLabel": "Tool",
   "historyTitle": "Recent history",
-  "inboxEmpty": "Nothing to report yet. When an agent or a person edits this folder, it lands here.",
   "inboxFooter": "What ran, and what you allowed or rejected, is recorded inside this folder only. Nothing leaves it.",
   "receiptTitle": "Work results",
-  "receiptItems": "{count} changes",
-  "receiptAt": "Result time",
-  "receiptDecision": {
-    "allowed": "Allowed",
-    "rejected": "Rejected"
-  },
   "receiptResult": {
     "pending": "Waiting to run",
     "completed": "Completed",
@@ -50,9 +42,6 @@
     "cancelled": "Cancelled",
     "not-run": "Not run"
   },
-  "summaryAdded": "{count} added",
-  "summaryEdited": "{count} edited",
-  "summaryRemoved": "{count} removed",
   "summaryJoin": " · ",
   "problemUnresolved": "{count} broken links",
   "problemCycles": "{count} pairs that point back at each other",
@@ -60,9 +49,7 @@
   "bridgeChildren": "moved {count} sub-concepts under a new in-between concept",
   "event": {
     "taskStart": "Task started",
-    "taskStartAgent": "{agent} started a task",
     "taskEnd": "Task finished",
-    "taskEndAgent": "{agent} finished a task",
     "domainAdded": "Domain added",
     "domainRemoved": "Domain removed",
     "bridgeInserted": "A new concept was inserted between two existing ones",

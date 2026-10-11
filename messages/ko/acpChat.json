@@ -68,7 +68,6 @@
       "scopeRelation": "{from} → {type} → {to}",
       "scopeItem": "묶음 {items, number}개 중 {selected, number}번 항목",
       "coverageNone": "이 요청에는 요약할 값이 없어요. 요청 전체는 「상세」에 있어요.",
-      "beforeUnknown": "이전 · 확인할 수 없음",
       "before": "이전",
       "after": "제안값",
       "absent": "없음",

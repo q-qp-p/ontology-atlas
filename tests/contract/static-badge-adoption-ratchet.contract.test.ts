@@ -65,8 +65,6 @@ const DEBT: ReadonlyArray<readonly [file: string, count: number]> = [
   ["src/views/docs-vault/ui/parts/DocsSidebarBody.tsx", 2],
   ["src/views/download/ui/DemoStage.tsx", 1],
   ["src/views/home/ui/TopologyCommandChrome.tsx", 1],
-  ["src/views/ontology-insights/ui/tabs/DomainCouplingCard.tsx", 1],
-  ["src/views/ontology-insights/ui/tabs/FreshnessTab.tsx", 1],
   ["src/views/project-detail/ui/construction-review/ConstructionReviewPanel.tsx", 1],
   ["src/views/project-editor/ui/ProjectEditorPage.tsx", 1],
   ["src/widgets/app-nav-rail/ui/AppNavRail.tsx", 1],

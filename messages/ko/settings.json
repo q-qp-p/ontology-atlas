@@ -92,7 +92,6 @@
         "invalidUrl": "링크 {index}번째 줄: 올바른 URL을 입력해 주세요."
       },
       "demoModeBanner": "저장하려면 먼저 폴더를 열어야 해요.",
-      "demoModeSaveFailed": "데모 모드에서는 저장할 수 없어요. 먼저 폴더를 열어 주세요.",
       "demoModeBannerHint": "지도 화면에서 폴더를 고르면 저장할 수 있어요"
     },
     "actions": {

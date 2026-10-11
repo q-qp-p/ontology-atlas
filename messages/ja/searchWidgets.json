@@ -198,16 +198,6 @@
     },
     "scrollRegionLabel": "ショートカット一覧"
   },
-  "hero": {
-    "docsVault": "オントロジーワークスペース",
-    "docsVaultAriaLabel": "オントロジーワークスペースを開く：ローカルのMarkdown、グラフの引き継ぎ、AIの設定を1か所で確認します",
-    "ontologyAriaLabel": "マップを開く：文書とそのつながりを階層として表示します",
-    "openDocsVault": "ワークスペースを開く"
-  },
-  "workspaceStrip": {
-    "ontologyTitle": "このプロジェクトが持つオントロジーの概念の合計です。プロジェクトとvault-readmeの概念は含みません。/ontologyの「N件の概念」とは異なる場合があります。",
-    "stubTitle": "ほかのファイルから指されているのに、まだ存在しない文書です。マップ下部の一覧から作成または破棄できます。"
-  },
   "hint": {
     "relayoutAriaLabel": "自動配置",
     "relayoutTitle": "概念のレイアウトを自動配置",

@@ -253,15 +253,11 @@ const OFF_RAMP_DEBT: ReadonlyArray<readonly [string, number]> = [
 ];
 
 /**
- * **2026-08-15: empty — and empty because the ledger was wrong, not because it
- * was repaid.**
- *
- * The 9 places listed here (HomePage 3 · ConnectionsTab 2 · ImpactRankingCard 1 ·
- * SearchHint 2 · TopologyFitControl 1) were all `icon={…}` slots whose container
- * set the size in CSS (ChromeChip 14 · ChromeTile 16 · EmptyState 16). The old
- * premise that they "render at the 24px default" was a misreading that ignored the
- * container's `[&>svg]:size-*`. The `SIZED_SLOT_OWNERS` classification plus the
- * slot-owner CSS assertion carry that judgement now.
+ * **Empty because an `icon={…}` slot is sized by its container**, not because a
+ * debt was repaid: ChromeChip (14), ChromeTile (16) and EmptyState (16) set it in
+ * CSS (`[&>svg]:size-*`), so such an icon never renders at the 24px default. The
+ * `SIZED_SLOT_OWNERS` classification plus the slot-owner CSS assertion carry that
+ * judgement.
  *
  * An empty array does not make the check idle — the scanner still sweeps the whole
  * repository, and a single unspecified icon outside a slot, or inside an unknown
