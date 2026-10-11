@@ -1,7 +1,7 @@
 {
   "source": "https://cdn.agentclientprotocol.com/registry/v1/latest/registry.json",
   "registryVersion": "1.0.0",
-  "npmDependencyCutoff": "2026-10-10T06:32:34.147Z",
+  "npmDependencyCutoff": "2026-10-11T12:49:25.221Z",
   "agents": [
     {
       "id": "claude-acp",
@@ -15,7 +15,7 @@
       "cli": "claude",
       "launch": {
         "kind": "npx",
-        "package": "@agentclientprotocol/claude-agent-acp@0.89.0",
+        "package": "@agentclientprotocol/claude-agent-acp@0.89.1",
         "args": []
       }
     },
@@ -274,7 +274,7 @@
       "cli": null,
       "launch": {
         "kind": "npx",
-        "package": "dirac-cli@0.5.18",
+        "package": "dirac-cli@0.5.19",
         "args": [
           "--acp"
         ]
