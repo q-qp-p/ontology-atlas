@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { LibraryWorkActivity } from "@/features/library";
 
 import { buildLibraryGraph } from "../model/build-library-graph";
-import { libraryGraphActivityMarks } from "./use-library-graph-engine";
+import { libraryGraphActivityMarks } from "./library-graph-engine/activity-marks";
 
 const graph = buildLibraryGraph({
   docs: [
