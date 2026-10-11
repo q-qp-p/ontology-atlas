@@ -75,14 +75,14 @@ export function specTriggerPath(changedPath) {
 
 /**
  * Spec changes between two refs, described one per line, for the trigger files
- * among the changed paths.
+ * among the changed paths. A moved trigger compares against its old path.
  */
-export function designSpecChangesBetween(base, head, changedPaths, triggerFiles, root = process.cwd()) {
+export function designSpecChangesBetween(base, head, changedPaths, triggerFiles, root = process.cwd(), renamedFrom = new Map()) {
   const touched = new Set([...changedPaths].map(specTriggerPath));
   const found = [];
   for (const path of triggerFiles) {
     if (!touched.has(path)) continue;
-    const before = censusFor(path, specTextAt(base, path, root));
+    const before = censusFor(path, specTextAt(base, renamedFrom.get(path) ?? path, root));
     const after = censusFor(path, specTextAt(head, path, root));
     for (const change of diffCensus(before, after)) found.push(describeChange(path, change));
   }
