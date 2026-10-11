@@ -55,11 +55,15 @@ import {
 } from "../../dogfood-mcp-walk.mjs";
 import {
   EXPECTED_TOOLS,
+  expectedToolsListAnnotationSummary,
+} from "../../../mcp/scripts/verify/tools-list/inventory.mjs";
+import {
   VERIFY_TUNED_HEALTH_ARGS,
   VERIFY_TUNED_WORKSPACE_BRIEF_NODE_LIMIT,
-  expectedToolsListAnnotationSummary,
+} from "../../../mcp/scripts/verify/requests/first-contact.mjs";
+import {
   TOOLS_LIST_SCHEMA_CONTRACT_SUMMARY,
-} from "../../../mcp/scripts/verify.mjs";
+} from "../../../mcp/scripts/verify/tools-list/schema.mjs";
 import { QUERY_ONTOLOGY_OPERATIONS } from "../../../mcp/src/ontology-engine.mjs";
 import { ROOT_PKG, makeDogfoodToolsList, okShape } from "./fixtures.mjs";
 

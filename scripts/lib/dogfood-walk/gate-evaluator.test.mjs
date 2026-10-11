@@ -5,7 +5,8 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { evaluateDogfoodGate, recordResult } from "../../dogfood-mcp-walk.mjs";
-import { compileIndexesSummary, VAULT_ISSUE_CODE_VALUES } from "../../../mcp/scripts/verify.mjs";
+import { compileIndexesSummary } from "../../../mcp/scripts/verify/checks/compile.mjs";
+import { VAULT_ISSUE_CODE_VALUES } from "../../../mcp/src/validate.mjs";
 import { makeDogfoodToolsList, okShape } from "./fixtures.mjs";
 
 describe("recordResult", () => {

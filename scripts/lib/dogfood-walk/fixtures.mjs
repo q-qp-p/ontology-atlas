@@ -4,9 +4,7 @@
 // Split out of scripts/dogfood-mcp-walk.test.mjs (structural decomposition, logic unchanged).
 import { readFileSync } from "node:fs";
 
-import {
-  EXPECTED_TOOLS,
-} from "../../../mcp/scripts/verify.mjs";
+import { EXPECTED_TOOLS } from "../../../mcp/scripts/verify/tools-list/inventory.mjs";
 import {
   MAINTENANCE_KIND_VALUES,
   QUERY_ONTOLOGY_OPERATIONS,

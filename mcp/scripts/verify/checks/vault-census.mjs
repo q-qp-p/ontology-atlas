@@ -1,0 +1,166 @@
+import { VAULT_ISSUE_CODE_VALUES } from '../../../src/validate.mjs';
+
+import { formatCount } from '../output.mjs';
+import { listConceptsFailure } from './concept-reads.mjs';
+
+export function listKindsFailure(parsed) {
+  if (!Number.isInteger(parsed?.total) || parsed.total < 0) {
+    return 'list_kinds response missing total count';
+  }
+  if (!parsed.byKind || typeof parsed.byKind !== 'object' || Array.isArray(parsed.byKind)) {
+    return 'list_kinds response missing byKind aggregate';
+  }
+  let sum = 0;
+  for (const [kind, count] of Object.entries(parsed.byKind)) {
+    if (typeof kind !== 'string' || kind.length === 0) {
+      return 'list_kinds response has empty kind key';
+    }
+    if (!Number.isInteger(count) || count < 0) {
+      return `list_kinds response missing count for kind: ${kind || 'unknown'}`;
+    }
+    sum += count;
+  }
+  if (sum !== parsed.total) {
+    return `list_kinds response total mismatch: total ${parsed.total}, byKind ${sum}`;
+  }
+  return null;
+}
+
+export function projectProbeFailure(parsed, kinds) {
+  const shapeFailure = listConceptsFailure(parsed);
+  if (shapeFailure) return `project probe ${shapeFailure}`;
+  const kindProjectCount = Number.isInteger(kinds?.byKind?.project) ? kinds.byKind.project : 0;
+  if (kindProjectCount === 0 && parsed.total === 0) {
+    return null;
+  }
+  if (parsed.total < 1) {
+    return 'project probe response missing project node';
+  }
+  const nonProject = parsed.nodes.find((node) => node?.kind !== 'project');
+  if (nonProject) {
+    return `project probe returned non-project node: ${nonProject.slug || '(unknown)'}`;
+  }
+  if (Number.isInteger(kindProjectCount) && parsed.total >= 1 && parsed.total !== kindProjectCount) {
+    return `project probe count mismatch: list_kinds project ${kindProjectCount}, probe ${parsed.total}`;
+  }
+  return null;
+}
+
+export function findOrphansFailure(parsed) {
+  if (!Number.isInteger(parsed?.total) || parsed.total < 0) {
+    return 'find_orphans response missing total count';
+  }
+  if (!Array.isArray(parsed.orphans)) {
+    return 'find_orphans response missing orphans array';
+  }
+  if (parsed.orphans.length > parsed.total) {
+    return `find_orphans response orphan count exceeds total: orphans ${parsed.orphans.length}, total ${parsed.total}`;
+  }
+  for (const [index, node] of parsed.orphans.entries()) {
+    if (!node || typeof node !== 'object' || Array.isArray(node)) {
+      return `find_orphans response malformed orphan at index ${index}`;
+    }
+    if (typeof node.slug !== 'string' || node.slug.length === 0) {
+      return `find_orphans response missing orphan slug at index ${index}`;
+    }
+    if (typeof node.kind !== 'string' || node.kind.length === 0) {
+      return `find_orphans response missing orphan kind: ${node.slug}`;
+    }
+    if (node.kind === 'project' || node.kind === 'vault-readme') {
+      return `find_orphans default exclusions returned root/sentinel kind: ${node.slug}`;
+    }
+    if (typeof node.title !== 'string' || node.title.length === 0) {
+      return `find_orphans response missing orphan title: ${node.slug}`;
+    }
+    if (!Number.isFinite(node.mtime) || node.mtime < 0) {
+      return `find_orphans response missing orphan mtime: ${node.slug}`;
+    }
+  }
+  return null;
+}
+
+export function validateVaultFailure(parsed) {
+  const summary = parsed?.summary;
+  if (!summary) return 'validate_vault response missing summary';
+  if (!Number.isInteger(parsed?.scanned) || parsed.scanned < 0) {
+    return 'validate_vault response missing scanned count';
+  }
+  if (!Number.isInteger(summary.problemFiles) || summary.problemFiles < 0) {
+    return 'validate_vault response missing problemFiles count';
+  }
+  if (!Number.isInteger(summary.errorFiles) || summary.errorFiles < 0) {
+    return 'validate_vault response missing errorFiles count';
+  }
+  if (!Number.isInteger(summary.warningFiles) || summary.warningFiles < 0) {
+    return 'validate_vault response missing warningFiles count';
+  }
+  if (!summary.byCode || typeof summary.byCode !== 'object' || Array.isArray(summary.byCode)) {
+    return 'validate_vault response missing byCode aggregate';
+  }
+  if (Array.isArray(parsed.problems)) {
+    for (const [problemIndex, problem] of parsed.problems.entries()) {
+      if (!Array.isArray(problem?.issues)) continue;
+      for (const [issueIndex, issue] of problem.issues.entries()) {
+        if (!VAULT_ISSUE_CODE_VALUES.includes(issue?.code)) {
+          return `validate_vault response unknown issue code at problems[${problemIndex}].issues[${issueIndex}]: ${issue?.code}`;
+        }
+      }
+    }
+  }
+  const byCodeFailure = validateByCodeAggregate(summary.byCode);
+  if (byCodeFailure) return byCodeFailure;
+  const problemFiles = summary.problemFiles;
+  if (problemFiles === 0) return null;
+  if (Object.keys(summary.byCode).length === 0) {
+    return 'validate_vault response missing byCode entries for problem files';
+  }
+  // Warning-only problem files warn (see `validateVaultNotice`); a file with
+  // an error is what fails verification, matching `ontology-atlas validate`.
+  if (summary.errorFiles === 0) return null;
+  const codeSummary = validationCodeSummary(summary.byCode);
+  const suffix = codeSummary ? ` · codes ${codeSummary}` : '';
+  return `validate_vault found ${formatCount(problemFiles, 'problem file')}: errors ${summary.errorFiles}, warnings ${summary.warningFiles}${suffix}`;
+}
+
+/** Warning-only validation problems, printed but never fatal. */
+export function validateVaultNotice(parsed) {
+  const summary = parsed?.summary;
+  if (!summary || !Number.isInteger(summary.problemFiles) || summary.problemFiles === 0) return null;
+  if (summary.errorFiles !== 0) return null;
+  const codeSummary = summary.byCode && typeof summary.byCode === 'object' && !Array.isArray(summary.byCode)
+    ? validationCodeSummary(summary.byCode)
+    : '';
+  const suffix = codeSummary ? ` · codes ${codeSummary}` : '';
+  return `validate_vault found ${formatCount(summary.problemFiles, 'problem file')} with warnings only (errors 0, warnings ${summary.warningFiles})${suffix}; warnings do not block verification.`;
+}
+
+function validateByCodeAggregate(byCode) {
+  for (const [code, entry] of Object.entries(byCode)) {
+    if (!VAULT_ISSUE_CODE_VALUES.includes(code)) {
+      return `validate_vault response unknown byCode key: ${code}`;
+    }
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+      return `validate_vault response malformed byCode entry: ${code}`;
+    }
+    if (typeof entry.severity !== 'string' || entry.severity.length === 0) {
+      return `validate_vault response missing byCode severity: ${code}`;
+    }
+    if (!Number.isInteger(entry.count) || entry.count < 0) {
+      return `validate_vault response missing byCode count: ${code}`;
+    }
+    if (!Array.isArray(entry.files)) {
+      return `validate_vault response missing byCode files: ${code}`;
+    }
+  }
+  return null;
+}
+
+export function validationCodeSummary(byCode, limit = 3) {
+  const entries = Object.entries(byCode || {})
+    .filter(([, entry]) => Number.isInteger(entry?.count))
+    .sort(([aCode, a], [bCode, b]) => b.count - a.count || aCode.localeCompare(bCode));
+  if (entries.length === 0) return null;
+  const shown = entries.slice(0, limit).map(([code, entry]) => `${code}:${entry.severity || 'unknown'}:${entry.count}`);
+  const suffix = entries.length > shown.length ? `, +${entries.length - shown.length} more` : '';
+  return `${shown.join(', ')}${suffix}`;
+}

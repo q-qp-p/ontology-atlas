@@ -32,7 +32,9 @@ import {
 } from '../../scripts/lib/test-name-pattern.mjs';
 import { assertPnpmScriptsExist } from '../../scripts/lib/pnpm-script-refs.mjs';
 import { CLI_CLIENT_INFO } from './lib/mcp-call.mjs';
-import { expectedToolsListAnnotationSummary } from '../../mcp/scripts/verify.mjs';
+import {
+  expectedToolsListAnnotationSummary,
+} from '../../mcp/scripts/verify/tools-list/inventory.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const CLI = join(__dirname, 'index.mjs');

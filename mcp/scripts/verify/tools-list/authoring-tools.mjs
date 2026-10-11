@@ -1,0 +1,326 @@
+import { WRITE_RELATION_TYPE_VALUES } from '../../../src/ontology-engine.mjs';
+
+import { sameArray } from '../value-checks.mjs';
+import { outputPropertyAt, propertyAt } from './schema-primitives.mjs';
+
+function unknownFieldsItemSchemaFailure(schema, toolName) {
+  const items = schema?.items;
+  if (
+    items?.type !== 'object' ||
+    items?.additionalProperties !== false ||
+    !sameArray(items?.required, ['name']) ||
+    items?.properties?.name?.type !== 'string' ||
+    items?.properties?.suggestion?.type !== 'string'
+  ) {
+    return `${toolName} outputSchema row unknownFields item drift`;
+  }
+  return null;
+}
+
+function stringArraySchemaFailure(schema) {
+  return !(schema?.type === 'array' && schema.items?.type === 'string');
+}
+
+export function authoringToolsSchemaFailure(tools) {
+  for (const [toolName, propertyName] of [
+    ['add_concepts', 'concepts'],
+    ['add_relations', 'relations'],
+  ]) {
+    const tool = tools.find((candidate) => candidate?.name === toolName);
+    // toolsListSchemaFailure also supports focused unit fixtures containing a
+    // subset of the registry. Live verification separately enforces the full
+    // inventory, then validates every destructive tool present here.
+    if (!tool) continue;
+    if (!sameArray(tool.inputSchema?.required, [propertyName])) {
+      return `${toolName} required schema drift`;
+    }
+    const batchProperty = propertyAt(tool, ['properties', propertyName]);
+    if (batchProperty?.type !== 'array' || batchProperty?.maxItems !== 50) {
+      return `${toolName}.${propertyName} batch cap schema drift`;
+    }
+  }
+
+  const addConceptsTool = tools.find((candidate) => candidate?.name === 'add_concepts');
+  if (!/non-object row shape/.test(addConceptsTool?.description || '') || !/unknown row field/.test(addConceptsTool?.description || '')) {
+    return 'add_concepts description missing row isolation guidance';
+  }
+  if (!/concepts\[n\]/.test(addConceptsTool?.description || '')) {
+    return 'add_concepts description missing row label guidance';
+  }
+  if (!/single unknown-field rows include `receivedField` plus one-row `unknownFields`/.test(addConceptsTool?.description || '')) {
+    return 'add_concepts description missing single-field repair guidance';
+  }
+  if (!/multi unknown-field rows report every unknown field/.test(addConceptsTool?.description || '') || !/Received fields/.test(addConceptsTool?.description || '')) {
+    return 'add_concepts description missing multi-field received fields guidance';
+  }
+  if (!/duplicate input slugs/.test(addConceptsTool?.description || '') || !/first-seen `concepts\[m\]`/.test(addConceptsTool?.description || '')) {
+    return 'add_concepts description missing duplicate row guidance';
+  }
+  if (!/structured `rowName` \/ `firstSeenAt`/.test(addConceptsTool?.description || '')) {
+    return 'add_concepts description missing duplicate structured row repair guidance';
+  }
+  if (!/Invalid-only batches return no row-level write metadata and no top-level `postWriteMaintenance`/.test(addConceptsTool?.description || '')) {
+    return 'add_concepts description missing invalid-only no-write metadata guidance';
+  }
+  if (addConceptsTool.outputSchema?.type !== 'object') {
+    return 'add_concepts outputSchema root drift';
+  }
+  if (!sameArray(addConceptsTool.outputSchema?.required, ['concepts'])) {
+    return 'add_concepts outputSchema required drift';
+  }
+  if (addConceptsTool.outputSchema?.additionalProperties !== false) {
+    return 'add_concepts outputSchema root openness drift';
+  }
+  const addConceptRowsSchema = outputPropertyAt(addConceptsTool, ['properties', 'concepts']);
+  if (
+    addConceptRowsSchema?.type !== 'array' ||
+    addConceptRowsSchema.items?.type !== 'object' ||
+    !sameArray(addConceptRowsSchema.items?.required, ['slug', 'ok'])
+  ) {
+    return 'add_concepts outputSchema rows drift';
+  }
+  if (addConceptRowsSchema.items?.additionalProperties !== false) {
+    return 'add_concepts outputSchema row openness drift';
+  }
+  if (addConceptRowsSchema.items?.properties?.slug?.type !== 'string') {
+    return 'add_concepts outputSchema row slug drift';
+  }
+  if (addConceptRowsSchema.items?.properties?.ok?.type !== 'boolean') {
+    return 'add_concepts outputSchema row ok drift';
+  }
+  if (addConceptRowsSchema.items?.properties?.filePath?.type !== 'string') {
+    return 'add_concepts outputSchema row filePath drift';
+  }
+  if (addConceptRowsSchema.items?.properties?.changed?.type !== 'boolean') {
+    return 'add_concepts outputSchema row changed drift';
+  }
+  if (addConceptRowsSchema.items?.properties?.warnings?.type !== 'array' || addConceptRowsSchema.items?.properties?.warnings?.items?.type !== 'string') {
+    return 'add_concepts outputSchema row warnings drift';
+  }
+  if (addConceptRowsSchema.items?.properties?.error?.type !== 'string') {
+    return 'add_concepts outputSchema row error drift';
+  }
+  for (const propertyName of ['errorCode', 'valueName', 'suggestion', 'rowName', 'receivedField', 'conflictSubject', 'conflictSlug', 'firstSeenAt']) {
+    if (addConceptRowsSchema.items?.properties?.[propertyName]?.type !== 'string') {
+      return `add_concepts outputSchema row ${propertyName} drift`;
+    }
+  }
+  if (addConceptRowsSchema.items?.properties?.receivedValue?.type !== 'string') {
+    return 'add_concepts outputSchema row receivedValue drift';
+  }
+  if (addConceptRowsSchema.items?.properties?.unknownFields?.type !== 'array') {
+    return 'add_concepts outputSchema row unknownFields drift';
+  }
+  const addConceptsUnknownFieldsFailure = unknownFieldsItemSchemaFailure(
+    addConceptRowsSchema.items?.properties?.unknownFields,
+    'add_concepts',
+  );
+  if (addConceptsUnknownFieldsFailure) return addConceptsUnknownFieldsFailure;
+  for (const propertyName of ['allowedValues', 'allowedFields', 'receivedFields', 'recoveryTools', 'avoidTools']) {
+    if (stringArraySchemaFailure(addConceptRowsSchema.items?.properties?.[propertyName])) {
+      return `add_concepts outputSchema row ${propertyName} drift`;
+    }
+  }
+  if (outputPropertyAt(addConceptsTool, ['properties', 'postWriteMaintenance'])?.type !== 'object') {
+    return 'add_concepts outputSchema postWriteMaintenance drift';
+  }
+
+  const addConceptTool = tools.find((candidate) => candidate?.name === 'add_concept');
+  if (!addConceptTool) return 'tools/list response missing add_concept tool';
+  if (addConceptTool.outputSchema?.type !== 'object') {
+    return 'add_concept outputSchema root drift';
+  }
+  if (!sameArray(addConceptTool.outputSchema?.required, ['ok', 'slug', 'filePath', 'changed'])) {
+    return 'add_concept outputSchema required drift';
+  }
+  if (addConceptTool.outputSchema?.additionalProperties !== false) {
+    return 'add_concept outputSchema root openness drift';
+  }
+  for (const propertyName of ['slug', 'filePath']) {
+    if (outputPropertyAt(addConceptTool, ['properties', propertyName])?.type !== 'string') {
+      return `add_concept outputSchema ${propertyName} drift`;
+    }
+  }
+  if (outputPropertyAt(addConceptTool, ['properties', 'ok'])?.type !== 'boolean') {
+    return 'add_concept outputSchema ok drift';
+  }
+  if (outputPropertyAt(addConceptTool, ['properties', 'changed'])?.type !== 'boolean') {
+    return 'add_concept outputSchema changed drift';
+  }
+  const addConceptWarningsSchema = outputPropertyAt(addConceptTool, ['properties', 'warnings']);
+  if (addConceptWarningsSchema?.type !== 'array' || addConceptWarningsSchema.items?.type !== 'string') {
+    return 'add_concept outputSchema warnings drift';
+  }
+  if (outputPropertyAt(addConceptTool, ['properties', 'postWriteMaintenance'])?.type !== 'object') {
+    return 'add_concept outputSchema postWriteMaintenance drift';
+  }
+
+  const addRelationsTool = tools.find((candidate) => candidate?.name === 'add_relations');
+  const addRelationInputType = propertyAt(addRelationsTool, ['properties', 'relations', 'items', 'properties', 'type']);
+  if (!sameArray(addRelationInputType?.enum, WRITE_RELATION_TYPE_VALUES)) {
+    return 'add_relations inputSchema type enum drift';
+  }
+  if (!/non-object row shape/.test(addRelationsTool?.description || '') || !/unknown row field/.test(addRelationsTool?.description || '') || !/unknown type/.test(addRelationsTool?.description || '')) {
+    return 'add_relations description missing row isolation guidance';
+  }
+  if (!/relations\[n\]/.test(addRelationsTool?.description || '')) {
+    return 'add_relations description missing row label guidance';
+  }
+  if (!/structured `rowName`/.test(addRelationsTool?.description || '')) {
+    return 'add_relations description missing structured rowName guidance';
+  }
+  if (!/single unknown-field rows include `receivedField` plus one-row `unknownFields`/.test(addRelationsTool?.description || '')) {
+    return 'add_relations description missing single-field repair guidance';
+  }
+  if (!/multi unknown-field rows report every unknown field/.test(addRelationsTool?.description || '') || !/Received fields/.test(addRelationsTool?.description || '')) {
+    return 'add_relations description missing multi-field received fields guidance';
+  }
+  if (!/`allowedFields`, `receivedFields`/.test(addRelationsTool?.description || '')) {
+    return 'add_relations description missing structured field-list guidance';
+  }
+  if (!/closest-value hint/.test(addRelationsTool?.description || '')) {
+    return 'add_relations description missing closest-value type guidance';
+  }
+  if (!/structured `valueName` \/ `receivedValue` \/ `suggestion` \/ `allowedValues`/.test(addRelationsTool?.description || '')) {
+    return 'add_relations description missing structured value repair guidance';
+  }
+  if (!/Invalid-only batches return no row-level `changed` \/ `alreadyExists` write metadata and no top-level `postWriteMaintenance`/.test(addRelationsTool?.description || '')) {
+    return 'add_relations description missing invalid-only no-write metadata guidance';
+  }
+  if (addRelationsTool.outputSchema?.type !== 'object') {
+    return 'add_relations outputSchema root drift';
+  }
+  if (!sameArray(addRelationsTool.outputSchema?.required, ['relations'])) {
+    return 'add_relations outputSchema required drift';
+  }
+  if (addRelationsTool.outputSchema?.additionalProperties !== false) {
+    return 'add_relations outputSchema root openness drift';
+  }
+  const addRelationRowsSchema = outputPropertyAt(addRelationsTool, ['properties', 'relations']);
+  if (
+    addRelationRowsSchema?.type !== 'array' ||
+    addRelationRowsSchema.items?.type !== 'object' ||
+    !sameArray(addRelationRowsSchema.items?.required, ['ok', 'from', 'to', 'type'])
+  ) {
+    return 'add_relations outputSchema rows drift';
+  }
+  if (addRelationRowsSchema.items?.additionalProperties !== false) {
+    return 'add_relations outputSchema row openness drift';
+  }
+  for (const propertyName of ['from', 'to', 'type']) {
+    if (addRelationRowsSchema.items?.properties?.[propertyName]?.type !== 'string') {
+      return `add_relations outputSchema row ${propertyName} drift`;
+    }
+  }
+  if (addRelationRowsSchema.items?.properties?.ok?.type !== 'boolean') {
+    return 'add_relations outputSchema row ok drift';
+  }
+  if (addRelationRowsSchema.items?.properties?.alreadyExists?.type !== 'boolean') {
+    return 'add_relations outputSchema row alreadyExists drift';
+  }
+  if (addRelationRowsSchema.items?.properties?.key?.type !== 'string') {
+    return 'add_relations outputSchema row key drift';
+  }
+  if (addRelationRowsSchema.items?.properties?.changed?.type !== 'boolean') {
+    return 'add_relations outputSchema row changed drift';
+  }
+  if (addRelationRowsSchema.items?.properties?.error?.type !== 'string') {
+    return 'add_relations outputSchema row error drift';
+  }
+  for (const propertyName of ['errorCode', 'valueName', 'suggestion', 'rowName', 'receivedField', 'missingSubject', 'missingSlug', 'createTool']) {
+    if (addRelationRowsSchema.items?.properties?.[propertyName]?.type !== 'string') {
+      return `add_relations outputSchema row ${propertyName} drift`;
+    }
+  }
+  if (addRelationRowsSchema.items?.properties?.receivedValue?.type !== 'string') {
+    return 'add_relations outputSchema row receivedValue drift';
+  }
+  if (addRelationRowsSchema.items?.properties?.unknownFields?.type !== 'array') {
+    return 'add_relations outputSchema row unknownFields drift';
+  }
+  const addRelationsUnknownFieldsFailure = unknownFieldsItemSchemaFailure(
+    addRelationRowsSchema.items?.properties?.unknownFields,
+    'add_relations',
+  );
+  if (addRelationsUnknownFieldsFailure) return addRelationsUnknownFieldsFailure;
+  for (const propertyName of ['allowedValues', 'allowedFields', 'receivedFields', 'similarSlugs', 'recoveryTools']) {
+    if (stringArraySchemaFailure(addRelationRowsSchema.items?.properties?.[propertyName])) {
+      return `add_relations outputSchema row ${propertyName} drift`;
+    }
+  }
+  if (outputPropertyAt(addRelationsTool, ['properties', 'postWriteMaintenance'])?.type !== 'object') {
+    return 'add_relations outputSchema postWriteMaintenance drift';
+  }
+
+  const addRelationTool = tools.find((candidate) => candidate?.name === 'add_relation');
+  if (!addRelationTool) return 'tools/list response missing add_relation tool';
+  const singleAddRelationInputType = propertyAt(addRelationTool, ['properties', 'type']);
+  if (!sameArray(singleAddRelationInputType?.enum, WRITE_RELATION_TYPE_VALUES)) {
+    return 'add_relation inputSchema type enum drift';
+  }
+  // strict-args derives its allowlist from the schema, so a missing `why` block rejects `why`.
+  const addRelationWhy = propertyAt(addRelationTool, ['properties', 'why']);
+  if (addRelationWhy?.type !== 'string' || addRelationWhy?.maxLength !== 300) {
+    return 'add_relation inputSchema why (relation_notes rationale) drift';
+  }
+  if (!/rejected before endpoint slug resolution/.test(addRelationTool?.description || '')) {
+    return 'add_relation description missing type-preflight guidance';
+  }
+  if (!/closest-value hint/.test(addRelationTool?.description || '')) {
+    return 'add_relation description missing closest-value type guidance';
+  }
+  if (!/structured `valueName` \/ `receivedValue` \/ `suggestion` \/ `allowedValues`/.test(addRelationTool?.description || '')) {
+    return 'add_relation description missing structured value repair guidance';
+  }
+  if (!/no `changed`, `alreadyExists`, or `postWriteMaintenance` write metadata/.test(addRelationTool?.description || '')) {
+    return 'add_relation description missing non-write preflight metadata guidance';
+  }
+  if (addRelationTool.outputSchema?.type !== 'object') {
+    return 'add_relation outputSchema root drift';
+  }
+  if (!sameArray(addRelationTool.outputSchema?.required, ['ok', 'from', 'to', 'type'])) {
+    return 'add_relation outputSchema required drift';
+  }
+  if (addRelationTool.outputSchema?.additionalProperties !== false) {
+    return 'add_relation outputSchema root openness drift';
+  }
+  for (const propertyName of ['from', 'to', 'type', 'key']) {
+    if (outputPropertyAt(addRelationTool, ['properties', propertyName])?.type !== 'string') {
+      return `add_relation outputSchema ${propertyName} drift`;
+    }
+  }
+  for (const propertyName of ['ok', 'changed', 'alreadyExists']) {
+    if (outputPropertyAt(addRelationTool, ['properties', propertyName])?.type !== 'boolean') {
+      return `add_relation outputSchema ${propertyName} drift`;
+    }
+  }
+  if (outputPropertyAt(addRelationTool, ['properties', 'postWriteMaintenance'])?.type !== 'object') {
+    return 'add_relation outputSchema postWriteMaintenance drift';
+  }
+
+  const patchConceptTool = tools.find((candidate) => candidate?.name === 'patch_concept');
+  if (!patchConceptTool) return 'tools/list response missing patch_concept tool';
+  if (patchConceptTool.outputSchema?.type !== 'object') {
+    return 'patch_concept outputSchema root drift';
+  }
+  if (!sameArray(patchConceptTool.outputSchema?.required, ['ok', 'slug', 'filePath', 'changed', 'postWriteMaintenance'])) {
+    return 'patch_concept outputSchema required drift';
+  }
+  if (patchConceptTool.outputSchema?.additionalProperties !== false) {
+    return 'patch_concept outputSchema root openness drift';
+  }
+  for (const propertyName of ['slug', 'filePath']) {
+    if (outputPropertyAt(patchConceptTool, ['properties', propertyName])?.type !== 'string') {
+      return `patch_concept outputSchema ${propertyName} drift`;
+    }
+  }
+  for (const propertyName of ['ok', 'changed']) {
+    if (outputPropertyAt(patchConceptTool, ['properties', propertyName])?.type !== 'boolean') {
+      return `patch_concept outputSchema ${propertyName} drift`;
+    }
+  }
+  if (outputPropertyAt(patchConceptTool, ['properties', 'postWriteMaintenance'])?.type !== 'object') {
+    return 'patch_concept outputSchema postWriteMaintenance drift';
+  }
+  return null;
+}
