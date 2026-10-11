@@ -75,7 +75,7 @@ export function specTriggerPath(changedPath) {
 
 /**
  * Spec changes between two refs, described one per line, for the trigger files
- * among the changed paths. A moved trigger compares against its old path.
+ * among the changed paths.
  */
 export function designSpecChangesBetween(base, head, changedPaths, triggerFiles, root = process.cwd(), renamedFrom = new Map()) {
   const touched = new Set([...changedPaths].map(specTriggerPath));
