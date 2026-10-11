@@ -10,7 +10,7 @@ import {
 } from '@/entities/architecture-profile';
 import {
   parseArchitectureRecord,
-  type ArchitectureRecordSource,
+  type ArchitectureRecord,
   type ArchitectureRoleEdge,
 } from '@/entities/architecture-record';
 import {
@@ -43,7 +43,7 @@ function buildRecord({
   excludedByUsage = 18 as number | undefined,
   observedRoleEdges = [] as ArchitectureRoleEdge[],
 }: {
-  source?: ArchitectureRecordSource;
+  source?: ArchitectureRecord['brief']['measured']['source'];
   status?: 'conforms' | 'violated' | 'unknown';
   violationCount?: number;
   excludedByUsage?: number | undefined;

@@ -31,12 +31,6 @@ export function availableDemoClips(
   return DEMO_CLIPS.filter((clip) => available.includes(clip.id));
 }
 
-export function hasDemoClips(
-  available: readonly DemoClip['id'][] = AVAILABLE_DEMO_CLIP_IDS,
-): boolean {
-  return availableDemoClips(available).length > 0;
-}
-
 function localeTag(locale: string): 'ko' | 'en' {
   return locale === 'ko' ? 'ko' : 'en';
 }

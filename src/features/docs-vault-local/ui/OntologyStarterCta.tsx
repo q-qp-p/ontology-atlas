@@ -31,15 +31,6 @@ export const ONTOLOGY_STARTER_AGENT_VERIFY_PROMPT =
     'Do not write to the ontology until one of those read-first checks succeeds.',
   ].join(' ');
 
-export const ONTOLOGY_STARTER_CLI_VERIFY_COMMANDS = [
-  `${ATLAS_CLI} validate .`,
-  `${ATLAS_CLI} workspace-brief .`,
-  `${ATLAS_CLI} agent-brief . --prompt`,
-  `${ATLAS_CLI} agent-brief . --graph-db-pack`,
-  `${ATLAS_CLI} agent-brief . --verify-fallbacks`,
-  `${ATLAS_CLI} mcp-verify . --timeout-ms 15000`,
-].join('\n');
-
 export const ONTOLOGY_STARTER_JSON_GATE_COMMAND =
   `${ATLAS_CLI} agent-brief . --verify-fallbacks --json --exit-zero --fallback-timeout-ms 15000 --fallback-slow-ms 5000 --fallback-concurrency 4`;
 

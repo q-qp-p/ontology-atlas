@@ -2,12 +2,12 @@ import { describe, expect, it, beforeEach } from "vitest";
 import { act, render, screen } from "@testing-library/react";
 import { useState } from "react";
 
+import { useArrivalMemory } from "./route-arrival-memory";
 import {
   clearArrivalMemory,
   readArrivalMemory,
-  useArrivalMemory,
   writeArrivalMemory,
-} from "./route-arrival-memory";
+} from "./route-arrival-memory-store";
 
 /**
  * The contract `AtlasGitPanel`, `AcpRuntimeSettings`, `HomePage` and `DocsVaultViewer` rely
