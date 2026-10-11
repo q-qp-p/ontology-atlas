@@ -170,7 +170,9 @@
     "sourceErrorUnbound_sidecar_unavailable": "Atlas 无法读取本地回执，因此没有连接该文件夹。",
     "sourceErrorUnbound_picker_failed": "Atlas 无法打开代码文件夹选择器。请再点一次。",
     "sourceErrorUnbound_measurement_failed": "Atlas 无法测量所选文件夹，因此没有连接。",
-    "sourceErrorUnbound_persistence_failed": "Atlas 无法保存回执，因此没有连接该文件夹。"
+    "sourceErrorUnbound_persistence_failed": "Atlas 无法保存回执，因此没有连接该文件夹。",
+    "sourceRepairTarget": "打开 {title} 并检查缺失的代码位置：{path}。",
+    "sourceRepairUnavailable": "记录的概念或代码位置与当前项目不匹配。请选择修复目标前重新检查代码文件夹。"
   },
   "createNode": {
     "heading": "添加概念",

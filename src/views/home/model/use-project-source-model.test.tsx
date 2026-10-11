@@ -260,6 +260,29 @@ describe("project source model", () => {
     expect(notAProject.result.current.loading).toBe(false);
   });
 
+  it("rechecks a changed repair claim and clears it on a project switch", async () => {
+    const vault = createFakeVaultHandle();
+    const inspect = vi.fn(async () => ({ ...inspection, files: [] }));
+    const sourceRuntime = runtime({ inspect });
+    const { result, rerender } = renderHook(({ projectSlug, currentDocs }) => useProjectSourceModel({
+      projectSlug, vaultHandle: vault.handle, nodes, docs: currentDocs, runtime: sourceRuntime,
+    }), { initialProps: { projectSlug: "music", currentDocs: docs } });
+    await waitFor(() => expect(result.current.view?.status).toBe("not_measured"));
+    await act(async () => { await result.current.runNextAction(); });
+    expect(result.current.repairTarget?.nodeId).toBe("capability:play");
+    const changed = docs.map((doc) => doc.slug === "capabilities/play"
+      ? { ...doc, frontmatter: { ...doc.frontmatter, path: "src/moved.ts" } } : doc);
+    rerender({ projectSlug: "music", currentDocs: changed });
+    expect(result.current.repairTarget).toBeNull();
+    expect(result.current.view?.nextAction.id).toBe("remeasure_source");
+    await act(async () => { await result.current.runNextAction(); });
+    await waitFor(() => expect(result.current.repairTarget?.path).toBe("src/moved.ts"));
+    expect(inspect).toHaveBeenCalledTimes(2);
+    rerender({ projectSlug: "other", currentDocs: changed });
+    expect(result.current.view).toBeNull();
+    expect(result.current.repairTarget).toBeNull();
+  });
+
   it("keeps cancellation silent, preserves the receipt view, and restores trigger focus", async () => {
     const vault = createFakeVaultHandle();
     const restoreFocus = vi.fn();

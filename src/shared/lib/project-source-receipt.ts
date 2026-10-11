@@ -287,8 +287,35 @@ export function deriveProjectSourceView(input: {
   );
 }
 
+export function projectSourceRepairWitness(view: ProjectSourceView): ProjectSourceWitness | null {
+  const target = view.nextAction.target;
+  const receipt = view.receipt;
+  if (
+    view.nextAction.id !== "repair_source_path"
+    || view.currentness === "stale"
+    || view.status !== "review_required"
+    || !receipt || receipt.projectSlug !== view.projectSlug
+    || receipt.nextAction.id !== "repair_source_path"
+    || receipt.nextAction.target !== target
+    || view.topGap?.id !== "declared_source_path_missing"
+    || view.topGap.nodeSlug !== target
+    || !portableLocation(target)
+  ) return null;
+  return receipt.witnesses.find((witness) => (
+    witness.nodeSlug === target && !witness.supported && portableLocation(witness.path)
+  )) ?? null;
+}
+
+function portableLocation(value: unknown): value is string {
+  return typeof value === "string" && value.length > 0 && value.length <= 500
+    && value.trim() === value && !/[\\:\u0000-\u001f\u007f]/u.test(value)
+    && !value.startsWith("~")
+    && value.split("/").every((part) => part !== "" && part !== "." && part !== "..");
+}
+
 /** Copy-safe receipt summary. Field order matches CLI and the inspector. */
 export function formatProjectSourceHandoff(view: ProjectSourceView): string {
+  const repair = projectSourceRepairWitness(view);
   return [
     "PROJECT SOURCE",
     `contractVersion: ${view.contractVersion}`,
@@ -299,6 +326,7 @@ export function formatProjectSourceHandoff(view: ProjectSourceView): string {
     `measuredAt: ${view.measuredAt ?? "unmeasured"}`,
     `topGap: ${view.topGap?.id ?? "none"}`,
     `nextAction: ${view.nextAction.id}`,
+    ...(repair ? [`nextActionTarget: ${repair.nodeSlug}`, `missingSourcePath: ${repair.path}`] : []),
     `bindingCardinality: ${view.bindingCardinality}`,
   ].join("\n");
 }

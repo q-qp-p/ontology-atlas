@@ -379,7 +379,7 @@ export function TopologyInspectorSurfaces({
                 ? handleProjectSourceConfirmProposal
                 : undefined}
               onProjectSourceAction={projectSourceNextActionAvailable
-                ? handleProjectSourceAction
+                ? () => handleProjectSourceAction(handleSelect)
                 : undefined}
               onEnterRealm={
                 // Only for a container outside any realm.
@@ -560,8 +560,8 @@ export function TopologyInspectorSurfaces({
           projectSourceLabels={projectSourceLabels}
           projectSourceBusy={projectSource.busy}
           projectSourceError={projectSourceErrorLabel}
-          onProjectSourceAction={projectSource.canRunSourceAction
-            ? projectSource.runNextAction
+          onProjectSourceAction={projectSourceNextActionAvailable
+            ? () => handleProjectSourceAction(handleSelect)
             : undefined}
           onSelectNode={(id) => handleSelect(id)}
           onClose={handleClose}

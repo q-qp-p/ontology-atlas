@@ -64,7 +64,7 @@ export function ProjectSourceRemedy({
       {why ? (
         <p
           data-testid="map-project-source-why"
-          className="text-label text-[color:var(--map-panel-text-tertiary)]"
+          className="[overflow-wrap:anywhere] text-label text-[color:var(--map-panel-text-tertiary)]"
         >
           {why}
         </p>
