@@ -24,7 +24,9 @@ reason to inspect its original document.
 
 The owner's PO route is `observed`, `public-contract`, review lenses `moment/evidence/boundaries + spec`. Truth,
 transfer, agent-write and human correction boundaries stay unchanged. The first slice supports one explicitly
-bound Git source for one project scope, with the existing native source grant.
+bound Git source for one project scope, with the existing native source grant. The confined binding reader
+currently supports Unix platforms; macOS is the verified app surface. Non-Unix platforms, including Windows,
+retain the existing `unsupported_platform` refusal, mapped to `unreadable` with no dates by this command.
 
 ## Before this change
 
@@ -218,7 +220,8 @@ limits. The old `different-source` key remains for compatibility, but a valid se
 5. Given malformed, missing, duplicate or changed binding/receipt identity, a non-Git source, or more than one
    source scope, when comparison is requested, then an explicit unavailable reason replaces a result and no
    arbitrary root is chosen. Verify native binding fixtures and hook tests, including duplicate bindings that
-   name the same root.
+   name the same root. On non-Unix hosts, verify the actual command refuses the unavailable confined reader
+   and returns neither document nor source dates, even with valid binding data and both grants.
 6. Given a binding, receipt, root or HEAD changes during a delayed measurement, or the visible
    vault/project/paths change while it is pending, when the old result completes, then it cannot produce a
    visible current verdict. Verify native before/after mutation fixtures and the hook's delayed-response tests;

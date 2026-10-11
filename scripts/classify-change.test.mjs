@@ -10,6 +10,7 @@ import {
   encodePlan,
   FULL_LANE_COMMANDS,
   unitUsesAllShards,
+  isRelatedSweep,
   reuseReviewedMainPlan,
 } from './classify-change.mjs';
 
@@ -81,12 +82,14 @@ test('app tests run affected Vitest and the test-source ratchets without waking 
 
 test('a stylesheet change runs the token gates that read it whole', () => {
   for (const file of ['app/globals.css', 'app/styles/tokens.css']) {
-    assert.deepEqual(buildImpactPlan({ files: [file] }).lanes.unit.contractFiles, [
+    const { contract, contractFiles } = buildImpactPlan({ files: [file] }).lanes.unit;
+    assert.equal(contract, 'focused', file);
+    for (const gate of [
       'tests/contract/design-doc-token-integrity.contract.test.ts',
       'tests/contract/source-comment-bytes.contract.test.ts',
       'tests/contract/undeclared-token-ref.contract.test.ts',
       'tests/contract/unused-token-ratchet.contract.test.ts',
-    ], file);
+    ]) assert.ok(contractFiles.includes(gate), `${file} -> ${gate}`);
   }
 });
 
@@ -99,6 +102,29 @@ test('a widely imported source leaves related tests to the sharded affected run'
     false,
     'vitest related repeated the affected run unsharded on shard 1',
   );
+});
+
+test('code outside app and src runs every suite and contract its importers reach', () => {
+  const unit = buildImpactPlan({ files: ['mcp/src/architecture-profile.mjs'] }).lanes.unit;
+  assert.equal(unit.affected, true, 'a src suite imports this MCP module');
+  assert.equal(unit.contract, 'focused');
+  assert.ok(unit.contractFiles.includes('tests/contract/architecture-profile.contract.test.ts'));
+  assert.equal(unitUsesAllShards(unit), true);
+});
+
+test('a message part runs the suites importing the composed catalogue on every shard, and the contracts', () => {
+  const unit = buildImpactPlan({ files: ['messages/en/library.json'] }).lanes.unit;
+  assert.equal(unit.affected, false, 'no module imports a part, so --changed would select nothing');
+  assert.equal(unit.contract, 'full');
+  assert.ok(unit.extraCommands.some(isRelatedSweep));
+  assert.equal(unitUsesAllShards(unit), true);
+});
+
+test('a deleted file still imported somewhere runs the suites that import it by name', () => {
+  const unit = buildImpactPlan({ files: [], deletedFiles: ['mcp/src/architecture-profile.mjs'] }).lanes.unit;
+  const stale = 'src/views/architecture/model/analysis-architecture-record.test.ts';
+  assert.ok(unit.extraCommands.some((command) => command.split(' ').includes(stale)));
+  assert.ok(unit.contractFiles.includes('tests/contract/architecture-profile.contract.test.ts'));
 });
 
 test('a filesystem-scanned UI file runs affected units, contracts, and mapped e2e only', () => {
@@ -480,8 +506,9 @@ test('the perf lane starts only for code a measurement could import, and on ever
   const mode = (options) => buildImpactPlan(options).lanes.perf.mode;
   assert.equal(mode({ files: ['src/shared/lib/node-name-match.ts'] }), 'affected');
   assert.equal(mode({ files: ['src/shared/lib/source-passage.perf.test.ts'] }), 'affected');
-  assert.equal(mode({ files: ['app/[locale]/page.tsx'] }), 'affected');
-  // A plain test file is never imported by a measurement file.
+  // The import graph decides, wherever the imported code lives.
+  assert.equal(mode({ files: ['mcp/src/wiki-schema.mjs'] }), 'affected');
+  assert.equal(mode({ files: ['app/[locale]/page.tsx'] }), 'skip');
   assert.equal(mode({ files: ['src/shared/lib/cn.test.ts'] }), 'skip');
   assert.equal(mode({ files: ['docs/DESIGN-SYSTEM.md'] }), 'skip');
   assert.equal(mode({ files: ['mcp/src/schema.mjs'] }), 'skip');

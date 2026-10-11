@@ -84,6 +84,8 @@ reads document dates from the granted vault and implementation dates from the
 bound source under its separate read grant. The folders may belong to different
 Git repositories. Identical relative names remain separate document and source
 coordinates, including when the vault is nested in the source repository.
+The confined binding reader currently supports Unix platforms, including macOS.
+On Windows, this read returns unavailable and the claim dates remain unknown.
 
 An ungranted source offers the native code-folder picker. Its selection grants
 source reading only; date comparison separately requires the selected folder to

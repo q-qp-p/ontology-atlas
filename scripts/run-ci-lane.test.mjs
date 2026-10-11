@@ -34,6 +34,15 @@ test('affected unit lane uses the module graph and keeps filesystem contracts se
   assert.equal(commands.filter((command) => command.includes('tests/contract')).length, 2);
 });
 
+test('a related sweep is split across every shard and leaves the measurement project out', () => {
+  const plan = buildImpactPlan({ files: ['messages/en/library.json'] });
+  for (const shard of ['1/3', '2/3', '3/3']) {
+    const sweep = commandsForLane({ lane: 'unit', plan, base: 'abc123', shard }).filter((command) => command.startsWith('pnpm exec vitest related '));
+    assert.equal(sweep.length, 1, shard);
+    assert.ok(sweep[0].endsWith(`--project=contract-node --project=jsdom --shard=${shard}`), sweep[0]);
+  }
+});
+
 /**
  * The unit lane was 437 s average / 705 s at the tail and the only unsharded job in
  * PR CI (measured 2026-09-12). Sharding it is only safe if what gets split is a file
