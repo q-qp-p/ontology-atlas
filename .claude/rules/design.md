@@ -72,8 +72,8 @@ a composition.
   shows only while its popover is open. Gate:
   `tests/contract/footprint-trail-ink.contract.test.ts`.
 - Kind colour is data: a small marker plus a label on a neutral surface. Colour
-  alone may carry kind only in unlabeled totals, map dots and tree chips. Bars
-  use neutrals plus one indigo, separated by a 1px track gap.
+  alone may carry kind only in the map's kind light, whose legend names each
+  hue. Bars use neutrals plus one indigo, separated by a 1px track gap.
 - No coloured left-edge stripe on a new card or row ("No left-edge selection
   stripe" in `docs/DESIGN-SYSTEM.md`).
 - Workflow categories differ by shape (active underline, planned dashed), not

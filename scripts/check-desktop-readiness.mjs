@@ -963,46 +963,26 @@ if (
   ) &&
   /^export const MACOS_RELEASE: MacosRelease = \{\n\s+published: (?:true|false),/m.test(downloadGeneratedRelease) &&
   // Before publication only one state remains, "not yet", instead of placeholders.
-  /has not been published yet/.test(enMessages.download?.macosPendingBody ?? "") &&
-  /게시 전/.test(koMessages.download?.macosPendingBody ?? "") &&
+  /not published yet/.test(enMessages.download?.factUnpublished ?? "") &&
+  /게시 전/.test(koMessages.download?.factUnpublished ?? "") &&
   !enMessages.download?.checksumValuePending &&
   !enMessages.download?.factSizeValuePending &&
   !enMessages.download?.releaseAvailabilityNote &&
   !enMessages.download?.releaseStatusTitle &&
   !koMessages.download?.releaseStatusTitle &&
-  // Windows is not silent — the page says it is not out yet, not that it is missing.
-  //
-  // Revised 2026-07-29: the gateway redesign replaced the "coming soon" badge and
-  // card with a one-line status (`platformStatus`), a tracking link
-  // (`windowsTrackCta`), and a policy sentence stating the criteria (now in the
-  // guide's On trust chapter). The check is on the **contract** the three make together —
-  // where it is, where it goes, why it is not out — not on the badge **form**.
-  /Windows/.test(enMessages.download?.platformStatus ?? "") &&
-  /Windows/.test(koMessages.download?.platformStatus ?? "") &&
-  (enMessages.download?.windowsTrackCta ?? "").length > 0 &&
-  (koMessages.download?.windowsTrackCta ?? "").length > 0 &&
-  /not code-signed/.test(enMessages.download?.windowsUnsignedWarning ?? "") &&
-  /코드 서명되지 않았어요/.test(koMessages.download?.windowsUnsignedWarning ?? "") &&
-  /SmartScreen/.test(enMessages.download?.windowsUnsignedWarning ?? "") &&
-  /SmartScreen/.test(koMessages.download?.windowsUnsignedWarning ?? "") &&
-  // Signing status is written as **what is true now** — no future tense ("the gate
-  // will require") and no past tense that is not yet fact.
-  //
-  // Revised 2026-07-27: this gate was written in the unsigned era and **required**
-  // `trustPolicy` to be either "not signed or notarized" or "only after Developer ID
-  // signing". When the Developer ID certificate was issued that day
-  // (`docs/DECISIONS.md`) the release moved onto the signed path, but the
-  // requirement forced the page to keep showing the unsigned notice — the gate was
-  // holding a falsehood in place. Instead of pinning specific wording, it now
-  // decides on **whether the claim matches the actual release chain**.
-  !/Release gate requires/.test(enMessages.download?.proofSigned ?? "") &&
-  !/게이트가/.test(koMessages.download?.proofSigned ?? "") &&
+  // Windows is named, and its unsigned status is stated with the warning a visitor will meet.
+  /Windows/.test(enMessages.download?.heroWindowsCta ?? "") &&
+  /Windows/.test(koMessages.download?.heroWindowsCta ?? "") &&
+  /Unsigned/.test(enMessages.download?.trustLineWindows ?? "") &&
+  /미서명/.test(koMessages.download?.trustLineWindows ?? "") &&
+  /SmartScreen/.test(enMessages.download?.trustLineWindows ?? "") &&
+  /SmartScreen/.test(koMessages.download?.trustLineWindows ?? "") &&
   /\{file\}/.test(enMessages.download?.factShaLink ?? "") &&
   readText("docs/guide/trust.md").includes("shasum -a 256 <file>") &&
   readText("docs/guide/trust.md").includes("Get-FileHash <file> -Algorithm SHA256") &&
   // Claiming signing requires the release asset chain to actually sign, notarise,
   // and verify.
-  (!/Developer ID/.test(enMessages.download?.proofSigned ?? "") ||
+  (!/notarized/.test(enMessages.download?.trustLine ?? "") ||
     (pkg.scripts?.["desktop:release-artifact"] === RELEASE_ARTIFACT_COMMAND &&
       [
         'args: ["desktop:sign"]',
@@ -1024,7 +1004,7 @@ if (
   );
 } else {
   fail(
-    "the /download surface must derive size/checksum/download links from src/views/download/model/macos-release.generated.ts, say plainly that macOS is unpublished instead of showing placeholders, show a Windows in-preparation card, state signing/notarization as facts about published builds, and carry no operator-only release-pipeline status",
+    "the /download surface must derive size/checksum/download links from src/views/download/model/macos-release.generated.ts, say plainly that macOS is unpublished instead of showing placeholders, state the Windows build's unsigned status, state signing/notarization as facts about published builds, and carry no operator-only release-pipeline status",
   );
 }
 

@@ -4,8 +4,6 @@ import { describe, expect, it } from "vitest";
 import { deriveOntologyFromVault, resolveStaticVaultSource } from "@/entities/docs-vault";
 import { resolveNodeAgentTarget } from "@/entities/knowledge-graph";
 import { derivationToInsight } from "@/features/vault-ontology/model/use-ontology-insight";
-import { buildDuplicatePairs } from "@/views/ontology-insights/lib/duplicate-pairs";
-import { buildDoNextQueue } from "@/views/ontology-insights/lib/do-next-queue";
 import { compileOntology } from "../../mcp/src/ontology-compiler.mjs";
 import { createOntologyEngine } from "../../mcp/src/ontology-engine.mjs";
 import { parseFrontmatter } from "../../mcp/src/parser.mjs";
@@ -204,63 +202,6 @@ describe("화면 · CLI · MCP 개념 정합 (번들 dogfood == docs/ontology)",
     // document node in the bundled sample was caught here over a single `ontology/`
     // path fragment.
     expect(unusable).toEqual([]);
-  });
-});
-
-/** Extracts only the double-quoted slug argument from a handoff string. */
-function slugArgumentsIn(payload: string): string[] {
-  return [...payload.matchAll(/(?:slug|fromSlug|intoSlug|from)\s*:\s*"([^"]+)"/g)].map(
-    (match) => match[1],
-  );
-}
-
-describe("화면이 복사해 주는 MCP 호출의 인자 (인사이트)", () => {
-  const PLACEHOLDERS = new Set(["<대상>", "<근거 한 줄>"]);
-
-  function assertResolvable(payload: string) {
-    for (const slug of slugArgumentsIn(payload)) {
-      if (PLACEHOLDERS.has(slug)) continue;
-      const known = compiledNames.has(slug) || referencedOnlyRefs.has(slug);
-      expect(known, `복사되는 호출의 슬러그가 볼트에 없다: "${slug}" — ${payload}`).toBe(true);
-    }
-  }
-
-  it("「비슷한 이름」 병합 인계의 슬러그가 볼트에서 해석된다", () => {
-    const duplicates = buildDuplicatePairs(insight.nodes, insight.edges, 20);
-    // Candidates must really exist for this contract to mean anything.
-    expect(duplicates.rows.length).toBeGreaterThan(0);
-    for (const row of duplicates.rows) {
-      // Regression reproduction: this used to emit `ontology/elements/…` and fail immediately.
-      assertResolvable(
-        `merge_concepts({fromSlug:"${row.dissolveSlug}", intoSlug:"${row.keepSlug}"})`,
-      );
-    }
-  });
-
-  it("「할 일」 행별 인계의 슬러그가 볼트에서 해석된다", () => {
-    const freshness = new Map<string, string>();
-    for (const node of insight.nodes) {
-      const slug = node.evidenceIds[0];
-      if (slug) freshness.set(slug, "2020-01-01T00:00:00.000Z");
-    }
-    const queue = buildDoNextQueue(insight.nodes, insight.edges, freshness, {
-      // The prose is locale data; this contract only reads the MCP-call slugs.
-      prose: {
-        verificationGate: 'query_ontology({operation:"health"}) to re-check the result',
-        createDocFirst: 'create the document first with add_concept({slug:"%ref%", kind:"%kind%"})',
-        doNextUpdate: 'query_ontology({operation:"blast_radius", slug:"%ref%"}) then patch_concept({slug:"%ref%", …})',
-        doNextUpdateProof: 'get_concept({slug:"%ref%"})',
-        doNextNewDocProof: 'get_concept({slug:"%ref%"})',
-        orphanRelate: 'add_relation({from:"%ref%", to:"<target>", type:"relates", why:"<one-line reason>"})',
-        orphanFindNeighbors: 'find_neighbors({slug:"%ref%"}) then add_relation({from:"%ref%", to:"<target>", type:"relates", why:"<one-line reason>"})',
-        orphanProof: 'find_neighbors({slug:"%ref%"})',
-        promotionNewDoc: 'raise that document kind if right',
-        promotionDocumented: 'query_ontology({operation:"node_profile", slug:"%ref%"}) then patch_concept or add_concept',
-        promotionProof: 'query_ontology({operation:"node_profile", slug:"%ref%"})',
-      },
-    });
-    expect(queue.rows.length).toBeGreaterThan(0);
-    for (const row of queue.rows) assertResolvable(row.handoffPayload);
   });
 });
 

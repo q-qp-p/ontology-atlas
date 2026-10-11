@@ -6,24 +6,18 @@
   "header": {
     "openTreeAriaLabel": "Open document list",
     "openTreeTitle": "Document list",
-    "backToWorkspaceAriaLabel": "Back to concept view",
     "backToReviewAriaLabel": "Back to insight review",
     "reviewBack": "← Insight review",
-    "back": "Concept view",
     "title": "Ontology",
     "docCount": "{count} documents",
     "localBadge": "Local",
     "paletteTooltip": "Search · commands · tags (⌘K)",
     "paletteAriaLabel": "Open palette (search · commands · tags)",
-    "inspector": "Document info",
     "sourceAriaLabel": "Workspace source",
-    "vaultToolsTooltip": "Workspace tools",
-    "vaultToolsAriaLabel": "Open workspace tools menu",
     "vaultToolsMovedHint": "AI agent setup and verification tools moved to Settings: open the gear (⚙) at the top right.",
     "contractToggleLabel": "Workspace checks",
     "contractToggleHide": "Close workspace checks",
     "contractToggleShow": "Show workspace checks",
-    "crumbBack": "Your folder",
     "vaultPillFolders": "{count} folders",
     "vaultPillSwap": "Switch folder",
     "vaultPillSampleLabel": "Built-in sample (this tool's own documents)",
@@ -43,8 +37,7 @@
   "editorHeader": {
     "previewTab": "Preview",
     "editTab": "Edit",
-    "localSynced": "Synced · local",
-    "readOnlySample": "Read-only sample"
+    "localSynced": "Synced · local"
   },
   "frontmatterBlock": {
     "note": "The info block at the top is the map: this block becomes the map's dots and connections.",
@@ -198,13 +191,10 @@
     "dogfoodDirectBody": "Open docs/ontology directly in the desktop app so Atlas analyzes itself.",
     "createTitle": "Create a new workspace",
     "createBody": "Make or choose an empty folder, then seed it with the starter after it opens.",
-    "sampleTitle": "Browse sample workspace",
-    "sampleBody": "Look around with read-only docs before choosing a local folder.",
     "recentTitle": "Recent workspaces",
     "recentEmpty": "No recent workspaces yet. Open or create a folder to pin it here."
   },
   "sourceContract": {
-    "ariaLabel": "Where this workspace reads from right now",
     "filesLabel": "Workspace files",
     "filesLocalValue": "{count} local markdown files",
     "filesSampleValue": "{count} sample markdown files",
@@ -231,20 +221,10 @@
     "filesPruned": "Skipped {count} build/dependency folder(s) ({names})."
   },
   "advanced": {
-    "sourceServer": "Sample",
-    "sourceLocal": "Local",
-    "newDoc": "New doc"
-  },
-  "vaultReveal": {
-    "errorFallback": "Could not open the folder in Finder.",
-    "error": "Finder open failed: {message}"
+    "sourceServer": "Sample"
   },
   "agentSetup": {
     "ariaLabel": "MCP connection",
-    "title": "My MCP connection",
-    "ready": "ready",
-    "missing": "missing",
-    "rootSummaryBlocked": "No runnable server here · source-checkout setup only",
     "statusSummary": "{ready}/{total} connection files ready for {tools}",
     "rootSummaryReady": "This folder's connection files already point at the folder itself",
     "rootSummaryMissing": "Set up relative to this folder · opening from another code folder needs an absolute path",
@@ -253,8 +233,6 @@
     "connectionClaudeCursorCheck": "check with /mcp",
     "connectionCodex": "Codex",
     "connectionCodexCheck": "check with codex mcp list",
-    "connectionCodebaseRoot": "Another code folder",
-    "connectionCodebaseRootCheck": "copy the template, then restart",
     "connectionReady": "file ready",
     "connectionNeedsReview": "review",
     "connectionHint": ".mcp.json.example is a template for another folder, so it is not counted as a connection file. This screen checks the launch shape and folder path; restart the agent and confirm the live connection inside each tool.",
@@ -383,13 +361,9 @@
     "copyCodexCliCopied": "Codex command copied",
     "copyCodexCliFailed": "Copy failed",
     "copyCodexCliTitle": "Copy the one-line codex mcp add command that registers this folder from any code folder. Replace the folder-path placeholder before running it.",
-    "errorFallback": "Could not create the connection files",
-    "serverStatusSummary": "Open this in the desktop app and one button writes the connection files.",
     "serverMissingReason": "The MCP server file was not found inside this app, so there is nothing to connect an agent to. Installing the app again usually fixes it. What the app reported: {reason}",
     "writeFailed": "Could not write {files}. Nothing in the folder changed. Check that you are allowed to write to this folder, then press the button again. ({detail})",
     "writeFailedNoDetail": "Could not write {files}. Nothing in the folder changed. Check that you are allowed to write to this folder, then press the button again.",
-    "stepStateDone": "done",
-    "stepListAriaLabel": "Three steps to connect",
     "troubleshootToggle": "Not working?",
     "serverHintLabel": "How the server runs",
     "troubleshootAriaLabel": "What to check when the connection does not work",

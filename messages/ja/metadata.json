@@ -5,14 +5,12 @@
   "pages": {
     "topology": "マップ",
     "docs": "オントロジー・資料室",
-    "download": "ダウンロード",
     "projects": "プロジェクト",
     "ontology": "オントロジー",
     "ontologyInsights": "分析",
     "projectNew": "新規プロジェクト",
     "guide": "ガイド",
-    "changelog": "更新履歴",
-    "agents": "エージェント"
+    "changelog": "更新履歴"
   },
   "descriptions": {
     "home": "AIエージェントがコードを変えても、システムの理解を保てます。タスクの文脈を共有し、記録された意味と根拠を確かめ、残すものをローカルのMarkdown vaultで判断できます。",

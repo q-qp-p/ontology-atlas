@@ -706,9 +706,8 @@ export function materializeStarterFiles(
  * the only permitted extension is something written to a file — markdown inside the vault — that
  * executes no code and shows every change in a git diff.
  *
- * ⚠️ **It is not a concept node.** Putting it in `ONTOLOGY_STARTER_FILES` would make the count
- * contract (`starter-counts.ts`) report 6 instead of 5, and screen copy uses that number. So it is
- * written alongside the config files (`.mcp.json`, `.codex/config.toml`).
+ * ⚠️ **It is not a concept node**, so it stays out of `starterFilesForLocale` (the five concept
+ * files) and is written alongside the config files (`.mcp.json`, `.codex/config.toml`).
  */
 export const VAULT_AGENT_GUIDE_PATH = "AGENTS.md";
 
@@ -862,7 +861,7 @@ export function vaultClaudeBridgeForLocale(locale: string): StarterFile {
  * produces different work each time. These three fix the order — in particular "do not write during
  * the proposal step" and "verify after writing".
  *
- * ⚠️ **They are not concept nodes.** Putting them in `ONTOLOGY_STARTER_FILES` would make the count
+ * ⚠️ **They are not concept nodes.** Putting them in `starterFilesForLocale` would make the count
  * contract report 8 instead of 5, and screen copy uses that number. They are written alongside the
  * guide and the config files.
  *
@@ -1223,12 +1222,6 @@ export function vaultSkillFilesForLocale(locale: string): ReadonlyArray<StarterF
     { relPath: vaultSkillPath("atlas-absorb"), content: ko ? SKILL_ABSORB_KO : SKILL_ABSORB_EN },
   ];
 }
-
-/**
- * The English default, kept for existing consumers — the count contract (`starter-counts`) and the
- * CLI's default `init` both measure against it.
- */
-export const ONTOLOGY_STARTER_FILES: ReadonlyArray<StarterFile> = STARTER_FILES_EN;
 
 /**
  * **How** a config template launches the server.

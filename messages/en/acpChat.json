@@ -68,7 +68,6 @@
       "incomplete": "Meaning review incomplete · {inspected} of {total} recorded meaning units shown · {omitted} omitted. Details contains the complete request.",
       "coverageNone": "This request carries no values to summarize. Details shows the complete request.",
       "beforeUnavailable": "Only the values in this request are shown; a before state is never invented.",
-      "beforeUnknown": "Before · unavailable",
       "before": "Before",
       "after": "Proposed",
       "absent": "absent",

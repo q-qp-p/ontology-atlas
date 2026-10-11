@@ -2,7 +2,7 @@ import { useCallback, useSyncExternalStore } from 'react';
 
 /**
  * When this reader last looked at the brief, per vault: the anchor every "since" count is measured from. A fact
- * about the reader, so it stays in this browser (like `unmatched-dismissals.ts`), scoped per vault identity so one
+ * about the reader, so it stays in this browser, scoped per vault identity so one
  * folder's visit never marks another's items seen. A first visit measures from `DEFAULT_BRIEF_WINDOW_MS`, not the
  * epoch, which would count the whole folder as new.
  */

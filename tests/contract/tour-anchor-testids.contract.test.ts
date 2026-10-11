@@ -12,9 +12,9 @@ import { describe, expect, it } from "vitest";
  * testid was renamed or deleted: the guide quietly becomes one page and nothing says so.
  *
  * That is exactly what happened to Insights. `do-next-touchups` was a grouping the
- * 2026-09-06 "one list, one total" round removed — `DoNextTab.test.tsx` even asserts it is
- * gone — and the anchor kept naming it, so the second page never appeared again. No test
- * failed, because every test in the chain was about something else.
+ * 2026-09-06 "one list, one total" round removed, and the anchor kept naming it, so the
+ * second page never appeared again. No test failed, because every test in the chain was
+ * about something else.
  *
  * So the gate reads the anchors out of the source rather than holding its own copy of them:
  * a new guide is covered the day it is written, without anybody registering it here.

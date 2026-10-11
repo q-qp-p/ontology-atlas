@@ -41,8 +41,6 @@
       "missing": "Original missing"
     },
     "ask": "Ask agent with these leads",
-    "askNote": "The brief asks the agent to read again and write nothing. App auto-approval is off; any write still needs permission.",
-    "askUnavailable": "Connect an agent in the installed app to ask. The local evidence and source links above remain usable.",
     "report": {
       "summarize": "Summarize as report",
       "investigate": "Investigate originals",
@@ -51,7 +49,6 @@
       "masthead": "ONTOLOGY ATLAS / KNOWLEDGE REPORT",
       "title": "Question report",
       "caveat": "Read the cited originals before accepting any claim. This draft has not been reviewed or saved to the folder.",
-      "leadsTitle": "Retrieved evidence leads",
       "file": "File as Wiki answer",
       "filing": "Filing…",
       "fileRefused": {
@@ -141,7 +138,6 @@
   "emptyTitle": "Nothing gathered yet",
   "emptyBody": "Bring in the documents this project already has: a spec, a slide deck, a spreadsheet, a page you exported. Atlas copies them into sources/ untouched and never opens them until you ask.",
   "sources": {
-    "header": "Sources · {count, number}",
     "listAria": "Raw sources in this folder",
     "add": "Add files",
     "addTooltip": "Copy documents into this folder's sources/",
@@ -190,7 +186,6 @@
     "pagesNeedReview": "{count, plural, one {# existing page needs rechecking} other {# existing pages need rechecking}}"
   },
   "wiki": {
-    "header": "Wiki · {count, number}",
     "listAria": "Wiki pages in this folder",
     "compile": "Ask the agent to compile",
     "compileTooltip": "Read sources and update their write-ups. Retained answers are reported for separate review and refresh.",
@@ -232,7 +227,6 @@
       "draft": "draft",
       "reviewed": "reviewed"
     },
-    "viewOriginal": "View original",
     "viewOriginalCount": "{count, plural, one {# original} other {# originals}}",
     "viewOriginalOne": "View original: {name}",
     "originalMissing": "Cites {name}, which is not in this folder.",
@@ -271,7 +265,6 @@
     "newPageTitle": "Page title",
     "newPageTitleExample": "For example, Quarterly planning notes",
     "newPageExampleTitle": "Quarterly planning notes",
-    "newPageMake": "Create",
     "newPageCreate": "Create document",
     "newPageCancel": "Cancel",
     "newPagePreviewTitle": "What will be created",
@@ -567,7 +560,6 @@
     "blockedNoSources": "Nothing to compile yet. Step one is where documents come in.",
     "blockedNothingWaiting": "Every source already has a write-up that matches its bytes.",
     "transferLocalRemote": "The runner saved here is {host}, which is not this computer, so Compile does not run: it would send the contents of your documents there. {file} records every request Atlas does make.",
-    "open": "What to do next",
     "close": "Close",
     "status": "{step} {state}",
     "statusNotCompiled": "{count, plural, one {# not compiled} other {# not compiled}}",
@@ -607,7 +599,6 @@
     "after": "Proposed page",
     "refusedTitle": "This page cannot be written yet",
     "refusedLede": "Nothing is offered for this one. Compile again, or write the page yourself.",
-    "allow": "Allow once",
     "allowCount": "Allow once ({count, number})",
     "deny": "Don’t",
     "dismiss": "Close",
@@ -674,7 +665,6 @@
   },
   "conversation": {
     "open": "Conversation",
-    "running": "{phase} · {target}",
     "runningLabel": "Open the conversation. {agent} is still working: {phase}."
   },
   "answers": {
@@ -787,11 +777,6 @@
     "startingMore": "{count, number} more · see them all on the map",
     "memberCount": "{count, plural, one {# concept} other {# concepts}}",
     "referenceCount": "{count, plural, one {# reference} other {# references}}",
-    "shape": {
-      "name": "Name",
-      "members": "Concepts",
-      "purpose": "Purpose"
-    },
     "viewInMap": "View on the map",
     "viewInMapNamed": "View {name} on the map",
     "membersNamed": "Concepts in {name}",
@@ -809,9 +794,7 @@
     "eyebrow": "LEFT BY AUTOMATIONS",
     "title": "Check history",
     "lede": "Review the document checks scheduled in Automations. Manage schedules and execution settings there.",
-    "indexHeader": "Rounds · {count, number}",
     "indexAria": "Rounds this Mac keeps for this folder",
-    "newRound": "New round",
     "manageAutomations": "Manage in Automations",
     "limit": "Runs while Ontology Atlas is open on this Mac. Sleep pauses it; the next pass catches up once.",
     "appRequiredTitle": "Rounds run in the desktop app",
@@ -849,16 +832,10 @@
       "6h": "Every 6 hours",
       "daily": "Daily at {time}",
       "weekdays": "Weekdays at {time}",
-      "dailyShort": "daily {time}",
-      "weekdaysShort": "weekdays {time}",
-      "hourShort": "hourly",
-      "6hShort": "every 6 h",
       "dailyChip": "Daily",
       "weekdaysChip": "Weekdays",
       "everyMinutes": "{count, plural, one {Every minute} other {Every # minutes}}",
-      "everyHours": "{count, plural, one {Every hour} other {Every # hours}}",
-      "everyMinutesShort": "every {count, number} min",
-      "everyHoursShort": "every {count, number} h"
+      "everyHours": "{count, plural, one {Every hour} other {Every # hours}}"
     },
     "state": {
       "on": "On",
@@ -885,13 +862,10 @@
       "waitingHere": "waiting for this Mac to allow them, in Automations"
     },
     "runNow": "Run now",
-    "runNowNamed": "Run {name} now",
     "pause": "Pause",
     "resume": "Resume",
     "remove": "Remove",
     "removeNamed": "Remove {name}",
-    "pauseAll": "Pause all",
-    "resumeAll": "Resume all",
     "since": {
       "title": "Since you left",
       "todayTitle": "Today",
@@ -949,11 +923,6 @@
       "leftAsIs": "{page} changed after this pass wrote it; Atlas left it as is."
     },
     "sheet": {
-      "readbackConsistency": "{cadence}, check that every page still matches its originals, and {onStale} a page that has gone stale. It runs once as soon as you save.",
-      "readbackConsistencyQueued": "{cadence}, check that every page still matches its originals, and {onStale} a page that has gone stale. Another round is running, so this one starts at its next due time.",
-      "readbackService": "{cadence}, read what {service} sent again, bring in what is new, and rewrite the pages that changed. One agent turn per pass.",
-      "readbackRedraft": "rewrite",
-      "readbackMark": "only mark",
       "readbackHour": "Every hour",
       "readback6h": "Every six hours",
       "readbackDaily": "Every day at {time}",
@@ -965,7 +934,6 @@
       "savingChanges": "Saving…",
       "editWidens": "This change lets the round do more than this Mac allowed. Saving allows the new version on this Mac.",
       "readbackEditNext": " Its next run is {time}.",
-      "what": "What to check",
       "how": "Schedule",
       "time": "At",
       "onStale": "When the source changes",
@@ -973,13 +941,9 @@
       "redraftHint": "One agent turn for the stale sources only; the new page waits as a draft.",
       "mark": "Flag for review",
       "markHint": "The row in Sources turns amber. Nothing is written.",
-      "service": "Service",
-      "noConnectors": "No service is attached to this folder yet. Bring documents from a service once and it appears here.",
       "noAgent": "No coding agent is ready on this Mac, so a service round cannot run yet. A consistency round can.",
       "query": "What to look for",
       "queryPlaceholder": "pages changed in the last day in space ENG",
-      "queryHint": "Leave empty to only re-read what is already here.",
-      "name": "Name",
       "may": "Allowed actions",
       "mayReadVault": "read this folder and its map",
       "mayCallConnector": "ask {service} to read, never to write there",
@@ -991,8 +955,6 @@
       "costOnStale": "One agent turn only on a pass that finds something stale.",
       "allowAndSave": "Allow and schedule",
       "cancel": "Cancel",
-      "saved": "{name} runs first at {time}.",
-      "savedRunningNow": "Running {name} once now; the next pass is at {time}.",
       "saving": "Scheduling…",
       "saveFailed": "Could not save the round: {reason}",
       "places": "Review targets",

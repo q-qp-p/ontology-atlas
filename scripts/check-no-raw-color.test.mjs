@@ -87,7 +87,7 @@ test("flags a raw amber warning/source rgba() literal", () => {
   );
 });
 
-test("flags a raw kind-tone hue rgba() literal outside tone.ts", () => {
+test("flags a raw kind-tone hue rgba() literal", () => {
   withTempSrc(
     {
       "Widget.tsx": `export const Widget = () => (
@@ -153,7 +153,6 @@ test("scans the ontology-map canvas engine directory — no directory-wide exemp
 test("documented ALLOWLIST entries stay clean of raw literals so future edits don't silently re-introduce drift", () => {
   assert.ok(!ALLOWLIST.has("shared/config/indigo-tokens.ts"), "면제할 리터럴이 없으므로 목록에 없어야 한다");
   assert.ok(ALLOWLIST.has("views/docs-vault/lib/popout-template.ts"));
-  assert.ok(ALLOWLIST.has("entities/ontology-class/model/tone.ts"));
   assert.ok(ALLOWLIST.has("widgets/ontology-map/render/starfield.ts"));
   assert.ok(ALLOWLIST.has("widgets/ontology-map/render/grid.ts"));
 });

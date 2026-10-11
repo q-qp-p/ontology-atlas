@@ -66,10 +66,9 @@ export function LibraryStartStage({
   return (
     /*
      * The card, not a band of three inks spread across the pane. The 2026-08-12 empty-state
-     * verdict is that "barren" is about whether the block is anchored, and the repository's
-     * one in-app answer (`DomainCouplingCard`) is this exact frame: the stage column, a
-     * dashed edge and the first overlay. Dashed rather than solid because the last line of
-     * this stage says a folder is also a place to drop files into.
+     * verdict is that "barren" is about whether the block is anchored: the stage column, a
+     * dashed edge and the first overlay anchor it. Dashed rather than solid because the last
+     * line of this stage says a folder is also a place to drop files into.
      */
     <div
       data-testid="library-start-stage"

@@ -198,16 +198,6 @@
     },
     "scrollRegionLabel": "단축키 목록"
   },
-  "hero": {
-    "docsVault": "온톨로지 문서",
-    "docsVaultAriaLabel": "온톨로지 문서 열기: 로컬 마크다운, 그래프 전달, 에이전트 설정을 한 곳에서 점검",
-    "ontologyAriaLabel": "지도 열기: 로컬 폴더의 개념과 관계를 계층으로 봐요",
-    "openDocsVault": "온톨로지 문서 열기"
-  },
-  "workspaceStrip": {
-    "ontologyTitle": "프로젝트가 가진 개념 수예요. 안내 문서와 프로젝트 소개 문서는 제외되어 의미 지도의 전체 수와 다를 수 있어요.",
-    "stubTitle": "관계가 가리키지만 아직 문서가 없는 개념이에요. 의미 지도 하단에서 새 문서로 만들거나 정리할 수 있어요."
-  },
   "hint": {
     "relayoutAriaLabel": "자동 정렬",
     "relayoutTitle": "개념 위치 자동 정렬",

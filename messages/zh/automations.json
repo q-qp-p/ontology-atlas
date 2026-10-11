@@ -111,10 +111,7 @@
     "time": "时间"
   },
   "ontology": {
-    "indexTitle": "本体 · {count}",
-    "info": "只读的 ACP 轮次：检查本体和源码依据，然后留下一份有范围限制的审阅包。",
     "new": "新建本体审阅",
-    "count": "{count, plural, =0 {无本体审阅} other {# 个本体审阅}}",
     "title": "本体优化",
     "guard": "只读 · 绝不修改本体",
     "facts": {
@@ -154,11 +151,7 @@
     }
   },
   "documents": {
-    "indexTitle": "文档 · {count}",
-    "info": "现有的资料库轮次会在已批准的常驻范围内刷新来源并重写 Wiki 页面。",
     "new": "新建文档轮次",
-    "count": "{count, plural, =0 {无文档轮次} other {# 个文档轮次}}",
-    "title": "文档分析",
     "guard": "只改已批准的资料库范围 · 绝不改本体",
     "facts": {
       "runs": {

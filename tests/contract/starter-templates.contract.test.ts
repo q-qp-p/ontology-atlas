@@ -4,7 +4,6 @@ import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
-  ONTOLOGY_STARTER_FILES,
   VAULT_SKILL_NAMES,
   materializeStarterFiles,
   starterFilesForLocale,
@@ -84,8 +83,8 @@ describe("starter templates — CLI ↔ web parity (#73)", () => {
   });
 
   it("모르는 로케일은 영어로 떨어진다", () => {
-    expect(starterFilesForLocale("fr")).toBe(ONTOLOGY_STARTER_FILES);
-    expect(starterFilesForLocale("")).toBe(ONTOLOGY_STARTER_FILES);
+    expect(starterFilesForLocale("fr")).toBe(starterFilesForLocale("en"));
+    expect(starterFilesForLocale("")).toBe(starterFilesForLocale("en"));
   });
 });
 

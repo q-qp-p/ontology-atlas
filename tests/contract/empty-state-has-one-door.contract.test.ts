@@ -26,30 +26,6 @@ const DOORS: ReadonlyArray<{
   readonly href: string;
 }> = [
   {
-    what: 'insights connections — relation types',
-    file: 'src/views/ontology-insights/ui/tabs/ConnectionsTab.tsx',
-    testId: 'connections-relation-types-empty-action',
-    href: '/topology/?workbench=create',
-  },
-  {
-    what: 'insights connections — hubs',
-    file: 'src/views/ontology-insights/ui/tabs/ConnectionsTab.tsx',
-    testId: 'connections-hubs-empty-action',
-    href: '/topology/?workbench=create',
-  },
-  {
-    what: 'insights connections — impact ranking',
-    file: 'src/views/ontology-insights/ui/tabs/ImpactRankingCard.tsx',
-    testId: 'impact-ranking-empty-action',
-    href: '/topology/?workbench=create',
-  },
-  {
-    what: 'insights freshness — no domains',
-    file: 'src/views/ontology-insights/ui/tabs/FreshnessTab.tsx',
-    testId: 'freshness-no-domains-action',
-    href: '/topology/?workbench=create',
-  },
-  {
     what: 'project detail — composition',
     file: 'src/views/project-detail/ui/ProjectDetailPage.tsx',
     testId: 'project-detail-composition-empty-action',

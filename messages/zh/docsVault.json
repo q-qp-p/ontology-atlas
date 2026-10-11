@@ -6,24 +6,18 @@
   "header": {
     "openTreeAriaLabel": "打开文档列表",
     "openTreeTitle": "文档列表",
-    "backToWorkspaceAriaLabel": "返回概念视图",
     "backToReviewAriaLabel": "返回分析复核",
     "reviewBack": "← 分析复核",
-    "back": "概念视图",
     "title": "本体",
     "docCount": "{count} 篇文档",
     "localBadge": "本地",
     "paletteTooltip": "搜索 · 命令 · 标签（⌘K）",
     "paletteAriaLabel": "打开面板（搜索 · 命令 · 标签）",
-    "inspector": "文档信息",
     "sourceAriaLabel": "工作区来源",
-    "vaultToolsTooltip": "工作区工具",
-    "vaultToolsAriaLabel": "打开工作区工具菜单",
     "vaultToolsMovedHint": "AI 智能体的设置与验证工具已移到设置：点右上角的齿轮（⚙）。",
     "contractToggleLabel": "工作区检查",
     "contractToggleHide": "关闭工作区检查",
     "contractToggleShow": "显示工作区检查",
-    "crumbBack": "你的文件夹",
     "vaultPillFolders": "{count} 个文件夹",
     "vaultPillSwap": "切换文件夹",
     "vaultPillSampleLabel": "内置示例（本工具自己的文档）",
@@ -43,8 +37,7 @@
   "editorHeader": {
     "previewTab": "预览",
     "editTab": "编辑",
-    "localSynced": "已同步 · 本地",
-    "readOnlySample": "只读示例"
+    "localSynced": "已同步 · 本地"
   },
   "frontmatterBlock": {
     "note": "顶部的信息块就是地图：这一块会变成地图上的点和连线。",
@@ -198,13 +191,10 @@
     "dogfoodDirectBody": "直接在桌面应用中打开 docs/ontology，让 Atlas 分析它自己。",
     "createTitle": "新建工作区",
     "createBody": "新建或选择一个空文件夹，打开后再用入门模板初始化。",
-    "sampleTitle": "浏览示例工作区",
-    "sampleBody": "选择本地文件夹之前，可以先看看只读文档。",
     "recentTitle": "最近的工作区",
     "recentEmpty": "还没有最近的工作区。打开或创建一个文件夹后会固定在这里。"
   },
   "sourceContract": {
-    "ariaLabel": "此工作区当前的读取来源",
     "filesLabel": "工作区文件",
     "filesLocalValue": "{count} 个本地 md 文件",
     "filesSampleValue": "{count} 个示例 md 文件",
@@ -231,20 +221,10 @@
     "filesPruned": "已跳过 {count} 个构建或依赖文件夹（{names}）。"
   },
   "advanced": {
-    "sourceServer": "示例",
-    "sourceLocal": "本地",
-    "newDoc": "新建文档"
-  },
-  "vaultReveal": {
-    "errorFallback": "无法在访达中打开该文件夹。",
-    "error": "在访达中打开失败：{message}"
+    "sourceServer": "示例"
   },
   "agentSetup": {
     "ariaLabel": "MCP 连接",
-    "title": "我的 MCP 连接",
-    "ready": "就绪",
-    "missing": "缺失",
-    "rootSummaryBlocked": "这里没有可运行的服务器 · 仅支持源码检出方式",
     "statusSummary": "{tools} 的连接文件已就绪 {ready}/{total}",
     "rootSummaryReady": "此文件夹的连接文件已指向它自己",
     "rootSummaryMissing": "以此文件夹为基准设置 · 从其他代码文件夹打开需要绝对路径",
@@ -253,8 +233,6 @@
     "connectionClaudeCursorCheck": "用 /mcp 检查",
     "connectionCodex": "Codex",
     "connectionCodexCheck": "用 codex mcp list 检查",
-    "connectionCodebaseRoot": "其他代码文件夹",
-    "connectionCodebaseRootCheck": "复制模板后重启",
     "connectionReady": "文件就绪",
     "connectionNeedsReview": "待检查",
     "connectionHint": ".mcp.json.example 是供其他文件夹使用的模板，因此不算连接文件。此页面只检查启动方式和文件夹路径；请重启智能体，并在各工具里确认实际连接。",
@@ -383,13 +361,9 @@
     "copyCodexCliCopied": "已复制 Codex 命令",
     "copyCodexCliFailed": "复制失败",
     "copyCodexCliTitle": "复制一行 codex mcp add 命令，可在任意代码文件夹中注册此文件夹。运行前请替换文件夹路径占位符。",
-    "errorFallback": "无法创建连接文件",
-    "serverStatusSummary": "在桌面应用中打开，一个按钮就能写入连接文件。",
     "serverMissingReason": "在此应用内找不到 MCP 服务器文件，因此没有可供智能体连接的对象。重新安装应用通常能解决。应用返回的信息：{reason}",
     "writeFailed": "无法写入 {files}，文件夹里没有任何改动。请确认你有此文件夹的写入权限，然后再点一次按钮。（{detail}）",
     "writeFailedNoDetail": "无法写入 {files}，文件夹里没有任何改动。请确认你有此文件夹的写入权限，然后再点一次按钮。",
-    "stepStateDone": "完成",
-    "stepListAriaLabel": "连接的三个步骤",
     "troubleshootToggle": "不起作用？",
     "serverHintLabel": "服务器如何运行",
     "troubleshootAriaLabel": "连接不起作用时该检查什么",

@@ -9,9 +9,7 @@
   "linksShown": "共 {total, number} 条链接，显示 {shown, number} 条",
   "reading": "正在读取文件：{read, number} / {total, number}",
   "settling": "读完所有文件后，圆环才会确定",
-  "legendFlows": "线 = 依赖 · 数字 = 数量",
   "legendNeeds": "依赖",
   "legendUsers": "被依赖",
-  "legendStale": "过时",
-  "legendRings": "越靠近中心，被其他领域依赖越多"
+  "legendStale": "过时"
 }

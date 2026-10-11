@@ -2,7 +2,7 @@ import type { KnowledgeGraphEdge, KnowledgeGraphNode } from "../../model";
 import type { OntologyTreeBuildResult } from "./types";
 import { ATLAS_CLI } from "@/shared/config/cli-invocation";
 
-export type AgentReadinessStatus = "ready" | "needs-links" | "needs-shape";
+type AgentReadinessStatus = "ready" | "needs-links" | "needs-shape";
 type AgentReadinessActionKey =
   | "resolveUnknown"
   | "addConcepts"
@@ -33,8 +33,6 @@ export interface AgentReadinessCliCommand {
   command: string;
 }
 
-export const AGENT_GRAPH_DB_CLI_SELF_CHECK_COMMAND =
-  `${ATLAS_CLI} agent-brief [vault] --verify-fallbacks --json --exit-zero --fallback-timeout-ms 15000 --fallback-slow-ms 5000 --fallback-concurrency 4`;
 export const AGENT_GRAPH_DB_RUNTIME_GATE_COMMAND = "pnpm dogfood:graph-db";
 export const AGENT_GRAPH_DB_RUNTIME_GATE_CHECK_COUNT = 14;
 

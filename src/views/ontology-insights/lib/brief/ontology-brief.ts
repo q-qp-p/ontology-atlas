@@ -76,7 +76,7 @@ function isAgentWritten(createdBy: string | null | undefined): boolean {
 }
 
 export function buildOntologyBrief(input: OntologyBriefInput): BriefCore {
-  // The census strip's rule (`canonical-census.ts`), so every count labelled "concept" on this screen agrees.
+  // The canonical census rule (`canonical-census.ts`), so every count labelled "concept" on this screen agrees.
   const concepts = input.nodes.filter(isCanonicalConcept);
   let current = 0;
   let stale = 0;

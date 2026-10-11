@@ -1311,14 +1311,12 @@ describe('focused check suggestions', () => {
     assert.deepEqual(matches[0].paths, paths);
   });
 
-  it('suggests the insights census E2E for its exact derivation, page, hero, and domain-capacity owners', () => {
+  it('suggests the insights count E2E for the analysis model, page, workspace, and pair rail', () => {
     const paths = [
-      'src/shared/lib/render-timing/use-count-up.ts',
-      'src/views/ontology-insights/lib/census-health.ts',
+      'src/views/ontology-insights/lib/analysis-model.ts',
       'src/views/ontology-insights/ui/OntologyInsightsPage.tsx',
-      'src/views/ontology-insights/ui/parts/InsightsHeroCensus.tsx',
-      'src/views/ontology-insights/ui/tabs/OverviewTab.tsx',
-      'src/widgets/domain-capacity-bar/ui/DomainCapacityBar.tsx',
+      'src/views/ontology-insights/ui/analysis/AnalysisWorkspace.tsx',
+      'src/views/ontology-insights/ui/analysis/PairRail.tsx',
     ];
     const command = 'pnpm exec playwright test tests/e2e/insights-badge-agreement.spec.ts';
     const result = suggestFocusedChecks(paths);
@@ -1373,8 +1371,8 @@ describe('focused check suggestions', () => {
     const result = suggestFocusedChecks([
       'src/widgets/ontology-map/interaction/free-area.test.ts',
       'src/views/home/model/use-node-datasheet-model.ts',
-      'src/views/ontology-insights/ui/tabs/OverviewTab.test.tsx',
-      'src/widgets/domain-capacity-bar/ui/DomainCapacityLegend.tsx',
+      'src/views/ontology-insights/lib/analysis-model.test.ts',
+      'src/views/ontology-insights/ui/analysis/AnalysisRecords.tsx',
       'src/features/ontology-change-review/ui/OntologyChangeReview.test.tsx',
       'src/widgets/ontology-map/ui/OntologyMapDetailPanel.test.tsx',
     ]);
@@ -1548,23 +1546,10 @@ describe('focused check suggestions', () => {
     assert.deepEqual(domainCommands(rootLock), ['pnpm test:mcp:package', 'pnpm licenses:check', 'pnpm notice:check']);
     assert.deepEqual(rootLock.escalations.map((row) => row.command), ['pnpm package:check']);
 
-    const mcpLock = suggestFocusedChecks(['mcp/package-lock.json']);
-    const cliLock = suggestFocusedChecks(['cli/package-lock.json']);
+    const mcpLock = suggestFocusedChecks(['mcp/pnpm-lock.yaml']);
 
-    const packageLockCommands = [
-      'pnpm test:mcp:package',
-      'pnpm vault:validate',
-    ];
-    const mcpPackageLockEscalations = [
-      'pnpm package:check',
-      'pnpm dogfood:verify',
-    ];
-    const cliPackageLockEscalations = ['pnpm package:check'];
-
-    assert.deepEqual(domainCommands(mcpLock), packageLockCommands);
-    assert.deepEqual(mcpLock.escalations.map((row) => row.command), mcpPackageLockEscalations);
-    assert.deepEqual(domainCommands(cliLock), packageLockCommands);
-    assert.deepEqual(cliLock.escalations.map((row) => row.command), cliPackageLockEscalations);
+    assert.ok(domainCommands(mcpLock).includes('pnpm test:mcp:package'));
+    assert.deepEqual(mcpLock.escalations.map((row) => row.command), ['pnpm package:check', 'pnpm dogfood:verify']);
   });
 
   it('suggests narrow MCP verify tests before the full verify helper gate', () => {
@@ -1972,7 +1957,7 @@ describe('agent-file surface', () => {
       'pnpm exec vitest run tests/contract/agent-files.contract.test.ts tests/contract/nested-agents-pointers.contract.test.ts tests/contract/skill-routing.contract.test.ts tests/contract/rules-path-scope.contract.test.ts tests/contract/secret-read-guard.contract.test.ts tests/contract/node-test-reachability.contract.test.ts tests/contract/agent-file-citations.contract.test.ts';
     for (const path of [
       'cli/src/lib/agent-files.mjs',
-      'src/views/docs-vault/lib/agent-files.ts',
+      'src/entities/agent-files/model/agent-files.ts',
       'tests/fixtures/agent-files-cases.mjs',
       '.claude/rules/testing.md',
       'src/AGENTS.md',

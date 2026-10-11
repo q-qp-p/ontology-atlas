@@ -20,7 +20,7 @@ export const INDIGO_FOCUS = "#7c87e6";
 export const INDIGO_HIGHLIGHT = "#8b97ff";
 
 /** Exported for inline composition; prefer the `indigoRgba` helper below. */
-export const INDIGO_RGB = {
+const INDIGO_RGB = {
   brand: "94, 106, 210",
   accent: "113, 112, 255",
   hover: "130, 143, 255",

@@ -7,7 +7,7 @@ import { cn } from '@/shared/lib/cn';
  * behaviour for a component to carry. Three shapes, one per measured radius family, each its
  * family's most-used geometry. Geometry only: colour and tracking stay at the site because the
  * inventory found no majority to converge on (60 colour combinations across 67 badges). Status
- * dots, callouts and `EvidenceOnlyBadge` are not consumers.
+ * dots and callouts are not consumers.
  * Gates: `tests/contract/badge-class.contract.test.ts`
  * and `tests/contract/static-badge-adoption-ratchet.contract.test.ts`.
  */

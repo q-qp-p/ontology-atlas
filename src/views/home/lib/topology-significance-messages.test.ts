@@ -39,8 +39,7 @@ describe("topology.significance ICU messages", () => {
       expect(t("impact", { count: 7 })).toContain("7");
     });
 
-    it(`[${locale}] formats the what line with and without a domain`, () => {
-      expect(t("whatWithDomain", { kind: "K", domain: "D" })).toContain("D");
+    it(`[${locale}] formats the what line`, () => {
       expect(t("what", { kind: "K" })).toContain("K");
     });
   }

@@ -15,13 +15,11 @@
   "conceptCount": "{count, plural, one {# concept} other {# concepts}}",
   "empty": "No concepts in this folder yet.",
   "emptyChildren": "No direct children are recorded for {name}. Read its document to inspect the recorded relations.",
-  "filteredEmpty": "No concepts match the current filters. Clear the filters to see the structure.",
   "clearFilters": "Clear filters",
   "missingDocument": "No document for this reference. Read its incoming relations to see where it was named.",
   "cycle": "This concept is already in the path. Read its document to inspect the circular containment.",
   "loading": "Reading this folder’s concepts…",
   "unreadable": "The folder could not be read. Reopen it to restore access; no documents were changed.",
-  "reopenFolder": "Reopen folder",
   "previousPage": "Previous",
   "nextPage": "Next",
   "page": "{current} / {total}"

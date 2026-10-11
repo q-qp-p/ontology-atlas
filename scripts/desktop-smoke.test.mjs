@@ -109,7 +109,6 @@ test("download uses absolute landing metadata and refuses a missing title", () =
   try {
     const messages = JSON.parse(fs.readFileSync("messages/en.json", "utf8"));
     messages.metadata.homeTitle = "Fixture landing title";
-    messages.metadata.pages.download = "Fixture route label";
     messages.metadata.siteName = "Fixture brand";
     write(root, "messages/en.json", JSON.stringify(messages));
     assert.equal(resolveRouteTitles({ root, locales: ["en"] })["en:/download"], messages.metadata.homeTitle);

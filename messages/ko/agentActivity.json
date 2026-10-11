@@ -1,6 +1,5 @@
 {
   "writing": "작업 중",
-  "writingAgent": "{agent} 작업 중",
   "liveAgent": "{agent} · {phase}",
   "phase": {
     "planning": "계획 중",
@@ -34,15 +33,8 @@
   "nextStepLabel": "다음",
   "toolLabel": "도구",
   "historyTitle": "최근 기록",
-  "inboxEmpty": "아직 알릴 것이 없어요. 에이전트나 사람이 이 폴더를 고치면 여기에 남아요.",
   "inboxFooter": "무엇이 실행됐고 무엇을 승인하거나 거절했는지는 이 폴더 안에만 기록돼요. 밖으로 나가지 않아요.",
   "receiptTitle": "작업 결과",
-  "receiptItems": "변경 {count}건",
-  "receiptAt": "결과 시각",
-  "receiptDecision": {
-    "allowed": "허용함",
-    "rejected": "거절함"
-  },
   "receiptResult": {
     "pending": "실행 대기",
     "completed": "완료",
@@ -50,9 +42,6 @@
     "cancelled": "취소됨",
     "not-run": "실행 안 함"
   },
-  "summaryAdded": "추가 {count}",
-  "summaryEdited": "편집 {count}",
-  "summaryRemoved": "삭제 {count}",
   "summaryJoin": " · ",
   "problemUnresolved": "끊어진 연결 {count}개",
   "problemCycles": "서로 되짚는 연결 {count}쌍",
@@ -60,9 +49,7 @@
   "bridgeChildren": "하위 개념 {count}개를 새 중간 개념 밑으로 옮김",
   "event": {
     "taskStart": "작업 시작",
-    "taskStartAgent": "{agent} 작업 시작",
     "taskEnd": "작업 끝",
-    "taskEndAgent": "{agent} 작업 끝",
     "domainAdded": "도메인 생김",
     "domainRemoved": "도메인 사라짐",
     "bridgeInserted": "두 개념 사이에 새 개념이 끼어듦",

@@ -13,13 +13,3 @@ export function resolveNodeDocument(
     ? { ownSlug: null, mentionedInSlug: slug }
     : { ownSlug: slug, mentionedInSlug: null };
 }
-
-/**
- * A name known only from another document's relation key, with no `.md` of its own; decision
- * surfaces rank these below written concepts. A missing `hasOwnDocument` reads as a concept.
- */
-export function isEvidenceOnlyConcept(
-  node: Pick<KnowledgeGraphNode, "hasOwnDocument"> | null | undefined,
-): boolean {
-  return node?.hasOwnDocument === false;
-}

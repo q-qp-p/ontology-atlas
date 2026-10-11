@@ -232,7 +232,6 @@
       "revisionTitle": "已有 {count} 次提交改动过这篇文档。次数由 Git 记录，无法手工编辑。"
     },
     "sidebar": {
-      "treeHeader": "文档列表",
       "treeFiltered": "按 #{tag} 筛选",
       "treeSearchCount": "{count} 条结果",
       "searchLabel": "搜索文档",
@@ -254,17 +253,14 @@
       "collection": {
         "all": {
           "label": "全部文档",
-          "count": "{count}",
           "tooltip": "全部文档：此文件夹中的每一篇文档（{count}）"
         },
         "guides": {
           "label": "指南",
-          "count": "{count}",
           "tooltip": "指南：供人阅读的文档（{count}）"
         },
         "ontology": {
           "label": "地图文档",
-          "count": "{count}",
           "tooltip": "地图文档：只含出现在地图上的概念（{count}）"
         }
       },
@@ -290,8 +286,7 @@
         "unverifiablePlain": "无法读取此文件，不知道它是否有改动",
         "reviewedOn": "{date} 检查",
         "reviewedOnTitle": "有人读过这篇文档并认定语义正确的那一天"
-      },
-      "libraryLink": "汇集的文档在资料库里"
+      }
     },
     "empty": {
       "eyebrow": "{count} 篇文档",

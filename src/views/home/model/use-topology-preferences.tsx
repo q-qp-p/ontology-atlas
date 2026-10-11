@@ -29,7 +29,6 @@ export function useTopologyPreferences() {
     [tGlossary],
   );
   const tTopologyKeyboardWalk = useTranslations('topologyWidgets.keyboardWalk');
-  // Reuses the `atlasGit` keys `GitStatusTile` uses.
   const tAtlasGit = useTranslations('atlasGit');
   const relationVocabulary = useRelationVocabulary();
   // Plain mode is a display lens only: it hides the element tier (except a clicked node's ego),

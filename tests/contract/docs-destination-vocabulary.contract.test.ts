@@ -17,15 +17,13 @@ function at(catalog: Catalog, path: string): string {
     if (!node || typeof node !== 'object') return undefined;
     return (node as Catalog)[key];
   }, catalog);
-  expect(typeof value, `${path} 가 문자열이 아니다`).toBe('string');
+  expect(typeof value, `${path} is not a string`).toBe('string');
   return value as string;
 }
 
 const ONTOLOGY_REFERENCES = [
   'settingsFolder.documentsTitle',
   'searchWidgets.shortcuts.scope.docs',
-  'topology.controls.docsLabel',
-  'ontologyPages.insights.emptyTitleLink',
   'projectPages.detail.topBarDocsVault',
 ] as const;
 

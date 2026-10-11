@@ -9,9 +9,7 @@
   "linksShown": "リンク{total, number}件中{shown, number}件を表示",
   "reading": "{total, number}件中{read, number}件のファイルを読み込み中",
   "settling": "全ファイルの読み込みが終わると輪が確定します",
-  "legendFlows": "線 = 依存 · 数字 = 件数",
   "legendNeeds": "依存先",
   "legendUsers": "利用元",
-  "legendStale": "古い",
-  "legendRings": "中心に近いほど、他のドメインからの依存が多い"
+  "legendStale": "古い"
 }

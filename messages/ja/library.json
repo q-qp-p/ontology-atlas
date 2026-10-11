@@ -41,8 +41,6 @@
       "missing": "原本が見つかりません"
     },
     "ask": "この手がかりでエージェントに質問",
-    "askNote": "指示書は、エージェントに読み直しを依頼し、何も書き込まないよう求めます。アプリの自動承認はオフで、書き込みには引き続き許可が必要です。",
-    "askUnavailable": "質問するには、インストール済みのアプリでエージェントを接続してください。上のローカルの根拠と出典リンクは引き続き使えます。",
     "report": {
       "summarize": "報告としてまとめる",
       "investigate": "原本を調査",
@@ -51,7 +49,6 @@
       "masthead": "ONTOLOGY ATLAS / ナレッジ報告",
       "title": "質問の報告",
       "caveat": "主張を受け入れる前に、引用された原本を読んでください。この下書きはレビューもフォルダへの保存もされていません。",
-      "leadsTitle": "取得した根拠の手がかり",
       "file": "Wikiの回答として保存",
       "filing": "保存中…",
       "fileRefused": {
@@ -141,7 +138,6 @@
   "emptyTitle": "まだ何もありません",
   "emptyBody": "このプロジェクトにすでにある文書を取り込みましょう。仕様書、スライド、スプレッドシート、書き出したページなどです。Atlasは「sources/」にそのままコピーし、依頼するまで中身を開きません。",
   "sources": {
-    "header": "ソース · {count, number}",
     "listAria": "このフォルダの元ソース",
     "add": "ファイルを追加",
     "addTooltip": "文書をこのフォルダの「sources/」にコピーします",
@@ -190,7 +186,6 @@
     "pagesNeedReview": "再確認が必要な既存ページ{count, number}件"
   },
   "wiki": {
-    "header": "Wiki · {count, number}",
     "listAria": "このフォルダのWikiページ",
     "compile": "エージェントに整理を依頼",
     "compileTooltip": "ソースを読み、まとめた内容を更新します。保持された回答は、別途レビューと更新のために報告されます。",
@@ -232,7 +227,6 @@
       "draft": "下書き",
       "reviewed": "レビュー済み"
     },
-    "viewOriginal": "原本を見る",
     "viewOriginalCount": "原本{count, number}件",
     "viewOriginalOne": "原本を見る：{name}",
     "originalMissing": "{name}を引用していますが、このフォルダにはありません。",
@@ -271,7 +265,6 @@
     "newPageTitle": "ページのタイトル",
     "newPageTitleExample": "例：四半期計画のメモ",
     "newPageExampleTitle": "四半期計画のメモ",
-    "newPageMake": "作成",
     "newPageCreate": "文書を作成",
     "newPageCancel": "キャンセル",
     "newPagePreviewTitle": "作成される内容",
@@ -567,7 +560,6 @@
     "blockedNoSources": "整理するものはまだありません。文書を取り込むのは、最初のステップです。",
     "blockedNothingWaiting": "すべてのソースに、そのバイト列と一致するまとめがあります。",
     "transferLocalRemote": "ここに保存されているランナーは{host}で、このコンピュータではないため、整理は実行されません。文書の内容がそこへ送信されてしまうためです。Atlasが実際に行うリクエストは、すべて{file}に記録されます。",
-    "open": "次にすること",
     "close": "閉じる",
     "status": "{step} {state}",
     "statusNotCompiled": "未整理{count, number}件",
@@ -607,7 +599,6 @@
     "after": "提案されたページ",
     "refusedTitle": "このページはまだ書き込めません",
     "refusedLede": "これについて提案できるものはありません。もう一度整理するか、ページを自分で書いてください。",
-    "allow": "1回だけ許可",
     "allowCount": "1回だけ許可（{count, number}）",
     "deny": "許可しない",
     "dismiss": "閉じる",
@@ -674,7 +665,6 @@
   },
   "conversation": {
     "open": "会話",
-    "running": "{phase} · {target}",
     "runningLabel": "会話を開く。{agent}が作業中です：{phase}。"
   },
   "answers": {
@@ -787,11 +777,6 @@
     "startingMore": "ほか{count, number}件 · すべてマップで見る",
     "memberCount": "概念{count, number}件",
     "referenceCount": "参照{count, number}件",
-    "shape": {
-      "name": "名前",
-      "members": "概念",
-      "purpose": "目的"
-    },
     "viewInMap": "マップで見る",
     "viewInMapNamed": "{name}をマップで見る",
     "membersNamed": "{name}の概念",
@@ -809,9 +794,7 @@
     "eyebrow": "自動化が残したもの",
     "title": "点検履歴",
     "lede": "自動化でスケジュールした文書の点検を確認します。スケジュールと実行設定は、自動化で管理します。",
-    "indexHeader": "点検 · {count, number}",
     "indexAria": "このMacがこのフォルダ用に保持している点検",
-    "newRound": "新しい点検",
     "manageAutomations": "自動化で管理",
     "limit": "このMacでOntology Atlasを開いている間に実行されます。スリープ中は止まり、復帰後の次の実行でまとめて追いつきます。",
     "appRequiredTitle": "点検はデスクトップアプリで実行されます",
@@ -849,16 +832,10 @@
       "6h": "6時間ごと",
       "daily": "毎日{time}",
       "weekdays": "平日の{time}",
-      "dailyShort": "毎日{time}",
-      "weekdaysShort": "平日{time}",
-      "hourShort": "毎時",
-      "6hShort": "6時間ごと",
       "dailyChip": "毎日",
       "weekdaysChip": "平日",
       "everyMinutes": "{count, number}分ごと",
-      "everyHours": "{count, number}時間ごと",
-      "everyMinutesShort": "{count, number}分ごと",
-      "everyHoursShort": "{count, number}時間ごと"
+      "everyHours": "{count, number}時間ごと"
     },
     "state": {
       "on": "オン",
@@ -885,13 +862,10 @@
       "waitingHere": "自動化で、このMacでの実行が許可されるのを待っています"
     },
     "runNow": "今すぐ実行",
-    "runNowNamed": "{name}を今すぐ実行",
     "pause": "一時停止",
     "resume": "再開",
     "remove": "削除",
     "removeNamed": "{name}を削除",
-    "pauseAll": "すべて一時停止",
-    "resumeAll": "すべて再開",
     "since": {
       "title": "前回以降",
       "todayTitle": "今日",
@@ -949,11 +923,6 @@
       "leftAsIs": "{page}は、この実行が書き込んだ後に変更されたため、Atlasはそのままにしました。"
     },
     "sheet": {
-      "readbackConsistency": "{cadence}、すべてのページが原本と一致しているか確認し、古くなったページは{onStale}。保存するとすぐ1回実行されます。",
-      "readbackConsistencyQueued": "{cadence}、すべてのページが原本と一致しているか確認し、古くなったページは{onStale}。別の点検が実行中のため、この点検は次の実行時刻に始まります。",
-      "readbackService": "{cadence}、{service}が送った内容を読み直し、新しいものを取り込み、変更があったページを書き直します。1回の実行につきエージェントのターンは1回です。",
-      "readbackRedraft": "書き直します",
-      "readbackMark": "印をつけるだけにします",
       "readbackHour": "1時間ごと",
       "readback6h": "6時間ごと",
       "readbackDaily": "毎日{time}",
@@ -965,7 +934,6 @@
       "savingChanges": "保存中…",
       "editWidens": "この変更により、点検がこのMacで許可されていた範囲を超えて動作できるようになります。保存すると、新しいバージョンがこのMacで許可されます。",
       "readbackEditNext": "次回の実行は{time}です。",
-      "what": "確認する内容",
       "how": "スケジュール",
       "time": "時刻",
       "onStale": "ソースが変更されたとき",
@@ -973,13 +941,9 @@
       "redraftHint": "古くなったソースについてだけエージェントのターンを1回実行し、新しいページは下書きとして待機します。",
       "mark": "要確認として印をつける",
       "markHint": "ソース一覧の行が琥珀色になります。何も書き込みません。",
-      "service": "サービス",
-      "noConnectors": "このフォルダには、まだサービスが接続されていません。サービスから一度文書を取り込むと、ここに表示されます。",
       "noAgent": "このMacには使えるコーディングエージェントがないため、サービスの点検はまだ実行できません。整合性の点検は実行できます。",
       "query": "探す内容",
       "queryPlaceholder": "ENGスペースで直近1日に変更されたページ",
-      "queryHint": "空欄にすると、すでにあるものを読み直すだけになります。",
-      "name": "名前",
       "may": "許可する操作",
       "mayReadVault": "このフォルダとそのマップを読み取る",
       "mayCallConnector": "{service}に読み取りだけを依頼する（書き込みは不可）",
@@ -991,8 +955,6 @@
       "costOnStale": "エージェントのターンは、古いものが見つかった実行でのみ1回です。",
       "allowAndSave": "許可してスケジュール",
       "cancel": "キャンセル",
-      "saved": "{name}は{time}に初回の実行を行います。",
-      "savedRunningNow": "{name}を今すぐ1回実行します。次回の実行は{time}です。",
       "saving": "スケジュール中…",
       "saveFailed": "点検を保存できませんでした：{reason}",
       "places": "レビュー対象",
