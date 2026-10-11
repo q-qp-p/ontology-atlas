@@ -98,7 +98,7 @@ function reviewedCoordinates(docs) {
     let recorded = false;
     for (const { line, code } of evidence.fields) {
       const match = line.match(/^\s*-\s*(Primary implementation|Supporting implementation|Focused test):\s*`([^`]+)`(?:\s+.*)?$/);
-      if (!match || match[2] !== code) continue;
+      if (!match || normalizeText(match[2]) !== normalizeText(code)) continue;
       const role = LABEL_TO_ROLE.get(match[1]);
       const parsed = parseCoordinate(match[2], role, doc);
       recorded = true;

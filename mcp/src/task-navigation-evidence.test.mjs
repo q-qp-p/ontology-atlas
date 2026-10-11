@@ -123,6 +123,30 @@ describe('task navigation evidence', () => {
     assert.equal(escaped.status, 'unknown');
   });
 
+  test('reads deeply nested inline markup without overflowing the call stack', () => {
+    const root = box();
+    write(root, 'src/writer.mjs', 'export function writeValue() { return true; }\n');
+    write(root, 'tests/writer.test.mjs', "test('writes values', () => {});\n");
+    const nested = '*a '.repeat(3000) + '`package.json`' + ' a*'.repeat(3000);
+    const onlyManifest = current(root, [doc('elements/nested-evidence', `## Evidence\n\n${nested}`)]);
+    assert.equal(onlyManifest.status, 'unknown');
+    const result = current(root, [doc('elements/writer', `## Evidence\n\n${nested}\n\n- Primary implementation: \`src/writer.mjs#writeValue\`\n- Focused test: \`tests/writer.test.mjs#writes values\`\n\n## Includes\n\n${nested}\n\n## Excludes\n\n${nested}\n`)]);
+    assert.equal(result.status, 'ready');
+    assert.equal(result.readPlan.targetCount, 2);
+    assert.ok(result.boundary.in.length > 0);
+    assert.ok(result.boundary.out.length > 0);
+  });
+
+  test('preserves whitespace normalization in reviewed code spans', () => {
+    const root = box();
+    write(root, 'src/writer.mjs', 'export function writeValue() { return true; }\n');
+    write(root, 'tests/writer.test.mjs', "test('writes values', () => {});\n");
+    const result = current(root, [doc('elements/writer', '## Evidence\n\n- Primary implementation: ` src/writer.mjs#writeValue `\n- Focused test: `  tests/writer.test.mjs#writes values  `\n\n## Includes\n\nWriting.\n\n## Excludes\n\nParsing.\n')]);
+    assert.equal(result.status, 'ready');
+    assert.equal(result.primary.symbol, 'writeValue');
+    assert.equal(result.tests[0].symbol, 'writes values');
+  });
+
   test('resolves reviewed Rust implementation, supporting, test, and boundary evidence', () => {
     const root = box();
     write(root, 'src/types.rs', [
