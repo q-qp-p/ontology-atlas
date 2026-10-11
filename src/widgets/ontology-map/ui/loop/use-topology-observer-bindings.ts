@@ -25,8 +25,6 @@ interface Dependencies {
   onEnterRealm: ((slug: string) => void) | undefined;
   realmEnterButtonElRef: RefObject<HTMLButtonElement | null>;
   realmEnterButtonRef: RefObject<HTMLButtonElement | null> | undefined;
-  tourAnchorElRef: RefObject<HTMLDivElement | null>;
-  tourAnchorRef: RefObject<HTMLDivElement | null> | undefined;
   trailLensPropRef: RefObject<RefObject<boolean> | null>;
   trailLensActiveRef: RefObject<boolean> | undefined;
   trailBrushPropRef: RefObject<RefObject<string | null> | null>;
@@ -40,8 +38,6 @@ interface Dependencies {
   lastActiveMsRef: RefObject<number>;
   agentFocusNodeIdRef: RefObject<string | null>;
   agentFocusNodeId: string | null;
-  tourAnchorNodeIdRef: RefObject<string | null>;
-  tourAnchorNodeId: string | null;
   spotlightIdsRef: RefObject<ReadonlySet<string> | null>;
   spotlightIds: ReadonlySet<string> | null;
   mapLensKindRef: RefObject<TopologyMapLensKind>;
@@ -67,8 +63,6 @@ export function useTopologyObserverBindings({ onGrowthReplayingChangeRef,
   onEnterRealm,
   realmEnterButtonElRef,
   realmEnterButtonRef,
-  tourAnchorElRef,
-  tourAnchorRef,
   trailLensPropRef,
   trailLensActiveRef,
   trailBrushPropRef,
@@ -82,8 +76,6 @@ export function useTopologyObserverBindings({ onGrowthReplayingChangeRef,
   lastActiveMsRef,
   agentFocusNodeIdRef,
   agentFocusNodeId,
-  tourAnchorNodeIdRef,
-  tourAnchorNodeId,
   spotlightIdsRef,
   spotlightIds,
   mapLensKindRef,
@@ -117,10 +109,6 @@ export function useTopologyObserverBindings({ onGrowthReplayingChangeRef,
 
   useEffect(() => {
     realmEnterButtonElRef.current = realmEnterButtonRef?.current ?? null;
-  });
-
-  useEffect(() => {
-    tourAnchorElRef.current = tourAnchorRef?.current ?? null;
   });
 
   useEffect(() => {
@@ -160,17 +148,6 @@ export function useTopologyObserverBindings({ onGrowthReplayingChangeRef,
   useEffect(() => {
     agentFocusNodeIdRef.current = agentFocusNodeId;
   }, [agentFocusNodeId, agentFocusNodeIdRef]);
-
-  useEffect(() => {
-    tourAnchorNodeIdRef.current = tourAnchorNodeId;
-    // The tour's anchor probe is written only on a drawn frame. A map at rest skips frames,
-    // so without this wake a step that names a node while the map sleeps leaves the probe
-    // 0x0: the overlay reads "no target", centres its card on the very node the copy points
-    // at, and draws no cutout. Whether the loop happened to be awake decided the placement
-    // (a CI runner that was still drawing placed the card beside the node; a resting map
-    // did not).
-    lastActiveMsRef.current = performance.now();
-  }, [tourAnchorNodeId, tourAnchorNodeIdRef, lastActiveMsRef]);
 
   useEffect(() => {
     spotlightIdsRef.current = spotlightIds;

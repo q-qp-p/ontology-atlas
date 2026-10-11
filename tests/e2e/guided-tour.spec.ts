@@ -92,6 +92,54 @@ test("tour clearance identifies the requested domain even when the cutout points
   expect(clear?.overlaps).toBe(false);
 });
 
+for (const [locale, width, height] of [["en", 1440, 900], ["ko", 1200, 863]] as const) {
+  test(`a new canvas target is placed before the next animation frame at ${width}`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.addInitScript(() => {
+      const request = window.requestAnimationFrame.bind(window);
+      const cancel = window.cancelAnimationFrame.bind(window);
+      const deferred = new Map<number, FrameRequestCallback>();
+      let held = false;
+      window.requestAnimationFrame = (callback) => {
+        const id = request((time) => {
+          if (held) deferred.set(id, callback);
+          else callback(time);
+        });
+        return id;
+      };
+      window.cancelAnimationFrame = (id) => { deferred.delete(id); cancel(id); };
+      Object.assign(window, {
+        holdTourFrames: () => { held = true; },
+        releaseTourFrames: () => {
+          held = false;
+          for (const callback of deferred.values()) request(callback);
+          deferred.clear();
+        },
+      });
+    });
+    await gotoAndSettle(page, `/${locale}/topology/?e2e=1&guides=off`);
+    await waitForMapStill(page);
+    await page.getByTestId("topology-tour-button").click();
+    for (const step of ["nodes", "relations"]) {
+      await page.getByTestId("guided-tour-next").click();
+      await expect(page.getByTestId("guided-tour-overlay")).toHaveAttribute("data-tour-step", step);
+    }
+    await page.evaluate(() => (window as unknown as { holdTourFrames(): void }).holdTourFrames());
+    try {
+      await page.getByTestId("guided-tour-next").click();
+      await expect(page.getByTestId("guided-tour-overlay")).toHaveAttribute("data-tour-step", "try-click");
+      const opening = await readCardAgainstLitNode(page);
+      console.log(`[tour-opening:${width}] ${JSON.stringify(opening)}`);
+      if (process.env.TOUR_PROOF_DIR) await page.screenshot({ path: `${process.env.TOUR_PROOF_DIR}/opening-${width}.png` });
+      expect(opening?.targetInCutout, JSON.stringify(opening)).toBe(true);
+      expect(opening?.overlaps, JSON.stringify(opening)).toBe(false);
+    } finally {
+      await page.evaluate(() => (window as unknown as { releaseTourFrames(): void }).releaseTourFrames());
+    }
+  });
+}
+
 type TourStepReading = { step: string; text: string; legendOnScreen: boolean };
 
 /** A step may name a legend only while a legend is on the screen. */

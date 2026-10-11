@@ -779,11 +779,12 @@ export function OntologyMap(props: OntologyMapProps) {
       {/* The guided tour's canvas node anchor (steps 2 and 4) — the same projection
                   technique as the realm button (the loop refreshes the transform and
                   `--tour-anchor-r` every frame). It is a **measurement probe** with no paint:
-                  the scrim and cutout are painted by GuidedTourOverlay, which reads this rect
+                  it must never transition, including under the global reduced-motion duration.
+                  The scrim and cutout are painted by GuidedTourOverlay, which reads this rect
                   from the z-70 overlay layer (Guardian correction 2026-07-23 — painting the
                   scrim at z-40 inside the widget left outer chrome such as the top toolbar
                   floating above the scrim, so the testid step and the dimming layered wrongly). */}
-      {tourAnchorRef ? (<div ref={tourAnchorRef} data-testid="topology-tour-anchor" aria-hidden className="pointer-events-none absolute left-0 top-0 z-40" style={{
+      {tourAnchorRef ? (<div ref={tourAnchorRef} data-testid="topology-tour-anchor" data-tour-anchor-node={tourAnchorNodeId ?? undefined} aria-hidden className="pointer-events-none absolute left-0 top-0 z-40 transition-none" style={{
                 width: "calc(var(--tour-anchor-r, 0px) * 2)",
                 height: "calc(var(--tour-anchor-r, 0px) * 2)",
                 visibility: tourAnchorNodeId ? "visible" : "hidden",

@@ -1,3 +1,4 @@
+import { projectTourAnchor } from "./topology-tour-anchor";
 import type { CameraAxes } from "../../engine/camera";
 import type { ClusterChip } from "../../model/density-gate";
 import type { DomeRuntime } from "../../model/dome-view/runtime";
@@ -276,25 +277,12 @@ export function createRealmFrameStage(sources: RealmFrameStageSources) {
       }
     }
 
-    // --- Guided-tour canvas anchor projection, structurally identical to
-    // the realm-button block above. Writes the screen position and radius of
-    // the node `tourAnchorNodeId` names into the anchor div every frame;
-    // OntologyMap draws that circle as a scrim cutout. There is no CSS
-    // transition — this per-frame transform *is* the motion. ---
-    {
-      const anchorEl = tourAnchorElRef.current;
-      if (anchorEl) {
-        const anchorId = tourAnchorNodeIdRef.current;
-        const node = anchorId ? world.nodeById.get(anchorId) : undefined;
-        if (node) {
-          const dFrame = domeRuntimeRef.current?.frame.get(node.id);
-          const rr = radiusForKind(node.kind, tokens) * node.magnitudeScale * (dFrame?.s ?? 1) * camera.scale.value;
-          const s = worldToScreen(camera, width, height, node.x + (dFrame?.dx ?? 0), node.y + (dFrame?.dy ?? 0));
-          anchorEl.style.transform = `translate(-50%, -50%) translate(${s.x}px, ${s.y}px)`;
-          anchorEl.style.setProperty("--tour-anchor-r", `${rr + 10}px`);
-        }
-      }
-    }
+    projectTourAnchor({
+      element: tourAnchorElRef.current,
+      nodeId: tourAnchorNodeIdRef.current,
+      world, camera, width, height, tokens,
+      dome: domeRuntimeRef.current,
+    });
 
     result.frameClusteredIds = frameClusteredIds;
     result.frameChips = frameChips;
