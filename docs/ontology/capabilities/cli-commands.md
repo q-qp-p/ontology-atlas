@@ -18,6 +18,7 @@ Carries the same authority over the vault from a terminal, so scaffolding a vaul
 ## Includes
 - Scaffolding a new vault, importing and exporting, graph queries, writes, validation, and the connection smoke check.
 - A growth command that prints the plan the agent surface returns, counting the next reads recorded unknowns ask for beside the writes waiting.
+- Agent setup names the resolved configured vault in its post-change sync guidance, including when the vault and codebase are separate folders (`cli/src/commands/agent-setup.mjs`).
 - The same findings and codes the MCP surface reports, by the same names.
 
 ## Excludes

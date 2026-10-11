@@ -12,15 +12,16 @@ dependencies: [elements/evidence-verdict-rule]
 relation_notes: { elements/evidence-verdict-rule: "You asked me to turn imports I actually witnessed into dependencies: the scan shows evidence-drift.mjs importing evidence-verdict.mjs so the dates and the verdict cannot disagree." }
 ---
 
-Dates every cited file and every concept document from Git in one walk, so each concept can be told whether its evidence moved after the meaning was last written.
+Dates cited source files and concept documents from their respective Git histories so a shared rule can compare evidence changes with recorded meaning.
 
 ## Includes
-- One bounded Git walk producing a last-changed time per cited path and per document.
-- An explicit unknown when no time could be read, rather than a default of current.
+- Bounded date reads with distinct vault-document and source-path maps. The native Analysis command resolves the existing project binding and performs a guarded walk for each authoritative repository (`src-tauri/src/git/evidence/bound.rs`); MCP dating remains in `mcp/src/evidence-drift.mjs`.
+- Native checks for grants, binding and receipt identity, repository HEAD and root identity around the read. The renderer discards an obsolete binding or scope before using returned dates (`src/views/ontology-insights/lib/use-ontology-evidence.ts`).
+- Explicit unknowns for unavailable history, missing authority, ambiguous bindings, dirty files and omitted paths. A picker selection must match the existing bound folder before date comparison resumes.
 
 ## Excludes
-- Judging the verdict itself, which is stated by a separate shared rule.
-- Working at all where the vault is not inside a readable Git repository.
+- Accepting meaning or choosing the freshness verdict; the shared evidence rule owns that comparison.
+- Rebinding a project, changing source files or using filesystem modification time as committed evidence.
 
 ## Uncertainty
-- Read from the module header, which cites a 2026-09-13 probe claiming this one fact cut a reader's missed impacts by 75 percent; that measurement was not reproduced here. In this vault the check reports `checked: false` on every run, because the vault folder sits outside a Git repository.
+- Controlled separate-repository fixtures exercise the native comparison; they do not establish correctness for every repository or accepted business meaning. The historical 75-percent missed-impact reduction was not reproduced in this campaign.
