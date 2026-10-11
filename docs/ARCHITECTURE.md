@@ -947,7 +947,6 @@ Long-form docs:
 - [`DESIGN-SYSTEM.md`](./DESIGN-SYSTEM.md) — design tokens + forbidden patterns
 - [`engineering/deployment.md`](./engineering/deployment.md) — static export → static hosting
 - [`CHANGELOG.md`](./CHANGELOG.md) — chronological user-visible changes
-- [`docs/archive/`](./archive/) — historical analysis docs (earlier cloud-mode designs, retired surfaces)
 
 ### Internal meaning transition evidence
 

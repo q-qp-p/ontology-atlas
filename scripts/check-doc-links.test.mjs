@@ -86,7 +86,7 @@ describe('prose path citations', () => {
     assert.equal(isHistoricalDoc('docs/CHANGELOG.md'), true);
     assert.equal(isHistoricalDoc('mcp/CHANGELOG.md'), true);
     assert.equal(isHistoricalDoc('docs/DECISIONS.md'), true);
-    assert.equal(isHistoricalDoc('docs/archive/SIGMA-PLAYBOOK.md'), true);
+    assert.equal(isHistoricalDoc('docs/archive/X.md'), true);
     assert.equal(isHistoricalDoc('docs/audits/X.md'), true);
     assert.equal(isHistoricalDoc('docs/FEATURES.md'), false);
     assert.equal(isHistoricalDoc('AGENTS.md'), false);

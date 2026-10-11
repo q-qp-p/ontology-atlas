@@ -17,8 +17,8 @@ area: map
 > Input: `docs/prototypes/topology-b2plus.html` (approved B2+ "Circuit × Constellation"
 > prototype) · the superseded Phase 0 measurement (recoverable from Git; its adapter
 > contract is preserved below) ·
-> `docs/archive/SIGMA-PLAYBOOK.md` (Sigma v3 built-in feature contract — investigated but v2 does not
-> adopt Sigma, archived) · `docs/design/interaction.md`
+> the Sigma v3 feature study (investigated, not adopted; recoverable from Git) ·
+> `docs/design/interaction.md`
 > (fluid interface principles) · `.claude/rules/design.md` · `docs/PRODUCT-DESIGN-OPERATING-SYSTEM.md`
 > (Design Gate · Graph Engine Fit Gate · Attention Layer Model · State Contract ·
 > 14-inch rule) · design-guardian terrain map verdict (layer (b) item).
@@ -60,7 +60,7 @@ Graph engine fit pass
   This is not a bottleneck "we can fix" but the structural cost of the WebGL engine itself.
 - Missing capability: B2+ requires **unique polygons per kind** (hex plates, square chips, via pads), **shape morphing** converging corner-radius to circles as zoom increases, **engraved (embossed) numeric text**, **4-point diffraction spikes**, and star-dust textures. This set of shapes cannot be created with Sigma's built-in node programs (`NodeCircleProgram`/
   `NodePointProgram`) or official extension packages (`@sigma/node-border`/`node-image`/
-  `node-piechart`/`node-square`) — it falls under the "custom GLSL programs are a last resort" category specified in SIGMA-PLAYBOOK §1.5.
+  `node-piechart`/`node-square`) — it falls under the "custom GLSL programs are a last resort" category named in the Sigma feature study.
 - Can current stack solve it? No — nodeReducer/edgeReducer/camera API /
   label LOD settings (§1.1~1.4) only adjust color, size, hidden state, and label density. Polygon
   geometry, engraved text, and diffraction spikes require writing new shader-level custom programs (vertex/fragment GLSL, VAO/VBO management, clipspace coordinate transformation),
@@ -265,7 +265,7 @@ Memory([[owner-topology-taste]]) confirmed metaphor: **operational state is embe
 | **stale (unpowered)** | Dashed `[3,3]` border, dim fill/stroke (`staleFill`/`staleStroke`), no vibration | Power removed from circuit — stagnant |
 | **hub** | Kind shape + 4px expanded amber ring (`COL.amber`, tone allowed by charter exception) | Structural importance, orthogonal to freshness (can display simultaneously) |
 
-These four states are not mutually exclusive (both hub+fresh and hub+stale possible) — composed as independent overlays (§SIGMA-PLAYBOOK §4-1 "State via borders instead of new coloring" principle, same for canvas 2D: add dash/rings/vibrations per state rather than adding colors).
+These four states are not mutually exclusive (both hub+fresh and hub+stale possible) — composed as independent overlays ("state via borders instead of new coloring": add dash/rings/vibrations per state rather than adding colors).
 
 ### 3.5 Drift Warning State (New — not in prototype)
 

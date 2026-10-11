@@ -170,8 +170,7 @@ Check your vault has at least one `.md` with frontmatter `slug:` and `kind:`. Th
 ## npm publish (retired)
 
 The project no longer publishes to npm; the macOS app carries the MCP server in
-its bundle instead. There is nothing to publish and nothing here to fix. The
-old step-by-step guide is kept as a record at `docs/archive/PUBLISH-NPM.md`, and
+its bundle instead. There is nothing to publish and nothing here to fix.
 `.claude/settings.json` still blocks `npm publish` / `pnpm publish` / `yarn publish`
 from any AI agent.
 

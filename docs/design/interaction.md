@@ -71,4 +71,4 @@ This boundary prevents the situation where "they overlap weirdly and stutter": c
 ## 6. Implementation Notes
 
 - Spring: Motion (formerly Framer Motion) series `type: 'spring', bounce: 0, duration: 0.4` ≈ damping 1.0. Whether to introduce new dependencies will be decided in Slice 2 — if the existing TopologyMapCanvas's pure function camera + CSS `translate` FLIP is sufficient, we'll implement velocity inheritance ourselves without libraries (principle of minimal dependencies).
-- Integration with Sigma canvas follows the reducer·camera API patterns in `docs/archive/SIGMA-PLAYBOOK.md` (investigated but v2 does not adopt Sigma — archived) — DOM overlays are limited to a single popover.
+- DOM overlays on the map canvas are limited to a single popover.
