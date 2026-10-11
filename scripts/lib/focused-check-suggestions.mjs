@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { posix } from 'node:path';
 
 import { isSupportedSourcePath } from '../quality/source-language/source-paths.mjs';
+import { loadTestReach } from './import-graph/test-reach.mjs';
 
 /**
  * The changed-path focused-check advisor: which checks a set of changed paths
@@ -132,7 +133,9 @@ export function suggestFocusedChecks(paths = [], { deletedPaths = [], commentOnl
   );
   const withVitestDirect = prependSuggestions(
     withSourceLanguage,
-    directVitestTestSuggestions(behaviorPaths),
+    directVitestTestSuggestions(behaviorPaths, normalizedDeleted, {
+      allContractsRun: staticCommands.some((item) => item.command === 'pnpm test:contracts'),
+    }),
   );
   const withPlaywrightDirect = prependSuggestions(
     withVitestDirect,
@@ -195,31 +198,54 @@ function directSourceLanguageSuggestions(paths) {
 }
 
 /**
- * A changed test runs itself; a changed source file runs **every suite that
- * imports it**, through Vitest's module graph (`vitest related`). The sibling
- * `<name>.test.tsx` alone missed the suite that renders the file: a change to
- * `AcpPermissionCard.tsx` passed every recommended lane while
- * `AcpChatPanel.test.tsx` had 25 failing cases. Agents in a
- * fan-out never reach the pre-push `--changed` lane, so this is where it is caught.
+ * A changed test runs itself, and a changed file runs every suite whose imports reach it
+ * (`import-graph/test-reach.mjs`). Contracts run by exact name, so CI runs those files and
+ * not the whole contract suite; unit suites go through `vitest related`. A deleted file is
+ * no longer in Vitest's graph, so the tests still importing it run by name.
  */
-function directVitestTestSuggestions(paths) {
-  const pathSet = new Set(paths);
+function directVitestTestSuggestions(paths, deletedPaths, { allContractsRun }) {
+  const reach = loadTestReach();
   const rows = [];
   const sources = [];
   for (const path of paths) {
-    const testFile = resolveVitestTestFile(path, pathSet);
-    if (!testFile) continue;
-    if (testFile === path) {
-      rows.push({ command: `pnpm exec vitest run ${testFile}`, reason: 'changed Vitest test file', paths: [path] });
-    } else {
+    if (isVitestUnitTest(path)) {
+      rows.push({ command: `pnpm exec vitest run ${path}`, reason: 'changed Vitest test file', paths: [path] });
+    } else if (/^(?:src|app)\/.+\.tsx?$/.test(path) || reach.testsReaching([path]).unit.length > 0) {
       sources.push(path);
     }
   }
   if (sources.length > 0) {
     rows.push({
-      command: `pnpm exec vitest related --run --passWithNoTests ${sources.join(' ')}`,
-      reason: 'every Vitest suite that imports a changed source file (module graph), not only its sibling',
+      command: `pnpm exec vitest related --run --passWithNoTests --exclude='tests/contract/**' ${sources.join(' ')}`,
+      reason: 'every Vitest suite that imports a changed file (module graph), not only its sibling',
       paths: sources,
+      importGraph: true,
+    });
+  }
+  const stale = reach.testsReaching(deletedPaths);
+  const staleUnits = stale.unit.filter((test) => !deletedPaths.includes(test));
+  if (staleUnits.length > 0) {
+    rows.push({
+      command: `pnpm exec vitest run ${staleUnits.join(' ')}`,
+      reason: 'these suites still import a deleted file, which Vitest no longer sees',
+      paths: deletedPaths,
+      importGraph: true,
+    });
+  }
+  const contracts = new Set();
+  const contractInputs = [];
+  for (const path of [...paths, ...deletedPaths]) {
+    const reached = reach.testsReaching([path]).contract.filter((test) => !deletedPaths.includes(test));
+    if (reached.length === 0) continue;
+    contractInputs.push(path);
+    for (const test of reached) contracts.add(test);
+  }
+  if (contracts.size > 0 && !allContractsRun) {
+    rows.push({
+      command: `pnpm exec vitest run ${[...contracts].sort().join(' ')}`,
+      reason: 'every contract that imports, spawns or names a changed file',
+      paths: contractInputs,
+      importGraph: true,
     });
   }
   return rows;
@@ -285,11 +311,8 @@ function directPlaywrightTestSuggestions(paths) {
     }));
 }
 
-function resolveVitestTestFile(path) {
-  if (!/^(?:src|app)\//.test(path)) return null;
-  if (!/\.(?:ts|tsx)$/.test(path)) return null;
-  if (/\.(?:test|spec)\.(?:ts|tsx)$/.test(path)) return path;
-  return path.replace(/\.(tsx?)$/, '.test.$1');
+function isVitestUnitTest(path) {
+  return /^(?:src|app)\/.+\.(?:test|spec)\.tsx?$/.test(path);
 }
 
 function resolveMcpUnitTestFile(path, pathSet) {
