@@ -1,4 +1,4 @@
-import { slugDisplaySegment } from "../map-datasheet";
+import { slugDisplaySegment } from "./map-datasheet";
 import { controlClass } from "@/shared/ui";
 import type { OntologyMapDetailPanelLabels, OntologyMapDetailPanelProps } from "./types";
 

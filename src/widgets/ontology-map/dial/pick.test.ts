@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { HIT_TOUCH_SLACK_PX } from "../ui/topology-camera-math";
+import { HIT_TOUCH_SLACK_PX } from "../ui/camera/topology-camera-math";
 import { pickDial } from "./pick";
 import type { DialPick, DialRowPick } from "./types";
 

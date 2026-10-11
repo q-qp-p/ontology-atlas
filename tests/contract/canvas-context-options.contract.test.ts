@@ -27,8 +27,8 @@ import { describe, expect, it } from "vitest";
  * or is a buffer.
  */
 
-const MAIN_CANVAS = "src/widgets/ontology-map/ui/use-topology-frame-loop.ts";
-const COMPOSITION = "src/widgets/ontology-map/ui/use-topology-loop.ts";
+const MAIN_CANVAS = "src/widgets/ontology-map/ui/frame-loop/use-topology-frame-loop.ts";
+const COMPOSITION = "src/widgets/ontology-map/ui/loop/use-topology-loop.ts";
 const OFFSCREEN = [
   "src/widgets/ontology-map/render/grid.ts",
   "src/widgets/ontology-map/render/animated-background.ts",

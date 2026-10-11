@@ -1,5 +1,5 @@
 /**
- * Realm transition state machine and motion maths; `ui/use-topology-loop.ts` drives the
+ * Realm transition state machine and motion maths; `use-topology-loop.ts` drives the
  * phase and applies these per frame. Inside nodes FLIP, outside nodes fling out on an
  * accelerating curved path and unmount, and the ward draws itself; nothing loops, and
  * reduced motion switches at once. Timings are feel constants, not tokens.

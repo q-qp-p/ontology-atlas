@@ -28,7 +28,7 @@
 
 /**
  * The cap on a frame delta (seconds) — it stops the dt blowing up when a tab comes
- * back from the background. The rAF loop (`ui/use-topology-loop.ts`) clamps with
+ * back from the background. The rAF loop (`use-topology-loop.ts`) clamps with
  * this value.
  *
  * **This value is paired with the spring's stability condition.** Semi-implicit
