@@ -4,7 +4,7 @@ import { spawn as spawnAsync, spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { decodePlan, FULL_LANE_COMMANDS } from './classify-change.mjs';
+import { decodePlan, FULL_LANE_COMMANDS, isRelatedSweep } from './classify-change.mjs';
 
 /*
  * Measurement files never ride a shard: a ratio's verdict would depend on which files land
@@ -120,7 +120,10 @@ export function commandsForLane({
       // to run a handful of files and two shards would have nothing to do.
       if (wholeGraphOnly) commands.push(`pnpm exec vitest run ${unit.contractFiles.join(' ')}`);
     }
-    if (wholeGraphOnly) commands.push(...unit.extraCommands);
+    for (const command of unit.extraCommands) {
+      if (isRelatedSweep(command)) commands.push(sharded(`${command} ${MEASURED_LANES_EXCLUDED}`));
+      else if (wholeGraphOnly) commands.push(command);
+    }
     return unique(commands);
   }
 

@@ -5,13 +5,14 @@
  * PRs and verified main push ranges pay for affected evidence. Scheduled runs,
  * shared test configuration, and changes to this planner run the exhaustive
  * lanes. The focused mapping is not duplicated here: `checks:changed` remains
- * the repository's path -> check authority and this module assigns those checks
- * to CI lanes.
+ * the repository's path -> check authority, the import graph says which test
+ * projects a change reaches, and this module assigns those checks to CI lanes.
  */
 
 import { execFileSync, spawnSync } from 'node:child_process';
 import { appendFileSync } from 'node:fs';
 import { verifyReviewedMainPush } from './reviewed-main-push.mjs';
+import { loadTestReach } from './lib/import-graph/test-reach.mjs';
 
 import {
   CI_PLANNER_SURFACE_PATTERNS,
@@ -151,7 +152,6 @@ const KNOWN_PATHS = [
 
 const ROOT_VITEST_INPUTS = [
   /^(?:app|src)\//,
-  /^messages\//,
   /^tests\/fixtures\//,
 ];
 
@@ -249,6 +249,17 @@ function playwrightSpecs(command) {
     .filter((token) => /^tests\/e2e\/[A-Za-z0-9._-]+\.spec\.ts$/.test(token));
 }
 
+/** The file arguments of a single Vitest selection, or none for any other command. */
+function vitestFileArguments(command) {
+  const selection = /^pnpm exec vitest (?:run|related)\s+(.*)$/.exec(command);
+  if (!selection || selection[1].includes('&&')) return [];
+  return selection[1].split(/\s+/).filter((token) => token && !token.startsWith('-'));
+}
+
+function coversOnly(files, changed) {
+  return files.length > 0 && files.every((path) => changed.has(path));
+}
+
 function exactContractFiles(command) {
   if (!/^pnpm (?:exec vitest run|test:run)\b/.test(command)) return [];
   return command
@@ -269,7 +280,9 @@ function unitPlan({ paths, existingPaths, deletedPaths, suggestions, full }) {
     };
   }
 
-  const rows = suggestions.commands.filter((row) => commandLane(row.command) === 'unit');
+  const rows = suggestions.commands.filter(
+    (row) => commandLane(row.command) === 'unit' && !(row.paths.length > 0 && row.paths.every(isGenerated)),
+  );
   const broadContractRows = rows.filter((row) => row.command === 'pnpm test:contracts');
   const broadContractInputs = broadContractRows.flatMap((row) => row.paths);
   const contractFull = broadContractInputs.some(
@@ -283,9 +296,11 @@ function unitPlan({ paths, existingPaths, deletedPaths, suggestions, full }) {
         ...rows.flatMap((row) => exactContractFiles(row.command)),
       ]).sort();
   const knip = rows.some((row) => row.command === 'pnpm knip');
-  const affected = paths.some(
-    (path) => !isGenerated(path) && matchesAny(path, ROOT_VITEST_INPUTS),
-  );
+  const graphPaths = existingPaths.filter((path) => !isGenerated(path) && !matchesAny(path, ROOT_VITEST_INPUTS));
+  const affected =
+    paths.some((path) => !isGenerated(path) && matchesAny(path, ROOT_VITEST_INPUTS)) ||
+    (graphPaths.length > 0 && loadTestReach().testsReaching(graphPaths).unit.length > 0);
+  const changed = new Set(paths);
   const extraCommands = unique(
     rows
       .map((row) => row.command)
@@ -294,11 +309,9 @@ function unitPlan({ paths, existingPaths, deletedPaths, suggestions, full }) {
           command !== 'pnpm knip' &&
           command !== 'pnpm test:contracts' &&
           exactContractFiles(command).length === 0 &&
-          !/^pnpm exec vitest run (?:app|src)\//.test(command) &&
-          // The affected run (`vitest run --changed`, sharded) already runs every test that
-          // imports a changed source; the local sibling-suite command would repeat it unsharded
-          // on shard 1, which for a widely imported file outran the shard's 6-minute ceiling.
-          !(affected && /^pnpm exec vitest related /.test(command)),
+          // The sharded `vitest run --changed` already selects every suite importing a changed
+          // file; a row naming only changed files would repeat it unsharded on shard 1.
+          !(affected && coversOnly(vitestFileArguments(command), changed)),
       ),
   );
   const contract = contractFull ? 'full' : contractFiles.length > 0 ? 'focused' : 'skip';
@@ -317,33 +330,18 @@ function unitPlan({ paths, existingPaths, deletedPaths, suggestions, full }) {
 }
 
 /**
- * The measurement lane: the Vitest `perf` project, on a runner of its own.
- *
- * It is its own job because a ratio measured beside other work pays unevenly.
- *
- * `full` runs every measurement file. `affected` hands the selection to Vitest's own import graph
- * (`--changed`), which is the only thing that knows whether a perf file reaches a changed module;
- * this planner runs before any install and cannot. It is planned only when a changed path could
- * be in that graph: non-generated app or src code, or a measurement file itself. A plain test
- * file can never be imported by a measurement, so a test-only change skips the runner entirely.
- * A deletion under app or src runs everything, because a vanished module is not in anyone's
- * graph any more and `--changed` would select nothing.
+ * The measurement lane: the Vitest `perf` project, on a runner of its own, because a ratio
+ * measured beside other work pays unevenly. `affected` lets Vitest's `--changed` graph pick the
+ * files; it is planned only when the import graph says a measurement reaches a changed file.
+ * A deletion a measurement still reaches runs everything: `--changed` cannot see a vanished file.
  */
-const PERF_SOURCE_INPUTS = [/^(?:app|src)\//];
-
-function isPerfFile(path) {
-  return /\.perf\.test\.(?:ts|tsx)$/.test(path);
-}
-
-function perfPlan({ paths, deletedPaths, full }) {
+function perfPlan({ paths, existingPaths, deletedPaths, full }) {
   if (full || paths.some((path) => matchesAny(path, ROOT_UNIT_FULL_INPUTS))) return { mode: 'full' };
-  if (deletedPaths.some((path) => matchesAny(path, PERF_SOURCE_INPUTS))) return { mode: 'full' };
-  const relevant = paths.some(
-    (path) =>
-      matchesAny(path, PERF_SOURCE_INPUTS) &&
-      !isGenerated(path) &&
-      (isPerfFile(path) || !isSourceTest(path)),
-  );
+  const reach = loadTestReach();
+  const sources = (list) => list.filter((path) => !isGenerated(path));
+  const stale = reach.testsReaching(sources(deletedPaths)).perf.filter((test) => !deletedPaths.includes(test));
+  if (stale.length > 0) return { mode: 'full' };
+  const relevant = reach.testsReaching(sources(existingPaths)).perf.length > 0;
   return { mode: relevant ? 'affected' : 'skip' };
 }
 
@@ -454,7 +452,7 @@ export function buildImpactPlan({ files = [], deletedFiles = [], forceFull = fal
     full: full || paths.some((path) => matchesAny(path, E2E_FULL_INPUTS)),
   });
   const gates = gatesPlan({ suggestions, full });
-  const perf = perfPlan({ paths, deletedPaths: deleted, full });
+  const perf = perfPlan({ paths, existingPaths: existing, deletedPaths: deleted, full });
 
   return {
     version: 1,
@@ -513,7 +511,17 @@ export function reuseReviewedMainPlan(plan, proof, { eventName, base, head } = {
 }
 
 export function unitUsesAllShards(unit) {
-  return unit.mode === 'full' || unit.affected === true || unit.contract === 'full';
+  return (
+    unit.mode === 'full' ||
+    unit.affected === true ||
+    unit.contract === 'full' ||
+    (unit.extraCommands ?? []).some(isRelatedSweep)
+  );
+}
+
+/** A `vitest related` row is a file sweep like the affected run, so every shard takes a share. */
+export function isRelatedSweep(command) {
+  return /^pnpm exec vitest related /.test(command);
 }
 
 function git(args) {
