@@ -12,7 +12,7 @@ import {
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { analyzeRepoStructure, buildProposalAssessment } from './analyze.mjs';
+import { analyzeRepoStructure } from './analyze.mjs';
 import { detectExistingOntologyEvidence } from './analyze/project-detection.mjs';
 import { selectExactCaseEntry } from './analyze/scan-guards.mjs';
 
@@ -2422,16 +2422,6 @@ test('Autotools C/H role evidence reserves public and core witnesses ahead of ra
     assert.equal(result.proposalValidation.canWrite, false);
     assert.equal('writePlan' in result.proposalValidation, false);
     assert.equal(result.suggestedRelations.some((relation) => relation.type === 'depends_on'), false);
-
-    const assessment = buildProposalAssessment(result);
-    const publicEvidence = assessment.questions
-      .find((question) => question.id === 'evidence')
-      ?.evidence.find(
-      (evidence) => evidence.location === 'include/signal_bridge.h.in',
-      );
-    assert.match(publicEvidence?.excerpt ?? '', /^Public interface contract:/);
-    assert.match(publicEvidence?.excerpt ?? '', /observed implementation path/);
-    assert.doesNotMatch(publicEvidence?.excerpt ?? '', /implementation entry point/i);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { runJsonRpcProcess } from '../../scripts/lib/mcp-test-rpc.mjs';
 
 import { compileOntology } from './ontology-compiler.mjs';
-import { deriveBridgeShapes, queryCompiledOntology, shareArtifact } from './ontology-engine.mjs';
+import { queryCompiledOntology, shareArtifact } from './ontology-engine.mjs';
 import { createArtifactContext } from './ontology-engine/artifact-context.mjs';
 import { createContextOperations } from './ontology-engine/context-operations.mjs';
 import { similarityScore } from './ontology-engine/engine-helpers.mjs';
@@ -4543,69 +4543,6 @@ describe('maintenance_plan — unearned bridge nodes', () => {
     const graph = compileOntology(docs, { includeIndexes: true });
     const result = queryCompiledOntology(graph, { operation: 'maintenance_plan', limit: 25 });
     assert.deepEqual(result.actions.filter((a) => a.kind === 'retire_unearned_node'), []);
-  });
-});
-
-/**
- * The function `deriveBridgeShapes` tells an inserted layer from the graph alone, never a
- * frontmatter flag (forgeable, and lost on a hand edit).
- */
-describe('deriveBridgeShapes', () => {
-  const flat = {
-    nodes: [
-      { slug: 'project', kind: 'project' },
-      { slug: 'domains/d', kind: 'domain' },
-      { slug: 'capabilities/c', kind: 'capability' },
-      { slug: 'elements/e', kind: 'element' },
-    ],
-    edges: [
-      { from: 'project', to: 'domains/d', via: 'domains', resolved: true },
-      { from: 'domains/d', to: 'capabilities/c', via: 'capabilities', resolved: true },
-      { from: 'capabilities/c', to: 'elements/e', via: 'elements', resolved: true },
-    ],
-  };
-
-  it('says nothing about an ordinary flat hierarchy', () => {
-    assert.equal(deriveBridgeShapes(flat).size, 0);
-  });
-
-  it('flags both ends of an inserted layer, and names which end each is', () => {
-    const withBridge = {
-      nodes: [...flat.nodes, { slug: 'capabilities/bridge', kind: 'capability' }],
-      edges: [
-        ...flat.edges,
-        { from: 'capabilities/c', to: 'capabilities/bridge', via: 'contains', resolved: true },
-      ],
-    };
-    const shapes = deriveBridgeShapes(withBridge);
-    assert.equal(shapes.get('capabilities/bridge').via, 'same-kind-parent');
-    assert.equal(shapes.get('capabilities/bridge').counterpart, 'capabilities/c');
-    assert.equal(shapes.get('capabilities/c').via, 'same-kind-child');
-  });
-
-  it('reads the inline `domain:` direction too, not just the array keys', () => {
-    const nested = {
-      nodes: [
-        { slug: 'domains/outer', kind: 'domain' },
-        { slug: 'domains/inner', kind: 'domain' },
-      ],
-      edges: [{ from: 'domains/inner', to: 'domains/outer', via: 'domain', resolved: true }],
-    };
-    assert.equal(deriveBridgeShapes(nested).get('domains/inner').via, 'same-kind-parent');
-  });
-
-  it('ignores unresolved references — a string is not a layer', () => {
-    const dangling = {
-      nodes: [{ slug: 'capabilities/c', kind: 'capability' }],
-      edges: [{ from: 'capabilities/c', ref: 'capabilities/ghost', via: 'contains', resolved: false }],
-    };
-    assert.equal(deriveBridgeShapes(dangling).size, 0);
-  });
-
-  it('does not fire on a leaf — the rejected candidate clause did', () => {
-    // "Parent is a capability and all children are elements" is vacuously true of
-    // every leaf, so it is not implemented.
-    assert.equal(deriveBridgeShapes(flat).has('elements/e'), false);
   });
 });
 

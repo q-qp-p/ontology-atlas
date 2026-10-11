@@ -28,15 +28,6 @@ export function verifyKillGraceValueErrorMessage(env = process.env) {
   ].join(' ');
 }
 
-export function resolveVerifyVault({
-  env = process.env,
-  argv = process.argv,
-  cwd = process.cwd(),
-  isMain = false,
-} = {}) {
-  return parseVerifyArgs({ env, argv, cwd, isMain }).vault;
-}
-
 export function verifyVaultPathError(vault, cwd = process.cwd()) {
   const resolved = resolve(cwd, vault);
   try {

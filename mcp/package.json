@@ -109,7 +109,6 @@
     "src/analyze/native-evidence.mjs",
     "src/analyze/source-elements.mjs",
     "src/analyze/meaning-gate.mjs",
-    "src/analyze/proposal-assessment.mjs",
     "src/analyze/repo-structure.mjs",
     "src/meaning-assessment.mjs",
     "src/meaning-evaluation.mjs",
