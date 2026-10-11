@@ -1,18 +1,7 @@
 /**
- * C1 B1 — local spring tug during node drag. Pure math only (no DOM/canvas/
- * sim knowledge) so it's independently testable; the caller (`use-topology-
- * loop.ts`'s rAF loop, seeded by `topology-pointer-move.ts` at drag-start)
- * owns applying the result to world node positions.
- *
- * AUDIT FINDING this replaces: FA2's global relax (`model/force-layout.ts`,
- * 1 iteration/frame + `slowDown: 20`) is intentionally gentle for the settled
- * default layout, but that same gentleness means a dragged node produces NO
- * visible neighbor motion — the owner's "Dragging a node does not move its neighbours"
- * report. Instead of tuning FA2 (which would also affect the settled-layout
- * feel), this module propagates the DRAGGED node's own per-frame world-space
- * displacement directly to its 1-hop/2-hop neighbors, falling off by hop
- * distance, eased in smoothly (`stepTugAxis`) so the motion reads as springy
- * lag-then-catch-up rather than a rigid rod.
+ * Local spring tug during node drag: the dragged node's per-frame world displacement propagates
+ * to its 1-hop and 2-hop neighbours, falling off by hop distance and eased by `stepTugAxis`.
+ * Pure math; `use-topology-loop.ts` applies the result.
  */
 
 export interface DragTugSets {
@@ -81,12 +70,8 @@ export function tugFalloffForDistance(distance: number, radius: number): number 
 }
 
 /**
- * One exponential-smoothing step of a single scalar axis (world x OR y) toward
- * `target` — the same `1 - exp(-dt/tau)` shape as `model/focus-state.ts#stepEmphasis`,
- * generalized to an arbitrary numeric range (not just 0..1) so it can ease a
- * world-space offset toward `totalDragDelta × factor` (springy lag) and back
- * toward `0` once the drag ends or the neighbor is no longer in the tug set
- * (smooth release, no pop).
+ * One exponential-smoothing step of a scalar axis toward `target`, the `1 - exp(-dt/tau)` shape of
+ * `stepEmphasis` generalised to any numeric range.
  */
 export function stepTugAxis(current: number, target: number, dt: number, tau: number): number {
   return current + (target - current) * (1 - Math.exp(-dt / tau));

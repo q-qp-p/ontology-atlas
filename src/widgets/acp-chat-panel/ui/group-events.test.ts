@@ -81,12 +81,6 @@ describe('groupEvents — consecutive tool calls read as one run', () => {
 });
 
 describe('groupEvents — only repetition collapses', () => {
-  /*
-   * The 2026-09-05 decision that lookups stand above the answer is untouched: nothing is hidden
-   * behind a click. What three byte-identical calls lose is their separate lines — one fact stated
-   * three times pushes the *next*, different call out of view, and the count keeps what the lines
-   * were saying.
-   */
   it('folds three identical calls onto one row that says how many', () => {
     const out = groupEvents([
       user('u'),
@@ -183,10 +177,8 @@ describe('groupEvents — a tool call stands where it happened', () => {
 
   it('does not draw a thought above the call it actually followed', () => {
     /*
-     * Measured in the rendered dock (2026-09-19): a turn that went think -> read -> think drew
-     * `STEP ONE`, `STEP THREE`, then the read. The disclosure reached backwards past the call
-     * and took the later thought with it, so the read looked like a consequence of both thoughts
-     * when it happened between them. Order is this column's whole claim about cause.
+     * Order is this column's claim about cause: a disclosure must not reach back past a call
+     * to take a later thought.
      */
     const turn = [user('u'), thought('one'), tool('read'), thought('three'), agent('m')];
     expect(drawnIds(turn)).toEqual(['u', 'one', 'read', 'three', 'm']);

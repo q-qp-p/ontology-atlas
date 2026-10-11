@@ -82,7 +82,6 @@ export function HubRail({
       degreeBySlug.set(dep, (degreeBySlug.get(dep) ?? 0) + 1);
     }
   }
-  // With the Layer 0 container system retired, only hubs appear in the rail.
   const hubs = projects
     .filter((p) => p.isHub)
     .slice()

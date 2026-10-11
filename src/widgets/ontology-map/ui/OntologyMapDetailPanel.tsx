@@ -33,84 +33,14 @@ import { RelationsZone } from "./detail-panel/RelationsZone";
 import type { OntologyMapDetailPanelProps } from "./detail-panel/types";
 
 /**
- * ontology-map "component datasheet" node panel
- * (`docs/design/ontology-map.md` §5). Rendered ONLY when the
- * `atlas:feature:ontology-map` flag is on — the flag-off path keeps the
- * shared `TopologyNodePopover` byte-identical, so the Sigma engine is
- * untouched (lead design decision). Re-presents the SAME selection facts the
- * shared popover derives.
- *
- * Mockup redesign (2026-07-24, owner-approved `mockup-panel-detail.html`):
- * a BALANCED identity header — node name hero (left) + quiet kind badge and
- * close (right), then freshness (left) + a navigable indigo domain chip
- * (right), so neither side is barren for long names. Below, one primary action
- * plus Edit/More disclosure menus replaces the old seven-tile action strip;
- * typed counts live only in their relation-group headers. Then a relations zone with
- * a wide 28px between-group rhythm (`--map-panel-zone-gap`), each group
- * self-evident: a directional glyph + bold plain label + indigo count chip +
- * underline, rows carrying the canvas kind glyph (no competing kind word).
- * Footer stays sticky: slug (quiet) + ONE indigo-filled primary "full detail".
- * The floating power dot was removed (unexplained mark); `powered` now only
- * feeds the freshness fallback word.
- *
- * FSD: this widget owns its own prop shape — the view (`HomePage`) maps
- * `TopologyNodeFocusModel` into these props, so the import direction stays
- * view → widget. Colors/sizes come from `--map-panel-*` tokens.
- *
- * M-2 count semantics: connection groups are ROLE-based (contains / usedBy /
- * dependsOn / belongsTo) — the SAME four buckets the full-detail surface
- * renders, with each count shown once in its own group header. The fourth
- * bucket (belongs to) was missing here until 2026-07-26,
- * during which time popovers for nodes with only parents (dogfood 75%) said "connected places 0".
- * Containment is its OWN "containing" group/segment (rendered only
- * when non-empty, i.e. container nodes) instead of folding into "depends on" by
- * raw direction — the exact typed-fact collapse the UX round flagged. Group
- * headers reuse `labels.metricContains`/`metricUsedBy`/`metricDependsOn` (no
- * separate group-label strings) so the words match too. (After the redesign the
- * relation TYPE is encoded by the group itself — containing versus depending on — so
- * each row's left mark is the neighbour's canvas kind glyph, not a TraceMark line.)
- *
- * RATIO-SYSTEM §4 scale-up (`docs/prototypes/chrome-datasheet-final.html`,
- * owner: *"the information is good but it's all too small"* — the information is good but it's all
- * too small) promotes a THIRD group — evidence (evidence) — built from the node's own
- * `evidenceIds` (its backing vault doc; see
- * `map-datasheet.ts#buildV2EvidenceRows`). It reuses
- * `labels.metricEvidence` as its header, the same construction as the usedBy and
- * dependsOn groups, so the metric line's "evidence N" and this group's count never
- * drift. Rows are read-only (no `onSelectConnection` — evidenceIds are vault
- * slugs, a different id namespace than the canvas graph; see that module's doc
- * for why).
- *
- * N6 (persona-ux-2026-07 report — a PM could not get an immediate answer to
- * "which capability does this belong to?", which capability does this belong to): the owning
- * domain used to appear only as a `contains` row inside the "usedBy" (usedBy)
- * connections group, distinguished from `depends_on` rows only by line style
- * (solid versus dashed `TraceMark`) — not a fact a first-time reader would
- * notice. It now renders as its own "domain · <name>" line in the header,
- * clickable through the SAME `onSelectConnection` callback the connection rows
- * use (no new navigation primitive). When the domain is this node's direct
- * parent it also stays as one row in the "belongs to" group below — the header chip
- * is a shortcut to go straight there, and the group is the relation record
- * itself. Dropping the domain from the group alone would make the popover's
- * "belongs to N" disagree with the same number in full detail, which is the worse defect.
- *
- * Toss C2 (plain-language pass, 2026-07-24): the plain labels
- * containing/usedBy/dependsOn/evidence used to sit right next to jargon that undercut
- * them — the sticky footer's raw `slug` (`ontology/capabilities/mcp-server`) and
- * each evidence row's raw vault-path prefix were ALWAYS visible, unreadable to a
- * non-developer. Both now show only the readable leaf segment
- * (`slugDisplaySegment` / `V2EvidenceRow.title`) and fold the full path behind a
- * native `title=` hover tooltip — information is not lost (the "full detail" link
- * already owns navigating to the full record), it just no longer competes for
- * first-read attention with the plain-language facts.
+ * Component datasheet node panel (`docs/design/ontology-map.md` section 5). It owns its prop
+ * shape; the view maps `TopologyNodeFocusModel` into it. Connection groups are role-based
+ * (contains, usedBy, dependsOn, belongsTo), the same four buckets as full detail.
  */
 
 /**
- * The action row's primary. **One radius for the row** (interaction audit, 2026-09-25): the
- * primary was the Button's `rounded-panel` (12) in one branch and `rounded-card` in two others,
- * beside chip-radius menu triggers (6), so one row drew three corners. The map panel's controls
- * are chip-radius (`--map-panel-row-radius`), so the primary joins them — the fill carries the
- * emphasis, not the corner.
+ * The action row's primary uses the map panel's chip radius (`--map-panel-row-radius`) like
+ * the menu triggers.
  */
 const PRIMARY_ACTION_CLASS = "atlas-touch-floor min-w-0 flex-1 rounded-chip";
 
@@ -165,33 +95,15 @@ export function OntologyMapDetailPanel({
   const isProject = kind === "project";
   const showProjectSource = isProject && projectSource !== null;
   /**
-   * **The layout is decided by the kind, not by when the receipt lands** (2026-09-25 sweep).
-   *
-   * Everything a project draws differently — the receipt block, the "Concept document"
-   * meta line, the hairline over the actions, the folded relations, the footer without a
-   * slug — used to wait for `projectSource`, which arrives a native read (and on a bound
-   * folder, a repository walk) after the panel. So the panel opened looking finished in
-   * another layout and, 710 ms later, rebuilt itself: a block inserted above the buttons,
-   * the meta line rewritten, the relations folded, every button pushed down. While the
-   * receipt is read the panel is already the project's, and the receipt's place is held
-   * by its own heading and a pending line (`ProjectSourcePendingRows`).
+   * The layout is decided by the kind, not by when `projectSource` arrives, so the panel does not
+   * rebuild itself when the receipt lands. Until then its place is held by its heading and a pending
+   * line (`ProjectSourcePendingRows`).
    */
   const projectSourcePending = isProject && projectSource === null && projectSourceLoading;
   const projectLayout = showProjectSource || projectSourcePending;
   /**
-   * **The prescription attaches to the diagnosis.** The diagnosis
-   * ("No connected code folder" — no code folder is connected) used to sit at
-   * y=234 near the top of the panel while its prescription
-   * ("Connect a code folder") sat on the very last row at
-   * y=647 — 393px apart, with four action tiles and the evidence list in between.
-   * On the web that position was not even a button but one grey sentence
-   * (measured 2026-08-04). That is what a screen that diagnoses without being
-   * able to prescribe looks like.
-   *
-   * This block appears **only when there is a gap**. Wrapping a state with nothing
-   * wrong (`use_current_evidence`) in a box too would strip the box of its meaning
-   * — "there is something to fix here". That state's action stays in the footer, as
-   * now. So at no moment is the same control drawn in two places.
+   * The remedy block stands beside the diagnosis and appears only when there is a gap. The no-gap
+   * state's action stays in the footer, so the same control is never drawn in two places.
    */
   const showSourceRemedy = Boolean(
     showProjectSource
@@ -295,16 +207,8 @@ export function OntologyMapDetailPanel({
   ];
   const compactProjectRelations = useViewportBelow(1513);
   const collapseProjectRelations = projectLayout && compactProjectRelations;
-  // Mockup redesign (2026-07-24) — the top stats is one aggregate line. The
-  // per-type breakdown belongs to each relation group header's count chip below
-  // (one fact, once).
-  //
-  // Scope correction (2026-07-26) — the sum is built directly from the totals of
-  // **the groups actually drawn below**. It used to add only the three `metric.*`
-  // values, so the fourth bucket (belongs to) was neither drawn nor counted and a node
-  // with only a parent read as "connected places 0". Summing from the same object makes
-  // "the top equals the aggregate of the groups below" true by construction rather
-  // than by convention.
+  // The top count sums the totals of the groups drawn below, so it equals their aggregate by
+  // construction.
   const connectedTotal =
     groups.contains.total + groups.usedBy.total + groups.dependsOn.total + groups.belongsTo.total;
   const hasConnections =
@@ -351,18 +255,11 @@ export function OntologyMapDetailPanel({
   );
 
   return (
-    /* `Surface` carries the way out (2026-08-03). The parent (HomePage) used to
-       open the window with `usePanelPresence` and dictate the class through a
-       `presence` prop, which made «does this surface have an exit» a fact living
-       outside this file.
-
-       The inspector can occupy nearly the full window height. Use the existing
-       large-surface fade: the camera approaches the target while the reading
-       surface remains stationary. Small menus inside it retain chrome motion.
-
-       The outer box carries **width only** — the inner box is the scroll container
-       (max-height plus overflow-y-auto) and the sticky footer anchors to that
-       scrollport, so that role is not moved. */
+    /*
+     * `Surface` carries the exit window. The outer box carries width only; the inner box is the
+     * scroll container and the sticky footer anchors to its scrollport. Small menus inside keep
+     * chrome motion.
+     */
     <Surface
       open={open}
       motion="overlay"
@@ -389,20 +286,9 @@ export function OntologyMapDetailPanel({
         data-attention-role="supporting-detail"
         data-datasheet-density="instrument"
         onKeyDown={handleKeyDown}
-        // P3-③ (2026-07-21 retention round) — this panel is fixed-anchored to
-        // `--topology-node-popover-top` (HomePage's positioner) but had no height
-        // constraint of its own, so on a node with many connections the content
-        // overflowed the viewport and pushed the "Full details" footer off screen,
-        // out of the mouse's reach (measured at 1440×900, y=911). A viewport-based
-        // max-height plus internal scrolling clamps the panel so it is always
-        // anchored wholly inside the viewport. The cap is
-        // `--map-inspector-max-height`, this surface's own alias — below `lg`
-        // it becomes a bottom sheet capped so the map keeps its majority, and the
-        // meaning editor sharing this anchor must not inherit that (it is a form). Mockup redesign (2026-07-24) — the
-        // root has no padding and acts only as the scroll container, and each zone
-        // (identity/ops/relations) carries its own padding. That is what lets the
-        // full-bleed zone divider (`zdiv`) and the sticky footer anchor with no
-        // negative margins.
+        // The viewport cap keeps the footer in reach. `--map-inspector-max-height` is this surface's alias:
+        // below `lg` it is a bottom sheet the meaning editor sharing this anchor must not inherit.
+        // Zones carry their own padding, so `zdiv` and the sticky footer need no negative margins.
         className={[
           // Width is decided by the outer `Surface` (including the consumer
           // className's responsive width override) — here it only fills that width
@@ -440,8 +326,6 @@ export function OntologyMapDetailPanel({
         {/* ZONE 2 · OPS — the last-edit/conflict row (only with real data) plus the
             plain stats plus the quiet action strip. */}
         <div className="flex flex-col gap-3 px-[var(--map-panel-pad)] pt-3 pb-2.5">
-          {/* rank7 (design-council B5) — last-edit provenance + expected_mtime
-              conflict, both gated on real data by the caller. */}
           {lastEditSubject ? (
             <LastEditSubjectRow
               kind={lastEditSubject.kind}
@@ -547,11 +431,10 @@ export function OntologyMapDetailPanel({
                 >
                   {remedyMounted ? (
                     /*
-                      The card's 2px lead-in is padding on the measured body, not a margin on the
-                      card: a child's top margin collapses through the body, so the disclosure
-                      sized itself 2px short and its `overflow: hidden` cut the card's bottom
-                      border off (2026-09-25 sweep, at 1512 and 1040).
-                    */
+                     * The card's 2px lead-in is padding on the measured body, not a margin: a child's top margin
+                     * collapses through the body, so the disclosure would size 2px short and `overflow: hidden`
+                     * cut the card's border.
+                     */
                     <div ref={remedyContentRef} className="ai-row-disclosure-body pt-0.5">
                       <ProjectSourceRemedy
                         why={labels.sourceWhy}
@@ -567,9 +450,8 @@ export function OntologyMapDetailPanel({
                   ) : null}
                 </div>
               </div>
-              {/* The failure answers the press, so it stands under the button that was pressed
-                  (2026-09-25 sweep). Inserted above the remedy it pushed the button down from
-                  under the pointer, and the keyboard's focus fell to `<body>`. */}
+              {/* The failure stands under the pressed button: above the remedy it would push the button from
+                 under the pointer and drop keyboard focus to `<body>`. */}
               {projectSourceError ? (
                 <span
                   role="status"

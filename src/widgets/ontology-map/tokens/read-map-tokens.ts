@@ -1,17 +1,7 @@
 /**
- * The `--map-*` token reader (`docs/design/ontology-map.md` §2).
- *
- * Canvas 2D cannot consume CSS variables directly, so they are resolved once with
- * `getComputedStyle` and cached as JS values (colour strings and numbers) — reusing
- * the `skeletonInkRef` resolve-cache pattern from Design Guardian verdict a4. The
- * source of truth for the values is still `app/globals.css` alone; this file is a
- * read-only adapter.
- *
- * Token drift guard: if any of the §2 table's tokens (`TOKEN_SPECS.length` is the
- * source of truth for the exact count, pinned by a contract test) resolves to an
- * empty string — deleted from `app/globals.css`, or mistyped — it throws a
- * `OntologyMapTokenError` rather than silently falling back to a default, so a
- * missing token is never absorbed on a hunch.
+ * The `--map-*` token reader (`docs/design/ontology-map.md` section 2). Canvas 2D cannot read CSS
+ * variables, so they are resolved once and cached. A token resolving to an empty string throws
+ * `OntologyMapTokenError` rather than falling back to a default.
  */
 export interface OntologyMapTokens {
   // 2.1 Node surfaces (per-kind fill/stroke tier)
@@ -26,11 +16,8 @@ export interface OntologyMapTokens {
   nodeFillDim: string;
   nodeStrokeDim: string;
   /**
-   * `--map-ego-rest-alpha` — what the ego focus dims sinks to: the node, its
-   * lines, its chip and (for a project or domain) its name, on one number. A
-   * dimmed child keeps no name. The colour ramp alone (stroke 1.37:1 against
-   * the normal stroke, fill lighter than normal) left dimmed siblings reading as
-   * ego members without names (measured 2026-09-20).
+   * `--map-ego-rest-alpha`: the one alpha that ego-dimmed nodes, lines, chips and names sink to. A
+   * colour ramp alone left dimmed siblings reading as ego members without names.
    */
   egoRestAlpha: number;
   nodeFillStale: string;
@@ -39,12 +26,11 @@ export interface OntologyMapTokens {
   indigo: string;
   indigoBright: string;
   amberHub: string;
-  /** Teal reserved for the "recent changes" lens — it has to be distinct from the hub amber (owner call, 2026-08-02). */
+  /** Teal reserved for the recent changes lens; distinct from the hub amber. */
   recentChange: string;
   /**
-   * The lit 3D map's kind light (2026-09-25) — the product's kind ramp triples
-   * (`--color-kind-*-rgb`, "r g b"), the same four hues the legend wears, so a
-   * node's light and its legend dot can never disagree about its kind.
+   * The lit 3D map's kind light: the kind ramp triples (`--color-kind-*-rgb`, "r g b"), the same
+   * hues as the legend, so a node's light and its legend dot agree.
    */
   kindRgbProject: string;
   kindRgbDomain: string;
@@ -132,13 +118,8 @@ export interface OntologyMapTokens {
 
   // 2.4 Motion · camera
   /**
-   * `--map-camera-spring-angfreq-interactive` — dive-zoom fix (owner:
-   * "zoom in/out is slow" — zoom in/out is slow). Drives the scale axis (and pan
-   * while wheel-zooming)
-   * during a LIVE wheel gesture — crisp, ~0.40s 95%-settle. The single shared
-   * `cameraSpringAngFreq` (2.941, ~1.61s settle) this replaces made every
-   * camera move — including an interactive wheel zoom — feel as slow as a
-   * cinematic dive.
+   * `--map-camera-spring-angfreq-interactive`: drives the scale axis (and pan while wheel-zooming)
+   * during a live wheel gesture; crisp, about 0.40s settle, unlike the cinematic transition spring.
    */
   cameraSpringAngFreqInteractive: number;
   /**
@@ -183,10 +164,8 @@ export interface OntologyMapTokens {
   altitudeFarLowRatio: number;
   overviewEntryRatio: number;
   /**
-   * The fraction of the free canvas axis the fitted cone spans
-   * (`topology-camera-math.ts#computeDomeFitCameraTarget`). The cone's only
-   * padding term — it replaces the 15% bounds pad plus 0.95 overview ratio it
-   * used to inherit from the 2D overview fit.
+   * Fraction of the free canvas axis the fitted cone spans (`computeDomeFitCameraTarget`); the
+   * cone's only padding term.
    */
   domeFitFill: number;
   /** Screen px the cone fit leaves above itself for the floating tool lane. */
@@ -208,12 +187,8 @@ export interface OntologyMapTokens {
    */
   focusDimTau: number;
   /**
-   * How long the trail lens takes to fade in and out **under reduced motion**, in ms.
-   *
-   * Reduced motion suppresses the ignition sweep, the twinkle and the travelling light, and
-   * used to suppress the transition itself as well — the lens ramp snapped 0 to 1 in one
-   * frame. A cut is the one thing the preference did not ask for; an opacity crossfade carries
-   * no travel and no vestibular signal (design-motion, 2026-09-10).
+   * Trail lens fade time in ms under reduced motion: an opacity crossfade carries no travel, so the
+   * lens fades instead of snapping in one frame.
    */
   trailReducedFadeMs: number;
   /**
@@ -224,11 +199,9 @@ export interface OntologyMapTokens {
    */
   clusterRevealTau: number;
   /**
-   * `--map-spotlight-rest-alpha` — the target alpha nodes and edges outside
-   * the window sink to while the recent-changes spotlight lens is ON (council design,
-   * 2026-07-23). Kept lighter than the ego dim so structural context stays readable
-   * under a whole-map lens. The on/off transition reuses the existing `focusDimTau`
-   * ramp (zero new easings).
+   * `--map-spotlight-rest-alpha`: alpha nodes and edges outside the window sink to while the
+   * recent-changes spotlight is on. Lighter than the ego dim so structural context stays readable;
+   * reuses the `focusDimTau` ramp.
    */
   spotlightRestAlpha: number;
   /** `--map-path-rest-alpha` — the rest alpha off the path while the path lens is ON; deeper than the spotlight's, a path being two ends and a line rather than a whole-map lens. */
@@ -240,11 +213,8 @@ export interface OntologyMapTokens {
   breatheFreqRad: number;
   pulseDurationMs: number;
   /**
-   * Canvas-emphasis slice — the just-selected node's one-shot commit-pulse
-   * duration (`model/selection-pulse.ts#computeSelectionPulse`), separate
-   * from the unrelated (and much longer, 420ms) `pulseDurationMs` above —
-   * that token is reserved for a different future pulse and this slice
-   * doesn't touch it. Owner ceiling: ≤200ms; 180 leaves margin.
+   * Duration of the just-selected node's one-shot commit pulse (`computeSelectionPulse`); separate
+   * from `pulseDurationMs`. Ceiling is 200ms; 180 leaves margin.
    */
   selectPulseDurationMs: number;
   tipFadeMs: number;
@@ -573,21 +543,8 @@ export function clearOntologyMapTokensCache(): void {
 // refresh.
 const INDEX_DEPENDENT_TOKEN_KEYS = ["safeInsetLeft", "safeInsetRight", "safeInsetTop", "safeInsetBottom"] as const;
 /**
- * After an INDEX state (`data-topology-index`) transition, re-read **only the tokens
- * that can have changed**.
- *
- * ## Why full invalidation is wrong here (performance trace, 2026-07-28)
- *
- * `HomePage` called `clearOntologyMapTokensCache()` on every INDEX state change, and
- * **selecting a node changes that state.** So every single node click made the next
- * frame run `getPropertyValue` **115 times** inside one `getComputedStyle`, forcing a
- * style recalculation that burned **58ms** (the top Chrome ForcedReflow insight — the
- * next cause exposed after the earlier `useRowDisclosure` fix).
- *
- * Yet exactly **one** token depends on that attribute:
- * `--map-safe-inset-left`. 115 were being thrown away to refresh one.
- *
- * With no cache yet it does nothing — the next read fetches current values anyway.
+ * Re-reads only the tokens that depend on `data-topology-index` after an INDEX state transition. A
+ * full cache clear would redo 115 reads and force a style recalculation. No-op without a cache.
  */
 export function refreshIndexDependentTokens(element?: Element): void {
     if (!cached)

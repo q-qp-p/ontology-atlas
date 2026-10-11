@@ -129,10 +129,8 @@ describe('AgentTranscript', () => {
   });
 
   /**
-   * Regression guard, 2026-08-02 — in a measured turn the agent called tools 4 times
-   * and read 1,336 characters, printing 「Read: capabilities/checkout 635 chars」 on screen,
-   * and four rows below it said 「Answered without reading grounding」 (answered with no grounding
-   * read). The screen was contradicting its own screen.
+   * The agent read grounding, yet the screen said "Answered without reading grounding"; a read answer
+   * with missing notation is corrected from the read list, not demoted.
    */
   it('읽었는데 표기만 없는 답은 강등하지 않고 읽은 목록으로 보정한다', () => {
     const { onFocusNode } = renderTranscript(
@@ -163,12 +161,8 @@ describe('AgentTranscript', () => {
   });
 
   /**
-   * Union correction, 2026-08-02 — the first implementation stood **three warnings in
-   * one turn**: the demotion sentence, the `no-tool-call` notice row, and the chip
-   * title (the result of carrying both the interaction seat's chip prescription and
-   * the workbench seat's notice prescription). At three, those warnings become
-   * wallpaper — the same failure this file already learned on 2026-07-27. The notice
-   * is absorbed by the chip title, and **the type code stays in the data**.
+   * The `no-tool-call` notice is absorbed by the chip title so one turn does not stack three warnings;
+   * the type code stays in the data.
    */
   const noToolCallTurn = () =>
     turn({
@@ -236,10 +230,8 @@ describe('AgentTranscript', () => {
   });
 
   it('강등 판정은 턴의 결론에만 붙는다 — 중간 서술은 주장이 아니다', () => {
-    // The old render attached the same warning to remarks before a tool was called,
-    // such as "let me read first", repeating it 3 times in one turn (measured
-    // 2026-07-27). A repeated top warning becomes wallpaper — for a warning to be worth
-    // anything it has to stand only on that turn's **conclusion**.
+    // The demotion attaches only to the turn's conclusion; remarks like "let me read first" are not
+    // claims and repeating the warning makes it wallpaper.
     renderTranscript(
       turn({
         events: [

@@ -15,11 +15,8 @@ import type { PointerHitTests } from "./topology-pointer-hit-tests";
 import type { TopologyPointerHandlers } from "./topology-pointer-types";
 
 /**
- * Two taps on one node inside this window are a double-click. The second tap
- * then opens or folds that node's children (the `+N` chip's own act) and keeps
- * the selection, instead of undoing the first tap. Measured before this existed
- * (2026-09-19): a double-click on a domain selected it and deselected it again,
- * leaving nothing selected and nothing opened.
+ * Two taps on one node within this window are a double-click: the second tap opens or folds its
+ * children and keeps the selection instead of undoing the first tap.
  */
 export const DOUBLE_TAP_WINDOW_MS = 350;
 /** How far apart (CSS px) two presses may land and still be one 3D double-click. */
@@ -61,12 +58,8 @@ export function createPointerReleaseHandlers(
     const wasDragging = pointerMachineRef.current.phase === "dragging";
     const { next, commitClick } = transitionPointerState(pointerMachineRef.current, { type: "pointerup" }, tokens.hysteresisPx);
     pointerMachineRef.current = next;
-    // Let go of the grabbing shape once the hand lets go (2026-07-28). It used to be
-    // restored **only in the node-drag branch**, so pushing the background and then
-    // leaving the mouse still left the cursor as `grabbing` — released, while the
-    // screen still said it was held. Clearing it with `""` falls back to the canvas's
-    // default `grab` (a true signal that it is pannable), and the next pointermove over
-    // a node overrides it with `pointer`.
+    // Clearing the cursor with `""` falls back to the canvas default `grab`; the next move over a node
+    // overrides it with `pointer`.
     if (canvasRef?.current)
       canvasRef.current.style.cursor = "";
     // Node pin-drag release: unpin and give the graph a settle burst so it
@@ -181,12 +174,8 @@ export function createPointerReleaseHandlers(
       const now = performance.now();
       const last = lastTapRef.current;
       /*
-       * 3D: a double-click belongs to the node the **first** click hit. That click selects,
-       * and a selection names its neighbours — one of those names can land under the
-       * cursor, and a hit test that prefers the name would hand the second click to a
-       * different node (measured 2026-09-25 on the sample vault in Neural: a domain's
-       * double-click selected a capability 80 px away and never flew). Two presses within
-       * a few pixels are one gesture on one thing.
+       * 3D: a double-click belongs to the node the first click hit; a neighbour name can land under the
+       * cursor, so two presses within a few pixels count as one gesture on one thing.
        */
       const sameSpot = domeInteractive() !== null &&
         last !== null &&
@@ -220,12 +209,8 @@ export function createPointerReleaseHandlers(
       onSelect?.(action.nodeId);
       return;
     }
-    // 3D dome — re-clicking a selected node is **re-selection, not deselection**
-    // (2026-08-18, second pass): in the dome the panel's X leaves the selection intact
-    // and only collapses the panel (HomePage `handleDatasheetClose`), so the natural
-    // gesture for reopening a collapsed panel is re-clicking that node. Keeping the
-    // re-click = deselect toggle would remove that route — deselection stays the job of
-    // an empty-background click or Escape. 2D keeps the previous toggle.
+    // 3D dome: re-clicking a selected node re-selects it, because the panel's X only collapses the
+    // panel and re-clicking is how it reopens. Deselect stays with background click or Escape.
     if (action.type === "deselect" && commitClick !== null && commitClick.nodeId !== null && domeInteractive() !== null) {
       onSelect?.(commitClick.nodeId);
       return;

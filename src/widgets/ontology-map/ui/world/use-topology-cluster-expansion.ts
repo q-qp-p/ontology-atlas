@@ -60,10 +60,8 @@ export function useTopologyClusterExpansion({
     // once.
     lastActiveMsRef.current = performance.now();
 
-    // Dive the camera to the newly expanded parent, if there is one. A collapse
-    // alone leaves the camera where it is (owner's instruction). The children
-    // reveal naturally through tier alpha as the camera descends into the disc,
-    // reusing the existing ramp rather than adding a motion contract.
+    // Dive the camera to the newly expanded parent; a collapse leaves the camera alone. Children reveal
+    // through tier alpha as the camera descends, reusing the existing ramp.
     let newlyExpanded: string | null = null;
     for (const id of expandedParents) {
       if (!prev.has(id)) {
@@ -73,11 +71,8 @@ export function useTopologyClusterExpansion({
     }
     if (newlyExpanded === null) return;
     /*
-     * 3D draws every node (no cluster is ever folded there) and frames with its own
-     * projection, so a dive computed from 2D coordinates would aim at nothing. Until
-     * 2026-09-25 the 3D selection reframe overwrote it on the next frame; a click in 3D now
-     * only selects, so the dive has to stand down itself — a selection opening its
-     * ancestors must not move the 3D view.
+     * 3D draws every node and frames with its own projection, so a dive from 2D coordinates would aim at
+     * nothing; a selection opening its ancestors must not move the 3D view.
      */
     if (domeRuntimeRef.current?.active) return;
     const tokens = readOntologyMapTokensOrNull();
@@ -114,11 +109,8 @@ export function useTopologyClusterExpansion({
       batchRestrict = new Set<string>([newlyExpanded, ...ranked.slice(0, batchSize)]);
     }
     /*
-     * Through `cameraTokens`, like every other camera move. The cluster dive was the
-     * one that took the raw tokens, so it framed the fan against the whole window while
-     * the INDEX panel or an inspector covered part of it — measured 2026-09-21 at
-     * 1000×700 with the inspector open: thirteen of seventeen opened children landed
-     * under the panel, and the camera reported a successful frame.
+     * Go through `cameraTokens` like every other camera move, so the fan is framed against the free area
+     * rather than the whole window while a panel covers part of it.
      */
     const target = computeClusterFitTarget(world, cameraTokens(tokens), width, height, newlyExpanded, overviewEntryScale, batchRestrict);
     if (!target) return;

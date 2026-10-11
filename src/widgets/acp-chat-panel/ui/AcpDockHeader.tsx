@@ -5,12 +5,8 @@ import { useTranslations } from 'next-intl';
 import { CloseButton } from '@/shared/ui';
 
 /**
- * **The host owns closing** (2026-09-06 record). The meaning workbench has a header band with
- * one close; the chat panel draws none and accepts none, and
- * `control-adoption-ratchet.contract.test.ts` holds both halves. A dock that is only a
- * conversation beside a page (Docs, Library) has no band of its own, so this is the one it
- * wears: the same shape as the workbench's, without the tabs, so a person who learned where
- * the close lives on one screen finds it in the same corner on the next.
+ * The host owns closing: the meaning workbench has its own close band; the chat panel draws none
+ * (`control-adoption-ratchet.contract.test.ts`). A dock with no band of its own wears this one.
  */
 export function AcpDockHeader({ title, caption, onClose }: { title: string; caption?: string; onClose: () => void }) {
   const t = useTranslations('acpChat');

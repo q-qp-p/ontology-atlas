@@ -9,13 +9,9 @@ import {
 import type { DomeCircle, DomeCoord, DomeInputNode, DomeSector, DomeViewKind } from './types';
 
 /**
- * Strata: the tiers as four stacked planes at the cone's `DOME_PLANE` heights, answering
- * "what level is this on" (`docs/benchmark/STRATA-2026-09-06.md`). Height is the tier and
- * nothing else; children split their parent's sector by subtree size and sit at their own
- * sector's midpoint. Every bearing stays inside its parent's sector and sibling sectors are
- * disjoint, so containment drops from different parents cannot cross; `dome-view.test.ts`
- * asserts it on the shape. `STRATA_BARYCENTER_SWEEPS` orders siblings within a sector
- * and `applyLanes` alternates two radii. The cost is a wider silhouette than the cone.
+ * Strata: the tiers as four stacked planes at the cone's `DOME_PLANE` heights; height is the tier.
+ * Children split their parent's sector by subtree size, so containment drops from different parents
+ * cannot cross (`dome-view.test.ts`). The cost is a wider silhouette than the cone.
  */
 
 /**

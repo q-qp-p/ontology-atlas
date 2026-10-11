@@ -249,10 +249,8 @@ const STANDING_LABEL_MAX_WIDTH = 132;
  */
 const STANDING_LABEL_MAX_CHARS = 24;
 /**
- * The leader search: reach, steps and spokes for pushing a name off its mark, each ring
- * rotated by the golden angle to sample the previous ring's gaps. Past 44px (three label
- * lines) a name no longer reads as that dot's; four steps on twelve spokes cleared the
- * tightest measured folder.
+ * Leader search: reach, steps and spokes for pushing a name off its mark, each ring rotated by the
+ * golden angle. Past 44px a name no longer reads as that dot's; four steps on twelve spokes sufficed.
  */
 const LEADER_REACH_MAX = 44;
 const LEADER_STEPS = 4;
@@ -288,12 +286,9 @@ const STALE_DOT_RADIUS = 2.2;
 const STALE_DOT_RADIUS_MIN = 1.5;
 const STALE_DOT_BREATH = 1.1;
 /**
- * Most standing amber dots at rest, counted in unverified citations, not marks. Keeps
- * standing amber under 4% of canvas ink
- * (docs/records/decisions/2026-09-13-standing-amber-ink-share-e7854c6f-2475-49ae-821d-2c6dc5bcbdc6.md);
- * 64 sits between the densest legible fixture (48) and what its ink affords (72). Above it
- * no dot stands at all, never a sample, so an undotted stale citation never reads as fresh;
- * the open card, the pointed-at neighbourhood and the held `N sources changed` clause keep theirs.
+ * Most standing amber dots at rest, counted in unverified citations, keeping amber under 4% of ink;
+ * 64 sits between the densest legible fixture (48) and what its ink affords (72). Above it no dot
+ * stands, never a sample, so an undotted stale citation never reads as fresh.
  */
 export const STALE_DOT_STANDING_MAX = 64;
 const LABEL_RADIUS = 4;

@@ -69,24 +69,8 @@ export function useTopologyDomeTransitions({
     if (view3dRef.current === view3d) return;
     view3dRef.current = view3d;
     /*
-     * Turning it on makes the next frame's dome step fit the camera to the dome
-     * bbox with a cinematic tween.
-     *
-     * **Turning it off now fits too.** Owner bug report 2026-08-19: *"Switching from 3D back to 2D comes out oddly small"* (switching from 3D back to 2D
-     * comes out oddly small).
-     *
-     * The old reasoning — nodes morph back into place, so nothing jumps —
-     * holds only when the 3D camera matches the 2D framing, and it almost never
-     * does: the dome fit scale is far lower than the 2D overview (0.315 vs
-     * 0.978), and selection reframes, user pans and cloud placement each move
-     * it again. Returning to 2D then moves only the nodes, **leaving the camera
-     * where 3D put it**. At that zoom semantic zoom also collapses the shapes
-     * to circles and hides the engraved counts, so it reads as a different
-     * screen rather than a smaller one.
-     *
-     * It failed to reproduce in the browser a few times because returning was a
-     * **side effect of another effect rather than a guaranteed behaviour**, so
-     * some paths happened to land right. This makes the accident a contract.
+     * Turning 3D on fits the camera to the dome bbox with a cinematic tween. Turning it off fits too:
+     * the 3D camera rarely matches the 2D framing, so otherwise the map returns tiny, shapes collapsed.
      */
     domeFitPendingRef.current = view3d;
     if (view3d) domeFitDurationRef.current = DOME_ASSEMBLE_TOTAL_MS;
@@ -105,18 +89,9 @@ export function useTopologyDomeTransitions({
     lastActiveMsRef.current = lastInputMsRef.current;
   }, [domeFitDurationRef, domeFitPendingRef, domeRuntimeRef, flatFitPendingRef, lastActiveMsRef, lastInputMsRef, view3d, view3dRef]);
 
-  // In 3D, the detail panel opening or closing is a resize event as far as the
-  // camera is concerned. Owner, 2026-08-18: *"The camera should account for where
-  // the panel is and settle at a good size by itself."* (the camera should account for where
-  // the panel is and settle at a good size by itself). If the flip arrives
-  // while a selection is live, the selected node is reframed against the new
-  // visible-area insets on the same cinematic tween — never a teleport.
-  //
-  // The value is mount-based, so a close arrives after the exit animation ends,
-  // once the panel has left the DOM and the measured insets are true. 2D does
-  // not use this event: the 2D focus target already accounts for the panel
-  // insets at selection time, and closing the panel *is* deselection, so there
-  // is no separate reframing point.
+  // In 3D, the detail panel opening or closing counts as a resize: a live selection is reframed
+  // against the new insets on the same tween. The value is mount-based, so a close arrives after exit.
+  // 2D does not use it: its focus target already accounts for panel insets.
   const lastDetailPanelVisibleRef = useRef(detailPanelVisible);
 
   useEffect(() => {
@@ -128,11 +103,8 @@ export function useTopologyDomeTransitions({
     const slug = focusedSlugRef.current;
     if (slug === null) return;
     /*
-     * Since 2026-09-25 a click only selects in 3D, and the panel a click opens must not
-     * reframe the view by the back door: no zoom, no turn. A node a fly-to framed is re-flown
-     * against the new free area (its return view kept); any other selected node gets only
-     * the nudge — a sideways slide, and only when the panel would cover it (measured on the
-     * sample vault in Neural at 1440: a domain near the right edge sat under its own panel).
+     * A click only selects in 3D and must not reframe: a fly-to-framed node is re-flown against the new
+     * free area; any other selected node only slides sideways, and only if the panel would cover it.
      */
     dome.flyRequest = dome.flight !== null && dome.flight.slug === slug ? { slug } : { slug, nudge: true };
     lastActiveMsRef.current = performance.now();

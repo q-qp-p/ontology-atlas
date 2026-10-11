@@ -17,9 +17,6 @@ import {
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import { computeEgoBounds, type TopologyWorld } from "../world/topology-world";
 
-// The bottom label allowance is derived inside `topology-camera-math.ts` as max
-// LABEL_OFFSET + 4 slack (Guardian follow-up, 2026-07-23) — the test computes its
-// expectation from the same derivation so no literal drifts when LABEL_OFFSET changes.
 const OVERVIEW_LABEL_BOTTOM_ALLOWANCE = Math.max(...Object.values(LABEL_OFFSET)) + 4;
 
 /**
@@ -154,13 +151,6 @@ describe("computeOverviewCameraTarget — panel-aware safe insets", () => {
  * `overviewEntryScale × maxZoomRatio`, constant in RATIO terms across every
  * viewport, and reach at least the element tier's `fullRatio` (2.85) + margin.
  */
-/**
- * The lens fit (expand-all, recent-changes spotlight). Measured 2026-09-19 at
- * 1512×806 with the INDEX panel open: the raw-viewport fit landed expand-all
- * 116 px off the centre of the area beside the panel, and the next "fit" press
- * moved it. The lens bounds already carry their own padding, so only the side
- * panels are reserved — not the top and bottom lanes the overview fit keeps.
- */
 describe("computeLensFitTarget — beside the panels, not on the raw viewport", () => {
   const bounds = { minX: 0, minY: 0, maxX: 1000, maxY: 1000 };
   const tokens = { cameraScaleMax: 2.6, cameraScaleMin: 0.24 };
@@ -209,11 +199,6 @@ describe("computeEffectiveCameraScaleMax", () => {
   });
 });
 
-/**
- * C1 A1 follow-up — ratio-based zoom-out floor (owner feedback: wheel zoom
- * out shouldn't shrink the spine to a speck on some viewports and barely
- * budge on others). Symmetric to `computeEffectiveCameraScaleMax`.
- */
 describe("computeEffectiveCameraScaleMin", () => {
   const MIN_ZOOM_RATIO = 0.5; // --map-camera-min-zoom-ratio
   const ABSOLUTE_FALLBACK = 0.24; // --map-camera-scale-min
@@ -241,25 +226,6 @@ describe("computeEffectiveCameraScaleMin", () => {
   });
 });
 
-/**
- * Dive-framing fix (owner symptom: "clicking a node dives TOO deep —
- * over-zoomed, cluttered, labels colliding; pleasant view only after zooming
- * way out"). The old C1 A3 `revealFloor = overviewEntryScale ×
- * capability.fullRatio` forced every dive to zoomRatio ≥ 2.0 REGARDLESS of the
- * ego cluster's own size — fine for a tight cluster, but a wide-fan domain
- * (many spread-out neighbors) was zoomed in far past what fitting that fan
- * actually needed, packing it into a sliver of the viewport. The floor is now
- * redundant anyway: C1 A2's ego-tier exemption already keeps the focused node
- * + its 1-hop neighbors visible/clickable at ANY zoom, so nothing needs a
- * minimum zoom-in to "reveal" them.
- *
- * New target: `tscale = clamp(fitScale(egoBounds × marginRatio), overviewEntryScale, effectiveMax)`
- * — fits the WHOLE ego set (padded by `--map-focus-bbox-margin`, now a
- * multiplicative ratio ~1.15 rather than a fixed px pad, so the padding scales
- * with cluster size), floored at the overview's own entry scale (a dive never
- * zooms OUT past the overview itself) and capped at the ratio-based effective
- * max (unreadable/degenerate tiny-ego case).
- */
 describe("computeFocusCameraTarget — fit-to-ego dive (dive-framing fix)", () => {
   const baseTokens = {
     cameraScaleMax: 2.6,
@@ -457,10 +423,6 @@ describe("computeFocusCameraTarget — fit-to-ego dive (dive-framing fix)", () =
   });
 
   it("a wide ego graph is centred in the free area beside an open panel, not held near the node", () => {
-    // 2026-09-19 at 1512×806: a capability with two dependencies in other
-    // domains, a 384 px panel on the right. The ego centre sat 404 px right of
-    // the free centre; the 180-unit token leash allowed 157 px, so both
-    // neighbours landed under the panel.
     const tokens = { ...baseTokens, cameraFocusPanMargin: 180, safeInsetLeft: 0, safeInsetRight: 384 } as unknown as OntologyMapTokens;
     const world = egoWorld(
       {
@@ -490,16 +452,6 @@ describe("computeFocusCameraTarget — fit-to-ego dive (dive-framing fix)", () =
   });
 });
 
-/**
- * The pan leash — a safety net for **surfaces with no "Fit Map"**
- * (council verdict ②, 2026-07-29).
- *
- * One hard drag to the left on the gateway (`/download`) pushed the whole graph
- * behind the reserved column (the plate plus the headline) and left the stage
- * empty, with zero damping 12 seconds later. On the workbench a chrome button
- * brings it back, but the gateway has no such button — allowing an irreversible
- * gesture on a screen with no way back is the defect.
- */
 describe("computeUnfocusedPanBounds — 팬 목줄", () => {
   const bounds = { minX: -400, minY: -300, maxX: 400, maxY: 300 };
 
@@ -546,14 +498,6 @@ describe("computeUnfocusedPanBounds — 팬 목줄", () => {
 });
 
 describe("computeFocusCameraTarget — 안전 인셋", () => {
-  /**
-   * ⚠️ This function used to use the insets **not at all** (fixed 2026-08-10), so
-   * choosing a node could put it **behind the panel that explains it**. The overview
-   * path was already solving the same problem with insets, so the prescription was
-   * not a new correction system but bringing this function onto that mechanism — a
-   * day earlier a second shift was stacked at the call site, and that produced a
-   * 188px misalignment and a 64px over-correction.
-   */
   const base = {
     cameraScaleMax: 2.6,
     cameraMaxZoomRatio: 3.2,
@@ -685,13 +629,6 @@ describe("hitTestWorld — 그려진 잉크가 여유 링을 이긴다 (3D 원�
     scale: { value: 1, velocity: 0 },
   };
   const tokens = { radiusProject: 30, radiusDomain: 17, radiusCapability: 11, radiusElement: 7 } as unknown as Parameters<typeof hitTestWorld>[4];
-  /*
-   * The measured shape of the defect (sample vault, 2026-09-06): a far element is
-   * drawn at r≈3.5 px next to a near domain drawn at r≈10 px, their centres about
-   * 15 px apart. Nothing of the domain is painted over the element, yet pointing
-   * at the element's own centre answered "domain", because the domain's 5 px
-   * courtesy ring reached that far and depth was decided before ink.
-   */
   const nodes = [
     { id: "element", kind: "element", x: 0, y: 0, magnitudeScale: 1 },
     { id: "domain", kind: "domain", x: 20, y: 0, magnitudeScale: 1 }
@@ -769,13 +706,6 @@ describe("clampFitInsets — the chrome may not eat the map", () => {
     expect(390 - lo - hi).toBeCloseTo(390 * (1 - MAX_FIT_CHROME_SHARE), 6);
   });
 
-  /*
-   * The side lanes are footprint plus one equal air: INDEX 324 + 52 and the rail
-   * 60 + 52. The overview centres the drawing between the lanes, so the lanes must
-   * give up the same pixels or the drawing leaves the centre between INDEX and the
-   * rail. In proportion, the rail lane gave up to twice as much: +6.6 px at 900 and
-   * +15.4 px at 800 on screen (measured 2026-09-26).
-   */
   it("side lanes give way equally, so the drawing stays centred between INDEX and the rail", () => {
     const freeCentre = (width: number) => (324 + (width - 60)) / 2;
     for (const width of [768, 800, 900, 1000]) {

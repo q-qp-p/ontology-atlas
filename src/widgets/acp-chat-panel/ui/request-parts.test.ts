@@ -57,15 +57,6 @@ describe('splitAppRequest — the transcript opens on the readable sentence', ()
   });
 });
 
-/**
- * **The Library's briefs, measured on the installed app 2026-09-13.**
- *
- * The Check-the-wiki press opened the dock on the outgoing instruction verbatim — a JSON
- * schema, fenced blocks, `{"counts":{"disagreement":0,…}`, `nodeCandidates` and the taxonomy
- * rules — the largest block on the screen, in front of somebody who had pressed a Korean
- * button. Every Library brief writes the same anchor line before its instructions, so one
- * marker folds all of them, and the readable sentence each one opens with is what stands.
- */
 describe("a Library brief folds at its folder anchor", () => {
   const KO = [
     '이 폴더의 위키를 읽고, 빠진 연결을 목록으로 돌려줘. 파일은 하나도 고치지 않아.',
@@ -128,17 +119,8 @@ describe('the Check-the-wiki brief, as it is actually sent', () => {
 });
 
 /**
- * **The architecture workbench's packet, measured on the installed app 2026-09-09.**
- *
- * Pressing 「source check」 on a Korean build drew a bubble opening
- * `{"contract":"architectureAgentTask:v1","kind":"verify"` with ten English instruction
- * sentences under it, and a "full request" disclosure below that folded almost nothing.
- * Two causes, and the fix needs both: the marker was not listed here, and the packet stood
- * on line 0, where a marker folds nothing because there is no readable half in front of it.
- *
- * The bubble is `break-keep`, so a JSON object with no spaces in it does not wrap either —
- * which is why the first line ran off the panel's right edge with no scrollbar. Folded, it
- * lands in the disclosure, which is `break-words`.
+ * The packet marker must stand after a readable sentence, since a marker on line 0 folds nothing.
+ * The bubble is `break-keep`, so unspaced JSON would not wrap.
  */
 describe('the architecture handoff packet folds', () => {
   const REAL_SHAPE = [

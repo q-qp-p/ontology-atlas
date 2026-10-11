@@ -124,12 +124,7 @@ function replyTo(method: string, result: unknown) {
   emit({ jsonrpc: '2.0', id: call?.id, result });
 }
 
-/**
- * ⚠️ `mcpServers` **must** be passed. Auto-allow for vault tools switches on only
- * 「when we really wired it in」 (2026-08-16) — without it, this measures a session in
- * which that branch does not exist at all, which is measuring something other than
- * the real app.
- */
+/** `mcpServers` must be passed: vault tool auto-allow switches on only when it is wired in. */
 async function bootSession(
   props: Partial<ComponentProps<typeof AcpChatPanel>> = {},
   modes?: Record<string, unknown>,
@@ -300,14 +295,9 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
 
     const choices = screen.getByTestId('acp-chat-choices');
     /*
-     * ⚠️ **Not `flex-1`** (2026-09-19). A `basis-0 flex-1` slot is served last, so the runtime
-     * name beside it took its full content width and this row got the remainder — 48px, the
-     * picker's floor, with the mode's word clipped to fourteen pixels while that name was never
-     * truncated at any width. Content-sized here serves the control first.
-     *
-     * It still cannot push send off the row: `min-w-0` plus the default shrink means this row
-     * yields once the name has nothing left to give, and the picker inside keeps its own cap.
-     * The rendered proof across the drag range is `agent-composer-footer-width.spec.ts`.
+     * Not `flex-1`: a `basis-0 flex-1` slot is served last, so the runtime name takes its full width
+     * and clips the mode's word. Content-sized serves the control first; `min-w-0` lets it yield to send.
+     * Proof across the drag range: `agent-composer-footer-width.spec.ts`.
      */
     expect(choices).toHaveClass('flex', 'min-w-0');
     expect(choices).not.toHaveClass('flex-1');
@@ -326,8 +316,6 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
     const runtimeName = screen.getByTestId('acp-chat-runtime-label');
     expect(runtimeName.className).toContain('shrink-[99]');
     expect(runtimeName.className).toContain('@min-[286px]/composer:inline');
-    // One tool, one model: nothing to choose, so the tool's name carries the model as text
-    // instead of a one-entry picker (owner, 2026-09-07: the model is the tool's own entry).
     expect(screen.queryByTestId('acp-chat-runtime')).toBeNull();
     expect(screen.getByTestId('acp-chat-runtime-label')).toHaveTextContent('Claude Code · GPT-5.6-Sol (low)');
     expect(screen.getByTestId('acp-chat-mode')).toHaveTextContent('mode');
@@ -338,13 +326,7 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
     expect(screen.getByTestId('acp-chat-choices')).toBeInTheDocument();
   });
 
-  /**
-   * ⚠️ **The transcript opens on the sentence a person can read** (2026-09-06). The workbench's
-   * 「Analyze」 door sends about 1,200 app-composed characters, and drawn whole the answer to them
-   * started below the fold. Nothing is dropped — the whole request is one disclosure away — which
-   * is what keeps the 2026-08-24 decision (a caller may send on somebody's behalf, because the
-   * sentence lands as their own turn) intact.
-   */
+  /** The whole request stays one disclosure away; the transcript opens on the readable sentence only. */
   it('앱이 지은 요청은 읽을 문장만 서고, 전문은 한 번 펼쳐서 그대로 남는다', async () => {
     await bootSession();
     const composed = [
@@ -368,8 +350,6 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
 
   it('사람이 직접 쓴 줄바꿈은 말풍선에서도 줄바꿈으로 남는다', async () => {
     await bootSession();
-    // ⇧Enter is the documented way to break a line in this composer; the bubble used to reflow
-    // every paragraph of a three-step request into one wall.
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '첫째 줄\n둘째 줄' } });
     fireEvent.click(screen.getByTestId('acp-chat-send'));
     const bubble = await waitFor(() => document.querySelector('[data-acp-entry="user"]')!);
@@ -402,10 +382,8 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
   });
 
   /*
-   * Measured at the dock's documented floor (2026-09-20): the answer column is 260px and
-   * `pnpm atlas compile --page wiki/architecture.md --force --locale ko` lays out at 456px, so
-   * 196px — 43% of the command — sat behind `overflow-x: auto` and a 2px scrollbar with no copy
-   * control anywhere. The one actionable line in the answer could be neither read nor taken.
+   * The answer column is 260px at the dock floor, so a long command sits behind `overflow-x`
+   * and needs a copy control.
    */
   it('답에 실린 명령은 통째로 가져갈 수 있다 — 잘려 보이더라도', async () => {
     const written: string[] = [];
@@ -759,10 +737,6 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
     );
   });
 
-  /**
-   * Owner, 2026-09-24: while the agent worked, a running row looked exactly like a finished
-   * one. A running call's words carry the sweep; the same row, landed, carries none.
-   */
   it('sweeps the words of a running call and stills them once it lands', async () => {
     await bootSession();
     await startUserTurn('go');
@@ -811,14 +785,8 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
   });
 
   /**
-   * ⚠️ Measured in the rendered dock, 2026-09-19. Press Stop while a read is in flight and the row
-   * kept the word 「running」 and its pulsing ring for the rest of the conversation, with the
-   * session back at Ready and the composer open — the panel claiming work that had already
-   * stopped. Nothing on the wire says otherwise: a cancelled adapter simply stops reporting.
-   *
-   * It is also the promise `stoppedWithoutAnswer` already leans on. That rule stays quiet when a
-   * tool ran, because 「a tool that was mid-flight carries its own *stopped* on its row」, and the
-   * row was carrying the opposite word.
+   * A cancelled adapter simply stops reporting, so a row left open by Stop must not keep claiming
+   * it is running.
    */
   it('중지한 턴의 열린 도구 줄은 진행 중이라고 우기지 않는다', async () => {
     await bootSession();
@@ -948,13 +916,8 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
     // The ink stays tertiary: danger text against it measures 1.04:1.
     expect(row.className).toContain('text-[color:var(--color-text-tertiary)]');
     /*
-     * ⚠️ **The seam replaces the run's rule; it does not stand beside it.** The row is
-     * pulled out by the run's border plus its padding, and pays the same padding back, so
-     * the red hairline lands on the grey one and the words stay in the transcript's single
-     * left column. Measured 2026-09-05 before this pairing existed: the seam sat 1px right
-     * of the divider (two rules for one fact) and the row's text 1px left of every sibling.
-     * The two values are read off the wrapper rather than written twice, because the day
-     * they disagree is the day the left edge goes ragged.
+     * The seam replaces the run's rule: the row is pulled out by the run's border plus padding and pays
+     * the same padding back, so the red hairline lands on the grey one.
      */
     const run = row.closest('[data-acp-entry="tool-run"]');
     expect(run, 'a tool row outside its run has no rule to turn red').not.toBeNull();
@@ -1000,12 +963,7 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
     expect(document.querySelectorAll('[data-tool-repeat]')).toHaveLength(0);
   });
 
-  /*
-   * ⚠️ **Only repetition collapses** (2026-09-06). Three byte-identical calls are one fact stated
-   * three times, and stating it three times pushes the *next*, different call out of view. The row
-   * still says how many, so nothing about what happened is hidden — which is what keeps this
-   * inside the 2026-09-05 decision that an agent's lookups stand above its answer.
-   */
+  /* Only repetition collapses: identical calls are one fact stated several times; the row says how many. */
   it('folds a run of identical calls onto one row that says how many', async () => {
     await bootSession();
     for (const id of ['r1', 'r2', 'r3', 'r4']) {
@@ -1117,17 +1075,7 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
 });
 
 describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
-  /**
-   * ⚠️ **A defect that only measurement could have caught** (2026-08-16).
-   *
-   * Running a real session end to end, the agent could write **nothing** to the map —
-   * our own permission checkpoint was blocking our own MCP tools. An MCP tool call
-   * has no `file_path`, so it fell into 「path unknown → ask」, even though that server
-   * was launched by us against the vault path and cannot touch anything outside it.
-   *
-   * Every unit test was passing, because only requests with a file path had ever been
-   * fed in — **there was no test for the absent input.**
-   */
+  /** An MCP tool call has no `file_path`; the absent-input case needs its own test. */
   function mcpPermissionRequest(
     toolName: string,
     id = 78,
@@ -1196,12 +1144,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
       }),
     );
 
-    // Wait for the card itself, not only for a side effect of the same event.
-    // `previews` updates from the preview callback while the permission card mounts
-    // on a later render, so a green `previews` assertion does not mean the button
-    // exists yet. CI caught the gap on 2026-08-22 ("Unable to find
-    // [data-testid=acp-permission-allow]") while every local run passed — the two
-    // renders land in the same tick on a fast machine and not on a slow one.
+    // Wait for the card itself: `previews` updates before the permission card mounts on a later render.
     fireEvent.click(await screen.findByTestId('acp-permission-allow'));
     await waitFor(() =>
       expect(previews.at(-1)).toEqual({
@@ -1212,13 +1155,8 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
       }),
     );
     /*
-     * The claim is an **order**, not a duration: the answer must not be sent until the
-     * commit motion has been entered. Observing `committing` above is the moment the
-     * motion started, so an answer that is still absent *here* proves the guard held.
-     * Without the guard the answer leaves in the click's own tick and would already be
-     * defined at this line. An 80 ms sleep used to stand in for this, which asserted
-     * "the guard is still closed after 80 ms" — a claim about the machine's clock that a
-     * loaded runner can break while the product is perfectly correct.
+     * The claim is an order, not a duration: the answer must not be sent until the commit motion is
+     * entered, so an answer still absent here proves the guard held.
      */
     expect(
       answerFor(89),
@@ -1344,7 +1282,6 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     fireEvent.click(screen.getByTestId('acp-chat-stop'));
     act(() => replyTo('session/prompt', { stopReason: 'cancelled' }));
     await waitFor(() => expect(screen.getByTestId('acp-chat-panel')).toHaveAttribute('data-acp-status', 'ready'));
-    // Installed app, 2026-09-19: the request bubble stood alone, as if the agent never answered.
     expect(await screen.findByTestId('acp-turn-stopped')).toHaveTextContent('stoppedBeforeAnswer');
     await startUserTurn('Read it again');
     expect(screen.queryByTestId('acp-turn-stopped')).not.toBeInTheDocument();
@@ -1375,24 +1312,15 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     emit(mcpPermissionRequest('mcp__atlas-vault__patch_concept', 194, {
       slug: 'capabilities/refund', expected_mtime: 100, body: 'Replacement',
     }));
-    /*
-     * Re-query on every poll rather than holding the node `findBy` first resolved: the panel
-     * re-renders as the replacement request settles, and under a loaded parallel run the
-     * first node is detached by the time the matcher reads it — the assertion then failed on
-     * a live card (measured on this branch's pre-push, 2026-09-19, 364ms into the test).
-     */
+    /* Re-query on each poll: the panel re-renders as the replacement settles and detaches the node. */
     await waitFor(() => expect(screen.getByTestId('acp-permission-allow')).toBeInTheDocument());
     expect(screen.queryByTestId('acp-permission-deferred')).not.toBeInTheDocument();
     expect(answerFor(194)).toBeUndefined();
   });
 
   /**
-   * ⚠️ **The two answers must stay in the frame** (2026-09-06). The card sat unbounded in the
-   * panel's flex column, so a batch write — one review row per item — grew it until 「Don't」 and
-   * 「Allow once」 were below the bottom edge of a 1040×720 window. jsdom has no layout, so what is
-   * pinned here is the structure that produces the behaviour: the panel caps the card's height,
-   * the card scrolls **only its reading matter**, and the decision row sits after that scroller
-   * rather than inside it. Rendered geometry is the installed app's job.
+   * jsdom has no layout, so this pins the structure: the panel caps the card's height, the card scrolls
+   * only its reading matter, and the decision row sits after that scroller.
    */
   /**
    * ⚠️ **A turn blocked on this card is not thinking.** Measured in the rendered panel, both
@@ -1471,12 +1399,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     };
     emit(mcpPermissionRequest('mcp__atlas-vault__add_relation', 96, rawInput));
     await waitFor(() => expect(screen.getByTestId('acp-permission-card')).toBeInTheDocument());
-    // Wait for the card itself, not only for a side effect of the same event.
-    // `previews` updates from the preview callback while the permission card mounts
-    // on a later render, so a green `previews` assertion does not mean the button
-    // exists yet. CI caught the gap on 2026-08-22 ("Unable to find
-    // [data-testid=acp-permission-allow]") while every local run passed — the two
-    // renders land in the same tick on a fast machine and not on a slow one.
+    // Wait for the card itself: `previews` updates before the permission card mounts on a later render.
     fireEvent.click(await screen.findByTestId('acp-permission-allow'));
 
     await waitFor(() => expect(receipts.at(-1)).toMatchObject({
@@ -1637,12 +1560,8 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
 
   it('**우리 도구라도 볼트 밖 경로면 묻는다** — 이름이 통행증이 아니다', async () => {
     /*
-     * A hole caught in the 2026-08-16 review. A name starting with
-     * `mcp__atlas-vault__` used to **skip the path check** and be allowed outright.
-     * The rationale was "that server was launched against the vault path, so it cannot
-     * touch anything outside", and that is not true: `absorb_document` edits the source
-     * file in place relative to the **repository root**, not the vault. That breaks
-     * this screen's promise "ask before going outside the folder" without a single card.
+     * `absorb_document` edits the source file relative to the repository root, not the vault, so a name
+     * starting with `mcp__atlas-vault__` must not skip the path check.
      */
     bridge.verdict = 'ask';
     await bootSession();
@@ -1657,12 +1576,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
           { kind: 'reject_once', name: 'Deny', optionId: 'reject' },
           { kind: 'allow_once', name: 'Allow Once', optionId: 'allow' },
         ],
-        /*
-         * ⚠️ The argument name is **`filePath`** — the name our MCP server actually
-         * uses (`mcp/src/index.js` has `file_path` 0 times and `filePath` 30 times).
-         * This check used to hand-write `file_path`, a shape the real server never
-         * produces, so **the check was green while the screen was wide open.**
-         */
+        /* The argument is `filePath`, the name our MCP server actually uses; `file_path` would pass vacuously. */
         toolCall: {
           toolCallId: 'tc10',
           title: 'mcp__atlas-vault__absorb_document',
@@ -1739,8 +1653,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
   });
 
   it('볼트 안이라도 **편집**은 카드를 띄운다 — 경로 안전과 변경 승인은 다른 질문이다', async () => {
-    // 2026-09-01 review: path containment auto-allowed the agent's own edit tool on
-    // vault Markdown, bypassing the review the Atlas write path enforces on the same files.
+    // Path containment must not auto-allow the edit tool on vault Markdown; that bypasses write review.
     bridge.verdict = 'allow-inside-vault';
     await bootSession();
     emit(permissionRequest('/vault/notes.md', 77, 'edit'));
@@ -1753,8 +1666,6 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
   });
 
   it('a door pressed into a broken session restarts it and then sends', async () => {
-    // Installed app, 2026-09-08: after a limit error the person pressed the wiki-check door
-    // again and nothing moved — the request waited for a `ready` that never came.
     const view = await bootSession();
     bridge.exit?.(1);
     await waitFor(() =>
@@ -1777,12 +1688,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
   });
 
   it('the auto-allowed receipt carries its two doors: open the page, and ask next time', async () => {
-    /*
-     * The screen judged the write and let it land (2026-09-06 autonomy); the receipt is the
-     * one moment the consequence is on screen, so the way to the page and the way back to
-     * being asked stand on the receipt itself (council 2026-09-07). Both doors are the
-     * page's, not the panel's: the panel only relays the path it was told.
-     */
+    /* Both doors on the receipt are the page's, not the panel's: the panel only relays the path. */
     const openPage = vi.fn();
     const askNext = vi.fn();
     await bootSession({
@@ -1811,11 +1717,8 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
   });
 
   /*
-   * The refusal sibling of the receipt above, and it had no arm on the panel's chain (2026-09-20).
-   * `use-rounds-runner` answers `autoDecide` with `{ reject }` on every write outside a round's
-   * scope, and the notice fell through to `notice.gateOff` — a sentence saying Atlas *cannot* ask
-   * before a file outside the folder is touched. The opposite of what happened: it had decided,
-   * and refused. There was no `notice.autoRefused` string either.
+   * `use-rounds-runner` answers `autoDecide` with `{ reject }` outside a round's scope; the notice must
+   * say it refused rather than fall through to `notice.gateOff`.
    */
   it('자동 거절은 거절했다고 말하고, 무엇을 막았는지 이름을 댄다', async () => {
     await bootSession({ autoDecide: () => ({ reject: 'wiki/out-of-scope.md' }) });
@@ -1868,12 +1771,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     emit(permissionRequest('/somewhere/else.md'));
     await waitFor(() => expect(screen.getByTestId('acp-permission-card')).toBeInTheDocument());
 
-    // Wait for the card itself, not only for a side effect of the same event.
-    // `previews` updates from the preview callback while the permission card mounts
-    // on a later render, so a green `previews` assertion does not mean the button
-    // exists yet. CI caught the gap on 2026-08-22 ("Unable to find
-    // [data-testid=acp-permission-allow]") while every local run passed — the two
-    // renders land in the same tick on a fast machine and not on a slow one.
+    // Wait for the card itself: `previews` updates before the permission card mounts on a later render.
     fireEvent.click(await screen.findByTestId('acp-permission-allow'));
     await waitFor(() => expect(answerFor(77)).toEqual({ outcome: 'selected', optionId: 'allow' }));
   });
@@ -1939,11 +1837,6 @@ describe('대화 패널 — 대화방처럼 관리한다', () => {
   });
 
   it('Esc 로 닫힌다 — 이 앱의 다른 표면이 다 그러므로', async () => {
-    /*
-     * Caught reviewing the real thing (2026-08-16): the list opened, Esc was pressed,
-     * and it stayed. With only the scrim-click route, someone arriving by keyboard has
-     * no way out.
-     */
     await bootSession();
     await waitFor(() => expect(replyToList()).toBe(true));
     fireEvent.click(await screen.findByTestId('acp-chat-history'));
@@ -2206,18 +2099,8 @@ describe('대화 패널 — 사람이 읽는 화면이다', () => {
 
 describe('대화 패널 — 어댑터를 두 개 띄우지 않는다', () => {
   /**
-   * ⚠️ **A defect that surfaced only on the real thing** (2026-08-16).
-   *
-   * One chat window had two adapter processes running:
-   * ```
-   * 83796  npm exec @agentclientprotocol/claude-agent-acp@0.68.0
-   * 83797  npm exec @agentclientprotocol/claude-agent-acp@0.68.0
-   * ```
-   * The lock was a single `clientRef`, and that value is filled in only **after** the
-   * process is launched and the events attached. Called once more in between, both
-   * pass. The session number is then the later one while the lines go back and forth
-   * on the earlier, dying with `Session not found`, and the first process becomes a
-   * ghost nobody shuts down.
+   * The lock was a single `clientRef`, set only after the process launches; a second call in between
+   * would start another adapter and strand the first, so only one session may open.
    */
   it('띄우는 중에 또 불려도 세션은 하나만 연다', async () => {
     render(<AcpChatPanel runtimeId="claude-acp" runtimeLabel="Claude Agent" vaultRoot="/vault" />);
@@ -2264,13 +2147,6 @@ describe('대화 패널 — 어댑터를 두 개 띄우지 않는다', () => {
 });
 
 describe('작성 칸 — 안내가 쓰는 글을 가리지 않는다', () => {
-  /*
-   * Owner report from the real thing, 2026-08-16: *"The text I type overlaps the text on the box?"*
-   *
-   * A defect I created. Trying to keep 「the row from shifting」, the hint was layered
-   * over the text position — and that position is exactly where a long sentence
-   * passes. A hint meant to disappear once learned was covering what had to be read.
-   */
   it('손이 갔고 **비어 있을 때만** 안내를 띄운다', async () => {
     await bootSession();
     const box = screen.getByRole('textbox');
@@ -2309,7 +2185,7 @@ describe('작성 칸 — 안내가 쓰는 글을 가리지 않는다', () => {
      * plays that role.
      */
     await bootSession();
-    // The panel no longer draws a close button: the workbench that hosts it owns closing.
+    // The panel draws no close button: the workbench that hosts it owns closing.
     expect(screen.queryByTestId('acp-chat-close')).toBeNull();
     for (const id of ['acp-chat-new']) {
       const button = screen.getByTestId(id);
@@ -2325,13 +2201,6 @@ describe('작성 칸 — 안내가 쓰는 글을 가리지 않는다', () => {
 });
 
 describe('대화 패널 — 떠 있는 것은 떠 있어야 한다', () => {
-  /*
-   * Owner report from the real thing, 2026-08-16: *"It comes out together like this and can't be told apart."*
-   *
-   * With the past-conversations list as a flex child, opening it **pushed** the
-   * conversation down and the list looked like part of the conversation. Putting
-   * something that should float into the flow makes it not a popover but just another row.
-   */
   function replyToList() {
     const call = [...bridge.sent].reverse().find((m) => m.method === 'session/list');
     if (!call) return false;
@@ -2413,10 +2282,6 @@ describe('대화 패널 — 내 질문과 답이 갈린다', () => {
 
 describe('대화 패널 — 오류는 사람의 말로 말하고 다음 할 일을 준다', () => {
   it('로그인이 풀린 것을 알아보고, 원문은 접어 둔다', async () => {
-    /*
-     * Owner's screen, 2026-08-16: this position was pasting the whole JSON-RPC error.
-     * *"How is a user supposed to understand this?"*
-     */
     await bootSession();
     fireEvent.change(screen.getAllByRole('textbox')[0], { target: { value: '안녕' } });
     fireEvent.click(screen.getByTestId('acp-chat-send'));
@@ -2451,10 +2316,8 @@ describe('대화 패널 — 오류는 사람의 말로 말하고 다음 할 일�
 
   it('같은 실패를 두 번 말하지 않는다 — 어댑터가 메시지로도 보낸 원문은 안 그린다', async () => {
     /*
-     * Measured in the installed app, 2026-08-17. The check above looked only at **the
-     * card**, so it never saw that the adapter sends the same thing as a
-     * `session/update` message too. On screen the English original stood **before**
-     * the card.
+     * The adapter also sends the error text as a `session/update` message;
+     * it must not render outside the card.
      */
     await bootSession();
     fireEvent.change(screen.getAllByRole('textbox')[0], { target: { value: '안녕' } });
@@ -2491,7 +2354,6 @@ describe('대화 패널 — 오류는 사람의 말로 말하고 다음 할 일�
     const alert = await screen.findByTestId('acp-chat-error');
     // The original survives only inside the folded "Details".
     expect(alert.textContent).toContain('authentication_failed');
-    // That line is no longer in the transcript.
     const transcript = screen.getByTestId('acp-chat-panel');
     const outsideAlert = [...transcript.querySelectorAll('*')].filter(
       (el) => el.textContent === echo && !alert.contains(el),
@@ -2500,13 +2362,7 @@ describe('대화 패널 — 오류는 사람의 말로 말하고 다음 할 일�
   });
 
   it('깨진 npx 캐시로 죽은 것을 알아본다 — 오류 문자열이 아무 말도 안 해도 (2026-08-19 실기계)', async () => {
-    /*
-     * Exactly the owner's screen: the error was only `acp session closed` and every
-     * clue was in stderr. If that combination ends as `unknown` (「tell us if this keeps
-     * happening」) there is nothing the user can do — reading it as the install branch
-     * is what produces the real action, 「a new conversation = the app clears it and
-     * downloads again」.
-     */
+    /* The error is only `acp session closed` with the clue in stderr; it must read as the install branch. */
     render(
       <AcpChatPanel
         runtimeId="claude-acp"
@@ -2535,12 +2391,6 @@ describe('대화 패널 — 오류는 사람의 말로 말하고 다음 할 일�
   });
 
   it('카드가 시킨 그 행동을 카드가 준다 — 「다시 시도」가 실제로 새 세션을 띄운다', async () => {
-    /*
-     * Owner's installed app, 2026-08-24: *"if this is normal I still would not know what to do —
-     * give me what to do, bigger and better made"*. Five of the six kinds ended their sentence with
-     * 「press New chat」, and 「New chat」 was a pencil icon up in the header. An error surface whose
-     * next step lives somewhere else is a dead end.
-     */
     render(
       <AcpChatPanel
         runtimeId="claude-acp"
@@ -2715,13 +2565,6 @@ describe('첫 내려받기 — 「켜는 중」만으로는 부족하다 (2026-0
   });
 
   it('내려받기가 없는 평범한 시작도 화면 가운데서 기다린다 — 우측 상단 칩 하나로는 부족하다', async () => {
-    /*
-     * ⚠️ This test used to assert the opposite: *"a start with no download draws nothing extra."*
-     * Owner, 2026-08-24, of the top-right 「connecting」 badge: *"when it first opens it would be
-     * good to have a spinner in the middle of the screen… large enough to actually see."* The
-     * centred block existed but only while npx was fetching, so the common case — an ordinary
-     * start — left the body empty and the panel looked finished while it was still opening.
-     */
     render(
       <AcpChatPanel
         runtimeId="claude-acp"
@@ -2780,12 +2623,7 @@ describe('첫 내려받기 — 「켜는 중」만으로는 부족하다 (2026-0
     expect(screen.queryByTestId('brand-waiting-mark')).toBeNull();
   });
 
-  /*
-   * ⚠️ A door may open with a first turn (decision, 2026-08-24). The first-run card's 「make a map
-   * from my code」 button presses this: the app cannot run the analysis itself — it never calls
-   * MCP — so it hands the work to the agent. The sentence must wait for `ready`, because a prompt
-   * sent into a starting session is swallowed and the person watches a door do nothing.
-   */
+  /* A door's first turn waits for `ready`: a prompt sent into a starting session is swallowed. */
   it('문이 실은 첫 말은 세션이 준비된 뒤에, 한 번만 나간다', async () => {
     render(
       <AcpChatPanel
@@ -2840,14 +2678,7 @@ describe('첫 내려받기 — 「켜는 중」만으로는 부족하다 (2026-0
 
 describe('권한 카드 — 놓칠 수 없어야 한다', () => {
   it('카드가 뜨면 **초점이 그 안으로** 온다 — 거절 쪽으로', async () => {
-    /*
-     * Review 2026-08-16: this card declared `role="alertdialog"` while doing none of
-     * what that role promises (interrupting, moving focus). For someone who cannot see
-     * the screen, the moment the agent stopped was complete silence.
-     *
-     * Focus goes to **reject**, not allow — a hand pressing any key to move past must
-     * not land on the irreversible side.
-     */
+    /* Focus goes to reject, not allow, so a key press to move past cannot land on the irreversible side. */
     bridge.verdict = 'ask';
     await bootSession();
     emit(permissionRequest('/somewhere/else/notes.md'));
@@ -3342,10 +3173,6 @@ describe('답변 속 노드 이름 — 지도와 잇는다', () => {
 });
 
 describe('도구 줄 — 어느 노드를 만졌는지 말한다', () => {
-  /**
-   * It used to say only "Read a concept" without naming the target.
-   * The value was arriving in `rawInput` and the session was discarding it.
-   */
   it('도구가 만진 노드를 적고, 올리면 지도로 나간다', async () => {
     const hovered: (string | null)[] = [];
     render(
@@ -3774,11 +3601,6 @@ describe('Ontology DNA 발표 — 같은 ACP turn을 장면으로 본다', () =>
 });
 
 describe('답하다 죽은 것과 다 끝난 것은 다른 말이다', () => {
-  /**
-   * Either way, it used to read only "Finished" in a small chip. Dying halfway
-   * through an answer looked identical to a clean finish, so the user assumed that was
-   * the whole answer.
-   */
   it('차례가 도는 중에 죽으면 그렇게 말한다', async () => {
     await bootSession();
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '봐줘' } });
@@ -3863,16 +3685,7 @@ describe('답하다 죽은 것과 다 끝난 것은 다른 말이다', () => {
   });
 });
 
-/**
- * For the in-app agent to **register its own name in the vault**, the screen has to
- * know "a turn is running right now" (owner instruction, 2026-08-17).
- *
- * ⚠️ **Not for the whole time a session is open.** While the heartbeat is fresh the
- * screen lights the "Agent Active" indicator on the rail. If that
- * lights when nothing was asked, the screen is stating something that did not happen,
- * and this panel already keeps that discipline (*"If you mark it 'Read' before sending …"* —
- * marking it "read" before sending …).
- */
+/** Activity is reported only while a turn runs; reporting it when idle would state a falsehood. */
 describe('대화 패널 — 차례가 도는 동안만 알린다', () => {
   it('도구가 실제로 호출된 동안만 구조화된 입력을 전달하고 끝나면 지운다', async () => {
     const seen: Array<{ id: string; toolKind: string | null; rawInput: unknown } | null> = [];
@@ -4015,11 +3828,6 @@ describe('대화 패널 — 차례가 도는 동안만 알린다', () => {
   });
 });
 
-/**
- * The `/` menu has to be **selectable** (three owner reports, 2026-08-17):
- * "Keyboard navigation doesn't work" · "No hover effect when hovering with the mouse,
- * so you can't tell where you are" · "Clicking the background should close it but doesn't."
- */
 describe('작성 칸 — `/` 메뉴', () => {
   async function openMenu() {
     await bootSession();
@@ -4099,13 +3907,6 @@ describe('작성 칸 — `/` 메뉴', () => {
   });
 });
 
-/**
- * Owner, installed app, 2026-09-08: *"every time I press X and go back into the agent it is a new
- * conversation — the previous, latest conversation should always open, and I should be able to
- * pick one."* Everything needed was already on the wire (`session/list`, `session/load`); nothing
- * consulted it. These cases pin what the panel now asks the adapter, and — just as importantly —
- * what it does when the adapter cannot answer.
- */
 describe('reopening the panel — the folder\'s latest conversation, not a blank one', () => {
   /** Boots with `resumeLatest`, answering `session/list` with these rows. */
   async function bootResuming(sessions: unknown[]) {
@@ -4207,14 +4008,6 @@ describe('reopening the panel — the folder\'s latest conversation, not a blank
   });
 });
 
-/**
- * **A request the app seats is still the person's to read, edit or drop.**
- *
- * Measured on the Insights dock (2026-09-19): pressing the agent door seated five lines in the
- * composer, opening the person's own text box on `Use only Atlas MCP read tools…` and a literal
- * `query_ontology({operation:"maintenance_plan"})`. The transcript already stands the readable
- * sentence and folds the machine block; the composer was the one place the request arrived whole.
- */
 describe('대화 패널 — 앉힌 요청은 읽을 문장만 서고, 붙은 지시는 그대로 따라간다', () => {
   const LEAD = 'Explain this Analysis tab from the current ontology evidence only.';
   const DETAIL = [
@@ -4320,12 +4113,6 @@ describe('대화 패널 — 앉힌 요청은 읽을 문장만 서고, 붙은 지
     expect(screen.queryByTestId('acp-chat-seated-detail')).toBeNull();
   });
 
-  /*
-   * Measured on the Insights dock (2026-09-20): the screen had written the question and folded
-   * three instruction lines under it, and the empty transcript — 470px of panel above that box —
-   * still read "Ask anything about this folder." The biggest region on screen invited a blank
-   * start while the start was already written.
-   */
   it('앉힌 요청이 기다리면 빈 대화는 백지에서 시작하라고 하지 않는다', async () => {
     await seat();
     const empty = screen.getByTestId('acp-chat-empty');
@@ -4350,12 +4137,6 @@ describe('대화 패널 — 앉힌 요청은 읽을 문장만 서고, 붙은 지
   });
 });
 
-/**
- * 2026-09-25, against the QA bridge's hanging `acp_start`: while the tool started, Send and New
- * chat waited and Stop was drawn for a running turn alone, so closing the whole dock was the only
- * way out — and the Library's dock, which is put away rather than closed, reopened on the same
- * stuck panel (still starting, Send still disabled).
- */
 describe('AcpChatPanel — a connection that never finishes starting', () => {
   const props = {
     runtimeId: 'claude-acp',

@@ -171,17 +171,8 @@ export function useTopologyVisibilityState({
   const prevNodeIdsRef = useRef<Set<string>>(new Set());
 
   /**
-   * Ids of nodes **born during this session**. The appearance ramp
-   * (`appearRef`) alone is not enough: at overview zoom a new capability's tier
-   * alpha is 0, so the ramp is multiplied by zero — an agent could create a
-   * node and all the screen showed was the domain's child count going 2 → 3
-   * (measured 2026-08-17, fixed on the owner's instruction). Nodes in this set
-   * get the same class of tier exemption as an ego click or a chip expand, so
-   * they are actually drawn.
-   *
-   * **It persists for the session.** Appearing and then vanishing is exactly
-   * the flicker the owner said not to do. A reload returns to the ordinary tier
-   * rules.
+   * Ids of nodes born during this session. At overview zoom a new capability's tier alpha is 0, so the
+   * appearance ramp alone shows nothing; these get the tier exemption, and persist for the session.
    */
   const bornNodeIdsRef = useRef<Set<string>>(new Set());
 

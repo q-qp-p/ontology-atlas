@@ -81,10 +81,8 @@ export function useTopologyOverviewNavigation({
     const { width, height } = viewportRef.current;
     if (!tokens || !world || width <= 0 || height <= 0 || !hasInitializedRef.current) return;
     landTierAssembly(world);
-    // Warding invariant (owner bug report 2026-07-23): inside a realm, fit and
-    // relayout return to the **realm's content bbox**, not the global spine.
-    // Tweening to the global overview takes the camera out of the realm and
-    // leaves "an empty ring plus some nodes somewhere" — same contract as the
+    // Inside a realm, fit and relayout return to the realm's content bbox, not the global spine:
+    // tweening to the global overview takes the camera out of the realm. Same contract as the
     // deselect return.
     const realmData = realmDataRef.current;
     const realmPhase = realmTransitionRef.current.phase;
@@ -131,13 +129,9 @@ export function useTopologyOverviewNavigation({
         return;
       }
     }
-    // Expand-all is a lens, and its frame is the lens fit. The overview fit
-    // below reserves the tool lane and the docking-chip row on top and the
-    // readout on the bottom, which is right for the spine but shrinks the
-    // expanded map from 75 % to 63 % of the height and moves it — pressing
-    // "fit" or "auto-arrange" after expand-all made the map jump to a second,
-    // smaller frame of the same nodes (measured 2026-09-19 at 1512×806). One
-    // lens, one frame: hand the fit to the lens while it is on.
+    // Expand-all is a lens and its frame is the lens fit: the overview fit reserves the tool lane,
+    // docking chips and readout, which would shrink and move the expanded map on "fit" or
+    // "auto-arrange". One lens, one frame.
     if (overviewFitRef.current === "full" && spotlightIdsRef.current !== null && runSpotlightFitRef.current?.()) {
       return;
     }

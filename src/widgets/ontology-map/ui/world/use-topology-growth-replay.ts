@@ -51,28 +51,9 @@ export function useTopologyGrowthReplay({
 }: Dependencies) {
 
   /**
-   * **The replay is a toggle, not a hold** (owner, 2026-09-07: *"nobody keeps the
-   * mouse still after pressing a button; make the button show an active state
-   * while it runs and stop on a second press."*).
-   *
-   * It used to end on the first input after a 300 ms grace, which meant the
-   * pointer drifting one pixel, a hover, or a wheel notch killed a twelve-second
-   * event the person had just asked for. This narrows the 2026-09-02 rule
-   * ("ends on its own or on the first input", `docs/DECISIONS.md`) to four
-   * **deliberate** exits, all of them routed through `endGrowthReplay`:
-   *
-   * | Exit | Where |
-   * |---|---|
-   * | a second press of the control | this effect, below |
-   * | `Escape` | the window keydown effect beside this one |
-   * | any press on the canvas — a node, the ground, or the start of a drag | the `pointerdown` effect beside this one |
-   *
-   * **Pointer movement, hover and wheel-zoom keep it running.** Wheel could
-   * equally have been an exit; it is not, because the wheel is how a reader
-   * leans in to watch something appear, and taking the picture away for that is
-   * the same defect in a smaller form. Zooming during a replay is harmless — the
-   * replay drives appear ramps only and never touches the camera after its
-   * opening fit.
+   * The replay is a toggle, not a hold. Deliberate exits, all through `endGrowthReplay`: a second
+   * press of the control, `Escape`, any press on the canvas. Pointer move, hover and wheel keep it
+   * running.
    */
   useEffect(() => {
     if (growthReplayToken === growthReplayTokenSeenRef.current) return;
@@ -91,12 +72,8 @@ export function useTopologyGrowthReplay({
     runOverviewFit();
     const now = performance.now();
     /*
-     * Schedule only what the screen will actually show. In 2D the density gate
-     * hides elements at overview altitude, and a replay paced over 125 nodes of
-     * which 36 are visible spent most of its twelve seconds on nothing
-     * (measured 2026-09-02: one visible birth per second). The tier alpha is
-     * read at the **fit target** scale, since that is where the camera is
-     * heading; the cone tree draws every tier, so 3D keeps them all.
+     * Schedule only what the screen will show: the density gate hides elements at overview altitude.
+     * Tier alpha is read at the fit target scale, where the camera is heading; 3D draws every tier.
      */
     const zoomRatio = computeZoomRatio(cameraTargetRef.current.tscale, overviewScaleRef.current * tokens.overviewEntryRatio);
     const dome = domeRuntimeRef.current;
@@ -129,15 +106,8 @@ export function useTopologyGrowthReplay({
   }, [endGrowthReplay, growthReplayRef]);
 
   /**
-   * A press on the canvas ends it — the reader reached for the map, which is the
-   * one gesture that says "show me this instead of that". One listener rather
-   * than a wrapper per callback, because the callbacks do not cover the ground:
-   * `onPaneClick` fires only when there is a selection to clear, so a click on
-   * empty space with nothing selected reached nothing (measured 2026-09-07). A
-   * press also opens every drag, so this covers panning and node dragging too.
-   *
-   * `pointerdown`, not `click`: the replay should stop the moment the map is
-   * touched, not when the button comes back up at the end of a long drag.
+   * A press on the canvas ends it. One listener, because `onPaneClick` fires only with a selection to
+   * clear. `pointerdown`, not `click`, so it stops when the map is touched; a press opens every drag.
    */
   useEffect(() => {
     const canvas = canvasRef.current;

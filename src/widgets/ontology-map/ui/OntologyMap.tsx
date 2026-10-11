@@ -40,18 +40,6 @@ const WALK_NOTICE_NODE_GAP = 38;
 import { useReducedMotion } from "framer-motion";
 import { transientSurface } from "@/shared/ui/transient-surface";
 
-/**
- * `OntologyMap` — the product's single current canvas-2D topology renderer.
- * The former DOM canvas and Sigma/WebGL implementations are retired and
- * deleted; `HomePage` supplies the current adapter contract (selected slug,
- * path query, visibility and interaction callbacks) directly to this widget.
- *
- * The component itself stays a thin JSX shell — mount/resize/rAF-loop/
- * pointer/camera/draw wiring all live in `use-topology-loop.ts` (+ its
- * `topology-world.ts`/`topology-camera-math.ts`/`topology-frame-draw.ts`
- * helpers), per this file's own 300-line budget (`.claude/rules/*`).
- */
-
 export interface OntologyMapNode {
   id: string;
   label: string;
@@ -63,9 +51,8 @@ export interface OntologyMapNode {
   ownerKey: string | null;
   recentlyUpdated: boolean;
   /**
-   * The raw authorship source (`created_by`) — `human`, `agent:<name>`, or absent.
-   * The review-pending ring is drawn only when the value is **exactly** `human`.
-   * Absent is unknown, not human (ledger 2026-07-31 — no retroactive inference).
+   * Raw authorship source (`created_by`): `human`, `agent:<name>`, or absent. The review-pending
+   * ring draws only for exactly `human`; absent is unknown, not human.
    */
   createdBy?: string;
   /** Living-map drift — the dusty decision derived from vault mtime
@@ -236,10 +223,8 @@ export interface OntologyMapProps {
    */
   agentFocusNodeId?: string | null;
   /**
-   * The recently-changed spotlight (`?recent=`, council design 2026-07-23) —
-   * non-null turns on a lens that sinks every node and edge outside this set to the
-   * rest alpha. Nodes inside the set are lit by HomePage swapping the fresh channel
-   * key (changedSlugs) over the same window. null or omitted is off.
+   * Recently-changed spotlight (`?recent=`): non-null sinks every node and edge outside this set to
+   * the rest alpha. Null or omitted is off.
    */
   spotlightIds?: ReadonlySet<string> | null;
   /** The meaning currently carried by the same lens mechanism. Omission refers to existing recent changes. */
@@ -255,7 +240,6 @@ export interface OntologyMapProps {
   onEnterRealm?: (slug: string) => void;
   /** Expanded INDEX covers the map on phones, so its floating controls yield. */
   indexExpanded?: boolean;
-  /** S4 — the orbit button's accessible label (i18n, injected by HomePage). The user-facing wording is "show only this" (show only this; owner decision 2026-07-23) while the internal name stays realm. */
   realmEnterLabel?: string;
   /** S4 — the orbit button's hover microtooltip copy ("look only inside this node" — look only inside this node). */
   realmEnterTooltip?: string;
@@ -326,25 +310,15 @@ export interface OntologyMapProps {
    */
   tierReveal?: TierRevealConfig;
   /**
-   * The bbox the overview camera fits — `"spine"` (default) is project/domain/hub,
-   * `"full"` is every node. Only a consumer that draws every tier on entry (the
-   * gateway's evidence section — `GATEWAY_TIER_REVEAL`) passes `"full"`: drawing
-   * every tier while fitting the spine bbox seats the graph low in the frame,
-   * because its mass sits below the spine's centre (measured 2026-08-18 at 1512:
-   * 143px of blank above, 17px below). The workbench default is unchanged — on an entry
-   * that draws the spine only, fitting the full bbox was a regression that shrank 8
-   * nodes to dots (the `use-topology-loop` trySnapInitialCamera doc-block).
+   * Bbox the overview camera fits: "spine" (default) is project/domain/hub, "full" is every node.
+   * Pass "full" only when every tier draws on entry; fitting the spine bbox then seats the graph low
+   * in the frame.
    */
   overviewFit?: "spine" | "full";
   /**
-   * The guided tour (2026-07-23, `src/features/guided-tour`) — the projection
-   * contract for canvas node anchors (steps 2 and 4). It points at a node rather
-   * than DOM, so it copies the realm "expand" button's precedent verbatim (the
-   * per-frame `worldToScreen` block in `use-topology-loop.ts`). While this node id
-   * is non-null the loop writes a transform plus `--tour-anchor-r` into
-   * `tourAnchorRef`'s DOM every frame. Resolving the id (choosing project, domain
-   * or hub) belongs to HomePage (`resolve-tour-anchor-node.ts`) — this widget only
-   * projects.
+   * Projection contract for the guided tour's canvas node anchor: while non-null, the loop writes a
+   * transform plus `--tour-anchor-r` into `tourAnchorRef`'s DOM every frame. Choosing the node
+   * belongs to HomePage (`resolve-tour-anchor-node.ts`).
    */
   tourAnchorNodeId?: string | null;
   /**
@@ -355,12 +329,8 @@ export interface OntologyMapProps {
    */
   tourAnchorRef?: RefObject<HTMLDivElement | null>;
   /**
-   * rank18 (design council batch B1) — while a DOM overlay (GlobalSearch and the
-   * like) is open, the canvas is excluded from the keyboard and screen-reader tree.
-   * A canvas is painted pixels and offers no keyboard traversal of its own, and
-   * INDEX/the datasheet are already accessible alternatives, so the canvas hides
-   * only while an overlay is open (no new alternative UI — the existing INDEX and
-   * datasheet are reused).
+   * While a DOM overlay is open the canvas is excluded from the keyboard and screen-reader tree;
+   * INDEX and the datasheet remain the accessible alternatives.
    */
   overlayOpen?: boolean;
   /**
@@ -376,11 +346,6 @@ export interface OntologyMapProps {
    * defaults to `"dot"`.
    */
   canvasBackground?: CanvasBackground;
-  /**
-   * 3D view (2026-08-18, opt-in) — the lit Strata planes or the relation-driven
-   * Neural cloud (`model/dome-view/`). The top toolbar's view picker turns it on;
-   * omitted is false (2D, the default).
-   */
   view3d?: boolean;
     /**
      * Which structural question places nodes in 3D — `strata` stacks the containment
@@ -390,8 +355,8 @@ export interface OntologyMapProps {
      */
     mapArrangement?: MapArrangement;
   /**
-   * Lit 3D (2026-09-25) — node id → evidence state from the product's one rule. It sets how
-   * much light each node emits; an absent id, or null, is unknown and emits none.
+   * Node id to evidence state; sets how much light each node emits. An absent id, or null, is
+   * unknown and emits none.
    */
   domeEvidence?: ReadonlyMap<string, "current" | "stale" | "unknown"> | null;
   onHiddenDependenciesChange?: (count: number) => void;
@@ -409,10 +374,8 @@ export interface OntologyMapProps {
    */
   domeLightLegend?: ReactNode;
   /**
-   * 3D reframing input (2026-08-18, second pass) — whether the node detail panel is
-   * actually covering the screen. To the dome camera, that panel opening or closing
-   * is a window-resize event, so every flip of this value smoothly reframes the
-   * selected node against the visible area. Ignored in 2D (omitted is false).
+   * Whether the node detail panel covers the screen. To the dome camera its opening or closing is a
+   * resize, so each flip reframes the selected node. Ignored in 2D.
    */
   detailPanelVisible?: boolean;
   /** The footprint appearance setting — read with `useFootprint()` and passed down. Omitted means no footprints. */
@@ -434,17 +397,9 @@ export interface OntologyMapProps {
   wheelIntent?: "zoom" | "page-scroll";
   navigationSpeed?: MapNavigationSpeed;
   /**
-   * How long without input before ambient motion sleeps. Omitted uses the workbench
-   * default (`AMBIENT_SLEEP_DELAY_MS`, 30 seconds — the value for a surface where a
-   * person **keeps the map open for a long time** while judging).
-   *
-   * A surface like the gateway, where the session itself can be shorter than that,
-   * passes something shorter. Measured (motion seat, 2026-07-28): a `/download`
-   * visitor **could not structurally reach sleep** — the canvas is 62% of the
-   * viewport, so merely moving the mouse toward a CTA fired `pointermove` and reset
-   * the 30-second clock. And nothing on that surface earns the burn (measured change
-   * per second on an awake canvas: 0.056% — the comets are not perceived). It was
-   * paying workbench rates for a poster.
+   * Idle time before ambient motion sleeps. Omitted uses `AMBIENT_SLEEP_DELAY_MS` (30s, for a
+   * long-open workbench); short-session surfaces such as the gateway pass less, since moving the
+   * mouse resets the clock.
    */
   ambientSleepDelayMs?: number;
 }
@@ -501,30 +456,9 @@ export function OntologyMap(props: OntologyMapProps) {
   // `handleWheel` is wired natively (non-passive) inside `useTopologyLoop` —
   // see its own FIX comment — not bound here as a JSX prop.
   /**
-   * The dead-end notice — **beside the node, self-dismissing, and it never takes
-   * focus** (three owner reports from real use, 2026-08-10).
-   *
-   * ## Why the app's shared toast was abandoned
-   *
-   * It started as a toast. The judgement "do not create a new surface" was right
-   * even then, but in the real thing three things were wrong at once — and all
-   * three came from **one cause**:
-   *
-   * | What the owner saw | Cause |
-   * |---|---|
-   * | "I can't tell when it appears like this" (like this I can't tell) | A toast sits at the screen's bottom right. The blocked node is somewhere in the middle, and a sentence 500px away does not connect to "the thing I just pressed" |
-   * | "It doesn't disappear, it just stays" (it doesn't disappear, it just stays) | When the close button takes focus, sonner stops its own dismissal timer |
-   * | "Without pressing x you can't even move" (without pressing x you can't even move) | Once focus moves to the toast, arrow keys never reach the canvas |
-   *
-   * So this notice has to be **something that cannot take focus** — no button, and
-   * `pointer-events: none`. Nothing is lost by missing it (that there is no node in
-   * that direction can be learned again by pressing again), which also fits the
-   * toast discipline (*"anything you cannot afford to miss belongs to a permanent
-   * surface"*). Assistive technology reads it through `aria-live`.
-   *
-   * The motion uses **machinery that already exists** — `usePanelPresence` plus
-   * `overlay-spring-surface` (`overlay-fade-only` for reduced motion). Zero new
-   * keyframes, zero new tokens.
+   * The dead-end notice sits beside the node, self-dismisses and must never take focus: a focused
+   * control stops the dismissal timer and diverts arrow keys from the canvas. So no button and
+   * `pointer-events: none`; assistive technology reads it through `aria-live`.
    */
   const [notice, setNotice] = useState<{ x: number; y: number; key: number;
     } | null>(null);
@@ -645,12 +579,9 @@ export function OntologyMap(props: OntologyMapProps) {
   }, [canvasRef, readLayoutMarks]);
 
   /*
-   * **What the open panels really cover, for the chrome drawn on the map** (interaction
-   * audit, 2026-09-25). The lit legend ran on under the inspector because its right edge was
-   * the static `--map-safe-inset-right`. The camera already measures the panels
-   * (`measureCanvasInsets`); publishing the same measurement as
-   * `--map-live-inset-left/right` lets an overlay stop at the panel's edge. Re-read when the
-   * panel flips (and once more after its entrance), and on resize.
+   * Publishes the open panels' measured insets (`measureCanvasInsets`) as
+   * `--map-live-inset-left/right` so overlays stop at the panel edge. Re-read when the panel flips,
+   * once after its entrance, and on resize.
    */
   useEffect(() => {
     const container = containerRef.current;
@@ -684,38 +615,13 @@ export function OntologyMap(props: OntologyMapProps) {
        is never used as a runtime selector. */
     data-surface-role={MAP_CANVAS_SURFACE_ROLE}
     /**
-     * **Something you can drag is not a picture** (motion seat P3, 2026-07-28).
-     *
-     * It used to declare `role="img"` — a still image — to assistive technology
-     * while the label said "you can drag it around". The affordance contradiction
-     * was written straight into the accessibility tree. There was no `tabIndex`
-     * either, so a keyboard user got **zero** signals.
-     *
-     * Why `group` rather than `role="application"`: `application` takes away the
-     * assistive technology's default key handling entirely. The old reasoning was
-     * *"this canvas offers no keyboard traversal of its own, so taking the keys
-     * away and giving nothing back is the worst option"*.
-     *
-     * ⚠️ **That premise stopped being true on 2026-08-09** — arrow-key traversal
-     * of neighbours was added (`onKeyDown`). `group` stays anyway: the only keys
-     * we swallow are **the four arrows**, and leaving the rest to assistive
-     * technology loses less than taking all key handling. If an environment is
-     * observed where a screen reader's browse mode claims the arrow keys first,
-     * `application` gets another look then — nothing is taken away pre-emptively
-     * without measuring against real assistive technology.
-     *
-     * The focus ring is **also an affordance of the still frame** — zero motion budget.
+     * `group` rather than `role="application"`: `application` removes assistive technology's default
+     * key handling, and only the four arrows are swallowed. Not `img`: the canvas is draggable and
+     * keyboard-walkable.
      */
     role={canvasLabel ? "group" : undefined} aria-label={canvasLabel} tabIndex={canvasLabel ? 0 : undefined}
-    // Why `cursor-grab` is the **default state** (council "Interaction" —
-    // interaction — 2026-07-28): this canvas's primary action is panning. The
-    // pointer handlers override it inline with `pointer` over a node or edge, and
-    // `grabbing` while pushing.
-    //
-    // **It has to be a class, not an inline style.** When a drag ends and resets
-    // with `style.cursor = ""`, an inline default erases itself and falls to
-    // `auto` (measured). As a class, the cascade restores `grab` where the inline
-    // value was lifted — the reset becomes correct by itself.
+    // `cursor-grab` must be a class, not an inline style: an inline default is erased by `style.cursor
+    // = ""` when a drag ends, while the class restores `grab` by cascade.
     className="cursor-grab outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--color-indigo-focus-ring)] data-[keyboard-focus=true]:outline-2 data-[keyboard-focus=true]:outline-solid data-[keyboard-focus=true]:-outline-offset-2 data-[keyboard-focus=true]:outline-[color:var(--color-indigo-focus-ring)]" style={{
             display: "block",
             width: "100%",
@@ -728,12 +634,6 @@ export function OntologyMap(props: OntologyMapProps) {
             delete event.currentTarget.dataset.keyboardFocus;
             handlePointerDown(event);
         }} onBlur={(event) => { delete event.currentTarget.dataset.keyboardFocus; }} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerCancel} onPointerLeave={handlePointerLeave} onContextMenu={handleContextMenu}
-    /**
-     * Walk neighbours with the arrow keys (2026-08-09, option B). The rules are in
-     * `../interaction/keyboard-walk` and the wiring is `use-topology-loop`'s
-     * `handleKeyDown`. Until this was added, the canvas could take focus but there
-     * were **zero things a key could do**.
-     */
     onKeyDown={handleKeyDown}/>
       {/* The S4 orbit "expand" button — anchored to canvas coordinates (the loop
                   refreshes the transform every frame). Hidden by default; shown only when the
@@ -741,33 +641,15 @@ export function OntologyMap(props: OntologyMapProps) {
                   button. A microtooltip on hover (one plain line). */}
       {onEnterRealm && !detailPanelVisible ? (<button ref={realmEnterButtonRef} type="button" data-testid="topology-realm-enter-button" aria-label={realmEnterLabel}
         /**
-         * **While invisible it is not a tab stop** (keyboard measurement, 2026-07-29).
-         *
-         * This button appears and disappears every frame through `opacity` and
-         * `pointerEvents` alone (to preserve layout), and `opacity: 0` **does not
-         * turn off focusability.** So the 26th Tab on the map stopped here: the ring
-         * draws at alpha 0 and is nowhere on screen, and pressing Enter does nothing
-         * (the click decision lives in the canvas's hit test). To a keyboard user it
-         * is **a slot where focus vanishes**.
-         *
-         * Paired with `pointer-events: none`, it drops out of the tab order and hides
-         * from screen readers too. Both come back when it is visible.
+         * Not a tab stop while invisible: the button hides through `opacity` and `pointerEvents` only, and
+         * `opacity: 0` leaves it focusable. With `pointer-events: none` it drops out of tab order and
+         * screen readers.
          */
         tabIndex={-1} aria-hidden className={controlClass({ shape: "icon", className: `${props.indexExpanded ? "max-md:hidden " : ""}atlas-touch-floor atlas-touch-floor-wide group absolute left-0 top-0 z-40 flex h-7 w-7 rounded-full border border-[color:var(--map-panel-border)] bg-[color:var(--map-panel-surface)] text-[color:var(--map-indigo-bright)] shadow-[var(--map-panel-shadow)] transition-[opacity,background-color] hover:bg-[color:var(--map-panel-row-hover)]` })} style={{ opacity: 0, pointerEvents: "none" }}>
           <Orbit size={ICON_SIZE.md} aria-hidden/>
-          {/*
-                   * **This tooltip is not drawn in 3D** (owner instruction, 2026-08-18).
-                   *
-                   * This button moves to the node's **projected** position every frame. In 2D
-                   * a still camera means a still position, so the text box below it stays put;
-                   * in the dome the node keeps moving with rotation and perspective, so the
-                   * same text box slides across the scene — by the time your eyes settle to
-                   * read it, it has gone elsewhere.
-                   *
-                   * It disables **the explanation, not the feature**: the button and its
-                   * `aria-label` ("Show only this") are unchanged, so mouse and
-                   * assistive technology reach it exactly as before.
-                   */}
+          {/* Tooltip is not drawn in 3D: the button follows the node's projected position, which keeps moving
+             in the dome, so the text would slide. Only the explanation is disabled; the button and its
+             `aria-label` are unchanged. */}
           {realmEnterTooltip && !view3d ? (<span role="tooltip" className="pointer-events-none absolute left-1/2 top-full mt-2 hidden -translate-x-1/2 whitespace-nowrap rounded-[var(--map-panel-radius)] border border-[color:var(--map-panel-border)] bg-[color:var(--map-panel-surface)] px-2 py-1 text-label font-[var(--font-weight-signature)] text-[color:var(--map-panel-text-primary)] shadow-[var(--map-panel-shadow)] group-hover:block">
               {realmEnterTooltip}
             </span>) : null}
@@ -776,14 +658,9 @@ export function OntologyMap(props: OntologyMapProps) {
       {/* The inspector docks against the same right edge the names favour, and the
                   reader is looking at one concept, so the names step aside while it is open. */}
       {tierNamesActive && !detailPanelVisible ? (<OntologyMapTierLegend names={tierNames ?? []} labels={domeTierLabels!} onRaise={raiseDomeTier} onWidths={setDomeTierNameWidths}/>) : null}
-      {/* The guided tour's canvas node anchor (steps 2 and 4) — the same projection
-                  technique as the realm button (the loop refreshes the transform and
-                  `--tour-anchor-r` every frame). It is a **measurement probe** with no paint:
-                  it must never transition, including under the global reduced-motion duration.
-                  The scrim and cutout are painted by GuidedTourOverlay, which reads this rect
-                  from the z-70 overlay layer (Guardian correction 2026-07-23 — painting the
-                  scrim at z-40 inside the widget left outer chrome such as the top toolbar
-                  floating above the scrim, so the testid step and the dimming layered wrongly). */}
+      {/* Measurement probe with no paint: it must never transition, including under the global
+         reduced-motion duration. GuidedTourOverlay paints the scrim and cutout and reads this rect from
+         the z-70 layer. */}
       {tourAnchorRef ? (<div ref={tourAnchorRef} data-testid="topology-tour-anchor" data-tour-anchor-node={tourAnchorNodeId ?? undefined} aria-hidden className="pointer-events-none absolute left-0 top-0 z-40 transition-none" style={{
                 width: "calc(var(--tour-anchor-r, 0px) * 2)",
                 height: "calc(var(--tour-anchor-r, 0px) * 2)",

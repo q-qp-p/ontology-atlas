@@ -6,7 +6,6 @@ import {
   type Rect,
 } from "./free-area";
 
-/** Measured geometry (1512×982, 2026-08-10) — these numbers are why this module exists. */
 const CANVAS: Rect = { x: 64, y: 0, width: 1448, height: 982 };
 const RIGHT_POPOVER: Rect = { x: 1128, y: 32, width: 352, height: 813 };
 
@@ -56,14 +55,6 @@ describe("computeFreeArea", () => {
     expect(free.width).toBe(CANVAS.width);
   });
 
-  /**
-   * The `side-panel` declaration says «edge-attached, short content» — it does not
-   * say **which** edge. Below `lg` the same node inspector is a bottom sheet
-   * spanning the whole column, and while the declaration also forced `tallEnough`
-   * the rectangle landed in the «both» branch and was subtracted from nothing: the
-   * camera made no room and the sheet covered 93 of 125 nodes at 390×844
-   * (2026-09-05). Width is measured evidence and settles the edge.
-   */
   it("전폭 시트는 명시가 있어도 붙어 있는 가장자리 쪽으로 뺀다", () => {
     const bottomSheet: Rect = {
       x: 76,
@@ -218,12 +209,6 @@ describe("measureCanvasInsets", () => {
     expect(measureCanvasInsets(canvas, CANVAS)).toEqual({ left: 324, right: 0 });
   });
 
-  /**
-   * Measured 2026-09-03: the search palette (an `aria-modal` sheet) was still
-   * fading out on the frame the focus camera measured the DOM, and it was
-   * subtracted as a 915 px *left* panel, so the picked node was aimed under the
-   * detail panel. A modal blocks the map; it never shares the screen with it.
-   */
   it("모달 시트는 좌우 인셋으로 세지 않는다 — 검색 팔레트가 사라지는 프레임", () => {
     const canvas = fakeCanvas([{ x: 400, y: 64, width: 576, height: 640, modal: true }, RIGHT_POPOVER]);
     expect(measureCanvasInsets(canvas, CANVAS)).toEqual({ left: 0, right: 384 });

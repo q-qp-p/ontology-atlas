@@ -34,10 +34,7 @@ export type WorldNodeKind = "project" | "domain" | "capability" | "element";
 export interface WorldNode {
   id: string;
   kind: WorldNodeKind;
-  /**
-   * The raw authorship source (`created_by`) — `human` · `agent:<name>` · absent.
-   * Absent is unknown, not a human (ledger 2026-07-31).
-   */
+  /** Raw authorship source (`created_by`): `human`, `agent:<name>`, or absent. Absent is unknown. */
   createdBy?: string;
   label: string;
   x: number;
@@ -303,18 +300,8 @@ export function computeFoldedIds(
 }
 
 /**
- * **The spine the overview draws** (2026-09-25): `spineBounds` without the nodes the
- * density gate folds.
- *
- * The hub is spine because the tier gate always shows it, but a hub under a parent
- * holding more than twelve children sits behind that parent's chip like its siblings,
- * and the overview fit went on framing it. Measured on the dogfood ontology at
- * 1512×949: the hub (`element:vault-file-store`, folded into the crowded "meaning
- * layer" domain) stood at world x -416 while the drawn cross spans ±267, so the fit
- * centred -78 and the drawing landed 82 px right of the free map's centre on screen;
- * the bundled sample's hub folds on the other side and its ring landed 77 px left.
- *
- * Falls back to the whole spine when none of it would be drawn.
+ * `spineBounds` without the nodes the density gate folds: the hub is always shown by the tier gate
+ * but can sit behind a crowded parent's chip, skewing the fit. Falls back to the whole spine.
  */
 export function computeDrawnSpineBounds(
   world: Pick<TopologyWorld, "spineBounds" | "childrenByParent" | "nodeById"> & DialBearing,
@@ -336,15 +323,8 @@ export function computeDrawnSpineBounds(
 }
 
 /**
- * **Revealed bounds** (2026-09-03): the drawn spine plus the children a person has
- * expanded. The overview fit frames the spine, and a chip expansion dives to
- * its cluster, but every *other* way back to the overview — a deep link with
- * `open=`, the fit button, the `0` key, auto-arrange, the deselect return, a
- * resize — refitted the spine alone, leaving the expanded children just off
- * the edge (measured: five marketing elements at y 877–895 on an 860 px
- * canvas). Folded and clustered children (past the batch cap) are not drawn, so
- * they do not widen the frame; with nothing expanded this is exactly the drawn
- * spine.
+ * The drawn spine plus the children a person has expanded, so every return to the overview keeps
+ * them in frame. Folded and clustered children are not drawn and do not widen it.
  */
 export function computeRevealedBounds(
   world: Pick<TopologyWorld, "spineBounds" | "childrenByParent" | "nodeById"> & DialBearing,
@@ -365,16 +345,8 @@ export function computeRevealedBounds(
 }
 
 /**
- * **The frame a path's target is picked in** (2026-09-26): the overview's own bounds
- * (`overview` — the drawn spine plus what a person expanded) grown by the source and the
- * neighbours its focus draws.
- *
- * Picking a source selects it, and a selection dives to its ego graph: measured on the
- * product's own map at 1512×949, the right-click → path on the top domain zoomed to 1.21
- * around it and its project, and the sibling domain a person would pick next stood at
- * y 1057.9 on a 949-tall canvas. Every drawn node is a candidate target, so the frame is
- * the map they are drawn on. A neighbour folded under another parent is held open for the
- * focus and counts; the source's own folded children stay behind its chip and do not.
+ * The frame a path's target is picked in: the overview bounds grown by the source and the neighbours
+ * its focus draws, since selecting the source dives to its ego graph. Its folded children stay out.
  */
 export function computePathPickBounds(
   world: Pick<TopologyWorld, "nodeById" | "neighborMap" | "childrenByParent"> & DialBearing,
@@ -409,13 +381,8 @@ export function computeEgoBounds(
   tokens: OntologyMapTokens,
   focusedSlug: string,
   /**
-   * S8 defect 4 — restrict the ego bbox to the realm's members while a realm is
-   * expanded. With a realm active, neighbours outside the warding circle sit at
-   * fling coordinates (thousands of units from the origin), so measuring the bbox
-   * unrestricted wraps those outside neighbours too and shrinks the camera so far
-   * that "the screen disappears" (owner report). Given this set, only the focus node
-   * plus the neighbours **inside it** enter the bbox, so the focus dive moves only
-   * within the warding circle. Omitted means global.
+   * Restricts the ego bbox to the realm's members: neighbours outside the warding circle sit at fling
+   * coordinates and would shrink the camera far out. Omitted means global.
    */
   restrictIds?: ReadonlySet<string> | null): Bounds | null {
   const focusNode = world.nodeById.get(focusedSlug);
@@ -447,12 +414,8 @@ export function computeIdsBounds(world: Pick<TopologyWorld, "nodeById">, tokens:
 }
 
 /**
- * S2 part 5B — the radius-padded bbox of an expanded cluster "disc" (the parent
- * plus its direct children's fan). Clicking a chip to expand a parent dives the
- * camera to this bbox so "it expanded" is visible in the viewport (owner report #2:
- * *"Expanding shows no change at all"* — expanding shows no change at all). The same
- * pattern as the ego bbox (`computeEgoBounds`), but holding contains children
- * rather than neighbours. `null` when `parentId` does not resolve or has no children.
+ * Radius-padded bbox of an expanded cluster disc (parent plus its direct children's fan); expanding
+ * a chip dives the camera here. Like `computeEgoBounds` but over children. Null if none.
  */
 export function computeClusterDiscBounds(
   world: Pick<TopologyWorld, "nodeById" | "childrenByParent">,
@@ -539,25 +502,9 @@ export function buildTopologyWorld(
   dialInput: DialWorldInput | null = null,
   placeDial: ((model: DialModel) => DialModel) | null = null): TopologyWorld {
   /*
-   * **A node is drawn under the last containment parent that keeps it in the domain the
-   * spine put it in** (2026-09-21).
-   *
-   * Two rules used to run side by side. `buildOntologyTree` — and with it the INDEX and
-   * the domain census — keeps a node's **first** containment parent; the map kept its
-   * **last**. Most of the time that only changed depth inside one domain, which is what
-   * gives the map its fans: an element its capability and its domain both declare hangs
-   * off the domain here and under the capability there, and the domain's total is the
-   * same either way. It stops being harmless when the two parents sit in **different**
-   * domains: `element:saved-constellation-sidecar` is declared by `capability:mcp-server`
-   * in "AI Agent Integration" and by its own `domain:` in local vault management, so the
-   * census counted it for the first domain while the map drew it under the second. The
-   * node was engraved 18 and its chip opened 17.
-   *
-   * Making the map keep the first parent as well would have fixed the number and taken
-   * the fans with it: measured on the bundled storefront sample, all six crowded parents
-   * fell under the fold threshold and the map lost every cluster chip. So the map keeps
-   * the last parent for depth and yields to the spine only at a domain boundary, where
-   * disagreeing is what produces a number nobody can open.
+   * A node is drawn under the last containment parent that keeps it in the domain the spine put it in.
+   * `buildOntologyTree` keeps the first parent; keeping the last preserves the fans, but across a
+   * domain boundary the map yields to the spine so the census count matches what a chip opens.
    */
   const firstContainsParentById = new Map<string, string>();
   const lastContainsParentById = new Map<string, string>();
@@ -646,8 +593,7 @@ export function buildTopologyWorld(
       parentId: containsParentById.get(n.id) ?? null,
       isHub: n.isHub,
       fresh: n.recentlyUpdated,
-      // Living-map drift — the adapter's dusty verdict (from vault mtime) is wired
-      // into the existing stale visual channel (freshness.ts: dash [3,3] plus an opaque token).
+      // Stale state from vault mtime feeds the stale visual channel in `freshness.ts`.
       stale: n.stale ?? false,
       count: n.descendantCount,
       magnitudeScale: 1, // Filled by the second pass below, once maxCount is settled.
@@ -816,11 +762,8 @@ function buildDialWorld(
  */
 export function applyForcePositions(world: TopologyWorld, positions: ReadonlyMap<string, { x: number; y: number;
 }>): void {
-  // **Iterate over what was given.** This used to walk all 3000 of the world's nodes
-  // calling `positions.get`, while a throttled tick actually moved a few dozen of
-  // them. With the map carrying only those few dozen
-  // (`force-layout.ts#positions(only)`), this loop runs only that many times. The
-  // meaning is identical — a node absent from the map kept its coordinates before too.
+  // Iterate over the positions given, not all world nodes: a throttled tick moves a few dozen, and a
+  // node absent from the map keeps its coordinates.
   for (const [id, p] of positions) {
     const node = world.nodeById.get(id);
     if (node) {

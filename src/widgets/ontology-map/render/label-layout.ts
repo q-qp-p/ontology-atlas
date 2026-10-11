@@ -66,12 +66,9 @@ export function isWithinSafeRect(x: number, y: number, rect: SafeRect): boolean 
  * `marginX`/`marginY` keep the text box itself inside the rect (width/2, font).
  */
 /**
- * A label whose slot below the node falls under the floor band takes the slot
- * above the node instead, when the node itself is on screen and that slot is
- * inside the safe rect. The band is reserved for the readout in one corner,
- * yet the anchor gate dropped every name under it: two domains drawn at
- * y 741 of an 806-tall canvas stood nameless (measured 2026-09-20). Returns
- * the baseline to use, or null when the ordinary gate should decide.
+ * A label whose slot below the node falls under the floor band takes the slot above instead, when
+ * the node is on screen and that slot is inside the safe rect. Returns the baseline to use, or
+ * null when the ordinary gate should decide.
  */
 export function floorFlipBaseline(
   anchorX: number,
@@ -110,27 +107,9 @@ export interface SafeRectProtectionInput {
 }
 
 /**
- * **Whether a label pushed outside the chrome inset is clamped to the inset edge
- * rather than dropped.**
- *
- * The cull itself has to exist — without it, off-screen names pile up along the
- * inset edge. So the question is: would the screen lie if this name were missing?
- *
- * - What the user is looking at right now — the focus centre, ego neighbours,
- *   hover, footprint visits. (Guardian follow-up: the cull ran before the
- *   "selected ⇒ alpha 1" guarantee, so ego children under the left panel lost
- *   their names.)
- * - **The two overview-spine ranks, project and hub** (decision ledger
- *   2026-08-08 (3) ②). The node path culls against the whole viewport while this
- *   path culls against the safe rect, which left the outermost spine nodes drawn
- *   but nameless. A nameless amber hub ring breaks both the contract in
- *   `render/labels.ts` (*"if you can click it, you can read it"*, no nameless
- *   circles) and `resolveLabelPriority`, where a hub already ranks **equal to a
- *   project** — and at overview altitude the reader's question is precisely
- *   *which one is the hub* (`model/label-lod.ts`).
- *
- * Everything else — ordinary `dim`/`normal` domains, capabilities, elements —
- * still drops.
+ * Whether a label pushed outside the chrome inset is clamped to the inset edge rather than dropped.
+ * Protected: the focus centre, ego neighbours, hover, footprint visits, and the project and hub
+ * spine ranks, since a drawn spine node without a name breaks `render/labels.ts`. The rest drops.
  */
 export function isSafeRectProtectedLabel(input: SafeRectProtectionInput): boolean {
   if (input.egoState === "center" || input.egoState === "neighbor") return true;
@@ -156,15 +135,7 @@ export interface LabelCandidate<T> {
    * suppress itself.
    */
   ownerId?: string;
-  /**
-   * A second box to try when `bbox` is taken — the slot above the node.
-   *
-   * Without it the placer drops a name outright the moment a higher-priority
-   * label occupies its slot, however much room sits beside it. Measured
-   * 2026-09-20 on a folder of 20 concepts at 1512x982, with the map using 49%
-   * of the canvas width: one capability lost its name to a neighbour 49 px
-   * away while its own slot above was clear.
-   */
+  /** A second box to try when `bbox` is taken: the slot above the node. */
   altBbox?: LabelBBox;
   /** Set by `greedyPlaceLabels` when it fell back to `altBbox`. */
   usedAlt?: boolean;
@@ -176,14 +147,7 @@ export interface LabelPriorityInput {
   isSelected: boolean;
   isHovered: boolean;
   isHub: boolean;
-  /**
-   * The node is what a lens was opened to show — a path's own nodes, or a
-   * constellation's members. It takes the top band because it is the answer to
-   * the question the person asked. Measured 2026-09-20: a path's destination
-   * capability sat inside an expanded domain disc, and the greedy placer handed
-   * the space to that domain (3) and the project (2) first, so the map drew the
-   * path with one end named and the other anonymous.
-   */
+  /** The node a lens was opened to show (a path or constellation member); it takes the top band. */
   isLensSubject?: boolean;
 }
 
@@ -252,10 +216,8 @@ export const CLUSTER_CHIP_LABEL_PRIORITY = 2;
 export const NODE_DISC_LABEL_PRIORITY = 1;
 
 /**
- * Whether this bbox overlaps a **foreign** reservation, ignoring its own owner's.
- * The frame build reuses the exact test `greedyPlaceLabels` applies, so the
- * "blocked below, flip above" decision agrees with the placement — two different
- * rules here would flip a label only to drop it anyway.
+ * Whether this bbox overlaps a reservation of a different label. Uses the same test as
+ * `greedyPlaceLabels`, so the "blocked below, flip above" decision agrees with the placement.
  */
 export function overlapsForeignReserved(
   bbox: LabelBBox,

@@ -1,23 +1,7 @@
 /**
- * Always-on comets plus hover pulses — the pure model and pulse renderer that
- * restore the prototype's two edge motions (`docs/prototypes/topology-b2plus.html`
- * §14 `updateParticles`/`updatePulses`, §13 `drawPulses`). Owner: "this isn't what I want; bring the old one back" (this isn't what I want; bring the old one back), which replaced the focus-conditioned firefly dots with this original spec.
- *
- * Two effects:
- * 1. **Always-on comet** — every depends edge carries a per-edge phase `e.t`
- *    that flows regardless of focus (`updateParticles`,
- *    `e.t = (e.t + dt*speed) % 1`). The tail itself is drawn by
- *    `render/traces.ts`, which reads `e.t` and follows the same edge curve.
- *    This module owns only the phase-advance model.
- * 2. **Hover pulse** — hovering a node fires one 420ms signal outward along
- *    each edge it touches (`spawnHoverPulses` → `updatePulses` for lifetime →
- *    `drawPulses` to render): a bright head plus a pale trail 0.05 behind it,
- *    shrinking in radius rather than fading in alpha, because glow is banned.
- *
- * Pure layer: it knows nothing of the canvas or of a clock — progress arrives
- * only as an argument. Under reduced-motion both the phase advance and the pulse
- * spawn are skipped entirely. The unit tests pin phase determinism, pulse
- * lifetime, and direction; the pixels are verified on a real screen.
+ * Always-on comets plus hover pulses: the pure phase-advance model and pulse renderer (the tail is
+ * drawn by `render/traces.ts`). It knows nothing of a clock; progress arrives as an argument.
+ * Under reduced motion both the phase advance and the pulse spawn are skipped.
  */
 
 import { bezierPoint, type Point } from "./traces";
@@ -33,10 +17,8 @@ export const PULSE_TRAIL_LAG = 0.05;
 const PULSE_MIN_SCALE = 0.35;
 
 /**
- * Deterministic seed in [0,1) from an edge's two endpoint ids — no RNG state, so
- * the same edge always gets the same phase offset. Used to seed `edge.t` so the
- * always-on comets flow out of step instead of in lockstep, which would read as
- * one wave crossing every edge at once.
+ * Deterministic seed in [0,1) from an edge's two endpoint ids, so always-on comets flow out of step
+ * instead of reading as one wave crossing every edge.
  */
 export function fireflySeed(sourceId: string, targetId: string): number {
   const s = `${sourceId} ${targetId}`;
@@ -86,9 +68,8 @@ export function edgePairMeta(edge: EdgePairRef): { seed: number; key: string } {
 }
 
 /**
- * Design Guardian-approved cap on comets over the selection's incident `contains` edges, and the
- * same cap on the always-on `depends` comets (which still flow regardless of focus, #512): a
- * 90-child domain would otherwise light an unreadable mass of particles.
+ * Cap on comets over the selection's incident `contains` edges, and on the always-on `depends` comets:
+ * a 90-child domain would otherwise light an unreadable mass of particles.
  */
 export const EGO_CONTAINS_COMET_LIMIT = 24;
 
@@ -146,7 +127,6 @@ export function selectAmbientDependsComets(
 
 export interface EgoContainsComets<E extends EdgePairRef = EdgePairRef> {
   keys: ReadonlySet<string>;
-  /** Every incident `contains` edge whose pair key is in `keys`, for an identity lookup per frame. */
   edges: ReadonlySet<E>;
 }
 
@@ -156,10 +136,8 @@ const egoCometCache = new WeakMap<
 >();
 
 /**
- * The comet-carrying `contains` edges touching the focused node: its incident `contains` edges in
- * rank order, first `limit`. `incidentIndices` is the world's `edgeIndexByNode` entry, where a
- * self-loop appears twice in a row. Cached per edge list and entry, since the physics step and the
- * draw both ask every frame.
+ * The focused node's incident `contains` edges in rank order, first `limit`. A self-loop appears twice
+ * in a row in `incidentIndices`. Cached per edge list and entry, as physics and draw ask every frame.
  */
 export function selectEgoContainsComets<E extends EdgePairRef & { kind: string }>(
   edges: readonly E[],

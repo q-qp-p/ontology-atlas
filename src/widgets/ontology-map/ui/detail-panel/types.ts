@@ -55,9 +55,8 @@ export interface OntologyMapDetailPanelLabels {
   actionCreateLinked?: string;
   actionCopyHandoff: string;
   /**
-   * S7 Seam — where to verbally instruct the agent about this concept. Optional
-   * because in environments without an agent panel (web build, legacy consumers), neither label nor handler
-   * appear; there, handoff copy becomes the primary action.
+   * Optional: without an agent panel (web build) neither label nor handler appears,
+   * and handoff copy becomes the primary action.
    */
   actionAskAgent?: string;
   /** S4 "Area Expansion" secondary discovery path action label ("Area Expansion"). */
@@ -72,16 +71,12 @@ export interface OntologyMapDetailPanelLabels {
   codeLocationsLabel: string;
   codeLocationsCopyLabel: string;
   codeLocationsCopiedLabel: string;
-  /** rank7 (design-council B5) — the 「Last Edited」 (last edited) subject row plus
-   *  the expected_mtime conflict badge copy. It reuses the `editProvenance` i18n
-   *  namespace (single source). */
+  /** Reuses the `editProvenance` i18n namespace. */
   editSubjectPrefix: string;
   editSubjectAgent: string;
   editSubjectHuman: string;
   editConflictMessage: string;
-  /** Summary-freshness row copy (`summaryFreshness` i18n namespace), preformatted by
-   *  the caller. Present only when the caller can derive a verdict — the browser has no
-   *  Git history, so these stay undefined there and the row never mounts. */
+  /** Preformatted by the caller; undefined in the browser (no Git history), so the row never mounts. */
   summaryFreshnessPrefix?: string;
   summaryFreshnessLag?: string;
   summaryFreshnessAction?: string;
@@ -124,15 +119,7 @@ export interface OntologyMapDetailPanelProps {
    */
   sourceTitle?: string | null;
   kind: string;
-  /**
-   * N6 (persona-ux-2026-07 report — the PM persona's first question, "which does
-   * this belong to?", had no immediate answer) — the owning domain, or null when
-   * the node has none (it IS a domain, or it is an orphan). Rendered as a
-   * first-class "Domain · <Name>" fact in the header, separate from the "Used By"
-   * connections list it used to be buried in (containment versus depends_on,
-   * distinguished there only by line style). Clicking focuses the domain through
-   * the same `onSelectConnection` callback the connection rows already use.
-   */
+  /** Owning domain, or null for a domain or orphan. Clicking focuses it via `onSelectConnection`. */
   domain: { id: string; title: string } | null;
   /**
    * Set when this node is a `domain` or `project` whose containment list changed after
@@ -145,17 +132,7 @@ export interface OntologyMapDetailPanelProps {
   summaryHistoryUnavailable?: boolean;
   /** "Power" (power) — powered (recently updated, fresh) versus unpowered (quiet). */
   powered: boolean;
-  /**
-   * Connections grouped by relation type, each with a capped row preview + the
-   * group's true total — so a contains-hub's depends group renders its real
-   * count instead of collapsing into a generic overflow.
-   *
-   * This is the single source of **every** relation count this panel draws
-   * (2026-07-26). A separate `metric` prop used to hold another copy of the same
-   * numbers, and any bucket missing from that copy also dropped silently out of
-   * the aggregate above. Binding what is counted to what is drawn removes
-   * "counting what is not drawn, or not drawing what is counted" at the type level.
-   */
+  /** Single source of every relation count this panel draws, so counts and drawn rows cannot diverge. */
   groups: V2ConnectionGroupsView;
   /** The 「Evidence」 (evidence) group — the node's own backing vault doc(s),
    * RATIO-SYSTEM §4 promotion. Rows built by `buildV2EvidenceRows`; empty when
@@ -170,22 +147,9 @@ export interface OntologyMapDetailPanelProps {
    * section — never fabricated.
    */
   codeLocations: readonly string[];
-  /**
-   * S-C1 (owner 2026-07-20: *"A change date or something? Otherwise you can't tell them apart"* — a change
-   * date, something like that, otherwise you can't tell them apart) — the
-   * pre-formatted "when did it change" label ("Today" / "3 days ago", or null when the
-   * node has no backing doc date). Formatting lives in the caller so the label
-   * passes through the same i18n path as every other string here.
-   */
+  /** Preformatted "when did it change" label; null when the node has no backing doc date. */
   updatedAtLabel?: string | null;
-  /**
-   * rank7 (design-council B5) — last-edit provenance, pre-resolved by the
-   * caller (`resolveNodeLastEditSubject`) from real data only (a fresh
-   * agent heartbeat attributed to this node, or a same-session self-write
-   * record). `null` when neither source has evidence — the row is not
-   * rendered (no fabrication). Human vs AI is the `kind` field only, never
-   * a color.
-   */
+  /** Last-edit provenance from real data only (`resolveNodeLastEditSubject`); null hides the row. */
   lastEditSubject?: { kind: "agent" | "human"; ageLabel: string } | null;
   /**
    * rank7 — expected_mtime conflict badge. `true` only on a REAL mismatch
@@ -207,19 +171,8 @@ export interface OntologyMapDetailPanelProps {
   labels: OntologyMapDetailPanelLabels;
   onSelectConnection: (id: string) => void;
   /**
-   * While the cursor is over a relation row, point at that node **on the map**
-   * (owner instruction, 2026-08-17: *"It would be nice if hovering each of these made it glint on the map beside it; right now nothing responds."* — hovering
-   * each of these should make it glint on the map beside it; right now nothing
-   * responds).
-   *
-   * **Mind the namespace** — the value passed here is the **canvas node id**
-   * (`domain:example-domain`), the same as `onSelectConnection`. Evidence
-   * document rows are a different namespace (a vault slug) and go out separately
-   * through `onHoverEvidence`. Merging the two into one callback repeats exactly
-   * the accident `chat-node-index.ts` recorded — where two namespaces met with no
-   * check, and the feature survived as wiring while being dead.
-   *
-   * Omitted, nothing happens (the previous behaviour).
+   * Canvas node id (`domain:example-domain`), as in `onSelectConnection`. Evidence rows use a vault
+   * slug and go through `onHoverEvidence`; do not merge the two namespaces into one callback.
    */
   onHoverConnection?: (id: string | null) => void;
   /**
@@ -265,16 +218,8 @@ export interface OntologyMapDetailPanelProps {
    * drawer is opt-in). Omitted hides the link (read-only embeds, for instance). */
   onOpenFullDetail?: () => void;
   /**
-   * Whether it is open. This panel **carries its own entry and exit** — `<Surface>`
-   * owns the exit window (`EXIT_WINDOW_MS`), the exit class
-   * (`.topology-chrome-out`), `inert` and `pointer-events-none`, so the consumer
-   * has nothing to arrange again.
-   *
-   * `presence: "entering" | "exiting"` used to be **computed by the parent** and
-   * passed down. Then the exit window's timer lived in the parent, and reading
-   * this file alone could not tell you whether this surface had a way out (the
-   * hard-cut ratchet's detector could not see it either). The window belongs to
-   * the surface.
+   * `<Surface>` owns the exit window (`EXIT_WINDOW_MS`), `.topology-chrome-out`, `inert` and
+   * `pointer-events-none`, so the consumer arranges no exit timing.
    */
   open: boolean;
   /**
@@ -310,14 +255,8 @@ export interface OntologyMapDetailPanelProps {
   /** Localized explicit-action failure; never used for picker cancellation. */
   projectSourceError?: string | null;
   /**
-   * **Honest degradation** — passed only when this surface cannot perform that
-   * action (on the web, the browser does not know the absolute path of the folder
-   * it was given). It carries all three things `surfaces.md` requires: why it does
-   * not work · where it does · **and what does work here**.
-   *
-   * This position used to be a single grey sentence, "You can connect a code folder in the installed app" — not a
-   * link, with no reason, and no word about what works on this screen. That is
-   * what a screen that diagnoses without prescribing looks like.
+   * Passed only when the action is unavailable (the web cannot know the folder's absolute path).
+   * Carries why it does not work, where it does, and what works here (`surfaces.md`).
    */
   projectSourceDegraded?: {
     why: string;

@@ -71,12 +71,6 @@ const MENU_WIDTH = 200;
 const MENU_HEIGHT_ESTIMATE = 210;
 const VIEWPORT_MARGIN = 8;
 
-/**
- * Design Guardian nice-to-have (W2-B review) — a right-click near the
- * viewport's right/bottom edge used to position the menu off-screen (raw
- * `clientX`/`clientY`, no clamp). Pulls the anchor back in by the menu's own
- * footprint + a small margin; never pushes it past the top/left edge either.
- */
 export function clampContextMenuPosition(
   position: { x: number; y: number },
   viewport: { width: number; height: number },
@@ -145,12 +139,8 @@ export function OntologyMapContextMenu({
   const menuRef = useRef<HTMLElement | null>(null);
 
   /*
-   * ★ **The menu takes focus when it opens** (interaction audit, 2026-09-25).
-   *   Focus used to stay on the canvas, so the first ArrowDown walked the map's
-   *   selection instead — it opened the next domain's panel and left this menu
-   *   floating over that panel, anchored to a node that had moved away. Focus on
-   *   the first item makes the arrow keys the menu's, and the canvas's keyboard
-   *   walk (bound to the canvas element) never hears them.
+   * Focus moves to the first item on open so arrow keys belong to the menu; otherwise the canvas's
+   * keyboard walk would hear them and change the selection.
    */
   useEffect(() => {
     if (!open) return;
@@ -210,10 +200,8 @@ export function OntologyMapContextMenu({
       ? position
       : clampContextMenuPosition(position, {
           /*
-           * The right wall is **the map's edge, not the screen's** (review,
-           * 2026-08-16). With a conversation panel standing to the right of the
-           * map, folding against the screen width puts the menu on top of that
-           * panel — while what the menu acts on is a node in the map.
+           * The right wall is the map's edge, not the screen's: with a conversation panel to the right, the
+           * screen width would put the menu on top of that panel.
            */
           width: currentFloatingRightBound(),
           height: window.innerHeight,

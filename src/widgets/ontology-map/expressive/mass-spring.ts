@@ -1,24 +1,7 @@
 /**
- * Mass, drop and press — the map's second-order motion (2026-09-08, direction B
- * "Weighted graph: mass, heat and reach are drawn", after the owner lifted the
- * overshoot ban: `docs/DECISIONS.md` "The expression bans are lifted").
- *
- * Until today every node settled on the same critically damped exponential, so
- * a hub with forty relations and a leaf with one came to rest the same way and
- * the picture never said which was heavy. This module is the pure math: a
- * node's **mass** is its degree on a smoothstep, a heavy node's release spring
- * is underdamped (it overshoots once and takes longer to sit), a light node's
- * is critical (it snaps). Mass rides ζ alone; ω is one number for every node,
- * because the integrator's proven stability bound and the ω the map wants are
- * the same 16 (`spring-stability.contract.test.ts`).
- *
- * The same second-order step drives the **drop** of a
- * released node (it carries the hand's velocity a little way past the drop
- * point, capped so the excursion never exceeds one radius step) and the
- * **press** of a hovered node (an underdamped unit step, so the swell peaks
- * above its rest and settles back).
- *
- * Pure functions only — the loop owns state and the draw owns paint.
+ * Second-order motion: a node's mass is its degree on a smoothstep; heavy nodes get underdamped
+ * release springs, light ones critical. Mass rides damping ratio alone; omega is 16 for every node,
+ * the integrator's stability bound (`spring-stability.contract.test.ts`). Pure functions only.
  */
 
 export interface SpringResponse {

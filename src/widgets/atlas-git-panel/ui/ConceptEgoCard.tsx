@@ -7,11 +7,8 @@ import { ConceptEgoGraph } from "./ConceptEgoGraph";
 import { controlClass } from '@/shared/ui/control-class';
 
 /**
- * The chosen concept's properties plus its immediate neighbours, so the trail ends here
- * instead of at the map. The table on the left names neighbours, the drawing on the right
- * shows structure, and pointing at either lights its twin. Cells appear in reading order
- * (name, summary, owner, document, agent reference, relations), and a field without a
- * value gets no cell.
+ * The chosen concept's properties plus its immediate neighbours; pointing at the table or the
+ * drawing lights its twin.
  */
 export function ConceptEgoCard({
   ego,

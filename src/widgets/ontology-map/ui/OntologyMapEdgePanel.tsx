@@ -9,26 +9,18 @@ import { controlClass } from '@/shared/ui/control-class';
 import { cn } from "@/shared/lib/cn";
 
 /**
- * The edge panel's one action, in **the node panel's primary grammar** (interaction audit,
- * 2026-09-25): the same `Button` sm (32, body type, signature weight) on the map panel's chip
- * radius. It was a 266x32 chip in 11px regular type beside a node panel whose primary is a
- * filled Button — the same docked slot spoke two dialects. A `<Link>` cannot be a `<Button>`,
- * so both branches wear the Button's own variant string.
+ * The edge panel's one action wears the node panel's primary grammar: `Button` sm on the chip
+ * radius. A `<Link>` cannot be a `<Button>`, so both branches use the Button's own variant
+ * string.
  */
 const EDIT_RELATION_ACTION_TRIM = "atlas-touch-floor w-full rounded-chip";
 /** The same class for the `<Link>` branch, which cannot be a `<Button>`. */
 const EDIT_RELATION_ACTION_CLASS = cn(buttonVariants({ variant: "primary", size: "sm" }), EDIT_RELATION_ACTION_TRIM);
 
 /**
- * P3b — the edge popover. Built from the same material as the node datasheet
- * (panel tokens), it states one relation's meaning: plain sentence → type and
- * direction → the declaring source (.md) → change date → a relation-edit deep link.
- *
- * The reference study's verdict: what makes something read as an ontology is not
- * the type's name but the sentence plus the declaring source — frontmatter *is*
- * the graph here, so showing provenance costs nothing, and that is this product's
- * point of difference. The sentence and labels are assembled by the caller from
- * the relation lexicon (P1a); this widget is display-only.
+ * The edge popover: one relation's plain sentence, type and direction, declaring source (.md),
+ * change date and a relation-edit deep link. Display-only; the caller assembles sentence and
+ * labels.
  */
 export interface OntologyMapEdgePanelProps {
   /** The plain sentence — "A leans on B" (from the lexicon's plain register). */
@@ -85,11 +77,8 @@ export function OntologyMapEdgePanel({
   onClose,
   className,
 }: OntologyMapEdgePanelProps) {
-  // H3 P1 — the edge popover's focus contract. On open, focus moves into the
-  // dialog so `role=dialog` plus `aria-label` is announced to a screen reader; on
-  // close it returns to the trigger that opened it (the canvas, or whatever held
-  // focus before). There used to be no focus management at all, so closing with
-  // Esc unmounted the dialog and lost focus to body (accessibility audit P1).
+  // Focus moves into the dialog on open so `role=dialog` plus `aria-label` is announced, and
+  // returns to the trigger on close.
   const dialogRef = useRef<HTMLElement>(null);
   useEffect(() => {
     const trigger = document.activeElement as HTMLElement | null;
@@ -123,9 +112,8 @@ export function OntologyMapEdgePanel({
         />
       </div>
 
-      {/* The recorded reason is the protagonist when there is one; the templated sentence is
-          the same for every edge of its type, so it drops to a caption above it. Without a
-          note the sentence stands alone, as before (2026-09-06). */}
+      {/* With a recorded reason it leads; the templated sentence is the same for every edge of its
+         type, so it drops to a caption. */}
       <p
         data-testid="map-edge-sentence"
         className={
@@ -161,10 +149,8 @@ export function OntologyMapEdgePanel({
             onClick={() => onSelectNode(n.id)}
             className="rounded-chip text-[color:var(--map-panel-text-secondary)] hover:bg-[color:var(--map-panel-row-hover)] hover:text-[color:var(--map-panel-text-primary)]"
           >
-            {/* The same row grammar as the node panel's connection rows: the kind
-                glyph first, then the name. Two bare names read as headings, not as
-                the doors to the two nodes they are (2026-09-19). The kind is the
-                id's prefix — the one place it is always known. */}
+            {/* Same row grammar as the node panel's connection rows: kind glyph first, then the name. The
+               kind is the id's prefix, the one place it is always known. */}
             <OntologyMapKindGlyph kind={n.id.split(":")[0] ?? ""} />
             <span className="min-w-0 flex-1 truncate">{n.title}</span>
           </RowButton>
@@ -177,15 +163,8 @@ export function OntologyMapEdgePanel({
             {labels.declaredByLabel}
             {updatedAtLabel ? ` · ${updatedAtLabel}` : ""}
           </span>
-          {/*
-            The label is the document's name and nothing else. It used to read
-            `{slug}.md → {openDoc}`, an arrow between a name and an action inside
-            a link that navigates within the app — the decoration `forbidden.md`
-            refuses, and the one shape the label-decoration gate's two scans
-            cannot see (they look for an arrow followed by a tag, or alone in an
-            element). The action stays in the accessible name so a reader still
-            hears what pressing it does.
-          */}
+          {/* The label is the document's name only; the action stays in the accessible name, so no arrow
+             decorates it. */}
           <Link
             href={declaredBy.href}
             aria-label={`${declaredBy.slug}.md · ${labels.openDoc}`}

@@ -1,27 +1,7 @@
 /**
- * ⚠️ Colour-gate exemption (the `ALLOWLIST` in `scripts/check-no-raw-color.mjs`,
- * 2026-08-04). This file's `rgba(236,236,240,…)` is a string consumed directly by
- * `ctx.fillStyle`: a canvas 2D context has no cascade, so it cannot resolve
- * `var(--…)`, and the alpha is recomputed per star per frame, so it cannot fold
- * into one token either. It looks white but is not exactly r=g=b, so it misses
- * the automatic greyscale exemption too. Do not add new colours here — if one is
- * unavoidable, record why alongside it.
- *
- * Far-field star-dust texture + diffraction spikes — ported from the B2+
- * prototype's `buildStarDust()`/`drawSpike()`
- * (`docs/prototypes/topology-b2plus.html` §8, §12).
- *
- * Both are far-field-only "magnitude = brightness" overlays (B1 constellation
- * DNA, design doc §1.1): dust is a static, near-invisible texture that never
- * re-seeds per frame (so it never reads as noise); diffraction spikes are a
- * crisp 4-point overlay drawn only on the top-`starCount` nodes by
- * `magnitude` (`count + degree*18`, prototype `computeMagnitude()` —
- * magnitude ranking itself is NOT this module's job, it's a graph-data
- * derivation the adapter/HomePage layer computes once and passes in as
- * `isBrightStar` per node).
- *
- * Zero React imports — pure Canvas 2D drawing plus one extractable pure
- * helper (`computeStarDustCount`, unit-tested in `starfield.test.ts`).
+ * Colour-gate exemption (`ALLOWLIST` in `scripts/check-no-raw-color.mjs`): `rgba(236,236,240,...)`
+ * feeds `ctx.fillStyle`, which cannot resolve `var(--...)`, and alpha is per star per frame.
+ * Do not add colours here. Magnitude ranking is computed upstream and passed as `isBrightStar`.
  */
 
 export interface DustPoint {
@@ -176,14 +156,7 @@ export interface StarDustDrawState {
   radialParallax?: number;
 }
 
-/*
- * perf 2026-08-19 — per-point fillStyle string cache. The alpha differs per point
- * (`point.alpha * farT`), but for the **same point array and the same farT** the
- * identical strings were being rebuilt every frame — hundreds of points per
- * viewport × 60fps of string allocation and parsing. A change to the array
- * reference or to farT rebuilds the whole cache; the string values are identical,
- * so the pixels are too.
- */
+/* Per-point fillStyle string cache, rebuilt only when the points array reference or farT changes. */
 let dustStyleSourcePoints: readonly DustPoint[] | null = null;
 let dustStyleFarT = -1;
 let dustStyleOpacityScale = -1;

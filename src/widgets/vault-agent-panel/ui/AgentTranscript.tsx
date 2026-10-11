@@ -38,12 +38,8 @@ export interface AgentTranscriptLabels {
 }
 
 /**
- * Notices where a person has to act — the conversation **stops** here. The rest
- * (aborted, cap reached) are progress reports and may stay quiet.
- *
- * Why the distinction is needed: all six codes used to be the same grey micro
- * label, which made "you hit the call limit" the quietest sentence on screen. The
- * reason it stopped is the most important fact in that turn (Tufte — ink to the data).
+ * Notices where a person has to act and the conversation stops; the rest (aborted, cap reached) are
+ * progress reports and may stay quiet.
  */
 /**
  * Notice codes the recovery chip **absorbs into its title**. They stay in the data
@@ -94,11 +90,8 @@ export function AgentTranscript({
     <div className="flex flex-col gap-4">
       {turns.map((turn) => {
         /**
-         * The single position for this turn's **conclusion**. The demotion for an
-         * uncited answer attaches only here — an intermediate remark before a tool is
-         * called, like "let me read first", makes no claim about the vault so there is
-         * nothing to warn about, and three copies of the same warning in one turn make
-         * that warning wallpaper (measured 2026-07-27: 3 per turn).
+         * The single position for the turn's conclusion; the uncited-answer demotion attaches only here, not
+         * to intermediate remarks that make no claim about the vault.
          */
         const lastAssistant = turn.events.reduce(
           (found, event, index) => (event.kind === 'assistant' ? index : found),
@@ -204,16 +197,8 @@ export function AgentTranscript({
             </div>
           ) : null}
 
-          {/* The footer always reserves one row — an arriving answer does not push the
-              content above it.
-
-              **The character count dropped to hover here** (2026-08-02). A round's
-              fixed cost is 18,934 characters (8,500 of system guidance plus 10,122 of
-              tool schemas), so "This turn: 40,036 chars" is not the size of the user's data —
-              the read rows on the same screen totalled 1,336 characters, and the total
-              is 30× that, mostly tool schemas. Permanently visible, the largest number
-              on screen becomes the most meaningless one. The data (`sentChars`) is
-              unchanged; only the render was demoted. */}
+          {/* The footer always reserves one row so an arriving answer does not push content above it. The
+             character count is hover-only: it is dominated by fixed tool schemas, not the user's data. */}
           <p
             data-testid="agent-turn-footer"
             title={

@@ -97,11 +97,8 @@ describe("clusterBadgeRect", () => {
   const NODE_R = 20;
 
   /**
-   * The **upper-left** — the upper-right is the orbit button's bearing
-   * (2026-08-02). Sharing a shoulder put 80% of the badge under the button and
-   * every click went to the button instead. The bearing split and its
-   * exhaustive zero-overlap sweep:
-   * `tests/contract/expand-settings.contract.test.ts`.
+   * The badge sits upper-left because the upper-right is the orbit button's bearing; sharing a shoulder
+   * put 80% of the badge under the button (`tests/contract/expand-settings.contract.test.ts`).
    */
   it("배지는 부모의 좌상단(스크린 x- 왼쪽, y- 위)에 앉는다", () => {
     const rect = clusterBadgeRect(PARENT_X, PARENT_Y, NODE_R, clusterBadgeLabel(63));
@@ -201,19 +198,8 @@ describe("clusterChipOccupancyRect (S11 라벨 예약)", () => {
 });
 
 /**
- * **The chip walks the gap rather than jumping it.**
- *
- * The collapsed pill sits at its anchor and the expanded badge on the parent's
- * shoulder, a measured 51–147px apart. That gap used to be crossed by an alpha
- * crossfade alone, which reads as one mark **vanishing here and another
- * appearing there** — without a line for the eye to follow the user does not
- * take them for the same thing.
- *
- * What is measured here is not whether it looks nice but whether it **arrives**:
- * at the end of the transition the pill's position must equal the badge's, so
- * the crossfade happens at one point instead of over the gap. Frame-level
- * measurement is design-motion's `/motion-verify`; this locks the **geometric
- * precondition** that verdict rests on.
+ * The chip walks the gap: the collapsed pill and the expanded badge sit 51-147px apart, so at the end
+ * of the transition the pill's position must equal the badge's and the crossfade happens at one point.
  */
 describe("clusterChipTravelPoint — 칩이 배지 자리로 걸어간다", () => {
   const base = {

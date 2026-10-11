@@ -29,15 +29,8 @@ export interface PhysicsStepInput {
   overviewScale: number;
   tokens: OntologyMapTokens;
   /**
-   * Dive-zoom fix (owner: *"Zoom in/out is slow"*) — which of
-   * the two split spring tokens
-   * (`--map-camera-spring-angfreq-interactive/-transition`) this frame's
-   * camera step uses. The caller (`use-topology-loop.ts`) tracks the mode:
-   * interactive while a wheel gesture is live (crisp scale + pan), reset to
-   * transition on every programmatic camera move (focus dive, deselect return,
-   * Auto-arrange, fit-view — cinematic but snappier than the old shared value).
-   * Threaded in rather than read from `tokens` directly so this function stays a
-   * pure function of its inputs.
+   * Selects the interactive or transition spring token for this frame's camera step; passed in so
+   * this function stays pure.
    */
   cameraAngularFrequency: number;
   dt: number;
@@ -64,13 +57,8 @@ export interface PhysicsStepInput {
   /** True while the pointer is actively dragging — suppresses the elastic pan-bounds clamp (see `engine/camera.ts`). */
   isDragging: boolean;
   /**
-   * 3D dome view (2026-08-18) — the world bbox of the nodes actually **drawn**. The
-   * dome sits somewhere other than the 2D layout (its own projection centre and
-   * rotation pose), so anchoring the pan leash to the 2D `world.bounds` let the
-   * elastic clamp drag the camera towards the 2D centre on the first wheel-zoom or
-   * orbit frame, throwing the cursor anchor 175 world units off (measured). While the
-   * dome is on, the loop passes `DomeRuntime.drawnBounds`. null/omitted keeps the
-   * previous behaviour.
+   * World bbox of the nodes actually drawn. The dome has its own projection, so anchoring the pan leash
+   * to 2D `world.bounds` drags the camera off. Null/omitted uses the 2D bounds.
    */
   worldBoundsOverride?: { minX: number; minY: number; maxX: number; maxY: number } | null;
   /**
@@ -86,12 +74,8 @@ export interface PhysicsStepInput {
    */
   focusLeashPx?: FocusLeashPx | null;
   /**
-   * 3D dome view — overrides the camera's minimum zoom (`DomeRuntime.fitScale`). The
-   * dome's projected bbox is wider than the 2D spine bbox, so its fit zoom can sit
-   * below the 2D anchor-based minimum — without lowering the minimum the fit target
-   * becomes unreachable (target ≠ value) and the wheel anchor computes against a
-   * fictional target zoom, throwing the screen sideways (measured 175 units,
-   * 2026-08-18). null/omitted keeps the previous behaviour.
+   * Overrides the camera minimum zoom (`DomeRuntime.fitScale`): the dome fit can sit below the 2D
+   * minimum, which would make the fit target unreachable.
    */
   scaleMinOverride?: number | null;
   /**
@@ -101,31 +85,13 @@ export interface PhysicsStepInput {
    */
   reducedMotion: boolean;
   /**
-   * The ambient sleep factor, [0,1] (council "Workbench" P0, 2026-07-28).
-   *
-   * Multiplied into the phase-advance speed of the permanent comets. 1 = awake
-   * (identical to before), 0 = asleep. The ramp (1→0) is what keeps particles from
-   * **stopping dead** mid-orbit: they flow and then gradually come to rest, because a
-   * frozen particle reads as "is it broken?".
-   *
-   * Omitted means 1 (awake) — an existing caller or test that does not know this
-   * parameter behaves exactly as before.
+   * Ambient sleep factor in [0,1] multiplied into comet phase speed. The ramp keeps particles from
+   * stopping dead mid-orbit. Omitted means 1 (awake).
    */
   ambientFactor?: number;
   /**
-   * WCAG 2.2 §2.3.3 — the camera snap above is a **vestibular** mitigation, and
-   * the standard exempts motion the user themselves initiates (scrolling,
-   * panning, pinching). Wheel/drag/pinch are the hand's extension: snapping them
-   * teleports the entire viewport in one frame, which is *worse* for a
-   * vestibular-sensitive reader than the interpolated travel it replaced — every
-   * "where did I just go" cue is gone with it (2026-07-28 frame measurement:
-   * one frame of canvas delta, then 0.00 forever).
-   *
-   * So the reduced-motion snap is scoped to **app-initiated** camera moves (ego
-   * dive · fit · auto-arrange), which are the ones that move the world without
-   * being asked. Direct manipulation keeps its spring. Set by the pointer
-   * handlers on every gesture that writes `cameraTargetRef`, cleared by the
-   * programmatic camera setters. Ignored when `prefers-reduced-motion` is off.
+   * WCAG 2.2 2.3.3: the reduced-motion snap covers only app-initiated camera moves; hand-driven
+   * gestures keep their spring. Set by pointer handlers, cleared by programmatic camera setters.
    */
   userDrivenCamera?: boolean;
   /**
@@ -270,12 +236,8 @@ export function stepTopologyPhysics(input: PhysicsStepInput): PhysicsStepResult 
   const focusNode = focusedNodeId !== null && camera.scale.value > overviewScale
     ? world.nodeById.get(focusedNodeId)
     : undefined;
-  // Unfocused clamp source = the VISIBLE tier's bounds. At spine-only zoom the
-  // full-graph bounds cover the vast legal-but-empty de-pileup fan (only the
-  // ~8-node spine draws), so the elastic clamp would happily leave the camera
-  // stranded over nothing (owner's *"The canvas disappeared"*;
-  // QA loss A). Uses the pre-step camera scale — one frame of lag is imperceptible
-  // at spring speeds.
+  // Unfocused clamp uses the visible tier's bounds: at spine-only zoom the full-graph bounds include
+  // empty de-pileup space and would strand the camera. Uses the pre-step scale.
   const preStepZoomRatio = computeZoomRatio(camera.scale.value, overviewScale * tokens.overviewEntryRatio);
   // 3D dome — the leash anchor follows where the node is «drawn» (see the two
   // overrides' JSDoc above). The dome always draws every tier, so the override
@@ -328,9 +290,7 @@ export function stepTopologyPhysics(input: PhysicsStepInput): PhysicsStepResult 
 
   const activeEgoId = focusedNodeId ? null : hoveredNodeId;
   const neighborsOfFocused = focusedNodeId ? world.neighborMap.get(focusedNodeId) : undefined;
-  // Click-focus signature — the whole scene is "focused" if a node OR an
-  // edge-pair is selected. One shared gate so node-click and edge-click drive
-  // the same normal↔dim color ramp (owner headline motion).
+  // The scene is focused if a node or an edge pair is selected; one gate drives both color ramps.
   const focusActive = focusedNodeId !== null || pairFocusActive;
   if (focusActive || isDragging) settleTierAssembly(world);
   for (const node of world.nodes) {
@@ -363,12 +323,7 @@ export function stepTopologyPhysics(input: PhysicsStepInput): PhysicsStepResult 
     const isEgoMember =
       focusedNodeId !== null && (node.id === focusedNodeId || neighborsOfFocused?.has(node.id) === true);
     const previousReveal = egoRevealById.get(node.id) ?? 0;
-    // A6 — the ego reveal has its OWN taus (rise 0.22 / decay 0.12), no longer
-    // borrowing the hover ripple's (0.09/0.15). With the hover taus the
-    // children finished appearing at ~0.41s while the camera dive was still
-    // travelling until ~1.01s — content popped onto a moving camera. The
-    // slower rise lands the children WITH the camera; the fast decay is
-    // deliberate asymmetry (exits don't earn time).
+    // The ego reveal has its own taus so children land with the camera dive; the fast decay is deliberate.
     egoRevealById.set(
       node.id,
       reducedMotion
@@ -411,22 +366,15 @@ export function advanceTopologyComets(
   tokens: Pick<OntologyMapTokens, "edgePulseSpeed" | "edgePulseSpeedEgo">,
   ambientFactor: number | undefined,
 ): void {
-  // Prescription E: the focused node's capped incident `contains` edges advance like depends
-  // edges. The draw asks `selectEgoContainsComets` the same question and gets the same cached answer.
+  // The focused node's capped incident `contains` edges advance like depends edges; the draw asks
+  // `selectEgoContainsComets` and gets the same cached answer.
   const egoCometEdges: ReadonlySet<ParticleEdge> | null =
     focusedNodeId === null
       ? null
       : selectEgoContainsComets(world.edges, world.edgeIndexByNode.get(focusedNodeId)).edges;
 
-  // R6 permanent comets — the comet phase of `depends` edges always advances
-  // (`updateParticles`, the pure model `render/edge-fireflies.ts`). It flows on
-  // ambient (edgePulseSpeed) regardless of focus, while edges attached to the focus
-  // subgraph accelerate as "more current is flowing" (edgePulseSpeedEgo,
-  // `resolveEdgePulseSpeed`, lead spec §2). Under reduced-motion `updateParticles`
-  // skips the advance (still), which is what makes the idle gate hold.
-  // Ambient sleep (2026-07-28) — long after the user's hands leave, this factor ramps
-  // to 0 and the comets flow to a stop. While awake it is 1, so nothing differs from
-  // before by a single pixel.
+  // Comet phase of `depends` edges always advances; focus-subgraph edges use `edgePulseSpeedEgo`.
+  // Reduced motion skips the advance so the idle gate holds; `ambient` ramps it to 0 when asleep.
   const ambient = ambientFactor ?? 1;
   updateParticles(
     edges,

@@ -417,11 +417,8 @@ describe("OntologyMapDetailPanel — project source receipt", () => {
     expect(onProjectSourceAction).toHaveBeenCalledTimes(1);
     expect(action.className).toContain("--map-panel-primary-surface");
     /*
-     * **The prescription has to sit beside the diagnosis.** Measured 2026-08-04,
-     * these two were 393px apart with four action tiles and the evidence list in
-     * between. A unit test cannot measure pixel distance, so it pins **whether they
-     * share an ancestor** — if someone drops it back into the footer, this assertion
-     * breaks first.
+     * The remedy must share an ancestor with the receipt; jsdom cannot measure distance, so the shared
+     * ancestor is pinned.
      */
     const remedy = screen.getByTestId("map-project-source-remedy");
     expect(remedy).toContainElement(action);
@@ -577,7 +574,6 @@ describe("OntologyMapDetailPanel — project source receipt", () => {
     renderPanel(vi.fn(), undefined, {
       kind: "project",
       projectSource,
-      // Web: there is no execute callback. This position used to end at one grey sentence.
       projectSourceDegraded: {
         why: "A browser cannot tell where the folder sits on your disk.",
         ctaLabel: "Get the macOS app",
@@ -728,12 +724,6 @@ describe("OntologyMapDetailPanel — project source receipt", () => {
   });
 });
 
-/*
- * 2026-09-25 sweep: the project inspector opened in another layout while its receipt was read and
- * rebuilt itself 710 ms later — a block inserted above the buttons, the meta line rewritten, the
- * relations folded, the footer slug gone, every button pushed down. The layout now follows the
- * kind from the first frame, and the receipt's place is held while it is read.
- */
 describe("OntologyMapDetailPanel — project receipt still being read", () => {
   const gapView: ProjectSourceView = {
     contractVersion: 1,
@@ -868,12 +858,6 @@ describe("OntologyMapDetailPanel — full-detail A1 opt-in link", () => {
   });
 });
 
-// P3-③ (2026-07-21 retention round) — at 1440×900 a node with many connections
-// overflowed the panel content past the viewport, pushing the "Full Details →"
-// (full detail) footer off screen (y=911) and out of reach. The panel must always
-// scroll inside the viewport by itself — jsdom does no real layout, so the
-// regression is caught by checking that the clamp contract (a token-based
-// max-height plus internal overflow) is actually on the className.
 describe("OntologyMapDetailPanel — viewport clamp (P3-③)", () => {
   it("+N 은 죽은 수가 아니다 — 누르면 그 자리에서 전부 펼쳐지고, 다시 누르면 접힌다", () => {
     const many = Array.from({ length: 9 }, (_, i) => ({
@@ -906,12 +890,9 @@ describe("OntologyMapDetailPanel — viewport clamp (P3-③)", () => {
   it("always carries a viewport-bounded max-height and internal scroll so the footer link stays reachable", () => {
     renderPanel(vi.fn());
     const panel = screen.getByTestId("map-detail-panel");
-    // `--map-inspector-max-height`, not the shared panel ceiling. It aliases
-    // that ceiling at `lg` and above and diverges below it, where this surface is a
-    // bottom sheet capped so the map keeps its majority. The meaning editor shares
-    // this anchor and must keep the unclamped ceiling — it is a form, and 405px of
-    // it put its own textarea behind its own sticky footer at 600x900 (2026-09-05,
-    // `contextual-meaning-editor.spec.ts`).
+    // `--map-inspector-max-height`, not the shared panel ceiling: it diverges below `lg`, where this
+    // surface is a bottom sheet. The meaning editor shares this anchor and must keep the unclamped
+    // ceiling.
     expect(panel.className).toContain("max-h-[var(--map-inspector-max-height)]");
     expect(panel.className).toContain("overflow-y-auto");
     // The full-detail footer link is inside the same clamped/scrollable
@@ -936,12 +917,6 @@ describe("OntologyMapDetailPanel — 근거(evidence) group promotion (RATIO-SYS
     expect(screen.getByText("product-owner-operating-system")).toBeInTheDocument();
   });
 
-  // Toss C2 (2026-07-24) — the raw vault-path prefix (`row.path`) used to
-  // render as an always-visible mono span next to the title, opaque to a
-  // non-developer. It no longer renders in the visible DOM text; the row's
-  // link carries the full `row.id` slug as a native `title=` hover instead
-  // (information preserved, just no longer competing for first-read
-  // attention with the plain 「Evidence」 label).
   it("folds the evidence row's path behind a hover title instead of always-visible text", () => {
     renderPanel(undefined, {
       rows: [{ id: "capabilities/product-owner-operating-system", title: "product-owner-operating-system", path: "capabilities/" }],
@@ -982,8 +957,6 @@ describe("OntologyMapDetailPanel — 근거 evidence count (group only)", () => 
   });
 });
 
-// R+ 「Code location」 — the REAL code evidence (raw file paths),
-// distinct from the 「Evidence」 group above, a source-doc slug reference.
 describe("OntologyMapDetailPanel — 코드 위치 (code location) group", () => {
   it("renders a code-location row for each path when codeLocations is non-empty", () => {
     renderPanel(undefined, undefined, {
@@ -1016,11 +989,6 @@ describe("OntologyMapDetailPanel — 코드 위치 (code location) group", () =>
   });
 });
 
-// Toss C2 (2026-07-24) — the sticky footer used to show the FULL `slug`
-// (`ontology/capabilities/mcp-server`) always visible, mono/quaternary but
-// still raw and unreadable to a non-developer. It now shows only the last
-// path segment and folds the full slug behind a native `title=` hover — the
-// 「Full details →」 link already owns navigating to the full record.
 describe("OntologyMapDetailPanel — sticky 푸터 slug 평문화 (Toss C2)", () => {
   it("shows only the slug's last segment in visible text, with the full slug as a hover title", () => {
     render(
@@ -1189,11 +1157,6 @@ describe("OntologyMapDetailPanel — group count chips", () => {
   });
 });
 
-// Scope correction (2026-07-26) — 「Connected」 counts all four relation
-// buckets, and every bucket it counts is drawn. Only belongs to (incoming containment)
-// used to be missing, so a node with only a parent (221 of the dogfood vault's 294
-// = 75%) said 「Connected 0」 — with a clickable domain chip right above it. This
-// pins the screen against stating a verifiable falsehood.
 describe("OntologyMapDetailPanel — 부모만 있는 노드의 이어진 곳", () => {
   const parentRow = {
     id: "capability:frontmatter-to-ontology",
@@ -1593,7 +1556,6 @@ describe("OntologyMapDetailPanel — W2-A action row", () => {
   });
 });
 
-// rank7 (design-council B5) — last-edit provenance + expected_mtime conflict.
 describe("OntologyMapDetailPanel — last-edit provenance", () => {
   it("renders no subject row when lastEditSubject is null (no fabrication)", () => {
     renderPanel();
@@ -1630,10 +1592,6 @@ describe("OntologyMapDetailPanel — last-edit provenance", () => {
   });
 });
 
-// Mockup redesign (2026-07-24, owner-approved mockup-panel-detail) — a balanced
-// header (name hero + kind badge + domain chip), group headers with a direction
-// icon + count chip + underline, a kind glyph at each row's left, a quiet action
-// strip, and an indigo primary footer.
 describe("OntologyMapDetailPanel — 시안 재설계 구조", () => {
   it("renders the node name as the header hero (title2/650, truncatable)", () => {
     renderPanel();
@@ -1762,17 +1720,6 @@ describe("OntologyMapDetailPanel — 시안 재설계 구조", () => {
     expect(chip.querySelector("svg")).toBeNull();
   });
 
-  /**
-   * This panel **carries its own exit window** (2026-08-03). The parent used to
-   * open the window with `usePanelPresence` and only dictate the class through a
-   * `presence` prop — which made «does this surface have a way out» a fact living
-   * outside this file, and if the parent reverted to unmounting immediately nothing
-   * here could catch it.
-   *
-   * The contract HomePage leans on is exactly these two: it stays for the window's
-   * duration after closing, and it reports once when the window ends (that report
-   * takes down the positioner).
-   */
   it("닫아도 1프레임에 사라지지 않고, 퇴장이 끝나면 한 번 알린다", async () => {
     const onExited = vi.fn();
     const panel = (open: boolean) => (
@@ -1816,20 +1763,6 @@ describe("OntologyMapDetailPanel — 시안 재설계 구조", () => {
   });
 });
 
-/**
- * Hovering a row makes the map beside it point at that node (owner instruction,
- * 2026-08-17: *"Would it be possible to make each of these highlight and display
- * on the adjacent map when hovered? Currently, there is no response."* — hovering each of these should
- * make it glint on the map beside it; right now nothing responds).
- *
- * What is measured here is one thing: **which name goes out through which
- * callback.** The two row kinds use different namespaces — a relation row uses the
- * canvas node id and an evidence document row uses the vault slug. Merging the two
- * into one list once produced a dead feature that «had the wiring but caught no
- * name at all» (`chat-node-index.ts`), and this is precisely the check that was
- * missing then. Whether the map actually draws it is canvas and cannot be measured
- * here; `tests/e2e/datasheet-hover-map-brush.spec.ts` measures that in pixels.
- */
 describe("OntologyMapDetailPanel — 줄 호버가 지도로 나가는 통로", () => {
   const childRow = {
     id: "capability:cart",

@@ -50,7 +50,6 @@ export function LibraryMarkPopover({
   /** Whether the full neighbourhood list is shown rather than its first rows. */
   expanded: boolean;
   onExpand: () => void;
-  /** `Open` — the door that does what a press used to do, now named. */
   onOpen: () => void;
   /** A concept lives on the map, so its one door leaves for the map. */
   onOpenOnMap: (() => void) | null;

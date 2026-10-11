@@ -131,22 +131,9 @@ export function useTopologyCameraNavigation({
   }, [relayoutToken, fitViewToken, runOverviewFit, initialFitTokensRef]);
 
   /*
-   * The spotlight fit: the **moment** the recent-changes lens turns on or its
-   * window changes, aim the camera so every spotlit node is on screen.
-   *
-   * Owner report 2026-08-02: narrowing the window from 30 days to 1 dropped the
-   * spotlight from 15 nodes to 3 while **the view stayed put**, so nothing
-   * appeared to happen. Everywhere else — search selection, "View Only This" — the
-   * camera follows.
-   *
-   * It fits once when the token changes and never again after a pan or zoom, so
-   * it cannot take away a view the user set; with zero spotlit nodes it does
-   * not move at all.
-   *
-   * Returns `true` on success. The two failure reasons are deliberately
-   * distinct: "not ready yet" lets the caller record debt, "nothing to fit"
-   * ends there — debt recorded then could never be paid, and a session with no
-   * spotlit nodes would retry on every initialization.
+   * Spotlight fit: when the recent-changes lens turns on or its window changes, frame every spotlit
+   * node. Fits once per token, never after a pan or zoom; with no spotlit nodes it does not move.
+   * Returns `true` on success. "Not ready" lets the caller record debt; "nothing to fit" ends there.
    */
   const spotlightFitImplementation = (motion: SpotlightMotion = "tween"): boolean => {
     const ids = spotlightIdsRef.current;
@@ -172,13 +159,9 @@ export function useTopologyCameraNavigation({
     // collapsed cluster, say). With no bbox to fit, leave the camera alone —
     // and record no debt, because retrying gives the same result.
     if (hit === 0) return true;
-    // A path is read against the ring it sits in. Fitting the two endpoints
-    // alone put the camera at 1.55× the overview, and the rest of the spine
-    // overflowed: three domains under the toolbar, one off the canvas
-    // (measured 2026-09-19). The lens dims that ring now, so it is the frame
-    // the path wants, not a crop to cut away. The ring as drawn: a hub folded
-    // behind a crowded parent is not in it, unless the path itself runs
-    // through it, and then the path's own bbox above already holds it.
+    // A path is read against the ring it sits in; fitting only its endpoints crops the rest of the
+    // spine. The ring is as drawn: a hub folded behind a crowded parent counts only if the path
+    // runs through it.
     if (mapLensKindRef.current === "path") {
       const spine = computeDrawnSpineBounds(world, tokens, expandedParentsRef.current);
       if (spine.minX < minX) minX = spine.minX;
@@ -203,8 +186,8 @@ export function useTopologyCameraNavigation({
         width,
         height,
         { ...cameraTokens(tokens), overviewEntryRatio: 1 })
-      // Beside the panels, not on the raw viewport: the raw fit landed
-      // expand-all 116 px off the free centre (measured 2026-09-19).
+      // Fit beside the panels, not on the raw viewport, which would leave expand-all off the free
+      // centre.
       : computeLensFitTarget(focusBounds, width, height, cameraTokens(tokens));
     if (constellationFocusId !== null && constellationCameraRef.current === null) {
       constellationCameraRef.current = {

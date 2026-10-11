@@ -14,12 +14,8 @@ import { collectHoverAvoidRects, type PointerHitTests } from "./topology-pointer
 import type { TopologyPointerHandlers } from "./topology-pointer-types";
 
 /**
- * Sim warmth topped up while a node is actively pin-dragged, in MILLISECONDS
- * (kept warm so neighbors keep reflowing). A4: heat used to be a frame count,
- * which made the same gesture settle twice as fast on a 120Hz display as on a
- * 60Hz one — time budgets are refresh-rate invariant. 350ms ≈ the old
- * 20-frame top-up at 60Hz. The release settle budget is the
- * `--map-node-release-settle-ms` token (900).
+ * Sim warmth topped up during a node pin-drag, in milliseconds so settling is refresh-rate invariant.
+ * The release settle budget is the `--map-node-release-settle-ms` token.
  */
 const NODE_DRAG_HEAT_MS = 350;
 
@@ -224,14 +220,8 @@ export function createPointerMoveHandler(
     // can read it"; the root of the user report "With a node clicked, the edge hover tooltip does not appear"). The
     // candidates already reflect the focus tier's hit rules via buildEdgeCandidates.
     const hitNodeId = hitVisibleNode(world, cameraRef.current, tokens, point.x, point.y);
-    // P3c — proximity to an edge at a node-miss point is a hover microcard. It fires
-    // only when the identity changes (moving along the same edge does not re-fire, so
-    // the card is stable). Moving onto a node clears the edge hover immediately (the
-    // node wins).
-    // The edge hit is also used for the cursor decision, so it is computed **outside**
-    // the hover block below — if the cursor affordance rode on the edge-hover wiring
-    // (`hoveredEdgeRef && onHoverEdge`), a consumer without that wiring would get no
-    // cursor at all (2026-07-28: it really was inside that guard).
+    // Edge proximity at a node-miss point is a hover card, firing only when the edge identity changes;
+    // a node hit clears it. Computed outside the hover block because the cursor decision also uses it.
     const edgeHit = hitNodeId === null && hoveredEdgeRef && onHoverEdge
       ? hitTestEdges(buildEdgeCandidates(), point.x, point.y, 6)
       : null;
@@ -261,24 +251,8 @@ export function createPointerMoveHandler(
           : null);
       }
     }
-    // Cursor affordance — **each surface shows its own primary action** (design
-    // council "Interaction" prescription plus a measured correction, 2026-07-28).
-    //
-    // Before: node = `grab`, edge = `pointer`, **background = nothing**. The node's
-    // `grab` was not a lie (it really does pin-drag). The real defect was the
-    // background — **it is pannable and offered no affordance at all** (measured: the
-    // background hover cursor was `auto`). So nobody was told "you can push this map",
-    // while the grabbing hand appeared only over nodes, which cannot be pushed.
-    //
-    // Now it splits by primary action:
-    // - node, edge, chip → `pointer` (press and it opens — the action the hint bar names)
-    // - background → `grab` (push and the map follows), `grabbing` while pushing
-    // Node dragging still works and still answers with `grabbing` — as an enhancement
-    // it yields the affordance in the primary position (the council's ruling being that
-    // it belongs to the class where drag-only discovery is acceptable).
-    //
-    // That this assignment sits **outside** the hover block above is also contractual —
-    // inside it, a consumer with no edge-hover wiring would get no cursor at all.
+    // Cursor follows each surface's primary action: node, edge, chip use `pointer`; background `grab`.
+    // Assigned outside the hover block so a consumer without edge-hover wiring still gets a cursor.
     e.currentTarget.style.cursor =
       hitNodeId !== null || edgeHit !== null ? "pointer" : "grab";
     // Density gate — cluster chip hover: cursor pointer plus a border emphasis mirror

@@ -18,11 +18,7 @@ import type { HoverAvoidRect } from "./topology-pointer-types";
 
 /** How far around the pointer drawn nodes and names are collected for the card to avoid. */
 const HOVER_AVOID_REACH_PX = 420;
-/**
- * Breathing room around each disc and name. "Clear" means visibly clear, not
- * touching: without it the card's edge sat 1 px inside a disc's ring and the
- * placement still counted the corner as free (measured 2026-09-19).
- */
+/** Breathing room around each disc and name so "clear" means visibly clear, not touching. */
 const HOVER_AVOID_MARGIN_PX = 6;
 
 /**
@@ -238,23 +234,8 @@ export function createPointerHitTests(ctx: PointerContext) {
   };
 
   /**
-   * The candidate cache — **the same input is never rebuilt** (code review fix,
-   * 2026-07-28).
-   *
-   * This function filters every node (O(N)), projects every edge (O(E), three
-   * coordinate transforms and two Map lookups per edge) and allocates whole arrays.
-   * And its call site is **every `pointermove` that missed a node** — up to ~125Hz.
-   * Simply moving the mouse over the background walks the entire graph and allocates
-   * new arrays every frame. The 97-node dogfood does not show it, but this engine is
-   * designed for 2–3k nodes.
-   *
-   * Yet most of those frames have **the same input** — with the camera still, the
-   * candidates are unchanged. So it rebuilds only when at least one input differs.
-   * During a pan or zoom the camera values differ every frame, so it naturally
-   * recomputes each time (accuracy first there), and hovering while still is all
-   * cache hits after the first frame.
-   *
-   * The key holds the `world` reference, so a changed graph invalidates immediately.
+   * Candidate cache: rebuilt only when an input differs. The call site is every `pointermove` that
+   * missed a node; with the camera still the candidates are unchanged. The key holds `world`.
    */
   let edgeCandidateCache: {
     key: string;

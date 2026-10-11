@@ -4,16 +4,9 @@ import { HEX_TYPE, type HexBand, type HexMeasure, type HexTextRole } from "../mo
 export type HexEvidenceState = "current" | "stale" | "unknown";
 
 /*
- * ⚠️ **Names are measured in the face the page ships, not in whatever the platform has**
- * (2026-09-25). The board's names band starts at the smallest cell every name fits
- * (`minNamesRadius`), so the font decides whether a board opens named. With a macOS-only stack
- * (`-apple-system, 'Apple SD Gothic Neo'`) every other platform fell to its own `sans-serif`:
- * on the Linux CI runner the dogfood vault's widest name needed R 48 where macOS needed 46, and
- * the same board at 1280 opened as pips there (R 47) while it opened named on the Mac that
- * proved it. The product's own Pretendard is self-hosted and measured within a pixel of the
- * Apple stack (125 vs 126 px for the widest dogfood name), so the band is the same on macOS,
- * Linux and the Windows beta. The system stack stays behind it for the frames before the
- * webfont arrives; the board re-measures once it has (`useHexFontsReady`).
+ * Names are measured in the face the page ships (self-hosted Pretendard), not the platform
+ * font, so the names band (`minNamesRadius`) is the same on macOS, Linux and Windows. The system
+ * stack covers frames before the webfont arrives; the board re-measures then (`useHexFontsReady`).
  */
 const SYSTEM_FAMILY = "-apple-system, 'SF Pro Text', 'Apple SD Gothic Neo', sans-serif";
 const MONO = "ui-monospace, 'SF Mono', Menlo, monospace";

@@ -120,17 +120,9 @@ export function useTopologyObserverBindings({ onGrowthReplayingChangeRef,
   useEffect(() => {
     focusedSlugRef.current = focusedSlug;
     /*
-     * The hover ref is cleared on every focus transition (bug sweep
-     * 2026-09-01). The pointermove handler early-returns while a node is
-     * focused, so the id captured at click time froze in this ref: the idle
-     * gate read it as "interaction in progress" every frame and the ambient
-     * sleep never engaged — a full-frame 60fps repaint for as long as the
-     * mouse rested over the canvas (~130ms/s at 2k nodes). And deselecting via
-     * Escape or the panel close without moving the mouse let the frame
-     * resolver revive the stale id as a live hover ring on the
-     * previously-clicked node. A fresh pointermove after deselect re-derives
-     * the real hover.
-    */
+     * The hover ref is cleared on every focus transition: pointermove returns early while focused, so a
+     * stale id would block ambient sleep and revive as a hover ring after deselect.
+     */
     hoveredNodeIdRef.current = null;
     if (hoveredEdgeRef.current !== null) {
       hoveredEdgeRef.current = null;

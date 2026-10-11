@@ -207,10 +207,6 @@ export function createPresentationFrameStage({ domeRuntimeRef,
   hiddenDependenciesSentRef,
   flatDialRef,
 }: Dependencies) {
-  /*
-   * Lit 3D (2026-09-25) — the stage buffers and parsed inks live for the stage's lifetime;
-   * the inks are re-parsed only when the token strings change.
-   */
   const strataStage = createStrataStage();
   let litInkKey = "";
   let litInks: Pick<DomeLightFrame, "kindRgb" | "warningRgb" | "focusRgb"> | null = null;
@@ -291,19 +287,8 @@ export function createPresentationFrameStage({ domeRuntimeRef,
         // hit in lockstep.
         realmTierKindsRef.current = realmTierKinds;
         /*
-         * Footprint trail: this frame's visit ordinal per node, starting at 1. The array is
-         * short (≤30), so recomputing it per frame costs nothing.
-         *
-         * ⚠️ **The focused node used to be deleted from this map and is not any more.** The
-         * reason it was — "the selection ring already holds that position" — was true of a
-         * shoe print, which sat *beside* the node in the ring's own orbit. Since 2026-09-10 the
-         * mark is the node emitting, and the two occupy different geometry: the ring strokes
-         * the silhouette and the r+6 hairline, the star throws light outward from it. Keeping
-         * the deletion after that cost the walk its last stop — usually the node the person had
-         * just clicked — so the end of the path was a hole, and the "here is where the walk
-         * ends" cross could almost never draw because the star it rides on was missing.
-         * `frame-draw/node-visual` separates the two by ink instead: indigo on the focused node,
-         * star ink on the rest.
+         * Visit ordinal per node for the footprint trail. The focused node stays in the map: the mark emits
+         * light outward, so it does not collide with the selection ring.
          */
         const footprintStepsById = buildFootprintSteps(visitedTrailRef.current);
         // A longer trail stamps the arrival motion's start time; a shorter one
@@ -332,18 +317,8 @@ export function createPresentationFrameStage({ domeRuntimeRef,
             speedPxPerMs: tokens.spotlightRingSpeed,
         });
         /*
-         * Trail lens on/off ramp, reusing the same easing and token. Reduced-motion arrives
-         * immediately — same contract as the spotlight.
-         *
-         * ⚠️ **The clock outlives the close, and that is the whole fix for the interruption
-         * flash.** It used to zero on the closing frame, which made `sweep` fall back to its
-         * default of 1 for every star the ignition had not reached yet — so closing the lens
-         * *mid-sweep* lit the entire constellation for the two or three frames the ramp took to
-         * fade it. design-motion recorded it: a star jumped 28.2 → 42.6 luminance in one 33 ms
-         * frame, **+51%**, on the way out (2026-09-10). Holding the clock until the ramp is
-         * spent lets an interrupted open fade from wherever the sweep actually got to, which is
-         * the difference between a transition that can be interrupted and one that must be
-         * waited out.
+         * The trail lens clock outlives the close so an interrupted open fades from where the sweep got to
+         * instead of lighting every star. Reduced motion arrives immediately.
          */
         if (trailLensActive && trailLensOpenedAtRef.current === 0)
             trailLensOpenedAtRef.current = now;
@@ -364,14 +339,8 @@ export function createPresentationFrameStage({ domeRuntimeRef,
         }
         if (reducedMotionRef.current) {
             /*
-             * ⚠️ **Reduced motion asked for no travel, not for a cut.** This used to be
-             * `trailLensActive ? 1 : 0`, and design-motion measured the result: the constellation
-             * went 22.25 → 51.9 luminance **in one 33 ms frame** (2026-09-10). Everything the
-             * preference is actually for is still suppressed — the ignition sweep, the twinkle,
-             * the travelling light — and none of them comes back here. What comes back is an
-             * opacity crossfade over `--motion-settle`, which carries no position, no scale and
-             * no vestibular signal; it is the same fade a `prefers-reduced-motion` stylesheet
-             * would leave in place of a slide.
+             * Reduced motion gets an opacity crossfade, not a cut: it carries no position or scale, so no
+             * vestibular signal.
              */
             const stepPerMs = 1 / Math.max(1, tokens.trailReducedFadeMs);
             const target = trailLensActive ? 1 : 0;
@@ -425,8 +394,6 @@ export function createPresentationFrameStage({ domeRuntimeRef,
             tokens,
             focusedNodeId,
             hoveredNodeId,
-            // Press (2026-09-08): when this hover began, so the draw can run the
-            // underdamped step response from that instant.
             hoverStartedAt: (() => {
                 if (hoverStartRef.current.id !== hoveredNodeId) {
                     hoverReleasedRef.current = hoverStartRef.current.id;
@@ -530,12 +497,8 @@ export function createPresentationFrameStage({ domeRuntimeRef,
         // Record which lens state this frame drew; the idle gate compares
         // against it next frame to decide whether the lens changed.
         drawnTrailLensRef.current = trailLensActive;
-        // Guided-tour spotlight ring, drawn by the engine onto the frame rather
-        // than as an overlay DOM circle. Owner bug report 2026-07-24: the DOM
-        // circle was slightly offset and a slightly different shape from the
-        // node, so it looked misaligned. Using the same `worldToScreen` in the
-        // same frame makes agreement with the drawn node structural. The scrim
-        // cutout stays with the GuidedTourOverlay.
+        // Spotlight ring is drawn by the engine with the same `worldToScreen` as the node so they align;
+        // the scrim cutout stays with the GuidedTourOverlay.
         {
             const anchorId = tourAnchorNodeIdRef.current;
             const node = anchorId ? world.nodeById.get(anchorId) : undefined;

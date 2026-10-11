@@ -123,14 +123,8 @@ export function createClusterFrameStage(sources: ClusterFrameStageSources) {
 
   function foldClusters(now: number, tokens: OntologyMapTokens, world: TopologyWorld): ClusterStructure {
     const liveRealmRootId = realmDataRef.current?.rootId ?? null;
-    // Owner bug report 2026-07-23 (a capability realm rendered as an empty
-    // ring): treating only the root as expanded is not enough. If the root is
-    // itself a child the outer density gate collapsed — a capability under a
-    // domain with 28 of them, say — the root and every member land in
-    // clusteredIds and the realm looks empty. So the root's whole `contains`
-    // ancestor chain is treated as expanded and the outer gate cannot hide
-    // the realm's interior. The ancestors' other children are hard-culled as
-    // realm outsiders anyway.
+    // Treat the realm root's whole `contains` ancestor chain as expanded; otherwise the outer density
+    // gate can collapse the root and the realm renders empty.
     let effectiveExpanded: ReadonlySet<string> = expandedParentsRef.current;
     if (liveRealmRootId) {
       // The ancestor chain is computed once per rootId and cached.
@@ -177,12 +171,8 @@ export function createClusterFrameStage(sources: ClusterFrameStageSources) {
     // `ego: true`, riding the same render and hit paths. Session-only state.
     let frameClusteredIds: ReadonlySet<string> = clusterState.clusteredIds;
     let egoHiddenCount = 0;
-    // While a realm is active, un-collapse members held by an **outside**
-    // parent's density gate — the case where a shared element's primary owner
-    // is a capability outside the realm. Gates from parents inside the realm
-    // (the internal +N chips) are kept. This must match
-    // `realmVisibleBounds`'s visible-member rule, or the warding ring and
-    // framing diverge from what is drawn.
+    // While a realm is active, un-collapse members held by an outside parent's density gate. Must match
+    // `realmVisibleBounds`'s visible-member rule or the warding ring and framing diverge from the draw.
     if (liveRealmRootId && realmDataRef.current) {
       const memberIds = realmDataRef.current.memberIds;
       let needsFilter = false;
