@@ -1,7 +1,7 @@
 /**
  * The Library canvas's inspection window, declared once.
  *
- * `use-library-graph-engine.ts` mounts `window.__atlasLibraryGraph` when the route carries
+ * `mountLibraryGraphProbe` mounts `window.__atlasLibraryGraph` when the route carries
  * `e2e`, and two specs read it. While each declared the shape for itself, adding a getter
  * for one of them made the other's declaration a different type for the same global, which
  * TypeScript rejects outright — so the shape lives here and both import it.

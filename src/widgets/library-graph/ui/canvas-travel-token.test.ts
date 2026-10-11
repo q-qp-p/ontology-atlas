@@ -32,7 +32,7 @@ describe("the library graph's clocks", () => {
   });
 
   it("still reads them by name, and falls back only to the gated JS mirror", () => {
-    const engine = read("src/widgets/library-graph/ui/use-library-graph-engine.ts");
+    const engine = read("src/widgets/library-graph/ui/library-graph-engine/picture-sync.ts");
     expect(engine).toContain('"--motion-fast"');
     expect(engine).toContain('"--motion-base"');
     // A literal duration in the engine would be the drift this arrangement exists to avoid.

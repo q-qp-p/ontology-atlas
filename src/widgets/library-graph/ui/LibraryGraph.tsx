@@ -27,7 +27,8 @@ import {
   type LibraryGraphCardSide,
 } from "../model/library-graph-card";
 import { LibraryMarkPopover } from "./LibraryMarkPopover";
-import { useLibraryGraphEngine, type LibraryGraphCardBox, type LibraryIslandPick } from "./use-library-graph-engine";
+import type { LibraryGraphCardBox, LibraryIslandPick } from "./library-graph-engine/engine-types";
+import { useLibraryGraphEngine } from "./use-library-graph-engine";
 
 /**
  * The library's graph: the paper trail under the ontology (which file was read, what was

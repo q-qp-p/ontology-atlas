@@ -3,78 +3,52 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 
 import { MOTION } from "@/shared/motion";
-import type { LibraryWorkActivity, LibraryWorkEvent } from "@/features/library";
+import type { LibraryWorkActivity } from "@/features/library";
 
 import type { LibraryGraph, LibraryGraphNode } from "../model/build-library-graph";
 import {
   libraryGraphFlowEdges,
-  libraryGraphStaleEdges,
   placeLibraryGraphCard,
   LIBRARY_CARD_MAX_WIDTH,
-  type LibraryGraphCardSide,
 } from "../model/library-graph-card";
-import { maxOf } from "../model/library-graph-extremes";
-import { easeMotion, type LayoutPoint } from "../model/library-graph-layout";
-import type { FlowLayout, FlowWorld } from "../model/library-flow-layout";
-import { ISLANDS_MIN_MARKS, type IslandsLayout } from "../model/library-islands-layout";
+import type { LayoutPoint } from "../model/library-graph-layout";
+import type { FlowLayout } from "../model/library-flow-layout";
+import type { IslandsLayout } from "../model/library-islands-layout";
+import type { IslandField } from "../model/library-islands-physics";
+import { librarySimulationBounds, type LibrarySimulation } from "../model/library-force-simulation";
 import {
-  createIslandField,
-  isIslandFieldMoving,
-  islandArrival,
-  pinIsland,
-  releaseIsland,
-  settleIslandField,
-  stepIslandField,
-  type IslandField,
-} from "../model/library-islands-physics";
-import {
-  applyLibraryFlowLayout,
-  applyLibraryIslandsLayout,
-  createLibrarySimulation,
-  hasPinnedNode,
-  isLibrarySimulationRunning,
-  LIBRARY_FIT_PADDING,
-  libraryPositions,
-  libraryMarkRadii,
-  librarySimulationBounds,
-  pinLibraryNode,
-  reheatLibrarySimulation,
-  releaseLibraryNode,
-  resizeLibrarySimulation,
-  settleLibrarySimulation,
-  stepLibrarySimulation,
-  syncLibrarySimulation,
-  type LibrarySimulation,
-} from "../model/library-force-simulation";
-import {
-  createProjectedPositions,
-  fitView,
-  isSameView,
-  isWheelZoomIntent,
   LIBRARY_ZOOM_MAX,
-  LIBRARY_ZOOM_MIN,
-  libraryZoomMax,
-  panView,
-  scaleBounds,
-  screenToWorld,
-  SOURCE_LABEL_MIN_SCALE,
   WIDEST_MARK_WORLD_RADIUS,
-  wheelPixelDelta,
-  wheelZoomFactor,
-  worldToScreen,
-  zoomViewAbout,
   type LibraryGraphView,
   type LibraryPositionLookup,
 } from "../model/library-graph-view";
 import {
-  drawLibraryGraph,
   hitTestLibraryGraph,
-  type LibraryGraphActivityMark,
-  type LibraryGraphFlow,
   type LibraryGraphLabelBox,
   type LibraryGraphGeometry,
 } from "../render/draw-library-graph";
-import { readLibraryGraphInk, type LibraryGraphInk } from "../render/library-graph-ink";
+import type { LibraryGraphInk } from "../render/library-graph-ink";
+
+import type {
+  LibraryGraphCardBox,
+  LibraryGraphEngine,
+  LibraryIslandPick,
+  PointerState,
+} from "./library-graph-engine/engine-types";
+import { activitySignature } from "./library-graph-engine/activity-marks";
+import { paintLibraryGraphFrame } from "./library-graph-engine/paint-frame";
+import { stepLibraryGraphFrame } from "./library-graph-engine/step-frame";
+import {
+  observeLibraryGraphBox,
+  syncLibraryGraphPicture,
+} from "./library-graph-engine/picture-sync";
+import {
+  attachLibraryGraphWheel,
+  finishLibraryGraphGesture,
+  moveLibraryGraphPointer,
+  pressLibraryGraphPointer,
+} from "./library-graph-engine/pointer-gestures";
+import { mountLibraryGraphProbe } from "./library-graph-engine/inspection-probe";
 
 /**
  * The library canvas's clock, pointer and paint, kept apart from `LibraryGraph.tsx` so the
@@ -96,269 +70,13 @@ import { readLibraryGraphInk, type LibraryGraphInk } from "../render/library-gra
  */
 
 /**
- * Travel before a press becomes a drag: the map's measured `--map-hysteresis-px`, as a
- * literal because that token is scoped to the topology surface.
- */
-const DRAG_THRESHOLD_PX = 7;
-
-/** What the fit reserves on every side, in CSS px; constant, so one folder has one framing. */
-const FIT_PADDING = LIBRARY_FIT_PADDING;
-/**
- * The flow layout's world: the padded pixel box seen through the zoom ceiling, shrunk a
- * little so a small folder's fit lands on the ceiling (`LIBRARY_MAX_MARK_PX`).
- */
-function flowWorld(box: { width: number; height: number }, ceiling: number): FlowWorld {
-  const shrink = 0.9;
-  return {
-    width: Math.max(1, ((box.width - FIT_PADDING * 2) / ceiling) * shrink),
-    height: Math.max(1, ((box.height - FIT_PADDING * 2) / ceiling) * shrink),
-    ceiling,
-  };
-}
-/** The islands overview's world: the padded box shrunk a little, so the fit lands at 1:1. */
-function islandsWorld(box: { width: number; height: number }): { width: number; height: number } {
-  const shrink = 0.94;
-  return {
-    width: Math.max(1, (box.width - FIT_PADDING * 2) * shrink),
-    height: Math.max(1, (box.height - FIT_PADDING * 2) * shrink),
-  };
-}
-/** The island under a canvas point on the overview; null off every island. */
-function islandAt(
-  islands: IslandsLayout["islands"] | undefined,
-  view: LibraryGraphView,
-  box: { width: number; height: number },
-  point: LayoutPoint,
-): IslandsLayout["islands"][number] | null {
-  if (!islands) return null;
-  const world = screenToWorld(point, view, box);
-  return (
-    islands.find((island) =>
-      island.band
-        ? Math.abs(world.x - island.x) <= island.band.width / 2 && Math.abs(world.y - island.y) <= island.band.height / 2
-        : Math.hypot(world.x - island.x, world.y - island.y) <= island.r,
-    ) ?? null
-  );
-}
-/**
- * Writes island bodies back onto the picture: each island's centre, and each dot at its
- * offset, since the simulation's nodes are the position store every frame reads.
- */
-function placeIslandBodies(
-  sim: LibrarySimulation,
-  field: IslandField,
-  layout: IslandsLayout | null = null,
-  offsets: ReadonlyMap<string, { island: string; dx: number; dy: number }> | null = null,
-): void {
-  const byId = new Map(field.bodies.map((body) => [body.id, body]));
-  if (layout) {
-    for (const island of layout.islands) {
-      const body = byId.get(island.id);
-      if (!body) continue;
-      island.x = body.x;
-      island.y = body.y;
-    }
-  }
-  if (!offsets) return;
-  for (const node of sim.nodes) {
-    const offset = offsets.get(node.id);
-    if (!offset) continue;
-    const body = byId.get(offset.island);
-    if (!body) continue;
-    node.x = body.x + offset.dx;
-    node.y = body.y + offset.dy;
-  }
-}
-/** On the overview a page's name stands once its dot is this wide on screen. */
-const ISLAND_PAGE_LABEL_MIN_PX = 10;
-/** On the overview a file's name waits for a real zoom: a page dot this wide, not merely named. */
-const ISLAND_SOURCE_LABEL_MIN_PX = 36;
-/**
- * An island spanning this share of the view's shorter side has been zoomed into and opens;
- * a small island opens when aimed at from the zoom ceiling instead.
- */
-const ISLAND_OPENS_AT_VIEW_SHARE = 0.45;
-/** An opened island zoomed out to this share of its fit scale gives way to the map. */
-const ISLAND_LEAVES_BELOW_FIT = 0.6;
-/**
- * After a wheel-out returns the map, further wheel-out of the same stream is ignored this
- * long, or it zooms the map past its fit into a small archipelago; wheel-in, press and drag
- * still act at once.
- */
-const WHEEL_RETURN_SETTLE_MS = 700;
-/**
  * On the overview a dot takes a press only once its radius is this, on screen: a 16px
  * mark is a target, a 4px one is texture and the island under it is what the press means.
  */
 const ISLAND_DOT_PRESS_MIN_PX = 8;
 
-/**
- * A folded file band (`FlowColumn.grid` above one) names its files only this far past the
- * source threshold: 24px squares leave no room for a name until about 60px a row.
- */
-const FOLDED_LABEL_MIN_SCALE = SOURCE_LABEL_MIN_SCALE * 3.5;
-
-/** How fast an auto-fitting view catches up with the settling picture, per frame. */
-const AUTO_FIT_FOLLOW = 0.16;
-
-/** Trailing window over which a release's speed is measured, in milliseconds. */
-const RELEASE_WINDOW_MS = 80;
-
 /** Touch reach around a mark, in CSS px. Half of `--touch-target-min` (44) is the floor. */
 const COARSE_HIT_REACH = 18;
-
-/** One shared empty set, so a resting frame allocates nothing for a motion it is not making. */
-const EMPTY_EDGE_SET: ReadonlySet<string> = new Set<string>();
-
-type PointerPhase = "idle" | "pressed" | "dragging";
-
-interface PointerState {
-  phase: PointerPhase;
-  pointerId: number | null;
-  down: LayoutPoint | null;
-  last: LayoutPoint | null;
-  /** What was under the pointer when it went down. Cleared the moment a drag starts. */
-  pressedNodeId: string | null;
-  /** Non-null while a mark is being carried; the offset keeps the grab point under the hand. */
-  drag: { nodeId: string; offset: LayoutPoint } | null;
-  /** Non-null while an island of the overview is being carried, with its own grab offset. */
-  islandDrag: { id: string; offset: LayoutPoint } | null;
-  history: Array<{ x: number; y: number; t: number }>;
-}
-
-/**
- * Maps a Library work target to an existing page or source node, stricter than a label
- * match, or a model's mention would look like a file read.
- */
-function activityNodeId(event: LibraryWorkEvent, graph: LibraryGraph): string | null {
-  if (!event.target) return null;
-  const nodeId = event.target.kind === "source" ? `source:${event.target.ref}` : `page:${event.target.ref}`;
-  return graph.nodes.some((node) => node.id === nodeId) ? nodeId : null;
-}
-
-/**
- * Resolves the finite overlay from epoch receipts, apart from the rAF clock. Each `at`
- * is an epoch `Date.now()`, or every receipt reads as fresh after a reload.
- */
-export function libraryGraphActivityMarks(
-  activity: LibraryWorkActivity | undefined,
-  graph: LibraryGraph,
-  nowEpochMs: number,
-  trailMs: number,
-  activeCycleMs: number,
-  reducedMotion: boolean,
-): LibraryGraphActivityMark[] {
-  if (!activity) return [];
-  const marks: LibraryGraphActivityMark[] = [];
-  const occupied = new Set<string>();
-  const append = (event: LibraryWorkEvent): void => {
-    const nodeId = activityNodeId(event, graph);
-    if (!nodeId || occupied.has(nodeId)) return;
-    occupied.add(nodeId);
-    const moves = !reducedMotion && (event.kind === "read" || event.kind === "proposal");
-    marks.push({
-      nodeId,
-      kind: event.kind,
-      phase: event.phase,
-      progress: 0,
-      turn: moves ? (Math.max(0, nowEpochMs - event.at) % Math.max(1, activeCycleMs)) / Math.max(1, activeCycleMs) : 0,
-    });
-  };
-
-  if (activity.isActive && activity.current?.phase === "active") append(activity.current);
-
-  for (const event of activity.recent) {
-    if (event.phase !== "complete" || event.kind === "waiting") continue;
-    const elapsed = Math.max(0, nowEpochMs - event.at);
-    if (elapsed >= trailMs) continue;
-    const nodeId = activityNodeId(event, graph);
-    if (!nodeId || occupied.has(nodeId)) continue;
-    occupied.add(nodeId);
-    marks.push({
-      nodeId,
-      kind: event.kind,
-      phase: "complete",
-      // Reduced motion receives the settled mark in its single paint, never a frame loop.
-      progress: reducedMotion ? 1 : elapsed / Math.max(1, trailMs),
-      settled: reducedMotion,
-    });
-  }
-  return marks;
-}
-
-/** Only completed receipts can keep the canvas clock awake; a pending wait is intentionally still. */
-function hasActivityTrail(
-  activity: LibraryWorkActivity | undefined,
-  graph: LibraryGraph,
-  nowEpochMs: number,
-  trailMs: number,
-  activeCycleMs: number,
-  reducedMotion: boolean,
-): boolean {
-  if (reducedMotion) return false;
-  return libraryGraphActivityMarks(activity, graph, nowEpochMs, trailMs, activeCycleMs, false).some(
-    (mark) => mark.phase === "complete" || (mark.phase === "active" && (mark.kind === "read" || mark.kind === "proposal")),
-  );
-}
-
-/** A primitive dependency: unrelated parent renders must not wake a settled canvas. */
-function activitySignature(activity: LibraryWorkActivity | undefined): string {
-  if (!activity) return "";
-  const event = (value: LibraryWorkEvent | null): string =>
-    value
-      ? `${value.id}:${value.kind}:${value.phase}:${value.target?.kind ?? ""}:${value.target?.ref ?? ""}:${value.at}`
-      : "";
-  return `${activity.isActive ? "1" : "0"}|${event(activity.current)}|${activity.recent.map(event).join(",")}`;
-}
-
-/** Where the open card stands, for the surface to read and for a gate to measure. */
-export interface LibraryGraphCardBox {
-  nodeId: string;
-  left: number;
-  top: number;
-  side: LibraryGraphCardSide;
-  width: number;
-  /** The tallest it may be here; past that it scrolls inside. */
-  maxHeight: number;
-  /** The mark the card is hung from, in canvas CSS pixels. */
-  mark: { x: number; y: number; radius: number };
-}
-
-/** An island a press picked: what it stands for and who is on it. */
-export interface LibraryIslandPick {
-  id: string;
-  kind: "concept" | "folder" | "unsorted" | "unread";
-  label: string;
-  conceptId: string | null;
-  pages: readonly string[];
-  sources: readonly string[];
-}
-
-export interface LibraryGraphEngine {
-  onPointerDown: (event: ReactPointerEvent<HTMLCanvasElement>) => void;
-  onPointerMove: (event: ReactPointerEvent<HTMLCanvasElement>) => void;
-  onPointerUp: (event: ReactPointerEvent<HTMLCanvasElement>) => void;
-  onPointerCancel: (event: ReactPointerEvent<HTMLCanvasElement>) => void;
-  onPointerLeave: () => void;
-  onDoubleClick: (event: ReactPointerEvent<HTMLCanvasElement>) => void;
-  /** Frames the whole picture again. The corner control and a double-click both call it. */
-  fitToView: () => void;
-  /** Whether the camera already sits where {@link LibraryGraphEngine.fitToView} would put it (`isSameView`). */
-  framed: boolean;
-  /** The settled picture's width over its height, for `data-picture-aspect`. */
-  pictureAspect: number | null;
-  /** The picture the folder got: `flow` names everything, `islands` is the overview past `ISLANDS_MIN_MARKS`. */
-  picture: "flow" | "force" | "islands";
-  /** The islands of the overview, largest first, for the keyboard to step over; empty on any other picture. */
-  islands: readonly LibraryIslandPick[];
-  /**
-   * The marks in reading order, column by column, top to bottom, for the keyboard; empty
-   * without columns, and the caller falls back to graph order.
-   */
-  walkOrder: readonly string[];
-  /** Places the open card synchronously; a layout effect passes the id, since the state ref fills later. */
-  placeCard: (openNow?: string | null) => void;
-}
 
 export function useLibraryGraphEngine({
   graph,
@@ -703,370 +421,15 @@ export function useLibraryGraphEngine({
 
   const paint = useCallback(
     (now: number) => {
-      const canvas = canvasRef.current;
-      const sim = simRef.current;
-      if (!canvas || !sim) return;
-      /*
-       * Resolved from the canvas and cached. A throw means `app/globals.css` lacks the palette;
-       * it propagates rather than falling back to a colourless default.
-       */
-      inkRef.current ??= readLibraryGraphInk(canvas);
-      const context = canvas.getContext("2d", { alpha: false });
-      if (!context) return;
-      const startedAt = performance.now();
-
-      /*
-       * The backing store is resized in the frame, never in the ResizeObserver: writing the
-       * canvas width clears the bitmap, and an observer runs after rAF, so it ships a blank frame.
-       */
-      const pending = pendingBoxRef.current;
-      if (pending) {
-        boxRef.current = pending;
-        pendingBoxRef.current = null;
-      }
-      const { width, height, dpr } = boxRef.current;
-      if (width === 0 || height === 0) return;
-      const backingWidth = Math.max(1, Math.round(width * dpr));
-      const backingHeight = Math.max(1, Math.round(height * dpr));
-      if (canvas.width !== backingWidth) canvas.width = backingWidth;
-      if (canvas.height !== backingHeight) canvas.height = backingHeight;
-      context.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-      const moving = travelRef.current !== null || ghostsRef.current.size > 0 ||
-        (islandFieldRef.current !== null && isIslandFieldMoving(islandFieldRef.current));
-      let overviewGeometry = overviewGeometryRef.current;
-      const geometryChanged = !overviewGeometry || overviewGeometry.nodes !== sim.nodes ||
-        overviewGeometry.ticks !== sim.ticks || overviewGeometry.radii !== radiiRef.current ||
-        overviewGeometry.columns !== columnsRef.current || overviewGeometry.islands !== islandsRef.current ||
-        overviewGeometry.moving || moving;
-      const box = { width, height };
-      const bounds = pictureRef.current !== "islands" || geometryChanged
-        ? librarySimulationBounds(sim)
-        : overviewGeometry?.bounds ?? null;
-      // Where the fit tile would take the camera, every frame, so the tile stops offering a no-op press.
-      const fitTarget = fitView(bounds, box, FIT_PADDING, zoomMaxRef.current);
-      fitScaleRef.current = fitTarget.scale;
-      if (autoFitRef.current.on) {
-        const target = fitTarget;
-        const current = viewRef.current;
-        // Instant under reduced motion and on the first frame.
-        const follow = stateRef.current.reducedMotion || current.scale === 1 ? 1 : AUTO_FIT_FOLLOW;
-        viewRef.current = {
-          scale: current.scale + (target.scale - current.scale) * follow,
-          x: current.x + (target.x - current.x) * follow,
-          y: current.y + (target.y - current.y) * follow,
-        };
-        // Auto-fit stays armed after arriving, so motion is the distance left, not "armed",
-        // or the loop repaints forever.
-        const next = viewRef.current;
-        const drift =
-          Math.abs(next.scale - target.scale) / Math.max(1e-6, target.scale) +
-          (Math.abs(next.x - target.x) + Math.abs(next.y - target.y)) / Math.max(1, box.width);
-        // Snap onto the target at the threshold: the lerp is asymptotic, and a leftover
-        // fraction resumes on the next wake, so a hover would move every mark.
-        if (drift < 0.002) {
-          viewRef.current = target;
-          autoFitRef.current.converged = true;
-        } else {
-          autoFitRef.current.converged = false;
-        }
-      }
-      const view = viewRef.current;
-      publishFramed(isSameView(view, fitTarget));
-
-      const world = pictureRef.current !== "islands" || geometryChanged
-        ? libraryPositions(sim, worldPositionsRef.current)
-        : worldPositionsRef.current;
-      const travel = travelRef.current;
-      if (travel) {
-        const t = (now - travel.since) / Math.max(1, motionRef.current.settle);
-        if (t >= 1 || stateRef.current.reducedMotion) travelRef.current = null;
-        else {
-          const eased = easeMotion(t);
-          for (const [id, start] of travel.from) {
-            const end = world.get(id);
-            if (end) world.set(id, { x: start.x + (end.x - start.x) * eased, y: start.y + (end.y - start.y) * eased });
-          }
-        }
-      }
-      const ghosts = ghostsRef.current;
-      const screenPoints = screenPointsRef.current;
-      if (geometryChanged) {
-        for (const id of screenPoints.keys()) if (!world.has(id) && !ghosts.has(id)) screenPoints.delete(id);
-      }
-      const screen = createProjectedPositions({ get: (id) => world.get(id) ?? ghosts.get(id) }, view, box, screenPoints);
-      // Radii go through the same camera as positions, so a zoom grows dots by the same factor.
-      const screenRadii = screenRadiiRef.current;
-      const radiusSource = screenRadiusSourceRef.current;
-      if (radiusSource?.radii !== radiiRef.current || radiusSource.scale !== view.scale) {
-        for (const [id, radius] of radiiRef.current) screenRadii.set(id, radius * view.scale);
-        if (screenRadii.size > radiiRef.current.size) {
-          for (const id of screenRadii.keys()) if (!radiiRef.current.has(id)) screenRadii.delete(id);
-        }
-        screenRadiusSourceRef.current = { radii: radiiRef.current, scale: view.scale };
-      }
-
-      /*
-       * The dim ramp runs one `--motion-fast` under reduced motion too: it changes ink, not
-       * position, so there is no axis to remove, and a snap would be a hard cut. Every dim is
-       * started by the person's own hand (WCAG 2.2 §2.3.3); `settling` sleeps after the ramp.
-       */
-      const elapsed = lastPaintRef.current === 0 ? 0 : now - lastPaintRef.current;
-      lastPaintRef.current = now;
-      const dimState = dimRef.current;
-      if (dimState.value !== dimState.target) {
-        const step = elapsed / Math.max(1, motionRef.current.fast);
-        dimState.value =
-          dimState.target > dimState.value
-            ? Math.min(dimState.target, dimState.value + step)
-            : Math.max(dimState.target, dimState.value - step);
-      }
-
-      // Arrivals and departures.
-      const opacity = new Map<string, number>();
-      for (const node of sim.nodes) if (node.entered < 1) opacity.set(node.id, easeMotion(node.entered));
-      // On the overview a dot arrives with its island: it fades in as the island closes in.
-      if (pictureRef.current === "islands" && islandFieldRef.current && isIslandFieldMoving(islandFieldRef.current)) {
-        const arrivalOf = new Map<string, number>();
-        for (const body of islandFieldRef.current.bodies) {
-          const arrival = islandArrival(body);
-          if (arrival < 1) arrivalOf.set(body.id, easeMotion(arrival));
-        }
-        if (arrivalOf.size > 0) {
-          for (const [id, offset] of islandOffsetsRef.current) {
-            const alpha = arrivalOf.get(offset.island);
-            if (alpha !== undefined) opacity.set(id, Math.min(opacity.get(id) ?? 1, alpha));
-          }
-        }
-      }
-      const nodes: LibraryGraphNode[] = ghosts.size > 0 ? [...graphRef.current.nodes] : graphRef.current.nodes;
-      if (ghosts.size > 0) {
-        for (const [id, ghost] of ghosts) {
-          const gone = (now - ghost.since) / Math.max(1, motionRef.current.base);
-          if (gone >= 1 || stateRef.current.reducedMotion) {
-            ghosts.delete(id);
-            continue;
-          }
-          nodes.push(ghost.node);
-          opacity.set(id, 1 - easeMotion(gone));
-        }
-      }
-
-      screenRef.current = screen;
-      /*
-       * The ego focus, strongest first: hover, keyboard, an open card (its dim must survive
-       * the pointer leaving to read it), then the open page. Pointing elsewhere closes nothing.
-       */
-      const active =
-        stateRef.current.hoveredId ??
-        stateRef.current.focusedId ??
-        stateRef.current.cardId ??
-        stateRef.current.selectedId;
-      // Without one, a strip clause's `highlight` holds the slot as a set, since its fact is an edge with two ends.
-      const attention = active
-        ? neighboursRef.current.get(active) ?? new Set([active])
-        : stateRef.current.highlight && stateRef.current.highlight.size > 0
-          ? stateRef.current.highlight
-          : null;
-      /*
-       * The last set is kept while `dim` is above zero: the renderer draws full ink whenever
-       * the focus set is null, so dropping it at once makes the un-dim a hard cut.
-       */
-      if (attention) lastFocusRef.current = attention;
-      const focus = attention ?? (dimState.value > 0 ? lastFocusRef.current : null);
-      const activity = libraryGraphActivityMarks(
-        stateRef.current.activity,
-        graphRef.current,
-        Date.now(),
-        motionRef.current.base + motionRef.current.settle,
-        motionRef.current.activityCycle,
-        stateRef.current.reducedMotion,
-      );
-
-      /*
-       * Three motions: flow (an open card's citations drift toward the page), arrival (one
-       * pass for a just-written page, bounded by its receipt) and pulse (the stale dot's
-       * breath while its card is open, or once as the home settles). Reduced motion sets
-       * the `still` flag. At rest with no card every set is empty; `settling` schedules frames.
-       */
-      const reduced = stateRef.current.reducedMotion;
-      const period = Math.max(1, motionRef.current.activityCycle);
-      const arrived = new Map<string, number>();
-      const arrivalEdges = new Set<string>();
-      for (const mark of activity) {
-        if (mark.kind !== "write" || mark.phase !== "complete") continue;
-        if (!mark.nodeId.startsWith("page:")) continue;
-        const progress = Math.min(1, Math.max(0, mark.progress));
-        arrived.set(mark.nodeId, progress);
-        for (const edge of graphRef.current.edges) {
-          if (edge.relation !== "cites") continue;
-          if (edge.source === mark.nodeId || edge.target === mark.nodeId) arrivalEdges.add(edge.id);
-        }
-      }
-      const cardOpen = stateRef.current.cardId !== null;
-      const homePulse =
-        pulseRef.current.homeAt !== null && now - pulseRef.current.homeAt <= period * 2
-          ? (now - pulseRef.current.homeAt) / (period * 2)
-          : null;
-      if (pulseRef.current.homeAt !== null && homePulse === null) pulseRef.current.homeAt = null;
-      const pulse =
-        cardOpen && flowRef.current.stale.size > 0
-          ? flowRef.current.stale
-          : homePulse !== null
-            ? libraryGraphStaleEdges(graphRef.current)
-            : EMPTY_EDGE_SET;
-      const flow: LibraryGraphFlow | null =
-        flowRef.current.edges.size > 0 || arrivalEdges.size > 0 || pulse.size > 0
-          ? {
-              edges: cardOpen ? flowRef.current.edges : EMPTY_EDGE_SET,
-              // One dash period per activity cycle: slower than loading, fast enough to show direction.
-              phase: ((now % period) / period),
-              arrivalEdges,
-              arrivalPhase: arrived.size > 0 ? Math.min(...arrived.values()) : 0,
-              arrived,
-              pulse,
-              // One breath over two activity cycles, derived from tokens this canvas reads.
-              pulsePhase:
-                homePulse !== null && !cardOpen
-                  ? Math.sin(Math.PI * homePulse) ** 2
-                  : Math.sin((Math.PI * (now % (period * 2))) / (period * 2)) ** 2,
-              still: reduced,
-            }
-          : null;
-
-      // The passes below append, so the probe arrays are cleared per frame.
-      if (labelReportRef.current) labelReportRef.current.length = 0;
-      if (islandReportRef.current) islandReportRef.current.length = 0;
-      // The islands in canvas pixels, and how wide a page dot is on screen right now.
-      const islands =
-        pictureRef.current === "islands" && islandsRef.current
-          ? islandsRef.current.islands.map((island) => {
-              const at = worldToScreen(island, view, { width, height });
-              let stale = 0;
-              for (const id of island.pages) if (stalePagesRef.current.has(id)) stale += 1;
-              const body = islandFieldRef.current?.bodies[islandFieldRef.current.index.get(island.id) ?? -1];
-              return {
-                id: island.id,
-                kind: island.kind,
-                label: island.label,
-                x: at.x,
-                y: at.y,
-                r: island.r * view.scale,
-                pages: island.pages.length,
-                sources: island.sources.length,
-                stale,
-                arrival: body ? islandArrival(body) : 1,
-                ...(island.band ? { band: { width: island.band.width * view.scale, height: island.band.height * view.scale } } : {}),
-              };
-            })
-          : undefined;
-      const widestPagePx = pictureRef.current === "islands" ? 2 * view.scale * maxOf(nodes.filter((node) => node.kind === "page").map((node) => radiiRef.current.get(node.id) ?? 0), 0) : Infinity;
-      /*
-       * Zooming into an island opens it as columns, as a press would: a packed island has no
-       * room for names however far the camera closes in. The chip and Escape lead back.
-       */
-      const aim = zoomAimRef.current;
-      if (
-        pictureRef.current === "islands" &&
-        islands &&
-        aim &&
-        !(autoFitRef.current.on && !autoFitRef.current.converged) &&
-        pointerRef.current.phase !== "dragging" &&
-        onPressIslandRef.current
-      ) {
-        const atCeiling = view.scale >= zoomMaxRef.current - 1e-6;
-        // The Unread island is a pile, not a topic, so it never opens.
-        const filling = islands.find(
-          (island) => island.id === aim && island.kind !== "unread" && (atCeiling || island.r * 2 >= ISLAND_OPENS_AT_VIEW_SHARE * Math.min(width, height)),
-        );
-        const source = filling ? islandsRef.current?.islands.find((island) => island.id === filling.id) : null;
-        if (source) {
-          zoomAimRef.current = null;
-          onPressIslandRef.current(pick(source));
-        }
-      }
-      if (pictureRef.current === "islands" && geometryChanged) {
-        overviewGeometry = {
-          nodes: sim.nodes, ticks: sim.ticks, radii: radiiRef.current,
-          columns: columnsRef.current, islands: islandsRef.current, moving, bounds,
-          geometry: { positions: world, radii: radiiRef.current },
-        };
-        overviewGeometryRef.current = overviewGeometry;
-      }
-      drawLibraryGraph(context, {
-        nodes,
-        edges: graphRef.current.edges,
-        positions: screen,
-        overview: pictureRef.current === "islands" && overviewGeometry ? { geometry: overviewGeometry.geometry, view } : undefined,
-        width,
-        height,
-        ink: inkRef.current,
-        locale: localeRef.current,
-        selectedId: stateRef.current.selectedId,
-        hoveredId: stateRef.current.hoveredId,
-        focusedId: stateRef.current.focusedId,
-        activeLabel: stateRef.current.activeLabel,
-        standingLabels: stateRef.current.standingLabels,
-        radii: screenRadiiRef.current,
-        // A plain source column names every file; a folded band only once zoomed in.
-        sourceLabels:
-          pictureRef.current === "flow"
-            ? (columnsRef.current?.columns.find((column) => column.kind === "source")?.grid ?? 1) === 1 || view.scale >= FOLDED_LABEL_MIN_SCALE
-            : pictureRef.current === "islands"
-              ? widestPagePx >= ISLAND_SOURCE_LABEL_MIN_PX
-              : view.scale >= SOURCE_LABEL_MIN_SCALE,
-        conceptLabels:
-          pictureRef.current === "flow"
-            ? (columnsRef.current?.columns.find((column) => column.kind === "concept")?.grid ?? 1) === 1 || view.scale >= FOLDED_LABEL_MIN_SCALE
-            : pictureRef.current === "islands"
-              ? false
-              : view.scale >= SOURCE_LABEL_MIN_SCALE,
-        // Each column's name room in screen px; the layout returns world units.
-        flowLabelRoom:
-          pictureRef.current === "flow" && columnsRef.current
-            ? Object.fromEntries(
-                columnsRef.current.columns.map((column) => [column.kind, column.labelRoom * view.scale]),
-              )
-            : undefined,
-        labelReport: labelReportRef.current ?? undefined,
-        opacity,
-        dim: dimState.value,
-        focus,
-        activity,
-        flow,
-        layout: pictureRef.current,
-        islands,
-        hoveredIslandId: hoveredIslandRef.current,
-        focusedIslandId: focusedIslandRef.current,
-        islandReport: islandReportRef.current ?? undefined,
-        pageLabels: pictureRef.current !== "islands" || widestPagePx >= ISLAND_PAGE_LABEL_MIN_PX,
-        focusEdgesOnly: pictureRef.current === "islands",
-      });
-
-      placeCard();
-
-      /*
-       * Machine-readable state for e2e specs: `data-view-scale` tells a zoom from a pan, and
-       * the `data-interaction` value tells a node grab from a background pan.
-       */
-      const scaleText = view.scale.toFixed(4);
-      if (canvas.dataset.viewScale !== scaleText) canvas.dataset.viewScale = scaleText;
-      const interaction =
-        pointerRef.current.drag !== null || pointerRef.current.islandDrag !== null
-          ? "node"
-          : pointerRef.current.phase === "dragging"
-            ? "pan"
-            : "idle";
-      if (canvas.dataset.interaction !== interaction) canvas.dataset.interaction = interaction;
-
-      // Frame cost for the `e2e` probe, judged against the 2 ms budget in `docs/DECISIONS.md`,
-      // "A press on a Library mark opens a card beside it".
-      const cost = performance.now() - startedAt;
-      const record = paintCostRef.current;
-      record.last = cost;
-      record.total += cost;
-      record.frames += 1;
-      if (cost > record.worst) record.worst = cost;
+      paintLibraryGraphFrame({
+        autoFitRef, boxRef, canvasRef, columnsRef, dimRef, fitScaleRef, flowRef, focusedIslandRef,
+        ghostsRef, graphRef, hoveredIslandRef, inkRef, islandFieldRef, islandOffsetsRef,
+        islandReportRef, islandsRef, labelReportRef, lastFocusRef, lastPaintRef, localeRef,
+        motionRef, neighboursRef, onPressIslandRef, overviewGeometryRef, paintCostRef,
+        pendingBoxRef, pick, pictureRef, placeCard, pointerRef, publishFramed, pulseRef, radiiRef,
+        screenPointsRef, screenRadiiRef, screenRadiusSourceRef, screenRef, simRef, stalePagesRef,
+        stateRef, travelRef, viewRef, worldPositionsRef, zoomAimRef, zoomMaxRef,
+      }, now);
     },
     [canvasRef, placeCard, publishFramed],
   );
@@ -1117,94 +480,11 @@ export function useLibraryGraphEngine({
 
   useEffect(() => {
     stepRef.current = (now: number) => {
-      const sim = simRef.current;
-      if (!sim || !stateRef.current.visible || document.hidden) {
-        runningRef.current = false;
-        return;
-      }
-      const reduced = stateRef.current.reducedMotion;
-      // The islands' own physics: one fixed step a frame while anything moves, then still.
-      const field = pictureRef.current === "islands" ? islandFieldRef.current : null;
-      if (field && isIslandFieldMoving(field)) {
-        if (reduced && pointerRef.current.islandDrag === null) settleIslandField(field);
-        else stepIslandField(field);
-        placeIslandBodies(sim, field, islandsRef.current, islandOffsetsRef.current);
-      }
-      const busy = isLibrarySimulationRunning(sim) || hasPinnedNode(sim) || (field !== null && isIslandFieldMoving(field));
-      /*
-       * Forces run only under the force picture: laid marks stand closer than the collision
-       * reach, so stepping would blow packed dots into a cloud. A laid picture still advances
-       * fade-in arrivals at the simulation's rate.
-       */
-      if (pictureRef.current !== "force") for (const node of sim.nodes) if (node.entered < 1) node.entered = Math.min(1, node.entered + 0.08);
-      if (busy && pictureRef.current === "force") {
-        /*
-         * Reduced motion settles here too: `usePrefersReducedMotion` reads false on the first
-         * render (hydration), so the preference arrives after creation, and a later reheat
-         * would otherwise loop forever. A held mark still steps: the person's own hand
-         * (WCAG 2.2 §2.3.3).
-         */
-        if (!reduced) stepLibrarySimulation(sim);
-        else if (hasPinnedNode(sim)) stepLibrarySimulation(sim);
-        else settleLibrarySimulation(sim);
-      }
-      const settling =
-        busy ||
-        travelRef.current !== null ||
-        dimRef.current.value !== dimRef.current.target ||
-        ghostsRef.current.size > 0 ||
-        (autoFitRef.current.on && !autoFitRef.current.converged) ||
-        pendingBoxRef.current !== null ||
-        sim.nodes.some((node) => node.entered < 1) ||
-        hasActivityTrail(
-          stateRef.current.activity,
-          graphRef.current,
-          Date.now(),
-          motionRef.current.base + motionRef.current.settle,
-          motionRef.current.activityCycle,
-          reduced,
-        ) ||
-        /*
-         * The only unprompted frames, each bounded: the drift while a card is open, and the
-         * home's one stale breath, which clears itself. Reduced motion takes neither.
-         */
-        (!reduced &&
-          ((stateRef.current.cardId !== null && flowRef.current.edges.size > 0) ||
-            pulseRef.current.homeAt !== null));
-
-      /*
-       * A picture with nowhere left to go paints its last frame and stops the loop rather
-       * than idling; every later change comes back through `wake()`.
-       */
-      if (settling) {
-        wasSettlingRef.current = true;
-        paint(now);
-      } else {
-        // The aspect is published once the picture stops, or it reports the seed spiral's shape.
-        paint(now);
-        if (wasSettlingRef.current) {
-          wasSettlingRef.current = false;
-          publishAspect();
-          /*
-           * One breath for the stale citations once the home settles, not on mount, since a
-           * pulse on travelling marks is a flicker; `homeAt` clears itself, so never a loop.
-           */
-          if (
-            !reduced &&
-            pulseRef.current.armed &&
-            pulseRef.current.homeAt === null &&
-            stateRef.current.cardId === null &&
-            libraryGraphStaleEdges(graphRef.current).size > 0
-          ) {
-            pulseRef.current = { homeAt: now, armed: false };
-            frameRef.current = requestAnimationFrame((next) => stepRef.current(next));
-            return;
-          }
-        }
-        runningRef.current = false;
-        return;
-      }
-      frameRef.current = requestAnimationFrame((next) => stepRef.current(next));
+      stepLibraryGraphFrame({
+        autoFitRef, dimRef, flowRef, frameRef, ghostsRef, graphRef, islandFieldRef,
+        islandOffsetsRef, islandsRef, motionRef, paint, pendingBoxRef, pictureRef, pointerRef,
+        publishAspect, pulseRef, runningRef, simRef, stateRef, stepRef, travelRef, wasSettlingRef,
+      }, now);
     };
   }, [paint, publishAspect]);
 
@@ -1237,140 +517,13 @@ export function useLibraryGraphEngine({
 
   // The simulation: created once the canvas has a box, then kept in step with the folder.
   const syncSimulation = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const syncStartedAt = typeof performance === "undefined" ? 0 : performance.now();
-    const graph = graphRef.current;
-    const reducedMotion = stateRef.current.reducedMotion;
-    const style = getComputedStyle(canvas);
-    motionRef.current = {
-      fast: readMs(style, "--motion-fast", MOTION.fast.duration * 1000),
-      base: readMs(style, "--motion-base", MOTION.base.duration * 1000),
-      settle: readMs(style, "--motion-settle", MOTION.settle.duration * 1000),
-      // Existing canvas settle budget (900ms), not a library-local clock or a progress timer.
-      activityCycle: readMs(
-        style,
-        "--map-node-release-settle-ms",
-        MOTION.base.duration * 1000 + MOTION.settle.duration * 1000,
-      ),
-    };
-
-    const box = pendingBoxRef.current ?? boxRef.current;
-    // A fixed world scale: the radii never consult the box.
-    radiiRef.current = libraryMarkRadii(graph);
-    zoomMaxRef.current =
-      radiiRef.current.size === 0 ? LIBRARY_ZOOM_MAX : libraryZoomMax(Math.max(...radiiRef.current.values()));
-    pictureRef.current = layoutRef.current === "flow" && overviewRef.current && graph.nodes.length >= ISLANDS_MIN_MARKS ? "islands" : layoutRef.current;
-    setPicture(pictureRef.current);
-    const layPicture = (sim: LibrarySimulation, travelling: boolean, known: ReadonlySet<string> | null = null) => {
-      /*
-       * Only marks from the previous picture travel; a just-added mark starts on the seed
-       * spiral, so it is placed where it belongs and fades in instead of flying across.
-       */
-      const from = travelling && !reducedMotion ? libraryPositions(sim) : null;
-      if (from && known) for (const id of [...from.keys()]) if (!known.has(id)) from.delete(id);
-      if (pictureRef.current === "islands") {
-        columnsRef.current = null;
-        publishWalkOrder(null);
-        islandsRef.current = applyLibraryIslandsLayout(sim, graph, islandsWorld(box), islandLabelsRef.current);
-        // The ceiling follows the overview's own dot sizes.
-        radiiRef.current = islandsRef.current.radii;
-        zoomMaxRef.current = radiiRef.current.size === 0 ? LIBRARY_ZOOM_MAX : libraryZoomMax(maxOf(radiiRef.current.values()));
-        setIslandsList(islandsRef.current.islands.map(pick));
-        // Dots belong to their island: each keeps its offset from the island's centre.
-        const offsets = new Map<string, { island: string; dx: number; dy: number }>();
-        for (const island of islandsRef.current.islands) {
-          for (const id of [...island.pages, ...island.sources, ...(island.conceptId ? [island.conceptId] : [])]) {
-            const point = islandsRef.current.positions.get(id);
-            if (point) offsets.set(id, { island: island.id, dx: point.x - island.x, dy: point.y - island.y });
-          }
-        }
-        /*
-         * A dot that changed island leaves a ghost and fades in where it belongs, or a folder
-         * loading in chunks sends clouds of dots flying through every island.
-         */
-        const previousOffsets = islandOffsetsRef.current;
-        if (from && previousOffsets.size > 0) {
-          const now = typeof performance === "undefined" ? 0 : performance.now();
-          for (const [id, start] of [...from.entries()]) {
-            const before = previousOffsets.get(id)?.island;
-            const after = offsets.get(id)?.island;
-            if (before === undefined || after === undefined || before === after) continue;
-            from.delete(id);
-            const node = graph.nodes.find((candidate) => candidate.id === id);
-            const live = sim.nodes[sim.index.get(id) ?? -1];
-            if (!node || !live) continue;
-            live.entered = 0;
-            ghostsRef.current.set(`${id}#moved`, { node: { ...node, id: `${id}#moved` }, x: start.x, y: start.y, since: now });
-          }
-        }
-        islandOffsetsRef.current = offsets;
-        /*
-         * Islands arrive on a folder's first map, chunked loads included. A relaid map keeps
-         * each island where it stands and springs it home; a return from an opened island
-         * travels instead; reduced motion settles in place.
-         */
-        const world = islandsWorld(box);
-        const previous = islandFieldRef.current;
-        const returning = travelling && !lastOverviewRef.current;
-        const arriving = !reducedMotion && !returning && previous === null;
-        const field = createIslandField(islandsRef.current.islands, { x: world.width / 2, y: world.height / 2 }, { arriving });
-        if (previous && !returning) {
-          for (const body of field.bodies) {
-            const was = previous.bodies[previous.index.get(body.id) ?? -1];
-            if (!was) continue;
-            body.x = was.x;
-            body.y = was.y;
-            if (Math.hypot(body.x - body.home.x, body.y - body.home.y) > 0.05) field.moving = true;
-          }
-        }
-        if (reducedMotion) settleIslandField(field);
-        islandFieldRef.current = field;
-        placeIslandBodies(sim, field, islandsRef.current, offsets);
-      } else {
-        islandsRef.current = null;
-        islandFieldRef.current = null;
-        islandOffsetsRef.current = new Map();
-        setIslandsList([]);
-        columnsRef.current = applyLibraryFlowLayout(sim, graph, flowWorld(box, zoomMaxRef.current));
-        publishWalkOrder(columnsRef.current);
-      }
-      if (from && from.size > 0) {
-        // Only marks on both pictures travel; the rest are ghosts or arrivals.
-        const ids = new Set(sim.nodes.map((node) => node.id));
-        for (const id of [...from.keys()]) if (!ids.has(id)) from.delete(id);
-        travelRef.current = from.size > 0 ? { from, since: typeof performance === "undefined" ? 0 : performance.now() } : null;
-      }
-      lastOverviewRef.current = overviewRef.current;
-      autoFitRef.current = { on: true, converged: false };
-    };
-    const existing = simRef.current;
-    if (!existing) {
-      if (box.width === 0 || box.height === 0) return;
-      const sim = createLibrarySimulation({ graph, box });
-      simRef.current = sim;
-      // Reduced motion settles before the first frame and never ticks: the same picture, synchronously.
-      if (pictureRef.current !== "force") layPicture(sim, false);
-      else if (reducedMotion) settleLibrarySimulation(sim);
-      autoFitRef.current = { on: true, converged: false };
-    } else {
-      const known = new Set(existing.nodes.map((node) => node.id));
-      const changed = syncLibrarySimulation(existing, graph);
-      // The columns are recomputed whole: a new page changes every row under it.
-      if (pictureRef.current !== "force") layPicture(existing, true, known);
-      const now = typeof performance === "undefined" ? 0 : performance.now();
-      for (const gone of changed.removed) {
-        const node = ghostsRef.current.get(gone.id)?.node ?? lastKnownRef.current.get(gone.id);
-        if (node) ghostsRef.current.set(gone.id, { node, x: gone.x, y: gone.y, since: now });
-      }
-    }
-    lastKnownRef.current = new Map(graph.nodes.map((node) => [node.id, node]));
-    syncCostRef.current = (typeof performance === "undefined" ? 0 : performance.now()) - syncStartedAt;
-    stalePagesRef.current = new Set(graph.edges.filter((edge) => edge.certainty === "unverified").map((edge) => edge.source));
-
-    // The loop publishes the aspect at rest; here the picture is still the seed spiral.
-    wasSettlingRef.current = true;
-    wake();
+    syncLibraryGraphPicture({
+      autoFitRef, boxRef, canvasRef, columnsRef, ghostsRef, graphRef, islandFieldRef,
+      islandLabelsRef, islandOffsetsRef, islandsRef, lastKnownRef, lastOverviewRef, layoutRef,
+      motionRef, overviewRef, pendingBoxRef, pick, pictureRef, publishWalkOrder, radiiRef,
+      setIslandsList, setPicture, simRef, stalePagesRef, stateRef, syncCostRef, travelRef, wake,
+      wasSettlingRef, zoomMaxRef,
+    });
   }, [canvasRef, wake]);
 
   /** Mirrored into a ref so the loop and the observer do not depend on its identity. */
@@ -1385,61 +538,11 @@ export function useLibraryGraphEngine({
 
   // Measure the box; the frame commits it.
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || typeof ResizeObserver === "undefined") return;
-    const measure = (): void => {
-      const rect = canvas.getBoundingClientRect();
-      const dpr = typeof window === "undefined" ? 1 : window.devicePixelRatio || 1;
-      const previous = boxRef.current;
-      pendingBoxRef.current = { width: rect.width, height: rect.height, dpr };
-      rectRef.current = { left: rect.left, top: rect.top };
-      const sim = simRef.current;
-      // The force picture's scale and composition are facts about the folder, so a resize only
-      // records the box there; the laid flow and islands pictures are re-laid below.
-      if (sim) {
-        const before = { ...sim.box };
-        resizeLibrarySimulation(sim, { width: rect.width, height: rect.height });
-        // Columns are a fact about the box: a new width moves them, and the view refits.
-        if (pictureRef.current !== "force" && (before.width !== sim.box.width || before.height !== sim.box.height)) {
-          if (pictureRef.current === "islands") islandsRef.current = applyLibraryIslandsLayout(sim, graphRef.current, islandsWorld(sim.box), islandLabelsRef.current);
-          else {
-            columnsRef.current = applyLibraryFlowLayout(sim, graphRef.current, flowWorld(sim.box, zoomMaxRef.current));
-            publishWalkOrder(columnsRef.current);
-          }
-          autoFitRef.current = { on: true, converged: false };
-        }
-      }
-      // The first box is what lets the simulation be created at all.
-      else if (rect.width > 0 && rect.height > 0) syncSimulationRef.current();
-      /*
-       * A taken camera keeps the same world extent visible when the box changes: the scale
-       * follows the smaller axis ratio about a fixed centre, so nothing leaves the edges and
-       * no arrangement is refitted away. Clamped to `scaleBounds`, as a wheel is.
-       */
-      if (
-        !autoFitRef.current.on &&
-        sim &&
-        rect.width > 0 &&
-        rect.height > 0 &&
-        previous.width > 0 &&
-        previous.height > 0 &&
-        (Math.abs(rect.width - previous.width) > 1 || Math.abs(rect.height - previous.height) > 1)
-      ) {
-        const box = { width: rect.width, height: rect.height };
-        const ratio = Math.min(box.width / previous.width, box.height / previous.height);
-        const limits = scaleBounds(zoomMaxRef.current);
-        const view = viewRef.current;
-        viewRef.current = {
-          ...view,
-          scale: Math.min(limits.max, Math.max(limits.min, view.scale * ratio)),
-        };
-      }
-      wake();
-    };
-    const observer = new ResizeObserver(measure);
-    observer.observe(canvas);
-    measure();
-    return () => observer.disconnect();
+    return observeLibraryGraphBox({
+      autoFitRef, boxRef, canvasRef, columnsRef, graphRef, islandLabelsRef, islandsRef,
+      pendingBoxRef, pictureRef, publishWalkOrder, rectRef, simRef, syncSimulationRef, viewRef,
+      wake, zoomMaxRef,
+    });
   }, [canvasRef, wake]);
 
 
@@ -1489,207 +592,31 @@ export function useLibraryGraphEngine({
   /** Ends the gesture; a press that never travelled is a choice. */
   const finishGesture = useCallback(
     (timeStamp: number, commit?: LayoutPoint) => {
-      const state = pointerRef.current;
-      const sim = simRef.current;
-      if (state.drag && sim) {
-        releaseLibraryNode(sim, state.drag.nodeId, releaseVelocity(state.history, timeStamp, viewRef.current.scale));
-        reheatLibrarySimulation(sim);
-      }
-      if (state.islandDrag && islandFieldRef.current) releaseIsland(islandFieldRef.current, state.islandDrag.id);
-      const pressed = state.pressedNodeId;
-      pointerRef.current = {
-        phase: "idle",
-        pointerId: null,
-        down: null,
-        last: null,
-        pressedNodeId: null,
-        drag: null,
-    islandDrag: null,
-        history: [],
-      };
-      const canvas = canvasRef.current;
-      if (canvas) canvas.style.cursor = "";
-      if (commit) {
-        const node = pressed
-          ? graphRef.current.nodes.find((candidate) => candidate.id === pressed) ?? null
-          : null;
-        if (node) {
-          // One tap at every pointer type: a press only opens a reversible card, never navigates.
-          coarseTapRef.current = null;
-          if (coarsePointer()) onHoverRef.current(node.id);
-          onPressMark(node);
-        } else {
-          /* An island press opens it; an empty-canvas press dismisses what stands open. */
-          const island = pictureRef.current === "islands" ? islandAt(islandsRef.current?.islands, viewRef.current, boxRef.current, commit) : null;
-          if (island && onPressIslandRef.current) {
-            onDismiss();
-            onPressIslandRef.current(pick(island));
-          } else onDismiss();
-        }
-      }
-      wake();
+      finishLibraryGraphGesture({
+        boxRef, canvasRef, coarsePointer, coarseTapRef, graphRef, islandFieldRef, islandsRef,
+        onDismiss, onHoverRef, onPressIslandRef, onPressMark, pick, pictureRef, pointerRef, simRef,
+        viewRef, wake,
+      }, timeStamp, commit);
     },
     [canvasRef, onDismiss, onPressMark, wake],
   );
 
   const onPointerDown = useCallback(
     (event: ReactPointerEvent<HTMLCanvasElement>) => {
-      const canvas = canvasRef.current;
-      if (canvas) {
-        const rect = canvas.getBoundingClientRect();
-        rectRef.current = { left: rect.left, top: rect.top };
-      }
-      const point = pointOf(event);
-      if (event.pointerType === "touch") {
-        touchesRef.current.set(event.pointerId, point);
-        if (touchesRef.current.size === 2) {
-          // Two fingers abandon any press or drag in progress before the pinch starts.
-          const [first, second] = [...touchesRef.current.values()];
-          pointerRef.current = {
-            phase: "idle",
-            pointerId: null,
-            down: null,
-            last: null,
-            pressedNodeId: null,
-            drag: null,
-    islandDrag: null,
-            history: [],
-          };
-          pinchRef.current = {
-            distance: Math.hypot(second!.x - first!.x, second!.y - first!.y),
-            mid: { x: (first!.x + second!.x) / 2, y: (first!.y + second!.y) / 2 },
-          };
-          takeCamera();
-          return;
-        }
-        if (touchesRef.current.size > 2) return;
-      }
-      try {
-        event.currentTarget.setPointerCapture(event.pointerId);
-      } catch {
-        // jsdom and some test environments do not implement pointer capture; the
-        // `buttons === 0` guard in the move handler covers the gesture either way.
-      }
-      const hit = hitTest(point);
-      pointerRef.current = {
-        phase: "pressed",
-        pointerId: event.pointerId,
-        down: point,
-        last: point,
-        pressedNodeId: hit?.id ?? null,
-        drag: null,
-    islandDrag: null,
-        history: [{ x: point.x, y: point.y, t: event.timeStamp }],
-      };
+      pressLibraryGraphPointer({
+        canvasRef, hitTest, pinchRef, pointerRef, pointOf, rectRef, takeCamera, touchesRef,
+      }, event);
     },
     [canvasRef, hitTest],
   );
 
   const onPointerMove = useCallback(
     (event: ReactPointerEvent<HTMLCanvasElement>) => {
-      /*
-       * The box position is re-read on every move: a scroll moves the canvas with no event
-       * here, so a cached offset hit-tests beside the pointer. The read forces no layout.
-       */
-      const canvas = canvasRef.current;
-      if (canvas) {
-        const rect = canvas.getBoundingClientRect();
-        rectRef.current = { left: rect.left, top: rect.top };
-      }
-      const point = pointOf(event);
-      const state = pointerRef.current;
-      const sim = simRef.current;
-      const box = boxRef.current;
-
-      if (event.pointerType === "touch" && touchesRef.current.has(event.pointerId)) {
-        touchesRef.current.set(event.pointerId, point);
-        const pinch = pinchRef.current;
-        if (pinch && touchesRef.current.size >= 2) {
-          const [first, second] = [...touchesRef.current.values()];
-          const distance = Math.hypot(second!.x - first!.x, second!.y - first!.y);
-          const mid = { x: (first!.x + second!.x) / 2, y: (first!.y + second!.y) / 2 };
-          if (pinch.distance > 0) {
-            const bounds = scaleBounds(zoomMaxRef.current);
-            let next = zoomViewAbout(viewRef.current, box, mid, distance / pinch.distance, bounds);
-            // The midpoint's own movement pans, so one gesture pinches and pans.
-            next = panView(next, { x: mid.x - pinch.mid.x, y: mid.y - pinch.mid.y });
-            viewRef.current = next;
-          }
-          pinchRef.current = { distance, mid };
-          wake();
-        }
-        return;
-      }
-
-      // A release outside the canvas is only visible in `buttons`, so it is checked on every move.
-      if (state.phase !== "idle" && event.buttons === 0) {
-        finishGesture(event.timeStamp);
-        return;
-      }
-
-      if (state.phase === "idle") {
-        const hit = hitTest(point);
-        if (hit?.id !== stateRef.current.hoveredId) onHoverRef.current(hit?.id ?? null);
-        const island = hit || pictureRef.current !== "islands" ? null : islandAt(islandsRef.current?.islands, viewRef.current, boxRef.current, point);
-        if ((island?.id ?? null) !== hoveredIslandRef.current) {
-          hoveredIslandRef.current = island?.id ?? null;
-          onHoverIslandRef.current?.(island ? pick(island) : null);
-          wake();
-        }
-        // The cursor is the only press affordance on painted marks, which no DOM gate can see.
-        event.currentTarget.style.cursor = hit || island ? "pointer" : "grab";
-        return;
-      }
-
-      if (state.phase === "pressed") {
-        const travelled = Math.hypot(point.x - (state.down?.x ?? point.x), point.y - (state.down?.y ?? point.y));
-        if (travelled < DRAG_THRESHOLD_PX) return;
-        state.phase = "dragging";
-        takeCamera();
-        // Decided once: what was under the pointer at pointerdown is what the gesture carries.
-        const grabbed = state.pressedNodeId;
-        state.pressedNodeId = null;
-        // On the overview a hand carries the island; the physics shoves others aside and back.
-        const heldIsland =
-          !grabbed && pictureRef.current === "islands" && islandFieldRef.current
-            ? islandAt(islandsRef.current?.islands, viewRef.current, boxRef.current, state.down ?? point)
-            : null;
-        if (heldIsland && islandFieldRef.current) {
-          const world = screenToWorld(point, viewRef.current, box);
-          state.islandDrag = { id: heldIsland.id, offset: { x: heldIsland.x - world.x, y: heldIsland.y - world.y } };
-          pinIsland(islandFieldRef.current, heldIsland.id, { x: heldIsland.x, y: heldIsland.y });
-        }
-        // In the flow layout a mark has one place; a hand that moves it pans the picture.
-        if (grabbed && sim && sim.index.has(grabbed) && pictureRef.current === "force") {
-          const node = sim.nodes[sim.index.get(grabbed)!]!;
-          const world = screenToWorld(point, viewRef.current, box);
-          state.drag = { nodeId: grabbed, offset: { x: node.x - world.x, y: node.y - world.y } };
-          pinLibraryNode(sim, grabbed, { x: node.x, y: node.y });
-          reheatLibrarySimulation(sim);
-        }
-        event.currentTarget.style.cursor = "grabbing";
-      }
-
-      if (state.phase === "dragging") {
-        if (state.islandDrag && islandFieldRef.current) {
-          const world = screenToWorld(point, viewRef.current, box);
-          pinIsland(islandFieldRef.current, state.islandDrag.id, { x: world.x + state.islandDrag.offset.x, y: world.y + state.islandDrag.offset.y });
-        } else if (state.drag && sim) {
-          const world = screenToWorld(point, viewRef.current, box);
-          pinLibraryNode(sim, state.drag.nodeId, {
-            x: world.x + state.drag.offset.x,
-            y: world.y + state.drag.offset.y,
-          });
-          reheatLibrarySimulation(sim, 0.32);
-        } else {
-          const previous = state.last ?? point;
-          viewRef.current = panView(viewRef.current, { x: point.x - previous.x, y: point.y - previous.y });
-        }
-        state.last = point;
-        state.history.push({ x: point.x, y: point.y, t: event.timeStamp });
-        if (state.history.length > 10) state.history.shift();
-        wake();
-      }
+      moveLibraryGraphPointer({
+        boxRef, canvasRef, finishGesture, hitTest, hoveredIslandRef, islandFieldRef, islandsRef,
+        onHoverIslandRef, onHoverRef, pick, pictureRef, pinchRef, pointerRef, pointOf, rectRef,
+        simRef, stateRef, takeCamera, touchesRef, viewRef, wake, zoomMaxRef,
+      }, event);
     },
     [canvasRef, finishGesture, hitTest, wake],
   );
@@ -1739,44 +666,10 @@ export function useLibraryGraphEngine({
   );
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const onWheel = (event: WheelEvent): void => {
-      // A native listener: React's delegated `wheel` is passive, so `preventDefault` there cannot stop page scroll.
-      const pixels = wheelPixelDelta(event, typeof window === "undefined" ? 800 : window.innerHeight);
-      if (!isWheelZoomIntent(pixels, event.ctrlKey)) return;
-      event.preventDefault();
-      if (pixels > 0 && overviewRef.current && event.timeStamp - wheelReturnedAtRef.current < WHEEL_RETURN_SETTLE_MS) return;
-      const rect = canvas.getBoundingClientRect();
-      rectRef.current = { left: rect.left, top: rect.top };
-      takeCamera();
-      const about = { x: event.clientX - rect.left, y: event.clientY - rect.top };
-      // The island under the pointer at the start of a zoom-in run is the aim; later steps
-      // keep it, since the edge clamp slides the view under the pointer.
-      if (pixels >= 0) zoomAimRef.current = null;
-      else if (pictureRef.current === "islands" && zoomAimRef.current === null) {
-        zoomAimRef.current = islandAt(islandsRef.current?.islands, viewRef.current, boxRef.current, about)?.id ?? null;
-      }
-      viewRef.current = zoomViewAbout(
-        viewRef.current,
-        boxRef.current,
-        about,
-        wheelZoomFactor(pixels),
-        scaleBounds(zoomMaxRef.current),
-      );
-      /*
-       * Zooming out of an opened island past a margin below its fit returns to the map; the
-       * margin stops an overshoot bouncing out. The zoom floor counts, since a wide island fits there.
-       */
-      const scaleNow = viewRef.current.scale;
-      if (pixels > 0 && !overviewRef.current && (scaleNow <= fitScaleRef.current * ISLAND_LEAVES_BELOW_FIT || scaleNow <= LIBRARY_ZOOM_MIN + 1e-6)) {
-        wheelReturnedAtRef.current = event.timeStamp;
-        onLeaveIslandRef.current?.();
-      }
-      wake();
-    };
-    canvas.addEventListener("wheel", onWheel, { passive: false });
-    return () => canvas.removeEventListener("wheel", onWheel);
+    return attachLibraryGraphWheel({
+      boxRef, canvasRef, fitScaleRef, islandsRef, onLeaveIslandRef, overviewRef, pictureRef,
+      rectRef, takeCamera, viewRef, wake, wheelReturnedAtRef, zoomAimRef, zoomMaxRef,
+    });
   }, [canvasRef, wake]);
 
   /**
@@ -1785,93 +678,11 @@ export function useLibraryGraphEngine({
    * Getters over the product's own refs, so a frame pays nothing.
    */
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!new URLSearchParams(window.location.search).has("e2e")) return;
-    const probe = {
-      /** Every drawn mark, in canvas CSS pixels — including a node still fading out. */
-      nodes: () =>
-        graphRef.current.nodes.map((node) => {
-          const point = screenRef.current.get(node.id);
-          return {
-            id: node.id,
-            kind: node.kind,
-            label: node.label,
-            x: point?.x ?? Number.NaN,
-            y: point?.y ?? Number.NaN,
-            radius: screenRadiiRef.current.get(node.id) ?? 0,
-          };
-        }),
-      /** Every relation by endpoint id; with `nodes()`, a spec can count crossings and collisions. */
-      edges: () =>
-        graphRef.current.edges.map((edge) => ({
-          source: edge.source,
-          target: edge.target,
-          relation: edge.relation,
-          certainty: edge.certainty,
-        })),
-      /** What the pointer is holding right now: a mark, the background, or nothing. */
-      interaction: () => ({
-        kind: pointerRef.current.drag || pointerRef.current.islandDrag ? ("node" as const) : pointerRef.current.phase === "dragging" ? ("pan" as const) : ("idle" as const),
-        nodeId: pointerRef.current.drag?.nodeId ?? pointerRef.current.islandDrag?.id ?? null,
-      }),
-      view: () => ({ ...viewRef.current, ...boxRef.current }),
-      /** The columns of the flow picture as last laid, or null under the force layout. */
-      layout: () =>
-        columnsRef.current
-          ? { rowGap: columnsRef.current.rowGap, columns: columnsRef.current.columns.map((column) => ({ kind: column.kind, x: column.x, grid: column.grid, count: column.ids.length })) }
-          : null,
-      /** The scale the fit tile would take the camera to. */
-      fitScale: () => fitScaleRef.current,
-      /** The islands of the overview, in world units, or null under any other picture. */
-      islands: () =>
-        islandsRef.current
-          ? islandsRef.current.islands.map((island) => ({ id: island.id, kind: island.kind, label: island.label, x: island.x, y: island.y, r: island.r, pages: island.pages.length, sources: island.sources.length, ...(island.band ? { band: island.band } : {}) }))
-          : null,
-      /** Every name the last frame placed, from the label pass's own output; empty until one armed frame. */
-      labels: () => labelReportRef.current ?? [],
-      /** The islands whose name the last frame placed; a name that lost a collision is not here. */
-      islandNames: () => islandReportRef.current ?? [],
-      /** Where the simulation is: above the floor it is still arranging itself. */
-      alpha: () => simRef.current?.alpha ?? 0,
-      /**
-       * Whether marks are still travelling (camera easing, a mark entering, a pending box);
-       * laid pictures keep `alpha()` at 0, so specs wait on this.
-       */
-      arriving: () =>
-        (autoFitRef.current.on && !autoFitRef.current.converged) ||
-        pendingBoxRef.current !== null ||
-        travelRef.current !== null ||
-        (islandFieldRef.current !== null && pictureRef.current === "islands" && isIslandFieldMoving(islandFieldRef.current)) ||
-        (simRef.current?.nodes.some((node) => node.entered < 1) ?? false),
-      /** The open card's placement with its painted mark, in one frame's coordinates. */
-      card: () => cardBoxRef.current,
-      /** Which lines are moving, and whether they are travelling or standing still. */
-      flow: () => ({
-        edges: [...flowRef.current.edges],
-        stale: [...flowRef.current.stale],
-        pulsing: pulseRef.current.homeAt !== null,
-      }),
-      /** What the last sync of the graph cost, in ms. */
-      syncCost: () => syncCostRef.current,
-      /** Frame costs in ms; `reset()` first, since a folder's arrival is the costliest frame. */
-      paint: () => ({
-        last: paintCostRef.current.last,
-        mean: paintCostRef.current.frames === 0 ? 0 : paintCostRef.current.total / paintCostRef.current.frames,
-        worst: paintCostRef.current.worst,
-        frames: paintCostRef.current.frames,
-        reset: () => {
-          paintCostRef.current = { last: 0, total: 0, frames: 0, worst: 0 };
-        },
-      }),
-    };
-    labelReportRef.current = [];
-    islandReportRef.current = [];
-    (window as unknown as { __atlasLibraryGraph?: typeof probe }).__atlasLibraryGraph = probe;
-    return () => {
-      labelReportRef.current = null;
-      islandReportRef.current = null;
-      delete (window as unknown as { __atlasLibraryGraph?: typeof probe }).__atlasLibraryGraph;
-    };
+    return mountLibraryGraphProbe({
+      autoFitRef, boxRef, cardBoxRef, columnsRef, fitScaleRef, flowRef, graphRef, islandFieldRef,
+      islandReportRef, islandsRef, labelReportRef, paintCostRef, pendingBoxRef, pictureRef,
+      pointerRef, pulseRef, screenRadiiRef, screenRef, simRef, syncCostRef, travelRef, viewRef,
+    });
   }, []);
 
   return {
@@ -1889,34 +700,4 @@ export function useLibraryGraphEngine({
     walkOrder,
     placeCard,
   };
-}
-
-/**
- * A released mark's speed in world units per tick, over a trailing window anchored at the
- * release, so a drag held still before letting go stops dead.
- */
-function releaseVelocity(
-  history: ReadonlyArray<{ x: number; y: number; t: number }>,
-  releasedAt: number,
-  scale: number,
-): LayoutPoint | undefined {
-  if (history.length < 2) return undefined;
-  const from = history.find((sample) => releasedAt - sample.t <= RELEASE_WINDOW_MS);
-  const to = history[history.length - 1]!;
-  if (!from || from === to) return undefined;
-  const span = to.t - from.t;
-  if (span <= 0) return undefined;
-  // Screen pixels per millisecond → world units per 60fps tick.
-  const perTick = 16.7 / (span * Math.max(0.0001, scale));
-  return { x: (to.x - from.x) * perTick, y: (to.y - from.y) * perTick };
-}
-
-/** A CSS duration token in milliseconds, parsed rather than transcribed. */
-function readMs(style: CSSStyleDeclaration, token: string, fallback: number): number {
-  const raw = style.getPropertyValue(token).trim();
-  if (raw.endsWith("ms")) return Number.parseFloat(raw) || fallback;
-  if (raw.endsWith("s")) return (Number.parseFloat(raw) || fallback / 1000) * 1000;
-  // Map canvas physics budgets are unitless milliseconds; preserve that existing contract.
-  if (/^\d+(?:\.\d+)?$/.test(raw)) return Number.parseFloat(raw) || fallback;
-  return fallback;
 }
