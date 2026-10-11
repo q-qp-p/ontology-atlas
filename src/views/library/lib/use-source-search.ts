@@ -4,57 +4,9 @@ import { sourceSearchPrefix } from './source-search-prefix';
 import { passageLabelFor, sourceUnits, type PassageLabel, type SourceUnit } from '@/shared/lib/library/source-passage';
 
 /**
- * **Search the words inside the documents, because a person typed them.**
- *
- * Until slice U2 the index column's field matched a source on its **path** and nothing
- * else, while the wiki half beside it already matched page text. Measured 2026-09-11 on a
- * six-file folder with no agent: typing "T+2" returned nothing, though
- * `sources/settlement-policy.md` says it on line 11 and `sources/fee-schedule.csv` says
- * it in three records. The one thing a person can do on their first day — find a sentence
- * they know they wrote — was the one thing the Library could not do.
- *
- * ## When the reading happens, and why that is the whole design
- *
- * **On the first keystroke, never on folder open** (PM selection, 2026-09-11, choosing
- * this over an eager read at open). The clause it protects is the standing one from
- * 2026-09-11 "Pressing a citation reads that one file": *nothing is read that a person
- * did not name*. A keystroke is a person naming what they want as surely as a press is,
- * so this stays inside that clause — while a read at folder open would put every readable
- * file through the reader before anybody asked anything, and would make
- * `source.neverOpened` false on every pane in the folder. That is a ledger cost, and at
- * first-day size it buys nothing: six files read and split in 0.6–3.5 ms, so eager and
- * lazy are indistinguishable exactly where the person is.
- *
- * The other clauses hold the same way as in `use-cited-passage.ts`:
- *
- * - **Through handles already granted.** `sourceHandles` is the folder walk's own map —
- *   a `TauriFileHandle` over `read_vault_binary_file` in the app, an FSA handle in the
- *   browser. No new permission, no new bridge.
- * - **Nothing kept on disk.** Units stay only for the current folder and planned file
- *   versions; a plan change drops retired entries, and unmount drops the rest.
- *   No IndexedDB, no `.ontology-atlas/` record: a search index on disk would be
- *   the second store `.claude/rules/local-first.md` forbids, and the vault's Markdown is
- *   the only index Atlas has.
- * - **Nothing sent.** No LLM, ACP or MCP path is touched.
- *
- * ## Why the input never waits
- *
- * The reads are asynchronous and publish per file, so the list fills while the rest
- * arrive and the field keeps every keystroke. Matching is separate from reading and runs
- * over whatever has landed — which is why the caller must print a reading state rather
- * than a bare count, or a folder mid-read would report "no match" for a file it has not
- * opened yet. That sentence is the difference between "not there" and "not read yet".
- *
- * ## The two caps, and the one they are not
- *
- * 200 files and 20 MB, whichever binds first, counted from the **directory listing's**
- * sizes — so the cap is decided before a single byte is read, not after. Every byte read
- * crosses into the WebView (`read_vault_binary_file` in the app), so a search must not
- * pull a whole folder of scans into memory.
- *
- * This is **not** the folder walk's own cap (`VAULT_WALK_MAX_ENTRIES`, 100,000 entries),
- * which decides what the folder is; this one decides what a search read. Both say so on
- * screen rather than truncating in silence.
+ * Reads only on the first keystroke, never on folder open, through granted handles; nothing is kept
+ * or sent. Reads publish per file, so the caller shows a reading state. Caps: 200 files and 20 MB
+ * from listing sizes.
  */
 
 /** Files one search may read, however small they are. */
@@ -101,15 +53,8 @@ export interface SourceSearchState {
   /** How many files this search is allowed to read at all. */
   plannedCount: number;
   /**
-   * **Which paths have been read**, so a caller can tell an unread row from a row that
-   * held nothing.
-   *
-   * The count below was already kept; only the set was private, and that privacy is what
-   * emptied the column. Filtering on `hits` alone removes every row whose read has not
-   * landed yet, so on the 200-file folder the list stood at **0 rows while the line said
-   * `1/200`** (design-lead, council 2026-09-11) — "nothing found" arriving before "still
-   * reading". With the set, the caller keeps an unread row and the list *narrows* as
-   * reads land, which is the truth about what the search knows.
+   * Which paths have been read, so a caller can tell an unread row from a row that held nothing;
+   * filtering on `hits` alone would empty the list before reads land.
    */
   read: ReadonlySet<string>;
   /**

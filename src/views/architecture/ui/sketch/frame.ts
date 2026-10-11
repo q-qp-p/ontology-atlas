@@ -196,7 +196,10 @@ export function solveSketchFrame({
       : hasLedger
         ? PAD_Y_LEDGER
         : PAD_Y;
-  /* One owner for the chrome row's vertical rhythm: headings sit on the ladder's top padding and faces are placed from the same `padY`. */
+  /*
+   * One source for the chrome row's vertical rhythm: headings sit on the ladder's top padding and
+   * faces are placed from the same `padY`.
+   */
   const laneHeadingY = padY + 14;
   const boxH = axis === 'across' && splitsEvidence
     ? BOX_H_ACROSS_SPLIT

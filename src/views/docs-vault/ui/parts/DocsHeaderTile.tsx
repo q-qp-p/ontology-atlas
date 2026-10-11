@@ -15,8 +15,7 @@ export interface DocsHeaderTileProps
 
 /**
  * Sized by `--chrome-tile-size`; separate from `ChromeTile` only for the radius: a header tile
- * uses `--chrome-radius-inner`, a tile over the map `--chrome-radius`. Ledger:
- * the 2026-08-03 entry in `docs/DECISIONS.md`.
+ * uses `--chrome-radius-inner`, a tile over the map `--chrome-radius`.
  */
 export const DocsHeaderTile = forwardRef<HTMLButtonElement, DocsHeaderTileProps>(
   function DocsHeaderTile(

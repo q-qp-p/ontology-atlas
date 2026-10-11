@@ -31,8 +31,8 @@ import { groupLedgerByDay, passDurationSeconds } from "../../lib/round-presentat
  */
 
 /**
- * A minute and more reads in minutes: "180 s" asked the reader to divide by sixty (2026-09-25).
- * Under a minute keeps its seconds, because there the seconds are the information.
+ * A minute and more reads in minutes; under a minute keeps seconds, because there the seconds are
+ * the information.
  */
 function useDurationWords() {
   const t = useTranslations("library.rounds");
@@ -65,13 +65,8 @@ export function pageName(path: string): string {
   return path.replace(/^wiki\//, "").replace(/\.md$/, "");
 }
 /**
- * **One chip for every press a pass names** — the morning card and the ledger alike.
- *
- * The morning card drew a stale page as bare text and a redraft with a document glyph: two
- * shapes for one press ("open this page in Wiki"), measured side by side on 2026-09-25. Every
- * page press is now this chip, the same glyph, type step and padding; the line beside it
- * already carries whether the page went stale or was rewritten. A press that goes somewhere
- * other than a page (the refused line → its ledger entry) passes its own glyph.
+ * One chip for every press a pass names, in the morning card and the ledger alike: same glyph, type
+ * step and padding. A press that goes somewhere other than a page passes its own glyph.
  */
 export function RoundChip({
   label,
@@ -111,11 +106,8 @@ export interface RunningPass {
 }
 
 /**
- * **The live row.** A pass in flight is on the axis while it runs, not only once it is over.
- * Measured in the browser on 2026-09-21: the header said "running now · <name>" while the
- * ledger below it still printed "No pass yet. The first one runs at 01:00." — two lines on one
- * screen contradicting each other, and the person watching a pass they had just started had
- * nothing on the axis to watch. The empty sentence yields to this row.
+ * The live row: a pass in flight is on the axis while it runs, and the empty sentence yields to this
+ * row.
  */
 function LiveRow({ running, locale }: { running: RunningPass; locale: string }) {
   const t = useTranslations("library.rounds");

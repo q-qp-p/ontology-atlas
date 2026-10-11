@@ -43,7 +43,7 @@ afterEach(() => {
 
 describe('one headless agent turn', () => {
   it('ends at once when the person stops it while the handshake never answers, and closes the session', async () => {
-    // The desktop bridge's `acp_start` held open: `start()` never settles (probe, 2026-09-25).
+    // The desktop bridge's `acp_start` held open: `start()` never settles.
     const session = fakeSession({ start: vi.fn(() => never<void>()) });
     const stop = signal();
     const turn = runHeadlessTurn({ session: () => session, status: () => 'starting', brief: 'brief', aborted: stop.promise, completion: never() });

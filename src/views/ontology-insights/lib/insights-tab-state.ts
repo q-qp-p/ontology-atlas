@@ -17,7 +17,6 @@ export const INSIGHTS_TABS = [
 /** Sections rendered by Analysis; old ontology tab names remain compatible URL intents. */
 export const INSIGHTS_SECTIONS = ["connections", "brief", "library", "harness", "flow"] as const;
 
-/** The legacy first row: what a tab is about. `ontology` opens the question row underneath. */
 export const INSIGHTS_CORES = ["brief", "ontology", "library", "harness"] as const;
 
 export type InsightsCore = (typeof INSIGHTS_CORES)[number];

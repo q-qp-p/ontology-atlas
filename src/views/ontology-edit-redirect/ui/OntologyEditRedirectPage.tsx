@@ -8,7 +8,6 @@ import {
   buildTopologyMeaningEditorNodeHref,
 } from "@/entities/knowledge-graph";
 
-/** Legacy `/ontology/edit` and `/ontology/studio` links open the map's edit workbench. */
 export function OntologyEditRedirectPage() {
   const searchParams = useSearchParams();
   const router = useRouter();

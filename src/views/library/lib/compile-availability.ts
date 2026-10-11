@@ -46,10 +46,8 @@ export function libraryCompileBlockedReason(
   if (sourceCount === 0) return t("stage.blockedNoSources");
   if (route === "local") {
     /*
-     * The local runner compiles, but not everything and not everywhere. Both refusals
-     * name the specific missing thing rather than the route, because a person reading
-     * "a local model cannot compile" would go and install a coding agent they may not
-     * need (PO evidence and PO steward, 2026-09-06).
+     * Both refusals name the specific missing thing rather than the route, so a person does not install
+     * a coding agent they may not need.
      */
     if (localModel && !localModel.onThisComputer) {
       return t("stage.blockedLocalRemote", { host: localModel.host });
@@ -88,26 +86,9 @@ export function libraryBrainLabel(
 }
 
 /**
- * **What leaves this computer when Compile runs — one sentence, chosen once.**
- *
- * Two surfaces can start Compile, so two surfaces could disclose it, and this module
- * already exists because answering one question in two places is how they come to
- * disagree. The connect-by-address runner is a program on this machine, every request to
- * it leaves a line in the folder's own audit file, and the wording says "on this
- * computer" only when the saved host really is (`.claude/rules/local-first.md`).
- *
- * The **caller** decides which surface prints it, and exactly one does: the shelf's step
- * two while it is drawn, the index beside its own chip when a selection has replaced the
- * shelf. Measured 2026-09-06 in the installed app, printing it in both put the same
- * paragraph twice in one viewport, which teaches a reader to skip it; the regression the
- * other way is worse and shipped for one commit — with a single brain and nothing
- * selected the disclosure appeared **nowhere**, caught by
- * `tests/e2e/library-compile-dock.spec.ts`.
- *
- * ⚠️ **The agent route's sentence is no longer one of these** (2026-09-12). It used to be
- * returned from here too, which put it under the Compile press on the shelf and under the
- * one in an open source's pane. See `libraryProviderDisclosure` below for where it went
- * and why the two facts part company.
+ * What leaves this computer when Compile runs, in one sentence. The caller decides which surface
+ * prints it, and exactly one does: the shelf's step two while drawn, otherwise the index beside its
+ * chip. The agent route's sentence is `libraryProviderDisclosure`.
  */
 export function libraryTransferSentence(
   {
@@ -126,24 +107,9 @@ export function libraryTransferSentence(
 }
 
 /**
- * **The one sentence about traffic Atlas is not in the path of** — on demand, in the
- * index head's glyph, and nowhere else.
- *
- * Owner, 2026-09-12, reading the installed app's Library: *"text like 'the coding agent
- * sends requests directly to its provider and Atlas does not record that traffic…' —
- * shouldn't that be handled as a tooltip?"* Measured on the owner's folder at 1512 it was
- * printing as a paragraph in up to three places on one journey — the shelf's step two,
- * the index under its door group, and an open source's pane beside Compile — at which
- * point a reader learns to skip it, which is the opposite of disclosure.
- *
- * **Why it may move and the sentence above may not.** `.claude/rules/local-first.md`
- * asks for one place to say *what leaves this computer*, and says it must be where the
- * press happens. This sentence is not that: on the agent route nothing leaves through
- * Atlas at all, and the sentence exists to say exactly that — the rule's own clause that
- * Atlas "must not claim that `.ontology-atlas/llm-audit.jsonl` covers provider-owned
- * transfers". A standing correction about what Atlas does *not* log is a fact about the
- * place, so it belongs with the place's description; a transfer Atlas performs stays
- * under the button that performs it.
+ * Traffic Atlas is not in the path of: on the agent route nothing leaves through Atlas, so this
+ * standing correction about what Atlas does not log belongs with the place's description. A transfer
+ * Atlas performs is disclosed under the button that performs it (`.claude/rules/local-first.md`).
  */
 export function libraryProviderDisclosure(
   { route }: { route: CompileAvailability["route"] },

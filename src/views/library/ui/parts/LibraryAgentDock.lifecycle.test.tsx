@@ -5,16 +5,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import enMessages from "../../../../../messages/en.json";
 
 /**
- * **The dock with the real conversation panel inside it.**
- *
- * The sibling file mocks the panel to measure the frame; this one keeps the panel, because the
- * defect the owner reported is not in either piece — it is in the seam between them. Closing the
- * dock unmounted `AcpChatPanel`, `useAcpSession`'s cleanup ran `stop()`, and `stopAcpSession`
- * ended the adapter process mid-turn. Nothing in either file alone can see that.
- *
- * So this measures the two facts a person actually reported: **the process is not killed** when
- * they press X, and **the conversation they were having is still there** when they come back.
- * `bridge.stopped` is the proof for the first — it is the exact call that ends the child.
+ * The dock with the real conversation panel: closing must not call `stopAcpSession`.
+ * `bridge.stopped` is the call that ends the child process.
  */
 const bridge = vi.hoisted(() => ({
   sent: [] as Array<Record<string, unknown>>,
@@ -195,7 +187,6 @@ describe("pressing X on the Library dock", () => {
     view.reopen();
     await act(async () => {});
     expect(screen.getByText("Four sources are waiting.")).toBeInTheDocument();
-    // One process, one conversation. A second `session/new` is the blank screen the owner met.
     expect(bridge.started).toBe(1);
     expect(bridge.sent.filter((message) => message.method === "session/new")).toHaveLength(1);
   });

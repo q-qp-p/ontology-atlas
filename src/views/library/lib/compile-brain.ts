@@ -3,25 +3,9 @@
 import { useCallback, useSyncExternalStore } from "react";
 
 /**
- * **Which brain Compile runs on, when this computer has two.**
- *
- * The 2026-09-06 rule was a precedence: a verified coding agent outranked the
- * connect-by-address runner, because it is the only one of the two that opens a PDF. That
- * is the right *default* and the wrong *law*. The owner's reason for setting up a local
- * runner at all is to choose it deliberately for a folder whose documents should not leave
- * the machine, and a precedence rule takes exactly that choice away — on a machine where
- * both are installed, the sensitive folder silently goes to the coding agent's provider.
- *
- * So: a default, not a precedence. Both available draws one picker; the stored answer wins
- * and the coding agent is what an unanswered folder gets.
- *
- * ## Why the resolution is a pure function
- *
- * Three facts decide it — is the agent ready, is the runner saved, what did the person
- * choose — and the interesting cases are the ones where they disagree: a stored choice for
- * a brain this machine no longer offers must **fall back and stop being stored**, or the
- * folder keeps a preference for something that is not there and the next machine inherits
- * it through a synced profile. That is a table, so it is tested as one.
+ * Which brain Compile runs on when this computer has two: a default, not a precedence. Both
+ * available draws one picker; the stored answer wins and the coding agent is the default. A stored
+ * choice for a brain no longer offered falls back and stops being stored.
  */
 
 export type CompileBrain = "agent" | "local";

@@ -4,18 +4,9 @@ import { libraryCoverageCaption, libraryStepStates, libraryWaitingLine } from ".
 import type { LibraryUiModel } from "@/features/library";
 
 /**
- * **A folder mid-measurement must not be reported as finished.**
- *
- * The owner read the merged build on a folder of seven sources and seven pages while the
- * hashes were still being taken, and three surfaces gave three answers: the guide's step
- * two said *done · every source already has a write-up that matches its bytes*, its step
- * three said *0 of 7 written up*, and all seven source rows said *checking*. The cause is
- * that hashing is lazy — `needsCompileCount` counts only the sources **known** to be
- * waiting, so "nothing is waiting" and "everything is written up" are not the same claim
- * until every source has been measured.
- *
- * These cases pin the seam. They use only the fields `libraryStepStates` reads, because a
- * fuller model would be a fixture nobody can check against the function's own contract.
+ * Pins the seam: hashing is lazy, so `needsCompileCount` counts only sources known to be waiting,
+ * and nothing waiting differs from everything written up until every source is measured. Uses only
+ * the fields `libraryStepStates` reads.
  */
 type Input = Pick<LibraryUiModel, "sources" | "wikiPages" | "needsCompileCount">;
 
@@ -130,13 +121,8 @@ describe("what the waiting line says", () => {
 
 
 /**
- * ⚠️ **A folder whose sources have all been written up and have since changed read
- * "0 of 6 sources written up"** (measured 2026-09-09).
- *
- * `compiled` means a page exists *and* its bytes still match. Everything else was folded
- * into the plain sentence, so the most ordinary resting state of a live folder — write-ups
- * that have gone stale — reported the same number as a folder nobody had touched. The
- * earlier `checking` and `partial` repairs each added their own clause and left this one.
+ * A folder whose write-ups all went stale must not read 0 of N written up; `compiled` means a page
+ * exists and its bytes still match.
  */
 describe("which coverage sentence step three prints", () => {
   const coverage = (

@@ -17,50 +17,9 @@ import type { ComponentProps } from "react";
 type AcpChatPanelProps = ComponentProps<typeof AcpChatPanel>;
 
 /**
- * The guarded ACP conversation, docked to the Library.
- *
- * Compile is still a job and not a place (`docs/DECISIONS.md`, 2026-09-05): it starts one
- * turn beside the library it is compiling, rather than sending a person to another screen
- * and asking them to describe the folder they were already looking at. What changed on
- * 2026-09-06 is which screen that is — the library became a destination, so the dock came
- * with it rather than staying beside a document tree it never read.
- *
- * The shape is the one Analysis and Architecture already use, and for the same measured
- * reason: the outer frame claims its width first, and the agent process starts after
- * that movement settles, so process startup cannot stall the one animation that explains
- * where the reading pane went.
- *
- * **The standing-line ladder in the chat panel is the running state.** No spinner is
- * added here — the panel already says what the agent is doing, and a second indicator
- * that only says "something is happening" would compete with the one that says what.
- *
- * **Which library this conversation is about** rides above the shared dock header. The
- * header itself is `AcpDockHeader`, the same one the map and the architecture view use,
- * so its title is the same word on three screens; the eyebrow is what says the turn was
- * started from here and is compiling *this* folder. One lucide `Library` glyph, matching
- * the destination's own rail icon — a second wordmark would be chrome, and a second title
- * would be two headings in eight pixels of each other.
- *
- * ## Closing puts the conversation away; it does not end it (owner, 2026-09-08)
- *
- * *"If I press X mid-conversation and come back in, does the conversation continue? It is
- * supposed to keep working in the background, but it looks like the work just stops."* It
- * did stop. `Surface` unmounts its children once the exit window closes, unmounting
- * `AcpChatPanel` with them, and `useAcpSession`'s cleanup calls `stop()` — which calls
- * `stopAcpSession` and kills the adapter process. A turn in flight died with the press,
- * and the transcript went with it.
- *
- * So the surface stays open for as long as the conversation stands. **The frame is what
- * closes**: its width transitions to zero over `--agent-panel-reflow-duration`, taking the
- * panel with it, and while it is shut the frame is `inert` and `aria-hidden`, so nothing
- * inside is reachable by tab, pointer or screen reader. What is given up is the surface's
- * own 140ms brightness exit, and that reads correctly rather than as a loss: the
- * conversation is **put away**, not dismissed, and it is still there when the frame opens
- * again — with its transcript, its permission card and its running turn.
- *
- * The conversation ends when the person leaves the Library. This whole subtree unmounts
- * then, `stop()` runs, and the adapter really does exit — a background turn is background
- * work on this screen, not a process outliving the screen that started it.
+ * Closing puts the conversation away, it does not end it: the frame closes (width to zero, `inert`,
+ * `aria-hidden`) while the surface stays mounted, so `useAcpSession` cleanup does not `stop()`.
+ * Leaving the Library unmounts the subtree and ends the adapter.
  */
 export interface LibraryAgentOpeningRequest {
   /**
@@ -114,11 +73,7 @@ export function LibraryAgentDock({
   vaultRoot: string;
   mcpServers: unknown[];
   openingRequest: LibraryAgentOpeningRequest | null;
-  /**
-   * The one app-authored turn whose answer belongs on a page, not in this pane: the wiki
-   * check. See `AcpChatPanel`'s `answerFold` — the chat says one line and opens the
-   * Check-results page (owner, 2026-09-12).
-   */
+  /** The app-authored turn whose answer belongs on a page; see `AcpChatPanel`'s `answerFold`. */
   answerFold?: { request: string; line: string; doorLabel: string; onOpen: () => void } | null;
   knownSlugs: ReadonlySet<string>;
   onClose: () => void;
@@ -132,18 +87,13 @@ export function LibraryAgentDock({
   onFileAnswer?: (() => void) | null;
   /** Keeps the offer visible while its create-only write is pending. */
   filingAnswer?: boolean;
-  /**
-   * Why the last press on the save chip filed nothing, kept under the chip until the next
-   * answer. The refusal was a toast alone (2026-09-19, installed app): it left in a few
-   * seconds, and a person who looked away saw a chip that did nothing.
-   */
+  /** Why the last press on the save chip filed nothing, kept under the chip until the next answer. */
   fileAnswerNote?: string | null;
   /** The doors an `auto-allowed` notice carries; see `AcpChatPanelProps.noticeActions`. */
   noticeActions?: AcpChatPanelProps["noticeActions"];
   /**
-   * One turn's observable step and target, or `null` between turns. The page draws the
-   * resting state from it while this dock is shut — a closed dock with a live turn behind it
-   * has to say so, or the background work the owner asked for is invisible work.
+   * One turn's observable step and target, or `null` between turns; the page draws the resting state
+   * from it while the dock is shut.
    */
   onTurnActivityChange?: AcpChatPanelProps["onTurnActivityChange"];
   /** Active structured ACP tool input for the graph activity bridge. */
@@ -151,13 +101,8 @@ export function LibraryAgentDock({
   /** Terminal ACP tool rows forwarded as they arrive, before a later turn cancellation can hide them. */
   onTerminalToolObservation?: AcpChatPanelProps["onTerminalToolObservation"];
   /**
-   * The dock's width, owned by the page rather than by this frame (2026-09-07).
-   *
-   * `useChatWidth` keeps the width **during a drag** in local state and only stores it on
-   * release, so two instances of the hook disagree for the length of every drag. The page
-   * publishes this width as `--app-right-dock-width` — the right-hand wall every floating
-   * surface measures against — and a wall that lags the handle by a whole gesture is the
-   * defect the variable exists to prevent. One owner, one number.
+   * The page owns the width: `useChatWidth` keeps the in-flight drag locally, so a second copy lags.
+   * The page publishes it as `--app-right-dock-width`.
    */
   chatWidth: {
     width: number;
@@ -165,10 +110,8 @@ export function LibraryAgentDock({
     commitWidth: (width: number) => void;
   };
   /**
-   * Whether the index column is drawn beside the reader. Between `lg` and `xl` the dock is
-   * an overlay rather than a column, and with the index drawn it starts at the index's
-   * right edge instead of covering it: measured at 1040 the full-width overlay lay 268px
-   * across the index, which is the list a person picks the next page from (2026-09-25).
+   * Whether the index column is drawn beside the reader. Between `lg` and `xl` the dock is an overlay
+   * and starts at the index's right edge instead of covering it.
    */
   indexBeside?: boolean;
 }) {
@@ -196,19 +139,11 @@ export function LibraryAgentDock({
    * The condition is what keeps it from looping.
    */
   if (open && !standing) setStanding(true);
-  /*
-   * The session starts once the dock has its width, whichever way it opened. It used to
-   * start only for a door's request (the nonce), so a dock opened from the *Conversation*
-   * chip sat on "Connecting" forever, and a door pressed into that already-open dock found
-   * no width transition to wait for either (installed app, 2026-09-07).
-   */
+  /* The session starts once the dock has its width, however it opened, not only for a door's request. */
   const [settled, setSettled] = useState(false);
   /*
-   * Born wide: a dock mounted while already open has no width transition to wait for.
-   * Measured in the installed app on 2026-09-06 — the page remounted the dock mid-request
-   * and, at xl, the session waited on a `transitionend` that never came, so the panel sat
-   * on "Connecting" and every later chip pressed into a session that never started. Once
-   * the dock has closed, the next opening is a real transition again and owns the handoff.
+   * Born wide: a dock mounted already open has no width transition to wait for. After it closes, the
+   * next opening is a real transition and owns the handoff.
    */
   const bornOpenRef = useRef(open);
   useEffect(() => {
@@ -233,17 +168,8 @@ export function LibraryAgentDock({
   }, [open]);
 
   /*
-   * **The keyboard follows the dock in, and comes back out with it** (2026-09-25).
-   *
-   * Measured at 1040, 1280 and 1512: pressing *Conversation* left focus on `body`, because
-   * that chip unmounts when the dock opens, and at 1280 the index folds for the dock's width
-   * so *Check page format* and *Compile* unmount the same way. Below `xl` the dock is an
-   * overlay that covers the reader, and Escape did nothing. So on open focus moves into the
-   * dock — the composer when it can take text, otherwise the dock itself — and on close it
-   * returns to whatever opened it, or to the reader when that control is gone.
-   *
-   * Transition-keyed on a ref rather than cleaned up per run, so StrictMode's double effect
-   * cannot cancel the one focus move an opening owes.
+   * Focus moves into the dock on open and back to the opener (or the reader) on close. Keyed on a
+   * transition ref so StrictMode's double effect cannot cancel the one focus move.
    */
   const frameRef = useRef<HTMLDivElement | null>(null);
   const surfaceRef = useRef<HTMLElement | null>(null);
@@ -338,9 +264,8 @@ export function LibraryAgentDock({
       ref={frameRef}
       data-testid="library-agent-dock-frame"
       /*
-       * **One Escape rule for both docks.** Escape anywhere in the dock puts it away, as it closes
-       * the map's; a composer holding a sentence claims the key first (`defaultPrevented`), so an
-       * unsent draft is never what Escape takes. This dock used to ignore the key entirely.
+       * Escape anywhere in the dock puts it away; a composer holding a sentence claims the key first
+       * (`defaultPrevented`), so an unsent draft is never taken.
        */
       onKeyDown={(event) => {
         if (event.key !== "Escape" || event.defaultPrevented || !open) return;
@@ -438,8 +363,7 @@ export function LibraryAgentDock({
             systemPromptAppendix={LIBRARY_HANDOFF_APPENDIX}
             beforeComposer={
               onFileAnswer ? (
-                // The LLM Wiki pattern's "answers can be filed back", standing under the
-                // answer it files rather than in the index column (owner, 2026-09-07).
+                // The save offer stands under the answer it files, not in the index column.
                 <div className="flex flex-col items-start gap-1.5">
                   <Tooltip content={tLibrary("wiki.fileAnswerTooltip")}>
                     <Chip

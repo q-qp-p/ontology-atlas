@@ -6,12 +6,7 @@ import enMessages from "../../../../../messages/en.json";
 import type { LibraryUiModel } from "@/features/library";
 import { LibrarySection } from "./LibrarySection";
 
-/**
- * **A state repeated on every row is said once, above the list** (installed app,
- * 2026-09-18: a freshly filled folder wore the same amber pill on 1,600 of 3,000 source
- * rows, and 400 wiki spines read the same *needs review · off template*). Below one
- * screen of rows nothing folds, which is what the sibling tests keep pinning row by row.
- */
+/** A state repeated on every row is said once, above the list; below one screen of rows nothing folds. */
 
 const BASE = {
   sources: [],
@@ -147,12 +142,8 @@ describe("the wiki shelf says its common caption once", () => {
 });
 
 /**
- * **A door at the end of a sentence must not wear the sentence's ink.**
- *
- * Measured 2026-09-19 on the wiki tab in a browser: the note "writing needs the app…"
- * ended in *Get the app* set in the same tertiary grey with no underline, so the one way
- * out read as three more words. The tone is the accent the Rounds tab's door to the same
- * page wears; the note itself stays tertiary.
+ * A door at the end of a sentence must not wear the sentence's ink: the link takes the accent while
+ * the note stays tertiary.
  */
 describe("the web note's door to the app is a door", () => {
   it("sets the link in the accent ink while the sentence stays tertiary", () => {
@@ -166,11 +157,8 @@ describe("the web note's door to the app is a door", () => {
 });
 
 /**
- * **No agent: one notice with its door, not two dead chips** (design sweep, 2026-09-25).
- * Measured at 1512 the column's top 120px held Check and Compile at opacity 0.55 over a
- * two-line reason. The installed app with no runtime now draws one sentence and the door to
- * the agents page; while detection is still running the doors stay, because nothing is
- * missing yet.
+ * With no coding agent the installed app draws one notice with its door to the agents page instead
+ * of two dead chips; while detection still runs, the doors stay.
  */
 describe("the wiki head with no coding agent", () => {
   function NoAgent({ agentMissing }: { agentMissing: boolean }) {

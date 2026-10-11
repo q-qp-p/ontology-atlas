@@ -145,7 +145,6 @@ describe("DocMetaBar — a wiki page is not a document that failed to become a n
     ).toBeInTheDocument();
   });
 
-  // A file under `wiki/` that has a `kind:` gets the ordinary verdict.
   it("treats a file under wiki/ that really carries a kind as the node it is", () => {
     renderMetaBar({
       ...wikiDoc,

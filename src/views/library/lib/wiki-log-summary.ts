@@ -1,8 +1,6 @@
 /**
- * The wiki log keeps its summaries in one machine form — `disagreement 0 · superseded 2`,
- * `a, b (new)`, `ran; counts not stated` — so `grep` reads the same words in every vault.
- * The Library header is where a person reads them, in the screen's language (installed
- * app, 2026-09-07: a Korean header said "ran; counts not stated").
+ * The wiki log keeps summaries in one machine form (`ran; counts not stated`) so `grep` reads the
+ * same in every vault; the Library header shows them in the screen's language.
  */
 export type LogSummaryTranslator = (key: string, values?: Record<string, string | number>) => string;
 

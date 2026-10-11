@@ -28,9 +28,7 @@ interface OntologyBriefDoc {
 interface OntologyEvidenceStates {
   current: ReadonlySet<string>;
   stale: ReadonlySet<string>;
-  /** Evidence paths no longer on disk. */
   missing: ReadonlySet<string>;
-  /** Only a folder-level path moved: something under it changed, not yet a verdict. */
   folderOnly: ReadonlySet<string>;
 }
 
@@ -40,7 +38,6 @@ export interface OntologyBriefInput {
   evidence: OntologyEvidenceStates | null;
   /** Why evidence is absent; app sessions must never suggest installing the app. */
   evidenceAvailability?: Extract<BriefCore['availability'], 'app-only' | 'reading' | 'unreadable' | 'no-source'>;
-  /** The to-do tab's verdict total. */
   repairCount: number;
   /** Names agents asked this folder for that it does not hold. */
   unmatchedCount: number;
@@ -48,8 +45,8 @@ export interface OntologyBriefInput {
 }
 
 /**
- * Why the concepts' evidence has no verdict yet, in order of precedence. A walk in flight is reading whatever else
- * is known, so a folder without a bound project does not flip from "no repository" to measured lines unmarked.
+ * Why evidence is not judged, in order of precedence. A walk in flight reads what else is known,
+ * so a folder without a bound project does not flip from "no repository" to measured lines.
  * A failed walk without a bound project still says "connect a repository".
  */
 export function evidenceAvailability(input: {

@@ -3,31 +3,13 @@ import type { useTranslations } from "next-intl";
 import type { LibraryUiModel } from "@/features/library";
 
 /**
- * **Where the folder stands, in the three words the shelf uses.**
- *
- * The derivation lived inside `LibraryStage` until 2026-09-06, which was fine while the
- * shelf was the only thing that said it. It is not any more: the Library's pane became
- * the graph, and the graph's header carries a one-line status strip — *Gather done ·
- * Compile next · 1 waiting* — so the same three states are now read in two places at
- * once, one of them permanently on screen and the other behind a chip.
- *
- * Two copies of this arithmetic would disagree the first time either one was edited, and
- * they would disagree **visibly**, in one viewport. So it is one function, and both
- * surfaces render what it returns.
+ * Where the folder stands in the three words the shelf uses; one function so the shelf and the graph
+ * header status strip render the same states.
  */
 
 /**
- * `checking` is the fourth word, added 2026-09-07.
- *
- * Hashing is lazy: a source that has been listed but not yet measured is **neither**
- * written up nor waiting, and `needsCompileCount` counts only the ones known to be
- * waiting. Without this word the arithmetic read a folder mid-measurement as finished —
- * the guide said *Compile done · every source already has a write-up that matches its
- * bytes* while step three said *0 of 7 written up* and all seven rows said *checking*
- * (owner, on the merged build). Three surfaces, three answers, one folder.
- *
- * It is deliberately not `waiting`: nothing is wrong and there is nothing to press. It is
- * the honest "ask again in a moment" the source rows have carried since they shipped.
+ * `checking`: hashing is lazy, so a listed but unmeasured source is neither written up nor waiting.
+ * Not `waiting`: nothing is wrong and there is nothing to press.
  */
 export type LibraryStepState = "done" | "next" | "waiting" | "checking";
 
@@ -97,8 +79,8 @@ export function libraryStepStates(
 ): LibraryStepStates {
   const sourceCount = model.sources.length;
   /**
-   * Sources listed but not yet hashed. The rows say `checking` for exactly these, and the
-   * two steps that would otherwise claim a verdict about them say the same word.
+   * Sources listed but not yet hashed; the rows and the steps that would otherwise claim a result say
+   * `checking`.
    */
   const checkingCount = model.sources.filter((row) => row.state === "checking").length;
   const gather: LibraryStepState = sourceCount > 0 ? "done" : "next";
@@ -113,10 +95,8 @@ export function libraryStepStates(
             ? "done"
             : "next";
   /*
-   * `next` was unreachable here until 2026-09-06: both branches returned `waiting`, so a
-   * folder whose pages were all written still showed the last step as one whose turn had
-   * not come. Reading is done only when every source is covered; with pages on the shelf
-   * and sources still waiting, reading is exactly what to do next.
+   * Reading is done only when every source is covered; with pages on the shelf and sources still
+   * waiting, reading is what to do next.
    */
   const read: LibraryStepState =
     model.wikiPages.length === 0
@@ -137,26 +117,9 @@ export function libraryStepStates(
 
 
 /**
- * **Which coverage sentence the read step prints, and with which numbers.**
- *
- * The plain sentence — *N of M sources written up* — is true only of a folder where
- * everything not written up is simply untouched. Three states break that, because a
- * source in any of them has a page (or is about to) and still is not `compiled`:
- *
- *   - `checking`  the hash has not been taken yet, so nothing is known;
- *   - `partial`   the run read only the first part of the file;
- *   - `stale`     a page exists and the bytes have moved under it.
- *
- * ⚠️ **Each was found the same way, one at a time, by an owner reading a real folder.**
- * `checking` first (the guide said *done* over *0 of 7 written up*), then `partial` (*0
- * of 2 written up* beside a shelf holding a page), and `stale` last (2026-09-09: *0 of 6
- * sources written up* under a shelf of four wiki pages, on the most ordinary folder of
- * the three — a folder whose sources have all been written up and have since changed).
- * The first two repairs each added their own clause and left the third case reading zero.
- *
- * Living here rather than in the JSX is what makes the fourth one a test instead of a
- * fourth owner report. The chain still names **one** clause, most specific first: a
- * caption that lists every qualifier at once is the header this stepper replaced.
+ * Which coverage sentence the read step prints. `checking`, `partial` and `stale` sources have a
+ * page or are about to but are not `compiled`, so the plain count would mislead. The chain names one
+ * clause, most specific first.
  */
 export function libraryCoverageCaption(
   model: Pick<LibraryUiModel, "sources" | "partialCount" | "staleCount">,

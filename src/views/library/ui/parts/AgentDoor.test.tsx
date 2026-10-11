@@ -9,17 +9,8 @@ import { LibraryQuestions } from "./LibraryQuestions";
 import { AgentDoor } from "./AgentDoor";
 
 /**
- * **A reason a person can act on — slice U2's third decision.**
- *
- * Measured 2026-09-11: the sentence explaining why Compile and Ask cannot run named a
- * destination and opened no door, while the rail's own agents tile sat 26px away. A
- * reason with no way out teaches a reader to stop reading reasons.
- *
- * What these cases pin is the two ways the door could go wrong rather than merely be
- * absent: it could carry **copy of its own** (a second voice explaining one blockage,
- * which decision 3 forbids — the label must be the rail's destination word), and it could
- * appear **where the sentence is not**, which would put two doors on a landing that is
- * held to one reason.
+ * Pins the two ways the door could go wrong: carrying copy of its own (the label must be the rail's
+ * destination word) and appearing where the sentence is not.
  */
 
 function renderIn(locale: "en" | "ko", node: React.ReactNode) {
@@ -83,11 +74,6 @@ describe("where the door appears, and where it must not", () => {
   });
 
   it("is absent when another card on the landing owns the sentence", () => {
-    /*
-     * The landing prints exactly one reason (`library-spine.spec.ts` counts it), so the
-     * door follows the paragraph. A door here as well would be the second copy of the
-     * thing 2026-09-11 removed — the same answer twice, ~200px apart.
-     */
     questions({ askBlockedReasonId: "library-stage-compile-blocked", agentDoor: true });
     expect(screen.queryByTestId("library-questions-ask-blocked")).toBeNull();
     expect(screen.queryByTestId("library-questions-ask-blocked-door")).toBeNull();

@@ -69,8 +69,8 @@ function Harness({ busy }: { busy: boolean }) {
 
 describe("the index list and the open row", () => {
   it("does not chase the selection again when something unrelated re-renders", () => {
-    // Under a search the list is a filtered array — the case where a render used to hand the
-    // effect a brand-new list with the same rows in it.
+    // Under a search the list is a filtered array; a new array with the same rows must not re-trigger
+    // the selection effect.
     writeLibraryIndexQuery("stability", "sources/b");
     const { rerender } = render(
       <NextIntlClientProvider locale="en" messages={enMessages}>

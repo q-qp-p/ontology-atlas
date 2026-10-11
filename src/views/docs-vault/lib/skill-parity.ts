@@ -18,7 +18,6 @@ export interface SkillParityRow {
   /** The `<name>` of `.claude/skills/<name>/…`. */
   name: string;
   verdict: SkillParityVerdict;
-  /** Used to phrase `one-sided` in plain language. */
   presentIn: Array<'.claude/skills' | '.agents/skills'>;
   /** Which files diverged, so the agent receiving the handoff knows what to open. */
   files: string[];

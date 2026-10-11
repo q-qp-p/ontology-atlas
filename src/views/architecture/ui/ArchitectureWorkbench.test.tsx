@@ -293,9 +293,8 @@ describe('ArchitectureWorkbench', () => {
   });
 
   /*
-   * Under `lower-only` drawing all 21 permitted edges restates the order (`docs/DECISIONS.md`,
-   * 2026-08-28 (3)); the six adjacent pairs make it a chain. Boxes follow dependency order and the
-   * assistive list reads every layer's full reach.
+   * Under `lower-only` drawing all 21 permitted edges restate the order; the six adjacent pairs make
+   * it a chain.
    */
   it('states the whole policy through the columns and the spine, drawing no skip', () => {
     renderWorkbench();
@@ -362,7 +361,6 @@ describe('ArchitectureWorkbench', () => {
     );
   });
 
-  /* Selection replaced hover focus and the reach pulse (`docs/DECISIONS.md`, 2026-08-28 (3)). */
   it('selects a role, says so, and answers with that role in the panel', () => {
     renderWorkbench();
     const views = screen.getByTestId('architecture-graph-box-views');
@@ -550,9 +548,8 @@ describe('ArchitectureWorkbench', () => {
 });
 
 /*
- * A receipt is a dated measurement, not a live claim: the stamp uses the receipt's vocabulary
- * (a short sha for git, the fingerprint sentence for folders, the dirty suffix), the verdict always
- * rides with its counts, and the surface admits it cannot re-verify the source.
+ * A receipt is a snapshot, not a live claim: the stamp, counts beside the result, and an admission
+ * that the surface cannot re-verify the source.
  */
 describe('ArchitectureWorkbench — persisted conformance receipt', () => {
   it('renders a git receipt as a dated stamp with counts beside the verdict, never a bare status', () => {

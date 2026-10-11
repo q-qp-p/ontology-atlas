@@ -17,8 +17,7 @@ import { ArchitectureSketch } from './ArchitectureSketch';
 
 
 /**
- * The architecture canvas with a dock for the selected role. Diagram and document are separate
- * artifacts (`docs/DECISIONS.md`, 2026-08-28 (3)), so boxes stay small enough for an edge to leave
+ * Diagram and document are separate artifacts, so boxes stay small enough for an edge to leave
  * from; `buildArchitectureGraph` picks the strokes and reports `edgeSource`.
  */
 export function ArchitectureFlow({
@@ -63,7 +62,10 @@ export function ArchitectureFlow({
   concepts: Readonly<Record<string, RoleConcept[]>>;
   /** Measured crossings from the persisted record; undefined draws no traffic rather than guessing. */
   roleTraffic?: readonly ArchitectureRoleEdge[];
-  /** Only each role's own outgoing edges are read here; the profile verdict stays in the evidence summary. */
+  /**
+   * Only each role's own outgoing edges are read here; the profile result stays in the evidence
+   * summary.
+   */
   record?: ArchitectureRecord | null;
   /** The profile's own sentence for a role, or null; the box prints it in place of counts. */
   roleSummary: (id: string) => string | null;

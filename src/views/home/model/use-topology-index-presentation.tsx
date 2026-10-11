@@ -120,8 +120,7 @@ export function useTopologyIndexPresentation({
     baseState: baseRenderedIndexState,
     meaningEditorOpen: Boolean(meaningEditorIntent),
     selectionActive: topologySelectionActive,
-    // `?index=expanded` is an explicit deep-link contract; legacy `/ontology?node=` redirects
-    // carry it.
+    // `?index=expanded` is an explicit deep-link contract that redirects carry.
     selectionManualExpand:
       indexManualExpandDuringSelection || indexState === "expanded",
     graphEmpty: topologyGraphEmpty,

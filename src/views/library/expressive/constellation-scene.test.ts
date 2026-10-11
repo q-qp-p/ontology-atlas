@@ -5,10 +5,8 @@ import { describe, expect, it } from "vitest";
 import { pageScaleFor, parallaxFollow } from "./constellation-scene";
 
 /**
- * The scene itself needs a GPU and is proved by recording. This file covers the one part
- * of it that is arithmetic, and it is the part that was wrong: the pointer tilt used to
- * move a fixed 6% of the remaining distance **per frame**, which is a monitor setting
- * wearing a duration's clothes.
+ * The scene needs a GPU and is proved by recording; this file covers the arithmetic part: the
+ * pointer tilt must follow real elapsed time, not a fixed fraction per frame.
  */
 
 /** Remaining distance to the target after `ms` of following in steps of `frameMs`. */
@@ -20,7 +18,6 @@ function remainingAfter(ms: number, frameMs: number): number {
   return remaining;
 }
 
-/** What the retired code did: a constant slice of the remaining distance, per frame. */
 function remainingAfterFixedFraction(ms: number, frameMs: number): number {
   let remaining = 1;
   for (let t = 0; t < ms; t += frameMs) remaining *= 1 - 0.06;
@@ -40,11 +37,6 @@ describe("parallaxFollow", () => {
     expect(at30).toBeCloseTo(at120, 3);
   });
 
-  /*
-   * ⚠️ The measurement that opened this (design-motion, 2026-09-09): 139ms to settle on a
-   * 120Hz display against 556ms on a 30Hz one, from one line of source. Without this the
-   * regression is invisible — every display renders something, and each one is smooth.
-   */
   it("detects the defect it replaced, so the fix cannot be quietly reverted", () => {
     const at120 = remainingAfterFixedFraction(280, HZ_120);
     const at30 = remainingAfterFixedFraction(280, HZ_30);
@@ -97,8 +89,6 @@ describe("the projection the weight channel depends on", () => {
   });
 
   it("listens for the pointer on the object's own box, never on the window", () => {
-    // The 2026-09-08 "wriggle" was a backdrop answering a cursor that was going somewhere
-    // else; a window listener is that defect, whatever the tilt is set to.
     expect(source).not.toContain('window.addEventListener("pointermove"');
     expect(source).toContain('pointerHost.addEventListener("pointermove"');
   });

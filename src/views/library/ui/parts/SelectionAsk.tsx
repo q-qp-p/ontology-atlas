@@ -24,31 +24,9 @@ const BAR_WIDTH = 420;
 type Placement = { text: string; top: number; left: number; above: boolean };
 
 /**
- * Select a passage in a wiki page, ask the agent about it.
- *
- * Owner direction 2026-09-07: dragging over text should offer a question at once, with the
- * question chosen rather than typed from scratch. The moment a passage is selected a single
- * bar appears just above its first line — where this comes from, what disagrees, explain
- * it — and a line for the person's own words. Nothing is sent until one of them is
- * pressed, and the passage is quoted into the conversation so the answer is about exactly
- * those words. While the bar is up the page body carries `data-selecting`, and the page
- * dims every line but the selection and the bar.
- *
- * Why one bar and not a chip that opens a list (the first shape, same day): the list stood
- * to the left of the text and covered three lines of it, and it took a second press to see
- * the questions. A row above the first selected line covers at most the line before it,
- * and reads as belonging to the selection the way an editor's formatting bar does. The
- * second shape the same day boxed every question in its own bordered chip and let the row
- * run off the right edge of the pane when a selection started far to the right; the owner
- * rejected that too. Now the questions are bare text buttons separated by hairlines, the
- * person's own question opens an input in the same row, and after the bar is drawn its
- * real width is measured and the row is pulled back inside the page box.
- *
- * The bar is `transientSurface('anchored')` on the shared `Surface`, the same shape as the
- * Library's shelf popover: beside what opened it, closes on Escape or an outside press, no
- * scrim. It is placed inside `containerRef`, the positioned page-body box, from the
- * selection's own line rectangles, so it follows the text at every width; when the first
- * line is too close to the top of the scroll pane, it hangs under the last line instead.
+ * Select a passage in a wiki page, ask the agent about it: one bar above the first selected line
+ * with questions and a line for the person own words. Nothing is sent until one is pressed. Placed
+ * inside `containerRef` from the selection line rectangles.
  */
 export function SelectionAsk({
   containerRef,
@@ -105,9 +83,7 @@ export function SelectionAsk({
     setOpen(true);
   }, [containerRef]);
 
-  // Drawn, then measured: the left edge is pulled back so the whole row stays inside the
-  // page box. Placement from the selection alone let the row run off the right edge of
-  // the pane (owner, installed app, 2026-09-07).
+  // Drawn, then measured: the left edge is pulled back so the whole row stays inside the page box.
   useLayoutEffect(() => {
     if (!open || !placement) return;
     const bar = barRef.current;

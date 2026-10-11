@@ -2,9 +2,8 @@ import type { BriefLineDetail } from './brief-model';
 import type { EvidenceRow } from '@/shared/lib/git/evidence-states';
 
 /**
- * The named concepts under each evidence line, one row per concept because the sentence counts concepts. Each row
- * carries its newest path, the one the verdict rests on, and the concept's verdict picks its list: a concept with
- * a vanished path and a moved one counts once, as missing, as `ontology-brief` counts it.
+ * One row per concept under each evidence line, because the sentence counts concepts. A concept with a
+ * vanished path and a moved one counts once, as missing, as `ontology-brief` counts it.
  */
 export function buildEvidenceDetails(input: {
   rows: readonly EvidenceRow[];
@@ -40,7 +39,6 @@ export function buildEvidenceDetails(input: {
 
 type EvidenceFile = { path: string; changedAt: string };
 
-/** The entry the verdict rests on, the most recently changed; `undefined` for an empty list. */
 function newest(entries: readonly EvidenceFile[]): EvidenceFile | undefined {
   return entries.reduce<EvidenceFile | undefined>(
     (best, entry) => (!best || (Date.parse(entry.changedAt) || 0) > (Date.parse(best.changedAt) || 0) ? entry : best),

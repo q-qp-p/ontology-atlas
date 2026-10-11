@@ -89,7 +89,6 @@ export interface BriefLineDetail {
   path: string;
   /** When the path moved. `null` for a path that is simply gone. */
   at: string | null;
-  /** When the concept document last moved, for the comparison the verdict rests on. */
   docAt: string | null;
   href: string;
 }

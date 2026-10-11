@@ -102,7 +102,6 @@ function namedUnit(path: string): string {
   return name.replace(/\.[^.]+$/, '');
 }
 
-/** A path's first segment, used to fold a directory of skills or rules into one name. */
 function topFolder(path: string, depth = 2): string {
   const parts = path.split('/');
   return parts.length <= depth ? path : `${parts.slice(0, depth).join('/')}/`;

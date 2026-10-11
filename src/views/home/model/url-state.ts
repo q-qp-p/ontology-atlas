@@ -129,10 +129,8 @@ export const HOME_QUERY_KEYS = {
 } as const;
 
 /**
- * Keys whose value is a name from one vault (node, project or category slug). Surviving a vault
- * switch leaves them pointing at nothing, which the screen reads as fact: a ghost `p` dims the
- * whole map, and absent `pathFrom`/`pathTo` claim "no path". `hub` has no consumer yet but rides
- * round-trips. `from`/`to` are legacy aliases of `pathFrom`/`pathTo`. Enum keys stay.
+ * Keys whose value is a name from one vault: surviving a vault switch leaves them pointing at
+ * nothing (a ghost `p` dims the map; absent `pathFrom`/`pathTo` claim no path). Enum keys stay.
  */
 export const VAULT_SCOPED_HOME_QUERY_KEYS = [
   "p",

@@ -11,44 +11,8 @@ import { ICON_SIZE } from "@/shared/ui/icon-size";
 import { wikiStatusLabel, writerLabel } from "../../lib/writer-label";
 
 /**
- * **Which page is open, and what it was written from.**
- *
- * A wiki page carries no `kind:`, so none of the graph chrome Docs draws applies to it —
- * and the first build of this pane inherited that absence wholesale: the reader opened
- * straight into `## Summary` with nothing naming the file. A page whose body happens to
- * start with a heading looked identical to one that did not.
- *
- * The three facts here are the ones a wiki page's frontmatter is *required* to carry
- * (`wiki-page-schema`), so this is a rendering of the contract rather than a new one:
- * who wrote it, what state it is in, and which sources it stands on.
- *
- * **The source rows are the reason it is a header and not a caption.** The whole promise
- * of this destination is that a claim can be walked back to the file it came from; a
- * citation that only exists inside the body text as `[[src:…]]` is a promise a person has
- * to keep by hand. Pressing one opens that file's own pane, where its hash and its state
- * are.
- *
- * ## The crossing is named (owner, 2026-09-06)
- *
- * *"'view the original' and 'view the template-based write-up' must be separate."* They
- * were separate — two panes that never named each other. `Built from` labelled the
- * provenance and left the reader to guess that a chip was a door. So the control now says
- * what pressing it does: **one cited source becomes one "View original" button carrying
- * its name**, and several keep a list under the same words, because a list of four files
- * cannot be one button without hiding three of them.
- *
- * A citation naming a file that is **not in this folder** is drawn as text rather than a
- * door. Pressing it would open a pane about nothing, and a door that leads nowhere is
- * worse than a fact stated plainly.
- *
- * ## One step for one job (2026-09-06)
- *
- * These were 32px chips. The index's own rows open the very same file at 36px, and so does
- * `SourceSummary`'s `View write-up` list on the other side of the crossing, so one gesture
- * carried two heights depending on which pane a person happened to be in. All three are
- * now the `row` shape at its `md` step, which is what `.claude/rules/design.md` means by
- * one size step per role. Several sources became a vertical list for the same reason: a
- * wrapped chip cluster cannot line up with anything.
+ * Names the open page, its writer, status and cited sources. A cited file not in this folder is
+ * drawn as text, not a door, since a press would open a pane about nothing.
  */
 export function WikiPageHeader({
   doc,
@@ -64,11 +28,7 @@ export function WikiPageHeader({
   onOpenSource: (path: string) => void;
   /** Retained answers already sit below workspace and reader chrome. */
   compactTop?: boolean;
-  /**
-   * The problem card under this header already names the cited file that is not in the
-   * folder and says what to do about it. The header then leaves its own one-line copy out,
-   * so the fact is said once, not twice 40px apart (design sweep, 2026-09-25).
-   */
+  /** Set when the problem card below already names the missing cited file; the header then omits it. */
   missingOriginalNamedBelow?: boolean;
   t: ReturnType<typeof useTranslations<"library">>;
 }) {
@@ -78,16 +38,8 @@ export function WikiPageHeader({
   const only = originals.length === 1 ? originals[0] : null;
 
   /*
-   * **Title, byline, then a breath before whatever the page opens on** (design sweep round
-   * 2, 2026-09-25). With the missing-original line handed to the problem card, the card
-   * followed the byline by 16px — the same gap as title to byline, so the three read as
-   * one run. The header's `pb-2` makes it 24 below the byline against 8 above it. A retained
-   * answer (`compactTop`) keeps its tight top instead: its own context block follows the
-   * byline, and the answer's Summary has to stay above 45% of the 1040×720 window floor
-   * (`library-answer-comparison-rows.spec.ts`). The title
-   * keeps `text-display`'s own 28px leading, the pair `app/globals.css` writes for a page
-   * headline; the 24px `leading-title` it used to carry is the 16px panel title's pair and
-   * set a wrapping headline's lines tighter than its size.
+   * `pb-2` gives the byline room below; `compactTop` keeps a tight top so a retained answer's Summary
+   * stays above 45% of the 1040x720 window (`library-answer-comparison-rows.spec.ts`).
    */
   return (
     <header
@@ -127,12 +79,7 @@ export function WikiPageHeader({
           )}
         </div>
       ) : originals.length > 0 ? (
-        /*
-         * Several originals fold (owner, 2026-09-07): six of them as full rows pushed the
-         * Summary below the fold of the installed app, and the top of a page was a list
-         * of file names nobody had asked to read. One closed line names the count; open,
-         * the files are chips on a wrapping row, each still a press that opens the source.
-         */
+        /* Several originals fold into a `Disclosure` so the Summary stays above the fold. */
         <Disclosure
           className="mt-3"
           summaryTestId="library-wiki-originals"

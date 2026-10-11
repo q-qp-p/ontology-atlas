@@ -165,7 +165,6 @@ describe("parseHomeRouteState", () => {
   });
 
   it("falls back to overview for the removed live-graph mode (#19)", () => {
-    // mode=graph is retired; old links demote to overview.
     const params = new URLSearchParams("mode=graph");
 
     expect(parseHomeRouteState(params)).toMatchObject({

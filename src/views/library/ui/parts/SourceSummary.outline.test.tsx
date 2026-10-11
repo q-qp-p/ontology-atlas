@@ -111,13 +111,6 @@ describe("the source pane's outline section", () => {
     const list = screen.getByTestId("library-source-outline-list");
     expect(list).toHaveTextContent("Response window");
     expect(list).toHaveTextContent("Records");
-    /*
-     * ⚠️ **The count is on the section's label, not in the list** (2026-09-12). Headings
-     * alone would describe a document of eight units as one of two, so the total is still
-     * printed — but a `text-body` primary line pushed into a list of pressable addresses
-     * looked like one more heading a reader could press and could not, which is the mixed
-     * grammar the owner read as *"very strange"*. It rides on the section label itself now.
-     */
     expect(list).not.toHaveTextContent("6 paragraphs");
     expect(screen.getByTestId("library-source-outline-count")).toHaveTextContent("6 paragraphs");
   });
@@ -166,12 +159,6 @@ describe("the source pane's outline section", () => {
     );
   });
   it("prints no line count for a format it cannot outline, and says so instead", () => {
-    /*
-     * ⚠️ Markdown and HTML used to print "18 lines" (design-lead, council 2026-09-11): a
-     * number nobody can act on, contradicting the section's own sentence that these
-     * formats cannot be outlined — a `##` line is a `line` unit to this reader and HTML's
-     * tags are stripped before units exist. They take the honest sentence a PDF takes.
-     */
     renderPane(outlineState({ format: "text", unitCount: 18 }));
     expect(screen.getByTestId("library-source-outline-unreadable")).toHaveTextContent(
       "does not read the structure of this format",
@@ -183,11 +170,6 @@ describe("the source pane's outline section", () => {
   });
 
   it("makes a heading row open the passage it already names", () => {
-    /*
-     * The rows carried `{anchor, title}` and were the only addresses on this screen a
-     * person could read and not follow, while the index caption beside them did exactly
-     * this (design-interaction hold-or-record → do it, council 2026-09-11).
-     */
     const onOpenPassage = vi.fn();
     renderPane(
       outlineState({
@@ -211,15 +193,7 @@ describe("the source pane's outline section", () => {
   });
 
   it("stands the forward press above the two blocks whose height the document decides", () => {
-    /*
-     * ⚠️ Measured at the app's own minimum window, 1040×720, on a five-row outline: the
-     * 「Agents」 door sat at y=724 with its bottom at 756 against a 720 viewport —
-     * `doorInViewport: false`, on the file that needed the door most (design-responsive,
-     * council 2026-09-11). The order is the fixed facts, then the action, then the
-     * variable-length blocks, which holds for any outline length rather than for the
-     * lengths measured so far. The rendered y is `library-day-one.spec.ts`'s to prove;
-     * this pins the order it depends on.
-     */
+    /* Order pinned: facts, then the action, then variable-length blocks, so the door stays in view. */
     renderPane(
       outlineState({
         format: "docx",
@@ -235,11 +209,6 @@ describe("the source pane's outline section", () => {
   });
 
   it("does not set the reason for a refused press two grades under its button", () => {
-    /*
-     * 9.5px under a 14px control, and the only sentence explaining why the card is dead —
-     * the 2026-08-09 finding `.claude/rules/design.md` records (design-lead, council
-     * 2026-09-11). It takes the grade this pane already gives `opened-state`.
-     */
     renderPane(outlineState({ unitCount: 0, unreadable: true }), {
       compileNote: "No verified coding agent is connected.",
       compileBlocked: true,

@@ -246,8 +246,6 @@ export function HarnessCoverageOverview({
     );
   };
 
-  // How many domains each role reaches. Only the column reaching the fewest is drawn in the warning ink; coverage
-  // is stated as a count, not a verdict.
   const covered = (['told', 'gated', 'watched'] as const).map((column) => ({
     column,
     count: evidence.areas.filter((area) => area.roles[column].declarations.length > 0).length,

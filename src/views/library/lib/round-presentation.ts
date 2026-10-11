@@ -58,11 +58,7 @@ export function summarizeSince(entries: readonly RoundPassEntry[], span: SinceSp
   const seenWritten = new Set<string>();
   for (const entry of entries) {
     const started = new Date(entry.startedAt).getTime();
-    /*
-     * A gap is not a pass, and the card does not name it: the ledger right below draws the same
-     * gap as a hatched band at its time (2026-09-25, round three — the card ended on
-     * "asleep 01:12 → 07:28" directly above the ledger row saying the same).
-     */
+    /* A gap is not a pass, and the card does not name it because the ledger below draws it. */
     if (entry.outcome === "asleep") continue;
     if (started < span.from.getTime() || started > span.to.getTime()) continue;
     summary.passes += 1;

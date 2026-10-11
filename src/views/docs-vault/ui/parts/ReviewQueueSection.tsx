@@ -8,10 +8,9 @@ import { controlClass } from "@/shared/ui/control-class";
 import type { ReviewQueueRow } from "@/entities/docs-vault";
 
 /**
- * What waits on a person, at the top of the document list; drawn only when non-empty.
- * The `raised` row (an agent handed it over, with its own sentence) and `changed-since-review`
- * (recomputed from the file, `docs/benchmark/FINDINGS-2026-09-02-review-marks.md`) stay separate rows. No row for
- * unreviewed nodes: absence stays unknown (`docs/DECISIONS.md`, 2026-08-22 record 93 §5).
+ * What waits on a person, at the top of the document list; drawn only when non-empty. The `raised`
+ * row and `changed-since-review` (recomputed from the file) stay separate rows. No row for
+ * unreviewed nodes: absence stays unknown.
  */
 export interface ReviewQueueSectionProps {
   rows: ReviewQueueRow[];
