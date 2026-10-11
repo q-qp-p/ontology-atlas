@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  detectMeaningFindingGaps,
   detectMeaningGaps,
   type ConceptDocFacts,
 } from "./meaning-gaps";
@@ -38,43 +37,5 @@ describe("detectMeaningGaps", () => {
 
   it("treats domains, projects and documents without a parent as complete", () => {
     expect(detectMeaningGaps({ kind: "domain" }, doc({ domainRef: null }))).toEqual([]);
-  });
-});
-
-describe("detectMeaningFindingGaps", () => {
-  it("maps codes to slot names in a fixed order", () => {
-    expect(
-      detectMeaningFindingGaps(
-        doc({
-          findings: [
-            "slug-outside-kind-folder",
-            "uncertainty-missing",
-            "epistemic-exclusion",
-            "boundary-missing",
-          ],
-        }),
-      ),
-    ).toEqual([
-      "missing-boundary",
-      "missing-uncertainty",
-      "epistemic-exclusion",
-      "slug-outside-kind-folder",
-    ]);
-  });
-
-  it("emits one row when both boundaries are empty", () => {
-    expect(
-      detectMeaningFindingGaps(
-        doc({ findings: ["boundary-missing", "boundary-missing"] }),
-      ),
-    ).toEqual(["missing-boundary"]);
-  });
-
-  it("excludes missing meaning, which has its own row", () => {
-    expect(detectMeaningFindingGaps(doc({ findings: ["definition-missing"] }))).toEqual([]);
-  });
-
-  it("skips unknown codes without inventing a slot", () => {
-    expect(detectMeaningFindingGaps(doc({ findings: ["folder-only-evidence"] }))).toEqual([]);
   });
 });

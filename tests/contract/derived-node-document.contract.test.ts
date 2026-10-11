@@ -6,11 +6,6 @@ import {
   type VaultManifest,
 } from "@/entities/docs-vault";
 import { resolveNodeDocument } from "@/entities/knowledge-graph";
-import { derivationToInsight } from "@/features/vault-ontology/model/use-ontology-insight";
-import {
-  buildDuplicatePairs,
-  buildSimilarityCandidates,
-} from "@/views/ontology-insights/lib/duplicate-pairs";
 
 /**
  * The contract separating derived nodes (concepts named only in another document's
@@ -109,37 +104,5 @@ describe("파생 노드와 문서 노드의 구분 (번들 샘플)", () => {
       // saying "this node's document" would be a lie.
       expect(ownSlugs.has(stub.sourceSlug)).toBe(true);
     }
-  });
-
-  /**
-   * "Does it have its own document" must have **one** definition. The duplicate-suspect
-   * card once guessed separately with "id tail == document slug tail", and that guess
-   * missed project nodes (a project id is built from the frontmatter `slug:`). Both
-   * surfaces now consult only `resolveNodeDocument`.
-   */
-  it("중복 의심 후보 집합 == 자기 문서 보유 노드 집합", () => {
-    const insight = derivationToInsight(
-      deriveOntologyFromVault(resolveStaticVaultSource("dogfood").manifest),
-    );
-    const candidates = buildSimilarityCandidates(insight.nodes, insight.edges);
-    const documented = insight.nodes.filter(
-      (n) => resolveNodeDocument(n).ownSlug !== null,
-    );
-
-    expect(candidates.size).toBe(documented.length);
-    expect([...candidates.keys()].sort()).toEqual(
-      documented.map((n) => n.id).sort(),
-    );
-    // A derived node mixed into the candidates makes the merge suggestion point at the wrong file.
-    expect(
-      [...candidates.keys()].some(
-        (id) => insight.nodes.find((n) => n.id === id)?.hasOwnDocument === false,
-      ),
-    ).toBe(false);
-    // The old fixed `suspectCount === 11` was deleted (2026-08-01) — it was noise that
-    // broke on every dogfood edit, and the set identity above already catches a
-    // regression in the unified definition. Only the shape contract remains here.
-    expect(buildDuplicatePairs(insight.nodes, insight.edges, 3).suspectCount)
-      .toBeGreaterThanOrEqual(0);
   });
 });

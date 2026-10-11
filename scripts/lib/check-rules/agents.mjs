@@ -57,7 +57,7 @@ export const rules = [
     command: 'pnpm exec vitest run tests/contract/agent-files.contract.test.ts tests/contract/nested-agents-pointers.contract.test.ts tests/contract/skill-routing.contract.test.ts tests/contract/rules-path-scope.contract.test.ts tests/contract/secret-read-guard.contract.test.ts tests/contract/node-test-reachability.contract.test.ts tests/contract/agent-file-citations.contract.test.ts',
     reason: 'one side of the agent-files pair, or a rule glob the nested pointers derive from, changed',
     /*
-     * `cli/src/lib/agent-files.mjs` and `src/views/docs-vault/lib/agent-files.ts`
+     * `cli/src/lib/agent-files.mjs` and `src/entities/agent-files/model/agent-files.ts`
      * are two implementations of one contract, and the nested `AGENTS.md`
      * pointers derive their expected rule set from `.claude/rules/` frontmatter.
      * Editing either side alone recommended neither contract, which is how a
@@ -65,7 +65,7 @@ export const rules = [
      */
     matches: [
       /^cli\/src\/lib\/agent-files\.mjs$/,
-      /^src\/views\/docs-vault\/lib\/agent-files\.ts$/,
+      /^src\/entities\/agent-files\/model\/agent-files\.ts$/,
       /^tests\/fixtures\/agent-files-cases\.mjs$/,
       /^\.claude\/rules\/[^/]+\.md$/,
       /^[^/]+\/AGENTS\.md$/,

@@ -243,7 +243,7 @@ export function ProjectDetailPage({
     !slug || Boolean(initialProject),
   );
   const { statusLabel: rawStatusLabel } = useTaxonomy();
-  // A missing value stays undefined; 'active' is the form's legacy fallback id (to-input.ts).
+  // A missing value stays undefined; 'active' is the derivation's fallback status id.
   const statusLabel = (id: string | undefined): string =>
     id === "active" ? t("statusActive") : rawStatusLabel(id);
 

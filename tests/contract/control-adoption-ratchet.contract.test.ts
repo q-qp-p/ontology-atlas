@@ -13,431 +13,68 @@ import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
  * Control adoption ratchet — **hand-written control classNames can never grow.**
  *
  * Six counts: two tag families (button, anchor) × three categories (registered,
- * debt, no-basis). A place is *registered* when it has a written claim to be
- * outside the value layer, *debt* when it is simply not moved yet, and
- * *no-basis* when the value layer cannot express its layout at all.
+ * debt, no-basis), plus the form count below. The ratchet only lets them fall;
+ * a rise means the value layer lost a consumer.
  *
- * The ratchet only ever lets those numbers fall. Raising one means the value
- * layer lost a consumer, which is the regression this file exists to stop.
- *
- * **Judged against the merge base, not against a number in this file**
- * (2026-09-27). Every count is measured on the working tree and again, with the
- * same code, on the merge-base tree (`lib/ratchet-base.ts`); a change fails only
- * when it made a count grow. The registries live in
+ * **Judged against the merge base, not against a number in this file.** Every
+ * count is measured on the working tree and again, with the same code, on the
+ * merge-base tree (`lib/ratchet-base.ts`); a change fails only when it made a
+ * count grow. The registries live in
  * `tests/contract/control-adoption/<registry>/<file>.<claim>.json`, one file per
- * row, so the base's own registry is what the base is measured with and two
- * branches registering different places touch different files. A deliberate
- * rise is a `tests/contract/ratchet-raises/<gate>/<slug>.json` record whose
- * `why` is the reason a reviewer reads. Before this, nine baseline literals here
- * changed in 56 of 74 commits to the file, and parallel branches conflicted on
- * them.
+ * row, so two branches registering different places touch different files. A
+ * deliberate rise is a `tests/contract/ratchet-raises/<gate>/<slug>.json` record
+ * whose `why` a reviewer reads.
  *
- * **The round history — exhaustive counts, registration verdicts, the 13 claims
- * that were rejected and why — is in Git history, not here:** the round log
- * under `docs/` was deleted after commit 530382f7a, which still holds it.
+ * The round-by-round history (exhaustive counts, rejected claims, hole census)
+ * is in Git: `git show 2b60604d8:tests/contract/control-adoption-ratchet.contract.test.ts`.
  *
- * Owner's note: *"What does it mean for the verdict to be final? Does it mean there's nothing left to fix? If so, you should declare termination so we don't have to check again next time."*
+ * ## The three categories
  *
- * | | 2026-08-05 | Now |
- * |---|---:|---:|
- * | Hand-written **buttons** | 74 | **0** |
- * | Hand-written **links** | 67 | **0** |
- * | Hand-written **form elements** | 63 | **0** |
- *
- * **This round is over as long as these three are 0.** The rest are all "positions the design system fundamentally cannot create," **listed with justification**, and each line carries a `conditional` — "when to reopen" — which, if a method arises, will be deleted and return to debt.
- *
- * **So the next person doesn't need to check these numbers again.** The only moment they become non-zero is when **a new hand-written control is added**, at which point this file turns red.
- *
- * ## Terminology — What "debt" means (2026-08-06, Owner's note)
- *
- * This file uses terms like "debt" and "registered," which are developer jargon and may not be understood by newcomers. Here is the plain explanation:
- *
- * | Term in this file | Plain meaning |
+ * | Category | Meaning |
  * |---|---|
- * | **Debt** | **Count of positions where styles are written manually without going through the design system.** The higher the number, the more inconsistently styled buttons appear across screens. |
- * | **Registered** | **Positions that the design system fundamentally cannot create** — listed with justification for why they can't be created. This is not an exemption but a **record of "no method available now"**; if a method arises, it returns to debt. |
- * | **No-basis** | **Positions where the design system could create them but has nothing to create** — e.g., missing transparent click surfaces. Not a target for fixing. |
- * | **Ratchet** | A check that fixes today's value as an upper bound so that improved numbers **cannot get worse again**. |
+ * | **Registered** | The value layer cannot produce this place in principle; the row says why (`control-adoption/buttons/`, `anchors/`). |
+ * | **No-basis** | The value layer could produce it but has nothing to produce: a full-screen click surface (`control-adoption/no-basis/`). Not a repayment target. |
+ * | **Debt** | Movable but not moved yet. Tends toward 0; progress is read only here. |
  *
- * **"Button debt 0" = No buttons with hand-written styles remain.**
+ * Two questions sort a place: can the value layer produce it? If not, register
+ * it. If so, does it have anything to produce? If yes it is debt; if no it is
+ * no-basis. "Too cumbersome to move" and "pixels move" are debt, never no-basis.
+ * Debt must be able to reach 0, which is why the other two are kept apart.
  *
- * | Count | Meaning — one line | Direction of movement |
- * |---:|---|---|
- * | **Button registered** | Positions the value layer **fundamentally cannot produce** (`control-adoption/buttons/`) | To increase, add a raise record for `control-registered`. That file is where to write "why." |
- * | **Button no-basis** | Positions the value layer could produce but **has nothing to produce** — not controls (`control-adoption/no-basis/`) | It is normal for this not to move. **Not a target for repayment.** |
- * | **Button debt 0** | Positions that can be moved but **haven't been yet** | **Tends toward 0.** Button progress is read solely from here. |
- * | **Anchor registered** | Same meaning, for anchors (`control-adoption/anchors/`) | Add a raise record for `control-anchor-registered`. |
- * | **Anchor no-basis 0** | Measured: saw all 102 and got 0 (since `<a>` aims to be thin, it's hard to become a "click surface with nothing to say") | Add a raise record if qualifiers arise. |
- * | **Anchor debt 0** | Unregistered among the 23 `<Link>`s and 14 `<a>`s not yet moved | **Tends toward 0.** |
- * | **Form debt 0** | `<input>`, `<textarea>`, `<select>`, `<label>` with hand-written specs (added 2026-08-05; 63→57→29→20 on 06) | **Tends toward 0.** All text fields have been moved, and native `<select>` debt is **0**. The remaining 20 are layout-only labels (not specs) + 5 checkboxes (self-contract fixed) + slider/full-screen editor/stage input. |
- * | Button total 108 · Anchor total 102 · Form total 63 | Sum of each category | Derived values. Do not judge based on these numbers. |
+ * ## The registry is a debt list, not a permit list
  *
- * **Why three categories — because debt must be able to reach 0.** Mixing "fundamentally cannot create" and "has nothing to produce" into debt means that number can never reach 0, and a number that can't reach 0 is decoration, not progress tracking. The owner's note was precisely this: *"Does 'no need' mean it doesn't need to be created by the design system or is unrelated? If so, it's correct to exclude it entirely; including it in the count causes confusion."*
+ * 1. **Register only a place that passed verification.** "Probably cannot move"
+ *    is debt; unverified debt errs in the safe direction.
+ * 2. **A row registers a count, not a file.** One more hand control in a
+ *    registered file keeps the registered count and raises debt.
+ * 3. **When the proof disappears, the row dies.** Each row carries a `proof`
+ *    string that must still be in the file; a `chrome-token` row also checks in
+ *    `globals.css` that the token is not a fixed step.
+ * 4. **Registering a movable place is the failure this file exists to stop.**
  *
- * ⚠️ **Before 2026-08-04, this gate counted only `<button>`.** So "debt 85" was never the count for *all controls* — anchors (109) could grow freely outside the gate's view. The number didn't suddenly jump to 194; **that many had simply not been counted all along.**
+ * ## Registration claims
  *
- * ### ⚠️ The registration ledger is a debt list, not an approval list
- *
- * Inherits the discipline from the header of `surface-motion-ratchet.contract.test.ts`: *"If you find a hard-cut surface not listed here, fix it rather than adding a line."*
- *
- * 1. **Registration is only for positions that passed verification.** "Probably can't be moved" is debt, not registration. Debt containing unverified items is an error in the **safe direction**.
- * 2. **Registering a file does not exempt that file.** Lines register **counts**, not files. If you add one more hand control to a registered file, the registration count stays the same but debt increases by 1 = turns red.
- * 3. **If justification disappears, the line dies.** Each line carries a `proof` string; if it disappears from the file, the gate says "claim is dead." The `chrome-token` line goes one layer deeper — checking in `globals.css` whether that token is **truly not a fixed step**. The day the token becomes a normal px, that line turns red and returns to debt.
- * 4. **If registration becomes an escape route, this round fails.** Registering something that could be moved but isn't is exactly that failure.
- *
- * ### Criteria for registration — The line separating "forever outside" from "not yet moved"
- *
- * The value layer (`controlClass()`) produces **className**. Therefore, the following three are fundamentally unproduced by this layer, and adding axes won't help:
+ * `controlClass()` produces a className, so these are outside it in principle:
  *
  * | Claim | What is outside the value layer |
  * |---|---|
- * | `chrome-token` | Chrome tokens own dimensions. The value layer's height vocabulary is **fixed steps** only, but these tokens are `clamp(38px, 4.2vh, 48px)` or **redefined to different values** on narrow width/coarse pointer. Fixed-step ramps cannot express viewport functions or pointer upgrades. |
- * | `stage-geometry` | Dimensions come from **JS-calculated `style`** (absolute stage coordinates), not className. Ramps cannot produce style. |
- * | `value-layer-peer` | The value layer's **own house**. Positions where primitives declare their own specs. Forcing a move breaks contracts or passes color/dimensions via `className`, neutralizing the layer — a layer cannot consume itself. |
- * | `standard-button` *(anchor, 2026-08-04)* | **The only shape explicitly yielded by the value layer.** `control-class.ts` states in its header: *"Does not replace standard buttons (`<Button>`) … creating overlapping positions blurs 'which is the spec'."* Thus, anchors passing through `buttonVariants()` have **already passed another value layer**, and moving them via `controlClass` is a violation of that rule, not compliance. |
- * | `no-spec` *(anchor, 2026-08-04)* | This tag **declares no shape/size/color** — either pure passthrough `className={className}` or a single `"inline-flex"` placeholder. It's a position where the value layer has nothing to produce; placeholders are layers the value layer itself defines as its `className` share. |
- * | `state-scoped` *(anchor, 2026-08-04)* | The entire spec exists **only under variant prefixes** (e.g., `focus:` skip link — `sr-only` normally). `controlClass()` produces unvarianted class strings, so it cannot add prefixes. |
- * | `prose` *(anchor, 2026-08-04 link bottom round)* | **Not a control but prose.** Links within markdown body flow — siblings are text, parent `--leading-prose` owns line boxes, and WCAG 2.5.8 exempts within sentences. All eight value layer shapes are flex-based, so it's **fundamentally impossible to produce `display:inline`** (inline-flex kills line wrapping at 320px — measured rect 1 vs 2). The destination is the `.prose-link` contract (`prose-link.contract.test.ts`). |
- *
- * Conversely, "the value layer doesn't have that shape yet" is **not a reason for registration**. That's a position opened by adding parts to the "system," so it is **debt**. This distinction is everything in this round.
- *
- * ### How to read the three branches — Two questions thrown at each position
- *
- * 1. **Can the value layer produce this?** If not → **registration** (one of the claim types in the table above).
- * 2. If yes, **does it have something to produce?** If yes → **debt** (move it). If no →
- *    **no-basis** (`NO_BASIS` — see "2026-08-04 category round" section below).
- *
- * The case where "no" is true in #2 is only one today: **full-screen click surfaces** (screams · blocking backdrops). They declare no shape/size/type/ink, so the value layer has nothing to overlay.
- * ⚠️ "Too cumbersome to move" · "Pixels move" are not answers to #2 — those are debt.
- *
- * Lines tagged `conditional` mean "move if X arises" — on the day the value layer gains that axis, delete registration and lower to debt, then repay.
- *
- * ### 13 claims **rejected** by the 2026-08-04 registration round — because the claims were false
- *
- * Claims entering this round were "git 15 · shared/ui 10 · workshop 11 = 36 outside value layer." Opening each position revealed **only 23 were true**:
- *
- * | Rejected position | Count | Why the claim was false |
- * |---|---:|---|
- * | `atlas-git-panel/ui/CommitDetail.tsx` | 2 | Does **not use** `--git-*` tokens. Underline tab (`min-h-9 border-b-2`) and deep inset row (`px-5`) — both are **value layer holes already counted by the owner** = debt |
- * | `atlas-git-panel/ui/ConceptEgoCard.tsx` | 1 | Same. Text control in `flex-wrap` list — "dense wrap" hole = debt |
- * | `shared/ui/node-explanation-edit.tsx` | 3 | Only **lives** in `src/shared/ui`, not a primitive. `h-6 w-6 rounded-full` is the "no circular icon control" hole already named by the owner = debt |
- * | `shared/ui/info-hint.tsx` | 1 | Same circular icon hole = debt |
- * | `shared/ui/compact-copy-button.tsx` | 1 | `rounded-chip px-2 py-1 text-label` is what the ramp produces. What's outside is just one `active:translate-y` **press idiom** = debt |
- * | `ontology-studio/**` — sentence controls 3 · dotted picker 1 · `rounded-2xl` entry card 1 | 5 | Not "stage geometry." The first four are `inline`/dotted holes; the last is a ramp waiting exception **already visibly registered with owner approval + `eslint-disable`** = debt |
- *
- * ⚠️ **Additionally, the justification for workshop 11 — "`studio-navigation.spec.ts` fixes those dimensions by contract" — is not true.** That spec measures only `fontSize`·`height` of `studio-save`/`studio-exit`, and those two are **not in** this 11. The real reason three stage positions are outside the value layer is not e2e contracts but
- * **`style={{left, top, width: layout.socket.w …}}`** — justification changed to registration.
- *
- * ════════════════════════════════════════════════════════════════════
- * ## What awaits debt 90 — Value layer holes (input for next round)
- * ════════════════════════════════════════════════════════════════════
- *
- * We've counted "reasons unable to move" each round, and placed that census here once. The count is the measurement from the last round that measured these holes.
- *
- * | Hole | Last measurement | What's missing |
- * |---|---:|---|
- * | **Size ramp bundles inset and type in one step** | 9 | "Large inset + small text" exists (mono micro CTA 5 · success tint action 2 · settings notification chip · `MarkdownField` tab). Moving changes type — not an axis but a "system" task of deciding **which is the spec**. |
- * | **`scope: 'panel'` opens only ink** | 7 | Border/indigo still outside: `--map-panel-border`(#2a2a30) · `--map-panel-divider`(#23232a) · `--map-indigo-bright`(#8890e0 ≠ global #7170ff). Value layer comment asserts *"panel ramp has no indigo"* but **it does**. |
- * | **No circular icon control** | 6 | `icon` is fixed to `rounded-chip`. Changing 24px circle to 6px square is not normalization but **identity change**, so it wasn't decided alone without "system" convening. |
- * | **Auxiliary controls in dense rows/wrap** | 5 + 1 | Applying `link`'s `min-h-11`(WCAG 2.5.8) makes rows 2~3x taller. The `inline` axis exempts only "**within sentences**" but cannot speak of "within dense rows." |
- * | **3-column grid row** | 3 | `STEP_ROW`(visual/name/why). `row` is flex-only. |
- * | **`tone: 'accent'` is a marker, not ink** | 3 | Two indigos: marker `--color-indigo-accent`(#7170ff) and text `--color-indigo-text-soft`(#bcc3ffeb). Measured on tint background: accent **3.55~4.25:1 (AA fail)** vs text-soft **7.09~8.37:1**. Not a "position unable to move" but **a potential defect of the value layer itself**. |
- * | **Underline as selection indicator tab** | 2 | `segment` defines "border 0," so it can't draw `border-b-2` tabs. Changing to tint is not normalization but **notation change** = design gate's job. |
- * | **Dotted line = "fillable" affordance** | 2 | Stage's "add more" · picker's "create new." Border *style* is shape; passing via `className` neutralizes the layer. |
- * | **Full-width center alignment + touch upgrade** | 2 | `chip`/`card` have content width, no `justify-center`; `segment` with `justify-center` has no border = "full-width center button with border" doesn't exist. |
- * | **Rising segment** | 2 | `segment`'s press is only indigo tint, but two idioms of `--color-panel` thumb rising on track (`LocaleSwitch` · settings `SegmentSwitch`), one fixed by contract as string. |
- * | **No position without type step** | 2 | All eight shapes enforce size, so controls needing to **inherit** parent text size structurally can't enter. |
- * | **No bordered icon square** | 2 | `QueueRowActions` kebab · `HubRail`. Count is only two, so **not yet an axis** — count and pass. |
- * | **Shallow vertical inset of pill** | 2 | Ramp has 2·2·4px but actual filter pill is 6~10px. Raising makes type larger too. |
- * | **Deep inset list row** | 1 | `px-5` of commit file row. Max for `row` is `px-3`. |
- * | **Ramp outside 16px radius** | 1 | Entry selection card — exception **already visibly registered with owner approval + `eslint-disable`**. `--radius-surface`(16) registration in next design pass. |
- * | **Press idiom (`active:translate-y`)** | 1 | `compact-copy-button`. Value layer has no press axis. |
- *
- * ### Registration candidate verification — 2026-08-04 integrated round confirmed 7 for registration
- *
- * The paragraph above delayed chrome token candidates to "next registration round"; opening each position: `SearchPalette` · `GlobalSearch` · `ShortcutSheet` · `DocsHeaderTile` ·
- * `BackToTopButton` · `GitStatusTile` etc. = **6 registrations**.
- * Verification caught one defect — GlobalSearch's dedicated token is a 32px **single fixed declaration**, so `tokenIsBeyondFixedSteps` rejected it (coarse upgrade block comment previously claimed "already covered"), and only after converging to `--overlay-close-size` was it registered. **Still unverified candidates**: scream/full overlay 5 (need new claim type) · settings sheet contract string fix 4 — still kept as debt (safe direction).
- *
- * ### That this count is **over-counted** — Limitations we keep in mind
- *
- * We count the **literal** `controlClass(` of opening tags (tags using constants created by `controlClass()` in the same file pass through). So if a completed class passing the ramp is imported and used in **another file**, it's caught as "hand-written." A safe-direction error (no under-counting), but penalizes the correct refactor to shared constants.
- *
- * ### 2026-08-04 hole round — debt 90 → 85, and **0 new axes**
- *
- * The remaining 77 items (unregistered at start of this round) were fully split. **The output of this round is not the 5 moved but "why no axis was created."**
- *
- * | Category | Count | What it is |
- * |---|---:|---|
- * | **Value layer outside re-judgment** | 25 | Chrome token contract 10 · scream/full overlay 5 · settings sheet contract fixes class string 4 · error/404 standard button positions 6 (4 adopted this time) → **21 for next registration round** |
- * | **Mono uppercase micro CTA** | 5 | **3rd consecutive round.** Next judgment priority 1 — review as **part** first, not axis (rule 1). |
- * | Lucky/grid row | 10 | Prior "no axis creation" decision valid. |
- * | Panel border/indigo | 6 | **4th consecutive round.** All overlap with secondary holes, single recovery 0~1. |
- * | Inset bottom/asymmetric | 5 | |
- * | Type/ink inheritance | 5 | |
- * | 40px/tint fill 3 · dense row inside 2 · chip 28px 1 | 6 | |
- * | Singletons (only one reason) | 14 | Cannot serve as axis justification. |
- *
- * **Why no new axes**: Most remaining positions hit **multiple holes simultaneously** (e.g., panel indigo + inset/type combination). So creating any single axis opens only 0~1 positions for that axis alone. Axes with 0~1 consumers aren't created — that's the criterion that killed `fixedHeight`. **Panel border/indigo 6 opens only in the same round as resolving inset/type combination.**
- *
- * **Re-measurement corrected two prior observations**: "Circular icon 6" is **2** for this target group (four are in `shared/ui`, outside value layer) · `HubRail` is a vertical edge tab, not "bordered icon square," so squares are only **1**, still not an axis.
- *
- * Moved 5: Two 404 files adopted `<Button>` (correcting that position ratio **4.42 → 4.70** — outside `a11y-ratchet`'s ROUTES, a position the ratchet couldn't see) · `rounded-[4px]` + eslint-disable → `rounded-micro`(disable reason extinguished by registration).
- *
- * ⚠️ Side measurement: raw `buttonVariants()` has both base `border-transparent` and variant border **remaining**, so CSS source order wins transparency. `<Link>` consumers require `cn` merge.
- *
- * ════════════════════════════════════════════════════════════════════
- * ## 2026-08-04 Anchor Round — Split 110 **fully**
- * ════════════════════════════════════════════════════════════════════
- *
- * On the day anchor gate opened, we opened and classified 110 position by position. **The output of this round is not the 8 moved but a full split of "why the remaining 102 don't move"** — exactly what made button side go from 417 → 85.
- *
- * ### Moved 8 — Only two categories, both justified by measurement
- *
- * | Category | Count | Actual movement |
- * |---|---:|---|
- * | `chip`/`md` **exact match** | 5 | **0px.** Hand class was `min-h-8 px-2.5 text-label`+`border-soft`+`rounded-chip`, and ramp produces the same values. Ramp's added `py-1.5` only makes natural height 16+12+2=30, but `min-h-8`(32) still wins. |
- * | `link`/`lg`/`scope:panel` | 3 | **+10px** (FullDetailA1 handoff row). This is not normalization but **accessibility correction** — that position had a 20px text-height target and fell short of WCAG 2.5.8's 24px floor **not exempted by sentence exemption** (a standalone control). `link`'s `min-h-11` is exactly the default axis created to prevent this defect. |
- *
- * ### Remaining 102 — Registration 19 · Debt 83
- *
- * | Category | Count | What's missing / Why outside? |
- * |---|---:|---|
- * | **[Registration] `standard-button`** | 10 | Shape yielded by value layer. DownloadPage 7 · Architecture empty-state exit 1 · Two 404 files 2. |
- * | **[Registration] `chrome-token`** | 3 | AtlasGitPanel 2(`--git-setup-action-height`) · TopologyReviewLink 1(`--chrome-tile-size`). Both have multiple declarations, passing token check. |
- * | **[Registration] `no-spec`** | 3 | MacosDownloadLink(passthrough) · PublicQuickActions 2(`inline-flex` wrapper). |
- * | **[Registration] `value-layer-peer`** | 1 | `<Link>` branch of `ChromeTile`. |
- * | **[Registration] `state-scoped`** | 1 | Skip link. |
- * | No position without type step | 13 | All eight shapes enforce size, so anchors needing to **inherit parent size** structurally can't enter. Button owner counted this hole as "2," but it's **13** for anchors — largest category this round, next judgment priority 1. |
- * | Dense row/sentence text links | 12 | `link`'s `min-h-11`(WCAG 2.5.8) makes top bar/chip inside/2-link row 2~3x taller. `inline` axis exempts only "**within sentences**." |
- * | **Permanent underline + `decoration-*`** | 12 | Value layer has **no underline/decoration axis at all**. Half are markdown body links (document 5 · gateway 2), so not controls but **prose** — whether to create an axis or remove this category from controls is "system's" judgment. |
- * | Inset and type bundled in one step | 9 | The hole button owner counted as "9." Exactly 9 for anchors too. |
- * | No weight axis (`font-medium`/`semibold`) | 4 | Only `onAccent` loads semibold as fixed. |
- * | Borderless **vertical** tile | 4 | Rail 2 · bottom tab 2. `tile` requires border/radius/inset. ⚠️ Claimed `--topology-bottom-tab-min-height` for `chrome-token` on bottom tab but **rejected** — single 56px fixed declaration, so token check refuses (case where gate actually blocks registration escape). |
- * | Height outside ladder | 3+2+2+1+2 | 36px 3 · 28px 2 · 40px chip 2 · 48px sheet row 1 · 40px `rounded-full` idiom 2. |
- * | Tint/overlay fill | 3 | |
- * | Mono uppercase micro | 3 | Same category as button side. Combined is 8, 4th consecutive round. |
- * | Lucky/grid card | 3 | Prior "no axis creation" decision valid. |
- * | `border-t` list row | 3 | `row` has no divider. |
- * | Panel border/action surface | 2 | `scope: 'panel'` opens only ink — 5th consecutive round for button side. |
- * | Singleton (only one reason) | 6 | Press/raise idiom · vertical underline selection indicator · ChromeTile inline reimplementation · border color axis · no `body-lg` step on `link` · (remaining not included in height outside ladder). |
- *
- * **Why zero new axes again**: Two largest categories (type inheritance 13 · dense row 12) are **opposite direction requirements** — one "don't produce size," the other "produce height but exclude 44." Both touch `link` and invalidate each other's harm. Which is the spec is "system's" job, not something this round decides alone.
- *
- * ### Input for next round — By recovery count, with full split
- *
- * | Rank | What | Recovery | Why not this time? |
- * |---:|---|---:|---|
- * | 1 | `link`'s **type/target two axes** judgment | 25 | The only decision opening both type inheritance 13 + dense row 12 at once. "System" convening matter, reason this round didn't fix that file. |
- * | 2 | Underline/decoration axis — **or remove prose links from controls** | 12 | Half are markdown body, so may not be "pressable." Whether to create axis or change classification comes first. |
- * | 3 | Resolve inset/type combination | 9 | Same decision as button side's 9 — both numbers drop in same round. |
- * | 4 | Weight axis | 4 | Asymmetry now: only `onAccent` loads semibold. |
- * | 5 | Borderless vertical tile | 4 | Rail 2 + bottom tab 2. `tile` needs "border 0" branch. |
- * | 6 | `app/error.tsx` · `app/global-error.tsx`'s `rounded-full` idiom | 2(+button 2) | Not missed this time but the **sibling** of the idiom normalized to `<Button>` yesterday, needing to move **together** with adjacent `<button>`, so left behind. Expected actual movement: radius 9999→12 · px 16→18 · type 12.5→14 · ink secondary→primary + background fill. Not value layer movement but **design judgment**, so different gate. |
- * | 7 | ChromeTile inline reimplementation 1(`HomePage`) | 1 | Answer is moving to primitive, but icon tokens differ (`--topology-chrome-icon-size` vs `--chrome-icon`) and has badge child, so not a drop-in. |
- * | — | Mono uppercase micro 3 | 3 | Combined with button side's 5 to **8**. 4th consecutive round, so review as **part**, not axis. |
- *
- * ════════════════════════════════════════════════════════════════════
- * ## 2026-08-04 Integrated Round — Re-evaluate button 85 + anchor 83 as one table, judge by combination
- * ════════════════════════════════════════════════════════════════════
- *
- * Since reason for "zero new axes" three consecutive rounds was "remaining positions hit multiple holes simultaneously," this time we weighed categories not singly but **by combination**. Full re-measurement used same logic as this file's parser (brace depth), and 85 · 83 matched baseline exactly.
- *
- * ### Integrated category table (Button B / Anchor A — one position overlaps multiple categories)
- *
- * | Category | B | A | Sum | Status |
- * |---|---:|---:|---:|---|
- * | Position without type step (needs inheritance) | 52* | 38* | 90* | Waiting `link` redesign (judgment below) — *Heuristic over-count: positions with label in child span · icon-only mixed. Pre-selection full split is anchor round's 13 as ground truth. |
- * | Inset/type combination (ramp outside (px,py,type)) | 19 | 24 | 43 | Not axis but **split into three identities** (judgment below). |
- * | Tint fill (indigo/success a-step background) | 15 | 9 | 24 | With mono parts/panel surface. |
- * | Height outside ladder(h-5/7/9/10/12/16) | 10 | 10 | 20 | Partially chrome token/standard button idiom. |
- * | Permanent underline/decoration | 2 | 13 | 15 | Interaction judgment: prose 5 + fake prose 2 are not controls — to prose contract round. |
- * | Weight(font-medium/semibold) | 8 | 7 | 15 | Axis candidate, consumer full split complete. |
- * | rounded-full idiom(outside pill) | 9 | 5 | 14 | Majority overlaps mono CTA. |
- * | **Mono uppercase micro CTA** | 8 | 4 | 12 | **5th consecutive round — part upgrade judgment (below)**. |
- * | Lucky/grid | 4 | 6 | 10 | "No axis creation" decision valid. |
- * | Panel surface(border/divider/indigo-bright) | 7 | 1 | 8 | Has consumers — same round as inset/type split. |
- * | Circular icon | 6 | 0 | 6 | Axis candidate(icon circular branch), 6 consumers. |
- * | border-t list row | 4 | 2 | 6 | `row` divider branch candidate. |
- * | Full-width center alignment | 6 | 0 | 6 | |
- * | Scream/full overlay | 5 | 0 | 5 | Waiting new registration claim type. |
- * | Press idiom(active:translate) | 4 | 0 | 4 | |
- * | Dotted 2 · underline tab 1 · 9px type 2 | 5 | 0 | 5 | Singleton. |
- *
- * ### Combination analysis — "Axis A alone N, A+B for M" (purpose of this convening)
- *
- * Counted per prescription candidate "does that prescription alone open the position entirely?":
- *
- * | Prescription | Positions opened alone | Positions opened by combination |
- * |---|---:|---|
- * | Underline/prose tailoring | 17 | — (Receiving interaction judgment, to prose contract round). |
- * | Chrome token registration verification | 15 | **7 executed this time** (rest scream type/settings sheet contract). |
- * | Inset/type release(single axis assumption) | 13 | +18 (with mono/tint) — but not resolved by single axis (judgment ②). |
- * | Mono part alone | 3 | **+9~12** (with tint fill/inset combination — triple-hole simultaneity is this category's identity). |
- * | Circular icon branch | 3 | +3 (with chrome token/tint). |
- * | Panel surface | 3 | +5 (with inset/type — matches 4th consecutive round observation). |
- * | border-t row branch | 5 | +2. |
- *
- * Numbers confirm convening premise: **largest recovery is not single axis but "mono part + tint tone + inset split" bundle(≈31) and "link redesign"(type inheritance + dense row + prose tailoring, ≈37).** Former needs part spec; latter received judgment below.
- *
- * ### Judgment (System stone, 2026-08-04)
- *
- * ① **`link` stands on wrong floor — factual error.** Value layer cites WCAG 2.5.8
- *    (AA, 24×24) while loading values from 2.5.5(AAA)/HIG(44, `min-h-11`).
- *    44 is `--touch-target-min` and design.md fixed as "coarse single source" — fine pointer full-screen 44 violates this repository's own touch contract.
- *    `inline` escape route was an axis needed because floor was wrong. **Reset(floor 24 + coarse upgrade + `inline` axis deletion + prose tailoring) moves pixels for 43 calls/28 files of adoption consumers, so goes to its own round with position-by-position full split table** — this round only does judgment and comment correction(remove incorrect citation).
- * ② **Inset/type combination is not an axis.** Distribution of (px,py,type) for 43 positions is not one hole but three identities: mono command tag(part) · standard button idiom(px-4/body/h-10) · ±1-step within row/chip. Creating inset axis multiplies to 8 shapes×4 sizes, becoming second system(rule 1 arithmetic).
- * ③ **Mono command tag upgraded to part** (5th consecutive round = most repeated category). Action layer primitive + gate owning voice(font-mono·uppercase·tracking 1token·caption) in same PR — next round priority 1. Tracking splits into full split 0.08×3 / 0.10 / 0.12 / 0.14×3, needing screen measurement for value confirmation.
- *    (Full range re-split of 2026-08-04 icon ramp round — unrelated to registration/debt, all `font-mono`+`uppercase` control tags: **22 positions · 5 values** = 0.06×2(document audit modal, newly found this round) · 0.08×6 · 0.10×2 · 0.12×4 · 0.14×8.
- *    One more 0.06 above debt 12's 4 values — input for measurement round.)
- *
- * ### Next round — By recovery count
- *
- * | Rank | What | Recovery(expected) | Prerequisite |
- * |---:|---|---:|---|
- * | 1 | `link` reset: floor 24(min-h-6) + coarse upgrade + inline axis deletion + prose tailoring(prose 5 · fake prose 2 → prose contract: force display:inline · underline token · UA focus) | Debt ≈37 + adoption 43-call consistency | Position-by-position full split table · touch-target meter Inline exception pre-adoption(if not, prose 5 becomes false red) · Dense row touch-hit-expand prohibited(tap stealing) — gap prescription(gap-1→2.5, height unchanged) priority. |
- * | 2 | Mono command tag part(+ tint fill tone) | ≈12 | Tracking 1 value confirmation(screen measurement) · Amber-isolated 1 position post-downgrade judgment. |
- * | 3 | Dense row AA immediate fix — DomainCouplingCard vertical gap-1→gap-2.5(center distance 21→26, row height unchanged) | Resolve 1 AA violation | Interaction measurement reception complete — only application remains. |
- * | 4 | Panel surface(border/divider/indigo-bright) + remaining inset split | ≈8 | Scope contract("signal is scope-independent") explicit revision needed. |
- * | 5 | Circular icon branch / border-t row branch / weight axis | 6 / 6 / 15 | Re-verify consumer full split for each. |
- * | 6 | Scream registration claim type · settings sheet contract 4 | 9 | Expand registration criteria table. |
- *
- * ════════════════════════════════════════════════════════════════════
- * ## 2026-08-04 link floor 24 Round — Execute "next" priority 1 (own round)
- * ════════════════════════════════════════════════════════════════════
- *
- * Execution of integrated round judgment ①. Owner: docs/DECISIONS.md 2026-08-04
- * "link floor 24." What remains in this file is count and correction both:
- *
- * - **Adoption consumer measurement 40 calls/24 files** — "43 calls/28 files" in judgment text was over-counted(re-split with same logic as this file's brace-depth parser). Position-by-position before→after full split table is in PR body and owner. |
- * - `link` floor `min-h-11`(44) → **`min-h-6`(24, WCAG 2.5.8 AA)**. Coarse's
- *   44 is produced by `.touch-hit-expand` — attachment 25(new 21), **non-attachment 15 has neighbor target margin <12px** (tap stealing: ::after of element later in DOM order covers preceding element) or truly within sentence/caption row. Position-by-position judgment in owner table.
- * - `inline` axis **deletion** — Of 14 positions fully split, only 3 were truly within sentences; judgment materials(sibling text source · used display · reflow) are all outside static view.
- *   Inline exemption judgment transferred to runtime meter(touch-target-contract's fine-pointer
- *   check, INLINE_EXEMPT + spacingClear).
- * - **Prose tailoring 6** (above `prose` registration) — Anchor debt 83 → 77. Judgment text's "→76" assumed prose 7, re-split corrected to 6(see registration comment).
- *
- * ════════════════════════════════════════════════════════════════════
- * ## 2026-08-04 Category Round — Separate "no-basis" from debt (button 78 → 74)
- * ════════════════════════════════════════════════════════════════════
- *
- * Round opened by owner's note: debt count mixed with **"positions judged to have no reason to put in value layer,"** blurring what that number means. This round didn't fix a single line of code — only **classification and measurement**.
- *
- * ### Output of this round is not the 4 separated but **20 rejected**
- *
- * Header counted "singleton 14 · lucky/grid 10" as those categories. Opening position by position and **re-measuring with entire repository as denominator**, most were false. "Singleton" was only one *within that round's target group*, not **one in the repository** — calling different denominators by same name.
- *
- * | Claim | Count then | Full split re-measurement | True? | Where to |
- * |---|---:|---:|---|---|
- * | Press idiom(`active:translate`) is singleton | 1 | **5** | False | Debt |
- * | Dotted affordance is singleton | 2 | **3** | False | Debt |
- * | Deep inset(`px-5`) is singleton | 1 | **2** | False | Debt |
- * | Underline tab(`border-b-*`) is singleton | 2 | **2** — `tab-bar.tsx` primitive already owns that notation | False | Debt(destination `<TabBar>`). |
- * | Remaining "singletons" like vertical underline/border color/weight | ~8 | Group by ramp outside **attribute types**, minimum 6 consumers(weight 39 · underline 24 · mono 46 …) | False | Debt |
- * | Lucky/grid row | 10 | Actual grid in opening tags is **1**(`DesktopVaultWelcome`). Rest are "lucky card" judgments, not grids. | False | Debt |
- * | That **1** even | — | Icon column fixed to `h-7 w-7`, so `row`(flex+gap) produces **same pixels**. Grid is preference, not necessity. | False | Debt |
- * | **Full-screen click surface(scream/blocking backdrop)** | 5 | **4** — fifth(`DemoStage` play overlay) loads `text-body`·`leading-body`, so judgment function rejects. | **True** | **No-basis 4**. |
- *
- * So **only one category recognized**, and even within it, gate rejected one position. Same result as yesterday's registration round removing 13 items — used what we learned then directly.
- *
- * ### Why only click surface is true — Two requirements this judgment demands
- *
- * `isClickSurface()` requires **simultaneously**: ① `inset-0`(covers screen) ② **0 attributes** owned by ramp(no declaration among height/inset/radius/border/type/weight).
- * Screams only have positioning(`absolute inset-0 z-*`) and one background layer, and overlaying anything of value layer's eight shapes **doesn't change what's visible**. Because no spec to overlay.
- *
- * The map's three carry **contracts** instead of specs — `data-backdrop-contract="blocks-map-and-closes-composer"`
- * · `data-backdrop-surface-token` · `data-interactive-overlay`(marker read by tour auto-start block judgment). Parts of overlay machinery, not design system.
- *
- * ### Return rules — Three to prevent this category from becoming escape route
- *
- * | What becomes false | Which check turns red |
- * |---|---|
- * | Attach any spec to scream(even one `px-3` is enough) | "As many qualified click surfaces as registered actually exist" — value layer now has something to produce, so returns to debt. |
- * | Fifth click surface appears somewhere | "Every qualifying click surface is in the registry" (probe ⑭) and the `control-click-surfaces` count against the merge base — new position caught by both. |
- * | Claim unqualified position for this category | Above two + "no-basis doesn't increase" — confirmed by measurement probe(`DemoStage` false claim → 4 checks red). |
- *
- * All three rules **are machine-measured**, not relying on human opinion. Confirmed all 7 probes red(full split exceeded · additional in registration file · spec attachment · `inset-0` removal · false claim · clearing ledger · lowering baseline only).
- *
- * ### What next round inherits
- *
- * - **`RecentNodeRow`'s `className={className}` pure passthrough 1** — Same nature as anchor registration's
- *   `no-spec` but not yet registered. This round was about creating new category, so didn't touch, left in debt(safe direction). Next registration round priority 1.
- * - Scream type appeared, so header's "waiting for new registration claim type" item **scream/full overlay 5** is resolved — 4 no-basis, 1 debt(`DemoStage`). |
- *
- * ════════════════════════════════════════════════════════════════════
- * ## History — Round-by-round record (417 → 108). **Do not delete**
- * ════════════════════════════════════════════════════════════════════
- *
- * What each round counted is justification for next upgrade. Below is compressed version, preserving numbers and reasons. Original narrative in git history(2026-08-03 revision of this file).
- *
- * ### Why ratchet instead of lint rule (founding judgment, still valid)
- *
- * Original was "lint error if `<button>`'s className doesn't come from `controlClass()`." Counted full split before turning on per `/gate-probe` discipline: **419 items**. A rule that can't be fixed in one PR is noise not force, and covers existing signal(warning 96) — this repository previously banned `shadow-[` entirely, causing lint to jump 144 → 548. Moreover, transition is **normalization**, so pixels change(143 chips with unique size combinations 50 types), and decisions changing pixels are design gate's job, not lint rule's.
- *
- * ### Initial measurement (2026-08-03) — Full split 419, baseline 417
- *
- * By shape: chip 128 · text link-type 85 · list row 39 · icon square 36 · pill 32 · token radius others/uncategorized 58 · card-type 18 · floating/h-8 19 · standard button 1.
- * **2 items** with no className were wrappers, excluded; ratchet caught that correction itself(first run "reduced to 419 → 417" turned red).
- *
- * ⚠️ Parser lesson: If you don't split opening tags by **brace depth**, you read `=>` of `onClick={() => …}` as tag end. That happened in first measurement, classifying 251 of 419 as "no className," nearly flipping conclusion entirely. **Wrong element to measure means wrong number, even if a number comes out.**
- *
- * ### Record of descent
- *
- * | Value | What was moved |
- * |---:|---|
- * | 417 | Initial measurement |
- * | 406 | Settings sheet 11 — chip 6 · icon 2 · row 1 · link-type 1. |
- * | 389 | Map two widgets 31 of 17 — row 8 · link-type 5 · icon 3 · card 2 · chip 1. Remaining 14 are shapes **not in** six categories(vertical action tile 5 · segment tab 3 · window selection chip · vertical edge tab · canvas anchor circle · tree chevron) or positions where ramp minimum inset(8px) conflicts with panel's 4px inset 2. |
- * | 303 | Document drawer/quick drawer/workshop 121 of 86 — row 27 · icon 24 · chip 21 · link-type 13 · pill 4 · card 2. Remaining 35 = chrome token contract 4 · stage absolute positioning 15 · set read as one 11 · inline within sentence 5. |
- * | 269 | Recovery of 48 left by above two rounds "no space" — just after filling four value layer holes(`a1f956ce9`). Settings sheet 29 + map action tile 5. New four `tone`(secondary 6 · accent 11 · success 2 · warning 2 · danger 1) opened 22, `shape: 'tile'` opened 7, `link`'s `min-h-11` opened 3. |
- * | 259 | View round 18 of 10 — row 6 · chip 5. **First time `row`/`sm` exactly matched hand-written height**(`py-1.5` + `--leading-label` = 28px = `min-h-7`). |
- * | 227 | Features round 63 of 32 — chip 15 · pill 6 · link-type 6 · icon 3 · others 2. |
- * | 210 | Map view 31 of 17 — icon 9 · pill 4 · chip 1 · link-type 1. Remaining 14 = not controls 3(full backdrop is scream, not pressable element) · chrome token 2 · ellipsis needed 3 · padding text link 3 · ramp no step 3. |
- * | 173 | Widget round 84 of 37 — chip 21 · pill 4 · icon 4 · card 5 · row 2 · link-type 1. Zero new axes. **210 − 37 = 173 exactly matched full split re-measurement** = means three rounds didn't overlap a single file. |
- * | 148 | Value layer round 25 — result of filling holes owner repeatedly counted. Segment/ghost 12 · panel ink 7 · filled indigo 3 · ellipsis 3. Three new axes + eighth shape one. |
- * | 136 | Workshop/record round 38 of 12 — card 7 · chip 2 · segment 2 · on-accent 3(overlap). Zero new axis/shape/tone. **Record panel is 0 of 15** — this round first saw "structurally outside value layer," and 2026-08-04 registered **12** of them(rest 3 are value layer holes, so debt). |
- * | 144 | Primitive/view round 35 of 4. **Output is "why 31 didn't move" rather than count moved** — same layer as value layer 6 · hole already in owner 21 · dead primitive not rendering 4. |
- * | 123 | Remaining round 57 of 9 — chip 6 · segment 2 · icon 1. Zero new axis/value. Moved chips four sat at `h-9`(36) → **`--control-h-md`(32)** = #884's returned ladder worked, first measurement. |
- * | 119 | Two dead primitives **deleted** — `LinkListEditor`·`ChipListEditor` exported and have unit tests but production consumers were **0**(full split grep). Exactly those 4 items. |
- * | 117 | Value layer round 2(system stone) 6 — "one step below sm" counted three consecutive rounds filled as **micro tier**: `--radius-micro`(4px — already 96 positions with that value) + chip `size: 'xs'` + `segment/sm` override. Together: change chip/pill default border divider(0.08) → border-soft(0.06) — majority correction of full split 74:18. |
- * | **113** | Today after accessibility/ink round. Split into **registration 23 + debt 90** on 2026-08-04. |
- *
- * ### What came with dead primitive deletion (2026-08-03)
- *
- * `link-list-editor` was the **only `.tsx`** in this repository using `data-external-link-marker`(declaration of column allowing `↗` before label), and
- * `label-decoration.contract.test.ts` relied on that fact with *"file writing marker must be 0."* **A component no one renders was supporting the rule's exception clause.** Kept exception(WCAG G201 — warning before leaving to new window), moved gate's idling prevention from "count of files writing exception" to "count of scanned files + synthetic probe." Owner: `docs/DECISIONS.md` 2026-08-03 "Two dead primitives."
- *
- * ### What value layer round **didn't create** — Not creating is also conclusion
- *
- * Applied `/gate-probe` step 1 discipline("don't create rule if noise covers signal") to axes too. **Don't create axis that can't name a single consumer.**
- *
- * | What owner requested | Reason not created(measurement) |
- * |---|---|
- * | `card`'s `items-start`(lucky card) | Doesn't open with one axis. Three consumers **deviate by 2+ axes**(`FirstRunPage` 3 is `grid-cols-[32px_1fr]` · `rounded-chip` · `px-4 py-3.5`, `DesktopVaultWelcome` 4 is radius 0 full bleed `px-4 py-4`). Opening only alignment **no position enters** = axis with 0 users. |
- * | Pair `tracking-<step>` for `text-<step>` | Can produce but **all 244 widths change today**(0.02em × 11px ≈ 6-char chip +1.3px). Honest fix is bundling `--text-<step>--letter-spacing` in globals.css, needing own measurement round. |
- * | Separate `active` vs "selected" axis | Segment 12 positions measured as **12/12 indigo tint background**, split only in ink(primary 11 · accent 1). Normalized by **majority** instead of axis. |
- * | `--chrome-radius-inner`(7px) | **Not a hole.** Alias for `var(--radius-chip)` = 6px in globals.css. Owner's "7px" is old record, and here is reason `segment` uses `rounded-chip`. |
- * | `fixedHeight` axis | Deleted 2026-08-03. Was symptom of wrong value, not axis. |
- *
- * ### Ladder measurement (2026-08-03, 1512×860 · dark) — Only 7 of 18 combinations on ladder
- *
- * Ladder is **28 / 32 / 40**:
- *
- * | Shape | sm | md | lg |
- * |---|---:|---:|---|
- * | chip | 24 | **32** | **32** |
- * | pill | 24 | **32** | **32** |
- * | segment | 22 | 24 | **32** |
- * | row | **28** | 36 | 42 |
- * | card | 30 | 34 | **40** |
- * | icon | 24 | **28** | **32** |
- *
- * Three things read: ① 22 · 24 · 30 · 34 · 36 · 42 are still **outside** this app's height vocabulary. ② `chip`/`pill` have same height for md and lg, so "one step larger" does nothing for height. ③ Chip family lacks 40px(`--control-h-lg`) step. |
- *
- * ### First case value layer expanded contract scope
- *
- * Workshop/record round moved workshop headers 6 had `text-caption`(9.5px) in 3 — `studio-navigation.spec.ts`'s "chrome label is one value 11px" contract only grabbed `studio-save`/`studio-exit` two positions, so siblings escaped.
- * Moving to ramp(`card/sm` = `text-label`) automatically made uncontracted positions into contract values. |
+ * | `chrome-token` | A chrome token owns the size as a viewport function or a pointer/width redefinition; the height ramp has fixed steps only. |
+ * | `stage-geometry` | The size comes from JS-computed `style` (absolute stage coordinates), not a className. |
+ * | `value-layer-peer` | The value layer's own primitives declaring their spec. |
+ * | `standard-button` | An anchor already shaped by `buttonVariants()`, the one shape `control-class.ts` yields to `<Button>`. |
+ * | `no-spec` | The tag declares no shape, size or colour (pure `className={className}` passthrough or an `inline-flex` placeholder). |
+ * | `state-scoped` | The whole spec sits under a variant prefix (a `focus:` skip link); `controlClass()` emits unprefixed classes. |
+ * | `prose` | A link inside running text; every value-layer shape is flex, and `inline-flex` breaks line wrapping. Its contract is `.prose-link`. |
+ * | `shape-gap` | The eight shapes cannot express the layout; always `conditional`, so the row is deleted once the shape exists. |
+ *
+ * "The value layer does not have that shape yet" is not a claim: that is debt.
+ * A `conditional` row names when to reopen it.
+ *
+ * ## Known over-count
+ *
+ * The count reads a literal `controlClass(` on the opening tag (or a constant
+ * built from it in the same file). A finished class imported from another file
+ * counts as hand-written: a safe-direction error that penalises sharing.
  */
 /**
  * The **kind of claim** that something is outside the value layer. A new kind must also be added

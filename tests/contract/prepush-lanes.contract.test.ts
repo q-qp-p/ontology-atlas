@@ -67,10 +67,10 @@ describe("pre-push 훅 — 빠른 CI 거울", () => {
 
   /**
    * Timing ratios cannot be measured on a machine this hook is deliberately
-   * saturating. `duplicate-pairs.perf.test.ts` compares a fast path against a naive
-   * one and reads the clock; under parallel lanes (~900% CPU measured) it went
-   * red on a push whose diff could not have touched it, and passed on a rerun. CI
-   * runs the same three files on a quiet runner, where the number means something.
+   * saturating. A `*.perf.test.*` file compares a fast path against a naive one and
+   * reads the clock; under parallel lanes (~900% CPU measured) one went red on a
+   * push whose diff could not have touched it, and passed on a rerun. CI runs the
+   * same files on a quiet runner, where the number means something.
    *
    * The exclusion is scoped to this lane. Removing it re-introduces a flake that
    * looks like a real failure, which is worse than no gate — people learn to retry.

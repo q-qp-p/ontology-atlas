@@ -1,7 +1,6 @@
 /**
  * Decides the transient "N concepts updated" chip (`ui/TopologyChangeAnnouncement.tsx`): did the
- * touched-node count just grow. Unlike the persistent `TopologyReviewLink` cumulative count, it
- * auto-dismisses after a few seconds.
+ * touched-node count just grow.
  */
 export interface ChangeAnnouncementDecision {
   show: boolean;

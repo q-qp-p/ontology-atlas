@@ -1,16 +1,8 @@
 /**
- * One list rhythm for every insights card: rows stack from the top with a divider, at the 44px touch-row floor
- * with the ramp's `py-3` inset, and a card's spare height goes to its caption (`mt-auto`), never shared out between
- * rows. The divider belongs to a plain cell, never a hover row: a pressable row bleeds `-mx-1.5 px-1.5`, so a
- * divider on it would pass the padding line and curve with the row radius.
+ * One insights row at the 44px touch-row floor with the ramp's `py-3` inset; callers add their own horizontal
+ * layout. A divider belongs to the plain cell around it, never the row: a pressable row bleeds `-mx-1.5 px-1.5`.
  */
-export const INSIGHTS_LIST = "flex flex-col divide-y divide-[color:var(--color-divider)]";
-
-/** One row of `INSIGHTS_LIST`; callers add their own horizontal layout. */
 export const INSIGHTS_LIST_ROW = "min-h-11 py-3";
-
-/** The same list in two columns on a wide board (hubs, impact ranking); ranks read left to right, then down. */
-export const INSIGHTS_LIST_TWO_COLUMN = "grid auto-rows-min content-start gap-x-6 @min-[960px]/insights:grid-cols-2";
 
 /**
  * The cell around one two-column row. Not `divide-y`: the second column's first row is a column head, and a line

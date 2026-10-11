@@ -25,38 +25,35 @@ export const rules = [
      * for a change to this board.
      */
     command: 'pnpm exec playwright test tests/e2e/touch-target-contract.spec.ts',
-    reason: 'a control on the insights board, the census strip, or a shared control primitive changed',
+    reason: 'a control on the insights board or a shared control primitive changed',
     matches: [
       /^src\/views\/ontology-insights\/ui\/OntologyInsightsPage\.tsx$/,
       /^src\/views\/ontology-insights\/ui\/tabs\/BriefTab\.tsx$/,
-      /^src\/views\/ontology-insights\/ui\/parts\/InsightsCensusStrip\.tsx$/,
       /^src\/shared\/ui\/tab-bar\.tsx$/,
       /^src\/shared\/ui\/segmented-control\.tsx$/,
     ],
   },
   {
     order: 770,
-    // The census strip is drawn for one subject only, so wherever it sits it can push the
-    // control a reader just clicked (measured 2026-09-20: 188px, at both 1512 and 1920).
+    // A strip drawn for one subject only pushed the control a reader just clicked (measured
+    // 2026-09-20: 188px, at both 1512 and 1920); the spec keeps the evidence in view.
     command: 'pnpm exec playwright test tests/e2e/insights-board-stability.spec.ts',
-    reason: 'the insights subject row, its census strip, or the panel between them changed',
+    reason: 'the insights subject row or the panel below it changed',
     matches: [
       /^src\/views\/ontology-insights\/ui\/OntologyInsightsPage\.tsx$/,
-      /^src\/views\/ontology-insights\/ui\/parts\/InsightsCensusStrip\.tsx$/,
+      /^src\/views\/ontology-insights\/ui\/analysis\/AnalysisWorkspace\.tsx$/,
       /^src\/shared\/ui\/segmented-control\.tsx$/,
     ],
   },
   {
     order: 780,
     command: 'pnpm exec playwright test tests/e2e/insights-badge-agreement.spec.ts',
-    reason: 'insights census rendering or its domain-capacity consumer changed',
+    reason: 'the insights analysis counts or the witnesses they name changed',
     matches: [
-      /^src\/shared\/lib\/render-timing\/use-count-up\.ts$/,
-      /^src\/views\/ontology-insights\/lib\/census-health\.ts$/,
+      /^src\/views\/ontology-insights\/lib\/analysis-model\.ts$/,
       /^src\/views\/ontology-insights\/ui\/OntologyInsightsPage\.tsx$/,
-      /^src\/views\/ontology-insights\/ui\/parts\/InsightsHeroCensus\.tsx$/,
-      /^src\/views\/ontology-insights\/ui\/tabs\/OverviewTab\.tsx$/,
-      /^src\/widgets\/domain-capacity-bar\/ui\/DomainCapacityBar\.tsx$/,
+      /^src\/views\/ontology-insights\/ui\/analysis\/AnalysisWorkspace\.tsx$/,
+      /^src\/views\/ontology-insights\/ui\/analysis\/PairRail\.tsx$/,
     ],
   },
 ];

@@ -58,7 +58,7 @@ describe("FSD boundaries — v7 policy migration", () => {
     expect(typeOnly.errorCount).toBe(0);
 
     const sameDirectionValueImport = await lintText(
-      "import { getOntologyKindTone } from '@/entities/ontology-class';\nexport const probe = getOntologyKindTone;\n",
+      "import { useOntologyKindLabel } from '@/entities/ontology-class';\nexport const probe = useOntologyKindLabel;\n",
       "src/shared/__boundaries-probe__.ts",
     );
     expect(sameDirectionValueImport.errorCount).toBe(1);

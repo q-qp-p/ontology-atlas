@@ -59,8 +59,6 @@ const messages: Record<string, string> = {
   "desktopWelcome.dogfoodDirectBody": "설치 앱에서 바로 docs/ontology를 열어 Atlas가 자기 자신을 분석하게 합니다.",
   "desktopWelcome.createTitle": "새 온톨로지 저장소 만들기",
   "desktopWelcome.createBody": "빈 폴더를 만들거나 선택합니다.",
-  "desktopWelcome.sampleTitle": "샘플 온톨로지 보기",
-  "desktopWelcome.sampleBody": "읽기 전용 문서로 둘러봅니다.",
   "desktopWelcome.recentTitle": "최근 저장소",
   "desktopWelcome.recentEmpty": "아직 최근 저장소가 없습니다.",
 };

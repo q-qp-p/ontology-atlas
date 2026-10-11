@@ -34,31 +34,6 @@ export interface BuildOntologyReachabilityOptions {
   types?: readonly string[];
   /** Relation types hidden from the walk. */
   excludeTypes?: readonly string[];
-  /** A prebuilt index for repeated walks of one graph; it must match `types` and `excludeTypes`. */
-  index?: ReachabilityIndex;
-}
-
-export interface ReachabilityIndex {
-  nodeById: ReadonlyMap<string, KnowledgeGraphNode>;
-  adjacency: ReachabilityAdjacency;
-}
-
-/** The filters are part of the index, so walk with the same values. */
-export function buildReachabilityIndex(
-  nodes: readonly KnowledgeGraphNode[],
-  edges: readonly KnowledgeGraphEdge[],
-  options: { types?: readonly string[]; excludeTypes?: readonly string[] } = {},
-): ReachabilityIndex {
-  const typeSet =
-    Array.isArray(options.types) && options.types.length > 0 ? new Set(options.types) : null;
-  const excludeSet =
-    Array.isArray(options.excludeTypes) && options.excludeTypes.length > 0
-      ? new Set(options.excludeTypes)
-      : null;
-  return {
-    nodeById: new Map(nodes.map((node) => [node.id, node] as const)),
-    adjacency: buildAdjacency(edges, typeSet, excludeSet),
-  };
 }
 
 interface DiscoveredNode {
@@ -113,8 +88,8 @@ export function buildOntologyReachability(
   const excludeSet = Array.isArray(options.excludeTypes) && options.excludeTypes.length > 0
     ? new Set(options.excludeTypes)
     : null;
-  const nodeById = options.index?.nodeById ?? new Map(nodes.map((node) => [node.id, node] as const));
-  const adjacency = options.index?.adjacency ?? buildAdjacency(edges, typeSet, excludeSet);
+  const nodeById = new Map(nodes.map((node) => [node.id, node] as const));
+  const adjacency = buildAdjacency(edges, typeSet, excludeSet);
   const discovered = new Map<string, DiscoveredNode>([
     [startId, { id: startId, distance: 0 }],
   ]);

@@ -142,22 +142,3 @@ export function CensusSubStat({
     </span>
   );
 }
-
-export function CensusSubStrip({
-  items,
-}: {
-  items: Array<{ key: string; label: string; count: number }>;
-}) {
-  return (
-    <div className="flex flex-wrap items-center gap-3.5 break-keep text-label text-[color:var(--color-text-tertiary)]">
-      {items.map((item) => (
-        <span key={item.key} className="inline-flex items-center gap-1.5">
-          {item.label}
-          <span className="font-mono text-label tabular-nums text-[color:var(--map-numeral-face)]">
-            {item.count}
-          </span>
-        </span>
-      ))}
-    </div>
-  );
-}

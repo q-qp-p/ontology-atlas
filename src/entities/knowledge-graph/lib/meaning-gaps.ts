@@ -1,30 +1,7 @@
-/** The single verdict on meaning gaps, shared by the insights queue and the agent panel's chips. */
+/** The single verdict on meaning gaps, read by the agent panel's chips. */
 
 /** Gaps a person can fill once they know what the thing means. */
-export type MeaningGapKind = "missing-definition" | "missing-domain";
-
-/** Other validator findings: queue rows only, kept apart because chips need prose for each kind. */
-export type MeaningFindingGapKind =
-  | "missing-boundary"
-  | "missing-uncertainty"
-  | "epistemic-exclusion"
-  | "slug-outside-kind-folder";
-
-/** Written out so a new code is mapped on purpose or ignored. */
-const FINDING_GAP_BY_CODE: Readonly<Record<string, MeaningFindingGapKind>> = {
-  "boundary-missing": "missing-boundary",
-  "uncertainty-missing": "missing-uncertainty",
-  "epistemic-exclusion": "epistemic-exclusion",
-  "slug-outside-kind-folder": "slug-outside-kind-folder",
-};
-
-/** The validator's order, minus the definition. */
-export const MEANING_FINDING_GAP_KINDS: readonly MeaningFindingGapKind[] = [
-  "missing-boundary",
-  "missing-uncertainty",
-  "epistemic-exclusion",
-  "slug-outside-kind-folder",
-];
+type MeaningGapKind = "missing-definition" | "missing-domain";
 
 export interface ConceptDocFacts {
   /** `VaultDoc.meaningFindings` verbatim; empty means asked and none found. */
@@ -54,16 +31,4 @@ export function detectMeaningGaps(
     gaps.push("missing-domain");
   }
   return gaps;
-}
-
-/** Deduplicated because a row is per node and `boundary-missing` arrives once per side. */
-export function detectMeaningFindingGaps(
-  doc: ConceptDocFacts,
-): MeaningFindingGapKind[] {
-  const seen = new Set<MeaningFindingGapKind>();
-  for (const code of doc.findings ?? []) {
-    const gap = FINDING_GAP_BY_CODE[code];
-    if (gap) seen.add(gap);
-  }
-  return MEANING_FINDING_GAP_KINDS.filter((gap) => seen.has(gap));
 }

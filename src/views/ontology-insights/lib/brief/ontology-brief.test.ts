@@ -24,7 +24,7 @@ describe('buildOntologyBrief', () => {
   it('is app-only without evidence states: every concept is unknown, none quietly current', () => {
     const brief = buildOntologyBrief({ nodes, docs, evidence: null, repairCount: 8, unmatchedCount: 0, anchorMs });
     expect(brief.availability).toBe('app-only');
-    // This card counts the same nodes as the census strip, so the two "concept" numbers agree.
+    // This card counts the canonical census, so every "concept" number on the screen agrees.
     expect(brief.headline).toBe(5);
     expect({ current: brief.current, stale: brief.stale, unknown: brief.unknown }).toEqual({
       current: null,

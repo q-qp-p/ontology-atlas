@@ -27,8 +27,6 @@ export {
 export { VaultSourceHydrationBoundary } from './ui/VaultSourceHydrationBoundary';
 export { AGENT_CLIENTS, filesForClient, type AgentClientId } from './lib/agent-clients';
 export {
-  ONTOLOGY_STARTER_FILES,
-  buildCodexConfigToml,
   buildCodexConfigTomlTemplate,
   buildCodexMcpAddCommandTemplate,
   buildMcpConfigJson,

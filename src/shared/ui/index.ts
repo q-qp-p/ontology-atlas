@@ -19,8 +19,6 @@ export { LiveAnnouncer } from './live-announcer';
 export { InfoHint } from './info-hint';
 export { ToastProvider, useToast, useToastAnchor } from './toast';
 export { EmptyState } from './empty-state';
-export { HiddenCountLine } from './hidden-count-line';
-export { EvidenceOnlyBadge } from './evidence-only-badge';
 export { Select } from './select';
 export { InlineEditable } from './inline-editable';
 /* A new primitive ships with consumers and a gate: `docs/DECISIONS.md`, two dead primitives. */

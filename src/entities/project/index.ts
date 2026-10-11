@@ -35,7 +35,6 @@ export {
 export { getTopologyFocusHref, getTopologyProjectHref, getTopologyProjectNodeHref } from "./lib/topology-href";
 export { ProjectCard } from "./ui/ProjectCard";
 export { ProjectMetaGrid } from "./ui/ProjectMetaGrid";
-export { projectToInput } from "./model/to-input";
 export { projectDisplayName, projectHasDisplayName, readDisplayNames } from "./lib/display-name";
 export { rankProjectMatches } from "./lib/match-projects";
 export type { ProjectMatchSource } from "./lib/match-projects";

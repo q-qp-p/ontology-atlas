@@ -43,8 +43,8 @@ export interface OntologyMapTokens {
   recentChange: string;
   /**
    * The lit 3D map's kind light (2026-09-25) — the product's kind ramp triples
-   * (`--color-kind-*-rgb`, "r g b"), the same four hues the kind chips and the
-   * legend wear, so a node's light and its chip can never disagree about its kind.
+   * (`--color-kind-*-rgb`, "r g b"), the same four hues the legend wears, so a
+   * node's light and its legend dot can never disagree about its kind.
    */
   kindRgbProject: string;
   kindRgbDomain: string;
