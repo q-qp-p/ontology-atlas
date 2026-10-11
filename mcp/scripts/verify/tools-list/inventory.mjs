@@ -62,10 +62,6 @@ export const EXPECTED_IDEMPOTENT_TOOLS = [
   'remove_relation',
 ];
 
-export function expectedToolSplitLabel() {
-  return `${EXPECTED_READ_TOOLS.length} read + ${EXPECTED_WRITE_TOOLS.length} write`;
-}
-
 export function toolsListAnnotationSummary(tools) {
   if (!Array.isArray(tools)) return 'missing tools/list';
   const titleCount = tools.filter((tool) => tool?.annotations?.title === expectedToolTitle(tool?.name)).length;

@@ -156,48 +156,6 @@ const RELATION_TYPE_FOR_KEY = Object.freeze({
   elements: 'elements',
   domain: 'domain',
 });
-/**
- * Bridge-shaped nodes: a node whose containment parent or child has its own kind
- * (a capability under a capability). The four kinds nest flat, so same-kind
- * containment happens only when someone inserted a grouping layer; no frontmatter
- * flag to forge or lose. ("Parent is a capability, children all elements" is
- * vacuously true of every leaf.) O(V + E): a slug→kind Map, one pass over edges.
- *
- * @param {{nodes?: Array, edges?: Array}} graph compiled artifact, or anything of
- *   the same `{slug, kind}` / `{from, to|ref, via, resolved}` shape, kept plain so
- *   the web renderer can mirror this without importing `mcp/`.
- * @returns {Map<string, {via: 'same-kind-parent'|'same-kind-child', counterpart: string}>}
- *   keyed by slug; absent means "not bridge-shaped".
- */
-export function deriveBridgeShapes(graph) {
-  const nodes = Array.isArray(graph?.nodes) ? graph.nodes : [];
-  const edges = Array.isArray(graph?.edges) ? graph.edges : [];
-  const kindBySlug = new Map(nodes.map((node) => [node.slug, node.kind]));
-  const shapes = new Map();
-
-  const note = (slug, via, counterpart) => {
-    if (kindBySlug.get(slug) !== kindBySlug.get(counterpart)) return;
-    // A same-kind parent (pushed down a level) wins over a same-kind child.
-    if (via === 'same-kind-child' && shapes.has(slug)) return;
-    shapes.set(slug, { via, counterpart });
-  };
-
-  for (const edge of edges) {
-    if (edge?.resolved === false) continue;
-    const target = edge?.to ?? edge?.ref;
-    if (typeof edge?.from !== 'string' || typeof target !== 'string') continue;
-    if (!kindBySlug.has(edge.from) || !kindBySlug.has(target)) continue;
-    if (DOWNWARD_CONTAINMENT_TYPES.has(edge.via)) {
-      note(target, 'same-kind-parent', edge.from);
-      note(edge.from, 'same-kind-child', target);
-    } else if (UPWARD_CONTAINMENT_TYPES.has(edge.via)) {
-      note(edge.from, 'same-kind-parent', target);
-      note(target, 'same-kind-child', edge.from);
-    }
-  }
-  return shapes;
-}
-
 export const MAINTENANCE_PHASE_VALUES = Object.freeze(['validate', 'repair', 'link', 'materialize', 'review']);
 export const MAINTENANCE_SEVERITY_VALUES = Object.freeze(['fail', 'warn', 'info']);
 export const MAINTENANCE_KIND_VALUES = Object.freeze([

@@ -84,7 +84,6 @@ import {
   EXPECTED_TOOLS,
   EXPECTED_WRITE_TOOLS,
   expectedToolTitle,
-  expectedToolSplitLabel,
   expectedToolsListAnnotationSummary,
   toolsListAnnotationSummary,
   toolsListInventoryFailure,
@@ -147,7 +146,6 @@ import {
   parseVerifyKillGraceMs,
   parseVerifyTimeoutMs,
   normalizeVerifyArgs,
-  resolveVerifyVault,
   serverStartupFailure,
   serverSignalFailure,
   verifyKillGraceValueErrorMessage,
@@ -508,7 +506,6 @@ describe('verify.mjs first-contact gates', () => {
     assert.equal(described[1], String(EXPECTED_TOOLS.length));
     assert.equal(described[2], String(EXPECTED_READ_TOOLS.length));
     assert.equal(described[3], String(EXPECTED_WRITE_TOOLS.length));
-    assert.equal(expectedToolSplitLabel(), `${described[2]} read + ${described[3]} write`);
   });
 
   it('packages project-meaning runtime modules and runs their source-checkout proofs', () => {
@@ -5919,22 +5916,22 @@ describe('verify.mjs first-contact gates', () => {
 
   it('resolves verify vault from explicit arg, env, or cwd', () => {
     assert.equal(
-      resolveVerifyVault({ env: { OATLAS_VAULT: '/tmp/env-vault' }, argv: ['node', 'verify.mjs', '/tmp/arg-vault'], cwd: '/tmp/cwd', isMain: true }),
+      parseVerifyArgs({ env: { OATLAS_VAULT: '/tmp/env-vault' }, argv: ['node', 'verify.mjs', '/tmp/arg-vault'], cwd: '/tmp/cwd', isMain: true }).vault,
       '/tmp/arg-vault',
     );
     assert.equal(
-      resolveVerifyVault({ env: {}, argv: ['node', 'verify.mjs', '/tmp/arg-vault'], cwd: '/tmp/cwd', isMain: true }),
+      parseVerifyArgs({ env: {}, argv: ['node', 'verify.mjs', '/tmp/arg-vault'], cwd: '/tmp/cwd', isMain: true }).vault,
       '/tmp/arg-vault',
     );
     assert.equal(
-      resolveVerifyVault({ env: { OATLAS_VAULT: '/tmp/env-vault' }, argv: ['node', 'verify.mjs'], cwd: '/tmp/cwd', isMain: true }),
+      parseVerifyArgs({ env: { OATLAS_VAULT: '/tmp/env-vault' }, argv: ['node', 'verify.mjs'], cwd: '/tmp/cwd', isMain: true }).vault,
       '/tmp/env-vault',
     );
     assert.equal(
-      resolveVerifyVault({ env: {}, argv: ['node', 'verify.mjs', '/tmp/arg-vault'], cwd: '/tmp/cwd', isMain: false }),
+      parseVerifyArgs({ env: {}, argv: ['node', 'verify.mjs', '/tmp/arg-vault'], cwd: '/tmp/cwd', isMain: false }).vault,
       '/tmp/cwd',
     );
-    assert.equal(resolveVerifyVault({ env: {}, argv: ['node', 'verify.mjs'], cwd: '/tmp/cwd', isMain: true }), '/tmp/cwd');
+    assert.equal(parseVerifyArgs({ env: {}, argv: ['node', 'verify.mjs'], cwd: '/tmp/cwd', isMain: true }).vault, '/tmp/cwd');
   });
 
   it('fails missing verify vault paths before server startup', () => {

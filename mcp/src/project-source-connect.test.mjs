@@ -25,7 +25,7 @@ import {
   rankProjectSourceCandidates,
   rateProjectSourceCandidate,
 } from './project-source-inference.mjs';
-import { collectProjectSourceCandidates, inferProjectSourceRoot } from './project-source-discovery.mjs';
+import { collectProjectSourceCandidates } from './project-source-discovery.mjs';
 import { deriveProjectSourceWitnessesFromDocs } from './project-source-witnesses.mjs';
 import {
   PROJECT_SOURCE_STATE_RELATIVE_PATH,
@@ -104,7 +104,7 @@ describe('discovery', () => {
     gitInit(root);
     const vault = join(root, 'docs', 'ontology');
     mkdirSync(vault, { recursive: true });
-    const proposal = inferProjectSourceRoot(vault);
+    const proposal = inferProjectSourceProposal(collectProjectSourceCandidates(vault));
     assert.equal(proposal.status, 'proposed');
     assert.equal(proposal.reason, 'enclosing_git_repository');
     assert.equal(proposal.candidate.ancestorDepth, 2);
@@ -114,7 +114,7 @@ describe('discovery', () => {
     writeFileSync(join(root, 'package.json'), '{}\n');
     const vault = join(root, 'vault');
     mkdirSync(vault, { recursive: true });
-    const proposal = inferProjectSourceRoot(vault);
+    const proposal = inferProjectSourceProposal(collectProjectSourceCandidates(vault));
     assert.equal(proposal.status, 'proposed');
     assert.equal(proposal.reason, 'ancestor_project_manifest');
     assert.deepEqual(proposal.candidate.evidence, ['package.json']);
@@ -136,7 +136,7 @@ describe('discovery', () => {
         writeFileSync(join(box, manifest), '');
         const vault = join(box, 'vault');
         mkdirSync(vault);
-        assert.equal(inferProjectSourceRoot(vault).status, 'proposed', manifest);
+        assert.equal(inferProjectSourceProposal(collectProjectSourceCandidates(vault)).status, 'proposed', manifest);
       } finally {
         rmSync(box, { recursive: true, force: true });
       }

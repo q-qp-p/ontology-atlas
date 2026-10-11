@@ -15,7 +15,6 @@ import { hardenedGitArgv } from './hardened-git.mjs';
 import {
   PROJECT_SOURCE_MANIFEST_FILES,
   PROJECT_SOURCE_MAX_ANCESTOR_DEPTH,
-  inferProjectSourceProposal,
 } from './project-source-inference.mjs';
 
 function canonical(path) {
@@ -101,12 +100,3 @@ export function collectProjectSourceCandidates(vaultRootPath) {
   return { vaultRootPath: vaultRoot, candidates };
 }
 
-/**
- * "Which folder is this vault's code?", with no side effect.
- * Pass `witnessSummary` after probing to raise confidence from a marker claim to
- * measured support.
- */
-export function inferProjectSourceRoot(vaultRootPath, witnessSummary = null) {
-  const { vaultRootPath: vaultRoot, candidates } = collectProjectSourceCandidates(vaultRootPath);
-  return inferProjectSourceProposal({ vaultRootPath: vaultRoot, candidates, witnessSummary });
-}

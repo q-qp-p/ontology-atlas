@@ -3,4 +3,3 @@
 // analyzeRepoStructure.
 
 export { analyzeRepoStructure } from './analyze/repo-structure.mjs';
-export { buildProposalAssessment } from './analyze/proposal-assessment.mjs';
