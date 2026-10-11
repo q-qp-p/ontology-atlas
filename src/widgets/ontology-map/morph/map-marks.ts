@@ -14,10 +14,10 @@ import { HITTABLE_MIN_TIER_ALPHA } from "../model/tier-visibility";
 import { readHexBoardTokensOrNull } from "../tokens/read-hex-board-tokens";
 import type { OntologyMapTokens } from "../tokens/read-map-tokens";
 import type { OntologyMapEdge, OntologyMapNode } from "../ui/OntologyMap";
-import { computeOverviewCameraTarget } from "../ui/topology-camera-math";
-import { lastDrawnNodeAlphas } from "../ui/topology-frame-draw";
-import { overviewBoundsFor, overviewFitTokens } from "../ui/topology-overview-fit";
-import { readOntologyMapTokensOrNull } from "../ui/topology-read-tokens";
+import { computeOverviewCameraTarget } from "../ui/camera/topology-camera-math";
+import { lastDrawnNodeAlphas } from "../ui/frame-draw/topology-frame-draw";
+import { overviewBoundsFor, overviewFitTokens } from "../ui/camera/topology-overview-fit";
+import { readOntologyMapTokensOrNull } from "../tokens/topology-read-tokens";
 import {
   buildTopologyWorld,
   computeFoldedIds,
@@ -26,7 +26,7 @@ import {
   radiusForKind,
   type TopologyWorld,
   type WorldNodeKind,
-} from "../ui/topology-world";
+} from "../ui/world/topology-world";
 import { predictHexMarks } from "./hex-marks";
 import type { MapLayoutTarget } from "./MapLayoutMorphOverlay";
 import { predictTerritoryTarget } from "./territories-marks";

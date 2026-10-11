@@ -11,7 +11,7 @@ import {
   signalFrame,
   stepPlan,
 } from "../light/signal-plan";
-import type { TopologyWorld } from "../ui/topology-world";
+import type { TopologyWorld } from "../ui/world/topology-world";
 import type { DialChordLight, DialLightFrame, Point } from "./types";
 
 const HEAD_HALO_WEIGHT = 0.35;

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CameraAxes } from "../engine/camera";
 import type { OntologyMapTokens } from "../tokens/read-map-tokens";
 import type { OntologyMapEdge, OntologyMapNode } from "../ui/OntologyMap";
-import { buildTopologyWorld } from "../ui/topology-world";
+import { buildTopologyWorld } from "../ui/world/topology-world";
 import type { DialLightFrame } from "../dial/types";
 import { LIGHT_SOURCES, type LightEmitter, type LightHead, type LightSourceInput } from "./light-sources";
 

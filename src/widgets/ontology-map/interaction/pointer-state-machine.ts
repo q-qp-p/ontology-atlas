@@ -122,7 +122,7 @@ export type ClickAction =
 /**
  * Routes a `commitClick` outcome (this module's `pointerup` result) into
  * exactly one `ClickAction` — pure extraction of
- * `ui/topology-pointer-handlers.ts#handlePointerUp`'s commitClick routing so
+ * `topology-pointer-handlers.ts#handlePointerUp`'s commitClick routing so
  * the "click a revealed child = select it, click empty canvas = deselect"
  * contract has its own regression test, independent of canvas/pointer-event
  * plumbing (label-clarity persona eval — "child click ejects to overview

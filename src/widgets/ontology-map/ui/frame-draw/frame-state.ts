@@ -2,7 +2,7 @@ import type { DomeNodeFrame } from "../../model/dome-view/runtime";
 import type { EvidenceLight } from "../../render/dome-light";
 import { createStrataLodChords } from "../../model/strata-lod";
 import type { PlacedRelationCaption } from "../../render/relation-captions";
-import type { TopologyWorld } from "../topology-world";
+import type { TopologyWorld } from "../world/topology-world";
 
 // State that several pass modules reassign; an imported `let` cannot be reassigned.
 export const passState = {

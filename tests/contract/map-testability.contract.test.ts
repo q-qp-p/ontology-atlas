@@ -21,11 +21,11 @@ import { describe, expect, it } from "vitest";
  */
 const INSTRUMENTATION = join(
   process.cwd(),
-  "src/widgets/ontology-map/ui/use-topology-map-instrumentation.ts",
+  "src/widgets/ontology-map/ui/loop/use-topology-map-instrumentation.ts",
 );
 
 const source = readFileSync(INSTRUMENTATION, "utf8");
-const loop = readFileSync(join(process.cwd(), "src/widgets/ontology-map/ui/use-topology-loop.ts"), "utf8");
+const loop = readFileSync(join(process.cwd(), "src/widgets/ontology-map/ui/loop/use-topology-loop.ts"), "utf8");
 
 describe("지도 검사 훅 (window.__atlasMap)", () => {
   it("the production loop installs the inspection hook", () => {

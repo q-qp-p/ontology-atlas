@@ -54,7 +54,7 @@ export interface CameraStepInput {
    * `--map-camera-spring-angfreq-interactive` (live wheel gesture —
    * scale axis + pan while wheel-zooming) and `-transition` (programmatic
    * camera moves — focus dive, deselect, Auto-arrange, fit-view); the caller
-   * (`ui/topology-physics-step.ts`) picks which one this frame passes in.
+   * (`topology-physics-step.ts`) picks which one this frame passes in.
    */
   angularFrequency: number;
   /** `--map-camera-scale-min` (0.24 in the prototype). */

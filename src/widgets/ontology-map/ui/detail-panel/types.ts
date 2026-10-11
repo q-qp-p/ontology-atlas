@@ -1,6 +1,6 @@
 import type { RefObject } from "react";
 import type { ProjectSourceView } from "@/shared/lib/project-source-receipt";
-import type { V2ConnectionGroupsView, V2EvidenceRow } from "../map-datasheet";
+import type { V2ConnectionGroupsView, V2EvidenceRow } from "./map-datasheet";
 
 export interface OntologyMapDetailPanelLabels {
   kindLabel: string;

@@ -13,7 +13,7 @@ export const rules = [
     reason: "the 3D relation line ink and depth fade changed",
     matches: [
       /^src\/widgets\/ontology-map\/model\/dome-view\/[\w-]+\.ts$/,
-      /^src\/widgets\/ontology-map\/ui\/(?:topology-frame-draw|frame-draw\/[^/]+)\.ts$/,
+      /^src\/widgets\/ontology-map\/ui\/frame-draw\/[^/]+\.ts$/,
     ],
   },
   {
@@ -192,7 +192,7 @@ export const rules = [
     command: 'pnpm exec playwright test tests/e2e/map-overview-centre.spec.ts',
     reason: "the overview centring in the free map changed",
     matches: [
-      /^src\/widgets\/ontology-map\/ui\/topology-overview-fit\.ts$/,
+      /^src\/widgets\/ontology-map\/ui\/camera\/topology-overview-fit\.ts$/,
       /^src\/widgets\/ontology-map\/dial\/fit\.ts$/,
     ],
   },
@@ -221,7 +221,7 @@ export const rules = [
     reason: "the path source pick framing changed",
     matches: [
       /^src\/widgets\/ontology-map\/ui\/OntologyMapContextMenu\.tsx$/,
-      /^src\/widgets\/ontology-map\/ui\/use-topology-overview-navigation\.ts$/,
+      /^src\/widgets\/ontology-map\/ui\/camera\/use-topology-overview-navigation\.ts$/,
     ],
   },
   {

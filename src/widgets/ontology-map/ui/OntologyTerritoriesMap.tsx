@@ -5,7 +5,7 @@ import { DEFAULT_MAP_NAVIGATION_SPEED, type MapNavigationSpeed } from "@/shared/
 import { MAP_CANVAS_SURFACE_ROLE } from "@/shared/lib/focus-map-canvas";
 import { copyCanvasAtCssSize, isMapLayoutMorphArmed, publishMapLayoutSnapshot } from "@/shared/lib/map-layout-morph-store";
 import type { OntologyMapEdge, OntologyMapNode } from "./OntologyMap";
-import { readOntologyMapTokensOrNull } from "./topology-read-tokens";
+import { readOntologyMapTokensOrNull } from "../tokens/topology-read-tokens";
 import type { Rect } from "../interaction/free-area";
 import { VIEW_CAMERA_MS, VIEW_DIM_MS } from "../model/motion-physics";
 import {

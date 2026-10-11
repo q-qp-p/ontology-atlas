@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { CameraAxes } from "../engine/camera";
 import type { LightEmitter, LightHead, LightSourceInput } from "../light/light-sources";
 import type { OntologyMapTokens } from "../tokens/read-map-tokens";
-import type { TopologyWorld } from "../ui/topology-world";
+import type { TopologyWorld } from "../ui/world/topology-world";
 import { createDialLightSource } from "./light-source";
 import type { DialChordLight, DialLightFrame } from "./types";
 

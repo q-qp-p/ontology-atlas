@@ -1,7 +1,7 @@
 /**
  * Eases the warding circle to a new radius when a realm's visible set changes, holding
  * while the target is unchanged, so there is one ease per change and no continuous motion.
- * The loop (`ui/use-topology-loop.ts`) keeps the state in a ref and steps it each frame.
+ * The loop (`use-topology-loop.ts`) keeps the state in a ref and steps it each frame.
  */
 
 import { easeInOutCubic } from "./camera-easing";
