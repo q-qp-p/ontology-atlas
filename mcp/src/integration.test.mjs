@@ -10508,6 +10508,30 @@ await test("query_ontology agent_brief: persisted claim boundaries outrank task 
   }
 });
 
+await test("query_ontology agent_brief: literal claims do not become a selected capability", async () => {
+  const root = makeVault([
+    { slug: "project", content: "---\nkind: project\ntitle: Operations\ndomains: [domains/catalog]\n---\nLocal operations.\n" },
+    { slug: "domains/catalog", content: "---\nkind: domain\ntitle: Catalog\ncapabilities: [capabilities/catalog]\n---\nOwns archive indexes.\n" },
+    { slug: "capabilities/catalog", content: "---\nkind: capability\ntitle: Archive Catalog\ndomain: domains/catalog\n---\n## Includes\n\n<!--\nRotate encryption keys.\n-->\n\n- Index archive records.\n" },
+  ]);
+  try {
+    const { responses } = await rpc(root, [
+      ...INIT_REQUESTS,
+      callTool(2, "query_ontology", { operation: "agent_brief", project: "project", detail: "compact", task: "Rotate encryption keys." }),
+      callTool(3, "query_ontology", { operation: "agent_brief", project: "project", detail: "compact", task: "Index archive records." }),
+    ]);
+    const refused = getCallParsed(responses, 2);
+    assert.equal(refused.focus.capability, null);
+    assert.equal(refused.focus.refusal.reason, "no_match");
+    assert.equal(refused.focus.taskNavigation.primary, null);
+    assert.equal(refused.safety.automaticWrite, false);
+    assert.equal(getCallText(responses, 2), refused.handoffPrompt);
+    assert.equal(getCallParsed(responses, 3).focus.capability?.slug, "capabilities/catalog");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 await test("query_ontology agent_brief: current reviewed coordinates become one exact task-navigation batch", async () => {
   const vault = makeVault([
     {
