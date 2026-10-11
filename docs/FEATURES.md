@@ -25,6 +25,10 @@ Markdown examples, HTML blocks/comments and blockquotes from their authored evid
 Capability selection applies the same authored-block boundary to ownership and
 exclusions, preserving genuine legacy fields and refusing unsupported claims.
 
+Initial repository analysis distinguishes authored Markdown from literal examples.
+Document excerpts report omitted prose with an exact, hash-bound source read;
+truncated evidence requires review and does not authorize meaning writes.
+
 The folder entry uses a static welcome portrait, and the missing-page screen
 uses a curious map-search portrait in its existing icon slot. These expressions
 leave the screen's labels and actions authoritative. Walking, reading and
