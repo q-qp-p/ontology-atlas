@@ -14,7 +14,6 @@
   "observationLabel": "源码观察",
   "observationTrackLabel": "代码中观察到",
   "observationRecorded": "检查回执",
-  "observationMissing": "尚未检查",
   "observationMissingShort": "尚未检查",
   "observationEmptyTitle": "尚未检查源码",
   "observationEmptyBody": "“检查源码”会让智能体读取真实的导入，填入每个角色的依赖以及与约定的差异。",
@@ -33,7 +32,6 @@
   "profileList": "已应用范围",
   "profileCurrent": "当前",
   "sourceCheckRequired": "需要检查源码",
-  "sourceCheckBody": "这条规则已由人批准。代码中真实的导入由 Atlas 通过 MCP 或 CLI 另行检查，缺少依据时绝不会显示为通过。",
   "sourceCheckNext": "在“架构”操作中让已连接的智能体来做，或在仓库中运行 `atlas architecture --record`。检查不会改动已审阅的结构；`--record` 只会替换本地的一份 .ontology-atlas/architecture/profile-slug.json 回执，这份回执可以单独删除。",
   "recordStatus": {
     "conforms": "符合",
@@ -85,8 +83,6 @@
   "reachNone": "不依赖其他角色",
   "ladderDirection": "箭头指向依赖的方向：一个角色的代码使用另一个角色的代码。",
   "reachInline": "可依赖 {targets}",
-  "legendDependency": "已审阅的概念依赖",
-  "legendRelated": "相关（已审阅）",
   "layerConcepts": "此角色中已审阅的概念：{count}",
   "conceptCount": "{count} 个概念",
   "moduleCount": "{count} 个模块",
@@ -101,26 +97,19 @@
   "roleLedgerImports": "{count} 个导入",
   "moreOccupants": "另有 {count} 个",
   "fewerOccupants": "收起",
-  "statRoles": "角色",
   "railRoles": "{count} 个角色",
-  "statModules": "源码模块",
-  "statEvidence": "依据文件",
   "patternsUndeclared": "未声明模式",
   "patternAxes": {
     "source-organization": {
-      "label": "源码组织",
       "body": "源码组织说明文件应放在哪个文件夹，它不是系统运行时的形态。"
     },
     "dependency": {
-      "label": "依赖",
       "body": "依赖说明一处改动从当前位置出发可以波及哪些角色。"
     },
     "presentation": {
-      "label": "呈现",
       "body": "呈现说明一个画面如何划分为“展示什么”和“决定什么”。"
     }
   },
-  "roleUndescribed": "此角色还没有说明。",
   "dependencySameRole": "同一角色内的模块始终可以互相引用。",
   "legendPermitted": "规则配置允许的已审阅依赖",
   "hiddenLeft": "左侧还有 {count} 个",
@@ -136,14 +125,11 @@
   "sourceListingUnavailable": "连接项目源文件夹后，这里会显示源码模块。浏览器无法读取源文件夹；在桌面应用中打开此本体文件夹，就会填充。",
   "getInstalledApp": "下载应用",
   "sourceListingUnbound": "尚未连接源文件夹。打开此规则配置所描述的文件夹，各个分区就会填入其通配符实际匹配到的模块。",
-  "draftFromCode": "根据此代码库起草",
   "connectedAgent": "已连接的智能体",
   "draftWithAgent": "用 {agent} 起草",
   "checkingAgent": "正在查找受保护的智能体…",
   "inspectSourceAction": "检查源码",
-  "reviewDeltaAction": "审阅差异",
   "planChangeAction": "规划改动",
-  "copyAgentTask": "复制给智能体的任务",
   "draftNoAgentBody": "没有已连接的智能体，所以无法在这里开始。复制下面的指令，粘贴到你使用的编码智能体中。",
   "agentTaskMenu": "选择其他智能体任务",
   "recheckSourceAction": "重新检查源码",

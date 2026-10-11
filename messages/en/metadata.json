@@ -5,14 +5,12 @@
   "pages": {
     "topology": "Map",
     "docs": "Ontology · Library",
-    "download": "Download",
     "projects": "Projects",
     "ontology": "Ontology",
     "ontologyInsights": "Analysis",
     "projectNew": "New project",
     "guide": "Guide",
-    "changelog": "Changelog",
-    "agents": "Agents"
+    "changelog": "Changelog"
   },
   "descriptions": {
     "home": "Keep understanding your system as AI agents change its code. Share task context, inspect recorded meaning and evidence, and decide what to keep in a local Markdown vault.",

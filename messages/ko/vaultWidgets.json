@@ -232,7 +232,6 @@
       "revisionTitle": "이 문서는 커밋 {count}번에 걸쳐 바뀌었어요. 이 수는 Git이 세며 손으로 고치지 않아요"
     },
     "sidebar": {
-      "treeHeader": "문서 목록",
       "treeFiltered": "#{tag} 필터 적용 중",
       "treeSearchCount": "검색 결과 {count}개",
       "searchLabel": "문서 검색",
@@ -254,17 +253,14 @@
       "collection": {
         "all": {
           "label": "전체 문서",
-          "count": "{count}개",
           "tooltip": "전체 문서: 이 폴더의 모든 문서 ({count})"
         },
         "guides": {
           "label": "가이드 문서",
-          "count": "{count}개",
           "tooltip": "가이드: 사람이 읽는 안내 문서 ({count})"
         },
         "ontology": {
           "label": "지도 문서",
-          "count": "{count}개",
           "tooltip": "지도 문서: 지도에 나오는 개념 문서만 ({count})"
         }
       },
@@ -290,8 +286,7 @@
         "unverifiablePlain": "파일을 읽지 못해 바뀌었는지 알 수 없어요",
         "reviewedOn": "{date} 확인",
         "reviewedOnTitle": "사람이 이 문서를 읽고 뜻이 맞다고 말한 날이에요"
-      },
-      "libraryLink": "모아 둔 문서는 자료실에 있어요"
+      }
     },
     "empty": {
       "eyebrow": "문서 {count}개",

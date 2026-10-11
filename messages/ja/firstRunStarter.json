@@ -30,20 +30,8 @@
   "sampleSourceAria": "試すサンプルを選択",
   "sampleSourceDogfood": "このアプリのコード",
   "sampleSourceStorefront": "オンラインストア",
-  "nodeHint": {
-    "action": "マップ上の概念をタップ",
-    "reason": "すべて実際の文書から作られています"
-  },
   "readout": {
     "conceptUnit": "概念",
-    "domainUnit": "ドメイン",
-    "tier_spine": "ドメインのみ",
-    "tier_circuit": "ケイパビリティまで",
-    "tier_element": "要素まで",
-    "zoomHint": "ズームインすると要素が表示されます",
-    "zoomHintPlain": "点をクリックすると要素が表示されます",
-    "dialCapabilitiesHint": "ズームするとケイパビリティが表示されます",
-    "dialElementsHint": "入ったドメインの要素が表示されます",
     "scopeFull": "地図全体 · 概念{count, number}件",
     "scopePartial": "現在の範囲 · 概念{shown, number} / 全体{total, number}件",
     "synthetic": "性能テスト用の仮想データ · 概念{count, number}件"
@@ -56,7 +44,6 @@
   "errorRootRejected": "このフォルダはマップにできません。システムフォルダやホームフォルダ全体ではなく、文書が入っているフォルダを選んでください。",
   "errorPathMissing": "そのフォルダは見つかりません。移動または削除された可能性があります。別のフォルダを選んでください。",
   "errorGrantNeeded": "このアップデート後は、アクセスを確認するためオントロジーのフォルダをもう一度選んでください。文書はそのまま残っています。",
-  "errorPermission": "Atlasはこのフォルダを読み取れません。もう一度選んでアクセスを許可してください。",
   "buildFromCodeWillCreate": "このプロジェクト内にマップ用フォルダを作成しますか？",
   "buildFromCodeReuse": "このプロジェクトのマップ用フォルダで続けますか？",
   "buildFromCodeCreateGo": "作成",

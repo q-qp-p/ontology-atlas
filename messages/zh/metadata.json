@@ -5,14 +5,12 @@
   "pages": {
     "topology": "地图",
     "docs": "本体 · 资料库",
-    "download": "下载",
     "projects": "项目",
     "ontology": "本体",
     "ontologyInsights": "分析",
     "projectNew": "新建项目",
     "guide": "指南",
-    "changelog": "更新日志",
-    "agents": "智能体"
+    "changelog": "更新日志"
   },
   "descriptions": {
     "home": "AI 智能体改动代码时，也能持续理解你的系统。共享任务上下文，查看已记录的语义和依据，并在本地 Markdown 文件夹中决定保留什么。",

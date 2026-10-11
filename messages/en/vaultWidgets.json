@@ -232,7 +232,6 @@
       "revisionTitle": "{count, plural, one {# commit has} other {# commits have}} changed this document. Git keeps the count; nobody edits it."
     },
     "sidebar": {
-      "treeHeader": "Document list",
       "treeFiltered": "Filtered by #{tag}",
       "treeSearchCount": "{count} results",
       "searchLabel": "Search documents",
@@ -254,17 +253,14 @@
       "collection": {
         "all": {
           "label": "All docs",
-          "count": "{count}",
           "tooltip": "All docs: every document in this folder ({count})"
         },
         "guides": {
           "label": "Guides",
-          "count": "{count}",
           "tooltip": "Guides: human-readable docs ({count})"
         },
         "ontology": {
           "label": "Map docs",
-          "count": "{count}",
           "tooltip": "Map docs: only concepts that appear on the map ({count})"
         }
       },
@@ -290,8 +286,7 @@
         "unverifiablePlain": "This file could not be read, so whether it changed is unknown",
         "reviewedOn": "checked {date}",
         "reviewedOnTitle": "The day a person read this document and said the meaning was right"
-      },
-      "libraryLink": "Gathered documents are in the Library"
+      }
     },
     "empty": {
       "eyebrow": "{count} documents",

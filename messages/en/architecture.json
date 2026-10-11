@@ -14,7 +14,6 @@
   "observationLabel": "Source observation",
   "observationTrackLabel": "Observed in code",
   "observationRecorded": "Inspection receipt",
-  "observationMissing": "Not inspected yet",
   "observationMissingShort": "Not inspected yet",
   "observationEmptyTitle": "Source not inspected yet",
   "observationEmptyBody": "“Inspect source” has an agent read the real imports and fill in each role's dependencies and where they differ.",
@@ -33,7 +32,6 @@
   "profileList": "Applied scopes",
   "profileCurrent": "Current",
   "sourceCheckRequired": "Source check required",
-  "sourceCheckBody": "This rule was approved by a person. The real imports in the code are checked separately by Atlas over MCP or the CLI, and missing evidence is never shown as a pass.",
   "sourceCheckNext": "Ask your connected agent from the Architecture action, or run atlas architecture --record in the repository. Inspection never changes the reviewed structure; --record only replaces one local .ontology-atlas/architecture/profile-slug.json receipt, which can be removed independently.",
   "recordStatus": {
     "conforms": "Conforms",
@@ -85,8 +83,6 @@
   "reachNone": "depends on no other role",
   "ladderDirection": "An arrow points the way a dependency runs: one role's code using another role's code.",
   "reachInline": "may depend on {targets}",
-  "legendDependency": "reviewed concept dependency",
-  "legendRelated": "related (reviewed)",
   "layerConcepts": "Reviewed concepts in this role: {count}",
   "conceptCount": "{count, plural, one {# concept} other {# concepts}}",
   "moduleCount": "{count, plural, one {# module} other {# modules}}",
@@ -101,26 +97,19 @@
   "roleLedgerImports": "{count, plural, one {# import} other {# imports}}",
   "moreOccupants": "+{count} more",
   "fewerOccupants": "Show fewer",
-  "statRoles": "Roles",
   "railRoles": "{count, plural, one {# role} other {# roles}}",
-  "statModules": "Source modules",
-  "statEvidence": "Evidence files",
   "patternsUndeclared": "No pattern declared",
   "patternAxes": {
     "source-organization": {
-      "label": "Source organization",
       "body": "Source organization says which folder a file belongs in. It is not the runtime shape of the system."
     },
     "dependency": {
-      "label": "Dependency",
       "body": "Dependency says which roles a change may reach from where it sits."
     },
     "presentation": {
-      "label": "Presentation",
       "body": "Presentation says how a screen is split between what it shows and what decides."
     }
   },
-  "roleUndescribed": "This role has no description yet.",
   "dependencySameRole": "Inside one role, modules may always reference each other.",
   "legendPermitted": "a reviewed dependency the profile permits",
   "hiddenLeft": "{count} more to the left",
@@ -136,14 +125,11 @@
   "sourceListingUnavailable": "Source modules appear once a project source folder is connected. A browser cannot read a source folder; open this ontology folder in the desktop app and this fills in.",
   "getInstalledApp": "Get the app",
   "sourceListingUnbound": "No source folder is connected yet. Open the folder this profile describes and the bands fill with the modules its globs actually contain.",
-  "draftFromCode": "Draft from this codebase",
   "connectedAgent": "connected agent",
   "draftWithAgent": "Draft with {agent}",
   "checkingAgent": "Checking for a guarded agent…",
   "inspectSourceAction": "Inspect source",
-  "reviewDeltaAction": "Review delta",
   "planChangeAction": "Plan change",
-  "copyAgentTask": "Copy task for your agent",
   "draftNoAgentBody": "No agent is connected, so this cannot start here. Copy the sentence below and paste it into the coding agent you use.",
   "agentTaskMenu": "Choose another agent task",
   "recheckSourceAction": "Re-inspect source",

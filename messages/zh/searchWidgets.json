@@ -198,16 +198,6 @@
     },
     "scrollRegionLabel": "快捷键列表"
   },
-  "hero": {
-    "docsVault": "本体工作区",
-    "docsVaultAriaLabel": "打开本体工作区：在一处查看本地 Markdown、图交接信息和 AI 设置",
-    "ontologyAriaLabel": "打开地图：以层级结构查看文档及其关联",
-    "openDocsVault": "打开工作区"
-  },
-  "workspaceStrip": {
-    "ontologyTitle": "此项目拥有的本体概念总数：不含项目和 vault-readme 概念，可能与 /ontology 上的“N 个概念”不同。",
-    "stubTitle": "被其他文件指向、但还不存在的文档。可以在地图底部的列表中创建或舍弃它们。"
-  },
   "hint": {
     "relayoutAriaLabel": "自动排列",
     "relayoutTitle": "自动排列概念布局",

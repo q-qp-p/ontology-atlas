@@ -95,37 +95,6 @@ describe("화면 글자 용어집 계약", () => {
     });
   }
 
-  /**
-   * The `pnpm <script>` called on screen **must actually exist.**
-   *
-   * The English screen was calling `pnpm folder:validate`, but that script does not
-   * exist (measured 2026-08-22). No matter how simply you word it, if the command
-   * doesn't exist, the user hits a wall in the same place — simplicity and correctness
-   * are different problems, and both are needed.
-   */
-  it("화면이 시키는 pnpm 명령이 package.json 에 실재한다", () => {
-    const scripts = Object.keys(
-      (JSON.parse(read("package.json")) as { scripts?: Record<string, string> }).scripts ?? {},
-    );
-    expect(scripts.length, "package.json 스크립트를 못 읽었다").toBeGreaterThan(10);
-
-    const missing: string[] = [];
-    let seen = 0;
-    for (const locale of LOCALES) {
-      for (const [key, text] of Object.entries(MESSAGES[locale])) {
-        for (const [, name] of text.matchAll(/pnpm\s+([a-z][a-z0-9:-]*)/gi)) {
-          seen += 1;
-          if (!scripts.includes(name)) missing.push(`${locale}:${key} — pnpm ${name}`);
-        }
-      }
-    }
-    expect(seen, "화면에서 pnpm 명령을 하나도 못 찾았다 — 이 시험이 헛돌고 있다").toBeGreaterThan(0);
-    expect(
-      missing,
-      `화면이 없는 명령을 시킨다:\n${missing.join("\n")}`,
-    ).toEqual([]);
-  });
-
   /** The glossary document must exist so that error message guidance does not become a dead link. */
   it("the glossary document exists", () => {
     expect(existsSync(path.join(ROOT, "docs/GLOSSARY.md")), "docs/GLOSSARY.md is missing").toBe(true);

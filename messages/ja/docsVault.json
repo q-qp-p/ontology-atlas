@@ -6,24 +6,18 @@
   "header": {
     "openTreeAriaLabel": "文書一覧を開く",
     "openTreeTitle": "文書一覧",
-    "backToWorkspaceAriaLabel": "概念ビューに戻る",
     "backToReviewAriaLabel": "分析レビューに戻る",
     "reviewBack": "← 分析レビュー",
-    "back": "概念ビュー",
     "title": "オントロジー",
     "docCount": "文書{count}件",
     "localBadge": "ローカル",
     "paletteTooltip": "検索・コマンド・タグ(⌘K)",
     "paletteAriaLabel": "パレットを開く（検索・コマンド・タグ）",
-    "inspector": "文書情報",
     "sourceAriaLabel": "ワークスペースの取得元",
-    "vaultToolsTooltip": "ワークスペースのツール",
-    "vaultToolsAriaLabel": "ワークスペースのツールメニューを開く",
     "vaultToolsMovedHint": "AIエージェントの設定と検証のツールは設定に移りました。右上の歯車(⚙)から開けます。",
     "contractToggleLabel": "ワークスペースのチェック",
     "contractToggleHide": "ワークスペースのチェックを閉じる",
     "contractToggleShow": "ワークスペースのチェックを表示",
-    "crumbBack": "あなたのフォルダ",
     "vaultPillFolders": "フォルダ{count}個",
     "vaultPillSwap": "フォルダを切り替え",
     "vaultPillSampleLabel": "組み込みサンプル（このツール自身の文書）",
@@ -43,8 +37,7 @@
   "editorHeader": {
     "previewTab": "プレビュー",
     "editTab": "編集",
-    "localSynced": "同期済み · ローカル",
-    "readOnlySample": "読み取り専用サンプル"
+    "localSynced": "同期済み · ローカル"
   },
   "frontmatterBlock": {
     "note": "先頭の情報ブロックがマップの元です。このブロックがマップの点とつながりになります。",
@@ -198,13 +191,10 @@
     "dogfoodDirectBody": "「docs/ontology」をデスクトップアプリで直接開き、Atlas自身を分析します。",
     "createTitle": "新しいワークスペースを作成",
     "createBody": "空のフォルダを作るか選び、開いた後にスターターを入れます。",
-    "sampleTitle": "サンプルワークスペースを見る",
-    "sampleBody": "ローカルフォルダを選ぶ前に、読み取り専用の文書で全体を見られます。",
     "recentTitle": "最近のワークスペース",
     "recentEmpty": "最近のワークスペースはまだありません。フォルダを開くか作成すると、ここに固定されます。"
   },
   "sourceContract": {
-    "ariaLabel": "このワークスペースの現在の読み込み元",
     "filesLabel": "ワークスペースのファイル",
     "filesLocalValue": "ローカルのMarkdownファイル{count}件",
     "filesSampleValue": "サンプルのMarkdownファイル{count}件",
@@ -231,20 +221,10 @@
     "filesPruned": "ビルド・依存関係のフォルダを{count}個スキップしました({names})。"
   },
   "advanced": {
-    "sourceServer": "サンプル",
-    "sourceLocal": "ローカル",
-    "newDoc": "新規文書"
-  },
-  "vaultReveal": {
-    "errorFallback": "Finderでフォルダを開けませんでした。",
-    "error": "Finderで開けませんでした：{message}"
+    "sourceServer": "サンプル"
   },
   "agentSetup": {
     "ariaLabel": "MCP接続",
-    "title": "自分のMCP接続",
-    "ready": "準備完了",
-    "missing": "不足",
-    "rootSummaryBlocked": "ここでは実行できるサーバがありません · ソースのチェックアウトでのみ設定可能",
     "statusSummary": "{tools}向けの接続ファイル：{ready}/{total}件が準備完了",
     "rootSummaryReady": "このフォルダの接続ファイルは、すでにこのフォルダ自身を指しています",
     "rootSummaryMissing": "このフォルダを基準に設定済み · 別のコードフォルダから開く場合は絶対パスが必要です",
@@ -253,8 +233,6 @@
     "connectionClaudeCursorCheck": "/mcpで確認",
     "connectionCodex": "Codex",
     "connectionCodexCheck": "codex mcp listで確認",
-    "connectionCodebaseRoot": "別のコードフォルダ",
-    "connectionCodebaseRootCheck": "テンプレートをコピーして再起動",
     "connectionReady": "ファイル準備完了",
     "connectionNeedsReview": "要確認",
     "connectionHint": ".mcp.json.exampleは別のフォルダ向けのテンプレートなので、接続ファイルには数えません。この画面で確認するのは起動の形式とフォルダのパスです。エージェントを再起動し、実際の接続は各ツールの中で確かめてください。",
@@ -383,13 +361,9 @@
     "copyCodexCliCopied": "Codexのコマンドをコピーしました",
     "copyCodexCliFailed": "コピーできませんでした",
     "copyCodexCliTitle": "どのコードフォルダからでもこのフォルダを登録できる、1行のcodex mcp addコマンドをコピーします。実行する前に、フォルダパスのプレースホルダーを置き換えてください。",
-    "errorFallback": "接続ファイルを作成できませんでした",
-    "serverStatusSummary": "デスクトップアプリで開くと、ボタン1つで接続ファイルを書き出せます。",
     "serverMissingReason": "このアプリの中にMCPサーバのファイルが見つからないため、エージェントをつなぐ先がありません。アプリを入れ直すと直ることが多いです。アプリからの報告：{reason}",
     "writeFailed": "{files}を書き込めませんでした。フォルダの中身は何も変わっていません。このフォルダへの書き込み権限があるかを確認してから、もう一度ボタンを押してください。({detail})",
     "writeFailedNoDetail": "{files}を書き込めませんでした。フォルダの中身は何も変わっていません。このフォルダへの書き込み権限があるかを確認してから、もう一度ボタンを押してください。",
-    "stepStateDone": "完了",
-    "stepListAriaLabel": "接続の3ステップ",
     "troubleshootToggle": "うまくいかない場合",
     "serverHintLabel": "サーバの動き方",
     "troubleshootAriaLabel": "接続できないときの確認項目",

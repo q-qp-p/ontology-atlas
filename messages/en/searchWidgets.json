@@ -198,16 +198,6 @@
     },
     "scrollRegionLabel": "Shortcut list"
   },
-  "hero": {
-    "docsVault": "Ontology workspace",
-    "docsVaultAriaLabel": "Open ontology workspace: inspect local markdown, graph handoffs, and AI setup in one place",
-    "ontologyAriaLabel": "Open the map: view documents and their connections as a hierarchy",
-    "openDocsVault": "Open workspace"
-  },
-  "workspaceStrip": {
-    "ontologyTitle": "Sum of ontology concepts owned by this project: excludes project / vault-readme concepts. May differ from the 'N concepts' count on /ontology.",
-    "stubTitle": "Documents that other files point to but that do not exist yet. Create or discard them from the list at the bottom of the map."
-  },
   "hint": {
     "relayoutAriaLabel": "Auto-arrange",
     "relayoutTitle": "Auto-arrange concept layout",

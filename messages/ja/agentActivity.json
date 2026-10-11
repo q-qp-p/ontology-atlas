@@ -1,6 +1,5 @@
 {
   "writing": "作業中",
-  "writingAgent": "{agent}が作業中",
   "liveAgent": "{agent} · {phase}",
   "phase": {
     "planning": "計画中",
@@ -34,15 +33,8 @@
   "nextStepLabel": "次",
   "toolLabel": "ツール",
   "historyTitle": "最近の履歴",
-  "inboxEmpty": "まだ報告はありません。エージェントまたは人がこのフォルダを編集すると、ここに表示されます。",
   "inboxFooter": "実行した内容と、あなたが許可または拒否した内容は、このフォルダの中にだけ記録されます。外には何も送られません。",
   "receiptTitle": "作業結果",
-  "receiptItems": "{count}件の変更",
-  "receiptAt": "結果の時刻",
-  "receiptDecision": {
-    "allowed": "許可",
-    "rejected": "拒否"
-  },
   "receiptResult": {
     "pending": "実行待ち",
     "completed": "完了",
@@ -50,9 +42,6 @@
     "cancelled": "キャンセル",
     "not-run": "未実行"
   },
-  "summaryAdded": "{count}件追加",
-  "summaryEdited": "{count}件編集",
-  "summaryRemoved": "{count}件削除",
   "summaryJoin": " · ",
   "problemUnresolved": "リンク切れ{count}件",
   "problemCycles": "互いに参照し合うペア{count}組",
@@ -60,9 +49,7 @@
   "bridgeChildren": "子の概念{count}件を新しい中間の概念の下に移動",
   "event": {
     "taskStart": "タスク開始",
-    "taskStartAgent": "{agent}がタスクを開始",
     "taskEnd": "タスク終了",
-    "taskEndAgent": "{agent}がタスクを終了",
     "domainAdded": "ドメインを追加",
     "domainRemoved": "ドメインを削除",
     "bridgeInserted": "既存の2つの概念の間に新しい概念を挿入しました",

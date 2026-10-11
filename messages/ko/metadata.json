@@ -5,14 +5,12 @@
   "pages": {
     "topology": "지도",
     "docs": "온톨로지 · 자료실",
-    "download": "다운로드",
     "projects": "프로젝트",
     "ontology": "온톨로지",
     "ontologyInsights": "분석",
     "projectNew": "새 프로젝트",
     "guide": "가이드",
-    "changelog": "변경 내역",
-    "agents": "에이전트"
+    "changelog": "변경 내역"
   },
   "descriptions": {
     "home": "AI 에이전트가 코드를 바꿔도 시스템의 의미를 놓치지 마세요. 로컬 마크다운 폴더로 작업 맥락을 공유하고 기록된 의미와 근거를 살펴보며 무엇을 남길지 판단하세요.",

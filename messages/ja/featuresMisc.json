@@ -1,15 +1,11 @@
 {
   "localVaultPicker": {
     "unsupported": "ここではローカルフォルダの編集は使えません。ディスク上のフォルダを開いて編集するには、デスクトップアプリをインストールしてください。",
-    "copyPathTooltip": "ローカルフォルダのパスをコピー",
     "copyPathAriaLabel": "ローカルフォルダのパスをコピー：{path}",
     "copyPathCopied": "パスをコピーしました",
     "copyPathFailed": "パスをコピーできませんでした",
     "revealPathAriaLabel": "ローカルフォルダをFinderで開く：{path}",
-    "revealPathLabel": "Finderで表示",
-    "openLabel": "フォルダを開く",
-    "validationChip": "{errors, plural, =0 {⚠ {warnings}} other {✗ {errors}}}",
-    "validationTooltip": "{errors, plural, =0 {情報ブロックの警告が{warnings}件：詳細は「pnpm vault:validate」で確認} other {情報ブロックのエラーが{errors}件{warnings, plural, =0 {} other {、警告が{warnings}件}}：マップに含まれていない文書があります。詳細は「pnpm vault:validate」で確認}}"
+    "openLabel": "フォルダを開く"
   },
   "vaultDiffToaster": {
     "added": "追加：{name}",

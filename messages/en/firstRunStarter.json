@@ -30,20 +30,8 @@
   "sampleSourceAria": "Choose a sample to explore",
   "sampleSourceDogfood": "This app's code",
   "sampleSourceStorefront": "Online store",
-  "nodeHint": {
-    "action": "Tap a concept on the map",
-    "reason": "all of it comes from real documents"
-  },
   "readout": {
     "conceptUnit": "concepts",
-    "domainUnit": "domains",
-    "tier_spine": "Domains only",
-    "tier_circuit": "Down to capabilities",
-    "tier_element": "Down to elements",
-    "zoomHint": "zoom in to reveal elements",
-    "zoomHintPlain": "click a dot to reveal its elements",
-    "dialCapabilitiesHint": "capabilities show as you zoom",
-    "dialElementsHint": "elements show inside the domain you enter",
     "scopeFull": "Whole map · {count, plural, one {# concept} other {# concepts}}",
     "scopePartial": "Current scope · {shown, number} / {total, number} concepts",
     "synthetic": "Performance test · {count, plural, one {# synthetic concept} other {# synthetic concepts}}"
@@ -56,7 +44,6 @@
   "errorRootRejected": "This folder cannot become a map. Pick a folder that holds documents, not a system folder or your whole home folder.",
   "errorPathMissing": "That folder is gone. It looks like it was moved or deleted. Pick another one.",
   "errorGrantNeeded": "After this update, choose your ontology folder once to confirm access. Your documents are still there.",
-  "errorPermission": "Atlas cannot read this folder. Pick it again to grant access.",
   "buildFromCodeWillCreate": "Create the map folder inside this project?",
   "buildFromCodeReuse": "Continue in this project's map folder?",
   "buildFromCodeCreateGo": "Create",

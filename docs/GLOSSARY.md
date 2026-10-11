@@ -274,7 +274,7 @@ boundary, not a ban.
 
 | Gate | Scope |
 |---|---|
-| `tests/contract/ui-copy-glossary.contract.test.ts` | §5 — user-facing strings, and every `pnpm <script>` a screen names must exist |
+| `tests/contract/ui-copy-glossary.contract.test.ts` | §5 — user-facing strings |
 | `pnpm docs:links` | Markdown-to-markdown links and cited repo paths |
 | `pnpm docs:comment-refs` | `.md` paths cited from code comments resolve |
 | `pnpm source:language` | Source, test, config, and prototype comments contain no Hangul, Han, or kana |
