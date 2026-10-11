@@ -1,8 +1,9 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { NextIntlClientProvider } from 'next-intl';
+import { createTranslator, NextIntlClientProvider } from 'next-intl';
 import { describe, expect, it, vi } from 'vitest';
 
 import { applyFrontmatterUpdates } from '@/entities/docs-vault';
+import { IMPACT_EDIT_RELATIONS } from '@/entities/knowledge-graph';
 import { parseFrontmatter } from '@/shared/lib/parse-frontmatter';
 
 import enMessages from '../../../../messages/en.json';
@@ -116,10 +117,13 @@ describe('MeaningEditorPanel', () => {
     );
 
     const { meaningEditor } = enMessages;
+    const t = createTranslator({ locale: 'en', messages: enMessages, namespace: 'meaningEditor' });
+    const impactNames = IMPACT_EDIT_RELATIONS.map((relation) => meaningEditor.relationName[relation]);
     expect(screen.getByRole('combobox', { name: meaningEditor.relation }))
       .toHaveAccessibleDescription(meaningEditor.relationHelp);
-    expect(screen.getByRole('combobox', { name: meaningEditor.target }))
-      .toHaveAccessibleDescription(meaningEditor.targetHelp);
+    expect(screen.getByRole('combobox', { name: meaningEditor.target })).toHaveAccessibleDescription(
+      t('targetHelp', { relations: new Intl.ListFormat('en', { type: 'conjunction' }).format(impactNames) }),
+    );
   });
 
   it('explains why instead of showing an empty review when nothing changed', () => {

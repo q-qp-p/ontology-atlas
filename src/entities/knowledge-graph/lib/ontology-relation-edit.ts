@@ -1,6 +1,7 @@
 import { slugify } from '@/shared/lib/slugify';
 
 import type { MeaningEditRelation } from './ontology-node-href';
+import { IMPACT_RELATION_TYPES } from './ontology-tree/reachability';
 import type { OntologyChangeSet } from './ontology-change-set';
 
 const RELATION_FRONTMATTER_KEY: Record<MeaningEditRelation, string> = {
@@ -16,6 +17,10 @@ export const RELATION_EDGE_TYPE: Record<MeaningEditRelation, string> = {
   contains: 'contains',
   relates: 'related_to',
 };
+
+export const IMPACT_EDIT_RELATIONS: readonly MeaningEditRelation[] = (
+  Object.keys(RELATION_EDGE_TYPE) as MeaningEditRelation[]
+).filter((relation) => IMPACT_RELATION_TYPES.includes(RELATION_EDGE_TYPE[relation]));
 
 type OntologyRelationFrontmatterUpdate =
   | string[]

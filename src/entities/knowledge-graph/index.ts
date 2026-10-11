@@ -56,6 +56,7 @@ export {
 export {
   buildOntologyRelationEditPlan,
   buildOntologyRelationRemovalPlan,
+  IMPACT_EDIT_RELATIONS,
   RELATION_EDGE_TYPE,
   type OntologyRelationEditPlan,
 } from "./lib/ontology-relation-edit";
