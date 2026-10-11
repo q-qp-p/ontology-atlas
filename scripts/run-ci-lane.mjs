@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-import { appendFileSync, closeSync, mkdtempSync, openSync, readFileSync, rmSync, statSync } from 'node:fs';
-import { spawn as spawnAsync, spawnSync } from 'node:child_process';
+import { appendFileSync, closeSync, mkdtempSync, openSync, readFileSync, rmSync } from 'node:fs';
+import { spawn as spawnAsync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { decodePlan, FULL_LANE_COMMANDS, isRelatedSweep } from './classify-change.mjs';
+import { collapseCoveredContractCommands } from './suggest-focused-checks.mjs';
 
 /*
  * Measurement files never ride a shard: a ratio's verdict would depend on which files land
@@ -70,11 +71,11 @@ export function commandsForLane({
     if (eventName === 'pull_request' && base) {
       commands.splice(1, 0, `pnpm decisions:check -- --base=${shellArgument(base)}`);
     }
-    return unique(
+    return collapseCoveredContractCommands(unique(
       platform === 'darwin'
         ? commands
         : commands.filter((command) => !MACOS_ONLY_GATE_COMMANDS.includes(command)),
-    );
+    ).map((command) => ({ command }))).commands.map((row) => row.command);
   }
 
   /**
@@ -192,14 +193,10 @@ function startConcurrent(command, { cwd, env }) {
   const child = spawnAsync(command, { cwd, env, shell: true, stdio: ['ignore', fd, fd] });
   closeSync(fd);
   const done = new Promise((resolve) => {
-    child.once('error', () => resolve(1));
-    child.once('exit', (code) => resolve(code ?? 1));
+    child.once('error', () => resolve({ status: 1, finished: Date.now() }));
+    child.once('close', (code) => resolve({ status: code ?? 1, finished: Date.now() }));
   });
-  return done.then((status) => {
-    // The serial loop's spawnSync blocks the event loop, so this callback can run long after
-    // the child exited. The output file's last write is when the command itself finished.
-    let finished = Date.now();
-    try { finished = Math.max(started, Math.min(finished, statSync(file).mtimeMs)); } catch { /* keep now */ }
+  return done.then(({ status, finished }) => {
     const output = readFileSync(file, 'utf8');
     rmSync(dir, { recursive: true, force: true });
     return { status, output, started, finished };
@@ -229,11 +226,19 @@ export function appendLaneReport({ env = process.env, record, appendFile = appen
   }
 }
 
+function runForeground(command, options) {
+  return new Promise((resolve) => {
+    const child = spawnAsync(command, options);
+    child.once('error', () => resolve({ status: 1 }));
+    child.once('close', (status) => resolve({ status }));
+  });
+}
+
 export async function runCommands({
   commands,
   cwd = process.cwd(),
   env = process.env,
-  spawn = spawnSync,
+  spawn = runForeground,
   startBeside = startConcurrent,
   stdout = process.stdout,
   stderr = process.stderr,
@@ -267,7 +272,7 @@ export async function runCommands({
   for (const [index, command] of serial.entries()) {
     stdout.write(`\n[ci-lane] (${index + 1}/${serial.length}) ${command}\n`);
     const started = Date.now();
-    const result = spawn(command, { cwd, env: childEnv, shell: true, stdio: 'inherit' });
+    const result = await spawn(command, { cwd, env: childEnv, shell: true, stdio: 'inherit' });
     report(command, result.status ?? 1, started);
   }
   for (const { command, result } of running) {

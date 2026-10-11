@@ -568,3 +568,24 @@ test('the perf lane starts only for code a measurement could import, and on ever
     /perf verdict/,
   );
 });
+
+test('CI regression-test edits run their checks without promoting unrelated product lanes', () => {
+  for (const file of [
+    'scripts/classify-change.test.mjs', 'scripts/run-ci-lane.test.mjs',
+    'scripts/lib/focused-check-suggestions.test.mjs', 'scripts/lib/import-graph/test-reach.test.mjs',
+    'scripts/run-playwright-ci.test.mjs', 'scripts/serve-static-export.test.mjs',
+  ]) {
+    const plan = buildImpactPlan({ files: [file] });
+    assert.equal(plan.full, false, file);
+    assert.notEqual(plan.lanes.unit.mode, 'full', file);
+    for (const lane of ['perf', 'mcp', 'e2e']) assert.equal(plan.lanes[lane].mode, 'skip', `${file}: ${lane}`);
+    assert.equal(plan.lanes.e2e.staticExport, false, file);
+    assert.equal(plan.lanes.e2e.webSurface, false, file);
+    assert.ok(plan.lanes.gates.commands.some((command) => command.includes(file) && command.includes('node --test')), file);
+    const implementation = file.replace('.test.mjs', '.mjs');
+    const runtime = buildImpactPlan({ files: [implementation] });
+    assert.equal(runtime.lanes.e2e.mode, 'full', implementation);
+    const mixed = buildImpactPlan({ files: [file, implementation] });
+    assert.equal(mixed.lanes.e2e.mode, 'full', `${implementation} with its test`);
+  }
+});

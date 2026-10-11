@@ -177,7 +177,7 @@ const BROWSER_INPUTS = [
 const STATIC_EXPORT_INPUTS = [
   /^playwright\.config\.ts$/,
   /^next\.config\.ts$/,
-  /^scripts\/serve-static-export(?:\.test)?\.mjs$/,
+  /^scripts\/serve-static-export\.mjs$/,
   /^tests\/e2e\/contextual-meaning-editor\.spec\.ts$/,
   /^src\/features\/ontology-change-review\//,
 ];
@@ -432,7 +432,7 @@ export function buildImpactPlan({ files = [], deletedFiles = [], forceFull = fal
   const existing = unique(files.map(normalizeChangedPath).filter(Boolean));
   const deleted = unique(deletedFiles.map(normalizeChangedPath).filter(Boolean));
   const unknownPaths = paths.filter((path) => !matchesAny(path, KNOWN_PATHS));
-  const plannerChanged = paths.some((path) => matchesAny(path, PLANNER_SURFACE));
+  const plannerChanged = paths.some((path) => !isSourceTest(path) && matchesAny(path, PLANNER_SURFACE));
   const rootAllChanged = paths.some((path) => matchesAny(path, ROOT_ALL_LANE_INPUTS));
   const full = forceFull || plannerChanged || rootAllChanged || unknownPaths.length > 0;
   const suggestions = suggestFocusedChecks(existing, { deletedPaths: deleted });
@@ -451,7 +451,7 @@ export function buildImpactPlan({ files = [], deletedFiles = [], forceFull = fal
     paths,
     suggestions,
     full: full || paths.some((path) =>
-      matchesAny(path, E2E_FULL_INPUTS) ||
+      (!isSourceTest(path) && matchesAny(path, E2E_FULL_INPUTS)) ||
       (path.startsWith('tests/e2e/') && !PLAYWRIGHT_SPEC_PATH.test(path)),
     ),
   });
