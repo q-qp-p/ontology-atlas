@@ -1,40 +1,7 @@
 /**
- * **The Library's constellation, lit** — the object `constellation-model.ts` describes,
- * drawn in WebGL behind the Library's own copy.
- *
- * This file owns materials, the camera, the frame and nothing else. Where the marks go is
- * the model's question and is answered without a GPU; what colour and how bright is this
- * file's, and it reads every value from the design system rather than inventing one.
- *
- * ## The motion, and the one it must not be
- *
- * ⚠️ **The Library already reversed an ambient wriggle once.** On 2026-09-08 the owner
- * killed the 2D graph's 0.28px/7.2s drift — *"why does it wriggle whenever I put the mouse
- * on the graph? it is hard to look at"* — and the rule that survived is that motion on
- * that canvas is only ever the answer to something a person did. That canvas is a picture
- * a person is **reading**; this one is a backdrop behind a title and a button, which is
- * the one place where a slow ambient turn is the point rather than an irritation. The two
- * are kept apart by three things:
- *
- *   - it is **slow** — a full turn takes minutes, not seconds, so nothing crosses the eye
- *     while a sentence is being read;
- *   - it **sleeps** — `ambientSleepFactor` decelerates it to a full stop 30s after the
- *     last input, the same contract the map keeps, so a screen left open costs nothing;
- *   - it **stops dead under reduced motion** — one still frame of the same object, drawn
- *     once, with no loop registered at all.
- *
- * Pointer parallax is deliberately tiny (±0.06 rad) and answers only a hand inside the
- * object's own box. The object should feel like it has depth when a hand moves over it,
- * not follow the cursor across the screen — a backdrop that leans while somebody reaches
- * for the button is the same wriggle under another name.
- *
- * ## Why instanced solids rather than points
- *
- * The owner asked for *geometric shapes*, and a sprite field cannot occlude. Real cubes
- * and spheres pass in front of each other, which is what makes the object read as having
- * a near and a far side — the same reason the download hero draws lit solids rather than
- * the 2D engine's dots. Two `InstancedMesh`es and one `LineSegments` is three draw calls
- * whatever the folder's size, so the cost is flat.
+ * Draws the object `constellation-model.ts` describes in WebGL; owns materials, camera and frame.
+ * The ambient turn is slow, sleeps via `ambientSleepFactor` after 30s idle and stops under reduced
+ * motion.
  */
 
 import * as THREE from "three";
@@ -92,14 +59,9 @@ function cssColor(el: Element, name: string, fallback: string): THREE.Color {
 const TURN_RATE = (Math.PI * 2) / 240_000;
 
 /**
- * How long the pointer tilt takes to cover 63% of its remaining distance.
- *
- * ⚠️ **A fixed per-frame fraction is a monitor setting, not a duration** (design-motion,
- * 2026-09-09). The tilt used to move 6% of the way home every frame, which is 278ms to
- * settle on a 60Hz display, 139ms on 120Hz and 556ms on 30Hz — the same gesture felt
- * different on every screen, and a dropped frame changed it mid-move. This is the time
- * constant that reproduces the old 60Hz feel exactly (`-16.67 / ln(0.94)`), now applied
- * against real elapsed time so every display gets that one answer.
+ * Time for the pointer tilt to cover 63% of its remaining distance. A fixed per-frame fraction is
+ * a monitor setting, not a duration; 269 reproduces a 60Hz feel (`-16.67 / ln(0.94)`) against real
+ * elapsed time.
  */
 const PARALLAX_TAU_MS = 269;
 
@@ -152,16 +114,9 @@ export function mountLibraryConstellation(
   const dim = options.dim ?? 1;
 
   /*
-   * ⚠️ **A token's text contrast is not its rendered contrast** (design-infoviz, 2026-09-09).
-   * `--color-text-tertiary` measures 6.13:1 as type on this very screen; the same value
-   * through `MeshStandardMaterial` and fog composited to **1.80:1 lit / 1.19:1 shaded** —
-   * the lighting model multiplied it down about 60%, and no ramp check can see that.
-   *
-   * The owner settled what the cube is for on the same day: *"I want the cool thing where
-   * the cubes assemble themselves."* A mark somebody is meant to watch assemble is a mark
-   * they have to be able to see, so the cube takes the primary ink and the material stops
-   * eating it — `--color-text-secondary` as the base, roughness down and emissive on, which
-   * is what lifts the shaded faces rather than only the lit one.
+   * A token's text contrast is not its rendered contrast: lighting and fog multiply it down. The
+   * cube takes `--color-text-secondary` with lower roughness and emissive on so the shaded faces
+   * stay visible.
    */
   const inkSource = cssColor(tokenEl, "--color-text-secondary", "#d0d6e0");
   const inkPage = cssColor(tokenEl, "--color-text-primary", "#f7f8f8");
@@ -188,32 +143,12 @@ export function mountLibraryConstellation(
   scene.add(key);
 
   /*
-   * ⚠️ **Orthographic, because a perspective camera was silently destroying an encoding**
-   * (design-infoviz, 2026-09-09). A page's sphere is scaled by `weight` over a 1.88x ramp,
-   * but under perspective its *screen* size is that ramp divided by depth, and the marks
-   * span 2.38-3.36 in depth — a 1.41x range that overlaps the signal. Measured on the
-   * shipped frame, weight 0.25 drew at 12.89px while weight 0.50 drew at 10.88px, and
-   * weight 1.00 and 0.75 differed by 0.5%. An ordered channel that does not preserve order
-   * is not an encoding, and the turn meant it was re-ordered every second on constant data.
-   *
-   * Re-measured over the whole anonymous object at 440px, projecting every page mark
-   * through both cameras: perspective renders **3 of 28** weight-ordered pairs backwards,
-   * and draws three pages of *identical* weight at 9.05, 9.05 and 12.89px — a 1.42x spread
-   * carrying no information at all. Orthographic renders **0 of 28** backwards and gives
-   * one weight one size (10.38 / 12.26 / 14.14 / 16.01 for the four weights present).
-   *
-   * An orthographic projection has no depth term, so a sphere's size on screen is its
-   * weight and nothing else, at every angle of the turn. The near and far sides are still
-   * told apart, by the two channels that survive the change: fog, and the occlusion that
-   * made solids worth drawing in the first place.
-   *
-   * The frustum is derived from the old framing rather than re-tuned, so both call sites
-   * keep the size they were measured at: half-height is `tan(42deg / 2) * distance`, the
-   * height a 42-degree lens covered at that distance.
+   * Orthographic, because perspective divides a sphere's weight-scaled size by depth and reorders
+   * the weight encoding. Half-height is `tan(42deg / 2) * distance`, so both call sites keep their
+   * framing.
    */
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 24);
   const camDistance = options.distance ?? 2.95;
-  /** The frame the retired 42-degree lens covered at this distance. */
   const halfHeight = Math.tan((42 * Math.PI) / 180 / 2) * camDistance;
 
   const sourceGeom = new THREE.BoxGeometry(0.062, 0.062, 0.062);
@@ -562,15 +497,9 @@ export function mountLibraryConstellation(
   };
 
   /*
-   * ⚠️ **Scoped to the object's own box, never `window`** (design-motion, 2026-09-09).
-   * Listening on `window` meant the backdrop leaned every time the cursor crossed the
-   * screen on its way to the call to action or the rail — motion in answer to something
-   * that had nothing to do with the object. That is precisely the mechanism behind the
-   * 2026-09-08 complaint this file's header was written against (*"why does it wriggle
-   * whenever I put the mouse on the graph?"*), reintroduced one surface over.
-   *
-   * The parent is the target rather than the canvas itself because the vignette is laid
-   * over the canvas and takes the events; the box is the same box either way.
+   * Scoped to the object's own box, never `window`: a window listener makes the backdrop lean as the
+   * cursor crosses the screen toward unrelated controls. The parent is the target because the
+   * vignette takes events.
    */
   const pointerHost: HTMLElement = canvas.parentElement ?? canvas;
 

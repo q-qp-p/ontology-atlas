@@ -48,10 +48,7 @@ export function resolveDocsVaultCollection(
   return 'guides';
 }
 
-/**
- * Listed in Docs but never auto-opened: the 2026-08-26 architecture record says a profile
- * "appears in Docs but never in the ontology graph".
- */
+/** Listed in Docs but never auto-opened and never in the ontology graph. */
 export function isArchitectureProfile(doc: Pick<VaultDoc, 'frontmatter'>): boolean {
   return doc.frontmatter.architecture_schema === 'architecture-profile/v1';
 }

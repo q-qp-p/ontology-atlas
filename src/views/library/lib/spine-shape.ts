@@ -1,19 +1,9 @@
 import type { LibraryWikiPage, LibraryWriteUpLink } from "@/entities/docs-vault";
 
 /**
- * How a page stands to its sources.
- *
- * - `stale` — some source this page cites has moved since the page was written, or the
- *   page never recorded a hash for it. Both mean *the write-up may no longer describe
- *   the file*, which is `vault-library.ts`'s own reading of `behind`, and both have the
- *   same cure: compile it again.
- * - `unverified` — **nothing has ever measured this page against a file.** It cites no
- *   source at all (a page somebody wrote by hand), or every citation it makes is still
- *   unmeasured. Drawing it as fresh would be the claim `vault-library.ts` refuses to
- *   make one list up: *a claim nothing has verified is not shown as verified.*
- * - `fresh` — at least one citation was measured and none of them is behind. A page read
- *   only in part counts as fresh here: what it says is current, and the fact that it
- *   stops short of the document is the **source** row's to carry, not the page's.
+ * `stale`: a cited source moved or no hash was recorded; compile again. `unverified`: nothing has
+ * measured this page against a file, so it is never shown as fresh. `fresh`: a citation was measured
+ * and none is behind; partial reading is the source row's to carry.
  */
 export type SpineFreshness = "stale" | "unverified" | "fresh";
 

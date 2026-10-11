@@ -1,9 +1,9 @@
 import type { ArchitectureRecord } from '@/entities/architecture-record';
 
 /**
- * What a role box can honestly say: what its outgoing edges did, never a per-role verdict. Violations
- * are a sample capped by `mcp/src/architecture-profile.mjs` (`violationsLimited`), so a limited count
- * is a floor; unmapped edges carry no role; only `emptyRoles` names an absence.
+ * What a role box can honestly say: what its outgoing edges did, never a per-role result.
+ * Violations are a sample capped by `mcp/src/architecture-profile.mjs` (`violationsLimited`), so a
+ * limited count is a floor; unmapped edges carry no role; only `emptyRoles` names an absence.
  */
 
 export interface RoleLedger {

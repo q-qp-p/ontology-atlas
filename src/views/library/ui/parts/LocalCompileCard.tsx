@@ -12,19 +12,9 @@ import { BrandWaitingMark } from '@/shared/ui/brand-waiting-mark';
 import { SegmentedControl } from '@/shared/ui/segmented-control';
 
 /**
- * **The card the local Compile turn ends at**, seated under step two.
- *
- * The 2026-09-06 record named the price of the local route: a page written by a model
- * from documents a person has not read themselves. This is what is put in front of the
- * button in exchange — for every page, the path it would take, what its five sections
- * carry, how many citations it holds, which sources it was written from, which were read
- * only in part, and which could not be opened at all.
- *
- * **A page that failed validation has no button.** Not a disabled one — the model
- * (`buildCompileConsentCard`) returns no proposal for it at all, so this component has
- * nothing to offer and shows the exact problem codes instead. The shape here follows the
- * ACP permission card the map and the workbench already use: the reading scrolls, and
- * Don't and Allow stay outside that scroller so the two decisions never scroll away.
+ * The card the local Compile turn ends at, under step two: per page the path, sections, citations
+ * and sources. A page that failed validation has no button and shows its problem codes. Both
+ * decision buttons stay outside the scroller.
  */
 export function LocalCompileCard({
   session,

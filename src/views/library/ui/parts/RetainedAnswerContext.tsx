@@ -8,49 +8,9 @@ import { Button, controlClass } from '@/shared/ui';
 import { AgentDoor } from './AgentDoor';
 
 /**
- * **The answer is what they opened, so the answer is what they read first** (owner,
- * 2026-09-12).
- *
- * Measured in the installed app at 1512×901 on the seeded folder
- * (`.claude/shots-2026-09-12/library-inspection/06-answer-page.png`): title, byline and
- * the originals disclosure, then a nine-line problem card, then this block — a bold
- * heading, three caption
- * paragraphs, a button and a link — and the answer's own **Summary started at y=756 of 901,
- * 84% down the viewport**. Every one of those lines is *about* the answer; none of them is
- * the answer. A reader who pressed a saved question had to scroll past the whole apparatus
- * to reach the sentence they asked for.
- *
- * This file is now two blocks with the body between them:
- *
- * | block | where | what it carries |
- * |---|---|---|
- * | `RetainedAnswerContext` | above the body | one line: what the observation found, and the press that acts on it. Everything else is behind a disclosure |
- * | `RetainedAnswerFooter` | after the body | leaving — the previous version, and the way back to the list |
- *
- * ## Why the notice is one line and not a card
- *
- * What a returning reader needs before the answer is the one fact that could make it wrong:
- * the cited originals changed, or one is missing, or nothing has moved. That is a sentence,
- * and the control that acts on it belongs on the same line. The **paths** of the files that
- * changed, the provenance caveat, and the paragraph explaining what a refresh sends to a
- * provider are all true and all secondary, so they sit under a `<summary>` a person opens
- * when the sentence has made them want them. The disclosure is the reason the sentence can
- * stay one line without anything being deleted.
- *
- * ## What stays outside the disclosure, and why
- *
- * `older` and the history state are **exceptional**: they say a reader is not on the newest
- * answer, or that the thread behind it is broken. A state that changes what the page *is*
- * may not be hidden behind a press. The error is the same class. All three are conditional,
- * so the routine screen pays nothing for them.
- *
- * ## The two controls are still not peers (2026-09-11 record, preserved)
- *
- * Asking for a draft acts on this answer; leaving for the list does not. The refresh stays
- * an outlined control inside a `role="group"` whose lede is the observation sentence — now
- * beside it rather than above it, which is the one assertion
- * `library-answer-comparison-rows.spec.ts` had to move — and leaving drops out of the group
- * to the very end of the page, below the answer it leaves.
+ * One line above the body says what the observation found and the press that acts on it; the rest
+ * sits behind a disclosure. `older`, the history state and the error stay outside it since they
+ * change what the page is.
  */
 export function RetainedAnswerContext({ observation, phase, historyState, older, onRefresh, refreshButtonRef, agentDoor = false, historyBlocked = false, error, t }: {
   observation: AnswerObservation;
@@ -87,33 +47,17 @@ export function RetainedAnswerContext({ observation, phase, historyState, older,
   const paths = (['changed', 'missing', 'added', 'rewritten'] as const).filter((kind) => observation[kind].length);
   return (
     /*
-     * The column is the line. `--measure-doc-column` is the prose measure spent at the reading
-     * size plus a gutter each side, so every line in this block already ends where the answer's
-     * body does. Until 2026-09-19 the block also put `max-w-[var(--measure-prose)]` on each `p`,
-     * and `ch` resolves at the element's own size: these 11px lines ended at 432px inside the
-     * 629px column the body fills (browser, 1512) — a second right edge over the answer, the
-     * state the 2026-09-12 column decision was written to remove, and the same cap
-     * `SourceSummary` and the problem cards dropped in #1667.
-     *
-     * `[&_p]:[word-break:keep-all]` stays. A line that wraps with `word-break: normal` breaks
-     * Hangul between any two syllables — the defect `korean-word-break.spec.ts` was written
-     * for. The paths paragraph keeps `break-words` beside it: that is `overflow-wrap`, a
-     * different property, so a long unspaced source path can still break out of its box while
-     * a Korean sentence cannot break inside a word.
+     * The column is the line: `--measure-doc-column` already ends lines where the body does, so no `ch`
+     * cap on each `p`. `[&_p]:[word-break:keep-all]` stops Hangul breaking between syllables; the paths
+     * paragraph keeps `break-words` (`overflow-wrap`) for long unspaced paths.
      */
     <section data-testid="retained-answer-context" className="mx-auto mt-4 w-full max-w-[var(--measure-doc-column)] px-6 [&_p]:[word-break:keep-all] md:px-10" aria-label={t('answers.evidence')}>
       <div role="group" aria-label={t('answers.refresh')} className="border-b border-[color:var(--color-divider)] pb-4">
         <p role="status" aria-live="polite" className="sr-only">{working ? t(`answers.phase.${phase}`) : ''}</p>
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-          {/*
-            **The group's lede and the observation are one sentence, not two.** It used to be
-            a `text-body` strong line stacked over a separate caption that explained the
-            press; the two said the same thing in two grades, and together they were the top
-            of a block that pushed the answer to 84% of the viewport. `text-label` is the
-            grade this screen already gives a sentence that explains a control
-            (`.claude/rules/design.md`, the 2026-08-09 finding), and `id` keeps it the
-            element the refresh is described by.
-          */}
+          {/* The group's lede and the observation are one sentence at `text-label`, the grade a sentence
+             explaining a control gets (`.claude/rules/design.md`); `id` keeps it the element the refresh is
+             described by. */}
           <p
             id="answer-refresh-lede"
             data-testid="answer-evidence-state"
@@ -186,11 +130,8 @@ export function RetainedAnswerContext({ observation, phase, historyState, older,
 }
 
 /**
- * **Leaving, after the answer rather than before it.**
- *
- * The way back to the question list and the previous revision both take a reader *off* this
- * answer, so they belong where the answer ends. They were 300px above the answer's own
- * Summary until 2026-09-12.
+ * Leaving, after the answer rather than before it: the way back to the list and the previous
+ * revision both take a reader off this answer, so they belong where it ends.
  */
 export function RetainedAnswerFooter({ onHome, onPrevious, t }: {
   onHome: () => void;

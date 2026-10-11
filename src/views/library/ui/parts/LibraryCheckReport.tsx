@@ -23,47 +23,9 @@ import { AgentMissingNotice } from "./AgentMissingNotice";
 import { WikiProblemSentence, type WikiProblemDoors } from "./WikiTemplateProblems";
 
 /**
- * **What the check found, as a page in the reading pane — two ledgers, the computed one
- * first.**
- *
- * Owner direction 2026-09-07 (design round, direction B) put the findings in the pane
- * rather than the 280px index column: in the column they were three-line clips that
- * pushed the page list off the screen. Owner selection 2026-09-12 (`/ui-build`
- * direction B, licensed by `docs/DECISIONS.md` 2026-09-11 "The Library keeps its spine,
- * and computes the structural check itself") decides what the pane holds.
- *
- * ⚠️ **The page used to be one ledger, and it was the agent's.** Every row came from the
- * last agent turn, held in memory for the session, and after a restart the page printed
- * *"what the last check found does not survive reopening the app"* — under a head that was
- * still counting those findings, because `wiki/_log.md` keeps the counts. Measured on the
- * installed app (`.claude/shots-2026-09-11/library-after/30-check-result-panel.png`): the
- * head counted two missing links and one name without a page, the body listed neither,
- * and in the same frame the pane strip said two pages were off-template while two index
- * rows each said the page needed its sources checked and was off-template. The app had
- * already computed, per page, facts it was telling the person it could not show.
- *
- * So the page is now **two places, and the place is the provenance**:
- *
- * 1. **What the app checked** leads, because it is the half that is always true. It is
- *    derived from `model.structural` — `verdicts` regrouped by `mcp/src/wiki-report.mjs`,
- *    the same module `wiki-validate` and `validate_wiki` group with — so it needs no
- *    press, no agent and no memory, and it is identical after quitting the app because
- *    nothing about it was remembered. Blocking kinds first, advisory last.
- * 2. **What the agent read** follows with its own head: the log line, or the disabled
- *    "Check the wiki" chip and the reason it cannot run here. Only this half can be
- *    empty, and only its copy may say so.
- *
- * That split is why `report.never` / `clean` / `gone` / `emptyLede` were re-scoped rather
- * than reused. `empty` was computed from the *agent's* findings, so a person with no agent
- * would have read "Not checked yet…" directly above a live list of nine computed rows, and
- * a clean agent run would have printed "found nothing to fix" above findings that are
- * exactly things to fix (both PO seats, 2026-09-12).
- *
- * **Every row keeps one door, and only one.** A finding's page names are the door: they
- * are `library-finding-page` buttons and they open the page. Structural rows get that and
- * nothing else — the door *is* the "open" the owner's decision asks for, and a chip beside
- * a link to the same page would be two doors to one place. **Fix** and **Propose** start
- * agent turns that write, so they stay on the agent's half only.
+ * Two ledgers, the computed one first: what the app checked (from `model.structural`, needing no
+ * press, agent or memory), then what the agent read. A finding's page names are its one door; Fix
+ * and Propose stay on the agent half.
  */
 
 /** Names past this many fold behind a count; the map kinds come first. */
@@ -79,27 +41,8 @@ function findingKindKey(code: LintFinding["code"]): "disagreement" | "superseded
 type RulePath = "report.rule.orphan-page";
 
 /**
- * **A finding kind, said as a sentence.**
- *
- * ⚠️ The heading used to *be* the code — `citation-target-missing`, `uncited-fact`,
- * `orphan-page`, `shared-source-unlinked`, in monospace and untranslated, in the body and
- * again in the outline rail. Measured on the installed app 2026-09-13
- * (`inspection-122/06-strip-format-report.png`), two screens from the wiki page that
- * already said "no original backs up what is written at line 22 under Facts" and kept its
- * codes behind a fold called "technical detail, check codes and line numbers"
- * (`wiki.technical`). One folder, two vocabularies, and the louder one was the machine's.
- *
- * Nothing is taken away: the code, its line anchor and the validator's own English
- * sentence stand under the same disclosure this page's sibling uses, because a person
- * holding this screen beside a terminal is comparing tokens. What changes is which of the
- * two is the heading.
- *
- * A kind this catalogue has not learned yet falls back to the code rather than to a raw
- * `library.report.rule.…` path — the same degradation `describeWikiProblem` keeps.
- *
- * Not exported: the heading and the outline rail's entry are both built here, and an
- * exported name with no importer is the kind of misinformation the dead-code ratchet exists
- * to refuse (the reason `WikiProblemSegment` stays internal too).
+ * A finding kind said as a sentence; the code, line anchor and validator English stay under the
+ * disclosure. An unknown kind falls back to the code, not a raw path. Not exported: no importer.
  */
 function reportRuleTitle(
   code: string,
@@ -123,12 +66,8 @@ function logWhen(at: string): string {
 }
 
 /*
- * ⚠️ **A `describeStructuralRow` used to live here, and it was the third copy.** The same
- * function sat in `WikiTemplateProblems.tsx` and in `AnswerRevisionComparison.tsx`
- * (carry-forward, 2026-09-11), so one folder's finding had three retellings maintained in
- * three places. `describeWikiProblem` is now the one of them, and the reason is not
- * tidiness: a person reads a finding on this page, presses the page's name, and must meet
- * the *same sentence* beside the page. Two retellings are two folders.
+ * `describeWikiProblem` is the one describer, so a finding here and beside its page read as the same
+ * sentence.
  */
 
 /**
@@ -151,7 +90,6 @@ export function reportOutline(
     for (const group of structural.groups) {
       out.push({
         slug: `report-code-${group.code}`,
-        // The rail reads what the heading reads. It used to read `orphan-page 2`.
         text: `${reportRuleTitle(group.code, t)} ${group.count}`,
         depth: 2,
         occurrence: 1,
@@ -186,19 +124,8 @@ function pageSlug(path: string): string {
 }
 
 /**
- * A finding's pages, each one a door. One component for both ledgers so a structural row
- * and a semantic row cannot come to look like different kinds of thing.
- *
- * **The door is the row's entire ability, so it is the row's brightest interactive ink**
- * (`design-guardian`, council 2026-09-12). Measured at 1512 before this change: the rule
- * sentence was `text-body` primary (12.5px, the brightest text on the screen) over a
- * `text-caption` quaternary page name (9.5px) — the element doing the screen's job was the
- * weakest thing on it, while `Fix`/`Propose` are deliberately absent from a structural row.
- * So the door takes the body step in primary and the sentence steps back to secondary.
- * `px-1.5` is not spacing taste: the focus ring is 2px inset, and with no horizontal
- * padding it landed on the first and last glyph (`design-interaction`, same council). The
- * paragraph's `-ml-1.5` gives that padding back to the column, so the first door's glyphs
- * still stand on the sentence's own left edge.
+ * The door is the row's whole ability, so it takes the brightest interactive ink. `px-1.5` keeps the
+ * 2px inset focus ring off the glyphs; the paragraph's `-ml-1.5` gives it back to the column.
  */
 function PageDoors({
   pages,
@@ -245,18 +172,8 @@ function PageDoors({
 }
 
 /**
- * **One row per bullet a person fixes, not per time the validator fired.**
- *
- * Within one code group, rows that name the same page and retell the same sentence become
- * one row whose door carries every place: `merchant-onboarding · line 22 · line 23`.
- * Measured at 1512 (design-lead, council 2026-09-12): rows 4 and 5 were the same three-line
- * sentence twice, differing only in the line number — 32 lines of rule prose around six
- * page names.
- *
- * ⚠️ The door used to carry `· :22 · :23` — a colon and a number, which is the anchor
- * `wiki-validate` prints and not a thing a person says (installed app, 2026-09-13). The
- * place now comes from the describer, in the reader's own words, exactly as it does beside
- * the page.
+ * Rows in one code group naming the same page and sentence merge into one row whose door carries
+ * every place; places come from the describer in the reader's words.
  */
 interface StructuralRow {
   row: WikiReportRow;
@@ -341,19 +258,8 @@ function placeSuffix(where: WikiProblemWhere): string {
 }
 
 /**
- * One code's findings: the rule as the heading, said once, and a row per bullet.
- *
- * **The heading is a sentence and the code is one press away.** Both design seats agreed
- * in council 2026-09-12 that one vocabulary with `wiki-validate` beats a translated
- * synonym — that is how a person checks the licensing record's falsifier themselves. The
- * 2026-09-13 inspection showed what that cost when the code was the *only* thing on the
- * heading: four monospace English tokens down a Korean page, and the same tokens in the
- * outline rail. Both are kept, in the order a person needs them — the sentence stands, the
- * code sits under `wiki.technical`, the disclosure the wiki page beside it already uses.
- *
- * The 1px rule above it makes the boundary between two kinds **structural rather than a
- * matter of ink**, which is what lets the rows below it step back without the group
- * dissolving into one list.
+ * The heading is a sentence and the code is one press away under `wiki.technical`. The 1px rule
+ * makes the boundary between kinds structural rather than a matter of ink.
  */
 function StructuralGroup({
   group,
@@ -488,11 +394,8 @@ export function LibraryCheckReport({
   lastLint: { at: string; summary: string } | null;
   busy: boolean;
   /**
-   * A check is in flight **right now**, as opposed to `busy`, which is true of every turn
-   * this screen can start. Only this half of the page can run one, so only this chip may
-   * wear the wait — and it must: at ≤1024 the index column holding the other running mark
-   * is off screen, so a running check was invisible everywhere (`design-interaction`,
-   * council 2026-09-12).
+   * A check is in flight now, unlike `busy`. Only this chip wears the wait, since at 1024 and below
+   * the index column holding the other running mark is off screen.
    */
   running?: boolean;
   /** Starts a check; null when no agent can run one here — the chip is still drawn. */
@@ -500,9 +403,8 @@ export function LibraryCheckReport({
   /** Why it cannot run here, for the disabled chip. Null when it can. */
   lintBlockedReason?: string | null;
   /**
-   * The installed app looked for a coding agent and found none. The chip then gives way to
-   * the notice the index draws for the same state (`AgentMissingNotice`), so one missing
-   * agent reads one way on both sides of the press that opens this page (2026-09-25).
+   * The installed app found no coding agent: the chip gives way to the index's `AgentMissingNotice` so
+   * one missing agent reads one way on both sides.
    */
   agentMissing?: boolean;
   onFix: ((finding: LintFinding) => void) | null;
@@ -523,15 +425,8 @@ export function LibraryCheckReport({
    */
   onJumpToSection?: (slug: string) => void;
   /**
-   * **Whether the advisory kinds are open — the caller's answer when the caller has one.**
-   *
-   * ⚠️ The outline rail lists every kind the report holds, and two of its six entries went
-   * nowhere (installed app, 2026-09-13: `inspection-122/07-report-orphan-page-rail.png`).
-   * Pressing `orphan-page` or `shared-source-unlinked` marked the entry active and the page
-   * did not move, because the section they name is inside a fold this component alone could
-   * open. The rail lives in the reading pane, above this component, so the state it has to
-   * change lives with the rail's own handler; left uncontrolled, this stays the local state
-   * it always was.
+   * Whether the advisory kinds are open, when the caller has an answer. The rail lives above this
+   * component, so the state it changes lives with the rail's handler; uncontrolled stays local.
    */
   advisoryOpen?: boolean;
   onAdvisoryOpenChange?: (open: boolean) => void;
@@ -541,17 +436,8 @@ export function LibraryCheckReport({
 }) {
   const [candidatesOpen, setCandidatesOpen] = useState(false);
   /**
-   * **The advisory kinds start closed, in every state.**
-   *
-   * `orphan-page` and `shared-source-unlinked` are true of every page in a wiki nobody has
-   * cross-linked yet — the app says so itself in `report.advisoryMark` — so they are by
-   * definition never the page to fix first. Measured from `measurements.json`: they held
-   * 413px at ≥768 and 473px at 390, which put "What the agent read" at y1049 and y1149,
-   * below the fold at every width the product is used at. Two closed summary rows cost
-   * ≈88px. The rail that used to be the answer to that cost is *arithmetically impossible*
-   * below a 1045px pane — the installed app's 1040px window floor and every iPad width
-   * (`design-responsive`, council 2026-09-12), which is what closed the vote: unanimous
-   * fold, blocking groups never collapsible.
+   * Advisory kinds start closed in every state: they are true of any wiki nobody has cross-linked, so
+   * never the page to fix first, and open they push the agent half below the fold.
    */
   const [advisoryOpenLocal, setAdvisoryOpenLocal] = useState(false);
   const advisoryOpen = advisoryOpenProp ?? advisoryOpenLocal;
@@ -582,11 +468,8 @@ export function LibraryCheckReport({
     rows: findings.filter((finding) => finding.code === code),
   })).filter((group) => group.rows.length > 0);
   /*
-   * Only the agent's half can be empty. `lastCheckFoundSomething` reads the app's own log
-   * line for a non-zero digit, because the counts persist in `wiki/_log.md` and the
-   * findings do not: an empty agent half under a log line that counts findings is not
-   * "nothing to fix", it is a page reopened after the app was (measured on the installed
-   * app, council 2026-09-07), and it says so.
+   * Only the agent's half can be empty. `lastCheckFoundSomething` reads the log line for a non-zero
+   * digit because counts persist in `wiki/_log.md` and findings do not.
    */
   const semanticEmpty = findings.length === 0 && candidates.length === 0;
   const lastCheckFoundSomething = !!lastLint && /(?:^|\D)[1-9]\d*/.test(lastLint.summary);
@@ -771,25 +654,17 @@ export function LibraryCheckReport({
 
         {semanticEmpty ? (
           <div className="mt-4 flex flex-col items-start gap-3">
-            {/* The lede, a finding's sentence and the candidates note are lines in the
-                report's column, and the column is the measure: `--measure-doc-column` is
-                `--measure-prose` spent at the reading size plus the gutters. They wore the
-                `ch` cap themselves until 2026-09-19, which at `text-body` resolved shorter
-                than the column (491px in 629px, browser, 1512) and gave the report a second
-                right edge. */}
+            {/* Lines here live in the report's column, so `--measure-doc-column` is the measure, not a `ch` cap,
+               which resolves shorter and gives a second right edge. */}
             <p className="text-body leading-body text-[color:var(--color-text-secondary)] [word-break:keep-all]">
               {lastLint ? (lastCheckFoundSomething ? t("report.gone") : t("report.clean")) : t("report.emptyLede")}
             </p>
           </div>
         ) : null}
 
-        {/* A feature the product has is always on screen and availability is a state with its
-            reason (`docs/DECISIONS.md` 2026-09-11). The computed half above needs no agent, so
-            this is the only control on the page that can be blocked. With no coding agent on
-            this computer at all, the state is the index's own notice, naming what Check would
-            do and ending in the door to connect one — not a dead chip over a caption with no
-            way out (2026-09-25). While an agent is still being looked for, or where a local
-            model can only compile, the chip stays drawn beside its reason. */}
+        {/* Availability is a state with its reason. With no coding agent at all, the index's notice with its
+           door replaces a dead chip; while one is still being looked for, or a local model can only compile,
+           the chip stays beside its reason. */}
         {onLint === null && agentMissing ? (
           <AgentMissingNotice
             testId="library-check-report-agent-missing"
@@ -872,8 +747,7 @@ export function LibraryCheckReport({
                     <PageDoors pages={finding.pages} onOpenPage={onOpenPage} />
                   </div>
                   {fixedKeys?.has(findingKey(finding)) ? (
-                    /* A Fix turn ended on this one: the row says so until the next check
-                       re-judges the pages (design-interaction, council 2026-09-07). */
+                    /* A Fix turn ended on this finding; the row says so until the next check re-judges the pages. */
                     <span
                       data-testid="library-finding-fixed"
                       className="flex-none pt-1 text-caption text-[color:var(--color-text-quaternary)] [word-break:keep-all]"

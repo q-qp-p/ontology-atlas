@@ -533,7 +533,6 @@ export function ProjectDetailPage({
               data-testid="project-detail-hero-actions"
               className="grid min-w-0 basis-full grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center @5xl/project-hero:ml-auto @5xl/project-hero:basis-auto"
             >
-              {/* Opening on the map is the one filled control; the reviewer's picker is second, outlined. */}
               <Link href={getTopologyProjectNodeHref(project.slug)} data-testid="project-detail-topology-link">
                 <Button type="button" variant="primary" size="sm" className="w-full sm:w-auto">
                   {t("topBarTopologyView")}
@@ -726,8 +725,8 @@ export function ProjectDetailPage({
           {bodyContent ? (
             <ProjectBriefSummary
               body={dedupedBodyContent ?? bodyContent}
-              // The reading column (`docs/DECISIONS.md`, 2026-09-12), left-aligned inside a card, at
-              // body-lg so it does not outrank the hero; hierarchy is weight and space, not size.
+              // The reading column (`docs/DECISIONS.md`), left-aligned in a card at body-lg so it does not
+              // outrank the hero; hierarchy is weight and space, not size.
               proseClassName={`${storyMarkdownClassName} max-w-[calc(var(--measure-doc-column)-2*var(--measure-doc-gutter))]`}
               coversLabel={t("bodyCovers")}
               leadSentence={heroTagline}

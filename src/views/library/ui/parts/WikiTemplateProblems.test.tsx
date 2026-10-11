@@ -11,27 +11,6 @@ import {
   type WikiTemplateProblem,
 } from "./WikiTemplateProblems";
 
-/**
- * **What this panel says about a page must be the same thing the header counts, and it
- * must be addressed to the person reading it.**
- *
- * Measured 2026-09-09 on a four-page folder that fit the template perfectly: the status
- * strip printed no off-template clause, and this panel simultaneously headed every
- * finding *This page does not fit the wiki template*. The findings were folder findings —
- * about how the pages link each other, not about any page's shape — and the heading in
- * the larger type was the wrong one.
- *
- * The second thing measured that day: a Korean reader was handed `dangling-wikilink:15`
- * followed by an English paragraph, because the sentence shipped from the validator,
- * where it is written once for machines.
- *
- * ⚠️ **The third, 2026-09-12** (owner, on a page their agent had just written): *"I
- * cannot tell what this is saying from a person's side — it just looks like alien
- * script."* The codes, the line anchors, the citation grammar and the CLI/tool names were
- * the loudest things on the card. They are all still here — behind one disclosure — and
- * what leads is one sentence per finding plus what to do about it.
- */
-
 /** The panel takes `t` from its parent, so the harness is the only thing that calls the hook. */
 function Harness({
   problems,
@@ -82,7 +61,6 @@ const LINK_PROBLEM: WikiTemplateProblem = {
   detail: { key: "dangling-wikilink", values: { target: "wiki/gone" } },
 };
 
-/** The owner's own case: a bullet under `## Facts` with nothing behind it. */
 const UNCITED: WikiTemplateProblem = {
   code: "uncited-fact",
   message: "Every bullet under `## Facts` ends in at least one citation.",
@@ -90,7 +68,6 @@ const UNCITED: WikiTemplateProblem = {
   detail: { key: "uncited-fact" },
 };
 
-/** The other folder finding the owner read: two write-ups of one original, unlinked. */
 const SHARED_SOURCE: WikiTemplateProblem = {
   code: "shared-source-unlinked",
   message: "`wiki/payments-01.md` also lists `sources/payments-ledger-01.html`.",
@@ -138,11 +115,7 @@ describe("WikiTemplateProblems — a folder finding is not an off-template verdi
 describe("WikiTemplateProblems — the card title counts, in words", () => {
   it("says how many there are and what kind they are, without a code", () => {
     renderPanel([UNCITED, LINK_PROBLEM]);
-    /*
-     * The Korean counter word is not decoration. Two of three walkers (2026-09-12) read
-     * the bare digit in the Korean title as an ordinal — *"the title implies a first one
-     * exists"* — so the number has to carry a counter and read as a count.
-     */
+    /* The Korean counter word keeps the number from reading as an ordinal. */
     expect(screen.getByTestId("library-wiki-problems").textContent).toContain("고칠 곳 1개 · 서식");
     expect(screen.getByTestId("library-wiki-link-findings").textContent).toContain("확인할 연결 1개");
   });
@@ -169,7 +142,6 @@ describe("WikiTemplateProblems — the sentence is in the reader's language", ()
     expect(row.textContent).not.toContain("[[");
   });
 
-  /** The owner's own sentence: the place, the problem, and what to do, in that order. */
   it("says where the claim is and what to do about it", () => {
     renderPanel([UNCITED]);
     const row = screen.getByTestId("library-wiki-problem");
@@ -320,10 +292,8 @@ describe("WikiTemplateProblems — one action per card, or none", () => {
       fix: { mode: "agent", onPress: vi.fn() },
     });
     /*
-     * ⚠️ **The folder card has no action** (po-evidence, 2026-09-12). Its findings are
-     * repaired by editing *another* page, which the repair brief's single-file constraint
-     * forbids, and the self action would open the wrong file. Its findings' own doors —
-     * the other page's title — are the way.
+     * The folder card has no action: its findings are fixed by editing another page, which the repair
+     * brief's single-file constraint forbids.
      */
     const buttons = screen.getAllByTestId("library-wiki-fix");
     expect(buttons).toHaveLength(1);
@@ -336,10 +306,8 @@ describe("WikiTemplateProblems — one action per card, or none", () => {
   });
 
   /*
-   * ⚠️ **A control may not promise a checkpoint the default removes.** The shipped default
-   * write mode is `auto`, and a repaired page that passes the validator is written without
-   * a permission card — which is exactly the success case of this repair. It may not deny
-   * one either, for a person who switched `ask` on (po-evidence and po-steward, 2026-09-12).
+   * A control may not promise a permission card the default `auto` write mode removes,
+   * nor deny one when the person switched `ask` on.
    */
   it("promises a permission card only where every write gets one", () => {
     const { unmount } = renderPanel([UNCITED], "en", {
@@ -370,18 +338,12 @@ describe("WikiTemplateProblems — the machine's vocabulary is one press away, n
     const card = screen.getByTestId("library-wiki-link-findings");
     expect(card.textContent).toContain("wiki-validate");
     expect(card.textContent).toContain("validate_wiki");
-    // …and the card's own explanation no longer does.
     expect(screen.getByText(ko.library.wiki.linkFindingsBody).textContent).not.toContain(
       "wiki-validate",
     );
   });
 
-  /*
-   * ⚠️ For `uncited-fact`, `missing-field`, `section-order-*`, `kind-present` and
-   * `describes-needs-approval` the validator's message never names the path either, so
-   * without this line nothing on the card says which file on disk holds the claim — and on
-   * the web there is no Finder reveal to answer it by action (po-steward, 2026-09-12).
-   */
+  /* Some codes' messages omit the path, so the card must name the file on disk. */
   it("names the file on disk the findings are about", () => {
     renderPanel([UNCITED], "ko", { file: "wiki/merchant-onboarding.md" });
     openTechnical();

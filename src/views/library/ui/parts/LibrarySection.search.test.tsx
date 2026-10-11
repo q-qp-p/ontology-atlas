@@ -8,17 +8,8 @@ import type { LibraryUiModel } from "@/features/library";
 import { LibrarySection } from "./LibrarySection";
 
 /**
- * **The index column answers from inside the documents — slice U2's first decision.**
- *
- * Measured 2026-09-11 on a six-file folder with no agent: typing "T+2" matched nothing,
- * because the source half filtered on `row.path` alone. What these cases pin is not that
- * a match appears — it is the three ways a search that reads files can lie:
- *
- * 1. it reports "no match" for a file it has not opened yet (the reading state exists so
- *    that *not read* and *not there* are different sentences on screen);
- * 2. it shows a caption whose address is not the unit's own (a person presses it and
- *    lands somewhere the phrase is not);
- * 3. it truncates a folder silently, so a partial search reads as a complete one.
+ * Pins the three ways a search that reads files can lie: reporting no match for a file not yet
+ * opened, captioning with an address that is not the unit's own, and truncating a folder silently.
  */
 
 const SETTLEMENT = [
@@ -142,10 +133,8 @@ describe("the index search reads the sources", () => {
     renderWith({ handles: bothHandles() });
 
     /*
-     * Before the keystroke the line is **there and empty**. It used to be absent, and
-     * appearing on the first character pushed the list 18–19px down under the pointer
-     * (design-interaction, council 2026-09-11) — so the height is reserved and the phase
-     * is the only thing that changes.
+     * Before the keystroke the matches line is present and empty, so the height is reserved and only the
+     * phase changes when typing begins.
      */
     const reserved = screen.getByTestId("library-search-matches");
     expect(reserved).toHaveAttribute("data-phase", "idle");
@@ -281,10 +270,8 @@ describe("the index search reads the sources", () => {
   });
   it("keeps a row nobody has read yet, so the column does not empty while reading", async () => {
     /*
-     * ⚠️ The defect this replaces: filtering on `matches || hits` alone dropped every row
-     * whose read had not landed, so on the 200-file folder the list stood at **0 rows
-     * while the line said 1/200** (design-lead, council 2026-09-11) — "nothing found"
-     * printed before "still reading". An unread file is neither a match nor a miss.
+     * Filtering on `matches || hits` alone would drop every row whose read has not landed; an unread
+     * file is neither a match nor a miss.
      */
     renderWith({ handles: pendingHandles() });
     fireEvent.change(screen.getByTestId("library-search"), { target: { value: "T+2" } });
@@ -301,10 +288,8 @@ describe("the index search reads the sources", () => {
 
   it("does not send a reader to the other list on a count it is still reading", async () => {
     /*
-     * The note is a finished answer — *none here, they are all on the other list* — and its
-     * count is `visibleSources`, which while reading still holds the rows nobody has read.
-     * Printed under an unfinished read it names a number that is about to change
-     * (design-interaction, council 2026-09-11).
+     * The note is a finished answer and its count is `visibleSources`, which while reading still holds
+     * unread rows, so it must not print under an unfinished read.
      */
     /* `sourcePaths` because the wiki half draws its shelf before a query is typed, and
        the shelf reads each page's freshness from them. */
@@ -348,11 +333,7 @@ describe("the index search reads the sources", () => {
   });
 
   it("comes back holding the question, so a door does not cost a retype", () => {
-    /*
-     * U2's own door: press 「Agents」 from a blocked step and return through the rail. The
-     * field used to be empty, so the person paid for the trip they were invited to take
-     * (design-interaction, council 2026-09-11).
-     */
+    /* Pressing the Agents door from a blocked step and returning through the rail must not cost a retype. */
     writeLibraryIndexQuery("folder-a", "T+2");
     const held = renderWith({ handles: bothHandles() });
     expect(screen.getByTestId("library-search")).toHaveValue("T+2");
@@ -368,9 +349,8 @@ describe("the index search reads the sources", () => {
 });
 
 /**
- * **A search that matches nowhere says so** (browser walk, 2026-09-19). Both lists emptied
- * under a caption of zeros and nothing else; a person who mistyped read a folder with
- * nothing in it. The sentence names the word, on whichever half the person is standing.
+ * A search that matches nowhere names the word, on whichever half the person is standing, rather
+ * than leaving zeros.
  */
 describe("a search with no match on either half", () => {
   it("prints one sentence naming the word under the sources list", async () => {
@@ -407,11 +387,7 @@ describe("a search with no match on either half", () => {
   });
 });
 
-/**
- * **The foot under the wiki list counts the rows on screen** (installed app, 3,000 files,
- * 2026-09-19): under a search that matched nothing it still said *400 pages miss the
- * template*, a number about rows nobody could see.
- */
+/** The foot under the wiki list counts the rows on screen, not the whole folder. */
 describe("the off-template foot counts what the list shows", () => {
   const page = (slug: string, title: string) => ({ slug, title, sourcePaths: [], createdBy: "agent:claude", compiledAt: null });
   const verdict = (codes: string[]) => ({ ok: codes.length === 0, firstProblem: codes[0] ?? null, firstProblemMessage: null, problemCount: codes.length, problems: codes.map((code) => ({ code, message: code })) });
@@ -425,7 +401,7 @@ describe("the off-template foot counts what the list shows", () => {
 
   it("says nothing at rest, and nothing once the search hides that page", async () => {
     mountTwo();
-    /* At rest the header strip and the card's own status line already carry it (2026-09-25). */
+    /* At rest the header strip and the card's own status line already carry the count. */
     expect(screen.queryByTestId("library-off-template-count")).toBeNull();
     fireEvent.change(screen.getByTestId("library-search"), { target: { value: "Lintel" } });
     await waitFor(() => {

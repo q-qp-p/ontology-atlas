@@ -95,8 +95,8 @@ export function useFullDetailA1Model({
           const target = resolveNodeAgentTarget(selectedOntologyNode);
           return { agentSlug: target.ref, documented: target.documented };
         })(),
-        // Freshness has one source (`use-node-datasheet-model`): the datasheet's verdict for this
-        // node, else the session baseline, or the two surfaces contradict each other.
+        // Freshness has one source (`use-node-datasheet-model`): the datasheet's result for this node,
+        // else the session baseline, or the two surfaces contradict each other.
         fresh:
           datasheet?.nodeId === selectedOntologyNode.id
             ? datasheet.powered

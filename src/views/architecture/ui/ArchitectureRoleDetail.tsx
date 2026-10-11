@@ -11,9 +11,9 @@ import type { RoleConcept } from '../model/role-concepts';
 import type { RoleSourceModule } from '../model/source-modules';
 
 /**
- * Everything one role carries, beside the drawing instead of inside it (decision 2026-08-28 (3)):
- * the graph answers shape and traffic, this panel what is in the layer. Props only: it reads no
- * profile or record, so any surface that composed the graph can use it.
+ * Everything one role carries, beside the drawing: the graph answers shape and traffic, this panel
+ * what is in the layer. Props only: it reads no profile or record, so any surface that composed
+ * the graph can use it.
  */
 
 /* The occupant grids' track floor and gap (`minmax(200px, 1fr)`, `gap-2.5`); the class strings quote them. */
@@ -178,7 +178,7 @@ export function ArchitectureRoleDetail({
               ? sinkLabel
               : reachInlineLabel(reach.map(roleLabel).join(' · '))}
           </p>
-          {/* A role id is a folder name, which carries no intent (decision 2026-08-26); the sentence says what the role is for. */}
+          {/* A role id is a folder name and carries no intent; the sentence says what the role is for. */}
           {summary ? (
             <p
               className="mt-1 break-keep text-body leading-body text-[color:var(--color-text-tertiary)]"
@@ -248,7 +248,7 @@ export function ArchitectureRoleDetail({
         </div>
       </div>
 
-      {/* The meaning layer (decision 2026-08-27): reviewed concepts, never mixed with the source modules above. */}
+      {/* The meaning layer: reviewed concepts, never mixed with the source modules above. */}
       <div
         ref={setConceptGridNode}
         className="border-t border-[color:var(--color-divider)] px-[var(--card-pad)] pb-[var(--card-pad)] pt-3"

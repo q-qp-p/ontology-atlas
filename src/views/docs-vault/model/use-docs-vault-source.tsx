@@ -267,7 +267,7 @@ export function useDocsVaultSource({
   }, [source, localVaultStatus, setAdvancedOpen]);
 
   const handleSourceChange = useCallback((next: Source) => {
-    // The installed app has no bundled sample; legacy commands and links must not reopen it.
+    // The installed app has no bundled sample, so links and commands must not reopen it.
     if (installedShell && next === 'server') return;
     setSource(next);
     setStaticSampleOverride(null);

@@ -164,11 +164,8 @@ describe("the wiki half of the column is an index: search, three doors, the list
     } as unknown as LibraryUiModel;
     mount(<HarnessWith model={withPerson} />);
     /*
-     * The rule is unchanged and its carrier moved with the list's shape: a 26px spine has
-     * no room for a caption, so the exception is named in the accessible name the spine
-     * already has to carry (the whole title truncates there too). The majority writer
-     * stays silent either way — nine identical labels are texture, and the one that says
-     * a person is the fact (design-lead, council 2026-09-07).
+     * The exception is named in the accessible name the spine carries, since a 26px spine has no room
+     * for a caption. The majority writer stays silent; only the one that says a person is the fact.
      */
     const named = ["wiki/a", "wiki/b", "wiki/c"].filter((slug) =>
       screen.getByTestId(`library-wiki-${slug}`).getAttribute("aria-label")?.includes("a person"),
@@ -197,19 +194,9 @@ describe("the wiki half of the column is an index: search, three doors, the list
   });
 
   /**
-   * **The row's two live states, and the one thing that clears the second** (2026-09-12).
-   *
-   * `running` and `unseen` shipped with the computed check and had no gate of any kind —
-   * no unit test, no e2e, no contract — so a row that silently stopped saying "a check is
-   * going" or "a finished check nobody has read" would have been green everywhere.
-   *
-   * They matter more since the Library's home became the folder's graph: the strip's
-   * `N off-template` clause presses into the same report, and this row is the **only**
-   * surface carrying the report's state, because a chip on the strip could not. Both
-   * presses go through `LibraryPage`'s `choose`, which is where "seen" lives — so the
-   * mark's whole contract is that it is drawn from the prop and nowhere else, and that is
-   * what this pins. No e2e can reach `unseen: true` today: the dock harness leaves
-   * `acp_start` unanswered on purpose, so no turn ever completes in a browser.
+   * `running` and `unseen` are drawn from the prop and nowhere else; `LibraryPage`'s `choose` is where
+   * seen lives. No e2e can reach `unseen: true` because the dock harness leaves `acp_start`
+   * unanswered.
    */
   it("draws running, then unseen, and neither once the report has been read", () => {
     const onOpen = vi.fn();
@@ -269,8 +256,6 @@ describe("a search whose matches sit on the other half of the switch", () => {
   }
 
   it("names the matches on the other list and switches there, instead of an empty list under a count", () => {
-    // Browser walkthrough 2026-09-07: "sources 0 · pages 6" stood over nothing, and the
-    // person had to know to press the other half of the switch.
     window.localStorage.removeItem("atlas.library.index-segment");
     const model = {
       ...MODEL,

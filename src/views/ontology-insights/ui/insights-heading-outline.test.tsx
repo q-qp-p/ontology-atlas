@@ -75,8 +75,7 @@ describe("insights sources render section title classes on headings, not spans",
   const { join } = await import("node:path");
 
   const ROOT = "src/views/ontology-insights/ui";
-  // These strings are the ramp's current classes, not a spec: if the ramp moves, update them, or this gate searches
-  // for a string that no longer exists and can never go red (`/gate-probe`).
+  // These are the ramp's current classes; if the ramp moves, update them or the gate can never go red.
   const TITLE_CLASSES = [
     'text-body-lg font-[var(--font-weight-signature)] tracking-[-0.01em] text-[color:var(--color-text-primary)]',
     'text-body font-[var(--font-weight-signature)] text-[color:var(--color-text-primary)]',

@@ -1,22 +1,9 @@
 import type { AcpTurnCompletion } from "@/features/acp-session";
 
 /**
- * **One headless agent turn for a round's pass** — open the session, send one brief, wait for
- * the turn, close.
- *
- * ## Nothing here may outlive a stop, or the ceiling
- *
- * The runner runs one pass at a time, so a turn that never returns holds the lock for every
- * other round. Measured through the desktop bridge on 2026-09-25 with the handshake held open
- * (`acp_start` never answering): only the `send` step raced the person's stop, so a pass still
- * inside `start()` ignored Pause and Remove. The header kept naming a round that was paused or
- * already gone, no `stopped` line reached the ledger, and every other round's "Run now" stayed
- * disabled until the window was reloaded. The ceiling had the same hole: it was armed only
- * around `send`, so a handshake that never answered was never timed out at all.
- *
- * Every step now races one `over` promise — the person's stop or the pass ceiling, whichever
- * comes first — and the session is told to stop on the way out, with a bounded wait, so the
- * lock never depends on a native call answering.
+ * Every step races one `over` promise (the person's stop or the pass ceiling) and the session is
+ * told to stop on the way out with a bounded wait, so the runner lock never depends on a native call
+ * answering.
  */
 
 /** The four calls a pass makes on the agent session. `useAcpSession`'s value satisfies it. */

@@ -16,9 +16,9 @@ export const RELEASE_ARCHES = ["aarch64"] as const;
 export type ReleaseArch = (typeof RELEASE_ARCHES)[number];
 
 /**
- * Mirrors the `desktop:release-artifact` chain in `package.json`, which ends in the step
- * desktop:verify-release-dmg --require-signed --require-notarized; `release-facts.test.ts`
- * fails when a step is dropped (`docs/DECISIONS.md`, 2026-07-27 certificate).
+ * Mirrors the `desktop:release-artifact` chain in `package.json`, which ends in
+ * `desktop:verify-release-dmg --require-signed --require-notarized`; `release-facts.test.ts` fails
+ * if a step is dropped.
  */
 export const RELEASE_SIGNING = {
   developerId: true,

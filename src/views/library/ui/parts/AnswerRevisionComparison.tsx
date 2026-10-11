@@ -22,13 +22,8 @@ import { describeWikiProblem, type WikiTemplateProblem } from '@/features/librar
 import { sectionSlices } from '../../lib/section-slices';
 
 /**
- * **Two capped columns and one gutter, centred** — the dialog's own measure.
- *
- * `text-reading` travels with it because `--measure-prose` is `ch`, and `ch` is the advance
- * of `0` in the element's *own* font: read at the 16px root the same token resolves to 572px
- * and at `text-body-lg` to 500px. Spending it at the size the prose is actually set in is what
- * the 2026-09-11 calibration is for (`app/globals.css`, `--measure-prose`) — the header, the
- * grid and the footer then start and end on the same two edges instead of three.
+ * `text-reading` travels with it because `--measure-prose` is `ch`, which resolves in the element's
+ * own font; spend it at the size the prose is set in so header, grid and footer share two edges.
  */
 const COMPARISON_SPAN =
   'mx-auto w-full max-w-[calc(2*var(--measure-prose)+var(--measure-doc-gutter))] text-reading';
@@ -156,13 +151,8 @@ function RevisionText({
 }
 
 /**
- * **One amber dot: this file's bytes moved. Never: this claim changed.**
- *
- * The mark sits beside the citation, not inside the citation's own `aria-label`, so the
- * control keeps the exact accessible name a reader and `AnswerRevisionComparison.test.tsx`
- * already know it by, and the observation arrives as its own labelled thing. It is the byte
- * observation the 2026-09-11 record allows ("byte observations may be recorded separately,
- * never as read provenance") and it makes no claim about the sentence in front of it.
+ * The mark sits beside the citation, not in its `aria-label`, so the control keeps its accessible
+ * name. It records that the file's bytes moved and makes no claim about the sentence.
  */
 function ChangedOriginalMark({ path, label, decorative }: { path: string; label: string; decorative?: boolean }) {
   return (
@@ -253,15 +243,6 @@ export function AnswerRevisionComparison({ open, question, before, after, proble
     { id: 'after', title: t('answers.after'), text: after, sources: newSources, slices: afterSlices },
   ].filter((pane) => !narrow || mobileSide === pane.id);
 
-  /*
-   * The blocking sentence, in the reader's language when the validator gave one.
-   *
-   * ⚠️ **A copy of `describeWikiProblem` used to live here** (carry-forward, 2026-09-11),
-   * so the reason a Save was refused and the reason printed beside the page were two
-   * sentences maintained apart. It is the shared describer now, and this is the one
-   * surface that wants the plain string rather than the pressable pieces: there is
-   * nothing to open from a footer whose whole subject is the control it is disabling.
-   */
   const blockingWords = problems[0] ? describeWikiProblem(problems[0], t) : null;
 
   const sectionCell = (pane: (typeof panes)[number], row: (typeof rows)[number]) => {
@@ -326,16 +307,8 @@ export function AnswerRevisionComparison({ open, question, before, after, proble
         <h2 id="answer-comparison-title" className="text-display font-[var(--font-weight-signature)] leading-title text-[color:var(--color-text-primary)]">{t('answers.compareTitle')}</h2>
         <p className="mt-2 break-words text-reading text-[color:var(--color-text-secondary)]">{question}</p>
         <p className="mt-2 text-body leading-body text-[color:var(--color-text-secondary)]">{t('answers.compareHint')}</p>
-        {/*
-          **The difference is stated before the two versions, not after them.** It used to be
-          a disclosure under the left column: a reader had to finish the longer document to
-          learn that four earlier sentences were gone. The numbers were already computed
-          there; only their position was wrong.
-
-          The path lines are `RetainedAnswerContext`'s own `label: paths` shape (same keys,
-          same order), so the sentence a person read on the answer page is the sentence that
-          greets them here.
-        */}
+        {/* The path lines use `RetainedAnswerContext`'s `label: paths` shape, same keys and order, so the
+           wording matches the answer page. */}
         <div data-testid="answer-comparison-delta" className="mt-3 text-body leading-body text-[color:var(--color-text-secondary)]">
           <p>{added.length || removed.length ? t('answers.sourceDelta', { added: added.length, removed: removed.length }) : t('answers.sameSources')}</p>
           {(['changed', 'missing', 'added'] as const).map((kind) => observation[kind].length ? (
@@ -354,15 +327,8 @@ export function AnswerRevisionComparison({ open, question, before, after, proble
         </div> : null}
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto" data-testid="answer-comparison-scroll">
-        {/*
-          **`subgrid`, so "Facts" on the left and "Facts" on the right share one row.** Two
-          independent documents side by side drift apart by the length of whatever is above:
-          measured on the owner's 2026-09-11 capture of the installed app, the left Facts
-          heading sat 61px above the right one and the person did the aligning. The columns
-          stay two elements — each is still one scrollable, testable pane — while the row
-          heights belong to the parent grid, so the longer cell stretches the row instead of
-          pushing its own column out of step.
-        */}
+        {/* `subgrid` makes the row heights belong to the parent grid so matching headings align across both
+           columns; each column stays its own scrollable pane. */}
         <div
           className={`${COMPARISON_SPAN} grid justify-center gap-x-[var(--measure-doc-gutter)] gap-y-4 grid-cols-[minmax(0,var(--measure-prose))] lg:grid-cols-[repeat(2,minmax(0,var(--measure-prose)))]`}
           style={{ gridTemplateRows: `repeat(${rows.length}, auto)` }}
@@ -379,11 +345,8 @@ export function AnswerRevisionComparison({ open, question, before, after, proble
         </div>
       </div>
       <footer className={`${COMPARISON_SPAN} flex flex-none flex-wrap items-center justify-end gap-x-4 gap-y-2 border-t border-[color:var(--color-divider)] pt-3`}>
-        {/*
-          **The reason stands beside the control it disables.** `problems.length > 0` has
-          always blocked the save; the sentence explaining it used to sit in a block above
-          the footer, which at 390 is off screen while the greyed-out button is not.
-        */}
+        {/* The reason stands beside the disabled control: a block above the footer can be off screen at 390
+           while the button is not. */}
         {error || blockingWords ? <div role="alert" data-testid="answer-comparison-blocked" className="min-w-0 flex-1 basis-full text-body leading-body text-[color:var(--color-text-primary)] [word-break:keep-all] sm:basis-0">
           {error ? <p data-testid="answer-comparison-error" data-failure-detail={error.detail ?? undefined} className="max-w-[var(--measure-prose)]">{error.sentence}</p> : null}
           {blockingWords ? <p className="max-w-[var(--measure-prose)]">{blockingWords.sentence}{blockingWords.action ? ` ${blockingWords.action}` : ''}</p> : null}

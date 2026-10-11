@@ -24,50 +24,9 @@ const SHELF_PAD_BOTTOM_PX = 4;
 const SHELF_STATE_FOLDS_FROM = 12;
 
 /**
- * **The wiki index: what the folder holds, and how much of it is still true.**
- *
- * The index used to draw wiki pages as a column of identical rows. Every row carried the
- * same glyph, the same ink and the same height, so *"which of these has fallen behind the
- * file it was written from"* — the one question a wiki over a folder of documents keeps
- * asking — could only be answered by opening pages one at a time. The freshness was in
- * the folder the whole time: `source_hash` is exactly that fact, and `vault-library.ts`
- * has derived it per page since the pairing shipped. Nothing on screen spent it.
- *
- * The resting state is a readable row for each page: title first, then a short
- * source-state caption. The full source/currentness explanation remains in the row's
- * accessible name and title so the compact caption never has to carry the whole claim.
- *
- * | What the eye sees | What it is |
- * |---|---|
- * | title | the page a person can open without hover |
- * | caption | source matches, needs review, or has not been checked |
- * | top/bottom marker | source or page-shape problem, with the exact reason in words |
- * | indigo row | the page currently open in the reader |
- *
- * ⚠️ **The two ambers are not one state drawn twice.** The head is about the *source*
- * (compile it again); the foot is about the *page's own bytes* (fix the sections). They
- * sit at opposite ends because they are fixed in different places, and the accessible
- * name says which is which in words — a colour is never the only carrier.
- *
- * ⚠️ **Selection and staleness must not be confusable**, which is why they use different
- * hues, different edges and different fills rather than two weights of one mark: an open
- * page is an indigo body with an indigo border, a stale page is a neutral body with an
- * amber rim on its head. A page that is both draws both, and reads as both.
- *
- * ## Search is still a list
- *
- * Search and resting states share this row grammar so a page does not become harder to
- * identify when a query is cleared.
- *
- * ## Compile marks the shelf, not a spine
- *
- * While Compile runs, the thing being worked on is the shelf: the board under the books
- * takes the indigo and a line says so in words. A light that stepped from spine to spine
- * shipped here first and the design council cut it the same day (2026-09-08) — it
- * measured 1.29:1 against the open page's own fill, so a still frame could not say which
- * of the two a lit spine was, and resting on one book at a time read as *this page now*,
- * which is a fact nothing on this screen holds. Nothing here knows which page the agent
- * is on, so nothing here points at one.
+ * The wiki index: title first, then a short source-state caption, with the full explanation in the
+ * row accessible name and title. An open page is indigo; a stale page is neutral with an amber rim.
+ * Compile marks the shelf, not a spine.
  */
 
 export interface LibraryShelfProps {
@@ -80,12 +39,8 @@ export interface LibraryShelfProps {
   /** True while a Compile turn is in flight: the shelf is what that turn is about. */
   compiling: boolean;
   /**
-   * *New page* — the hand action drawn in the list's grammar (council 2026-09-07).
-   *
-   * It sits **under the board**, not on the shelf: it is not a page, and a book-shaped
-   * control that makes a book would be the one mark on this shelf standing for nothing in
-   * the folder. Under the board it is still the last thing in the list and still in the
-   * list's tab order.
+   * The hand action sits under the board, not on the shelf: it is not a page, but stays last in the
+   * list and in tab order.
    */
   trailing?: ReactNode;
   t: ReturnType<typeof useTranslations<"library">>;
@@ -115,12 +70,9 @@ export function LibraryShelf({
     [model.pairing.writeUpsBySource, model.verdicts, pages],
   );
   /**
-   * **The caption most rows share is said once, above the shelf; the rows keep the
-   * exceptions** — the rule the source list and the writer label already follow. Every
-   * spine still says its state in words below one screen of rows (`SHELF_STATE_FOLDS_FROM`),
-   * which is what the cases in `LibraryShelf.test.tsx` pin; past that, 400 spines reading
-   * *needs review · off template* were one texture (installed app, 2026-09-18), and the one
-   * row that differed could not be found. A folded row keeps its words for a screen reader.
+   * The caption most rows share is said once above the shelf and rows keep the exceptions, as the
+   * source list does. Below `SHELF_STATE_FOLDS_FROM` every spine says its state; a folded row keeps
+   * its words for a screen reader.
    */
   const captionOf = (freshness: SpineFreshness, ownProblem: { code: string } | null): string =>
     ownProblem ? `${t(`shelf.state.${freshness}`)} · ${t("wiki.offTemplate")}` : t(`shelf.state.${freshness}`);
@@ -147,10 +99,8 @@ export function LibraryShelf({
   const [shelfWindow, shelfListRef, scrollToSpine] = useWindowedRows({ count: spines.length, estimate: SHELF_ROW_ESTIMATE_PX });
   const shelfRoving = useRovingRows({ count: spines.length, listRef: shelfListRef, scrollToRow: scrollToSpine, rendered: shelfWindow });
   /*
-   * **The shelf follows the open page.** A page opened from the graph's card or a citation
-   * is selected in a list that may not even have its row rendered: on the 3,000-file folder
-   * the shelf stayed at its top with nothing marked (dev, 2026-09-19). The selected spine is
-   * scrolled into view and becomes the keyboard's stop; a spine already in view moves nothing.
+   * The shelf follows the open page: the selected spine scrolls into view and becomes the keyboard's
+   * stop; a spine already in view moves nothing.
    */
   const { onRowFocus: shelfRowFocus } = shelfRoving;
   useEffect(() => {
@@ -203,21 +153,9 @@ export function LibraryShelf({
            * own code, and the writer where it is the exception.
            */
           /*
-           * ⚠️ **The dot marks the page's own defect, and nothing else** (guardian,
-           * 2026-09-09). It shipped as `stale || ownProblem`, and on the owner's folder
-           * that put the warning ink — `--color-amber-source-a90` is the same value as
-           * `--color-status-warning` — on 3 of 3 rows. A mark every row wears carries
-           * nothing, and 3/3 was not a small sample: staleness is the *resting* state of
-           * a folder somebody is working in, so a union with it trends to every row on
-           * any live shelf.
-           *
-           * `stale` is not dropped; it is said in words on the caption below, where it
-           * always was, and in the accessible name. The dot is pointed at the one fact
-           * that line can lose: it reads `<source state> · <off-template>` inside
-           * `truncate`, so only the trailing off-template segment can be clipped, and the
-           * dot is what survives the clip. `unverified` still gets no dot for the older
-           * reason — nothing is wrong there and nobody has started, which is why its row
-           * keeps the quiet border rather than a tinted one.
+           * The dot marks the page's own defect only. `stale` is the resting state of a live folder, so a
+           * union with it would mark every row; it is said in words on the caption. The dot survives the clip
+           * of the trailing off-template segment under `truncate`.
            */
           const needsAttention = Boolean(ownProblem);
           const facts = [
@@ -283,31 +221,6 @@ export function LibraryShelf({
                 })}
               >
                 {/*
-                  ⚠️ **The coloured bar is gone, and this is the second attempt at it.**
-
-                  It shipped as a full-bleed amber rim across the head of the card, over an
-                  amber border around the whole card, and the owner read it exactly right
-                  (2026-09-09): *"that yellow line on top looks so AI."* The first repair
-                  moved the same bar to the row's leading edge — and the owner read that
-                  too: *"what even is that line on the left… don't design it AI-ish, do it
-                  our way."*
-
-                  Our way was already written down. `docs/DESIGN-SYSTEM.md` lists
-                  **full-height coloured rails** among the canonical Don'ts, beside
-                  kind-coloured card backgrounds, and prescribes the replacement in the same
-                  breath: *a neutral surface with a small marker and a label*. Moving a rail
-                  from the top edge to the start edge is still a rail. So the bar is gone in
-                  both places, and the fact it carried moves into the line that was already
-                  under the title saying it in words.
-
-                  Both states still reach the eye, and they are still two states: the source
-                  moved (fix it by compiling again) and the page's own shape misses the
-                  template (fix it in the page). They now read as two words on one line
-                  rather than as two ends of a coloured edge, and the dot is the "small
-                  marker" the rule asks for — spent on the rarer of the two, because a
-                  marker on the state a working folder rests in marks nothing.
-                */}
-                {/*
                   The title runs down the book. Its ink is the control's `tone`, so the
                   three states are one ladder the value layer owns rather than three
                   colours written here: strong open, secondary checked, tertiary
@@ -315,13 +228,8 @@ export function LibraryShelf({
                   text floor. A spine truncates in the middle of a long name, so the whole
                   title is in the accessible name above.
                 */}
-                {/*
-                  **The index's glyph slot, on both lines** (design sweep, 2026-09-25). The
-                  book glyph stands in the slot every door and source row uses, so a card's
-                  title starts on the column's one text line; the attention dot takes the
-                  same slot on the status line, under the glyph, so the words of both lines
-                  start together whether or not the dot is drawn.
-                */}
+                {/* The index's glyph slot on both lines: the book glyph and the attention dot share the slot, so the
+                   words of both lines start together. */}
                 <span className="relative grid min-w-0 flex-1 grid-cols-[1rem_minmax(0,1fr)] gap-x-1.5 gap-y-0.5">
                   <span className="flex h-[var(--leading-body)] items-center justify-center">
                     <BookText size={ICON_SIZE.sm} aria-hidden className="opacity-60" />

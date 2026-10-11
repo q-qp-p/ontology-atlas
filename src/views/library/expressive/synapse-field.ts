@@ -1,30 +1,7 @@
 /**
- * **The Library's synapse field** — the ambient network behind the guided pane.
- *
- * The owner, 2026-09-09, on the centred stepper: *"the centre is good now, but the
- * background is a bit plain — can't we put some effect in? something like a background of
- * neurons connecting, or a graph connecting up."*
- *
- * ## What it is, and what it is careful not to be
- *
- * It is **texture, not data**. The Library's real folder is drawn in two places already —
- * the 2D graph behind the `Graph` chip, and the stepper's own sentences — and both are
- * exact. A working folder is also *small*: the frame that settled this had ten marks, and
- * ten marks spread across a pane read as debris rather than as a field. So this draws no
- * count, no title and no link that exists; it is the Library's **idea** (documents finding
- * each other) as a ground, and it says nothing a person could mistake for a fact about
- * their files.
- *
- * That distinction is what keeps `docs/DESIGN-SYSTEM.md`'s "a mark carries a fact or it
- * goes" intact rather than bent: this is not a mark on a chart with the fact filed off, it
- * is a background on a guidance screen that carries no chart at all.
- *
- * ## Why the maths is here
- *
- * The same contract the map's expressive folder keeps: plain numbers in, plain numbers
- * out, no canvas, no React, no DOM, no clock of its own. The host steps it and paints it.
- * That is what makes a field testable — that points stay in frame, that links appear only
- * within reach, that a link's weight falls off with distance — without a browser.
+ * Texture, not data: it draws no count, title or link that exists, so nothing can be mistaken for a
+ * fact about the user's files. Plain numbers in and out, no canvas, React or DOM, so the field is
+ * testable without a browser.
  */
 
 export interface SynapseNode {

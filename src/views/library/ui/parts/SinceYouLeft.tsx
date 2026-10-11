@@ -33,11 +33,7 @@ export function SinceYouLeft({
   onOpenPage: (slug: string) => void;
   /** Brings a ledger entry into view — the refused line's press lands on the pass naming the tool. */
   onShowPass?: (id: string) => void;
-  /**
-   * The title a person knows a page by. The card named pages by their slug
-   * (`meeting-notes-summary`) while the person had named the page "Release readiness sync
-   * notes"; a page no longer in the folder keeps its slug, which is still the truth.
-   */
+  /** The title a person knows a page by; a page no longer in the folder keeps its slug. */
   titleFor?: (slug: string) => string;
 }) {
   const t = useTranslations("library.rounds");
@@ -108,8 +104,6 @@ export function SinceYouLeft({
                 <span aria-hidden className="h-2 w-2 rounded-full bg-[color:var(--color-status-danger)]" />
                 {t("since.refused", { count: summary.refused })}
               </span>
-              {/* The refused tool is named only in its ledger entry; this press is the way there,
-                  so the line is not a dead end (2026-09-25). */}
               {onShowPass && refusedPass ? (
                 <RoundChip icon={History} onClick={() => onShowPass(refusedPass)}
                   label={t("since.showRefused")} testId="library-rounds-since-refused" />

@@ -21,10 +21,8 @@ import { readMachineApprovals, recordApproval } from '@/shared/lib/connectors/ma
 import { useRoundsRunner } from './use-rounds-runner';
 
 /**
- * The runner against a session whose handshake never answers — the desktop bridge's
- * `acp_start` held open (probe, 2026-09-25) — and against a Mac with no agent at all.
- * The store and the ledger are the real ones over memory, so what is asserted is what would
- * be on disk.
+ * Runner against a session whose handshake never answers (`acp_start` held open) and a Mac with no
+ * agent. Store and ledger are real over memory.
  */
 
 type Session = {

@@ -12,9 +12,8 @@ import { HomePage } from "@/views/home";
 import { FirstRunPage } from "@/views/first-run";
 
 /**
- * The root entry: a chosen or restored vault goes straight to the map (`HomePage`), with no starter; the
- * installed app without one gets `FirstRunPage`; the web without one gets the gateway, by the same
- * verdict as the shell's `isGatewaySurface`, so chrome and content agree.
+ * A chosen or restored vault goes straight to the map; the installed app without one gets
+ * `FirstRunPage`; the web gets the gateway by the same rule as the shell's `isGatewaySurface`.
  */
 export function RootEntryPage() {
   const vault = useLocalVault();
@@ -32,10 +31,7 @@ export function RootEntryPage() {
     // A neutral frame until the restore is attempted, or FirstRun flashes.
     return vault.restoreAttempted ? <FirstRunPage /> : <DesktopVaultRedirect />;
   }
-  /*
-   * A visitor whose connected folder no longer reads gets a notice and the picker over the gateway.
-   * The stored handle is kept: a failed restore does not prove the folder is gone.
-   */
+  /* The stored handle is kept: a failed restore does not prove the folder is gone. */
   const failedRestore =
     vault.restoreAttempted && vault.status === 'error' && !noticeDismissed;
   return (

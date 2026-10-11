@@ -65,11 +65,6 @@ describe('the ledger', () => {
   });
 
   it('draws the pass in flight and drops the empty sentence that contradicted it', () => {
-    /*
-     * Measured in the browser, 2026-09-21: the header said "running now · <name>" while this
-     * column still said "No pass yet. The first one runs at 01:00." — one screen, two lines,
-     * opposite claims.
-     */
     const { rerender } = draw();
     expect(screen.getByTestId('library-rounds-ledger-empty')).toBeInTheDocument();
 
