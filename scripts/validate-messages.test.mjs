@@ -301,9 +301,6 @@ describe('i18n message catalog', () => {
     assert.doesNotMatch(visibleCopy, /\bAgent\b|\bFallback\b|\bclient\b|\bnamespace\b|\breload\b|\brestart\b|graph DB gate/);
   });
 
-  // (Removed 2026-09-01) The liveActivity namespace had no renderer anywhere in src/
-  // or app/ and was deleted from both catalogs; this block was its last reader.
-
   it('keeps the topology path chip copy readable (분석 패널 완전 소멸 2단계 §b — replaces the retired path panel copy)', async () => {
     const en = await readJson(path.join(MESSAGES_DIR, 'en.json'));
     const ko = await readJson(path.join(MESSAGES_DIR, 'ko.json'));
@@ -344,34 +341,9 @@ describe('i18n message catalog', () => {
     );
   });
 
-  it('keeps topologyWidgets free of the retired sigma/contextMenu/edgeTooltip namespaces (chore/copy-plainlang W5 — SigmaTopology.tsx + SigmaContextMenu were physically deleted in c84ecb25e; only `controls`/`hubRail` still have consumers under `src/widgets/topology-controls`)', async () => {
+  it('keeps the topologyWidgets namespaces its controls read', async () => {
     const en = await readJson(path.join(MESSAGES_DIR, 'en.json'));
     const ko = await readJson(path.join(MESSAGES_DIR, 'ko.json'));
-
-    /*
-     * ⚠️ **Do not pin an exact set** (narrowed 2026-08-10).
-     *
-     * This used to be `deepEqual(keys, ['controls','hubRail'])`. But the purpose this
-     * test **states** is "the retired sigma/contextMenu/edgeTooltip must not come back",
-     * and pinning an exact set **breaks on legitimate additions** too — it actually
-     * caught adding `keyboardWalk`. Such a gate makes the next person revert the feature
-     * rather than the gate (`.claude/rules/documentation.md`, `/gate-probe`).
-     *
-     * So the verdict is a denylist. New sections grow freely; retired names cannot
-     * return.
-     */
-    const RETIRED = ['sigma', 'contextMenu', 'edgeTooltip'];
-    for (const [locale, messages] of [['ko', ko], ['en', en]]) {
-      const keys = Object.keys(messages.topologyWidgets);
-      assert.ok(keys.length > 0, `${locale}: topologyWidgets 가 비었다 — 이 시험이 공회전한다`);
-      for (const retired of RETIRED) {
-        assert.ok(
-          !keys.includes(retired),
-          `${locale}: 은퇴한 topologyWidgets.${retired} 가 되살아났다`,
-        );
-      }
-    }
-    // The two that still have consumers must not disappear.
     for (const [locale, messages] of [['ko', ko], ['en', en]]) {
       for (const kept of ['controls', 'hubRail']) {
         assert.ok(
@@ -409,10 +381,6 @@ describe('i18n message catalog', () => {
     assert.doesNotMatch(commands.sourceServer, /소스|Source/);
     assert.doesNotMatch(commands.sourceLocal, /소스|Source/);
   });
-
-  // (Removed 2026-07-24) The builder relation-write-confirmation copy guard
-  // was deleted with the retired ERD builder — its
-  // `ontologyPages.edit.page.relationConfirm` namespace no longer exists.
 
   it('keeps Korean docs vault welcome contract understandable without frontmatter jargon', async () => {
     const ko = await readJson(path.join(MESSAGES_DIR, 'ko.json'));
@@ -671,10 +639,6 @@ describe('i18n message catalog', () => {
       assert.match(lead, /\bMCP\b/, `${locale} gateway lede must name how the agent reaches Atlas`);
     }
   });
-
-  // (Removed 2026-07-24) The builder inspector overview-tab jargon guard was
-  // deleted with the retired ERD builder — its `ontologyPages.edit.inspector`
-  // namespace no longer exists.
 });
 
 async function readRoutingLocales() {

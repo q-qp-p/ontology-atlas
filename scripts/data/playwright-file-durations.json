@@ -16,10 +16,6 @@
       "seconds": 65.161,
       "tests": 1
     },
-    "a11y-structure.spec.ts": {
-      "seconds": 7.2,
-      "tests": 1
-    },
     "a11y-vault-backed.spec.ts": {
       "seconds": 29.994,
       "tests": 1
@@ -59,10 +55,6 @@
     "agent-footer-running-turn.spec.ts": {
       "seconds": 64.658,
       "tests": 28
-    },
-    "agent-limit-card-next-step.spec.ts": {
-      "seconds": 5,
-      "tests": 2
     },
     "agent-mascot-presence.spec.ts": {
       "seconds": 18.214,
@@ -128,10 +120,6 @@
       "seconds": 43.383,
       "tests": 4
     },
-    "chrome-noise.spec.ts": {
-      "seconds": 6.7,
-      "tests": 2
-    },
     "cjk-font-fallback.spec.ts": {
       "seconds": 3.97,
       "tests": 5
@@ -139,26 +127,6 @@
     "cjk-locale-sweep.spec.ts": {
       "seconds": 112.53,
       "tests": 76
-    },
-    "companion-growth.spec.ts": {
-      "seconds": 126.2,
-      "tests": 21
-    },
-    "companion-home.spec.ts": {
-      "seconds": 7.6,
-      "tests": 4
-    },
-    "companion-learning.spec.ts": {
-      "seconds": 115,
-      "tests": 16
-    },
-    "companion-progression.spec.ts": {
-      "seconds": 183.7,
-      "tests": 25
-    },
-    "companion-sector.spec.ts": {
-      "seconds": 36.4,
-      "tests": 5
     },
     "contextual-meaning-editor.spec.ts": {
       "seconds": 16.5,
@@ -396,10 +364,6 @@
       "seconds": 6.157,
       "tests": 3
     },
-    "insights-not-held-list.spec.ts": {
-      "seconds": 4.751,
-      "tests": 1
-    },
     "insights-previews.spec.ts": {
       "seconds": 7.4,
       "tests": 7
@@ -560,10 +524,6 @@
       "seconds": 7.043,
       "tests": 2
     },
-    "locale-purity.spec.ts": {
-      "seconds": 3.987,
-      "tests": 2
-    },
     "map-3d-edge-picking.spec.ts": {
       "seconds": 3.358,
       "tests": 2
@@ -650,10 +610,6 @@
     },
     "map-expand-all.spec.ts": {
       "seconds": 2.905,
-      "tests": 1
-    },
-    "map-expand-reframe.spec.ts": {
-      "seconds": 5,
       "tests": 1
     },
     "map-first-open-assembly.spec.ts": {
@@ -750,10 +706,6 @@
     },
     "map-label-collision.spec.ts": {
       "seconds": 0.901,
-      "tests": 1
-    },
-    "map-label-tries-the-upper-slot.spec.ts": {
-      "seconds": 4.9,
       "tests": 1
     },
     "map-layout-morph.spec.ts": {
@@ -876,14 +828,6 @@
       "seconds": 61.923,
       "tests": 7
     },
-    "map-tour-card-clears-node.spec.ts": {
-      "seconds": 1.1,
-      "tests": 1
-    },
-    "map-tour-points-at-what-exists.spec.ts": {
-      "seconds": 8.9,
-      "tests": 1
-    },
     "map-trail.spec.ts": {
       "seconds": 4.381,
       "tests": 1
@@ -968,10 +912,6 @@
       "seconds": 96.546,
       "tests": 8
     },
-    "page-frame.spec.ts": {
-      "seconds": 3.1,
-      "tests": 1
-    },
     "permission-decision-paint.spec.ts": {
       "seconds": 14.678,
       "tests": 5
@@ -1000,10 +940,6 @@
       "seconds": 64.08,
       "tests": 11
     },
-    "rail-active-indicator.spec.ts": {
-      "seconds": 4,
-      "tests": 1
-    },
     "rail-destinations.spec.ts": {
       "seconds": 16.343,
       "tests": 3
@@ -1022,10 +958,6 @@
     },
     "retired-game-storage.spec.ts": {
       "seconds": 5.326,
-      "tests": 3
-    },
-    "retired-skills-route.spec.ts": {
-      "seconds": 1.116,
       "tests": 3
     },
     "route-arrival-paint.spec.ts": {
@@ -1135,10 +1067,6 @@
     "web-content-security.spec.ts": {
       "seconds": 20.741,
       "tests": 3
-    },
-    "web-get-app-tile.spec.ts": {
-      "seconds": 5.6,
-      "tests": 1
     },
     "web-surface-smoke.spec.ts": {
       "seconds": 37.359,

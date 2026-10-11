@@ -69,27 +69,6 @@ describe('current-surface launch docs', () => {
     expect(findings).toEqual([]);
   });
 
-  // [removed 2026-08-01, owner instruction] The gate requiring "if a document
-  // states a node count, it matches the vault".
-  //
-  // Its last revision (2026-07-31) had already dropped the requirement and kept
-  // only the no-lying half, which looks like zero maintenance cost. The cost was
-  // not in the gate but in **the next person's habit**: while the counting
-  // machinery lives, writing counts into documents reads as a supported
-  // convention, and every written count turns CI red the moment the vault grows.
-  // Regenerating the vault to spec delivered that whole bill at once.
-  //
-  // So the rule is now one line — **CI does not count vault nodes.** The place
-  // that states a number is the command (`node cli/src/index.mjs overview`), not
-  // a document. What was lost, stated honestly: stale node counts in prose now
-  // pass in silence. The condition for reviving it is the falsifier in
-  // `docs/DECISIONS.md` — an observed case of a wrong count reaching a user.
-  //
-  // **Copy rendered on screen is still separate**: that is a claim made to the
-  // user, so it must be computed at runtime from the same source, and the
-  // "caption == graph" assertion in `DownloadPage.test.tsx` holds that position
-  // (it cannot rot, because it has no hand-maintained number).
-
   it('does not freeze MCP tool counts or read/write splits in current launch prose', async () => {
     const findings: string[] = [];
     const toolCountPattern = /\b\d+\s+(?:MCP\s+)?tools?\b|\b\d+-tool\b/i;
@@ -104,12 +83,6 @@ describe('current-surface launch docs', () => {
 
     expect(findings).toEqual([]);
   });
-
-  // [removed 2026-07-31] The gate requiring the README to carry a per-kind
-  // breakdown (capabilities 38 · elements 49 …). Same reason as above: it forced
-  // six numbers to be synchronised by hand, so adding a single node made an
-  // unrelated PR edit the README. The README now names
-  // `node cli/src/index.mjs overview` instead.
 
   it('keeps the packaged agent workflow aligned with current CLI, MCP, and dogfood facts', async () => {
     const workflow = await readFile(path.join(ROOT, 'docs/AGENT-GRAPH-WORKFLOW.md'), 'utf8');

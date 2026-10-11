@@ -137,6 +137,6 @@ function printUsage(stream = process.stderr) {
       `found=false exits 1 so scripts can use this as a relation gate. --max-hops range 0-${MAX_HOPS_CAP}.\n\n` +
       `${COLORS.bold}Example:${COLORS.reset}\n` +
       `  ontology-atlas path capabilities/cli-developer-entry capabilities/mcp-server\n` +
-      `  ontology-atlas path project elements/sigma-graphology --max-hops 8 --json\n`,
+      `  ontology-atlas path project elements/graph-engine --max-hops 8 --json\n`,
   );
 }
