@@ -1,8 +1,8 @@
 import type { DomeNodeFrame } from "../../model/dome-view/runtime";
 import { lerpColorHex } from "../../render/grid";
-import { worldToScreen } from "../topology-camera-math";
+import { worldToScreen } from "../camera/topology-camera-math";
 import { domeFamily } from "../frame-cache/structure";
-import type { WorldEdge } from "../topology-world";
+import type { WorldEdge } from "../world/topology-world";
 import { EMPTY_NEIGHBOR_SET, passState, litSectorIdsReused, lodHoverEgoReused } from "./frame-state";
 import { resetNodeVisualCacheFor } from "./node-visual";
 import type { FrameInputs } from "./frame-begin";

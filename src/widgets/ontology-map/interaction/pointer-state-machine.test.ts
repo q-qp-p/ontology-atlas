@@ -146,7 +146,7 @@ describe("transitionPointerState — click-safe contract", () => {
 /**
  * persona eval (label-clarity, 2026-07) — "child click ejects to overview
  * instead of selecting". `resolveClickAction` is the pure extraction of
- * `ui/topology-pointer-handlers.ts#handlePointerUp`'s commitClick routing, so
+ * `topology-pointer-handlers.ts#handlePointerUp`'s commitClick routing, so
  * the "empty canvas deselects, any other node selects" contract has its own
  * regression test independent of canvas/pointer-event plumbing.
  */

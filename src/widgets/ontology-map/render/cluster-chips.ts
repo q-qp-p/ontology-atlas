@@ -15,7 +15,7 @@
  *    indigo dot at the parent end, so membership reads without joining the
  *    'edge soup'.
  *
- * Hit-testing (`ui/topology-pointer-handlers.ts`) and drawing must use the
+ * Hit-testing (`topology-pointer-handlers.ts`) and drawing must use the
  * **same rectangle** or clicks land off target, so `clusterChipRect` is the
  * single source (no ctx needed — font width is approximated deterministically),
  * as are `clusterChipLabel` and `clusterChipScale`.

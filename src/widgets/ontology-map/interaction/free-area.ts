@@ -9,7 +9,7 @@
  * (`measureCanvasInsets`).
  *
  * **Does not compute**: «so where does the camera go». That formula lives in
- * exactly one place, `centerForInsets` in `ui/topology-camera-math.ts`. This
+ * exactly one place, `centerForInsets` in `topology-camera-math.ts`. This
  * module used to carry its own copy (`freeAreaOffset` + `cameraCenteringNode`),
  * which made **two** formulas for deciding the camera target — and one of them
  * (the focus dive) had no formula at all, so a chosen node went behind the panel.
