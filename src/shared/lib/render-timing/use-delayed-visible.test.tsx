@@ -21,8 +21,8 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('useDelayedVisible — 기다릴 것이 있을 때만 보인다', () => {
-  it('창보다 먼저 끝나면 한 번도 나타나지 않는다', () => {
+describe('useDelayedVisible shows only when there is something to wait for', () => {
+  it('never appears if it finishes before the window', () => {
     const { getByTestId, rerender } = render(<Probe active />);
     expect(getByTestId('state').textContent).toBe('hidden');
 
@@ -39,7 +39,7 @@ describe('useDelayedVisible — 기다릴 것이 있을 때만 보인다', () =>
     expect(getByTestId('state').textContent).toBe('hidden');
   });
 
-  it('창을 넘겨 오래 걸리면 나타난다 — 진짜 기다림은 여전히 알린다', () => {
+  it('appears when it runs past the window, so a real wait is still announced', () => {
     const { getByTestId } = render(<Probe active />);
 
     act(() => {
@@ -53,7 +53,7 @@ describe('useDelayedVisible — 기다릴 것이 있을 때만 보인다', () =>
     expect(getByTestId('state').textContent).toBe('visible');
   });
 
-  it('다시 기다리게 되면 창도 다시 시작한다 — 이전 표시가 남아 있지 않다', () => {
+  it('waiting again restarts the window, so no earlier display lingers', () => {
     const { getByTestId, rerender } = render(<Probe active />);
     act(() => {
       vi.advanceTimersByTime(SKELETON_DELAY_MS);

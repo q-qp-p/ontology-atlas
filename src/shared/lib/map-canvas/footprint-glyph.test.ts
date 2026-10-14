@@ -16,22 +16,22 @@ import {
  * The print is capped by a ratio to the node it marks, so a print scaling with the square root of
  * zoom cannot outgrow a node shrinking linearly. This gate locks the ratio, not pixels.
  */
-describe("footprintSizeFor — 자국은 노드보다 커지지 않는다", () => {
-  it("큰 노드에서는 기본 크기를 그대로 쓴다 — 문제 없던 자리는 안 건드린다", () => {
+describe("footprintSizeFor never lets a footprint outgrow its node", () => {
+  it("on a large node the default size is used as is, leaving untroubled spots alone", () => {
     // Domain radius 17px gives a cap of 18.9, above the base 13 — nothing is clamped.
     expect(footprintSizeFor(13, 17)).toBe(13);
   });
 
-  it("작은 노드에서는 노드 반경에 맞춰 잘린다", () => {
+  it("on a small node it is clipped to the node radius", () => {
     const size = footprintSizeFor(13, 7);
     expect(footprintPairRadius(size)).toBeCloseTo(FOOTPRINT_NODE_RATIO * 7, 5);
   });
 
-  it("깊은 줌아웃에서도 하한 아래로는 안 내려간다 — 소멸하면 「걸었다」를 못 말한다", () => {
+  it("does not drop below the lower bound even when zoomed far out, since a vanished footprint cannot say that someone walked here", () => {
     expect(footprintSizeFor(13, 0.4)).toBe(FOOTPRINT_MIN_SIZE);
   });
 
-  it("노드 대비 배수가 전 구간에서 2.5배를 넘지 않는다", () => {
+  it("the ratio to the node never exceeds 2.5 across the whole range", () => {
     for (const cameraScale of [1, 0.8, 0.6, 0.4, 0.3, 0.2]) {
       const k = footprintScaleFor(cameraScale);
       const nodeRadius = 7 * cameraScale;
@@ -40,7 +40,7 @@ describe("footprintSizeFor — 자국은 노드보다 커지지 않는다", () =
     }
   });
 
-  it("노드 반경이 없거나 이상하면 기본 크기로 물러난다", () => {
+  it("falls back to the default size when the node radius is missing or odd", () => {
     expect(footprintSizeFor(13, 0)).toBe(13);
     expect(footprintSizeFor(13, Number.NaN)).toBe(13);
   });
@@ -49,7 +49,7 @@ describe("footprintSizeFor — 자국은 노드보다 커지지 않는다", () =
 
 
 describe("formatStepNumbers", () => {
-  it("셋 이하는 그대로 잇는다", () => {
+  it("three or fewer are joined as they are", () => {
     expect(formatStepNumbers([1])).toBe("1");
     expect(formatStepNumbers([1, 3, 5])).toBe("1·3·5");
   });
@@ -58,30 +58,30 @@ describe("formatStepNumbers", () => {
    * Abbreviating without the total erases "I keep coming back here" — the very fact this
    * notation carries, which makes it loss rather than abbreviation.
    */
-  it("넷 이상은 줄이되 총 횟수를 함께 남긴다", () => {
+  it("four or more are shortened and keep the total count alongside", () => {
     expect(formatStepNumbers([1, 3, 5, 9])).toBe("1·…·9 (총 4회)");
   });
 
-  it("빈 목록은 빈 문자열", () => {
+  it("an empty list gives an empty string", () => {
     expect(formatStepNumbers([])).toBe("");
   });
 });
 
 /** `gap` must measure to the print's edge, not its centre: overlap is an edge condition. */
-describe("footprintAnchor — 노드와 겹치지 않는다", () => {
+describe("footprintAnchor does not overlap the node", () => {
   it.each([
     [13, 8, 13],
     [26, 8, 13],
     [17, 0, 26],
     [40, 0, 9],
-  ])("노드 반지름 %d · 여백 %d · 자국 %d", (nodeRadius, gap, size) => {
+  ])("node radius %d, margin %d, footprint %d", (nodeRadius, gap, size) => {
     const at = footprintAnchor(0, 0, nodeRadius, gap, size);
     const centerDistance = Math.hypot(at.x, at.y);
     const clearance = centerDistance - nodeRadius - footprintPairRadius(size);
-    expect(clearance, `노드를 파고들었다 (여유 ${clearance.toFixed(2)}px)`).toBeGreaterThanOrEqual(gap - 1e-6);
+    expect(clearance, `dug into the node (clearance ${clearance.toFixed(2)}px)`).toBeGreaterThanOrEqual(gap - 1e-6);
   });
 
-  it("라벨을 피해 우상단 사분면에 앉는다", () => {
+  it("sits in the upper-right quadrant, away from the label", () => {
     const at = footprintAnchor(100, 100, 13, 8, 13);
     expect(at.x).toBeGreaterThan(100);
     expect(at.y).toBeLessThan(100);
@@ -93,23 +93,23 @@ describe("footprintAnchor — 노드와 겹치지 않는다", () => {
  * size.
  */
 describe("footprintScaleFor", () => {
-  it("배율 1 에서는 원래 크기다", () => {
+  it("at scale 1 it is the original size", () => {
     expect(footprintScaleFor(1)).toBeCloseTo(1, 6);
   });
 
-  it("축소할수록 자국도 작아진다 — 단조 증가", () => {
+  it("the footprint shrinks as the map zooms out, monotonically", () => {
     const samples = [0.05, 0.2, 0.5, 1, 2].map(footprintScaleFor);
     for (let i = 1; i < samples.length; i += 1) {
       expect(samples[i]).toBeGreaterThanOrEqual(samples[i - 1]);
     }
   });
 
-  it("하한에서 멈춘다 — 한 점이 되면 '여기 걸었다'를 못 말한다", () => {
+  it("stops at the lower bound, since a single dot cannot say that someone walked here", () => {
     expect(footprintScaleFor(0.0001)).toBe(FOOTPRINT_SCALE_RANGE.min);
     expect(footprintScaleFor(9999)).toBe(FOOTPRINT_SCALE_RANGE.max);
   });
 
-  it("망가진 배율에도 자국을 없애지 않는다", () => {
+  it("does not erase the footprint on a broken scale", () => {
     for (const bad of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
       expect(footprintScaleFor(bad)).toBeGreaterThan(0);
     }

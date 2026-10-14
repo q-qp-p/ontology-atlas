@@ -163,14 +163,14 @@ describe('buildExcerpt — markdown is flattened to readable prose', () => {
     expect(excerpt).toContain('Also see HubRail.');
   });
 
-  it('respects the max length (잘릴 땐 말줄임표 포함 max+1 이내)', () => {
+  it('respects the max length (a truncated result stays within max+1 including the ellipsis)', () => {
     // Very long text with no spaces (no word boundary to cut at) — cut at max and append the ellipsis.
     expect(buildExcerpt('x'.repeat(500)).length).toBeLessThanOrEqual(321);
     expect(buildExcerpt('x'.repeat(500)).endsWith('…')).toBe(true);
     expect(buildExcerpt('x'.repeat(500), 50).length).toBeLessThanOrEqual(51);
   });
 
-  it('단어 중간에서 뚝 끊지 않고 어절 경계에서 자르고 말줄임표를 붙인다 (sonnet 검수 D1)', () => {
+  it('cuts at a word boundary instead of mid-word and appends an ellipsis', () => {
     const prose = '이 프로젝트의 ontology 는 비즈니스 핵심과 구현 근거를 잇는다 '.repeat(20);
     const out = buildExcerpt(prose, 60);
     expect(out.endsWith('…')).toBe(true);
@@ -191,7 +191,7 @@ describe('extractOutLinksWithContext — wikilinks inside the nested ontology/ v
   // existed, so the backlinks strip at the bottom of `/docs` never rendered — e.g.
   // a `[[capabilities/topology-canvas-render]]` link written inside an
   // `ontology/elements/*` document.
-  it('ontology/ 문서 안의 위키링크는 ontology/ 접두사를 붙여 정규화한다', () => {
+  it('a wikilink inside an ontology/ document is normalized with the ontology/ prefix', () => {
     const body = '같은 캔버스 엔진 얘기는 [[capabilities/topology-canvas-render]] 참고.';
     const { contexts } = extractOutLinksWithContext(
       body,
@@ -202,7 +202,7 @@ describe('extractOutLinksWithContext — wikilinks inside the nested ontology/ v
     expect(contexts[0].linkText).toBe('capabilities/topology-canvas-render');
   });
 
-  it('이미 ontology/ 접두사가 붙은 위키링크는 이중으로 접두사를 붙이지 않는다', () => {
+  it('a wikilink that already has the ontology/ prefix does not get it twice', () => {
     const body = '전체 문맥은 [[ontology/project]] 문서 참고.';
     const { contexts } = extractOutLinksWithContext(
       body,
@@ -211,13 +211,13 @@ describe('extractOutLinksWithContext — wikilinks inside the nested ontology/ v
     expect(contexts[0].target).toBe('ontology/project');
   });
 
-  it('ontology/ 바깥(최상위) 문서의 위키링크는 그대로 vault 루트 기준을 유지한다', () => {
+  it('a wikilink in a document outside ontology/ (top level) stays relative to the vault root', () => {
     const body = '자세한 기능은 [[FEATURES]] 참고.';
     const { contexts } = extractOutLinksWithContext(body, 'CHANGELOG');
     expect(contexts[0].target).toBe('FEATURES');
   });
 
-  it('표준 markdown 상대경로 링크는 (이미 정확했던) fromDir 기준 정규화를 그대로 유지한다', () => {
+  it('a standard markdown relative link keeps its fromDir-based normalization, which was already correct', () => {
     const body = '관련 element 는 [여기](../domains/ai-agent-partner.md) 참고.';
     const { contexts } = extractOutLinksWithContext(
       body,
@@ -232,7 +232,7 @@ describe('extractOutLinksWithContext — wikilinks inside the nested ontology/ v
  * (`docs/ONTOLOGY-ATLAS-SPEC.md` section 11.4).
  */
 describe('extractOutLinksWithContext — a bare wikilink inside wiki/ names a page in wiki/', () => {
-  it('wiki/ 문서 안의 맨 슬러그는 wiki/ 안의 페이지로 풀린다', () => {
+  it('a bare slug inside a wiki/ document resolves to a page under wiki/', () => {
     const body = '분기 계획은 [[budget]] 문서를 참고.';
     const { slugs, contexts } = extractOutLinksWithContext(body, 'wiki/quarter-plan');
     expect(slugs).toEqual(['wiki/budget']);
@@ -241,18 +241,18 @@ describe('extractOutLinksWithContext — a bare wikilink inside wiki/ names a pa
     expect(contexts[0].linkText).toBe('budget');
   });
 
-  it('슬래시가 있는 대상은 vault 루트 기준이라 wiki/ 를 덧붙이지 않는다', () => {
+  it('a target with a slash is relative to the vault root, so wiki/ is not prepended', () => {
     const body = '이 글은 [[capabilities/checkout]] 과 [[wiki/budget]] 을 가리킨다.';
     const { slugs } = extractOutLinksWithContext(body, 'wiki/quarter-plan');
     expect(slugs).toEqual(['capabilities/checkout', 'wiki/budget']);
   });
 
-  it('wiki/ 바깥 문서의 맨 슬러그는 종전대로 vault 루트를 가리킨다', () => {
+  it('a bare slug in a document outside wiki/ still points at the vault root, as before', () => {
     const { slugs } = extractOutLinksWithContext('[[budget]] 참고.', 'capabilities/checkout');
     expect(slugs).toEqual(['budget']);
   });
 
-  it('폴더 검사와 같은 답을 낸다: 두 해석기가 같은 대상을 만든다', () => {
+  it('gives the same answer as the folder check: both resolvers build the same target', () => {
     // The folder half normalises with `wiki-page-schema.ts`; if that boundary and this
     // one ever part again, one of these two assertions moves and the other does not.
     const { slugs } = extractOutLinksWithContext('[[budget]] [[wiki/budget]]', 'wiki/a');

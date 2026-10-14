@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 
 // Next.js fetch-cache pollution can make `app/sitemap.ts` and `generateStaticParams` produce
 // different project sets. Skips when out/ is absent; fails on mismatch otherwise.
-describe("공개 라우트 정합성", () => {
-  it("out/sitemap.xml 의 프로젝트 URL이 out/<locale>/project/*/ 디렉터리와 정확히 일치한다", async () => {
+describe("public route coherence", () => {
+  it("project URLs in out/sitemap.xml match the out/<locale>/project/*/ directories exactly", async () => {
     const root = path.resolve(__dirname, "../../../..");
     const outDir = path.join(root, "out");
 
@@ -30,7 +30,7 @@ describe("공개 라우트 정합성", () => {
         // A missing project directory for this locale is a potential regression:
         // fail only when the sitemap has entries but the directory does not exist;
         // skip when neither exists.
-        expect(sitemapSlugs.size, `${locale}: sitemap 에 entries 있지만 out/${locale}/project 디렉토리 없음`).toBe(0);
+        expect(sitemapSlugs.size, `${locale}: sitemap has entries but out/${locale}/project has no directory`).toBe(0);
         continue;
       }
       const builtEntries = await readdir(projectDir, { withFileTypes: true });
@@ -50,11 +50,11 @@ describe("공개 라우트 정합성", () => {
 
       expect(
         onlyInSitemap,
-        `${locale}: sitemap 광고하지만 HTML 없는 슬러그(404 위험): ${onlyInSitemap.join(", ")}`,
+        `${locale}: slugs the sitemap advertises but that have no HTML (404 risk): ${onlyInSitemap.join(", ")}`,
       ).toEqual([]);
       expect(
         onlyBuilt,
-        `${locale}: HTML 은 있지만 sitemap 누락된 슬러그: ${onlyBuilt.join(", ")}`,
+        `${locale}: slugs that have HTML but are missing from the sitemap: ${onlyBuilt.join(", ")}`,
       ).toEqual([]);
     }
   });

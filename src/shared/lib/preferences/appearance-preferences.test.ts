@@ -114,7 +114,7 @@ describe("appearance-preferences", () => {
  * Removed background values map to a successor; silently falling back to the default would make the
  * user's own choice disappear. The table is the contract.
  */
-describe("폐기된 캔버스 배경 값의 계승", () => {
+describe("inheriting a retired canvas background value", () => {
   it.each([
     ["constellation", "web"],
     ["contour", "dot"],
@@ -124,12 +124,12 @@ describe("폐기된 캔버스 배경 값의 계승", () => {
     expect(resolveCanvasBackground(retired)).toBe(heir);
   });
 
-  it("모르는 값과 null 은 기본값으로", () => {
+  it("unknown values and null become the default", () => {
     expect(resolveCanvasBackground("aurora")).toBe("dot");
     expect(resolveCanvasBackground(null)).toBe("dot");
   });
 
-  it("살아 있는 값은 그대로 통과한다", () => {
+  it("a live value passes through as is", () => {
     for (const v of CANVAS_BACKGROUNDS) expect(resolveCanvasBackground(v)).toBe(v);
   });
 });
@@ -139,22 +139,22 @@ describe("폐기된 캔버스 배경 값의 계승", () => {
  * leaking `NaN` into the renderer makes the footprints **vanish entirely with no
  * error at all**. This is where that silent failure is blocked.
  */
-describe("발자국 설정 정규화", () => {
-  it("범위 밖 숫자는 잘라 넣는다", () => {
+describe("footprint setting normalization", () => {
+  it("out-of-range numbers are clamped", () => {
     const out = resolveFootprint({ size: 999, opacity: -3, gap: 900 });
     expect(out.size).toBe(FOOTPRINT_RANGES.size.max);
     expect(out.opacity).toBe(FOOTPRINT_RANGES.opacity.min);
     expect(out.gap).toBe(FOOTPRINT_RANGES.gap.max);
   });
 
-  it("NaN·문자열·누락은 기본값으로 대체한다", () => {
+  it("NaN, strings and missing values are replaced by the default", () => {
     const out = resolveFootprint({ size: Number.NaN, gap: "8", tone: "chartreuse" });
     expect(out.size).toBe(DEFAULT_FOOTPRINT.size);
     expect(out.gap).toBe(DEFAULT_FOOTPRINT.gap);
     expect(out.tone).toBe(DEFAULT_FOOTPRINT.tone);
   });
 
-  it("객체가 아니면 통째로 기본값", () => {
+  it("a non-object becomes the default as a whole", () => {
     expect(resolveFootprint(null)).toEqual(DEFAULT_FOOTPRINT);
     expect(resolveFootprint("[]")).toEqual(DEFAULT_FOOTPRINT);
   });
@@ -163,7 +163,7 @@ describe("발자국 설정 정규화", () => {
    * Saved settings with keys that are no longer read still load: they resolve to a valid preference
    * rather than throwing or falling back wholesale to the defaults.
    */
-  it("은퇴한 여섯 값이 남아 있어도 나머지는 살아서 돌아온다", () => {
+  it("the rest come back alive even when the six retired values remain", () => {
     const out = resolveFootprint({
       size: 17,
       gap: 4,

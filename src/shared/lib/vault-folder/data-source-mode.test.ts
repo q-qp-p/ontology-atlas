@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { getDataSourceMode } from './data-source-mode';
 
 describe('getDataSourceMode', () => {
-  it('vault loaded → local (사용자 디스크 = 진실원)', () => {
+  it('vault loaded gives local (the user disk is the source of truth)', () => {
     expect(getDataSourceMode({ vaultLoaded: true })).toBe('local');
   });
 
-  it('vault 미선택 → static (빌드타임 dogfood manifest)', () => {
+  it('no vault selected gives static (build-time dogfood manifest)', () => {
     expect(getDataSourceMode({ vaultLoaded: false })).toBe('static');
   });
 });

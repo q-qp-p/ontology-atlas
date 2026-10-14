@@ -31,20 +31,20 @@ const FINISHED_BODY: Record<string, string> = {
 };
 
 describe("validateVaultDocument", () => {
-  it("frontmatter 자체가 없는 docs 파일은 ok", () => {
+  it("a docs file with no frontmatter at all is ok", () => {
     const r = validateVaultDocument("# Heading\n\n그냥 메모.");
     expect(r.ok).toBe(true);
     expect(r.issues).toHaveLength(0);
   });
 
-  it("정상 frontmatter (canonical kind) 는 ok", () => {
+  it("valid frontmatter (canonical kind) is ok", () => {
     const raw = `---\nuid: ${VALID_UID}\nkind: project\nslug: foo\ntitle: Foo\n---\n# Foo`;
     const r = validateVaultDocument(raw);
     expect(r.ok).toBe(true);
     expect(r.issues).toHaveLength(0);
   });
 
-  it("닫는 --- 가 없으면 unclosed-frontmatter error", () => {
+  it("a missing closing --- gives an unclosed-frontmatter error", () => {
     const raw = `---\nkind: project\nslug: foo\n# 어, 닫힘 빠짐`;
     const r = validateVaultDocument(raw);
     expect(r.ok).toBe(false);
@@ -53,14 +53,14 @@ describe("validateVaultDocument", () => {
     expect(r.issues[0].severity).toBe("error");
   });
 
-  it("kind 값이 빈 문자열이면 empty-kind error", () => {
+  it("an empty kind value gives an empty-kind error", () => {
     const raw = `---\nkind:\nslug: foo\n---\n`;
     const r = validateVaultDocument(raw);
     expect(r.ok).toBe(false);
     expect(r.issues.map((i) => i.code)).toContain("empty-kind");
   });
 
-  it("frontmatter 는 있는데 kind 자체가 없으면 missing-kind warning (ok)", () => {
+  it("frontmatter with no kind at all gives a missing-kind warning (ok)", () => {
     const raw = `---\nslug: foo\ntitle: Foo\n---\n`;
     const r = validateVaultDocument(raw);
     expect(r.ok).toBe(true);
@@ -68,7 +68,7 @@ describe("validateVaultDocument", () => {
     expect(r.issues[0].severity).toBe("warning");
   });
 
-  it("canonical 외 kind 값은 unknown-kind warning (ok)", () => {
+  it("a non-canonical kind value gives an unknown-kind warning (ok)", () => {
     const raw = `---\nuid: ${VALID_UID}\nkind: bogus\nslug: foo\n---\n`;
     const r = validateVaultDocument(raw);
     expect(r.ok).toBe(true);
@@ -76,7 +76,7 @@ describe("validateVaultDocument", () => {
     expect(r.issues[0].message).toMatch(/bogus/);
   });
 
-  it("frontmatter 블록은 있는데 key 가 0 추출되면 parse-zero-keys warning", () => {
+  it("a frontmatter block that yields zero keys gives a parse-zero-keys warning", () => {
     // Every key line is invalid (leading colon, comment).
     const raw = `---\n: bad\n# comment\n---\n`;
     const r = validateVaultDocument(raw);
@@ -84,7 +84,7 @@ describe("validateVaultDocument", () => {
     expect(r.issues.map((i) => i.code)).toContain("parse-zero-keys");
   });
 
-  it("trim 된 kind 가 canonical 이면 ok (capability + domain)", () => {
+  it("a trimmed kind that is canonical is ok (capability + domain)", () => {
     // capability/element warn with `missing-expected-field` when `domain` is
     // absent; this case is about recognising the kind, so `domain` is supplied
     // to keep the result clean.
@@ -94,7 +94,7 @@ describe("validateVaultDocument", () => {
     expect(r.issues).toHaveLength(0);
   });
 
-  it("6 종 모두 인식 (project / domain / capability / element / document / vault-readme)", () => {
+  it("recognizes all six (project / domain / capability / element / document / vault-readme)", () => {
     // capability/element need `domain` to come back clean — the schema warns
     // advisorily on a missing parent.
     const cases: Array<{ kind: string; extra?: string }> = [
@@ -115,7 +115,7 @@ describe("validateVaultDocument", () => {
     }
   });
 
-  it("R14 — capability/element 가 domain 없으면 missing-expected-field warning", () => {
+  it("a capability/element without a domain gives a missing-expected-field warning", () => {
     const r = validateVaultDocument(
       `---\nuid: ${VALID_UID}\nkind: capability\ntitle: X\n---\n`,
     );
@@ -123,7 +123,7 @@ describe("validateVaultDocument", () => {
     expect(r.issues.map((i) => i.code)).toContain("missing-expected-field");
   });
 
-  it("graph 배열 중복/비정렬이면 non-canonical-graph-array warning", () => {
+  it("a duplicated or unsorted graph array gives a non-canonical-graph-array warning", () => {
     const r = validateVaultDocument(
       `---\nuid: ${VALID_UID}\nkind: project\ntitle: X\ndependencies: [z, a, z]\n---\n`,
     );
@@ -133,7 +133,7 @@ describe("validateVaultDocument", () => {
     );
   });
 
-  it("error 와 warning 이 동시에 있으면 ok=false (error 우선)", () => {
+  it("with both an error and a warning ok is false (error takes priority)", () => {
     // `unclosed` returns immediately, so the concurrent case is built
     // differently: check only that an `empty-kind` error alone gives ok=false.
     const raw = `---\nkind:\n---\n`;
@@ -144,13 +144,13 @@ describe("validateVaultDocument", () => {
 });
 
 describe("validateVaultDocFrontmatter (parsed-only fast path)", () => {
-  it("빈 frontmatter — ontology 시그널 0 — 정상 (docs-only)", () => {
+  it("empty frontmatter has zero ontology signals and is fine (docs-only)", () => {
     const r = validateVaultDocFrontmatter({});
     expect(r.ok).toBe(true);
     expect(r.issues).toHaveLength(0);
   });
 
-  it("title 만 있는 frontmatter — ontology 시그널 0 — 정상 (docs-only)", () => {
+  it("frontmatter with only a title has zero ontology signals and is fine (docs-only)", () => {
     const r = validateVaultDocFrontmatter({
       title: "Just a doc",
       tags: ["foo"],
@@ -159,7 +159,7 @@ describe("validateVaultDocFrontmatter (parsed-only fast path)", () => {
     expect(r.issues).toHaveLength(0);
   });
 
-  it("ontology 시그널 (capabilities) 있는데 kind 없으면 missing-kind warning", () => {
+  it("an ontology signal (capabilities) without a kind gives a missing-kind warning", () => {
     const r = validateVaultDocFrontmatter({
       title: "X",
       capabilities: ["foo"],
@@ -168,13 +168,13 @@ describe("validateVaultDocFrontmatter (parsed-only fast path)", () => {
     expect(r.issues.map((i) => i.code)).toContain("missing-kind");
   });
 
-  it("kind 가 빈 문자열이면 empty-kind error", () => {
+  it("an empty kind string gives an empty-kind error", () => {
     const r = validateVaultDocFrontmatter({ kind: "", title: "X" });
     expect(r.ok).toBe(false);
     expect(r.issues.map((i) => i.code)).toContain("empty-kind");
   });
 
-  it("canonical kind 는 ok (capability with domain)", () => {
+  it("a canonical kind is ok (capability with domain)", () => {
     const r = validateVaultDocFrontmatter({
       uid: VALID_UID,
       kind: "capability",
@@ -195,7 +195,7 @@ describe("validateVaultDocFrontmatter (parsed-only fast path)", () => {
     expect(r.issues.map((i) => i.code)).toContain("missing-expected-field");
   });
 
-  it("graph 배열 중복/비정렬이면 non-canonical-graph-array warning", () => {
+  it("a duplicated or unsorted graph array gives a non-canonical-graph-array warning", () => {
     const r = validateVaultDocFrontmatter({
       uid: VALID_UID,
       kind: "project",
@@ -208,7 +208,7 @@ describe("validateVaultDocFrontmatter (parsed-only fast path)", () => {
     );
   });
 
-  it("non-canonical kind 는 unknown-kind warning", () => {
+  it("a non-canonical kind gives an unknown-kind warning", () => {
     const r = validateVaultDocFrontmatter({
       uid: VALID_UID,
       kind: "weird",
@@ -262,7 +262,7 @@ describe("summarizeVaultValidation", () => {
     expect(summary.issuesBySlug).toHaveLength(0);
   });
 
-  it("warning 만 있으면 ok=true, errorCount=0, warningCount > 0", () => {
+  it("with only warnings, ok=true, errorCount=0 and warningCount > 0", () => {
     const summary = summarizeVaultValidation([
       { slug: "a", frontmatter: { uid: VALID_UID, kind: "weird" } },
       { slug: "b", frontmatter: { capabilities: ["x"] } },
@@ -273,7 +273,7 @@ describe("summarizeVaultValidation", () => {
     expect(summary.issuesBySlug).toHaveLength(2);
   });
 
-  it("error 가 하나라도 있으면 ok=false", () => {
+  it("a single error makes ok=false", () => {
     const summary = summarizeVaultValidation([
       { slug: "a", frontmatter: { kind: "" } },
       {
@@ -285,7 +285,7 @@ describe("summarizeVaultValidation", () => {
     expect(summary.errorCount).toBe(1);
   });
 
-  it("issuesBySlug 가 slug 별로 묶여서 반환", () => {
+  it("issuesBySlug is returned grouped by slug", () => {
     const summary = summarizeVaultValidation([
       { slug: "a", frontmatter: { uid: VALID_UID, kind: "weird" } },
     ]);
@@ -300,13 +300,13 @@ describe("summarizeVaultValidation", () => {
   });
 });
 
-describe("파서가 못 읽은 줄은 문서의 문제로 함께 보고된다", () => {
+describe("lines the parser could not read are reported as document problems", () => {
   const malformed = [
     { code: "malformed-frontmatter-line", message: "3행을 읽지 못했습니다" },
     { code: "malformed-quoted-scalar", message: "따옴표가 닫히지 않았습니다" },
   ];
 
-  it("파싱 진단을 error 로 올려 보낸다", () => {
+  it("raises parse diagnostics as errors", () => {
     const r = validateVaultDocFrontmatter(
       { uid: VALID_UID, kind: "project", title: "X" },
       malformed,
@@ -319,7 +319,7 @@ describe("파서가 못 읽은 줄은 문서의 문제로 함께 보고된다", 
     expect(r.issues.every((i) => i.severity === "error")).toBe(true);
   });
 
-  it("ontology 노드가 아닌 문서에서도 못 읽은 줄은 말한다", () => {
+  it("a document that is not an ontology node still reports unreadable lines", () => {
     // Being a docs-only file is a reason to stay quiet about kinds. It is not a reason to stay
     // quiet about a line nobody can read.
     const r = validateVaultDocFrontmatter({ title: "Just a doc" }, malformed);
@@ -327,19 +327,19 @@ describe("파서가 못 읽은 줄은 문서의 문제로 함께 보고된다", 
     expect(r.issues.map((i) => i.code)).toContain("malformed-frontmatter-line");
   });
 
-  it("진단이 없으면 아무 것도 늘어나지 않는다", () => {
+  it("with no diagnostics nothing increases", () => {
     const r = validateVaultDocFrontmatter({ uid: VALID_UID, kind: "project", title: "X" });
     expect(r.issues).toHaveLength(0);
   });
 
-  it("진단과 무관한 파서 코드는 올려 보내지 않는다", () => {
+  it("parser codes unrelated to diagnostics are not raised", () => {
     const r = validateVaultDocFrontmatter({ uid: VALID_UID, kind: "project", title: "X" }, [
       { code: "some-other-note", message: "무시되어야 한다" },
     ]);
     expect(r.issues).toHaveLength(0);
   });
 
-  it("요약도 같은 사실을 센다 — 지도가 그리는 문서 전체의 단일 지점", () => {
+  it("the summary counts the same facts, the single point for every document the map draws", () => {
     const summary = summarizeVaultValidation([
       { slug: "a", frontmatter: { uid: VALID_UID, kind: "project" }, diagnostics: malformed },
       { slug: "b", frontmatter: { uid: "3f1a2b4c-5d6e-4f70-8a91-b2c3d4e5f607", kind: "project" } },

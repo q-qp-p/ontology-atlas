@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { snippetAroundFirstMatch, splitHighlightSegments } from "./highlight-match";
 
 describe("splitHighlightSegments", () => {
-  it("빈 query → 전체 단일 비매치 세그먼트", () => {
+  it("an empty query gives one whole non-match segment", () => {
     expect(splitHighlightSegments("Auth Service", "")).toEqual([
       { text: "Auth Service", match: false },
     ]);
@@ -11,20 +11,20 @@ describe("splitHighlightSegments", () => {
     ]);
   });
 
-  it("매치 없음 → 전체 단일 비매치 세그먼트", () => {
+  it("no match gives one whole non-match segment", () => {
     expect(splitHighlightSegments("Auth Service", "zzz")).toEqual([
       { text: "Auth Service", match: false },
     ]);
   });
 
-  it("대소문자 무시하고 원본 대소문자 보존하며 매치 분절", () => {
+  it("ignores case, preserves the original case, and splits at the match", () => {
     expect(splitHighlightSegments("Authentication", "auth")).toEqual([
       { text: "Auth", match: true },
       { text: "entication", match: false },
     ]);
   });
 
-  it("중간 매치 — 앞/매치/뒤 3 세그먼트", () => {
+  it("a middle match gives three segments: before, match, after", () => {
     expect(splitHighlightSegments("login flow", "in")).toEqual([
       { text: "log", match: false },
       { text: "in", match: true },
@@ -32,7 +32,7 @@ describe("splitHighlightSegments", () => {
     ]);
   });
 
-  it("모든 occurrence 매치", () => {
+  it("matches every occurrence", () => {
     expect(splitHighlightSegments("aXaXa", "a")).toEqual([
       { text: "a", match: true },
       { text: "X", match: false },
@@ -42,7 +42,7 @@ describe("splitHighlightSegments", () => {
     ]);
   });
 
-  it("정규식 특수문자도 리터럴로 안전 매칭", () => {
+  it("safely matches regex special characters as literals", () => {
     expect(splitHighlightSegments("a.b.c", ".")).toEqual([
       { text: "a", match: false },
       { text: ".", match: true },
@@ -52,7 +52,7 @@ describe("splitHighlightSegments", () => {
     ]);
   });
 
-  it("매치 세그먼트 텍스트를 join 하면 원본과 동일(손실 없음)", () => {
+  it("joining the matched segment texts equals the original, with no loss", () => {
     const segs = splitHighlightSegments("Capability: token issue", "token");
     expect(segs.map((s) => s.text).join("")).toBe("Capability: token issue");
   });
@@ -61,7 +61,7 @@ describe("splitHighlightSegments", () => {
   // convention), so a space in a phrase the user typed may be a newline in the
   // source. Literal substring matching found 0 hits there, producing no marks and no
   // scroll — whitespace runs (space, newline, tab) must match flexibly.
-  it("멀티 토큰 쿼리는 소스의 줄바꿈도 공백처럼 매치한다 (줄-랩 구절)", () => {
+  it("a multi-token query matches a line break in the source like a space (line-wrapped phrase)", () => {
     const text = "Give it a local, git-backed\nmental model it can read.";
     const segs = splitHighlightSegments(text, "git-backed mental model");
     const matched = segs.filter((s) => s.match).map((s) => s.text);
@@ -70,7 +70,7 @@ describe("splitHighlightSegments", () => {
     expect(segs.map((s) => s.text).join("")).toBe(text);
   });
 
-  it("멀티 토큰 쿼리는 연속 다중 공백/탭도 매치한다", () => {
+  it("a multi-token query also matches runs of spaces and tabs", () => {
     const text = "before  needle\tphrase  after";
     const segs = splitHighlightSegments(text, "needle phrase");
     expect(segs.filter((s) => s.match).map((s) => s.text)).toEqual([
@@ -78,14 +78,14 @@ describe("splitHighlightSegments", () => {
     ]);
   });
 
-  it("멀티 토큰이어도 특수문자는 여전히 리터럴 이스케이프", () => {
+  it("even with multiple tokens, special characters are still escaped as literals", () => {
     const segs = splitHighlightSegments("a.b c(d)", "a.b c(d)");
     expect(segs.filter((s) => s.match).map((s) => s.text)).toEqual([
       "a.b c(d)",
     ]);
   });
 
-  it("모든 occurrence 매치 — 멀티 토큰도 전역 매치", () => {
+  it("matches every occurrence, multi-token queries globally too", () => {
     const text = "needle phrase here, another needle phrase there";
     const segs = splitHighlightSegments(text, "needle phrase");
     expect(segs.filter((s) => s.match)).toHaveLength(2);
@@ -93,7 +93,7 @@ describe("splitHighlightSegments", () => {
 
   // `searchDocs` treats a multi-token query as AND over scattered tokens, so highlighting must match
   // individual tokens when the phrase is not contiguous.
-  it("멀티 토큰 쿼리 — 구절이 어디에도 연속으로 없으면 개별 토큰을 OR 로 매치(스캐터드 AND 매치 착지)", () => {
+  it("multi-token query: when the phrase is nowhere contiguous, individual tokens match as OR (scattered AND match landing)", () => {
     const text = "이 관계는 유용하다. 나중에 타입을 정의한다.";
     // The phrase "Relationship type" occurs nowhere contiguously in this text.
     const segs = splitHighlightSegments(text, "관계 타입");
@@ -103,20 +103,20 @@ describe("splitHighlightSegments", () => {
     expect(segs.map((s) => s.text).join("")).toBe(text);
   });
 
-  it("멀티 토큰 스캐터드 폴백 — 토큰 중 일부만 존재해도 존재하는 토큰만 매치", () => {
+  it("multi-token scattered fallback: matches only the tokens that exist even if just some are present", () => {
     const text = "관계만 있고 다른 단어는 없다.";
     const segs = splitHighlightSegments(text, "관계 타입");
     const matched = segs.filter((s) => s.match).map((s) => s.text);
     expect(matched).toEqual(["관계"]);
   });
 
-  it("멀티 토큰 스캐터드 폴백 — 토큰이 전혀 없으면 여전히 비매치", () => {
+  it("multi-token scattered fallback: still no match when no token is present", () => {
     const text = "아무 관련도 없는 문장이다.";
     const segs = splitHighlightSegments(text, "관계 타입");
     expect(segs).toEqual([{ text, match: false }]);
   });
 
-  it("구절 매치가 있으면 폴백을 타지 않고 구절 그대로 우선한다", () => {
+  it("a phrase match takes priority as is, without taking the fallback", () => {
     // When the phrase does occur contiguously the phrase-match path wins, even
     // though the individual tokens also appear elsewhere. Guards the
     // newline-flexible matching above against regression.
@@ -127,14 +127,14 @@ describe("splitHighlightSegments", () => {
   });
 });
 
-describe('한글 자판 질의 하이라이트', () => {
-  it('초성 매치도 표시된다', () => {
+describe('Hangul keyboard query highlighting', () => {
+  it('an initial-consonant match is shown too', () => {
     expect(splitHighlightSegments('장바구니', 'ㅈㅂㄱㄴ')).toEqual([
       { text: '장바구니', match: true },
     ]);
   });
 
-  it('이름 가운데 초성 매치의 앞뒤가 남는다', () => {
+  it('keeps the text before and after an initial-consonant match in the middle of a name', () => {
     expect(splitHighlightSegments('신규 회원 탈퇴', 'ㅎㅇ')).toEqual([
       { text: '신규 ', match: false },
       { text: '회원', match: true },
@@ -142,21 +142,21 @@ describe('한글 자판 질의 하이라이트', () => {
     ]);
   });
 
-  it('조합 중인 마지막 음절도 표시된다', () => {
+  it('a last syllable still being composed is shown too', () => {
     expect(splitHighlightSegments('장바구니', '장바ㄱ')).toEqual([
       { text: '장바구', match: true },
       { text: '니', match: false },
     ]);
   });
 
-  it('글자 그대로 맞는 매치가 있으면 그쪽이 이긴다', () => {
+  it('a literal character match wins when there is one', () => {
     expect(splitHighlightSegments('장바구니 담기', '장바')).toEqual([
       { text: '장바', match: true },
       { text: '구니 담기', match: false },
     ]);
   });
 
-  it('한글이 아닌 질의는 한글 경로를 타지 않는다', () => {
+  it('a non-Hangul query does not take the Hangul path', () => {
     expect(splitHighlightSegments('장바구니', 'cart')).toEqual([
       { text: '장바구니', match: false },
     ]);
@@ -176,24 +176,24 @@ describe('한글 자판 질의 하이라이트', () => {
 describe('snippetAroundFirstMatch', () => {
   const sentence = 'Hands a packed parcel to the courier and keeps the tracking number';
 
-  it('매치가 앞쪽이면 문장을 그대로 둔다', () => {
+  it('leaves the sentence as is when the match is near the start', () => {
     expect(snippetAroundFirstMatch(sentence, 'Hands')).toBe(sentence);
     expect(snippetAroundFirstMatch(sentence, 'packed')).toBe(sentence);
   });
 
-  it('매치가 뒤쪽이면 말줄임과 함께 매치 근처에서 시작한다', () => {
+  it('when the match is late, starts near it with an ellipsis', () => {
     const out = snippetAroundFirstMatch(sentence, 'tracking');
     expect(out.startsWith('…')).toBe(true);
     expect(out).toContain('tracking number');
     expect(out).not.toContain('Hands');
   });
 
-  it('낱말을 반으로 자르지 않는다', () => {
+  it('does not cut a word in half', () => {
     const out = snippetAroundFirstMatch(sentence, 'courier');
     expect(out).toBe('…to the courier and keeps the tracking number');
   });
 
-  it('매치가 없으면 그대로 둔다', () => {
+  it('leaves it as is when there is no match', () => {
     expect(snippetAroundFirstMatch(sentence, 'zzz')).toBe(sentence);
     expect(snippetAroundFirstMatch(sentence, '')).toBe(sentence);
   });

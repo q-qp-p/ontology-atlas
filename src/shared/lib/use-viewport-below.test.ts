@@ -33,26 +33,26 @@ afterEach(() => {
 });
 
 describe("useViewportBelow", () => {
-  it("matchMedia 가 없으면 넓은 화면으로 답한다 — 정적 prerender 안전값", () => {
+  it("without matchMedia it answers wide screen, the safe value for static prerender", () => {
     // @ts-expect-error — reproduces the static-export prerender environment.
     window.matchMedia = undefined;
     const { result } = renderHook(() => useViewportBelow(LG_BREAKPOINT_PX));
     expect(result.current).toBe(false);
   });
 
-  it("첫 렌더부터 실제 폭을 답한다 — 틀린 프레임을 그린 뒤 따라잡지 않는다", () => {
+  it("answers the real width from the first render, without catching up after a wrong frame", () => {
     installMatchMedia(true);
     const { result } = renderHook(() => useViewportBelow(LG_BREAKPOINT_PX));
     expect(result.current).toBe(true);
   });
 
-  it("경계는 CSS 와 같다 — min-width 미만만 참", () => {
+  it("the boundary matches CSS: true only below min-width", () => {
     const media = installMatchMedia(false);
     renderHook(() => useViewportBelow(LG_BREAKPOINT_PX));
     expect(media.queries[0]).toBe("(max-width: 1023.98px)");
   });
 
-  it("창 크기가 바뀌면 따라간다", () => {
+  it("follows window size changes", () => {
     const media = installMatchMedia(false);
     const { result } = renderHook(() => useViewportBelow(LG_BREAKPOINT_PX));
     expect(result.current).toBe(false);
@@ -60,7 +60,7 @@ describe("useViewportBelow", () => {
     expect(result.current).toBe(true);
   });
 
-  it("언마운트하면 구독을 놓는다", () => {
+  it("releases the subscription on unmount", () => {
     const media = installMatchMedia(true);
     const { unmount } = renderHook(() => useViewportBelow(LG_BREAKPOINT_PX));
     expect(media.listenerCount()).toBe(1);

@@ -9,12 +9,12 @@ afterEach(() => {
 });
 
 describe("useDocumentTitle", () => {
-  it("문자열 전달 시 document.title 갱신", () => {
+  it("updates document.title when given a string", () => {
     renderHook(() => useDocumentTitle("Demo · demo"));
     expect(document.title).toBe("Demo · demo");
   });
 
-  it("null/빈 값은 무시", () => {
+  it("ignores null and empty values", () => {
     document.title = "Untouched";
     renderHook(() => useDocumentTitle(null));
     expect(document.title).toBe("Untouched");
@@ -22,7 +22,7 @@ describe("useDocumentTitle", () => {
     expect(document.title).toBe("Untouched");
   });
 
-  it("unmount 시 다음 화면이 이미 쓴 제목을 덮지 않는다", () => {
+  it("on unmount it does not overwrite a title the next screen already wrote", () => {
     // The destination route owns the title from unmount on; restoring the mount-time title would
     // overwrite it.
     document.title = "Before";
@@ -33,7 +33,7 @@ describe("useDocumentTitle", () => {
     expect(document.title).toBe("Next route");
   });
 
-  it("입력값 변경 시 새 값 반영", () => {
+  it("reflects the new value when the input changes", () => {
     const { rerender } = renderHook(
       ({ value }: { value: string }) => useDocumentTitle(value),
       { initialProps: { value: "First" } },

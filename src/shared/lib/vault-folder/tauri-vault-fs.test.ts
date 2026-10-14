@@ -469,12 +469,12 @@ describe('tauri vault file-system shim', () => {
   });
 });
 
-describe('vaultRootRejectionReason — 거절은 실패와 다르게 읽힌다', () => {
+describe('vaultRootRejectionReason reads a rejection differently from a failure', () => {
   /*
    * Rust returns a reason code and the screen picks its wording from it; if extraction fails the
    * screen would show a retry message, which is false guidance.
    */
-  it('사유 코드를 뽑아낸다 — Error 와 문자열 둘 다', () => {
+  it('extracts the reason code from both an Error and a string', () => {
     expect(vaultRootRejectionReason(new Error('vault-root-rejected:filesystem-root'))).toBe(
       'filesystem-root',
     );
@@ -484,7 +484,7 @@ describe('vaultRootRejectionReason — 거절은 실패와 다르게 읽힌다',
     );
   });
 
-  it('Tauri 가 원문을 감싸 던져도 찾아낸다', () => {
+  it('finds it even when Tauri wraps and throws the original text', () => {
     // `invoke` sometimes returns the command error verbatim and sometimes wraps it in a sentence.
     expect(
       vaultRootRejectionReason(
@@ -493,14 +493,14 @@ describe('vaultRootRejectionReason — 거절은 실패와 다르게 읽힌다',
     ).toBe('system-directory');
   });
 
-  it('거절이 아닌 오류는 null — 평범한 실패를 거절로 오인하지 않는다', () => {
+  it('an error that is not a rejection gives null, so an ordinary failure is not mistaken for a rejection', () => {
     expect(vaultRootRejectionReason(new Error('permission denied'))).toBeNull();
     expect(vaultRootRejectionReason(null)).toBeNull();
     expect(vaultRootRejectionReason(undefined)).toBeNull();
     expect(vaultRootRejectionReason({ code: 42 })).toBeNull();
   });
 
-  it('접두사만 있고 사유가 비면 null — 빈 코드로 문구를 고르지 않는다', () => {
+  it('a prefix with an empty reason gives null, so no wording is chosen from an empty code', () => {
     expect(vaultRootRejectionReason('vault-root-rejected:')).toBeNull();
     expect(vaultRootRejectionReason('vault-root-rejected:   ')).toBeNull();
   });

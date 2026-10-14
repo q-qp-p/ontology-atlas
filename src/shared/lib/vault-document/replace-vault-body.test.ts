@@ -5,14 +5,14 @@ import { parseFrontmatter } from "./parse-frontmatter";
 const RAW = ["---", "slug: capabilities/auth", "kind: capability", "domain: iam", "---", "", "# Auth", "", "old explanation"].join("\n");
 
 describe("replaceVaultBody", () => {
-  it("frontmatter 보존 + 본문 교체", () => {
+  it("keeps frontmatter and replaces the body", () => {
     const next = replaceVaultBody(RAW, "# Auth\n\nnew explanation");
     expect(next).toBe(
       ["---", "slug: capabilities/auth", "kind: capability", "domain: iam", "---", "", "# Auth", "", "new explanation", ""].join("\n"),
     );
   });
 
-  it("round-trip: parseFrontmatter 로 frontmatter 불변 + 새 본문", () => {
+  it("round trip: frontmatter is unchanged under parseFrontmatter and the body is new", () => {
     const next = replaceVaultBody(RAW, "completely new body");
     const parsed = parseFrontmatter(next);
     expect(parsed.frontmatter).toEqual({
@@ -23,27 +23,27 @@ describe("replaceVaultBody", () => {
     expect(parsed.body.trim()).toBe("completely new body");
   });
 
-  it("본문 앞뒤 공백 정리", () => {
+  it("trims whitespace around the body", () => {
     const next = replaceVaultBody(RAW, "\n\n  spaced  \n\n");
     expect(next).toBe(
       ["---", "slug: capabilities/auth", "kind: capability", "domain: iam", "---", "", "spaced", ""].join("\n"),
     );
   });
 
-  it("빈 본문 → frontmatter 만", () => {
+  it("an empty body leaves frontmatter only", () => {
     const next = replaceVaultBody(RAW, "   ");
     expect(next).toBe(["---", "slug: capabilities/auth", "kind: capability", "domain: iam", "---", ""].join("\n"));
     expect(parseFrontmatter(next).frontmatter.slug).toBe("capabilities/auth");
   });
 
-  it("frontmatter 없으면 전체 본문 교체", () => {
+  it("without frontmatter the whole body is replaced", () => {
     expect(replaceVaultBody("just text", "new text")).toBe("new text\n");
   });
 });
 
 /** Frontmatter must survive BOM and CRLF files, and the original line endings and BOM are restored. */
-describe("BOM·CRLF 원본", () => {
-  it("BOM 이 있어도 frontmatter 를 보존한다", () => {
+describe("BOM and CRLF originals", () => {
+  it("keeps frontmatter even with a BOM", () => {
     const raw = "﻿---\nkind: capability\ntitle: T\n---\n옛 본문\n";
     const next = replaceVaultBody(raw, "새 본문");
     expect(next).toContain("kind: capability");
@@ -51,7 +51,7 @@ describe("BOM·CRLF 원본", () => {
     expect(next.startsWith("﻿")).toBe(true);
   });
 
-  it("CRLF 파일은 CRLF 로 되돌려 저장한다", () => {
+  it("a CRLF file is saved back as CRLF", () => {
     const raw = "---\r\nkind: capability\r\ntitle: T\r\n---\r\n옛 본문\r\n";
     const next = replaceVaultBody(raw, "새 본문");
     expect(next).toContain("kind: capability");
@@ -60,7 +60,7 @@ describe("BOM·CRLF 원본", () => {
     expect(/[^\r]\n/.test(next)).toBe(false);
   });
 
-  it("LF 파일은 LF 그대로 — 되돌림이 원본을 바꾸지 않는다", () => {
+  it("an LF file stays LF, so restoring never changes the original", () => {
     const raw = "---\nkind: capability\n---\n옛 본문\n";
     const next = replaceVaultBody(raw, "새 본문");
     expect(next.includes("\r")).toBe(false);
