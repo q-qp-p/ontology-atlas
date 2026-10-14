@@ -371,7 +371,7 @@ async function queryOntologyTool(args = {}) {
       });
     }
   }
-  if (result?.contract === 'agentBriefCompact:v2') return result;
+  if (result?.contract === 'agentBriefCompact:v3') return result;
   return {
     ...result,
     compiledSummary: {

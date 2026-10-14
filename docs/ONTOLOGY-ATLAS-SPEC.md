@@ -170,7 +170,7 @@ verify the exact symbol in the exact current file before proposing it and MUST
 NOT persist line numbers, commands, snippets, raw task text, or coordinates
 inferred only after seeing a later coding task. A task may select an already
 reviewed element; it cannot create a coordinate. Readers MAY ignore this body
-convention. Atlas compact v2 resolves current line locators only while the bound
+convention. Atlas compact v3 resolves current line locators only while the bound
 project source is current and every named file/symbol is safe and unique;
 otherwise it emits no exact target. Test coordinates must resolve as actual test
 declarations/calls on a test surface, not merely as a nearby function name.

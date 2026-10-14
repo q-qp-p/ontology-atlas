@@ -41,12 +41,12 @@ function okResponseBytes(result, prettyText = JSON.stringify(result, null, 2)) {
 }
 
 function ok(result) {
-  const compactPrompt = result?.contract === 'agentBriefCompact:v2'
-    && typeof result?.handoffPrompt === 'string'
-    ? result.handoffPrompt
-    : null;
+  if (result?.contract === 'agentBriefCompact:v3' && typeof result.handoffPrompt === 'string') {
+    const { handoffPrompt, ...structure } = result;
+    return { content: [{ type: 'text', text: handoffPrompt }], structuredContent: structure };
+  }
   const response = {
-    content: [{ type: 'text', text: compactPrompt ?? JSON.stringify(result, null, 2) }],
+    content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
   };
   if (result && typeof result === 'object' && !Array.isArray(result)) {
     response.structuredContent = result;

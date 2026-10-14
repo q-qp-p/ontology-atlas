@@ -31,7 +31,8 @@ import {
   resolveTestNamePattern,
 } from '../../scripts/lib/ci/test-name-pattern.mjs';
 import { assertPnpmScriptsExist } from '../../scripts/lib/pnpm-script-refs.mjs';
-import { CLI_CLIENT_INFO } from './lib/mcp-bridge/mcp-call.mjs';
+import { CLI_CLIENT_INFO, callMcpTool } from './lib/mcp-bridge/mcp-call.mjs';
+import { repairProxySource } from './lib/query-result-contract/agent-brief/agent-brief-fixtures.mjs';
 import {
   expectedToolsListAnnotationSummary,
 } from '../../mcp/scripts/verify/tools-list/inventory.mjs';
@@ -6858,16 +6859,21 @@ await test('agent-brief --project — selects one project in a multi-project vau
     assert.equal(compactResult.code, 0, `stdout: ${compactResult.stdout}\nstderr: ${compactResult.stderr}`);
     assert.equal(compactResult.stderr, '');
     const compact = JSON.parse(compactResult.stdout);
-    assert.equal(compact.contract, 'agentBriefCompact:v2');
+    assert.equal(compact.contract, 'agentBriefCompact:v3');
     assert.equal(compact.detail, 'compact');
     assert.equal(compact.project.slug, 'projects/beta');
-    assert.equal(compact.project.scope.nodes, 3);
+    assert.equal(Object.hasOwn(compact, 'handoffPrompt'), false);
     assert.equal(compact.validation.status, 'warn');
     assert.equal(compact.validation.warningFiles, 1);
     assert.equal(compact.focus.taskNavigation.status, 'blocked');
     assert.equal(compact.focus.taskNavigation.blockedBy, 'source_not_current');
     assert.doesNotMatch(JSON.stringify(compact), /projects\/alpha|domains\/alpha|capabilities\/alpha/);
-    assert.ok(Buffer.byteLength(JSON.stringify(compact), 'utf8') <= 12000);
+    const sent = await callMcpTool(root, 'query_ontology', {
+      operation: 'agent_brief', project: 'projects/beta', detail: 'compact',
+      task: 'Change the beta capability and identify its evidence and verification boundary.',
+    });
+    assert.deepEqual(compact, JSON.parse(JSON.stringify(sent)));
+    assert.ok(Buffer.byteLength(JSON.stringify(compact), 'utf8') + Buffer.byteLength(sent.handoffPrompt, 'utf8') <= 12000);
 
     const compactHuman = await run([
       'agent-brief',
@@ -6889,14 +6895,15 @@ await test('agent-brief --project — selects one project in a multi-project vau
     assert.match(human, /MEANING\s+\S+ · gap \S+ · next \S+/);
     assert.match(human, /MEANING REPAIR\s+\S+.*approval required · automatic write\/finalize off/);
     assert.match(human, /FULL DETAIL\s+query_ontology/);
+    assert.doesNotMatch(human, /PURPOSE/);
     const uncertaintyLines = (text) => text.split('\n').filter((line) => /^(?:Uncertainty:|Unknown:) /.test(line));
-    assert.deepEqual(uncertaintyLines(human), uncertaintyLines(compact.handoffPrompt));
+    assert.deepEqual(uncertaintyLines(human), uncertaintyLines(sent.handoffPrompt));
     const compactPrompt = await run([
       'agent-brief', root, '--project', 'projects/beta', '--compact',
       '--task', 'Change the beta capability and identify its evidence and verification boundary.', '--prompt', '--exit-zero',
     ]);
     assert.equal(compactPrompt.code, 0, compactPrompt.stderr);
-    assert.equal(compactPrompt.stdout.trimEnd(), compact.handoffPrompt);
+    assert.equal(compactPrompt.stdout, `${sent.handoffPrompt}\n`);
 
     const ambiguous = await run(['agent-brief', root, '--json', '--exit-zero']);
     assert.equal(ambiguous.code, 2);
@@ -6916,32 +6923,14 @@ await test('agent-brief --project — selects one project in a multi-project vau
   }
 });
 
-await test('agent-brief --compact — prints REPAIR READ from firstStep or a legacy workflow and names omitted steps', async () => {
+await test('agent-brief --compact — prints REPAIR READ from firstStep, names omitted steps and refuses a full workflow', async () => {
   const root = withVault([{
     slug: 'project',
     content: '---\nkind: project\ntitle: Repair Probe\n---\n## Definition\n\nA probe project.\n',
   }]);
-  const fixtures = pathToFileURL(join(__dirname, 'lib/query-result-contract/agent-brief/agent-brief-fixtures.mjs')).href;
   const realMcp = join(__dirname, '..', '..', 'mcp', 'src', 'index.js');
   const proxy = join(root, 'repair-proxy-mcp.mjs');
-  writeFileSync(proxy, [
-    "import { spawn } from 'node:child_process';",
-    "import readline from 'node:readline';",
-    `import { humanMeaningRepair, humanMeaningRepairCompact } from ${JSON.stringify(fixtures)};`,
-    `const child = spawn(process.execPath, [${JSON.stringify(realMcp)}], { stdio: ['pipe', 'pipe', 'inherit'], env: process.env });`,
-    "process.stdin.pipe(child.stdin);",
-    "readline.createInterface({ input: child.stdout }).on('line', (line) => {",
-    "  const message = JSON.parse(line);",
-    "  const structured = message.result?.structuredContent;",
-    "  if (structured?.contract === 'agentBriefCompact:v2') {",
-    "    structured.meaningRepair = (process.env.REPAIR_SHAPE === 'legacy' ? humanMeaningRepair : humanMeaningRepairCompact)(structured.project.slug);",
-    "    message.result.content = [{ type: 'text', text: JSON.stringify(structured) }];",
-    "  }",
-    "  console.log(JSON.stringify(message));",
-    "});",
-    "child.on('exit', (code) => process.exit(code ?? 0));",
-    '',
-  ].join('\n'));
+  writeFileSync(proxy, repairProxySource(pathToFileURL(join(__dirname, 'lib/query-result-contract/agent-brief/agent-brief-fixtures.mjs')).href, realMcp));
   try {
     const args = ['agent-brief', root, '--compact', '--task', 'Change the probe.', '--exit-zero'];
     const compact = await run(args, { env: { OATLAS_MCP_PATH: proxy } });
@@ -6953,10 +6942,9 @@ await test('agent-brief --compact — prints REPAIR READ from firstStep or a leg
       /REPAIR OMITTED steps 2-6 \(human_semantic_approval to finalize\) and 9 stop conditions; read FULL DETAIL before step 2/,
     );
     const legacy = await run(args, { env: { OATLAS_MCP_PATH: proxy, REPAIR_SHAPE: 'legacy' } });
-    assert.equal(legacy.code, 0, `stdout: ${legacy.stdout}\nstderr: ${legacy.stderr}`);
-    const legacyHuman = stripAnsi(legacy.stdout);
-    assert.match(legacyHuman, /REPAIR READ\s+query_ontology/);
-    assert.doesNotMatch(legacyHuman, /REPAIR OMITTED/);
+    assert.equal(legacy.code, 2, `stdout: ${legacy.stdout}\nstderr: ${legacy.stderr}`);
+    assert.match(legacy.stderr, /keep meaningRepair\.writePolicy behind full detail/);
+    assert.equal(legacy.stdout, '');
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -6977,13 +6965,14 @@ await test('agent-brief --compact — refuses literal-only ownership and preserv
     assert.equal(refused.focus.refusal.reason, 'no_match');
     const prompt = await run([...args, '--task', 'Rotate encryption keys.', '--prompt']);
     assert.equal(prompt.code, 0, prompt.stderr);
-    assert.equal(prompt.stdout.trimEnd(), refused.handoffPrompt);
+    const sent = (task) => callMcpTool(vault, 'query_ontology', { operation: 'agent_brief', project: 'project', detail: 'compact', task });
+    assert.equal(prompt.stdout, `${(await sent('Rotate encryption keys.')).handoffPrompt}\n`);
     const valid = await run([...args, '--task', 'Index archive records.', '--json']);
     assert.equal(valid.code, 0, valid.stderr);
     const selected = JSON.parse(valid.stdout);
     assert.equal(selected.focus.capability?.slug, 'capabilities/catalog');
     assert.ok(selected.focus.qualifiers.units.some((unit) => unit.text.includes('only after approval')));
-    assert.ok(selected.handoffPrompt.includes('only after approval'));
+    assert.ok((await sent('Index archive records.')).handoffPrompt.includes('only after approval'));
   } finally {
     rmSync(vault, { recursive: true, force: true });
   }
@@ -7082,9 +7071,12 @@ DER parsing and unrelated encodings.
       ]);
       for (const output of [jsonResult, humanResult, promptResult]) assert.equal(output.code, 0, output.stderr);
       const payload = JSON.parse(jsonResult.stdout);
-      assert.equal(promptResult.stdout.trimEnd(), payload.handoffPrompt);
+      const sentText = (await callMcpTool(vault, 'query_ontology', { operation: 'agent_brief', project: 'project', detail: 'compact', task })).handoffPrompt;
+      assert.equal(promptResult.stdout, `${sentText}\n`);
+      assert.equal(Object.hasOwn(payload, 'handoffPrompt'), false);
+      assert.doesNotMatch(stripAnsi(humanResult.stdout), /PURPOSE/);
       const coverageLines = (text) => text.split('\n').filter((line) => /^(?:Uncertainty:|Unknown:) /.test(line));
-      assert.deepEqual(coverageLines(stripAnsi(humanResult.stdout)), coverageLines(payload.handoffPrompt));
+      assert.deepEqual(coverageLines(stripAnsi(humanResult.stdout)), coverageLines(sentText));
       for (const source of payload.focus.uncertainty.sources) assert.ok(payload.nextReads[0].arguments.slugs.includes(source.slug));
       assert.ok(stripAnsi(humanResult.stdout).includes(JSON.stringify(payload.nextReads[0].arguments)));
       return payload;

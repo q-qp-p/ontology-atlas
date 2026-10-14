@@ -8,6 +8,7 @@ import { callMcpTool } from '../../lib/mcp-bridge/mcp-call.mjs';
 import {
   assertAgentBriefResponseShape,
   agentBriefExitCode,
+  isCompactContract,
 } from '../../lib/query-result-contract/agent-brief/agent-brief.mjs';
 import { resolveVaultRoot } from '../../lib/resolve-vault.mjs';
 import { formatUnknownFlagError, parsePositiveIntegerFlag, parseRequiredFlagValue, parseVaultFlag, resolveExclusiveVaultArg } from '../../lib/cli-args.mjs';
@@ -97,7 +98,7 @@ export async function runAgentBrief(args) {
     process.stdout.write(formatGraphDbCliPack(result, vaultRoot).trimEnd() + '\n');
     return readinessExitCode(result, exitZero);
   }
-  if (result.contract === 'agentBriefCompact:v2') renderCompact(result);
+  if (isCompactContract(result)) renderCompact(result);
   else render(result);
   const exitCode = readinessExitCode(result, exitZero);
   /*
@@ -633,7 +634,6 @@ function renderCompact(result) {
       `${COLORS.dim}REPAIR OMITTED${COLORS.reset} ${omissionSummary(repair.omitted)}; read FULL DETAIL before step 2\n`,
     );
   }
-  process.stdout.write(`${COLORS.dim}PURPOSE${COLORS.reset} ${result.purpose.statement || 'not recorded'}\n`);
   process.stdout.write(`${COLORS.dim}TASK MATCH${COLORS.reset} ${result.focus.capability?.slug ?? 'not recorded'}\n`);
   for (const anchor of result.focus.evidenceAnchors) {
     process.stdout.write(`  ${COLORS.dim}- ${anchor.slug}${anchor.path ? ` · ${anchor.path}` : ''} · ${anchor.sourceStatus}${COLORS.reset}\n`);
@@ -647,7 +647,7 @@ function renderCompact(result) {
     ? verification.recordedPaths.join(' · ')
     : 'tests unknown';
   process.stdout.write(
-    `${COLORS.dim}VERIFY${COLORS.reset} ${verification.status} · ${runner} · ${verificationPaths} · ${verification.nextAction}\n`,
+    `${COLORS.dim}VERIFY${COLORS.reset} ${verification.status} · ${runner} · ${verificationPaths}\n`,
   );
   if (result.focus.uncertainty) {
     process.stdout.write('Uncertainty scope: selected task documents; not_recorded means unknown.\n');
@@ -1041,8 +1041,8 @@ function printUsage(stream = process.stderr) {
       `Claude Code/Codex handoff: readiness score, copyable handoffPrompt, graph entrypoints,\n` +
       `first MCP calls, investigation playbooks, traversal strategy, health coverage, and read-first write policy.\n` +
       `Use --json for repeatable agent handoff snapshots; use --prompt to print only .handoffPrompt.\n` +
-      `Use --compact --task TEXT for the request-local, selected-project handoff capped at 12000 UTF-8 JSON bytes.\n` +
-      `Compact v2 verifies reviewed path#symbol/test coordinates only against current bound source; stale, missing, ambiguous, or unsafe evidence returns no exact target.\n` +
+      `Use --compact --task TEXT for the request-local, selected-project handoff: --json prints its structure and --prompt its text, together at most 12000 UTF-8 bytes.\n` +
+      `Compact v3 verifies reviewed path#symbol/test coordinates only against current bound source; stale, missing, ambiguous, or unsafe evidence returns no exact target.\n` +
       `Compact task text is not persisted and selects recorded evidence only; it never proves source behavior.\n` +
       `The current complete response remains the default while compact mode is qualified.\n` +
       `Use --graph-db-pack to print only executable CLI graph scan commands for connector-less sessions.\n` +
