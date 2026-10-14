@@ -15,7 +15,7 @@ import {
   togglePinnedDoc,
 } from '@/widgets/docs-vault';
 import type { VaultRecentKey } from '@/widgets/docs-vault';
-import { scheduleStateSync } from './persistence';
+import { scheduleStateSync } from '../persistence';
 
 interface LocalVaultLike {
   handle: FileSystemDirectoryHandle | null;

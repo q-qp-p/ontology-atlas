@@ -12,7 +12,7 @@ import {
   storeDocTabs,
   type DocTab,
 } from "./doc-tabs";
-import { scheduleStateSync } from "./persistence";
+import { scheduleStateSync } from "../persistence";
 
 /**
  * Wires `doc-tabs.ts` to `DocsVaultPage`. It never decides the active tab: the URL `?slug=`

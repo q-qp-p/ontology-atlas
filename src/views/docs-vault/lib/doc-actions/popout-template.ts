@@ -1,6 +1,6 @@
 import { DOC_COLUMN_GUTTER_PX, PROSE_MEASURE_REM } from "@/shared/ui/tokens/reading-measure";
 
-import { escapeHtml } from "./persistence";
+import { escapeHtml } from "../persistence";
 
 /**
  * A self-contained dark HTML page for popout or print. Standalone, so `var(--color-*)` tokens

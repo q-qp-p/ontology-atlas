@@ -142,7 +142,7 @@ test("scans the ontology-map canvas engine directory — no directory-wide exemp
 
 test("documented ALLOWLIST entries stay clean of raw literals so future edits don't silently re-introduce drift", () => {
   assert.ok(!ALLOWLIST.has("shared/config/indigo-tokens.ts"), "면제할 리터럴이 없으므로 목록에 없어야 한다");
-  assert.ok(ALLOWLIST.has("views/docs-vault/lib/popout-template.ts"));
+  assert.ok(ALLOWLIST.has("views/docs-vault/lib/doc-actions/popout-template.ts"));
   assert.ok(ALLOWLIST.has("widgets/ontology-map/render/starfield.ts"));
   assert.ok(ALLOWLIST.has("widgets/ontology-map/render/grid.ts"));
 });

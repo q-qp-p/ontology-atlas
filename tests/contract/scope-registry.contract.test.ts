@@ -291,8 +291,8 @@ const STORAGE_KEY_REGISTRY: StorageEntry[] = [
     kind: "storage",
     scope: "vault-scoped",
     scopedBy: "vaultScopeKey",
-    file: "src/views/docs-vault/lib/doc-tabs.ts",
-    provenBy: "src/views/docs-vault/lib/doc-tabs.test.ts",
+    file: "src/views/docs-vault/lib/doc-tabs/doc-tabs.ts",
+    provenBy: "src/views/docs-vault/lib/doc-tabs/doc-tabs.test.ts",
     note: "열린 탭 — 호출부가 `sourceKey` 이름으로 recentKey(=vaultScopeKey)를 넘긴다",
   },
   {
@@ -300,8 +300,8 @@ const STORAGE_KEY_REGISTRY: StorageEntry[] = [
     kind: "storage",
     scope: "vault-scoped",
     scopedBy: "vaultScopeKey",
-    file: "src/views/docs-vault/lib/doc-tabs.ts",
-    provenBy: "src/views/docs-vault/lib/doc-tabs.test.ts",
+    file: "src/views/docs-vault/lib/doc-tabs/doc-tabs.ts",
+    provenBy: "src/views/docs-vault/lib/doc-tabs/doc-tabs.test.ts",
     note: "활성 탭 — 위와 같음",
   },
 
