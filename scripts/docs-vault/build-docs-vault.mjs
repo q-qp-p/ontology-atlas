@@ -753,7 +753,7 @@ async function assertOutputsCurrent({
 const meaningRules = await (async () => {
   try {
     const [findings, schema] = await Promise.all([
-      import('../../mcp/src/meaning-findings.mjs'),
+      import('../../mcp/src/meaning/meaning-findings.mjs'),
       import('../../mcp/src/schema.mjs'),
     ]);
     return { findings, folderForKind: schema.folderForKind };
@@ -778,7 +778,7 @@ if (!meaningRules) {
  *
  * This mirrors `meaningFindings` in `src/shared/lib/vault-document/meaning-findings.ts`, which the
  * browser and desktop manifest builder call. The canonical judgements live in
- * `mcp/src/meaning-findings.mjs`; the fifth, `slug-outside-kind-folder`, sits in the write
+ * `mcp/src/meaning/meaning-findings.mjs`; the fifth, `slug-outside-kind-folder`, sits in the write
  * gate instead of that module, so it is read from the schema it is built on — the same two
  * lines `tests/contract/analysis/meaning-findings-parity.contract.test.ts` runs to prove the port
  * and the canonical rule agree.

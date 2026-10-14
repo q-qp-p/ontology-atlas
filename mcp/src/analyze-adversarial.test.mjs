@@ -5,7 +5,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { analyzeRepoStructure } from './analyze.mjs';
-import { readSourceEvidence } from './source-evidence.mjs';
+import { readSourceEvidence } from './evidence-search/source-evidence.mjs';
 
 function withAdversarialRepo(readme, extraSetup = () => {}) {
   const root = mkdtempSync(join(tmpdir(), 'ontology-atlas-adversarial-'));

@@ -6,10 +6,10 @@ title: Bounded source read
 display_en: Bounded source read
 display_ko: 제한된 소스 읽기
 domain: domains/code-evidence
-path: mcp/src/source-evidence.mjs
+path: mcp/src/evidence-search/source-evidence.mjs
 created_by: "agent:claude-code"
 dependencies: [elements/source-declaration-outline]
-relation_notes: { elements/source-declaration-outline: "You asked me to witness the import: mcp/src/source-evidence.mjs imports `outlineSource` from source-outline.mjs, which is what mode outline returns." }
+relation_notes: { elements/source-declaration-outline: "You asked me to witness the import: mcp/src/evidence-search/source-evidence.mjs imports `outlineSource` from source-outline.mjs, which is what mode outline returns." }
 ---
 
 Returns exact repository source lines or declaration outlines under fixed request, line, file and packet budgets so a builder can inspect actual implementation evidence.
@@ -26,5 +26,5 @@ Returns exact repository source lines or declaration outlines under fixed reques
 - Write plans, human approval or semantic qualification.
 
 ## Uncertainty
-- The limits, stable-read and selector implementation is in `mcp/src/source-evidence.mjs`; source-only dispatch is in `mcp/src/tools/repo-analysis.mjs`. Sixteen existing source-evidence unit cases and MCP source-only parity/refusal cases ran on 2026-10-03.
+- The limits, stable-read and selector implementation is in `mcp/src/evidence-search/source-evidence.mjs`; source-only dispatch is in `mcp/src/tools/repo-analysis.mjs`. Sixteen existing source-evidence unit cases and MCP source-only parity/refusal cases ran on 2026-10-03.
 - Exact evidence equality and smaller delivery were measured on one calibration range. General host token savings, runtime correctness and ontology quality do not follow from those measurements.

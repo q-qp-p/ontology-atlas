@@ -25,4 +25,4 @@ The interfaces through which AI coding agents read the same reviewed meaning and
 - Any guarantee that a host agent actually calls Atlas or follows the guidance it returns; a configured connection is an interface, not a promise.
 
 ## Uncertainty
-- Read from `mcp/src/server/`, `mcp/src/tools/`, `cli/src/lib/cli-commands.mjs`, `mcp/src/agent-brief-compact.mjs` and `src/features/mcp-connectors/`, plus the surface table in `docs/FEATURES.md`. The advertised tool count is deliberately not recorded here because that document says the live `tools/list` owns it; no agent host was actually connected during this scan.
+- Read from `mcp/src/server/`, `mcp/src/tools/`, `cli/src/lib/cli-commands.mjs`, `mcp/src/agent-brief/agent-brief-compact.mjs` and `src/features/mcp-connectors/`, plus the surface table in `docs/FEATURES.md`. The advertised tool count is deliberately not recorded here because that document says the live `tools/list` owns it; no agent host was actually connected during this scan.

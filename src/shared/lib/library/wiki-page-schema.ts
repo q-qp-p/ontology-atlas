@@ -4,7 +4,7 @@ import { parseFrontmatter, WIKI_DIR } from '../vault-document/parse-frontmatter'
  * The Wiki page contract, for the surfaces that render it.
  *
  * The public statement is `docs/ONTOLOGY-ATLAS-SPEC.md` §11, and the canonical machine
- * copy is `mcp/src/wiki-schema.mjs`, which the MCP server and the CLI both execute. This
+ * copy is `mcp/src/library/wiki-schema.mjs`, which the MCP server and the CLI both execute. This
  * is its TypeScript twin: the MCP package ships separately from the web bundle, so one
  * physical module cannot serve both, and
  * `tests/contract/library/wiki-page-schema.contract.test.ts` runs one fixture table through the

@@ -115,7 +115,7 @@ describe('관문 — 말하는 것과 거는 것이 같아야 한다', () => {
     expect(registry.agents.find((agent) => agent.id === 'codex-acp')?.launch?.package).toBe(
       '@agentclientprotocol/codex-acp@2.2.2',
     );
-    expect(readFileSync(join(ROOT, 'mcp/src/write-consent.mjs'), 'utf8')).toContain(
+    expect(readFileSync(join(ROOT, 'mcp/src/server/write-consent.mjs'), 'utf8')).toContain(
       'codex_approval_kind',
     );
   });

@@ -7,7 +7,7 @@
 import {
   detectVaultPathDrift,
   suggestPathReconciliations,
-} from '../detect-drift.mjs';
+} from '../drift/detect-drift.mjs';
 import { listSourceFiles } from '../infer-imports/source-files.mjs';
 import {
   REPO_ROOT,
@@ -30,16 +30,16 @@ import {
   dependencyWitnessFinding,
   folderOnlyEvidenceFinding,
   starterExampleFindings,
-} from '../meaning-findings.mjs';
+} from '../meaning/meaning-findings.mjs';
 import { loadVaultDocs } from '../vault/documents.mjs';
-import { collectPathLastChanges } from '../git-tools.mjs';
-import { evidenceConceptsFromDocs, resolveEvidenceStates } from '../evidence-drift.mjs';
+import { collectPathLastChanges } from '../git/git-tools.mjs';
+import { evidenceConceptsFromDocs, resolveEvidenceStates } from '../drift/evidence-drift.mjs';
 import {
   WIKI_DIR,
   isWikiFurnitureSlug,
   validateWikiFolder,
   validateWikiPage,
-} from '../wiki-schema.mjs';
+} from '../library/wiki-schema.mjs';
 import {
   buildSummaryFreshness,
   groupDanglingIssuesBySlug,

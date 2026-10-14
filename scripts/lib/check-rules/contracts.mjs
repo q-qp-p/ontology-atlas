@@ -7,7 +7,7 @@ export const rules = [
     reason: 'architecture profile, conformance, agent packet, and cross-surface parity changed',
     matches: [
       /^docs\/ontology\/architecture\//,
-      /^mcp\/src\/architecture-profile\.(?:mjs|test\.mjs)$/,
+      /^mcp\/src\/architecture\/architecture-profile\.(?:mjs|test\.mjs)$/,
       /^cli\/src\/(?:commands\/repo-analysis\/architecture|lib\/analysis-results\/architecture-results)\.mjs$/,
       /^src\/entities\/architecture-profile\//,
       /^src\/views\/architecture\//,

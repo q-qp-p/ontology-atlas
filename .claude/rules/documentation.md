@@ -21,7 +21,7 @@ localized READMEs (`README.{ko,ja,zh}.md`), and in the labels of `README.md`'s
 language switcher links. The localized READMEs follow `README.md` section for
 section. The rule covers strings a program prints:
 `cli-output-language.contract.test.ts` holds `cli/src/**` at zero, and the
-matcher data in `mcp/src/absorb.mjs` is the `display_ko` exception.
+matcher data in `mcp/src/vault/absorb.mjs` is the `display_ko` exception.
 `pnpm docs:language` ratchets the remaining scopes.
 
 ## What CI may check about prose

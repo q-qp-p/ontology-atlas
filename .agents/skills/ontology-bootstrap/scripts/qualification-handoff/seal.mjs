@@ -2,7 +2,7 @@ import {
   constructionPlanDigest,
   evaluateConstructionLifecycle,
   proposalCoverageRefs,
-} from '../../../../../mcp/src/construction-lifecycle.mjs';
+} from '../../../../../mcp/src/construction/construction-lifecycle.mjs';
 import { CONTRACTS, EXIT, QUANTIFIER_RE } from './contracts.mjs';
 import {
   artifactDigest,

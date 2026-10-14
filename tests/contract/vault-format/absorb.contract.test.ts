@@ -6,10 +6,10 @@ import {
   PLAN_CASES,
 } from "../../fixtures/absorb-cases.mjs";
 import * as absorbCli from "../../../cli/src/lib/mcp-bridge/absorb.mjs";
-import * as absorbMcp from "../../../mcp/src/absorb.mjs";
+import * as absorbMcp from "../../../mcp/src/vault/absorb.mjs";
 
 /**
- * The CLI re-exports `mcp/src/absorb.mjs`, so only `buildAbsorptionPlan` runs through both bindings;
+ * The CLI re-exports `mcp/src/vault/absorb.mjs`, so only `buildAbsorptionPlan` runs through both bindings;
  * later stages run on the canonical module alone (a `cli === mcp` check would compare a function
  * with itself).
  */

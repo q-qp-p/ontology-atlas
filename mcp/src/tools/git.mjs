@@ -2,7 +2,7 @@ import {
   inspectVaultGit,
   inspectVaultGitHistory,
   snapshotVaultGit,
-} from '../git-tools.mjs';
+} from '../git/git-tools.mjs';
 import {
   REPO_ROOT,
   VAULT_ROOT,

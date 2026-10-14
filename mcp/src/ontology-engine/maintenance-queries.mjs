@@ -1,7 +1,7 @@
 import { normalizeLimit, normalizeOptionalBoolean, summarizeNode } from './query-primitives.mjs';
 import { folderForKind } from '../schema.mjs';
-import { bodyMeaningFindings, starterExampleFindings } from '../meaning-findings.mjs';
-import { slugOutsideKindFolderMessage } from '../construction-rules.mjs';
+import { bodyMeaningFindings, starterExampleFindings } from '../meaning/meaning-findings.mjs';
+import { slugOutsideKindFolderMessage } from '../construction/construction-rules.mjs';
 
 const MEANING_GAP_KIND_BY_CODE = Object.freeze({
   'definition-missing': 'definition_missing',

@@ -19,14 +19,14 @@ import {
   parseArchitectureProfile as parseMcpProfile,
   findArchitectureProfiles as findMcpProfiles,
   matchesPathPattern as matchesMcpPath,
-} from '../../../mcp/src/architecture-profile.mjs';
+} from '../../../mcp/src/architecture/architecture-profile.mjs';
 
 describe('architecture-profile/v1 cross-surface contract', () => {
   it('rejects a deep nonmatch with repeated directory wildcards in both runtimes', () => {
     const path = `src/${'segment/'.repeat(28)}actual.ts`;
     const pattern = `src/${'**/'.repeat(16)}absent.ts`;
     const surfaces = [
-      [new URL('../../../mcp/src/architecture-profile.mjs', import.meta.url), 'matchesPathPattern'],
+      [new URL('../../../mcp/src/architecture/architecture-profile.mjs', import.meta.url), 'matchesPathPattern'],
       [new URL('../../../src/entities/architecture-profile/model/architecture-occupants.ts', import.meta.url), 'matchesArchitecturePath'],
     ] as const;
     for (const [moduleUrl, name] of surfaces) {
@@ -45,7 +45,7 @@ describe('architecture-profile/v1 cross-surface contract', () => {
     ['same-component', `${'a'.repeat(64)}x`, `${'*a'.repeat(12)}b`],
   ])('rejects %s wildcard ambiguity without stalling either runtime', (_kind, path, pattern) => {
     const surfaces = [
-      [new URL('../../../mcp/src/architecture-profile.mjs', import.meta.url), 'matchesPathPattern'],
+      [new URL('../../../mcp/src/architecture/architecture-profile.mjs', import.meta.url), 'matchesPathPattern'],
       [new URL('../../../src/entities/architecture-profile/model/architecture-occupants.ts', import.meta.url), 'matchesArchitecturePath'],
     ] as const;
     for (const [moduleUrl, name] of surfaces) {

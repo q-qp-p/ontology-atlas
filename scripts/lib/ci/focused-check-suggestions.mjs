@@ -306,8 +306,8 @@ function resolveMcpUnitTestFile(path, pathSet) {
   const mapped = bySource.get(path);
   if (mapped) return mapped;
   if (testFiles.has(path)) return path;
-  if (/^mcp\/src\/(?!integration\.test\.mjs$)[^/]+\.test\.mjs$/.test(path)) return path;
-  if (!/^mcp\/src\/[^/]+\.(?:mjs|js)$/.test(path)) return null;
+  if (/^mcp\/src\/(?!integration\.test\.mjs$).+\.test\.mjs$/.test(path)) return path;
+  if (!/^mcp\/src\/.+\.(?:mjs|js)$/.test(path)) return null;
   const testFile = path.replace(/\.(?:mjs|js)$/, '.test.mjs');
   return pathSet.has(testFile) || existsSync(testFile) ? testFile : null;
 }

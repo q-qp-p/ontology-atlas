@@ -20,8 +20,8 @@ import { aggregateWikiFindings as aggregateBridged } from '@/shared/lib/library/
 import {
   validateWikiFolder as validateFolderMcp,
   validateWikiPage as validatePageMcp,
-} from '../../../mcp/src/wiki-schema.mjs';
-import { aggregateWikiFindings as aggregateMcp } from '../../../mcp/src/wiki-report.mjs';
+} from '../../../mcp/src/library/wiki-schema.mjs';
+import { aggregateWikiFindings as aggregateMcp } from '../../../mcp/src/library/wiki-report.mjs';
 
 /**
  * One folder, three surfaces, one enumeration: the `wiki-validate --json` command, the

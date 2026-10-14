@@ -95,7 +95,7 @@ import {
 import {
   CONSENT_DECLINED,
   requestWriteConsent,
-} from './write-consent.mjs';
+} from './server/write-consent.mjs';
 import { StdioServerTransport } from '@modelcontextprotocol/server/stdio';
 
 // v2 takes a method string, not a schema object (a schema throws at startup).

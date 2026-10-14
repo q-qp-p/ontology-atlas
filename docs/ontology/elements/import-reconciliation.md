@@ -6,7 +6,7 @@ title: Import reconciliation
 display_en: Import reconciliation
 display_ko: 임포트 대사
 domain: domains/code-evidence
-path: mcp/src/reconcile-imports.mjs
+path: mcp/src/drift/reconcile-imports.mjs
 created_by: "agent:claude-code"
 ---
 

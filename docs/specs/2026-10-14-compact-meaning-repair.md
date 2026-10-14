@@ -19,7 +19,7 @@ differ by a few tens of bytes.
 Someone who already uses a coding agent asks it to change Atlas. The agent follows the tool
 description (`mcp/src/server/tool-definitions/graph.mjs:329`): `connection_info`, then compact
 `agent_brief` with the task "Change the task-scoped compact agent brief projection.". It gets
-an error telling it to use `detail:"full"` (`mcp/src/agent-brief-compact.mjs:1021-1023`), a
+an error telling it to use `detail:"full"` (`mcp/src/agent-brief/agent-brief-compact.mjs:1021-1023`), a
 response of 111,830 text characters instead of at most 12,000 bytes (probe).
 
 Evidence: `mcp/src/integration.test.mjs:10735-10786` makes this exact call; the brief reports
@@ -35,7 +35,7 @@ it failing PR #2765's train; `ontology-atlas agent-brief --compact` exits 2 with
 - **Compact passes `meaningRepair:v2` through unchanged** (`:924`). Inside it, workflow
   takes 1,096 bytes (step 1 alone is 483), `stopWhen` 246, questions 447 and provenance 211.
 - **Only step 1 carries guards.** Steps 2-6 are project-slug templates
-  (`mcp/src/meaning-repair.mjs:120-168`). `stopWhen` is the same nine-entry constant in
+  (`mcp/src/meaning/meaning-repair.mjs:120-168`). `stopWhen` is the same nine-entry constant in
   every state (`:11-21`, `:71`, `:484`).
 - **Only full `agent_brief` returns the workflow and `stopWhen`**; `meaning_repair_review`
   pages carry neither (`:398-461`).
@@ -128,7 +128,7 @@ new validator: the shared v2 rules, `omitted` with exactly three keys and
    count, not 1. The next action is `remeasure_source`.
 8. When the retained fields alone exceed 12,000 bytes, Atlas throws the existing error.
 
-**Changes together:** `mcp/src/agent-brief-compact.mjs` (projection, navigation-path packet,
+**Changes together:** `mcp/src/agent-brief/agent-brief-compact.mjs` (projection, navigation-path packet,
 prompt line); `project-source-meaning.mjs` (new validator sharing the step-1 check),
 `agent-brief-compact.mjs:102` and `agent-brief-fixtures.mjs` (`humanMeaningRepairCompact`);
 `cli/src/commands/diagnosis/agent-brief.mjs:629-630` (`REPAIR READ` reads
@@ -140,7 +140,7 @@ and one `changes` record.
 
 **Unchanged:** `docs/.generated/mcp-surface.json` (names and arguments only;
 `pnpm docs:surface:check`), `mcp/scripts/verify/checks/meaning-repair.mjs` (full output only,
-`agent-brief.mjs:104`), `mcp/src/meaning-repair.mjs`, and the vault (`/ontology-sync` should
+`agent-brief.mjs:104`), `mcp/src/meaning/meaning-repair.mjs`, and the vault (`/ontology-sync` should
 find nothing to write).
 
 ## States
@@ -207,7 +207,7 @@ No `messages/` entries: this is protocol and terminal text, and MCP output is En
 2. **Full unchanged** (`meaning-repair.test.mjs`; branch-vs-main probe in the PR). For one
    vault and receipt, full `meaningRepair` is v2 with six steps and nine `stopWhen`,
    byte-identical to main (2,428 bytes; probe-checked). `meaning-repair.mjs` has no diff.
-3. **States** (`mcp/src/agent-brief-compact.test.mjs`, extending `:260-285`). Given
+3. **States** (`mcp/src/agent-brief/agent-brief-compact.test.mjs`, extending `:260-285`). Given
    `blocked`, `source_changed_during_navigation` or `not_needed`, then `firstStep` is `null`,
    `omitted.steps` is `[]`, `stopConditions` is the full count, and there is no repair line.
    Given `human_review_required`, the exact line precedes `Next read:` in both branches.

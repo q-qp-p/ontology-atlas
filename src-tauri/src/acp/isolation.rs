@@ -47,7 +47,7 @@ const ISOLATED_CLAUDE_SETTINGS: &str = r#"{
 
 /// Not inherited from `~/.codex/config.toml`. The `ontology-atlas` block gates the vault's own
 /// project registration, which a session loads even from an isolated home (decision (111)).
-/// Its `command`/`args` are placeholders: codex merges this env into the vault's own entry, and `mcp/src/write-consent.mjs` reads the switch.
+/// Its `command`/`args` are placeholders: codex merges this env into the vault's own entry, and `mcp/src/server/write-consent.mjs` reads the switch.
 const ISOLATED_CODEX_CONFIG: &str = r#"approval_policy = "on-request"
 sandbox_mode = "read-only"
 

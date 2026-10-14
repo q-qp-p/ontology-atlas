@@ -27,5 +27,5 @@ test('the server loads no TypeScript module at startup', () => {
   assert.ok(modules.includes('tools/graph.mjs'), 'the walk must reach the tool modules');
   assert.ok(modules.length > 100, `the walk found only ${modules.length} modules`);
   assert.deepEqual(modules.filter((file) => file.endsWith('.mts') || file.endsWith('.ts')), []);
-  assert.equal(modules.includes('analysis-records.mjs'), false);
+  assert.equal(modules.includes('analysis-history/analysis-records.mjs'), false);
 });

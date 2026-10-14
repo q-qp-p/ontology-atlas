@@ -4,21 +4,21 @@
  * `finalize_project_meaning` receipt.
  */
 
-import { COMPETENCY_SECTION_HINT_EN } from '../construction-card.mjs';
+import { COMPETENCY_SECTION_HINT_EN } from '../construction/construction-card.mjs';
 import {
   MEANING_COMPETENCY_CONTRACT,
   MEANING_COMPETENCY_EVALUATOR,
   deriveMeaningAssessment,
-} from '../meaning-assessment.mjs';
+} from '../meaning/meaning-assessment.mjs';
 import { queryCompiledOntology } from '../ontology-engine.mjs';
 import {
   finalizeProjectMeaningReceipt,
   parseProjectCompetencyMarkdown,
   readProjectMeaningAssessment,
-} from '../project-meaning-receipt.mjs';
-import { collectProjectSourceCandidates } from '../project-source-discovery.mjs';
-import { inferProjectSourceProposal } from '../project-source-inference.mjs';
-import { inspectProjectSource } from '../project-source-inspection.mjs';
+} from '../project-meaning/project-meaning-receipt.mjs';
+import { collectProjectSourceCandidates } from '../project-source/project-source-discovery.mjs';
+import { inferProjectSourceProposal } from '../project-source/project-source-inference.mjs';
+import { inspectProjectSource } from '../project-source/project-source-inspection.mjs';
 import {
   PROJECT_SOURCE_STATE_RELATIVE_PATH,
   buildProjectSourceReceipt,
@@ -26,12 +26,12 @@ import {
   readProjectSourceView,
   removeProjectSourceBindings,
   writeProjectSourceBinding,
-} from '../project-source-receipt.mjs';
+} from '../project-source/project-source-receipt.mjs';
 import {
   projectSourceRemedy,
   undoPlan,
-} from '../project-source-remedy.mjs';
-import { deriveProjectSourceWitnessesFromDocs } from '../project-source-witnesses.mjs';
+} from '../project-source/project-source-remedy.mjs';
+import { deriveProjectSourceWitnessesFromDocs } from '../project-source/project-source-witnesses.mjs';
 import {
   COMPILED_ONTOLOGY_CACHE,
   VAULT_ROOT,

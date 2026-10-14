@@ -9,11 +9,11 @@ import {
   buildArchitectureBrief,
   buildArchitectureMeasuredStamp,
   parseArchitectureProfile,
-} from '../../../mcp/src/architecture-profile.mjs';
+} from '../../../mcp/src/architecture/architecture-profile.mjs';
 import {
   assertArchitectureRecord,
   buildArchitectureRecord,
-} from '../../../mcp/src/architecture-record.mjs';
+} from '../../../mcp/src/architecture/architecture-record.mjs';
 import { parseArchitectureRecord } from '@/entities/architecture-record';
 
 /*

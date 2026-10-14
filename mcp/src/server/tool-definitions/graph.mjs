@@ -1,4 +1,4 @@
-import { AGENT_BRIEF_TASK_MAX_CHARS } from '../../agent-brief-compact.mjs';
+import { AGENT_BRIEF_TASK_MAX_CHARS } from '../../agent-brief/agent-brief-compact.mjs';
 import {
   EDGE_TARGET_KIND_VALUES,
   MAINTENANCE_KIND_VALUES,

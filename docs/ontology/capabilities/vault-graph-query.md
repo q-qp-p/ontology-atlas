@@ -26,8 +26,8 @@ Compiles the folder of Markdown files into one typed graph and answers structura
 
 ## Evidence
 - `mcp/src/tools/graph.mjs` attaches `projectMeaningContext` to health, workspace and agent briefs.
-- `mcp/src/project-meaning-receipt.mjs` reads the exact document-bound finalization record.
-- `mcp/src/project-meaning-restart.test.mjs` exercises the full and compact MCP readback through fresh processes.
+- `mcp/src/project-meaning/project-meaning-receipt.mjs` reads the exact document-bound finalization record.
+- `mcp/src/project-meaning/project-meaning-restart.test.mjs` exercises the full and compact MCP readback through fresh processes.
 
 ## Excludes
 - Judging whether an answer is true of the product; a graph answer is a structural fact, not accepted meaning.

@@ -8,13 +8,13 @@ import {
   AGENT_BRIEF_TASK_MAX_CHARS,
   buildCompactAgentBrief,
   projectSourceSnapshotUnchanged,
-} from '../agent-brief-compact.mjs';
+} from '../agent-brief/agent-brief-compact.mjs';
 import {
   attachMeaningRepair,
   buildMeaningRepair,
   buildMeaningRepairReviewPage,
-} from '../meaning-repair.mjs';
-import { loadOntologyAtlasIgnore } from '../ontology-atlas-ignore.mjs';
+} from '../meaning/meaning-repair.mjs';
+import { loadOntologyAtlasIgnore } from '../vault/ontology-atlas-ignore.mjs';
 import { compileOntology } from '../ontology-compiler.mjs';
 import {
   EDGE_TARGET_KIND_VALUES,
@@ -29,18 +29,18 @@ import {
   refreshAgentBriefHandoffPrompt,
   shareArtifact,
 } from '../ontology-engine.mjs';
-import { buildProjectMeaningInventory } from '../project-meaning-inventory.mjs';
+import { buildProjectMeaningInventory } from '../project-meaning/project-meaning-inventory.mjs';
 import {
   parseProjectCompetencyMarkdown,
   readProjectMeaningAssessment,
-} from '../project-meaning-receipt.mjs';
-import { buildProjectSourceGraphHash } from '../project-source-graph-hash.mjs';
+} from '../project-meaning/project-meaning-receipt.mjs';
+import { buildProjectSourceGraphHash } from '../project-source/project-source-graph-hash.mjs';
 import {
   readProjectSourceBindings,
   readProjectSourceView,
-} from '../project-source-receipt.mjs';
-import { projectSourceRemedy } from '../project-source-remedy.mjs';
-import { deriveProjectSourceWitnessesFromDocs } from '../project-source-witnesses.mjs';
+} from '../project-source/project-source-receipt.mjs';
+import { projectSourceRemedy } from '../project-source/project-source-remedy.mjs';
+import { deriveProjectSourceWitnessesFromDocs } from '../project-source/project-source-witnesses.mjs';
 import {
   COMPILED_ONTOLOGY_CACHE,
   VAULT_ROOT,
@@ -278,7 +278,7 @@ function privateCurrentProjectSourceAccess(projectSlug, projectSource, graphHash
 }
 
 function analysisRecords() {
-  return import('../analysis-records.mjs');
+  return import('../analysis-history/analysis-records.mjs');
 }
 
 async function queryOntologyTool(args = {}) {

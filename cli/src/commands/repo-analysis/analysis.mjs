@@ -105,7 +105,7 @@ export async function runAnalysis(args) {
   if (archiveIntent) {
     try {
       const read = archiveArguments(args);
-      const { listAnalysisRecords, readAnalysisRecord } = await loadMcpModule('analysis-records.mjs');
+      const { listAnalysisRecords, readAnalysisRecord } = await loadMcpModule('analysis-history/analysis-records.mjs');
       const value = read.recordId !== undefined ? await readAnalysisRecord(read.vaultRoot, read.recordId) : await listAnalysisRecords(read.vaultRoot, read.historyOptions);
       if (read.json) process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
       else if (read.recordId !== undefined) {

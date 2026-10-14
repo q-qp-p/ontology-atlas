@@ -4,7 +4,7 @@ import {
   statSync,
   lstatSync,
   existsSync,
-} from '../confined-source-fs.mjs';
+} from './confined-source-fs.mjs';
 import { join, dirname, resolve, relative, extname, sep } from 'node:path';
 import { pathResolvesInsideRoot } from './path-confinement.mjs';
 import { zeroCounts } from './zero-counts.mjs';
