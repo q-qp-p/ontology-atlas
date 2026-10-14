@@ -4,11 +4,11 @@
  * (`docs/design/ontology-map.md` §4 P2/P3). Recomputed only when the graph
  * itself changes (mount, `relayoutToken`, or a new `nodes`/`edges` reference)
  * — never per animation frame, matching the prototype's "layout precomputed
- * once" invariant (`model/layout.ts`'s own contract).
+ * once" invariant (`model/layout/layout.ts`'s own contract).
  */
 import { DEFAULT_EXPAND } from "@/shared/lib/preferences/appearance-preferences";
 import type { ExpandStructure } from "@/shared/lib/preferences/appearance-preferences";
-import { computeDensityGate, type DensityGateParentGeometry } from "../../model/density-gate";
+import { computeDensityGate, type DensityGateParentGeometry } from "../../model/layout/density-gate";
 import {
   readContainmentTree,
   rollDirectedDomainFlows,
@@ -23,7 +23,7 @@ import { dialOverviewPad } from "../../dial/fit";
 import { layoutDial } from "../../dial/layout";
 import { circularDomainOrder, rememberDialOrder, rememberedDialOrder } from "../../dial/order";
 import type { DialModel, DialTokens, DialWorld, DialWorldInput } from "../../dial/types";
-import { computeConcentricLayout, type LayoutGraphNode, type LayoutRings } from "../../model/layout";
+import { computeConcentricLayout, type LayoutGraphNode, type LayoutRings } from "../../model/layout/layout";
 import { computeBowControlPoint, computeDependsBowControlPoint } from "../../render/traces";
 import { fireflySeed } from "../../render/edge-fireflies";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
@@ -178,7 +178,7 @@ export interface TopologyWorld {
   bounds: Bounds;
   /**
    * Bbox of just the level-0 SPINE (project + domain + hub). The overview only
-   * DRAWS the spine (tier gating in `model/tier-visibility.ts`), so fitting the
+   * DRAWS the spine (tier gating in `model/visibility/tier-visibility.ts`), so fitting the
    * full `bounds` — which the de-pileup deliberately spreads wide across all 295
    * nodes — zooms the ~8 visible spine nodes down to a dot (the fit regression).
    * Recomputed with `bounds` whenever geometry changes.
@@ -230,7 +230,7 @@ const FALLBACK_BOUNDS: Bounds = { minX: -100, minY: -100, maxX: 100, maxY: 100 }
 /**
  * A "spine" node is one shown at the overview entry (tier alpha = 1 at zoom
  * ratio 1): the project root, every domain, and any hub node. MUST mirror
- * `nodeTierAlpha`'s always-visible branch in `model/tier-visibility.ts` — if
+ * `nodeTierAlpha`'s always-visible branch in `model/visibility/tier-visibility.ts` — if
  * that gate changes, this must too, or the fit and the visible set drift apart.
  * The density gate is the other one a hub passes through: it can still fold one
  * behind a crowded parent's chip, which `computeDrawnSpineBounds` accounts for.

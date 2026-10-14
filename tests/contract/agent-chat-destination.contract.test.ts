@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 const agentsPage = readFileSync('src/views/agents/ui/AgentsPage.tsx', 'utf8');
-const home = readFileSync('src/views/home/model/use-topology-agent-orchestration.tsx', 'utf8');
+const home = readFileSync('src/views/home/model/agent/use-topology-agent-orchestration.tsx', 'utf8');
 
 describe('agents destination to map chat handoff', () => {
   it('queues the chosen runtime before navigating to the map', () => {

@@ -5,7 +5,7 @@ import { useLocale } from 'next-intl';
 import { resolveLocaleDisplayName } from '@/shared/lib/locale-text/locale-display-name';
 import { scheduleStateSync } from '../lib/persistence';
 import { settleDocsVaultAddress } from '../lib/url-state';
-import { useOpenDocTabs } from '../lib/use-open-doc-tabs';
+import { useOpenDocTabs } from '../lib/doc-tabs/use-open-doc-tabs';
 import type { useDocsVaultAddress } from './use-docs-vault-url';
 import type { useDocsVaultSource } from './use-docs-vault-source';
 import type { useVaultManifest } from './use-vault-manifest';

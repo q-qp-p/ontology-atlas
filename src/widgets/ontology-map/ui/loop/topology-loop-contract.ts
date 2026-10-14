@@ -2,9 +2,9 @@ import type { CanvasBackground, ExpandPreference, FootprintPreference, GlyphSet,
 import type { RefObject } from "react";
 import type { DialFrameSummary } from "../../dial/frame/frame";
 import type { DialEvidence, DialLabels, DialMemory } from "../../dial/types";
-import type { TopologyMapLensKind } from "../../model/path-lens";
-import { type TierNameAnchor } from "../../model/tier-names";
-import { type TierRevealConfig, type ZoomTier } from "../../model/tier-visibility";
+import type { TopologyMapLensKind } from "../../model/visibility/path-lens";
+import { type TierNameAnchor } from "../../model/dome-view/tier-names";
+import { type TierRevealConfig, type ZoomTier } from "../../model/visibility/tier-visibility";
 import type { ClusterBarLabels } from "../../render/cluster-chips";
 import type { HoverAvoidRect } from "../input/topology-pointer-types";
 
@@ -33,7 +33,7 @@ export interface UseTopologyLoopArgs {
   overviewFit?: "spine" | "full";
   fitViewToken: number;
   /**
-   * Bump to toggle a growth replay (`model/growth-replay.ts`); a bump while one runs stops it.
+   * Bump to toggle a growth replay (`model/ambient/growth-replay.ts`); a bump while one runs stops it.
    * Ignored under reduced motion.
    */
   growthReplayToken?: number;
@@ -81,7 +81,7 @@ export interface UseTopologyLoopArgs {
   onDrawnCountChange?: (drawn: number) => void;
   /**
    * Where each Strata tier name stands this frame, beside its plane's rim, in canvas
-   * CSS px (`model/tier-names.ts`). Emitted only when a name moved by more than half a
+   * CSS px (`model/dome-view/tier-names.ts`). Emitted only when a name moved by more than half a
    * pixel, so an idle frame does not re-render the overlay, and `null` whenever the
    * arrangement is not Strata or its rings are not up yet.
    */

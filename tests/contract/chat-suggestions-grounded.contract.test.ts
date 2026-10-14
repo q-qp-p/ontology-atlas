@@ -5,8 +5,8 @@ import {
   capabilitiesWithoutImplementationEvidence,
   computeVaultHealth,
 } from '@/entities/knowledge-graph/lib/vault-health';
-import { chatSuggestions } from '@/features/acp-session/model/chat-suggestions';
-import { suggestionDisplayNames } from '@/features/acp-session/model/use-chat-suggestions';
+import { chatSuggestions } from '@/features/acp-session/model/chat-suggestions/chat-suggestions';
+import { suggestionDisplayNames } from '@/features/acp-session/model/chat-suggestions/use-chat-suggestions';
 
 /**
  * Locks that suggestions still point at things in this folder when they run

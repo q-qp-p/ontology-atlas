@@ -173,7 +173,7 @@ test("ontology design surface ignores test fixtures when scanning forbidden visu
   // not the ignore rule works.
   writeFixture(
     root,
-    "src/views/docs-vault/lib/popout-template.test.ts",
+    "src/views/docs-vault/lib/doc-actions/popout-template.test.ts",
     'expect(html).not.toMatch(/ontology-kind-decision-stripe/);',
   );
 

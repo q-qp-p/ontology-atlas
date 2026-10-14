@@ -180,8 +180,8 @@ export const rules = [
     command: 'pnpm exec playwright test tests/e2e/library-answer-comparison-rows.spec.ts',
     reason: "the library answer comparison's row alignment and measure changed",
     matches: [
-      /^src\/views\/library\/ui\/parts\/AnswerRevisionComparison\.tsx$/,
-      /^src\/views\/library\/ui\/parts\/RetainedAnswerContext\.tsx$/,
+      /^src\/views\/library\/ui\/parts\/questions\/AnswerRevisionComparison\.tsx$/,
+      /^src\/views\/library\/ui\/parts\/questions\/RetainedAnswerContext\.tsx$/,
     ],
   },
   {
@@ -203,7 +203,7 @@ export const rules = [
     matches: [
       /^src\/views\/library\/ui\/(?:LibraryPage\.tsx|library-page\/[^/]+\.tsx?)$/,
       /^src\/views\/library\/ui\/LibraryRounds\.tsx$/,
-      /^src\/views\/library\/ui\/parts\/LibraryAgentDock\.tsx$/,
+      /^src\/views\/library\/ui\/parts\/agent\/LibraryAgentDock\.tsx$/,
       /^src\/features\/library\/ui\/FindDocumentsDialog\.tsx$/,
     ],
   },
@@ -212,7 +212,7 @@ export const rules = [
     command: 'pnpm exec playwright test tests/e2e/library-question-desk.spec.ts',
     reason: 'the library question desk changed',
     matches: [
-      /^src\/views\/library\/ui\/parts\/LibraryQuestionDesk\.tsx$/,
+      /^src\/views\/library\/ui\/parts\/questions\/LibraryQuestionDesk\.tsx$/,
     ],
   },
   {
@@ -221,7 +221,7 @@ export const rules = [
     reason: "the library constellation renderer's disposal changed",
     matches: [
       /^src\/views\/library\/ui\/LibraryConstellations\.tsx$/,
-      /^src\/views\/library\/ui\/parts\/LibraryConstellation\.tsx$/,
+      /^src\/views\/library\/ui\/parts\/first-run\/LibraryConstellation\.tsx$/,
     ],
   },
   {
@@ -229,7 +229,7 @@ export const rules = [
     command: 'pnpm exec playwright test tests/e2e/library-source-pane-end.spec.ts',
     reason: 'where the library source pane ends changed',
     matches: [
-      /^src\/views\/library\/ui\/parts\/SourceSummary\.tsx$/,
+      /^src\/views\/library\/ui\/parts\/sources\/SourceSummary\.tsx$/,
       /^src\/views\/library\/ui\/(?:LibraryPage\.tsx|library-page\/[^/]+\.tsx?)$/,
     ],
   },

@@ -1,5 +1,5 @@
-import { hexGutter, type HexBoardLayout, type HexTextLine, type HexTile } from "../model/hex-board";
-import { SQRT3 } from "../model/hex-grid";
+import { hexGutter, type HexBoardLayout, type HexTextLine, type HexTile } from "../model/board/hex-board";
+import { SQRT3 } from "../model/board/hex-grid";
 import { type HexDrawRoute, type HexDrawState, type HexFrameStats, type HexTextBox } from "../render/hex-board";
 import type { HexBoardTokens } from "../tokens/read-hex-board-tokens";
 import { edges, face, FRONT_SIDES, notch, pips, prismPolygons, smooth, startDot, stubHead, ticks, wall, type PaintedFace } from "./board-geometry";

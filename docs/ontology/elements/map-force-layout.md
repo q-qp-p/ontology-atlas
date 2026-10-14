@@ -6,7 +6,7 @@ title: Map force layout
 display_en: Map force layout
 display_ko: 지도 힘 배치
 domain: domains/human-workbench
-path: src/widgets/ontology-map/model/force-layout.ts
+path: src/widgets/ontology-map/model/layout/force-layout.ts
 created_by: "agent:claude-code"
 ---
 

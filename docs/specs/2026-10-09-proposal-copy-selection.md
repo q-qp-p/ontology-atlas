@@ -18,7 +18,7 @@ PO: `review`, lenses moment/evidence/boundaries; human correction affected, othe
 
 Before-state source references below are pinned to `dcfbe2753` (the implementation base); they describe the observed baseline, not the repaired behavior.
 
-- Apply rejects same-file selection gaps; clipboard export does not (`src/features/vault-agent/model/proposal-applier.ts:78-112`, `:145-162`).
+- Apply rejects same-file selection gaps; clipboard export does not (`src/features/vault-agent/model/proposals/proposal-applier.ts:78-112`, `:145-162`).
 - The card sets Copied immediately after a void callback; the hook never awaits clipboard (`src/widgets/vault-agent-panel/ui/AgentProposalCard.tsx:72`, `:219-235`; `src/widgets/vault-agent-panel/model/use-vault-agent.ts:500-503`).
 - Title counts edits; volume counts file occurrences and Set membership; expanded diff also uses Sets, omitting repeated-line deletion/reordering (`AgentProposalCard.tsx:77-79`, `:109-115`, `:332-355`; `proposal-applier.ts:166-185`).
 - Existing 22 tests passed despite controlled failures.

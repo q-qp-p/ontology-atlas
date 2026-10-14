@@ -1,5 +1,5 @@
 import { BOARD_ARRIVAL } from "../board/board-scene";
-import { HEX_TYPE, type HexBand, type HexMeasure, type HexTextRole } from "../model/hex-board";
+import { HEX_TYPE, type HexBand, type HexMeasure, type HexTextRole } from "../model/board/hex-board";
 
 export type HexEvidenceState = "current" | "stale" | "unknown";
 
@@ -42,7 +42,7 @@ export function hexFonts(): Record<HexTextRole, string> {
   return resolvedFonts;
 }
 
-/** A route to draw, in unit space, already searched by `model/hex-router.ts`. */
+/** A route to draw, in unit space, already searched by `model/board/hex-router.ts`. */
 export interface HexDrawRoute {
   points: readonly { x: number; y: number }[];
   /** Lattice node indices (canals keep them to seat their pill). */

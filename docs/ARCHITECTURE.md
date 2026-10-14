@@ -151,7 +151,7 @@ Atlas has several instruction channels, each with a different runtime boundary:
 | Channel | Instruction owner | Delivery and scope |
 |---|---|---|
 | Vault conversation | `src/features/vault-agent/model/system-prompt.ts` (`buildSystemPrompt`) | `use-vault-agent.ts` passes the assembled text to the provider as `system`; `AgentPromptDisclosure` displays that same value. This agent reads the vault and proposes changes for review. |
-| Local wiki Compile | `src/features/vault-agent/model/compile-system-prompt.ts` (`buildCompileSystemPrompt`) | `use-local-compile.ts` supplies the turn-specific system text for source reading and wiki proposals. This is a separate task from ontology construction. |
+| Local wiki Compile | `src/features/vault-agent/model/compile/compile-system-prompt.ts` (`buildCompileSystemPrompt`) | `use-local-compile.ts` supplies the turn-specific system text for source reading and wiki proposals. This is a separate task from ontology construction. |
 | ACP coding agent | `src/features/acp-session/model/use-acp-session.ts` (`vaultHandoffPrompt`) | `acp-client.ts` supplies `_meta.systemPrompt.append` on the Claude adapter path. This augments that agent's own instructions; it does not replace them or establish universal ACP support. |
 | External MCP client | `mcp/src/server/instructions.mjs` | `server/instance.mjs` attaches the registry's instructions to the MCP initialization response. The receiving host controls their inclusion and placement in model context. |
 
@@ -446,7 +446,7 @@ graph. The separation is a property of the **walk**, not a filter applied later.
   folder through both walkers and the derivation, so neither file kind can become a node
   by accident.
 - Local Compile has its own source read, existing-Wiki read and proposal catalogue in
-  `src/features/vault-agent/model/compile-tool-catalog.ts`. Existing Markdown reaches
+  `src/features/vault-agent/model/compile/compile-tool-catalog.ts`. Existing Markdown reaches
   the model as untrusted context, with sequential coverage and a current snapshot
   receipt required for replacement. Raw-source reads alone supply citation provenance.
   `use-local-compile.ts` rechecks consented before text and timestamp before handing the
@@ -483,7 +483,7 @@ graph. The separation is a property of the **walk**, not a filter applied later.
   `rounds-ledger.jsonl` pass ledger (500-line cap). `src/features/library-rounds/`
   holds the pure judges: the standing scope (`round-scope.ts`, the decision's table as
   code), the service pass brief, the local consistency pass, and the tick planner.
-  `src/views/library/lib/use-rounds-runner.ts` is the clock and the hands: one
+  `src/views/library/lib/rounds/use-rounds-runner.ts` is the clock and the hands: one
   60-second tick, one pass at a time, local rounds first, a catch-up once after sleep,
   and a headless `useAcpSession` whose `autoDecide` answers every permission request
   from the scope and can now refuse (`{ reject }`). `LibraryRoundsProvider` mounts it
@@ -516,7 +516,7 @@ graph. The separation is a property of the **walk**, not a filter applied later.
   writes register with the vault session's existing one-shot self-write ledger,
   so the polling toaster reports external changes without duplicating File's
   success and Undo feedback.
-- Retained answer refresh lives in `src/features/library/lib/answer-revision.ts`
+- Retained answer refresh lives in `src/features/library/lib/questions/answer-revision.ts`
   and `answer-revision-store.ts`; view hooks own the proposal and comparison
   lifecycle. ACP returns a draft, and an explicit save exclusively creates its
   Markdown revision after checking previous text and observed source bytes.
@@ -543,7 +543,7 @@ graph. The separation is a property of the **walk**, not a filter applied later.
   `evaluate:wiki` runner uses this index and the production Compile executor, loop,
   review builder and proposal applier against memory-only fixtures; its textual
   omission rubric is not a production gate or a semantic truth assessment.
-- `src/features/library/lib/question-desk.ts` ranks bounded local Wiki fact and
+- `src/features/library/lib/questions/question-desk.ts` ranks bounded local Wiki fact and
   decision leads and source units for the Wiki tab's unselected question desk.
   `LibraryQuestionDesk` retains its in-memory source-unit cache only for the
   current vault and inventoried file version, reports unread and omitted work,
@@ -859,9 +859,9 @@ to an agent.
 | `realm` | `/`, `/topology` | "realm" containment-subtree root | canonical `<kind>:<slug>` (bare slug promoted) |
 | `mode` | `/`, `/topology` | analysis mode | `overview` \| `focus` \| `path` \| `health` |
 | `pathFrom` / `pathTo` (aliases `from` / `to`) | `/`, `/topology` | path source / target | node id |
-| `hub` · `c` · `impact` · `pulse` · `index` · `create` | `/`, `/topology` | focused hub · category · impact mode · pulse window · INDEX panel state · legacy create-node intent | see `src/views/home/model/url-state.ts` |
+| `hub` · `c` · `impact` · `pulse` · `index` · `create` | `/`, `/topology` | focused hub · category · impact mode · pulse window · INDEX panel state · legacy create-node intent | see `src/views/home/model/route-state/url-state.ts` |
 | `workbench` · `edit` | `/topology` | contextual writer state · optional relation/target | `edit` \| `create`; `edit=<relation>:<targetId>` |
-| `recent` · `ask` | `/`, `/topology` | recent-change lens · agent first-words intent | typed parsers in `src/views/home/model/url-state.ts` |
+| `recent` · `ask` | `/`, `/topology` | recent-change lens · agent first-words intent | typed parsers in `src/views/home/model/route-state/url-state.ts` |
 | `via` | `/`, `/topology`, `/ontology` | origin marker for the return chip | `insights:<tab>` |
 | `review` | `/`, `/topology`, `/ontology/insights` | selected Analysis claim/declaration carried across a document or correction return | `analysis:<nodeId>` / `relation:<edgeId>`; legacy review ids remain compatible context |
 | `constellation` | `/topology` | saved Map task scope or creation intent | stable folder UUID \| `new` |

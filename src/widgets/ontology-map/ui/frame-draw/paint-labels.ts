@@ -1,13 +1,13 @@
-import type { NodeEgoState } from "../../model/focus-state";
-import { isPathLensNode } from "../../model/path-lens";
-import { classifyZoomTier } from "../../model/tier-visibility";
+import type { NodeEgoState } from "../../model/visibility/focus-state";
+import { isPathLensNode } from "../../model/visibility/path-lens";
+import { classifyZoomTier } from "../../model/visibility/tier-visibility";
 import {
   LABEL_TOP_K,
   isEgoNeighborLabelExempt,
   selectDiscLabelEligible,
   selectTopKLabels,
   type LabelRankEntry,
-} from "../../model/label-lod";
+} from "../../model/visibility/label-lod";
 import {
   ACTIVITY_MARK_GAP,
   ACTIVITY_MARK_RADIUS,

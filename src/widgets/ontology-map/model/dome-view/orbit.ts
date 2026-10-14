@@ -1,4 +1,4 @@
-import { DOME_PLANE, TAU } from '../cone-layout';
+import { DOME_PLANE, TAU } from './cone-layout';
 import { MOMENTUM_TAU_MS } from '../motion-physics';
 import type { DomeCoord, DomeModel, DomeViewKind } from './types';
 

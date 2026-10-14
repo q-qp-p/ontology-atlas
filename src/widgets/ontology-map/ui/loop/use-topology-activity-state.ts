@@ -26,7 +26,7 @@ export function useTopologyActivityState() {
    * commit-pulse anchor (which node, and when it was clicked). Set once per
    * NEW selection by the "focused slug change" effect below, never mutated
    * per-frame — `drawTopologyFrame` derives `now - startAtMs` itself every
-   * frame and lets `model/selection-pulse.ts#computeSelectionPulse` decide
+   * frame and lets `model/ambient/selection-pulse.ts#computeSelectionPulse` decide
    * when the pulse has expired (no cleanup timer needed; an expired pulse
    * just draws nothing).
    */

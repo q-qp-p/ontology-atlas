@@ -10,7 +10,7 @@ import { Button, Checkbox, Chip, CloseButton, Dialog, EmptyState, controlClass }
 import { ICON_SIZE } from "@/shared/ui/tokens/icon-size";
 import { Link } from "@/i18n/navigation";
 
-import type { DiscoveryOutcome } from "../lib/discover-sources";
+import type { DiscoveryOutcome } from "../lib/sources/discover-sources";
 
 /**
  * Candidates a person approves before anything is copied: blocking, every box unticked. Rows show

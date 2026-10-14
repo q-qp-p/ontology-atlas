@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 import enMessages from "../../../../messages/en.json";
 import { DesktopVaultWelcome } from "./parts/DesktopVaultWelcome";
-import { DOGFOOD_VAULT_PATH } from "../lib/dogfood-vault-path";
+import { DOGFOOD_VAULT_PATH } from "../lib/vault-source/dogfood-vault-path";
 
 vi.mock("@/i18n/navigation", () => ({
   Link: ({

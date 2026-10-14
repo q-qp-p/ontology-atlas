@@ -766,7 +766,7 @@ const eslintConfig = defineConfig([
   {
     files: [
       'src/shared/config/indigo-tokens.ts',
-      'src/views/docs-vault/lib/popout-template.ts',
+      'src/views/docs-vault/lib/doc-actions/popout-template.ts',
       'src/widgets/ontology-map/render/**/*.{ts,tsx}',
     ],
     ignores: codexTestIgnores,

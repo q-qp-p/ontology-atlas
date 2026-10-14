@@ -16,8 +16,8 @@ import {
   successfulLocalWriteEvents,
 } from "@/features/library";
 import type { AcpEvent, AcpTurnActivity, AcpTurnToolActivity } from "@/features/acp-session";
-import { useObservedWikiWork } from "../../lib/use-observed-wiki-work";
-import { useLibraryAgent } from "../../lib/use-library-agent";
+import { useObservedWikiWork } from "../../lib/wiki/use-observed-wiki-work";
+import { useLibraryAgent } from "../../lib/agent/use-library-agent";
 
 export function useLibraryWorkActivity({
   workVaultScope, nativeVaultRootPath, wikiRevisionStamp, agent,

@@ -7,7 +7,7 @@ import {
 } from "react";
 import type { CameraTarget } from "../../engine/camera";
 import type { DomeRuntime } from "../../model/dome-view/runtime";
-import { rankEgoNeighborsByDOI } from "../../model/focus-state";
+import { rankEgoNeighborsByDOI } from "../../model/visibility/focus-state";
 import { computeClusterFitTarget } from "../camera/topology-camera-math";
 import { readOntologyMapTokensOrNull } from "../../tokens/topology-read-tokens";
 import { type TopologyWorld } from "./topology-world";

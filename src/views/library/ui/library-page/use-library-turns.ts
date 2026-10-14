@@ -49,12 +49,12 @@ import { citedPassage as resolveCitedPassage } from "@/shared/lib/library/source
 import { useFailureSentence } from "@/shared/lib/failures/use-failure-sentence";
 import { useToast } from "@/shared/ui";
 import { isWikiFurnitureSlug } from "@/shared/lib/library/wiki-page-schema";
-import { libraryCompileBlockedReason, libraryTransferSentence } from "../../lib/compile-availability";
-import { useLibraryAgent } from "../../lib/use-library-agent";
-import { useAnswerRefresh } from "../../lib/use-answer-refresh";
-import { findingKey, reportOutline } from "../parts/LibraryCheckReport";
-import type { LibraryAgentOpeningRequest } from "../parts/LibraryAgentDock";
-import type { QuestionDeskReportRequest } from "../parts/LibraryQuestionDesk";
+import { libraryCompileBlockedReason, libraryTransferSentence } from "../../lib/compile/compile-availability";
+import { useLibraryAgent } from "../../lib/agent/use-library-agent";
+import { useAnswerRefresh } from "../../lib/questions/use-answer-refresh";
+import { findingKey, reportOutline } from "../parts/wiki/LibraryCheckReport";
+import type { LibraryAgentOpeningRequest } from "../parts/agent/LibraryAgentDock";
+import type { QuestionDeskReportRequest } from "../parts/questions/LibraryQuestionDesk";
 import type { LibrarySelection } from "./library-page-state";
 import type { useLibraryWorkActivity } from "./use-library-work-activity";
 

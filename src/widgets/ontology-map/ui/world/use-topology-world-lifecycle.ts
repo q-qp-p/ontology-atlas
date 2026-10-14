@@ -15,8 +15,8 @@ import {
 } from "../../expressive/release-offsets";
 import { ARRIVAL_GLIDE_CONCEPT_CEILING } from "../../morph/layout-morph";
 import { armTierAssembly, carryTierAssembly, claimTierAssembly, isTierAssembling, settleTierAssembly, TIER_ASSEMBLE_TOTAL_MS } from "../../morph/tier-assembly";
-import { createForceSimulation, type ForceSimulation } from "../../model/force-layout";
-import { initHomeSpring, type HomeSpringState } from "../../model/relayout-home";
+import { createForceSimulation, type ForceSimulation } from "../../model/layout/force-layout";
+import { initHomeSpring, type HomeSpringState } from "../../model/layout/relayout-home";
 import type { Pulse } from "../../render/edge-fireflies";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import { computeOverviewCameraTarget, computeOverviewFitScale, hasAnyNodeOnScreen } from "../camera/topology-camera-math";

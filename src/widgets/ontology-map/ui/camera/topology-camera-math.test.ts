@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { DEFAULT_TIER_REVEAL } from "../../model/tier-visibility";
+import { DEFAULT_TIER_REVEAL } from "../../model/visibility/tier-visibility";
 import { LABEL_OFFSET } from "../../render/labels";
 import {
   computeEffectiveCameraScaleMax,

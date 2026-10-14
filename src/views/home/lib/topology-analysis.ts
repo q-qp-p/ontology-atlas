@@ -1,5 +1,5 @@
 import { formatQueryOntologyCall } from "@/shared/lib/ontology-graph/ontology-query-call";
-import type { TopologyAnalysisMode } from "../model/url-state";
+import type { TopologyAnalysisMode } from "../model/route-state/url-state";
 import {
   buildTopologyMeaningEditorNodeHref,
   buildOntologyHealthActionTarget,

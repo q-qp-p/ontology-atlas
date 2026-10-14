@@ -14,7 +14,7 @@ import type { VaultManifest } from '@/entities/docs-vault';
 import { DocsHeaderTile } from './parts/DocsHeaderTile';
 import { DocsVaultVaultChip } from './parts/DocsVaultVaultChip';
 import { DocsVaultTabStrip } from './parts/DocsVaultTabStrip';
-import { resolveVaultChipIdentity } from '../lib/vault-chip-identity';
+import { resolveVaultChipIdentity } from '../lib/vault-source/vault-chip-identity';
 import type { DocsVaultSource as Source, DocsVaultView } from '../lib/persistence';
 
 export function DocsVaultHeader({
@@ -166,7 +166,7 @@ export function DocsVaultHeader({
         onClick={toggleDocListCollapsed}
         className="hidden lg:inline-flex"
       />
-      {/* The chip states the chosen source (`lib/vault-chip-identity`). */}
+      {/* The chip states the chosen source (`lib/vault-source/vault-chip-identity`). */}
       <DocsVaultVaultChip
         label={
           vaultChipIdentity.kind === 'local'

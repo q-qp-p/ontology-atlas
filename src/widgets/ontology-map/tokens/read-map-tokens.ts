@@ -103,7 +103,7 @@ export interface OntologyMapTokens {
   layoutRingDomain: number;
   layoutRingCapability: number;
   layoutRingElement: number;
-  /** `--map-realm-fill-radius-1` — the domain ring for a maxDepth=1 realm-expansion subtree (world units, `model/realm.ts#realmRingsForDepth`). */
+  /** `--map-realm-fill-radius-1` — the domain ring for a maxDepth=1 realm-expansion subtree (world units, `model/realm/realm.ts#realmRingsForDepth`). */
   realmFillRadius1: number;
   /** `--map-realm-fill-radius-2` — the domain ring for a maxDepth=2 realm-expansion subtree. */
   realmFillRadius2: number;
@@ -181,7 +181,7 @@ export interface OntologyMapTokens {
   emphasisDecayTau: number;
   /**
    * `--map-focus-dim-tau` — the click-focus color-ramp time constant
-   * (`model/focus-state.ts#stepFocusRamp`). One symmetric τ for the normal↔dim/
+   * (`model/visibility/focus-state.ts#stepFocusRamp`). One symmetric τ for the normal↔dim/
    * ego color transition so a click's dim/ego swap eases in on the camera-dive
    * time axis instead of hard-cutting, and a deselect eases it back out.
    */
@@ -195,7 +195,7 @@ export interface OntologyMapTokens {
    * `--map-cluster-reveal-tau` — the cluster expand/collapse reveal ramp
    * time constant (rank7). One symmetric τ so a collapsed parent's child subtree
    * fades IN (0→1) on expand and OUT (1→0) on collapse instead of hard-cutting,
-   * consistent across zoom. Reuses `stepEmphasis` (`model/focus-state.ts`).
+   * consistent across zoom. Reuses `stepEmphasis` (`model/visibility/focus-state.ts`).
    */
   clusterRevealTau: number;
   /**
@@ -284,7 +284,7 @@ export interface OntologyMapTokens {
   /** `--map-dust-parallax-min/max` — the dust parallax depth range (B3 leftover). */
   dustParallaxMin: number;
   dustParallaxMax: number;
-  /** Constellation background parallax factor — 1 = welded to the world, <1 = a distant layer. See `model/background-parallax.ts`. */
+  /** Constellation background parallax factor — 1 = welded to the world, <1 = a distant layer. See `model/camera/background-parallax.ts`. */
   canvasBgParallax: number;
 
   // 2.5 Safe area (fixed chrome insets, px — label culling plus camera fit)

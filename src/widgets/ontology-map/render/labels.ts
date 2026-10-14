@@ -4,8 +4,8 @@
  * own `revealAlpha`; a selected or hovered node is always full contrast; a dim node is 0.
  */
 
-import { smoothstep } from "../model/altitude";
-import { HITTABLE_MIN_TIER_ALPHA } from "../model/tier-visibility";
+import { smoothstep } from "../model/visibility/altitude";
+import { HITTABLE_MIN_TIER_ALPHA } from "../model/visibility/tier-visibility";
 import { lerpColorHex } from "./grid";
 
 export interface LabelDrawState {
@@ -17,7 +17,7 @@ export interface LabelDrawState {
   egoState: "center" | "neighbor" | "dim" | "normal";
   /** Whether this node is the currently-hovered node (no focus active). Floors its label to full contrast, same as `egoState === "center"`. */
   isHovered: boolean;
-  /** The node's own effective/tier alpha this frame (`model/tier-visibility.ts#effectiveNodeAlpha`) — ties capability/element label eligibility to "if you can click it, you can read it". Ignored by project/domain. */
+  /** The node's own effective/tier alpha this frame (`model/visibility/tier-visibility.ts#effectiveNodeAlpha`) — ties capability/element label eligibility to "if you can click it, you can read it". Ignored by project/domain. */
   revealAlpha: number;
   /** Explicit reading-scope emphasis, 0..1. Raises opacity without pretending the label is hovered or selected. */
   emphasisAlpha?: number;
@@ -170,7 +170,7 @@ export function measureLabelWidth(
 
 /**
  * capability/element label eligibility ramp, in `revealAlpha` units. The floor
- * is `model/tier-visibility.ts#HITTABLE_MIN_TIER_ALPHA` **by import, not by
+ * is `model/visibility/tier-visibility.ts#HITTABLE_MIN_TIER_ALPHA` **by import, not by
  * coincidence** — a child is nameable exactly when it is clickable, and the two
  * cannot drift apart in a later edit. Full readability arrives by 0.85.
  */

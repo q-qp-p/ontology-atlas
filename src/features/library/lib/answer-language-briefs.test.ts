@@ -12,13 +12,13 @@ vi.mock("@/i18n/locales", async (importActual) => {
   };
 });
 
-import { buildAskBrief } from "./ask-brief";
-import { buildCompileBrief } from "./compile-brief";
-import { buildFixBrief } from "./fix-brief";
-import { buildLintBrief } from "./lint-brief";
-import { buildProposeNodeBrief } from "./propose-node-brief";
-import { buildQuestionDeskBrief, buildQuestionDeskReportBrief, QUESTION_DESK_BRIEF_MAX_CHARS } from "./question-desk-brief";
-import { buildWikiShapeFixBrief } from "./wiki-fix-brief";
+import { buildAskBrief } from "./questions/ask-brief";
+import { buildCompileBrief } from "./wiki/compile-brief";
+import { buildFixBrief } from "./wiki/fix-brief";
+import { buildLintBrief } from "./wiki/lint-brief";
+import { buildProposeNodeBrief } from "./wiki/propose-node-brief";
+import { buildQuestionDeskBrief, buildQuestionDeskReportBrief, QUESTION_DESK_BRIEF_MAX_CHARS } from "./questions/question-desk-brief";
+import { buildWikiShapeFixBrief } from "./wiki/wiki-fix-brief";
 
 const HANGUL = /[ㄱ-ㆎ가-힣]/;
 const vaultRoot = "/vault";

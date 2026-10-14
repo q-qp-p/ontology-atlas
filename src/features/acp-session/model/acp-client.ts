@@ -4,8 +4,8 @@
  * Never pick `allow_always` for the user (it grants the directory); inside-vault is decided in Rust.
  */
 
-import { modeKeepsGate, partitionModes } from './mode-safety';
-import { atlasToolMode } from './atlas-tool-policy';
+import { modeKeepsGate, partitionModes } from './session-choices/mode-safety';
+import { atlasToolMode } from './permissions/atlas-tool-policy';
 
 /** The channel that carries lines. A process or a fake, as long as it satisfies this. */
 export interface AcpTransport {

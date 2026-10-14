@@ -1,5 +1,5 @@
-import { BarnesHutOctree, CollisionHashGrid } from '../cloud-spatial-index';
-import { findCouplingGroups } from '../coupling-groups';
+import { BarnesHutOctree, CollisionHashGrid } from './cloud-spatial-index';
+import { findCouplingGroups } from './coupling-groups';
 import { DOME_FIT_RADIUS } from './projection';
 import type { DomeCoord, DomeInputNode, DomeViewKind } from './types';
 

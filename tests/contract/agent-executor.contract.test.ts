@@ -24,9 +24,9 @@ import { derivationToInsight } from '@/features/vault-ontology/model/use-ontolog
 import {
   GRAPH_FRONTMATTER_KEYS,
   createToolExecutor,
-} from '@/features/vault-agent/model/tool-executor';
-import type { VaultReadPort } from '@/features/vault-agent/model/vault-read-port';
-import type { NormalizedToolCall } from '@/features/vault-agent/model/provider-adapter';
+} from '@/features/vault-agent/model/agent-tools/tool-executor';
+import type { VaultReadPort } from '@/features/vault-agent/model/agent-tools/vault-read-port';
+import type { NormalizedToolCall } from '@/features/vault-agent/model/providers/provider-adapter';
 
 const VAULT_DIR = join(__dirname, '../../docs/ontology');
 

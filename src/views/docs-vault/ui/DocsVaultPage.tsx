@@ -44,12 +44,12 @@ import {
   readStoredListCollapsed,
   storeListCollapsed,
 } from '../lib/persistence';
-import { buildSkillParityHandoff } from '../lib/skill-parity-handoff';
-import type { SkillParityRow } from '../lib/skill-parity';
+import { buildSkillParityHandoff } from '../lib/agent-files/skill-parity-handoff';
+import type { SkillParityRow } from '../lib/agent-files/skill-parity';
 import { useAdvancedMenu } from '../lib/use-advanced-menu';
-import { useAgentFilesModel } from '../lib/use-agent-files';
+import { useAgentFilesModel } from '../lib/agent-files/use-agent-files';
 import { usePaletteState } from '../lib/use-palette-state';
-import { useSkillParity } from '../lib/use-skill-parity';
+import { useSkillParity } from '../lib/agent-files/use-skill-parity';
 import { DocsVaultHeader } from './DocsVaultHeader';
 import { DocsVaultDocumentPane } from './DocsVaultDocumentPane';
 import { DocsVaultSidebar } from './DocsVaultSidebar';

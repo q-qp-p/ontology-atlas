@@ -18,9 +18,9 @@
  * meaningfully assertable without a heavy mock; P5's screenshot gate is the
  * real verification for paint correctness, per design doc §4 P3 gate).
  */
-import { smoothstep } from "../model/altitude";
+import { smoothstep } from "../model/visibility/altitude";
 import { FONT_WEIGHT } from "@/shared/ui/tokens/font-weight";
-import { computeHoverShimmer } from "../model/hover-shimmer";
+import { computeHoverShimmer } from "../model/ambient/hover-shimmer";
 import { drawStarEmission } from "@/shared/lib/map-canvas/star-emission";
 
 /**
@@ -144,7 +144,7 @@ export interface NodeShapeDrawState {
      * One-shot commit-pulse visual for the just-selected (`egoState ===
      * "center"`) node, or `null` outside its brief window (already played out,
      * `prefers-reduced-motion`, or this isn't the node that was just clicked).
-     * `model/selection-pulse.ts#computeSelectionPulse` is the pure source;
+     * `model/ambient/selection-pulse.ts#computeSelectionPulse` is the pure source;
      * never loops — once elapsed exceeds the duration it's permanently null
      * until the NEXT click resets the timestamp.
      */
@@ -155,7 +155,7 @@ export interface NodeShapeDrawState {
     /**
      * W6 agent visibility — true for the single node matching the current
        * agent heartbeat's `focus.ontologySlug` (resolved upstream by
-       * `views/home/lib/resolve-agent-focus-node.ts`), only while that
+       * `views/home/lib/agent/resolve-agent-focus-node.ts`), only while that
        * heartbeat is fresh (`hasFreshHeartbeat`, `topology-frame-draw.ts`'s
        * caller nulls the id otherwise). Draws a static amber hairline ring — the
        * SAME `amberHub` signal tone as the hub ring / project hexagon, never a
@@ -554,7 +554,7 @@ function strokeKindOutline(ctx: CanvasRenderingContext2D, kind: NodeShapeDrawSta
  * polygon/circle branch `strokeKindOutline` draws with. Used only to size
  * the hover-shimmer dash pattern (a decorative overlay, not a hit-test), so
  * this approximation is enough — no separate test needed the way the pure
- * `model/hover-shimmer.ts` time math is.
+ * `model/ambient/hover-shimmer.ts` time math is.
  */
 function outlinePerimeter(kind: NodeShapeDrawState["kind"], radius: number, farT: number): number {
     const points = bodyPointsScratch(kind, 0, 0, radius);
@@ -798,7 +798,7 @@ export function draw(ctx: CanvasRenderingContext2D, state: NodeShapeDrawState, t
     }
     // Canvas-emphasis slice §B — the selected node's STATIC double ring (2px on
     // the outline + a 6px-out 1px hairline), plus its brief one-shot commit
-    // pulse (`model/selection-pulse.ts`). The double ring is unconditional
+    // pulse (`model/ambient/selection-pulse.ts`). The double ring is unconditional
     // while `egoState === "center"` — it never animates itself, so it reads as
     // a fixed "this is selected" fact even after the pulse (if any) finishes.
     if (egoState === "center") {

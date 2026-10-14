@@ -21,7 +21,7 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), "utf8");
 describe("「이어서 새로 만들기」 — 어포던스 계약", () => {
   const inspector = read("src/views/home/ui/TopologyInspectorSurfaces.tsx");
   const composer = read("src/views/home/ui/TopologyBlockingOverlays.tsx");
-  const authoring = read("src/views/home/model/use-topology-authoring.tsx");
+  const authoring = read("src/views/home/model/authoring/use-topology-authoring.tsx");
 
   it("도메인 노드에서만 뜬다 — 다른 kind 는 이어 붙일 수가 없다", () => {
     expect(inspector).toMatch(/canCreateNode && canvasSelectedGraphNode\?\.kind === "domain"/);
@@ -46,7 +46,7 @@ describe("「이어서 새로 만들기」 — 어포던스 계약", () => {
      * screen's single create-concept path.
      */
     expect(authoring).toMatch(/buildNewNodeDoc\(\{ \.\.\.input, createdBy: "human" \}\)/);
-    expect(read("src/entities/docs-vault/lib/build-vault-markdown.ts")).toMatch(
+    expect(read("src/entities/docs-vault/lib/authoring/build-vault-markdown.ts")).toMatch(
       /createdBy: args\.createdBy,/,
     );
   });

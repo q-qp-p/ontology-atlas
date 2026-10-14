@@ -1,4 +1,4 @@
-import type { HexTile } from "../model/hex-board";
+import type { HexTile } from "../model/board/hex-board";
 import { hexFonts } from "../render/hex-board";
 import type { HexBoardTokens } from "../tokens/read-hex-board-tokens";
 

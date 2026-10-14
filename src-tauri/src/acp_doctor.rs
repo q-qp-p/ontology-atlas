@@ -75,7 +75,7 @@ pub(crate) const REPAIRABLE_IDS: &[&str] = &[
     "shadow-keychain",
 ];
 
-/// Copy of `GATED_SESSION_MODE` in `src/features/acp-session/model/runtime-gate.ts`, held
+/// Copy of `GATED_SESSION_MODE` in `src/features/acp-session/model/runtime-wiring/runtime-gate.ts`, held
 /// by `tests/contract/agent-doctor-checks.contract.test.ts` against drift. Codex's `read-only`
 /// is a vault-scoped write sandbox, so Git history is the undo.
 pub(crate) const SESSION_MODE_GATE: &[(&str, &str)] = &[("codex-acp", "read-only")];

@@ -6,7 +6,7 @@ title: ACP permission scope
 display_en: ACP permission scope
 display_ko: ACP 권한 범위
 domain: domains/agent-access
-path: src/features/acp-session/model/permission-scope.ts
+path: src/features/acp-session/model/permissions/permission-scope.ts
 created_by: "agent:claude-code"
 ---
 

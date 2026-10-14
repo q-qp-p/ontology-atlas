@@ -1024,7 +1024,7 @@ describe('focused check suggestions', () => {
       ['src/entities/vault-session/model/local-vault/use-local-vault.ts', 'tests/e2e/web-surface-smoke.spec.ts'],
       ['src/entities/vault-session/model/local-vault/vault-sidecars.ts', 'tests/e2e/web-surface-smoke.spec.ts'],
       ['src/features/vault-switch/ui/VaultSwitchRailTile.tsx', 'tests/e2e/vault-switch-release.spec.ts'],
-      ['src/views/home/model/use-past-trails.ts', 'tests/e2e/vault-switch-release.spec.ts'],
+      ['src/views/home/model/trail/use-past-trails.ts', 'tests/e2e/vault-switch-release.spec.ts'],
       ['src/widgets/ontology-map/ui/camera/use-topology-camera-navigation.ts', 'tests/e2e/vault-switch-release.spec.ts'],
       ['src/widgets/ontology-map/ui/camera/use-topology-overview-navigation.ts', 'tests/e2e/vault-switch-release.spec.ts'],
       ['src/widgets/ontology-map/ui/camera/use-topology-viewport-lifecycle.ts', 'tests/e2e/vault-switch-release.spec.ts'],
@@ -1356,7 +1356,7 @@ describe('focused check suggestions', () => {
     ]);
     const result = suggestFocusedChecks([
       'src/widgets/ontology-map/interaction/free-area.test.ts',
-      'src/views/home/model/use-node-datasheet-model.ts',
+      'src/views/home/model/inspector/use-node-datasheet-model.ts',
       'src/views/ontology-insights/lib/analysis-model.test.ts',
       'src/views/ontology-insights/ui/analysis/AnalysisRecords.tsx',
       'src/features/ontology-change-review/ui/OntologyChangeReview.test.tsx',

@@ -202,7 +202,7 @@ Therefore:
 
 If you open the map with the performance test address (`?synth=3000`), there are no lines between domains.
 This isn't a product limitation; it's because **the synthetic vault only creates structural relations**.
-The synthesizer (`src/views/home/lib/synth-vault.ts`) produces only one type of relation: `contains`.
+The synthesizer (`src/views/home/lib/synth-vault/synth-vault.ts`) produces only one type of relation: `contains`.
 
 If you open the real vault (`docs/ontology/`), you'll see lines crossing between domains. When judging the map's shape, **first check which vault you opened.**
 

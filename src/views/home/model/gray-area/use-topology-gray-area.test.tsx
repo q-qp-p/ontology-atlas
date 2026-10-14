@@ -3,7 +3,7 @@ import type { ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { VaultDoc } from '@/entities/docs-vault';
 import type { GrayAreaCandidate, GrayAreaSelection } from '@/features/gray-area';
-import { parseHomeRouteState, type HomeRouteState } from '../url-state';
+import { parseHomeRouteState, type HomeRouteState } from '../route-state/url-state';
 import { useTopologyGrayArea } from './use-topology-gray-area';
 
 const { translate } = vi.hoisted(() => ({ translate: (key: string) => key }));

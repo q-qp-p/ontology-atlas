@@ -9,8 +9,8 @@ import type { DialLabels, DialMemory, DialTokens, DialWorld } from "../dial/type
 import type { CameraAxes } from "../engine/camera";
 import { measureCanvasInsets, measureEdgeFitObstacle } from "../interaction/free-area";
 import type { DomeNodeFrame, DomeRuntime } from "../model/dome-view/runtime";
-import type { HexPlacementRecord } from "../model/hex-board";
-import { HITTABLE_MIN_TIER_ALPHA } from "../model/tier-visibility";
+import type { HexPlacementRecord } from "../model/board/hex-board";
+import { HITTABLE_MIN_TIER_ALPHA } from "../model/visibility/tier-visibility";
 import { readHexBoardTokensOrNull } from "../tokens/read-hex-board-tokens";
 import type { OntologyMapTokens } from "../tokens/read-map-tokens";
 import type { OntologyMapEdge, OntologyMapNode } from "../ui/OntologyMap";

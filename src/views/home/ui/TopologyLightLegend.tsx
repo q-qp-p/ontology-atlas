@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import type { MapEvidence, MapEvidenceAvailability } from "../model/use-map-evidence-states";
+import type { MapEvidence, MapEvidenceAvailability } from "../model/map-canvas/use-map-evidence-states";
 
 const KINDS = ["project", "domain", "capability", "element"] as const;
 type Kind = (typeof KINDS)[number];

@@ -1,18 +1,18 @@
-import type { useAcpRuntimeController } from "../model/use-acp-runtime-controller";
+import type { useAcpRuntimeController } from "../model/agent/use-acp-runtime-controller";
 import type { useHomeWorkbenchController } from "../model/use-home-workbench-controller";
-import type { useTopologyAgentOrchestration } from "../model/use-topology-agent-orchestration";
-import type { useTopologyAuthoring } from "../model/use-topology-authoring";
+import type { useTopologyAgentOrchestration } from "../model/agent/use-topology-agent-orchestration";
+import type { useTopologyAuthoring } from "../model/authoring/use-topology-authoring";
 import type { useTopologyCanvasFocus } from "../model/use-topology-canvas-focus";
-import type { useTopologyCreateIntent } from "../model/use-topology-create-intent";
-import type { useTopologyExplorationLenses } from "../model/use-topology-exploration-lenses";
-import type { useTopologyGraphProjection } from "../model/use-topology-graph-projection";
-import type { useTopologyInspectorState } from "../model/use-topology-inspector-state";
-import type { useTopologyKeyboardTour } from "../model/use-topology-keyboard-tour";
+import type { useTopologyCreateIntent } from "../model/authoring/use-topology-create-intent";
+import type { useTopologyExplorationLenses } from "../model/map-canvas/use-topology-exploration-lenses";
+import type { useTopologyGraphProjection } from "../model/map-canvas/use-topology-graph-projection";
+import type { useTopologyInspectorState } from "../model/inspector/use-topology-inspector-state";
+import type { useTopologyKeyboardTour } from "../model/keyboard/use-topology-keyboard-tour";
 import type { useTopologyNavigationActions } from "../model/use-topology-navigation-actions";
 import type { useTopologyPreferences } from "../model/use-topology-preferences";
-import type { useTopologyRouteControls } from "../model/use-topology-route-controls";
-import type { useTopologySourceActions } from "../model/use-topology-source-actions";
-import type { useTopologySourceReadiness } from "../model/use-topology-source-readiness";
+import type { useTopologyRouteControls } from "../model/route-state/use-topology-route-controls";
+import type { useTopologySourceActions } from "../model/project-source/use-topology-source-actions";
+import type { useTopologySourceReadiness } from "../model/project-source/use-topology-source-readiness";
 import type { useTopologyVaultReadModel } from "../model/use-topology-vault-read-model";
 
 
@@ -24,9 +24,9 @@ import { morphName, runMorph } from "@/shared/motion/shared-element";
 import { OntologyMapClusterHoverCard, OntologyMapContextMenu, OntologyMapDetailPanel, OntologyMapEdgeHoverCard, OntologyMapEdgePanel } from "@/widgets/ontology-map";
 import { ProjectDrawer } from "@/widgets/project-drawer";
 import { useTranslations } from "next-intl";
-import { normalizeKindLabelKey } from "../lib/topology-node-significance";
-import { returnFocusIfDropped } from "../lib/topology-focus-return";
-import { resolveNodeVaultRef } from "../lib/topology-node-edit";
+import { normalizeKindLabelKey } from "../lib/inspector/topology-node-significance";
+import { returnFocusIfDropped } from "../lib/keyboard/topology-focus-return";
+import { resolveNodeVaultRef } from "../lib/authoring/topology-node-edit";
 
 
 interface TopologyInspectorSurfacesProps {

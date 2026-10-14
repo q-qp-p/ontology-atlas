@@ -28,7 +28,7 @@ export const CHANGE_CAST: readonly ChangeRow[] = [
     calm: ['capability:wiki-pages'],
   },
   {
-    file: 'src/features/library/lib/judge-page-write.ts',
+    file: 'src/features/library/lib/wiki/judge-page-write.ts',
     added: 9,
     removed: 2,
     concept: 'element:wiki-page-write-judge',

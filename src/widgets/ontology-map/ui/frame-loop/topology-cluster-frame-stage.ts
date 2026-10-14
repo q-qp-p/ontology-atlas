@@ -1,5 +1,5 @@
 import type { ExpandPreference } from "@/shared/lib/preferences/appearance-preferences";
-import type { ClusterChip } from "../../model/density-gate";
+import type { ClusterChip } from "../../model/layout/density-gate";
 import {
   clusterMoreChipId,
   EGO_NEIGHBOR_CHIP_ID,
@@ -7,7 +7,7 @@ import {
   scheduleRipple,
   selectiveEgoNeighbors,
   type EgoNeighborRankEntry,
-} from "../../model/focus-state";
+} from "../../model/visibility/focus-state";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import { computeTopologyClusterState, placeClusterChips } from "../world/topology-cluster-state";
 import type { RealmRuntimeData } from "../world/topology-realm-runtime";

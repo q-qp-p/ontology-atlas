@@ -1,18 +1,18 @@
 "use client";
 
-import type { useTopologyAnalysisReview } from "../model/use-topology-analysis-review";
-import type { useTopologyAuthoring } from "../model/use-topology-authoring";
+import type { useTopologyAnalysisReview } from "../model/agent/use-topology-analysis-review";
+import type { useTopologyAuthoring } from "../model/authoring/use-topology-authoring";
 import type { useTopologyCanvasFocus } from "../model/use-topology-canvas-focus";
-import type { useTopologyCreateIntent } from "../model/use-topology-create-intent";
-import type { useTopologyExplorationLenses } from "../model/use-topology-exploration-lenses";
-import type { useTopologyGraphProjection } from "../model/use-topology-graph-projection";
-import type { useTopologyIndexPresentation } from "../model/use-topology-index-presentation";
-import type { useTopologyInspectorState } from "../model/use-topology-inspector-state";
-import type { useTopologyKeyboardTour } from "../model/use-topology-keyboard-tour";
+import type { useTopologyCreateIntent } from "../model/authoring/use-topology-create-intent";
+import type { useTopologyExplorationLenses } from "../model/map-canvas/use-topology-exploration-lenses";
+import type { useTopologyGraphProjection } from "../model/map-canvas/use-topology-graph-projection";
+import type { useTopologyIndexPresentation } from "../model/index-panel/use-topology-index-presentation";
+import type { useTopologyInspectorState } from "../model/inspector/use-topology-inspector-state";
+import type { useTopologyKeyboardTour } from "../model/keyboard/use-topology-keyboard-tour";
 import type { useTopologyNavigationActions } from "../model/use-topology-navigation-actions";
 import type { useTopologyPreferences } from "../model/use-topology-preferences";
-import type { useTopologyRouteControls } from "../model/use-topology-route-controls";
-import type { useTopologySceneControls } from "../model/use-topology-scene-controls";
+import type { useTopologyRouteControls } from "../model/route-state/use-topology-route-controls";
+import type { useTopologySceneControls } from "../model/map-canvas/use-topology-scene-controls";
 import type { useTopologyVaultReadModel } from "../model/use-topology-vault-read-model";
 
 import type { MapLayoutView } from "@/shared/lib/map-canvas/map-layout-morph-store";
@@ -30,11 +30,11 @@ import {
 } from "@/widgets/ontology-map";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useVaultLoadProgress } from "@/entities/vault-session";
-import { useFlatRingMemory } from "../model/use-flat-ring-memory";
+import { useFlatRingMemory } from "../model/map-canvas/use-flat-ring-memory";
 import { readHexRelief } from "@/shared/lib/preferences/appearance-preferences";
-import { readHexPlacement } from "../model/hex-board-placement-store";
-import { useMapEvidenceStates } from "../model/use-map-evidence-states";
-import { useMapLayoutMorph } from "../model/use-map-layout-morph";
+import { readHexPlacement } from "../model/map-canvas/hex-board-placement-store";
+import { useMapEvidenceStates } from "../model/map-canvas/use-map-evidence-states";
+import { useMapLayoutMorph } from "../model/map-canvas/use-map-layout-morph";
 import { TopologyHexBoardSurface } from "./TopologyHexBoardSurface";
 import { DomainStructureMap } from "@/widgets/ontology-map";
 import { TopologyLightLegend } from "./TopologyLightLegend";

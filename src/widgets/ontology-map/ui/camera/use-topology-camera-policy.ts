@@ -11,7 +11,7 @@ import {
   measureEdgeFitObstacle,
   type EdgeFitObstacle
 } from "../../interaction/free-area";
-import { cameraTransitionDurationMs, type CameraKeyframe, type CameraTween, type CameraTweenAltitude } from "../../model/camera-easing";
+import { cameraTransitionDurationMs, type CameraKeyframe, type CameraTween, type CameraTweenAltitude } from "../../model/camera/camera-easing";
 import {
   DOME_NODE_FIT_ALLOWANCE_PX,
   domeReachesRect,
@@ -133,7 +133,7 @@ export function useTopologyCameraPolicy({
       }
       /*
        * Strata's tier names stand beside their rims in the free map between the
-       * chrome (`model/tier-names.ts`), the chrome's columns excluded whether or not
+       * chrome (`model/dome-view/tier-names.ts`), the chrome's columns excluded whether or not
        * the drawing uses them, so the frame reads the box measured here rather than
        * walking the DOM on every frame. No column is reserved for the names: one that
        * finds no clear place beside its rim goes unnamed, and the drawing keeps the width.

@@ -1,4 +1,4 @@
-import { initHomeSpring, type HomeSpringState } from "../../model/relayout-home";
+import { initHomeSpring, type HomeSpringState } from "../../model/layout/relayout-home";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import { recomputeWorldGeometry, type TopologyWorld } from "./topology-world";
 

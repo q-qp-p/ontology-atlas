@@ -1,14 +1,14 @@
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from "react";
 import type { Rect } from "../../interaction/hover-card-placement";
 import type { CameraAxes, CameraTarget } from "../../engine/camera";
-import type { CameraTween, ZoomEase } from "../../model/camera-easing";
-import type { ForceSimulation } from "../../model/force-layout";
-import type { TierRevealConfig } from "../../model/tier-visibility";
+import type { CameraTween, ZoomEase } from "../../model/camera/camera-easing";
+import type { ForceSimulation } from "../../model/layout/force-layout";
+import type { TierRevealConfig } from "../../model/visibility/tier-visibility";
 import type { DragTugSets } from "../../interaction/drag-tug";
 import type { ClusterBarLabels } from "../../render/cluster-chips";
-import type { ClusterChip } from "../../model/density-gate";
+import type { ClusterChip } from "../../model/layout/density-gate";
 import type { ExpandPreference, MapNavigationSpeed } from "@/shared/lib/preferences/appearance-preferences";
-import type { DepthParallaxOffset } from "../../model/realm-depth-parallax";
+import type { DepthParallaxOffset } from "../../model/realm/realm-depth-parallax";
 import type { DomeRuntime } from "../../model/dome-view/runtime";
 import type { WorldOffset } from "../../interaction/node-drag";
 import type { PointerMachineState } from "../../interaction/pointer-state-machine";
@@ -41,7 +41,7 @@ export interface PointerHandlerRefs {
   cameraRef: Ref<CameraAxes>;
   cameraTargetRef: Ref<CameraTarget>;
   /**
-   * S3 finishing polish — the live cubic camera transition (`model/camera-easing.ts`).
+   * S3 finishing polish — the live cubic camera transition (`model/camera/camera-easing.ts`).
    * Any interactive gesture (wheel zoom, pointer-down for pan/select) clears it
    * so the spring immediately regains control from wherever the ease left the
    * camera. Optional — omitted keeps the pre-tween behavior.
@@ -91,7 +91,7 @@ export interface PointerHandlerRefs {
   userDrivenCameraRef?: Ref<boolean>;
   /** Monotonic camera-gesture revision. Programmatic fits never change it. */
   cameraGestureRevisionRef?: Ref<number>;
-  /** The live force simulation (`model/force-layout.ts`) — pin/movePin/clearPin during node-drag. Null before the world is built. */
+  /** The live force simulation (`model/layout/force-layout.ts`) — pin/movePin/clearPin during node-drag. Null before the world is built. */
   simRef: Ref<ForceSimulation | null>;
   /** Frames of remaining sim warmth — the rAF loop ticks the sim while > 0 (or while a node is pinned). Bumped by node-drag. */
   heatRef: Ref<number>;
@@ -101,7 +101,7 @@ export interface PointerHandlerRefs {
    * C1 B1/B2 — the dragged node's own 1-hop/2-hop neighbor sets, captured
    * once at grab time (`interaction/drag-tug.ts#computeDragTugSets`). Consumed
    * both to propagate the explicit neighbor tug (B1) and to restrict the
-   * release-settle FA2 tick to this local cluster (B2, `model/force-layout.ts`
+   * release-settle FA2 tick to this local cluster (B2, `model/layout/force-layout.ts`
    * `tick`'s `restrictToIds`). Persists through the post-release settle burst —
    * only cleared once that burst's heat reaches 0 (`use-topology-loop.ts`) or a
    * NEW drag starts.

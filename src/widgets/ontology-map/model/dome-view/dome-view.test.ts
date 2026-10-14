@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import type { CameraAxes } from "../../engine/camera";
 import { worldToScreen } from "../../ui/camera/topology-camera-math";
-import { findCouplingGroups } from "../coupling-groups";
-import { DOME_PLANE } from "../cone-layout";
+import { findCouplingGroups } from "./coupling-groups";
+import { DOME_PLANE } from "./cone-layout";
 import { CLOUD_ITERATIONS } from "./coupling-cloud";
 import {
   DOME_ASSEMBLE_TOTAL_MS,

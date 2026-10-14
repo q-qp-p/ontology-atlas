@@ -29,22 +29,22 @@ import {
 import {
   EGO_NEIGHBOR_LIMIT,
   selectiveEgoNeighbors,
-} from "@/widgets/ontology-map/model/focus-state";
+} from "@/widgets/ontology-map/model/visibility/focus-state";
 import {
   DISC_LABEL_TOP_K,
   selectDiscLabelEligible,
-} from "@/widgets/ontology-map/model/label-lod";
+} from "@/widgets/ontology-map/model/visibility/label-lod";
 import {
   computeConcentricLayout,
   type LayoutGraphNode,
   type LayoutRings,
-} from "@/widgets/ontology-map/model/layout";
+} from "@/widgets/ontology-map/model/layout/layout";
 import {
   MAX_EXPANDED_PARENTS,
   limitExpandedParents,
   toggleExpandedParent,
   parseExpandedParentsParam,
-} from "@/views/home/model/url-state";
+} from "@/views/home/model/route-state/url-state";
 
 /**
  * Expand-settings contract — **evidence that the settings are not decoration**.
@@ -655,7 +655,7 @@ describe("동시에 펼쳐 둘 부모 — 딥링크도 상한을 받는다", () 
   });
 
   it("지도 화면이 그 상한을 실제로 건다", () => {
-    const source = readFileSync("src/views/home/model/use-topology-route-controls.tsx", "utf8");
+    const source = readFileSync("src/views/home/model/route-state/use-topology-route-controls.tsx", "utf8");
     const composition = readFileSync("src/views/home/ui/HomePage.tsx", "utf8");
     expect(composition).toContain("useTopologyRouteControls({");
     expect(composition).toContain("topologyRouteControls={topologyRouteControls}");
@@ -780,7 +780,7 @@ describe("머리 위 막대 — 동사가 든 글자 버튼", () => {
    * fallback appears on screen.
    */
   it("지도 화면이 세 문구를 번역해 캔버스로 넘긴다", () => {
-    const source = readFileSync("src/views/home/model/use-topology-scene-controls.tsx", "utf8");
+    const source = readFileSync("src/views/home/model/map-canvas/use-topology-scene-controls.tsx", "utf8");
     const composition = readFileSync("src/views/home/ui/HomePage.tsx", "utf8");
     const renderer = readFileSync("src/views/home/ui/TopologyMapRenderer.tsx", "utf8");
     expect(composition).toContain("useTopologySceneControls({");

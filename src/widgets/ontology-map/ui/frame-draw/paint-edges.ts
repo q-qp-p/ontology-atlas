@@ -1,7 +1,7 @@
-import { domeAncestryEdgeKey } from "../../model/dome-ancestry";
-import { trailGlintLocalPhase } from "../../model/footprint-steps";
-import { resolveEdgeEgoStateWithPair, type EdgeEgoState } from "../../model/focus-state";
-import { isPathLensEdge } from "../../model/path-lens";
+import { domeAncestryEdgeKey } from "../../model/dome-view/dome-ancestry";
+import { trailGlintLocalPhase } from "../../model/visibility/footprint-steps";
+import { resolveEdgeEgoStateWithPair, type EdgeEgoState } from "../../model/visibility/focus-state";
+import { isPathLensEdge } from "../../model/visibility/path-lens";
 import { isDirectionalRelation } from "@/entities/knowledge-graph";
 import {
   DOME_HALO_ALPHA_CAP,
@@ -12,7 +12,7 @@ import {
   domeEdgeWidthFactor,
   domeHaloPx,
 } from "../../model/dome-view/ink";
-import { focusFogFactor } from "../../render/dome-light";
+import { focusFogFactor } from "../../render/dome-view/dome-light";
 import {
   captionNormal,
   captionWithinFlatBudget,

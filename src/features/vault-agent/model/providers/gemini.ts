@@ -4,15 +4,15 @@ import type {
   NormalizedToolCall,
   ProviderAdapter,
   TurnAssembly,
-} from '../provider-adapter';
+} from './provider-adapter';
 import {
   PROVIDER_DEFAULT_MODELS,
   hasParameters,
   readVendorErrorMessage,
   toGeminiSchema,
-} from '../provider-adapter';
+} from './provider-adapter';
 
-import { invalidProviderResponse, isResponseObject, readResponseObject } from '../provider-response';
+import { invalidProviderResponse, isResponseObject, readResponseObject } from './provider-response';
 
 /**
  * Gemini adapter: tool calls have no id (`g{n}` is synthesized, results pair by name), safety

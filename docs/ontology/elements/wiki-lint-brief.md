@@ -6,7 +6,7 @@ title: Wiki lint brief
 display_en: Wiki lint brief
 display_ko: 위키 점검 지시문
 domain: domains/human-workbench
-path: src/features/library/lib/lint-brief.ts
+path: src/features/library/lib/wiki/lint-brief.ts
 created_by: "agent:claude-code"
 ---
 

@@ -5,7 +5,7 @@ import {
   type TerritoryLayout,
   type TerritoryLayoutOptions,
   type TerritoryTextRole,
-} from "../model/territories-layout";
+} from "../model/layout/territories-layout";
 import { drawTerritories, TERRITORY_FONTS, type TerritoryInks } from "../render/territories";
 import type { OntologyMapTokens } from "../tokens/read-map-tokens";
 import type { OntologyMapEdge, OntologyMapNode } from "../ui/OntologyMap";

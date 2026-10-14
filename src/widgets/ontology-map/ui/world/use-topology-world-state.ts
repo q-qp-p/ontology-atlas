@@ -6,8 +6,8 @@ import {
 import {
   type SpringOffset,
 } from "../../expressive/release-offsets";
-import { type ForceSimulation } from "../../model/force-layout";
-import { type HomeSpringState } from "../../model/relayout-home";
+import { type ForceSimulation } from "../../model/layout/force-layout";
+import { type HomeSpringState } from "../../model/layout/relayout-home";
 import type { NodeDragState } from "../input/topology-pointer-types";
 import { type TopologyWorld } from "./topology-world";
 
@@ -16,7 +16,7 @@ export function useTopologyWorldState() {
 
   const worldRef = useRef<TopologyWorld | null>(null);
 
-  // Live force simulation (`model/force-layout.ts`) — seeded off the concentric
+  // Live force simulation (`model/layout/force-layout.ts`) — seeded off the concentric
   // layout, ticked while warm (`heatRef > 0`) or while a node is pinned.
   const simRef = useRef<ForceSimulation | null>(null);
 

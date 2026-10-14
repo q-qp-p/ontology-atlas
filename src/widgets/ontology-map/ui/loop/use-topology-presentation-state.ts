@@ -9,8 +9,8 @@ import {
   useRef,
   type RefObject
 } from "react";
-import type { TopologyMapLensKind } from "../../model/path-lens";
-import { type TierRevealConfig, type ZoomTier } from "../../model/tier-visibility";
+import type { TopologyMapLensKind } from "../../model/visibility/path-lens";
+import { type TierRevealConfig, type ZoomTier } from "../../model/visibility/tier-visibility";
 import type { UseTopologyLoopArgs } from "./topology-loop-contract";
 
 interface Dependencies {

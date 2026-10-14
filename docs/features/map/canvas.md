@@ -302,7 +302,7 @@ The Flat overview is the dial: [`flat-dial.md`](flat-dial.md).
   pointing). With 8,422 dependencies, three in four inside a domain, and
   evidence 85% stale, it takes 7.7 ms and 1,086 calls (119, 116 and 73 fps). The
   sample vault and anything below the threshold draw pixel-identically. Model:
-  `src/widgets/ontology-map/model/strata-lod.ts`; gate:
+  `src/widgets/ontology-map/model/dome-view/strata-lod.ts`; gate:
   `tests/e2e/map-3d-strata-lod.spec.ts`.
 - **Neural composition and readable 3D connections** — Neural uses deterministic
   relation communities as a layout aid, with tighter local groups, lit cell bodies,

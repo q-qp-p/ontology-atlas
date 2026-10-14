@@ -2,10 +2,10 @@
  * The realm expansion runtime — at the moment a transition starts it
  * computes the subtree, the re-layout coordinates, the warding geometry and the
  * fling start coordinates in one pass and hands them to `use-topology-loop.ts`.
- * A thin adapter between the pure model (`model/realm.ts`) and the live world
+ * A thin adapter between the pure model (`model/realm/realm.ts`) and the live world
  * (`topology-world.ts`): all the loop does per frame (applying FLIP and fling
  * coordinates) is feed this data to the evaluate functions in
- * `model/realm-transition.ts`.
+ * `model/realm/realm-transition.ts`.
  */
 
 import type { CameraTarget } from "../../engine/camera";
@@ -18,8 +18,8 @@ import {
   realmMaxDepth,
   realmRingsForDepth,
   type RealmBounds,
-} from "../../model/realm";
-import type { LayoutRadii, LayoutRings } from "../../model/layout";
+} from "../../model/realm/realm";
+import type { LayoutRadii, LayoutRings } from "../../model/layout/layout";
 import { computeTopologyClusterState } from "./topology-cluster-state";
 import { radiusForKind, type TopologyWorld } from "./topology-world";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
