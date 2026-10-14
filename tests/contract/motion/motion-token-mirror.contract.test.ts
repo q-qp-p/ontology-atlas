@@ -23,7 +23,7 @@ const CSS = readGlobalCss();
 /** Reads the first `--name: value;` declaration, wherever it is declared. */
 function cssVar(name: string): string {
   const m = CSS.match(new RegExp(`^\\s*${name.replace(/[-]/g, "\\-")}\\s*:\\s*([^;]+);`, "m"));
-  if (!m) throw new Error(`${name} 이 app/globals.css 에 없다`);
+  if (!m) throw new Error(`${name} is missing from app/globals.css`);
   return m[1].trim();
 }
 
@@ -31,12 +31,12 @@ function cssVar(name: string): string {
 function msTokenToSeconds(name: string): number {
   const raw = cssVar(name);
   const m = raw.match(/^([\d.]+)ms$/);
-  if (!m) throw new Error(`${name} 이 ms 값이 아니다: ${raw}`);
+  if (!m) throw new Error(`${name} is not an ms value: ${raw}`);
   return Number(m[1]) / 1000;
 }
 
-describe("모션 토큰 거울 — CSS 램프와 JS 복사본", () => {
-  it("duration 3단이 CSS 램프와 정확히 같다", () => {
+describe("motion token mirror: CSS ramp and JS copy", () => {
+  it("the 3 duration steps equal the CSS ramp exactly", () => {
     expect(MOTION.fast.duration).toBeCloseTo(msTokenToSeconds("--motion-fast"), 6);
     expect(MOTION.base.duration).toBeCloseTo(msTokenToSeconds("--motion-base"), 6);
     expect(MOTION.settle.duration).toBeCloseTo(msTokenToSeconds("--motion-settle"), 6);
@@ -52,11 +52,11 @@ describe("모션 토큰 거울 — CSS 램프와 JS 복사본", () => {
     expect(STAGGER).toBeCloseTo(msTokenToSeconds("--motion-stagger"), 6);
   });
 
-  it("이름 집합이 램프 3단을 벗어나지 않는다 (medium/slow 부활 차단)", () => {
+  it("the name set stays within the 3 ramp steps, blocking a medium/slow revival", () => {
     expect(Object.keys(MOTION).sort()).toEqual(["base", "fast", "settle"]);
   });
 
-  it("이징이 `--motion-ease` 의 값 복사다", () => {
+  it("the easing is a value copy of `--motion-ease`", () => {
     const raw = cssVar("--motion-ease");
     const nums = raw.match(/[\d.]+/g)?.map(Number) ?? [];
     expect(nums).toHaveLength(4);
@@ -66,12 +66,12 @@ describe("모션 토큰 거울 — CSS 램프와 JS 복사본", () => {
   // An element receiving a ramp duration also takes the family's easing — swapping
   // only the duration keeps half of the family definition, "one shared easing across
   // the three" (design.md).
-  it("세 스텝이 같은 이징 패밀리를 탄다", () => {
+  it("the three steps ride the same easing family", () => {
     const eases = Object.values(MOTION).map((m) => JSON.stringify(m.ease));
     expect(new Set(eases).size).toBe(1);
   });
 
-  it("퇴장 이징이 `--motion-ease-exit` 의 값 복사다", () => {
+  it("the exit easing is a value copy of `--motion-ease-exit`", () => {
     const raw = cssVar("--motion-ease-exit");
     const nums = raw.match(/[\d.]+/g)?.map(Number) ?? [];
     expect(nums).toHaveLength(4);
@@ -82,7 +82,7 @@ describe("모션 토큰 거울 — CSS 램프와 JS 복사본", () => {
   // point sits on or below the diagonal (y2 <= x2) is still gaining speed when it ends; one
   // whose second point sits above it (y2 > x2) is slowing down. Exits accelerate away,
   // entries decelerate into place — the property, not the four numbers, is the contract.
-  it("퇴장 곡선은 끝까지 가속하고 등장 곡선은 감속한다", () => {
+  it("the exit curve accelerates to the end and the entrance curve decelerates", () => {
     const [, , exitX2, exitY2] = MOTION_EASE_EXIT;
     const [, , enterX2, enterY2] = MOTION_EASE;
     expect(exitY2).toBeLessThanOrEqual(exitX2);
@@ -90,7 +90,7 @@ describe("모션 토큰 거울 — CSS 램프와 JS 복사본", () => {
     expect(JSON.stringify(MOTION_EASE_EXIT)).not.toBe(JSON.stringify(MOTION_EASE));
   });
 
-  it("램프 세 스텝은 등장 패밀리를 타고, 퇴장 패밀리는 EXIT_TRANSITION 만 탄다", () => {
+  it("the three ramp steps ride the entrance family, and the exit family rides only EXIT_TRANSITION", () => {
     for (const [name, step] of Object.entries(MOTION)) {
       expect(JSON.stringify(step.ease), `MOTION.${name} rides the exit curve`).toBe(
         JSON.stringify(MOTION_EASE),
@@ -105,7 +105,7 @@ describe("모션 토큰 거울 — CSS 램프와 JS 복사본", () => {
    * to import `MOTION_EASE_EXIT` directly and hand it to `transition=`. Closing the import
    * closes that door without a second AST selector.
    */
-  it("MOTION_EASE_EXIT 은 src/shared/motion 밖에서 직접 쓰이지 않는다 — 등장은 퇴장 곡선을 못 탄다", () => {
+  it("MOTION_EASE_EXIT is not used directly outside src/shared/motion, so an entrance cannot ride the exit curve", () => {
     const root = path.join(process.cwd(), "src");
     const files: string[] = [];
     const walk = (dir: string) => {
@@ -131,7 +131,7 @@ describe("모션 토큰 거울 — CSS 램프와 JS 복사본", () => {
    * `Out`. A `transition:` reference is refused too: a transition runs both ways on one
    * curve, so it would hand the accelerating curve to the entrance as well.
    */
-  it("CSS 에서 `var(--motion-ease-exit)` 는 나가는 규칙의 *Out 키프레임에만 붙는다", () => {
+  it("in CSS `var(--motion-ease-exit)` attaches only to the *Out keyframes of leaving rules", () => {
     /*
      * Split on `}` rather than a global `([^{}]*)\{([^{}]*)\}` match: the leading `[^{}]*` backtracks from
      * every position in the 339 KB stylesheet and is quadratic.
@@ -172,7 +172,7 @@ describe("모션 토큰 거울 — CSS 램프와 JS 복사본", () => {
      */
   }, 20_000);
 
-  it("오버레이 스프링이 CSS 토큰의 값 복사다", () => {
+  it("the overlay spring is a value copy of the CSS token", () => {
     const response = Number(cssVar("--overlay-spring-response"));
     const damping = Number(cssVar("--overlay-spring-damping"));
     expect(OVERLAY_SPRING.duration).toBeCloseTo(response, 6);
@@ -181,7 +181,7 @@ describe("모션 토큰 거울 — CSS 램프와 JS 복사본", () => {
     expect(OVERLAY_SPRING.bounce).toBe(0);
   });
 
-  it("감속 동등물이 fast 와 같은 시간이다 (정보 축은 남기고 이동 축만 없앤다)", () => {
+  it("the reduced-motion equivalent takes the same time as fast, keeping the information axis and removing only the movement axis", () => {
     expect(OVERLAY_SPRING_REDUCED.duration).toBeCloseTo(MOTION.fast.duration, 6);
   });
 });

@@ -24,17 +24,17 @@ function actionReferences() {
   });
 }
 
-describe("GitHub Actions 공급망 고정", () => {
-  it("워크플로와 로컬 복합 액션의 모든 외부 Action을 전체 commit SHA로 고정한다", () => {
+describe("GitHub Actions supply chain pinning", () => {
+  it("pins every external Action of workflows and local composite actions to a full commit SHA", () => {
     const references = actionReferences();
-    expect(references.length, "검사 대상이 비어 있으면 이 게이트는 아무것도 지키지 않는다").toBeGreaterThan(10);
+    expect(references.length, "if the scan target is empty this gate guards nothing").toBeGreaterThan(10);
     expect(
       references.some(
         ({ path, reference }) =>
           path === ".github/workflows/deploy-pages.yml" &&
           reference.startsWith("actions/upload-pages-artifact@"),
       ),
-      "`- uses:` 목록형 줄을 놓치면 Pages 배포 Action 전체가 검사 밖으로 빠진다",
+      "missing a `- uses:` list-style line drops the whole Pages deploy Action out of the scan",
     ).toBe(true);
     expect(
       references.some(
@@ -42,7 +42,7 @@ describe("GitHub Actions 공급망 고정", () => {
           path === ".github/actions/setup-playwright/action.yml" &&
           reference.startsWith("actions/cache@"),
       ),
-      "워크플로만 읽으면 공용 복합 Action 안의 공급망 입력을 놓친다",
+      "reading workflows only misses the supply chain inputs inside shared composite Actions",
     ).toBe(true);
 
     const mutable = references.filter(({ reference }) => {
@@ -53,7 +53,7 @@ describe("GitHub Actions 공급망 고정", () => {
 
     expect(
       mutable,
-      "태그와 브랜치는 같은 이름이 다른 코드를 가리킬 수 있다 — 전체 commit SHA를 쓰고 옆 주석에 사람이 읽을 버전을 남겨라",
+      "the same tag or branch name can point at different code; use a full commit SHA and leave a human-readable version in the adjacent comment",
     ).toEqual([]);
   });
 

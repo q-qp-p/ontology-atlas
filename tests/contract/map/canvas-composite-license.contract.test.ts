@@ -89,7 +89,7 @@ function unboundedLighter(source: string): number[] {
     }
     return lines;
 }
-describe("캔버스 합성 — 발광은 허가된 곳에서만", () => {
+describe("canvas compositing: glow is allowed only where licensed", () => {
     it.each(Object.entries(LICENSED))("%s bounds every lighter inside the function that sets it", (rel) => {
         const source = readCode(rel);
         expect((source.match(/globalCompositeOperation\s*=\s*["']lighter["']/g) ?? []).length, `${rel} sets no lighter`).toBeGreaterThan(0);
@@ -100,8 +100,8 @@ describe("캔버스 합성 — 발광은 허가된 곳에서만", () => {
         expect(users.filter((file) => !file.startsWith(PLUS_LIGHTER_HOME))).toEqual([]);
         expect(users.some((file) => file.startsWith(PLUS_LIGHTER_HOME))).toBe(true);
     });
-    it("걸어온 별은 십자를 달지 않는다 — 물러날 것이 없다", () => {
+    it("a walked star gets no cross spike, since it has nothing to recede from", () => {
         const star = readCode("src/shared/lib/map-canvas/star-emission.ts");
-        expect(/drawDiffractionSpike/.test(star), "걸어온 별이 다시 십자를 그린다 — 크기 스파이크와 한 점에서 겹친다").toBe(false);
+        expect(/drawDiffractionSpike/.test(star), "a walked star draws the cross again, overlapping the size spike at one point").toBe(false);
     });
 });

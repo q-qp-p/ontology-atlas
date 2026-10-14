@@ -14,8 +14,8 @@ function tsxFiles(dir: string): string[] {
   });
 }
 
-describe('HTML 안의 JSON-LD는 script 경계를 데이터가 닫지 못한다', () => {
-  it('모든 app JSON-LD가 중앙 JsonLd 경계를 거친다', () => {
+describe('JSON-LD in HTML: data cannot close the script boundary', () => {
+  it('every app JSON-LD goes through the central JsonLd boundary', () => {
     const sources = tsxFiles(APP_ROOT).map((file) => ({
       file,
       source: readFileSync(file, 'utf8'),
@@ -23,17 +23,17 @@ describe('HTML 안의 JSON-LD는 script 경계를 데이터가 닫지 못한다'
     const directScripts = sources.filter(({ source }) => source.includes('application/ld+json'));
     const consumers = sources.filter(({ source }) => /<JsonLd(?:\s|>)/u.test(source));
 
-    expect(consumers.length, '검사가 빈 app 표면에서 조용히 통과하면 안 된다').toBeGreaterThan(0);
+    expect(consumers.length, 'the check must not pass quietly over an empty app surface').toBeGreaterThan(0);
     expect(
       directScripts.map(({ file }) => relative(ROOT, file)),
-      'app은 raw JSON-LD script를 직접 소유하지 않는다',
+      'app does not own a raw JSON-LD script directly',
     ).toEqual([]);
     for (const { file, source } of consumers) {
       const label = relative(ROOT, file);
-      expect(source, `${label}: raw script 삽입을 다시 만들지 않는다`).not.toContain(
+      expect(source, `${label}: do not rebuild raw script insertion`).not.toContain(
         'dangerouslySetInnerHTML',
       );
-      expect(source, `${label}: escape가 한 곳에 남도록 JsonLd를 쓴다`).toMatch(
+      expect(source, `${label}: use JsonLd so the escape stays in one place`).toMatch(
         /<JsonLd(?:\s|>)/u,
       );
     }

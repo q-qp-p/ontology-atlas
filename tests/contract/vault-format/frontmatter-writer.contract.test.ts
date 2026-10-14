@@ -41,15 +41,15 @@ describe("frontmatter writer contract — MCP and CLI agree", () => {
 const ROUND_TRIP_CASES: Array<{ name: string; frontmatter: Record<string, unknown> }> = [
   { name: "quoted mapping keys and nested strings", frontmatter: { 'a:b': 'Top', labels: { 'x,y': '001', flag: 'false', empty: '', "owner's": 'Literal', '한글:키': 'Value' } } },
   { name: "literal escape sequences and control characters stay distinct", frontmatter: { labels: { 'key\\name': 'C:\\new\\tools, x', 'actual\nkey\t': 'actual\nvalue\t' } } },
-  { name: "따옴표 든 값 — 이스케이프가 누적되지 않는다", frontmatter: { kind: "capability", title: 'say "hello"' } },
-  { name: "배열 항목 안의 콤마", frontmatter: { kind: "capability", tags: ["a, b", "c"] } },
-  { name: "객체 값 안의 콤마", frontmatter: { kind: "capability", labels: { ko: "지도, 검색", en: "Map" } } },
-  { name: "역슬래시 든 값", frontmatter: { kind: "capability", title: "C:\\path, x" } },
-  { name: "따옴표와 콤마 혼합", frontmatter: { kind: "capability", labels: { ko: '지도, "검색"', en: "Map" } } },
-  { name: "콜론 든 값", frontmatter: { kind: "capability", title: "a: b" } },
+  { name: "a value with quotes: escapes do not accumulate", frontmatter: { kind: "capability", title: 'say "hello"' } },
+  { name: "a comma inside an array item", frontmatter: { kind: "capability", tags: ["a, b", "c"] } },
+  { name: "a comma inside an object value", frontmatter: { kind: "capability", labels: { ko: "지도, 검색", en: "Map" } } },
+  { name: "a value with a backslash", frontmatter: { kind: "capability", title: "C:\\path, x" } },
+  { name: "a mix of quotes and commas", frontmatter: { kind: "capability", labels: { ko: '지도, "검색"', en: "Map" } } },
+  { name: "a value with a colon", frontmatter: { kind: "capability", title: "a: b" } },
 ];
 
-describe("왕복 계약 — 쓰고 다시 읽으면 같다 (누적 오염 차단)", () => {
+describe("round trip contract: what is written reads back the same (blocks accumulated contamination)", () => {
   for (const c of ROUND_TRIP_CASES) {
     it(c.name, () => {
       for (const [label, build, parse] of [

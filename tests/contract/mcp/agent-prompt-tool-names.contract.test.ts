@@ -71,10 +71,10 @@ function citedToolNames(prompt: string): string[] {
   return [...cited];
 }
 
-describe("복사 지시문 — 실재하는 것만 부른다", () => {
+describe("copied instructions name only what exists", () => {
   const registered = registeredToolNames();
 
-  it("탐지기가 빈 집합 위에서 돌지 않는다 — MCP 도구 목록이 실제로 읽힌다", () => {
+  it("the detector does not run on an empty set, since the MCP tool list is actually read", () => {
     expect(registered.size).toBeGreaterThan(20);
     expect(registered.has("connection_info")).toBe(true);
   });
@@ -83,22 +83,22 @@ describe("복사 지시문 — 실재하는 것만 부른다", () => {
     ["analyze", buildAgentAnalyzePrompt({ vaultPath: "/tmp/vault" })],
     ["setup", buildAgentSetupPrompt({ vaultPath: "/tmp/vault" })],
   ] as const) {
-    it(`${label} 프롬프트가 부르는 도구는 전부 MCP 에 등록돼 있다`, () => {
+    it(`every tool the ${label} prompt calls is registered in the MCP`, () => {
       const unknown = citedToolNames(prompt).filter((n) => !registered.has(n));
       expect(unknown).toEqual([]);
     });
 
-    it(`${label} 프롬프트는 사용자 환경에 없는 경로를 안 부른다`, () => {
+    it(`the ${label} prompt names no path that is absent from the user's environment`, () => {
       expect(prompt).not.toContain("npx ontology-atlas");
       expect(prompt).not.toMatch(/\/ontology-(bootstrap|sync|extract)/);
     });
 
-    it(`${label} 프롬프트는 볼트 경로를 문장 안에 싣는다`, () => {
+    it(`the ${label} prompt carries the vault path inside the sentence`, () => {
       expect(prompt).toContain("/tmp/vault");
     });
   }
 
-  it("analyze 프롬프트는 **승인 전 쓰기 금지**를 명시한다", () => {
+  it("the analyze prompt states **no writes before approval**", () => {
     /*
      * Setup prompts of this kind usually end in autonomous execution. This paragraph is
      * where the contract that a human arbitrates meaning is written into the instructions
@@ -120,7 +120,7 @@ describe("복사 지시문 — 실재하는 것만 부른다", () => {
     expect(prompt).toMatch(/approv(al|ed|e)/i);
   });
 
-  it("경로를 모르면 그 사실을 문장으로 말한다 — 빈 자리를 남기지 않는다", () => {
+  it("when the path is unknown it says so in a sentence, leaving no blank slot", () => {
     const prompt = buildAgentAnalyzePrompt({ vaultPath: null });
     expect(prompt).toContain("the folder you are opened in");
   });
@@ -129,7 +129,7 @@ describe("복사 지시문 — 실재하는 것만 부른다", () => {
    * A prompt that names the write tools must name the fields that authorize them, taken from the
    * server's required output schema, since acceptance binds to a generated plan digest.
    */
-  it("쓰기 도구를 부르는 프롬프트는 그 쓰기를 허가하는 필드도 말한다", () => {
+  it("a prompt that calls a write tool also names the field that permits that write", () => {
     const prompt = buildAgentAnalyzePrompt({ vaultPath: "/tmp/vault" });
     const namesWriteTools = /add_concepts?|add_relations?/.test(prompt);
     expect(namesWriteTools).toBe(true);
@@ -168,7 +168,7 @@ describe("복사 지시문 — 실재하는 것만 부른다", () => {
    * stays open. The write tools are read from the server's own tool list, so this
    * fails if that boundary ever moves too.
    */
-  it("혼자서는 닿을 수 없는 상태를 쫓지 않고, 열려 있는 길을 말한다", () => {
+  it("does not chase a state it cannot reach alone, and names the open path instead", () => {
     const prompt = buildAgentAnalyzePrompt({ vaultPath: "/tmp/vault" });
     const source = MCP_SURFACE_FILES.map((file) => readFileSync(file, "utf8")).join("\n");
     expect(
@@ -198,13 +198,13 @@ describe("복사 지시문 — 실재하는 것만 부른다", () => {
    * re-authors instead invalidates its own approval, which is what made the
    * walkthrough's three turns produce three different plans.
    */
-  it("사람이 본 그 제안을 그대로 보관하라고 말한다", () => {
+  it("tells the agent to store the proposal the person saw exactly as shown", () => {
     const prompt = buildAgentAnalyzePrompt({ vaultPath: "/tmp/vault" });
     expect(prompt).toMatch(/save the exact proposal/i);
     expect(prompt).toMatch(/verbatim reproduces the same\s+digest/i);
   });
 
-  it("analyze 프롬프트는 승인만으로 쓰기가 되는 것처럼 말하지 않는다", () => {
+  it("the analyze prompt does not suggest that approval alone performs the write", () => {
     // The exact sentence that produced the dead end, and the shape of any successor.
     const prompt = buildAgentAnalyzePrompt({ vaultPath: "/tmp/vault" });
     expect(prompt).not.toMatch(/write only approved items/i);

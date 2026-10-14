@@ -61,7 +61,7 @@ import { KNOWN_VAULT_KINDS } from "../../../mcp/src/validate.mjs";
 
 describe("vault kind schema contract — mcp & cli agree", () => {
   describe("node UID — immutable identity format", () => {
-    it("생성문이 매 호출 새 lowercase UUIDv4를 로컬 발급한다", () => {
+    it("the generator locally issues a new lowercase UUIDv4 on every call", () => {
       const first = generateUidMcp();
       const second = generateUidMcp();
 
@@ -78,18 +78,18 @@ describe("vault kind schema contract — mcp & cli agree", () => {
       ["uppercase", "01890F3E-7B5D-4C0A-8F14-123456789ABC"],
       ["not v4", "01890f3e-7b5d-7c0a-8f14-123456789abc"],
       ["not uuid", "node-12"],
-    ])("%s UID를 양쪽에서 같은 invalid로 판정한다", (_name, uid) => {
+    ])("%s UID is judged the same invalid on both sides", (_name, uid) => {
       expect(uidIssueMcp(uid)).toBeTruthy();
       expect(uidIssueCli(uid)).toBe(uidIssueMcp(uid));
     });
 
-    it("유효한 lowercase UUIDv4는 양쪽에서 통과한다", () => {
+    it("a valid lowercase UUIDv4 passes on both sides", () => {
       const uid = "01890f3e-7b5d-4c0a-8f14-123456789abc";
       expect(uidIssueMcp(uid)).toBeNull();
       expect(uidIssueCli(uid)).toBeNull();
     });
 
-    it("merge는 survivor UID를 보존하고 source identity history를 흡수한다", () => {
+    it("merge preserves the survivor UID and absorbs the source identity history", () => {
       const from = {
         uid: "01890f3e-7b5d-4c0a-8f14-123456789abc",
         merged_uids: ["11890f3e-7b5d-4c0a-8f14-123456789abc"],
@@ -140,7 +140,7 @@ describe("vault kind schema contract — mcp & cli agree", () => {
     });
   });
 
-  it("capability path 는 양쪽 쓰기 경로의 정본 구현 근거다", () => {
+  it("capability path is the canonical implementation basis for both write paths", () => {
     expect(VAULT_KIND_SCHEMA.capability.optional.length).toBeGreaterThan(0);
     expect(VAULT_KIND_SCHEMA.capability.optional).toContain("path");
     expect(VAULT_KIND_SCHEMA.capability.preferredOrder.indexOf("path")).toBeGreaterThan(
@@ -181,7 +181,7 @@ describe("vault kind schema contract — mcp & cli agree", () => {
     }
   });
 
-  describe("flatSlugIssue — 슬러그는 평평한 식별자다 (2026-08-01 판정)", () => {
+  describe("flatSlugIssue: a slug is a flat identifier (decided 2026-08-01)", () => {
     // The two packages must agree, or `add_concept` and the CLI's `add` become different doors.
     for (const c of FLAT_SLUG_CASES) {
       it(`${c.name} (mcp)`, () => {
@@ -225,7 +225,7 @@ describe("vault kind schema contract — mcp & cli agree", () => {
 
 // Per-locale display names: MCP and the CLI must normalise identically or the vault ends up with
 // different keys.
-describe("display_<locale> 정규화 2-way contract", () => {
+describe("display_<locale> normalization 2-way contract", () => {
   it("emits display_<locale> in both builders identically", () => {
     const args = {
       uid: "31890f3e-7b5d-4c0a-8f14-123456789abc",
@@ -243,8 +243,8 @@ describe("display_<locale> 정규화 2-way contract", () => {
  * Value authority for the node qualification gate. The logic lives in `commitDoc` (`mcp/src/vault/`)
  * and the text in `mcp/src/construction-rules.mjs`; the CLI imports the same module.
  */
-describe("노드 자격 게이트 상수 — 값 정본", () => {
-  it("잠긴 값들", () => {
+describe("node qualification gate constants: the value source", () => {
+  it("locked values", () => {
     // Unresolved references are reported from the first one — an unresolved item is not
     // a "small child" but a different category (evidence), so there is no tolerable count.
     expect(gateMcp.NOTICE_THRESHOLD).toBe(1);
@@ -257,7 +257,7 @@ describe("노드 자격 게이트 상수 — 값 정본", () => {
 
   // The researched starting range is a trigger, not a hard cap, and steps aside once a vault has grown
   // enough to produce its own p90.
-  it("부트스트랩 트리거는 8/6 이고 project→domain 은 없다", () => {
+  it("the bootstrap trigger is 8/6 and there is no project to domain", () => {
     expect(gateMcp.BOOTSTRAP_FANOUT_TRIGGER).toEqual({
       domain_to_capability: 8,
       capability_to_element: 6,
@@ -272,11 +272,11 @@ describe("노드 자격 게이트 상수 — 값 정본", () => {
     expect(gateMcp.DENSE_PARENT_RESOLUTION_FLOOR).toBe(0.7);
   });
 
-  it("중첩 상수도 얼어 있다 — Object.freeze 는 얕다", () => {
+  it("nested constants are frozen too, since Object.freeze is shallow", () => {
     expect(Object.isFrozen(gateMcp.BOOTSTRAP_FANOUT_TRIGGER)).toBe(true);
   });
 
-  it("어떤 값도 자식 수 상한이 아니다 — 상한은 카운슬이 모든 형태로 기각했다", () => {
+  it("no value is a cap on child count, since the council rejected a cap in every form", () => {
     // What this test protects is the *meaning*, not the number. A name of the "keep it
     // under N" kind appearing in this block is the fan-out cap returning under a new
     // name, and a model will satisfy that metric with two empty buckets.
@@ -290,16 +290,16 @@ describe("노드 자격 게이트 상수 — 값 정본", () => {
  * Three-way check on the construction-rules text, mcp authority against the in-app chat prompt: `src/`
  * and `mcp/` are separate packages that cannot cross-import, so the text exists as literal copies.
  */
-describe("구축 규격 텍스트 3-way — mcp 정본 ↔ 앱 채팅 프롬프트", () => {
-  it("절차 전문이 바이트 그대로 실려 있다", () => {
+describe("construction spec text 3-way: mcp canonical to app chat prompt", () => {
+  it("the full procedure is carried byte for byte", () => {
     expect(PRODUCT_DISCIPLINE).toContain(CONSTRUCTION_RULES_EN);
   });
 
-  it("채팅 전용 차분도 바이트 그대로 실려 있다", () => {
+  it("the chat-only delta is carried byte for byte too", () => {
     expect(PRODUCT_DISCIPLINE).toContain(CHAT_RULES_DELTA_EN);
   });
 
-  it("차분의 핵심 — 도구를 부르기 전에 사람에게 먼저 말한다", () => {
+  it("the point of the delta: before calling a tool, tell the person first", () => {
     // MCP returns structured warnings to a program; chat speaks to a person. Without
     // this sentence the app quietly restructures the user's ontology and records it
     // only where the user will not look.
@@ -307,7 +307,7 @@ describe("구축 규격 텍스트 3-way — mcp 정본 ↔ 앱 채팅 프롬프�
     expect(PRODUCT_DISCIPLINE).toContain("say so in the conversation first");
   });
 
-  it("meta-model 경계가 바이트 그대로 실려 있고 authorable/reserved를 구분한다", () => {
+  it("the meta-model boundary is carried byte for byte and separates authorable from reserved", () => {
     expect(PRODUCT_DISCIPLINE).toContain(META_MODEL_RULES_EN);
     // The schema decides project's ownership scope. A prompt saying "domains only"
     // stops the agent proposing a capability or element directly under it.
@@ -330,7 +330,7 @@ describe("구축 규격 텍스트 3-way — mcp 정본 ↔ 앱 채팅 프롬프�
     expect(PRODUCT_DISCIPLINE).toContain("`vault-readme` is a reserved reader kind");
   });
 
-  it("element 를 파일 목록과 혼동하지 않고 구조 감사는 실제 부모를 읽는다", () => {
+  it("does not confuse element with a file list, and the structure audit reads the real parent", () => {
     const discipline = PRODUCT_DISCIPLINE.replace(/\s+/g, " ");
     expect(discipline).toContain(
       "A bare path is evidence for an element role, not a concept by itself",
@@ -352,7 +352,7 @@ describe("구축 규격 텍스트 3-way — mcp 정본 ↔ 앱 채팅 프롬프�
     );
   });
 
-  it("모델이 읽는 프롬프트에 한글이 없다 — 화면 문구와 다른 채널이다", () => {
+  it("the prompt the model reads has no Hangul, a different channel from on-screen wording", () => {
     expect(PRODUCT_DISCIPLINE).not.toMatch(/[가-힣]/);
   });
 });

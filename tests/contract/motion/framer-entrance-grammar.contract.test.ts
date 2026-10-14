@@ -65,8 +65,8 @@ function offenders(): Array<{ file: string; line: number; name: string; text: st
   return found;
 }
 
-describe("framer 등장 문법 — 시작 위치는 이름으로만 온다", () => {
-  it("두 문법의 값이 실제로 그 두 개다 — 이름만 있고 값이 바뀌면 소용없다", () => {
+describe("framer entrance grammar: the start position comes only by name", () => {
+  it("the two grammar values really are those two, since a name without its value is useless once the value changes", () => {
     expect(OVERLAY_RISE).toEqual({ opacity: 0, y: 8 });
     expect(OVERLAY_SETTLED).toEqual({ opacity: 1, y: 0 });
     expect(SHEET_RISE).toEqual({ opacity: 0, y: 12, scale: 0.985 });
@@ -74,7 +74,7 @@ describe("framer 등장 문법 — 시작 위치는 이름으로만 온다", () 
     expect(SHEET_RISE_REDUCED).toEqual({ opacity: 0, y: 0, scale: 1 });
   });
 
-  it("쉬는 자리는 시작 자리의 모든 축을 되돌린다 — scale 을 빠뜨리면 작은 채로 멈춘다", () => {
+  it("the resting position reverts every axis of the start position, and missing scale would stop it small", () => {
     for (const [start, rest] of [
       [OVERLAY_RISE, OVERLAY_SETTLED],
       [SHEET_RISE, SHEET_SETTLED],
@@ -83,7 +83,7 @@ describe("framer 등장 문법 — 시작 위치는 이름으로만 온다", () 
     }
   });
 
-  it("탐지기가 공회전하지 않는다 — 실제 파일을 읽고, 이름 붙은 값만 잡는다", () => {
+  it("the detector does not idle, since it reads the real files and catches only named values", () => {
     expect(TRACKED.length).toBeGreaterThan(200);
     const hits = (line: string) => {
       MOTION_PROP.lastIndex = 0;
@@ -108,7 +108,7 @@ describe("framer 등장 문법 — 시작 위치는 이름으로만 온다", () 
     expect(hits("initial={SHEET_RISE}")).toEqual([]);
   });
 
-  it("이름이 있는 시작 위치는 어디에서도 숫자로 다시 적히지 않는다", () => {
+  it("a named start position is never written again as a number anywhere", () => {
     const hits = offenders();
     expect(
       hits,

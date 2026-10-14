@@ -15,19 +15,19 @@ const INSTRUMENTATION = join(
 const source = readFileSync(INSTRUMENTATION, "utf8");
 const loop = readFileSync(join(process.cwd(), "src/widgets/ontology-map/ui/loop/use-topology-loop.ts"), "utf8");
 
-describe("지도 검사 훅 (window.__atlasMap)", () => {
+describe("map inspection hook (window.__atlasMap)", () => {
   it("the production loop installs the inspection hook", () => {
     expect(loop).toMatch(/import\s*\{\s*useTopologyMapInstrumentation\s*\}\s*from\s*["']\.\/use-topology-map-instrumentation["']/);
     expect(loop).toMatch(/\buseTopologyMapInstrumentation\(\{/);
   });
 
-  it("`e2e` 쿼리가 있을 때만 붙는다 — 상시 노출이 아니다", () => {
+  it("attaches only when the `e2e` query is present, never as a permanent exposure", () => {
     expect(source).toContain("__atlasMap");
     // The gate must have this shape. Delete the condition and the diagnostic window becomes product surface.
     expect(source).toMatch(/URLSearchParams\(window\.location\.search\)\.has\("e2e"\)/);
   });
 
-  it("창구를 걷어낸다 — 언마운트 뒤 전역에 남지 않는다", () => {
+  it("removes the accessor, so nothing is left on the global after unmount", () => {
     expect(source).toMatch(/delete\s+\(window as unknown as \{\s*__atlasMap\?: typeof hook;?\s*\}\)\.__atlasMap/);
   });
 
@@ -46,11 +46,11 @@ describe("지도 검사 훅 (window.__atlasMap)", () => {
     "chips:", // Does a chip's claim match reality
   ] as const;
 
-  it.each(REQUIRED_ACCESSORS)("`%s` 창구가 있다", (accessor) => {
+  it.each(REQUIRED_ACCESSORS)("`%s` accessor exists", (accessor) => {
     expect(source).toMatch(new RegExp(`\\b${accessor}\\s*\\(\\)\\s*=>`));
   });
 
-  it("엣지는 컨트롤 포인트까지 낸다 — 현선을 재면 화면에 없는 교차를 센다", () => {
+  it("edges expose their control points, since measuring the chord would count crossings that are not on screen", () => {
     // Keep the public coordinate fields. Accuracy is checked against actual
     // canvas stroke commands in map-3d-edge-picking.spec.ts; pinning the old
     // endpoint-offset formula here had preserved a different curve than paint.
@@ -58,7 +58,7 @@ describe("지도 검사 훅 (window.__atlasMap)", () => {
     expect(source).toMatch(/controlY:\s*toScreenY\(/);
   });
 
-  it("노드는 화면 반지름을 낸다 — 겹침은 반지름 없이 셀 수 없다", () => {
+  it("nodes expose their screen radius, since overlap cannot be counted without a radius", () => {
     // Must be **the same expression** as the drawing side: radiusForKind ×
     // magnitudeScale × camera zoom (× the 3D frame's perspective factor s — identical
     // to draw; 1 in 2D).
@@ -67,13 +67,13 @@ describe("지도 검사 훅 (window.__atlasMap)", () => {
     );
   });
 
-  it("`draggable` 을 노출한다 — 호버 히트와 «잡히는지» 는 다르다", () => {
+  it("exposes `draggable`, which differs from a hover hit saying whether it can be grabbed", () => {
     // A pointer cursor still fails to grab a node that is absent from the simulation; it becomes a pan.
     // Without this field the harness cannot see the difference.
     expect(source).toMatch(/draggable:\s*sim\?\.hasNode/);
   });
 
-  it("칩은 주장과 실제를 나란히 낸다", () => {
+  it("the chip reports the claim and the actual side by side", () => {
     // With `claimedCount` but no `shownChildren`, the mismatch of "says +24 and draws
     // 1" is invisible from outside — a defect that actually occurred.
     expect(source).toMatch(/\bclaimedCount:\s*chip\.count/);

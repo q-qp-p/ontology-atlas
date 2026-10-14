@@ -30,13 +30,13 @@ function statusChipClassStrings(source: string): string[] {
     .filter((line) => line.includes("rounded-micro") && line.includes("tracking-caps-"));
 }
 
-describe("편집기 상단 줄 — 상태 칩의 타입 방언은 하나다", () => {
-  it("상태 칩 어디에도 `text-caption`(9.5px) 이 없다", () => {
+describe("editor top line: the status chip has one type dialect", () => {
+  it("there is no `text-caption` (9.5px) anywhere in the status chip", () => {
     const chips = statusChipClassStrings(sourceWithoutComments());
     // Idling guard — if no chip is found, the "0 violations" below means nothing.
     expect(
       chips.length,
-      "상태 칩을 하나도 못 찾았다 — 서명(rounded-micro + tracking-caps)이 낡았다",
+      "found no status chip at all, so the signature (rounded-micro + tracking-caps) is stale",
     ).toBeGreaterThanOrEqual(3);
 
     const offenders = chips.filter((chip) => chip.includes("text-caption"));
@@ -48,16 +48,16 @@ describe("편집기 상단 줄 — 상태 칩의 타입 방언은 하나다", ()
     ).toEqual([]);
   });
 
-  it("상태 칩 셋이 실제로 같은 스텝을 쓴다", () => {
+  it("the three status chips really use the same step", () => {
     const source = sourceWithoutComments();
     // Find each chip by its own i18n key and read the class on the span that opens it.
     const chipKeys = ["saveContractAriaLabel", "saveWorkflowAriaLabel"] as const;
     for (const key of chipKeys) {
       const idx = source.indexOf(key);
-      expect(idx, `${key} 를 못 찾았다 — 게이트가 낡았다`).toBeGreaterThan(0);
+      expect(idx, `could not find ${key}, so the gate is stale`).toBeGreaterThan(0);
       const openTag = source.lastIndexOf("<span", idx);
       const chip = source.slice(openTag, idx);
-      expect(chip, `${key} 칩이 text-label 을 잃었다`).toContain("text-label");
+      expect(chip, `the ${key} chip lost text-label`).toContain("text-label");
     }
     // The save-state chip has three tone branches — all three must use the same step.
     const toneBranches = source
@@ -65,10 +65,10 @@ describe("편집기 상단 줄 — 상태 칩의 타입 방언은 하나다", ()
       .filter((l) => l.includes("rounded-micro") && l.includes("tracking-caps-10"));
     expect(
       toneBranches.length,
-      "저장 상태 칩의 톤 분기를 못 찾았다 — 게이트가 공회전한다",
+      "could not find the tone branch of the save status chip, so the gate spins idle",
     ).toBeGreaterThanOrEqual(3);
     for (const branch of toneBranches) {
-      expect(branch, "톤 분기마다 스텝이 갈리면 상태에 따라 글자 크기가 변한다").toContain(
+      expect(branch, "if the step splits per tone branch, the text size changes with the status").toContain(
         "text-label",
       );
     }
@@ -79,8 +79,8 @@ describe("편집기 상단 줄 — 상태 칩의 타입 방언은 하나다", ()
  * In this whole file `text-caption` appears at the eyebrow only, the one micro label the ramp
  * describes. A new place that needs caption grows this list with the reason written down.
  */
-describe("편집기의 9.5px 은 아이브로우 한 곳뿐이다", () => {
-  it("`text-caption` 을 쓰는 자리가 아이브로우 외에 없다", () => {
+describe("the 9.5px in the editor is the eyebrow only", () => {
+  it("no place other than the eyebrow uses `text-caption`", () => {
     const source = sourceWithoutComments();
     const lines = source.split("\n");
     const captionLines = lines
@@ -91,7 +91,7 @@ describe("편집기의 9.5px 은 아이브로우 한 곳뿐이다", () => {
     // violations" forever. At least one occurrence must exist.
     expect(
       captionLines.length,
-      "text-caption 이 한 곳도 없다 — 아이브로우가 사라졌거나 게이트가 낡았다",
+      "there is no text-caption at all, so the eyebrow is gone or the gate is stale",
     ).toBeGreaterThanOrEqual(1);
 
     // The eyebrow renders its own i18n key on the next line; that is how it is told apart.
@@ -106,14 +106,14 @@ describe("편집기의 9.5px 은 아이브로우 한 곳뿐이다", () => {
   });
 });
 
-describe("「미리보기」 라벨은 한 화면에 하나다", () => {
-  it("편집기 split view 토글이 문서 헤더 탭과 같은 이름을 쓰지 않는다", () => {
+describe("the \"Preview\" label is one per screen", () => {
+  it("the editor split view toggle does not use the same name as the document header tab", () => {
     for (const locale of ["ko", "en"] as const) {
       const messages = JSON.parse(readFileSync(`messages/${locale}.json`, "utf8"));
       const headerTab: string = messages.docsVault.editorHeader.previewTab;
       const splitToggle: string = messages.vaultWidgets.editor.preview;
-      expect(headerTab.length, `${locale}: 헤더 탭 라벨이 비었다`).toBeGreaterThan(0);
-      expect(splitToggle.length, `${locale}: split 토글 라벨이 비었다`).toBeGreaterThan(0);
+      expect(headerTab.length, `${locale}: the header tab label is empty`).toBeGreaterThan(0);
+      expect(splitToggle.length, `${locale}: the split toggle label is empty`).toBeGreaterThan(0);
       expect(
         splitToggle.trim().toLowerCase(),
         `${locale}: two controls drawn on one screen share a name. ` +

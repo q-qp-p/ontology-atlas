@@ -147,8 +147,8 @@ function scan(): string[] {
   return bad;
 }
 
-describe("타입/행간 램프 — 존재하지 않는 스텝 차단", () => {
-  it("모든 text-*/leading-* 스텝이 정의된 토큰을 가리킨다", () => {
+describe("type/leading ramp: blocks steps that do not exist", () => {
+  it("every text-*/leading-* step points at a defined token", () => {
     const bad = scan();
     expect(
       bad,
@@ -161,7 +161,7 @@ describe("타입/행간 램프 — 존재하지 않는 스텝 차단", () => {
     ).toEqual([]);
   });
 
-  it("램프를 실제로 읽는다 — 스캔이 비면 통과가 아니라 결함이다", () => {
+  it("really reads the ramp, so an empty scan is a defect rather than a pass", () => {
     const ramp = readRampSteps(readGlobalCss());
     // The floor is a 7-step ramp plus 9 line-height steps. If ramp parsing breaks, the test above passes forever.
     expect(ramp.text.size).toBeGreaterThanOrEqual(7);
@@ -170,7 +170,7 @@ describe("타입/행간 램프 — 존재하지 않는 스텝 차단", () => {
     expect(ramp.text.has("large")).toBe(false);
   });
 
-  it("판정이 실제로 잡는다 (프로브)", () => {
+  it("the verdict really catches (probe)", () => {
     const ramp = readRampSteps(readGlobalCss());
     const check = (line: string) =>
       extractRampRefs(line).filter((r) => !isDefined(r, ramp)).length;

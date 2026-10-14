@@ -37,10 +37,10 @@ function matchesAuditedUrl(routePattern: string, url: string): boolean {
   );
 }
 
-describe("접근성 래칫의 라우트 커버리지", () => {
+describe("route coverage of the accessibility ratchet", () => {
   const routes = ["/", ...discoverRoutes(APP_LOCALE_DIR)];
 
-  it("정본 인벤토리를 실제로 찾아낸다 — 탐지기가 빈 집합 위에서 놀지 않는다", () => {
+  it("actually finds the canonical inventory, so the detector does not idle on an empty set", () => {
     // Without this assertion `discoverRoutes` returning 0 would leave every check below green.
     expect(routes.length).toBeGreaterThanOrEqual(19);
     expect(routes).toContain("/topology");
@@ -48,7 +48,7 @@ describe("접근성 래칫의 라우트 커버리지", () => {
     expect(routes).toContain("/project/[slug]");
   });
 
-  it("모든 라우트가 «잰다» 또는 «이유와 함께 뺀다» 로 분류돼 있다", () => {
+  it("every route is classified as measured or excluded with a reason", () => {
     const unclassified = routes.filter(
       (route) =>
         !(route in EXCLUDED_ROUTES) &&
@@ -65,18 +65,18 @@ describe("접근성 래칫의 라우트 커버리지", () => {
     ).toEqual([]);
   });
 
-  it("제외 목록에 죽은 항목이 없다 — 사라진 라우트의 사유는 오정보다", () => {
+  it("the exclusion list has no dead entry, since the reason for a vanished route is misinformation", () => {
     const stale = Object.keys(EXCLUDED_ROUTES).filter((route) => !routes.includes(route));
-    expect(stale, `EXCLUDED_ROUTES 가 없는 라우트를 가리킨다: ${stale.join(", ")}`).toEqual([]);
+    expect(stale, `EXCLUDED_ROUTES points at a route that does not exist: ${stale.join(", ")}`).toEqual([]);
   });
 
-  it("제외 사유가 비어 있지 않다", () => {
+  it("an exclusion reason is not empty", () => {
     for (const [route, reason] of Object.entries(EXCLUDED_ROUTES)) {
-      expect(reason.trim().length, `${route} 의 제외 사유가 비었다`).toBeGreaterThan(10);
+      expect(reason.trim().length, `the exclusion reason of ${route} is empty`).toBeGreaterThan(10);
     }
   });
 
-  it("404 를 로케일 안팎 두 주소에서 잰다", () => {
+  it("measures the 404 at two addresses, inside and outside the locale", () => {
     // Both addresses resolve to `app/not-found.tsx`; both are kept so a change to the not-found
     // wiring cannot slip an unaudited surface back in.
     expect(AUDITED_ROUTES.some((url) => /^\/ko\/.*does-not-exist/.test(url))).toBe(true);

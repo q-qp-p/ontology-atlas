@@ -42,8 +42,8 @@ function fmOf(frontmatter: unknown): Record<string, unknown> {
   return frontmatter as Record<string, unknown>;
 }
 
-describe("created_by 값 규약 — 세 패키지가 같은 상수를 쓴다", () => {
-  it("키 이름과 human 값이 mcp · cli · web 에서 동일하다", () => {
+describe("created_by value convention: three packages use the same constants", () => {
+  it("the key name and the human value are identical in mcp, cli and web", () => {
     expect(KEY_MCP).toBe("created_by");
     expect(KEY_CLI).toBe(KEY_MCP);
     expect(HUMAN_MCP).toBe("human");
@@ -51,13 +51,13 @@ describe("created_by 값 규약 — 세 패키지가 같은 상수를 쓴다", (
     expect(VAULT_CREATED_BY_HUMAN).toBe(HUMAN_MCP);
   });
 
-  it("agentCreatedBy 가 `agent:<name>` 을 만들고 두 사본이 일치한다", () => {
+  it("agentCreatedBy produces `agent:<name>` and the two copies agree", () => {
     expect(agentMcp("codex")).toBe("agent:codex");
     expect(agentCli("codex")).toBe(agentMcp("codex"));
     expect(agentMcp("  claude-code  ")).toBe("agent:claude-code");
   });
 
-  it("이름을 모르면 human 이 아니라 agent:unknown 으로 떨어진다", () => {
+  it("when the name is unknown it falls to agent:unknown rather than human", () => {
     // The path proves an agent wrote it but not which agent. Even then there must be no
     // route that falls back to human.
     for (const noName of [null, undefined, "", "   "]) {
@@ -70,14 +70,14 @@ describe("created_by 값 규약 — 세 패키지가 같은 상수를 쓴다", (
   });
 });
 
-describe("스키마 — 선택 필드로 등록되고 왕복 보존된다", () => {
-  it("모든 kind 가 created_by 를 optional 로 인정한다", () => {
+describe("schema: registered as an optional field and preserved across a round trip", () => {
+  it("every kind accepts created_by as optional", () => {
     for (const kind of KINDS_MCP as string[]) {
       expect(schemaFor(SCHEMA_MCP, kind).optional).toContain(KEY_MCP);
     }
   });
 
-  it("값을 주면 그대로 남는다 — human / agent 양쪽", () => {
+  it("a given value stays as it is, for both human and agent", () => {
     const base = { uid: TEST_UID, slug: "capabilities/x", kind: "capability", title: "X" };
     expect(fmOf(buildMcp({ ...base, created_by: HUMAN_MCP })).created_by).toBe("human");
     expect(fmOf(buildMcp({ ...base, created_by: agentMcp("codex") })).created_by).toBe(
@@ -88,7 +88,7 @@ describe("스키마 — 선택 필드로 등록되고 왕복 보존된다", () =
     );
   });
 
-  it("값을 안 주면 키 자체가 생기지 않는다 — 소급 파생 0", () => {
+  it("when no value is given the key itself does not appear, with zero retroactive derivation", () => {
     for (const kind of KINDS_MCP) {
       const input = { uid: TEST_UID, slug: `${kind}-x`, kind, title: "X" };
       const fm = buildMcp(input);
@@ -97,7 +97,7 @@ describe("스키마 — 선택 필드로 등록되고 왕복 보존된다", () =
     }
   });
 
-  it("부재는 결함이 아니다 — 어떤 kind 도 검증 경고를 만들지 않는다", () => {
+  it("absence is not a defect, so no kind produces a validation warning", () => {
     for (const kind of KINDS_MCP) {
       const fm = { slug: "x", kind, title: "X", domain: "d" };
       expect(missingMcp(kind, fm)).not.toContain(KEY_MCP);
@@ -106,34 +106,34 @@ describe("스키마 — 선택 필드로 등록되고 왕복 보존된다", () =
   });
 });
 
-describe("질의 필터 — 「사람이 만든 것만 모아보기」", () => {
+describe("query filter: \"show only what people made\"", () => {
   const human = { slug: "a", frontmatter: { kind: "capability", created_by: "human" } };
   const agent = { slug: "b", frontmatter: { kind: "capability", created_by: "agent:codex" } };
   const unknown = { slug: "c", frontmatter: { kind: "capability" } };
 
-  it("created_by=human 이 사람 저작만 고른다", () => {
+  it("created_by=human picks human authorship only", () => {
     const { match } = parseFilter("created_by=human");
     expect([human, agent, unknown].filter(match).map((d) => d.slug)).toEqual(["a"]);
   });
 
-  it("스탬프 없는 노드는 human 으로 집계되지 않는다", () => {
+  it("a node without a stamp is not counted as human", () => {
     const { match } = parseFilter("created_by=human");
     expect(match(unknown)).toBe(false);
   });
 
-  it("`agent:<name>` 은 따옴표로 지목할 수 있다", () => {
+  it("`agent:<name>` can be addressed with quotes", () => {
     const { match } = parseFilter('created_by="agent:codex"');
     expect([human, agent, unknown].filter(match).map((d) => d.slug)).toEqual(["b"]);
   });
 
-  it("다른 술어와 조합된다", () => {
+  it("combines with other predicates", () => {
     const { match } = parseFilter("kind=capability AND created_by=human");
     expect([human, agent, unknown].filter(match).map((d) => d.slug)).toEqual(["a"]);
   });
 });
 
-describe("지도 개념 생성 — 사람이 만든 노드", () => {
-  it("직접 저장 문서에 created_by: human 이 실린다", () => {
+describe("map concept creation: a node a person made", () => {
+  it("a directly saved document carries created_by: human", () => {
     const { markdown } = buildNewNodeDoc({
       kind: "capability",
       title: "토큰 발급",
@@ -143,7 +143,7 @@ describe("지도 개념 생성 — 사람이 만든 노드", () => {
     expect(markdown).toContain("created_by: human");
   });
 
-  it("사람 스탬프는 frontmatter 안에만 있고 본문을 오염시키지 않는다", () => {
+  it("the human stamp lives only inside the frontmatter and does not pollute the body", () => {
     const { markdown } = buildNewNodeDoc({
       kind: "domain",
       title: "Auth",
@@ -155,7 +155,7 @@ describe("지도 개념 생성 — 사람이 만든 노드", () => {
   });
 });
 
-describe("내부 채팅 패널 적용 — 초안 저작자는 에이전트다", () => {
+describe("internal chat panel apply: the draft author is the agent", () => {
   const port = {
     nodes: [],
     edges: [],
@@ -168,7 +168,7 @@ describe("내부 채팅 패널 적용 — 초안 저작자는 에이전트다", 
     addRelation: () => "relation",
   };
 
-  it("패널이 제안한 새 노드는 agent:<provider> 로 찍힌다", async () => {
+  it("a new node proposed by the panel is stamped agent:<provider>", async () => {
     const proposal = await buildProposal({
       intents: [
         { name: "add_concept", args: { slug: "capabilities/x", kind: "capability", title: "X" } },
@@ -186,7 +186,7 @@ describe("내부 채팅 패널 적용 — 초안 저작자는 에이전트다", 
     expect(after).not.toContain("created_by: human");
   });
 
-  it("제공자를 모르면 human 이 아니라 agent:unknown 이다", async () => {
+  it("when the provider is unknown it is agent:unknown rather than human", async () => {
     const proposal = await buildProposal({
       intents: [
         { name: "add_concept", args: { slug: "capabilities/y", kind: "capability", title: "Y" } },

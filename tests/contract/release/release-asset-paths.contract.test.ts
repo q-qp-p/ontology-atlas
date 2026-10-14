@@ -47,7 +47,7 @@ function section(source: string, from: string, to: string | null): string {
 function step(job: string, name: string): string {
   const lines = job.split("\n");
   const start = lines.findIndex((line) => line.trim() === `- name: ${name}`);
-  expect(start, `${name} 스텝을 찾지 못했다`).toBeGreaterThan(-1);
+  expect(start, `step ${name} was not found`).toBeGreaterThan(-1);
   const rest = lines.slice(start + 1);
   const end = rest.findIndex((line) => /^\s*- name:/.test(line));
   return [lines[start], ...(end === -1 ? rest : rest.slice(0, end))].join("\n");
@@ -129,8 +129,8 @@ afterAll(() => {
   rmSync(scratch, { recursive: true, force: true });
 });
 
-describe("릴리스 자산 경로 계약", () => {
-  it("업로드 경로는 하나다 — 여럿이면 루트를 우리가 정하지 못한다", () => {
+describe("release asset path contract", () => {
+  it("there is one upload path, since with several we cannot decide the root", () => {
     // Given several paths, `upload-artifact` takes the least common ancestor as the
     // root: here that is `bundle/`, which adds a `dmg/` and
     // `macos/` level, and the downloading side had no way to know that depth.
@@ -140,7 +140,7 @@ describe("릴리스 자산 경로 계약", () => {
     expect(buildJob).toContain("node scripts/download/stage-macos-release-assets.mjs");
   });
 
-  it("아티팩트 폴더 이름이 아치를 나른다", () => {
+  it("the artifact folder name carries the arch", () => {
     // On download, the folder is the only thing naming the architecture.
     const uploadName = yamlValues(step(buildJob, "Upload workflow artifact"), "name")[0];
     expect(uploadName.replace("${{ matrix.arch }}", "aarch64")).toBe(artifactNameForArch("aarch64"));
@@ -181,7 +181,7 @@ describe("릴리스 자산 경로 계약", () => {
     }
   });
 
-  it("릴리스 업로드 글롭이 실제 레이아웃의 모든 자산에 매칭된다", () => {
+  it("the release upload glob matches every asset of the real layout", () => {
     // The globs are read from the workflow. A copy here would drift.
     const globs = yamlValues(step(stageJob, "Upload draft GitHub Release assets"), "files");
     expect(globs.length).toBeGreaterThan(0);
@@ -225,7 +225,7 @@ describe("릴리스 자산 경로 계약", () => {
     for (const glob of globs) {
       const hits = globSync(glob, { cwd }).map((hit) => hit.split("\\").join("/"));
       // A glob that matches nothing is a misunderstanding, not a contract.
-      expect(hits, `${glob} 이 아무 자산도 잡지 못했다`).not.toHaveLength(0);
+      expect(hits, `${glob} matched no asset`).not.toHaveLength(0);
       matched.push(...hits);
     }
 
@@ -242,7 +242,7 @@ describe("릴리스 자산 경로 계약", () => {
     expect(yamlValues(download, "path")).toEqual([`release-assets/${artifact}`]);
   });
 
-  it("발행 잡의 요약 글롭도 자기 레이아웃에 맞는다", () => {
+  it("the summary glob of the publish job also fits its own layout", () => {
     // This job downloads flat with `merge-multiple: true` — the eight assets only avoid
     // collisions after staging puts the version and architecture in the names.
     expect(yamlValues(step(publishJob, "Download macOS artifacts"), "merge-multiple")).toEqual([
@@ -267,7 +267,7 @@ describe("릴리스 자산 경로 계약", () => {
     expect(globSync(summaryGlob!, { cwd: merged })).toHaveLength(1);
   });
 
-  it("latest.json 의 URL 이 실제로 올라가는 자산 이름과 같다", () => {
+  it("the URL in latest.json equals the name of the asset actually uploaded", () => {
     // The updater downloads from this URL. When it is wrong the 404 is shown as "no
     // update" and the user never finds out.
     const { root, staged } = replayDownloadRoot(["aarch64"]);

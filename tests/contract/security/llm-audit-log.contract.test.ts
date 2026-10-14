@@ -12,11 +12,11 @@ import { parseLlmAuditLog } from '@/shared/lib/llm-connection/llm-audit-log';
 
 const FIXTURE = join(__dirname, '../../fixtures/llm-audit-log.sample.jsonl');
 
-describe('llm-audit.jsonl 계약 (Rust writer ↔ web reader)', () => {
+describe('llm-audit.jsonl contract (Rust writer to web reader)', () => {
   const raw = readFileSync(FIXTURE, 'utf-8');
   const entries = parseLlmAuditLog(raw);
 
-  it('writer 가 쓴 완료 줄을 화면이 같은 사실로 읽는다', () => {
+  it('the screen reads the completion line the writer wrote as the same fact', () => {
     expect(entries).toHaveLength(5);
     expect(entries[0]).toEqual({
       v: 1,
@@ -39,7 +39,7 @@ describe('llm-audit.jsonl 계약 (Rust writer ↔ web reader)', () => {
     });
   });
 
-  it('에이전트 왕복 줄은 무엇을 보고 무엇을 물었는지까지 말한다', () => {
+  it('an agent round-trip line also says what was looked at and what was asked', () => {
     const agent = entries[4];
     expect(agent.purpose).toBe('agent');
     expect(agent.model).toBe('claude-sonnet-4-5');
@@ -53,7 +53,7 @@ describe('llm-audit.jsonl 계약 (Rust writer ↔ web reader)', () => {
     expect(agent.responseChars).toBe(812);
   });
 
-  it('전송 직전 예약 줄(결과 필드 없음)은 unknown 으로 읽힌다', () => {
+  it('the reservation line just before sending (no result field) is read as unknown', () => {
     // This line is the evidence that the record was written before sending, and it is
     // what remains in the file if the process dies before the response.
     expect(entries[1].outcome).toBe('unknown');
@@ -63,7 +63,7 @@ describe('llm-audit.jsonl 계약 (Rust writer ↔ web reader)', () => {
     expect(entries[1].host).toBe('api.anthropic.com');
   });
 
-  it('host 가 없던 시절의 줄도 그대로 읽힌다 — 기록은 소급해 고치지 않는다', () => {
+  it('a line from the era before host existed is read as it is, since records are not fixed retroactively', () => {
     // Charter ⑤. `host` is additive, so `v` stays 1 and lines already sitting on a
     // user's disk are untouched. The parser reports absence as null; it never invents a
     // destination from the provider name.
@@ -72,7 +72,7 @@ describe('llm-audit.jsonl 계약 (Rust writer ↔ web reader)', () => {
     expect(entries[2].outcome).toBe('ok');
   });
 
-  it('벤더마다 다른 거부 상태 코드가 같은 결과 어휘로 읽힌다', () => {
+  it('refusal status codes that differ per vendor are read in the same result vocabulary', () => {
     // Gemini returns 400 for a wrong key; the status is kept verbatim but the outcome is `denied`
     // regardless of vendor.
     expect(entries[3].provider).toBe('gemini');
@@ -81,7 +81,7 @@ describe('llm-audit.jsonl 계약 (Rust writer ↔ web reader)', () => {
     expect(entries[3].httpStatus).toBe(400);
   });
 
-  it('픽스처의 모든 줄이 응답 본문을 담지 않는다', () => {
+  it('no line of the fixture carries a response body', () => {
     // Charter ④ — the audit log records what went out and how much, not the conversation.
     for (const line of raw.split('\n').filter(Boolean)) {
       const parsed = JSON.parse(line) as Record<string, unknown>;

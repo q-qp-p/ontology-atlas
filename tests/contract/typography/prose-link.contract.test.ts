@@ -78,38 +78,38 @@ const wearsProseLink = (className: string | null): className is string => /(^|\s
 function proseClassViolations(className: string): string[] {
   const out: string[] = [];
   if (/(^|\s)(inline-)?(flex|grid|block|inline-block)(\s|$)/.test(className)) {
-    out.push('display 를 얹었다 — 산문 자리의 줄바꿈이 죽는다(규율 ①)');
+    out.push('display was added, which kills line breaking in prose (discipline 1)');
   }
   if (/(^|\s)items-(center|start|end|baseline)(\s|$)/.test(className)) {
-    out.push('flex 정렬을 얹었다 — display 를 전제한 클래스다(규율 ①)');
+    out.push('flex alignment was added, a class that presumes display (discipline 1)');
   }
   if (/(^|\s)leading-/.test(className)) {
-    out.push('행간을 얹었다 — 줄 상자는 산문 부모의 것이다(규율 ②)');
+    out.push('line height was added, but the line box belongs to the prose parent (discipline 2)');
   }
   if (/(^|\s)text-(caption|label|body|body-lg|title|display|hero|hero-lg)(\s|$)/.test(className)) {
-    out.push('타입 스텝을 얹었다 — 크기는 산문 부모에서 상속한다(규율 ②)');
+    out.push('a type step was added, but size is inherited from the prose parent (discipline 2)');
   }
   if (/focus-visible:/.test(className)) {
-    out.push('포커스 스타일을 얹었다 — UA 기본을 존치한다(규율 ③)');
+    out.push('a focus style was added, but the UA default stays (discipline 3)');
   }
   if (/(^|\s)underline(\s|$)|underline-offset-/.test(className)) {
-    out.push('밑줄 기하를 다시 얹었다 — 기하는 .prose-link 가 소유한다');
+    out.push('underline geometry was added again, but .prose-link owns the geometry');
   }
   return out;
 }
 
-describe('산문 링크 계약 (.prose-link)', () => {
-  it('globals.css 의 .prose-link 가 밑줄 기하만 소유한다 — display·행간·크기는 산문의 것', () => {
+describe('prose link contract (.prose-link)', () => {
+  it('.prose-link in globals.css owns only the underline geometry; display, line height and size belong to the prose', () => {
     const css = readGlobalCss();
     const block = /\.prose-link\s*\{([^}]*)\}/.exec(css)?.[1];
-    expect(block, '.prose-link 블록이 globals.css 에 없다').toBeTruthy();
+    expect(block, 'the .prose-link block is not in globals.css').toBeTruthy();
     expect(block).toMatch(/text-decoration-line:\s*underline/);
     expect(block).toMatch(/text-underline-offset/);
     // The contract stated negatively — a display, line height, or size here takes
     // ownership away from the prose parent.
-    expect(block, '.prose-link 가 display 를 선언했다').not.toMatch(/display\s*:/);
-    expect(block, '.prose-link 가 행간을 선언했다').not.toMatch(/line-height\s*:/);
-    expect(block, '.prose-link 가 글자 크기를 선언했다').not.toMatch(/font-size\s*:/);
+    expect(block, '.prose-link declared display').not.toMatch(/display\s*:/);
+    expect(block, '.prose-link declared line height').not.toMatch(/line-height\s*:/);
+    expect(block, '.prose-link declared font size').not.toMatch(/font-size\s*:/);
   });
 
   it('every prose-link class in a registered prose file keeps the three disciplines', () => {
@@ -186,7 +186,7 @@ describe('산문 링크 계약 (.prose-link)', () => {
     expect(hoisted.callSites.map((anchor) => anchor.className)).toEqual(['prose-link break-words inline-flex', 'prose-link']);
   });
 
-  it('프로브 — 탐지기가 위반을 실제로 잡고, 정상을 지나보낸다', () => {
+  it('probe: the detector really catches violations and lets normal ones pass', () => {
     // Five kinds of violation
     expect(proseClassViolations('prose-link inline-flex items-center gap-1')).not.toEqual([]);
     expect(proseClassViolations('prose-link leading-body')).not.toEqual([]);

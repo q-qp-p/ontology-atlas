@@ -68,7 +68,7 @@ afterEach(() => {
  * a file outside the vault root"* — was open **on the filesystem side**, not the slug
  * side. The MCP and CLI copies both carry this contract.
  */
-describe("볼트 밖 쓰기 — 심볼릭 링크", () => {
+describe("writes outside the vault: symbolic links", () => {
   /** Places one link inside the vault root that points at a file outside it. */
   function vaultWithEscapeLink(): { root: string; outside: string } {
     const base = vault();
@@ -83,7 +83,7 @@ describe("볼트 밖 쓰기 — 심볼릭 링크", () => {
   it.each([
     ["mcp", mcpSlugToPath],
     ["cli", cliSlugToPath],
-  ])("%s: 링크된 slug 를 거절한다", (_name, resolve) => {
+  ])("%s: refuses a linked slug", (_name, resolve) => {
     const { root } = vaultWithEscapeLink();
     expect(() => resolve(root, "escape")).toThrow(/symlink/);
   });
@@ -91,7 +91,7 @@ describe("볼트 밖 쓰기 — 심볼릭 링크", () => {
   it.each([
     ["mcp", mcpSlugToPath],
     ["cli", cliSlugToPath],
-  ])("%s: 정상 slug 는 그대로 해석한다 — 가드가 기능을 죽이지 않았다", (_name, resolve) => {
+  ])("%s: a normal slug resolves as it is, so the guard did not kill the feature", (_name, resolve) => {
     const root = vault();
     writeFileSync(join(root, "a.md"), "---\nkind: domain\ntitle: A\n---\nx\n");
     expect(resolve(root, "a")).toBe(join(root, "a.md"));
@@ -99,7 +99,7 @@ describe("볼트 밖 쓰기 — 심볼릭 링크", () => {
     expect(resolve(root, "nested/new")).toBe(join(root, "nested/new.md"));
   });
 
-  it("쓰기가 실제로 링크 대상을 건드리지 않는다", () => {
+  it("a write does not actually touch the link target", () => {
     const { root, outside } = vaultWithEscapeLink();
     expect(() => writeFrontmatterKey(root, "escape", "relates", ["a"])).toThrow(/symlink/);
     expect(readFileSync(outside, "utf8")).not.toContain("relates");
@@ -115,7 +115,7 @@ describe("볼트 밖 쓰기 — 심볼릭 링크", () => {
  * promise that the chosen vault is the read boundary must hold for full traversal
  * too.
  */
-describe("볼트 밖 읽기 — 심볼릭 링크", () => {
+describe("reads outside the vault: symbolic links", () => {
   const walkers = [
     ["mcp", mcpWalkMd],
     ["cli", cliWalkMd],
@@ -133,16 +133,16 @@ describe("볼트 밖 읽기 — 심볼릭 링크", () => {
     return { root, safe };
   }
 
-  it("probe: MCP와 CLI 두 walker를 모두 검사한다", () => {
+  it("probe: checks both the MCP and the CLI walker", () => {
     expect(walkers).toHaveLength(2);
   });
 
-  it.each(walkers)("%s: 실제 파일만 걷고 .md 링크는 제외한다", (_name, walk) => {
+  it.each(walkers)("%s: walks only real files and excludes .md links", (_name, walk) => {
     const { root, safe } = vaultWithReadableEscape();
     expect(walk(root)).toEqual([safe]);
   });
 
-  it("MCP loader 응답에 링크 대상의 제목이나 본문이 들어오지 않는다", () => {
+  it("the MCP loader response carries neither the title nor the body of a link target", () => {
     const { root } = vaultWithReadableEscape();
     const docs = loadVaultDocs(root);
     expect(docs.map((doc) => doc.slug)).toEqual(["safe"]);
@@ -152,17 +152,17 @@ describe("볼트 밖 읽기 — 심볼릭 링크", () => {
 });
 
 /** An atomic replace must not relax a private document to the default 0644 temp-file permissions. */
-describe("볼트 파일 권한 — 원자적 갱신", () => {
+describe("vault file permissions: atomic update", () => {
   const writers = [
     ["mcp", mcpWriteFileAtomically],
     ["cli", cliWriteFileAtomically],
   ] as const;
 
-  it("probe: MCP와 CLI 두 writer를 모두 검사한다", () => {
+  it("probe: checks both the MCP and the CLI writer", () => {
     expect(writers).toHaveLength(2);
   });
 
-  it.each(writers)("%s: 0600 문서를 갱신해도 0600을 보존한다", (_name, write) => {
+  it.each(writers)("%s: updating a 0600 document keeps it 0600", (_name, write) => {
     const root = vault();
     const target = join(root, "private.md");
     writeFileSync(target, "before\n");
@@ -176,8 +176,8 @@ describe("볼트 파일 권한 — 원자적 갱신", () => {
 });
 
 /** A kind inherited via an object meta key still does not make a graph node. */
-describe("frontmatter 객체 메타키 — 그래프 경계", () => {
-  it("probe: 정상 노드와 공격 문서를 함께 컴파일한다", () => {
+describe("frontmatter object meta keys: graph boundary", () => {
+  it("probe: compiles a normal node together with an attack document", () => {
     const root = vault();
     writeFileSync(
       join(root, "safe.md"),
@@ -210,22 +210,22 @@ describe("frontmatter 객체 메타키 — 그래프 경계", () => {
  * relations**, on this product's primary platform. The difference is invisible to
  * the eye, so it cannot be fixed by hand either.
  */
-describe("유니코드 정규화 — NFD 파일명", () => {
+describe("Unicode normalization: NFD file names", () => {
   const NFD = "한글".normalize("NFD");
   const NFC = "한글".normalize("NFC");
 
-  it("probe: 두 형태가 실제로 바이트가 다르다", () => {
+  it("probe: the two forms really differ in bytes", () => {
     expect(NFD).not.toBe(NFC);
     expect(NFD.normalize("NFC")).toBe(NFC);
   });
 
-  it("NFD 파일명에서 만든 slug 는 NFC 다", () => {
+  it("a slug made from an NFD file name is NFC", () => {
     const root = vault();
     const file = join(root, `${NFD}.md`);
     expect(pathToSlug(root, file)).toBe(NFC);
   });
 
-  it("컴파일러가 NFC 참조를 NFD 파일에 연결한다 — 경고만 지우는 것으로는 부족하다", () => {
+  it("the compiler links an NFC reference to an NFD file, and merely silencing the warning is not enough", () => {
     const root = vault();
     writeFileSync(
       join(root, `${NFD}.md`),
@@ -259,7 +259,7 @@ describe("유니코드 정규화 — NFD 파일명", () => {
  * **pre-filtered** the input (`if (!frontmatter?.kind) continue;`). The production
  * loader does not filter, so `loadVaultDocs` is used here as is.
  */
-describe("노드 수 일치 — kind 없는 .md", () => {
+describe("node count matches: .md without a kind", () => {
   function mixedVault(): string {
     const root = vault();
     writeFileSync(
@@ -271,7 +271,7 @@ describe("노드 수 일치 — kind 없는 .md", () => {
     return root;
   }
 
-  it("kind 있는 문서만 노드가 된다", () => {
+  it("only a document with a kind becomes a node", () => {
     const summary = compileVault(mixedVault()) as {
       nodeCount: number;
       byKind?: Record<string, number>;
@@ -282,12 +282,12 @@ describe("노드 수 일치 — kind 없는 .md", () => {
     expect(byKindTotal).toBe(summary.nodeCount);
   });
 
-  it("지나친 파일 수를 조용히 삼키지 않는다", () => {
+  it("does not quietly swallow skipped files", () => {
     const summary = compileVault(mixedVault()) as { skippedNonNodeCount?: number };
     expect(summary.skippedNonNodeCount).toBe(2);
   });
 
-  it("정상 볼트에서는 아무것도 지나치지 않는다 — 새 필터가 오탐하지 않는다", () => {
+  it("a normal vault skips nothing, so the new filter has no false positives", () => {
     const root = vault();
     writeFileSync(
       join(root, "a.md"),
@@ -314,8 +314,8 @@ describe("노드 수 일치 — kind 없는 .md", () => {
  * itself when the block did not take — it **confirms the block first** rather than
  * emitting a false green in an environment where it cannot measure.
  */
-describe("읽지 못한 파일", () => {
-  it("검사 범위 밖 파일을 삼키지 않는다", () => {
+describe("files that could not be read", () => {
+  it("does not swallow a file outside the check range", () => {
     const root = vault();
     writeFileSync(join(root, "ok.md"), "---\nkind: domain\ntitle: OK\n---\nx\n");
     const secret = join(root, "secret.md");

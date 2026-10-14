@@ -39,8 +39,8 @@ const FIXTURES = 'tests/fixtures/surface-motion';
 
 const census = censusHardCuts(process.cwd());
 
-describe('등장·퇴장 래칫 — 소스 전수', () => {
-  it('하드컷이 늘지 않는다 — 새 표면은 나가는 길을 지고 태어난다', () => {
+describe('enter/exit ratchet over the whole source', () => {
+  it('hard cuts do not grow, so a new surface is born carrying its way out', () => {
     expect(
       census.length,
       `Surfaces that appear conditionally with no way out grew from ${BASELINE_HARD_CUTS} to ${census.length}.\n` +
@@ -50,7 +50,7 @@ describe('등장·퇴장 래칫 — 소스 전수', () => {
     ).toBeLessThanOrEqual(BASELINE_HARD_CUTS);
   });
 
-  it('갚았으면 기준선도 내린다 — 여유를 무료로 두지 않는다', () => {
+  it('when one is paid off the baseline goes down too, leaving no free slack', () => {
     expect(
       census.length,
       `Hard cuts fell from ${BASELINE_HARD_CUTS} to ${census.length}. Lower this file's BASELINE_HARD_CUTS ` +
@@ -58,10 +58,10 @@ describe('등장·퇴장 래칫 — 소스 전수', () => {
     ).toBeGreaterThanOrEqual(BASELINE_HARD_CUTS);
   });
 
-  it('기준선이 **리터럴**이다 — 센서스에서 파생되면 「늘지 않는다」가 실패 불가가 된다', () => {
+  it('the baseline is a **literal**, since deriving it from the census would make "does not grow" unable to fail', () => {
     expect(
       /const BASELINE_HARD_CUTS = \d+;/.test(readFileSync(SELF, 'utf8')),
-      'BASELINE_HARD_CUTS 를 `census.length` 로 두면 멈춤쇠가 양방향으로 헐거워진다(구 등록부의 실제 결함).',
+      'Setting BASELINE_HARD_CUTS to `census.length` loosens the pawl in both directions (a real defect of the old registry).',
     ).toBe(true);
   });
 });
@@ -77,26 +77,26 @@ describe('등장·퇴장 래칫 — 소스 전수', () => {
  * ⚠️ That is exactly why this round exists, so the probes verify not "the function is
  * alive" but **"it really consumes the whole product"**.
  */
-describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가', () => {
+describe('detector probes: what this gate actually catches', () => {
   const addOne = (fixture: string) => censusHardCuts(process.cwd(), ['src', 'app'], [`${FIXTURES}/${fixture}`]);
 
-  it('① 소스 전수를 실제로 먹는다 — 빈 집합 위에서 놀지 않는다', () => {
+  it('(1) really consumes the whole source, and does not idle on an empty set', () => {
     /*
      * Aimed at the number of files scanned and the total of entering surfaces, not at a violation
      * existing, so repaying the debt to 0 cannot turn it red.
      */
     const scanned = [...walkTsx(join(process.cwd(), 'src')), ...walkTsx(join(process.cwd(), 'app'))];
-    expect(scanned.length, '스캐너가 제품 트리를 못 걸었다면 모든 수가 거짓이다').toBeGreaterThan(200);
+    expect(scanned.length, 'if the scanner did not walk the product tree, every number is false').toBeGreaterThan(200);
 
     const appearing = censusAppearingSurfaces(process.cwd());
-    expect(appearing.length, '등장 표면이 0이면 스캐너나 경로가 깨진 것이다').toBeGreaterThan(0);
+    expect(appearing.length, 'zero appearing surfaces means the scanner or the path is broken').toBeGreaterThan(0);
     expect(
       new Set(appearing.map((c) => c.file)).size,
-      '전부 한 파일에서 나왔다면 스캔 범위가 무너진 것이다',
+      'if everything came from one file the scan range has collapsed',
     ).toBeGreaterThan(3);
   });
 
-  it('①-b 전환된 표면이 분모에서 사라지지 않는다 — 갚을수록 눈이 머는 결함', () => {
+  it('(1-b) converted surfaces do not vanish from the denominator, a defect that blinds the gate as debt is paid', () => {
     /*
      * Converted `<Surface>` sites must stay in the denominator, else 0 hard cuts is indistinguishable from
      * not looking.
@@ -105,32 +105,32 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
     const converted = appearing.filter((c) => c.what === '<Surface>');
     expect(
       converted.length,
-      '`<Surface>` 로 전환한 표면이 한 건도 안 세어졌다 — 탐지기 ⓪ 가 죽었다',
+      'no surface converted to `<Surface>` was counted, so detector (0) is dead',
     ).toBeGreaterThan(10);
     expect(
       new Set(converted.map((c) => c.file)).size,
-      '전환된 표면이 한 파일에만 있다면 스캔이 무너진 것이다',
+      'if the converted surfaces are in one file only, the scan has collapsed',
     ).toBeGreaterThan(5);
   });
 
-  it('② 소유자가 심었던 그 모양 — 이름 없는 인라인 오버레이를 잡는다', () => {
+  it('(2) the exact shape the owner planted: catches an unnamed inline overlay', () => {
     const fixture = `${FIXTURES}/InlineOverlay.tsx.fixture`;
-    expect(existsSync(fixture), '프로브 픽스처가 사라지면 탐지기 증명도 사라진다').toBe(true);
+    expect(existsSync(fixture), 'if the probe fixture disappears the proof of the detector disappears too').toBe(true);
     const withProbe = addOne('InlineOverlay.tsx.fixture');
     expect(
       withProbe.length,
-      '`{open && <div className="fixed … z-50">}` 를 못 잡았다. 이게 구 게이트가 초록이던 바로 그 모양이다.',
+      'Did not catch `{open && <div className="fixed … z-50">}`, which is exactly the shape the old gate was green on.',
     ).toBe(census.length + 1);
     expect(withProbe.some((c) => c.file.endsWith('InlineOverlay.tsx.fixture') && c.kind === 'inline')).toBe(true);
   });
 
-  it('③ 부모가 조건부로 그리는 명명 표면을 잡는다', () => {
+  it('(3) catches a named surface that the parent draws conditionally', () => {
     const withProbe = addOne('NamedHardCutHost.tsx.fixture');
     expect(withProbe.length).toBe(census.length + 1);
     expect(withProbe.some((c) => c.what === 'ProbeSurfacePanel' && c.kind === 'named')).toBe(true);
   });
 
-  it('④ 내용 교체는 세지 않는다 — 이 판별식이 죽으면 게이트가 소음이 된다', () => {
+  it('(4) does not count a content swap, since if this discriminator dies the gate turns into noise', () => {
     const withProbe = addOne('ContentSwap.tsx.fixture');
     expect(
       withProbe.length,
@@ -139,7 +139,7 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
     ).toBe(census.length);
   });
 
-  it('⑤ 기제를 갖춘 표면은 놓아준다 — 전환한 것이 되돌아가면 여기서 걸린다', () => {
+  it('(5) lets a surface with the mechanism go, and a converted one that reverts is caught here', () => {
     const converted = [
       'src/widgets/ontology-map/ui/OntologyMapDetailPanel.tsx',
       'src/widgets/vault-agent-panel/ui/VaultAgentPanel.tsx',
@@ -147,16 +147,16 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
       'src/widgets/search-palette/ui/SearchPalette.tsx',
     ];
     for (const file of converted) {
-      expect(existsSync(file), `${file} 이 사라졌다 — 회귀 가드도 같이 죽는다`).toBe(true);
+      expect(existsSync(file), `${file} is gone, so the regression guard dies with it`).toBe(true);
       expect(
         MOTION_MECHANISMS.some((m) => readFileSync(file, 'utf8').includes(m)),
-        `${file} 에서 등장/퇴장 기제가 사라졌다 — 센서스가 13 안이어도 이건 회귀다`,
+        `the enter/exit mechanism is gone from ${file}; this is a regression even if the census stays within 13`,
       ).toBe(true);
       expect(census.some((c) => c.file === file && c.kind === 'named')).toBe(false);
     }
   });
 
-  it('⑦ 열 수 있는 표면의 **분모**가 조용히 늘지 않는다 — 접근성 측정 목록의 입력', () => {
+  it('(7) the **denominator** of openable surfaces does not silently grow, as the input of the accessibility measurement list', () => {
     /*
      * This number is the hard-cut inventory's denominator and also the 19 in
      * `tests/e2e/design-audits/a11y-open-surfaces.spec.ts`'s "measures 5/19". A new surface turns this
@@ -178,10 +178,10 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
         `and name that way in the raise record's why: when the denominator grows silently, nobody notices 5/19 has become 5/30.\n` +
         appearing.map((c) => `  [${c.kind}] ${c.what} — ${c.at[0]}`).join('\n'),
     ).toBeLessThanOrEqual(verdict.ceiling);
-    expect(appearing.length, '하드컷은 등장 표면의 부분집합이다').toBeGreaterThanOrEqual(census.length);
+    expect(appearing.length, 'hard cuts are a subset of the appearing surfaces').toBeGreaterThanOrEqual(census.length);
   });
 
-  it('⑥ 기제 목록이 살아 있다 — 목록이 비면 모든 표면이 하드컷이 된다', () => {
+  it('(6) the mechanism list is alive, since if it is empty every surface becomes a hard cut', () => {
     expect(MOTION_MECHANISMS.length).toBeGreaterThan(3);
     // An enter-only class is not a mechanism — the missing exit path is the debt this
     // gate counts.

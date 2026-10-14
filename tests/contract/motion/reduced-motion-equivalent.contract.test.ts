@@ -23,7 +23,7 @@ const INTENTIONALLY_STILL: Readonly<Record<string, string>> = {
     "The stepped character frames stop. The final static READ or SUCCESS pose plus the same accessible status preserves the information.",
   "acp-working-shimmer":
     "Infinite band sweep shown only while an agent tool call, work group or turn is in flight, or while the analysis brief's sums are still being counted. Reduced motion stops the travel and removes the painted gradient, leaving the words in a still, brighter ink; the running ring, the present-tense outcome word and the ticking clock beside them carry the same fact, and on the brief the counting line says it in words while the list names the core still reading.",
-  "agent-pending-dot":"끝없이 도는 맥박 — 감속의 뜻이 바로 이걸 멈추는 것이다. 상태는 옆의 글자가 말한다.",
+  "agent-pending-dot":"an endless pulse, and stopping exactly that is what reduced motion means; the state is told by the adjacent text.",
   "architecture-observation-scan":
     "Infinite progress travel shown only during a real ACP turn. Reduced motion stops the line while the adjacent planning/editing/verifying/review-wait text preserves the current state.",
   "harness-scan-sweep":
@@ -33,17 +33,17 @@ const INTENTIONALLY_STILL: Readonly<Record<string, string>> = {
   "motion-work-sweep":
     "Infinite travel shown only while a WorkProgress of unknown length runs. Reduced motion parks the bar left-anchored at a third of the track, claiming no scale; the consumer's label and count carry the fact.",
   "overlay-spring-surface":
-    "소비처가 감속일 때 `.overlay-fade-only` 로 **클래스를 갈아 끼운다**(GlobalSearch 실측). CSS carve-out 이 아니라 다른 경로로 이미 덮여 있다.",
+    "When reduced, the consumer swaps the class to `.overlay-fade-only` (measured in GlobalSearch), so it is already covered by another path rather than a CSS carve-out.",
   // Driven by scroll position via `animation-timeline: view()`, with no duration to shorten. They live
   // only inside `no-preference`, so reduced-motion users see everything from the start. The exemption
   // holds only inside that media query, which the test below measures.
   "gateway-scroll-stage":
-    "스크롤이 굴린다(view() 타임라인) — duration 이 없어 감속용 시간을 줄 대상이 없다. 감속에서는 선언 자체가 존재하지 않고 무대(영상·지도·ACP 장면)는 처음부터 전부 보인다.",
+    "Driven by scroll (view() timeline); with no duration there is nothing to give a reduced time to. Under reduced motion the declaration does not exist at all and the stage (video, map, ACP scenes) is fully visible from the start.",
   // Each typed character firms up over `--motion-settle`, inside `no-preference` only; under reduced
   // motion the base-layer carve-out (`.gateway-type-ch { visibility: visible }`) shows it complete, so
   // no time axis is left to shorten. The condition is measured below with the scroll-timeline classes.
   "gateway-type-land":
-    "타자 안착 — 감속에서는 선언 자체가 없고 문장은 첫 프레임부터 완성돼 보인다(base 레이어 carve-out). 줄일 시간축이 없다.",
+    "Typing settle: under reduced motion there is no declaration and the sentence looks complete from the first frame (base-layer carve-out). There is no time axis to shorten.",
 };
 
 /**
@@ -111,7 +111,7 @@ const animatedClasses = [
   ),
 ].sort();
 
-describe('reduced-motion 동등물 계약', () => {
+describe('reduced-motion equivalent contract', () => {
   const blocks = reducedMotionBlocks(CSS);
   const allRules = blocks.flatMap(rules);
   // The ordinary rules outside reduced-motion — used when checking the entry syntax itself.
@@ -119,9 +119,9 @@ describe('reduced-motion 동등물 계약', () => {
     blocks.reduce((css, block) => css.replace(block, ''), CSS),
   );
 
-  it('전역 kill 규칙(안전망)이 남아 있다', () => {
+  it('the global kill rule (safety net) remains', () => {
     const global = allRules.find((r) => /\*,?\s*\*::before/.test(r.selector.replace(/\s+/g, ' ')));
-    expect(global, 'prefers-reduced-motion 전역 규칙이 사라졌다').toBeTruthy();
+    expect(global, 'the global prefers-reduced-motion rule is gone').toBeTruthy();
     expect(global!.body).toMatch(/animation-duration:\s*0\.01ms/);
   });
 
@@ -135,21 +135,21 @@ describe('reduced-motion 동등물 계약', () => {
     expect(waiting[0].body).toMatch(/transform:\s*none\s*!important\s*;/);
   });
 
-  it('후보를 CSS 에서 실제로 뽑아냈다 — 빈손으로 통과하지 않는다', () => {
+  it('actually extracted the candidates from CSS, so it does not pass empty-handed', () => {
     // Floor so a drop means the scanner has gone blind.
     expect(
       animatedClasses.length,
-      `애니메이션 클래스를 ${animatedClasses.length}개만 찾았다 — 스캐너가 헛돈다`,
+      `found only ${animatedClasses.length} animation classes, so the scanner is spinning idle`,
     ).toBeGreaterThanOrEqual(27);
     for (const cls of Object.keys(INTENTIONALLY_STILL)) {
       expect(
         animatedClasses,
-        `.${cls} 는 면제 목록에 있는데 CSS 에 없다 — 죽은 면제는 틀린 정보다`,
+        `.${cls} is on the exemption list but not in CSS; a dead exemption is wrong information`,
       ).toContain(cls);
     }
   });
 
-  it('감속 블록에서 언급되지 않은 표면은 이유가 적혀 있다', () => {
+  it('a surface not mentioned in the reduced block has its reason written down', () => {
     const naked = animatedClasses.filter(
       (cls) =>
         !(cls in INTENTIONALLY_STILL) &&
@@ -170,7 +170,7 @@ describe('reduced-motion 동등물 계약', () => {
    * A condition recorded only in prose gives no signal when the next person moves it
    * out, so it is measured here.
    */
-  it('스크롤 타임라인 안무는 no-preference 안에만 산다', () => {
+  it('scroll-timeline choreography lives only inside no-preference', () => {
     const marker = '@media (prefers-reduced-motion: no-preference)';
     const noPreferenceBlocks: string[] = [];
     for (let from = 0; ; ) {
@@ -191,7 +191,7 @@ describe('reduced-motion 동등물 계약', () => {
     }
     expect(
       noPreferenceBlocks.length,
-      'no-preference 블록이 하나도 없다 — 이 시험이 빈손으로 통과하고 있다',
+      'there is no no-preference block at all, so this test is passing empty-handed',
     ).toBeGreaterThan(0);
 
     for (const cls of SCROLL_TIMELINE_CLASSES) {
@@ -202,42 +202,42 @@ describe('reduced-motion 동등물 계약', () => {
       const inside = noPreferenceBlocks
         .map((block) => [...block.matchAll(new RegExp(`\\.${cls}(?![\\w-])`, 'g'))].length)
         .reduce((a, b) => a + b, 0);
-      expect(total, `.${cls} 가 CSS 에 없다 — 죽은 면제다`).toBeGreaterThan(0);
+      expect(total, `.${cls} is not in CSS, so it is a dead exemption`).toBeGreaterThan(0);
       expect(
         inside,
         `Only ${inside} of the ${total} declarations of .${cls} are inside no-preference; ` +
           `a declaration that leaked outside applies unchanged for reduced-motion users. ` +
           `The INTENTIONALLY_STILL reason is now false, so revert it or rewrite the reason.`,
       ).toBe(total);
-      expect(selector.test(CSS_CODE), 'selector 정규식이 헛돌고 있다').toBe(true);
+      expect(selector.test(CSS_CODE), 'the selector regex is spinning idle').toBe(true);
     }
   });
 
   for (const cls of requiresEquivalent) {
-    it(`.${cls} 는 reduced-motion 에서도 시간을 갖는다 (하드컷 아님)`, () => {
+    it(`.${cls} still takes time under reduced-motion (not a hard cut)`, () => {
       const matching = allRules.filter((r) =>
         r.selector.split(',').some((s) => new RegExp(`\\.${cls}(?![\\w-])`).test(s)),
       );
-      expect(matching.length, `.${cls} 의 reduced-motion 동등물이 없다`).toBeGreaterThan(0);
+      expect(matching.length, `.${cls} has no reduced-motion equivalent`).toBeGreaterThan(0);
 
       const timed = matching.filter((r) =>
         /(?:animation|transition)-duration:\s*(?:var\(|calc\()/.test(r.body),
       );
       expect(
         timed.length,
-        `.${cls} 의 동등물이 duration 토큰을 되찾지 않는다 (하드컷으로 남음)`,
+        `the equivalent of .${cls} does not get the duration token back (left as a hard cut)`,
       ).toBeGreaterThan(0);
 
       for (const rule of timed) {
         expect(
           /(?:animation|transition)-duration:\s*\d/.test(rule.body),
-          `.${cls} 동등물이 리터럴 ms 를 재기입했다 — 토큰만 쓴다`,
+          `the equivalent of .${cls} rewrote a literal ms; use the token only`,
         ).toBe(false);
       }
     });
   }
 
-  it('동등물은 흔들리는 축을 opacity 전용 키프레임으로 갈아탄다', () => {
+  it('the equivalent switches the shaking axis to an opacity-only keyframe', () => {
     // Entries carrying a transform (chrome-in/out · settings panel · rail dot) become
     // equivalents only by swapping the keyframe name — restoring the duration alone
     // still moves them.
@@ -263,7 +263,7 @@ describe('reduced-motion 동등물 계약', () => {
       );
       expect(
         matching.some((r) => /animation-name:\s*(?:panelCrossfadeIn|overlayFadeOut)/.test(r.body)),
-        `.${cls} 는 opacity 전용 키프레임으로 갈아타야 한다`,
+        `.${cls} must switch to an opacity-only keyframe`,
       ).toBe(true);
     }
   });
@@ -273,31 +273,31 @@ describe('reduced-motion 동등물 계약', () => {
    * instantly is right and the global kill rule already gives it. Guards that the duration is a ramp
    * token and that no carve-out is added.
    */
-  describe('컴포저 자람 — 감속에서는 즉시 도착', () => {
+  describe('composer growth: arrives instantly under reduced motion', () => {
     const PANEL = 'src/widgets/vault-agent-panel/ui/VaultAgentPanel.tsx';
 
-    it('자람의 시간은 표면 이동 램프 토큰이다 (리터럴 ms 0)', () => {
+    it('the growth time is the surface-move ramp token (zero literal ms)', () => {
       const src = TS(PANEL);
       expect(src).toContain("transitionProperty: 'height'");
       expect(src).toContain("transitionDuration: 'var(--motion-base)'");
       expect(src).toContain("transitionTimingFunction: 'var(--motion-ease)'");
       expect(
         /transitionDuration:\s*['"`]\s*\d/.test(src),
-        '컴포저 자람이 리터럴 ms 로 시간을 적었다 — 램프를 탄다',
+        'composer growth wrote its time as a literal ms; it should ride the ramp',
       ).toBe(false);
     });
 
-    it('감속 경로에 carve-out 이 없다 — 있으면 잘려야 할 이동이 되살아난다', () => {
+    it('the reduced path has no carve-out, since one would revive a movement that should be cut', () => {
       const carved = allRules.filter((rule) =>
         /vault-agent-input|agent-composer/.test(rule.selector),
       );
       expect(
         carved.map((rule) => rule.selector),
-        '컴포저에 reduced-motion 동등물이 생겼다 — 이 축은 잘리는 것이 맞다',
+        'the composer gained a reduced-motion equivalent, but this axis is meant to be cut',
       ).toEqual([]);
     });
 
-    it('전역 kill 규칙이 transition 까지 덮는다 (그게 이 결정의 전제다)', () => {
+    it('the global kill rule also covers transition, which is the premise of this decision', () => {
       const global = allRules.find((r) =>
         /\*,?\s*\*::before/.test(r.selector.replace(/\s+/g, ' ')),
       );
@@ -310,11 +310,11 @@ describe('reduced-motion 동등물 계약', () => {
    * the position jump and loses the opacity. The equivalent removes the movement axis at its origin
    * and gives opacity its time back.
    */
-  it('토스트 동등물은 흔들리는 축(--y)을 출발점에서 없앤다', () => {
+  it('the toast equivalent removes the shaking axis (--y) at the starting point', () => {
     const toastRules = allRules.filter((r) => r.selector.includes('.app-toast'));
     expect(
       toastRules.some((r) => /--y:\s*translateY\(0\)\s*!important/.test(r.body)),
-      '감속 사용자에게 토스트가 여전히 자기 높이만큼 순간이동한다',
+      'the toast still teleports by its own height for reduced-motion users',
     ).toBe(true);
     // The vendor switches it off with `!important`, so the equivalent wins only with
     // `!important` plus higher specificity. At lower specificity the rule exists but is
@@ -322,7 +322,7 @@ describe('reduced-motion 동등물 계약', () => {
     for (const rule of toastRules) {
       expect(
         rule.selector.includes('[data-sonner-toaster]'),
-        '토스트 동등물의 특이도가 벤더 규칙보다 낮다 — 조용히 진다',
+        'the toast equivalent has lower specificity than the vendor rule, so it silently loses',
       ).toBe(true);
     }
   });
@@ -331,11 +331,11 @@ describe('reduced-motion 동등물 계약', () => {
    * WCAG 2.2 section 2.3.3 exempts user-initiated movement: wheel, pinch and pan keep their time, and
    * only app-initiated camera moves snap, since snapping everything teleports the viewport.
    */
-  it('캔버스 카메라의 reduced-motion 스냅은 앱 개시 이동에만 걸린다', () => {
+  it('the canvas camera reduced-motion snap applies only to app-initiated moves', () => {
     const step = TS('src/widgets/ontology-map/ui/frame-loop/topology-physics-step.ts');
     expect(
       /if \(reducedMotion && !userDrivenCamera\)/.test(step),
-      '카메라 스냅이 사용자 개시 이동까지 자른다 (WCAG 2.3.3 예외 침범)',
+      'the camera snap also cuts user-initiated moves (violates the WCAG 2.3.3 exception)',
     ).toBe(true);
 
     const inputDir = 'src/widgets/ontology-map/ui/input';
@@ -345,13 +345,13 @@ describe('reduced-motion 동등물 계약', () => {
       .join('\n');
     expect(
       handlers.includes('userDrivenCameraRef'),
-      '포인터 제스처가 사용자 개시 표시를 남기지 않는다',
+      'the pointer gesture leaves no user-initiated mark',
     ).toBe(true);
     // The two points where wheel/pinch snapped the whole camera in place — if they
     // come back they bypass the gate above.
     expect(
       /reducedMotionRef\.current\) \{\s*cameraRef\.current = \{ x: \{ value: afterX/.test(handlers),
-      '휠 줌이 다시 감속 사용자에게 순간이동한다',
+      'wheel zoom teleports for reduced-motion users again',
     ).toBe(false);
   });
 
@@ -359,7 +359,7 @@ describe('reduced-motion 동등물 계약', () => {
    * Sheets drawn by framer are out of reach of the CSS global kill rule, which would keep opacity and
    * cut only geometry; they must use the shared equivalent.
    */
-  it('framer 오버레이는 감속 경로에서 공용 동등물을 탄다', () => {
+  it('framer overlays ride the shared equivalent on the reduced path', () => {
     for (const rel of [
       'src/widgets/shortcut-sheet/ui/ShortcutSheet.tsx',
       'src/widgets/search-palette/ui/SearchPalette.tsx',
@@ -367,7 +367,7 @@ describe('reduced-motion 동등물 계약', () => {
       'src/shared/ui/surfaces/dialog.tsx',
     ]) {
       const src = TS(rel);
-      expect(src.includes('OVERLAY_SPRING_REDUCED'), `${rel} 에 감속 동등물이 없다`).toBe(true);
+      expect(src.includes('OVERLAY_SPRING_REDUCED'), `${rel} has no reduced-motion equivalent`).toBe(true);
     }
   });
 
@@ -376,10 +376,10 @@ describe('reduced-motion 동등물 계약', () => {
    * movement curve also governed opacity and the entry read as a hard cut. If `opacity` returns to an
    * entry/exit keyframe it is caught here, because frames catch it and eyes do not.
    */
-  describe('지도 크롬 등장 — 밝기와 이동의 커브 분리', () => {
+  describe('map chrome entrance: brightness and movement on separate curves', () => {
     function keyframeBody(name: string): string {
       const at = CSS.indexOf(`@keyframes ${name}`);
-      expect(at, `@keyframes ${name} 가 없다`).toBeGreaterThan(-1);
+      expect(at, `@keyframes ${name} is missing`).toBeGreaterThan(-1);
       const open = CSS.indexOf('{', at);
       let depth = 0;
       let i = open;
@@ -394,17 +394,17 @@ describe('reduced-motion 동등물 계약', () => {
     }
 
     for (const name of ['topologyChromeIn', 'topologyChromeOut', 'overlaySpringIn', 'overlaySpringOut']) {
-      it(`${name} 은 이동만 담는다 — opacity 를 다시 묶지 않는다`, () => {
+      it(`${name} carries movement only and does not bind opacity again`, () => {
         expect(/opacity\s*:/.test(keyframeBody(name))).toBe(false);
       });
     }
 
     for (const cls of ['topology-chrome-in', 'topology-chrome-out']) {
-      it(`.${cls} 의 밝기는 앱 공통 램프(--motion-fast · --motion-ease)를 탄다`, () => {
+      it(`the brightness of .${cls} rides the app-wide ramp (--motion-fast · --motion-ease)`, () => {
         const rule = allRulesOutsideReducedMotion.find((r) =>
           r.selector.split(',').some((s) => new RegExp(`\\.${cls}(?![\\w-])`).test(s)),
         );
-        expect(rule, `.${cls} 규칙이 없다`).toBeTruthy();
+        expect(rule, `there is no rule for .${cls}`).toBeTruthy();
         // Entry is `panelCrossfadeIn`, exit is `overlayFadeOut` — both opacity-only and
         // on the same ramp. The reason the names differ is above.
         expect(rule!.body).toMatch(/panelCrossfadeIn|overlayFadeOut/);

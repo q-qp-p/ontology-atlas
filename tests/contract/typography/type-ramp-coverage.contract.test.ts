@@ -106,14 +106,14 @@ async function measureExemptDebt(): Promise<Map<string, number>> {
   );
 }
 
-describe("램프 lint 커버리지 — 새 표면이 첫날부터 덮이는가", () => {
-  it("커버리지는 거부목록이다 — 허용목록으로 되돌아가지 않았다", () => {
+describe("ramp lint coverage: is a new surface covered from day one", () => {
+  it("coverage is a deny list and has not gone back to an allow list", () => {
     // This assertion is the heart of the file. The moment a directory list appears
     // here, the "a newly created directory is on no list" hole returns intact.
     expect(rampCoveredGlobs).toEqual(["src/**/*.{ts,tsx}", "app/**/*.{ts,tsx}"]);
   });
 
-  it("탐지기가 빈 집합 위에서 놀지 않는다 — 램프 셀렉터가 실재한다", () => {
+  it("the detector does not spin idle on an empty set, since the ramp selectors exist", () => {
     // If the selector array is empty, every universal assertion below goes green for free.
     expect(rampSelectors.length).toBeGreaterThanOrEqual(20);
     expect(rampSelectors.some((selector) => selector.includes("text-\\[[0-9.]+px"))).toBe(true);
@@ -122,13 +122,13 @@ describe("램프 lint 커버리지 — 새 표면이 첫날부터 덮이는가",
     expect(rampSelectors.some((selector) => selector.includes("text-\\[[0-9.]+rem"))).toBe(true);
   });
 
-  it("아직 없는 경로도 램프 셀렉터를 전부 받는다", async () => {
+  it("a path that does not exist yet also receives every ramp selector", async () => {
     const uncovered: string[] = [];
     for (const futurePath of FUTURE_PATHS) {
       const config = await eslint.calculateConfigForFile(futurePath);
       const applied = new Set(selectorsFor(config));
       const missing = rampSelectors.filter((selector) => !applied.has(selector));
-      if (missing.length > 0) uncovered.push(`  ${futurePath}: 셀렉터 ${missing.length}개 누락`);
+      if (missing.length > 0) uncovered.push(`  ${futurePath}: ${missing.length} selectors missing`);
     }
 
     expect(
@@ -140,7 +140,7 @@ describe("램프 lint 커버리지 — 새 표면이 첫날부터 덮이는가",
     ).toEqual([]);
   }, ESLINT_CASE_TIMEOUT_MS);
 
-  it("프로브 — 새 디렉터리에 위반 넷을 심으면 빨개진다", async () => {
+  it("probe: planting four violations in a new directory turns it red", async () => {
     const [result] = await eslint.lintText(FIELD_TRIAL_VIOLATION, { filePath: PROBE_PATH });
     const ramp = result.messages.filter((message) => message.ruleId === "no-restricted-syntax");
     // text-[13px] · rounded-[5px] · leading-[1.9] · duration-300 — four.
@@ -152,18 +152,18 @@ describe("램프 lint 커버리지 — 새 표면이 첫날부터 덮이는가",
     expect(result.errorCount).toBeGreaterThanOrEqual(4);
   }, ESLINT_CASE_TIMEOUT_MS);
 
-  it("프로브 — 같은 자리의 정상 램프 값은 통과한다", async () => {
+  it("probe: normal ramp values in the same place pass", async () => {
     const [result] = await eslint.lintText(RAMP_CLEAN, { filePath: PROBE_PATH });
     const ramp = result.messages.filter((message) => message.ruleId === "no-restricted-syntax");
     expect(
       ramp.map((message) => message.message),
-      "정상 램프 유틸리티가 위반으로 잡힌다 — 오탐은 소음이고 소음은 신호를 덮는다.",
+      "a normal ramp utility is caught as a violation; a false positive is noise and noise drowns the signal.",
     ).toEqual([]);
   }, ESLINT_CASE_TIMEOUT_MS);
 });
 
-describe("램프 부채 예외 장부", () => {
-  it("예외는 파일 단위다 — 디렉터리 글롭이 아니다", () => {
+describe("ramp debt exception ledger", () => {
+  it("exceptions are per file, not directory globs", () => {
     // Excluding by directory also excludes **files created inside it later**. That was
     // the allowlist era's hole and must not reopen here.
     const globby = exemptions.filter((entry) => /[*?[\]]/.test(entry));
@@ -174,16 +174,16 @@ describe("램프 부채 예외 장부", () => {
     ).toEqual([]);
   });
 
-  it("예외 경로가 전부 실재한다 — 유령 예외는 유령 예산이다", () => {
+  it("every exception path exists, since a ghost exception is a ghost budget", () => {
     const missing = exemptions.filter((entry) => !existsSync(path.join(REPO_ROOT, entry)));
-    expect(missing, `없는 파일의 예외가 남아 있다: ${missing.join(", ")}`).toEqual([]);
+    expect(missing, `exceptions remain for files that do not exist: ${missing.join(", ")}`).toEqual([]);
   });
 
-  it("장부와 예외 목록이 같은 집합이다", () => {
+  it("the ledger and the exception list are the same set", () => {
     expect([...exemptions].sort()).toEqual(EXEMPT_DEBT.map(([file]) => file).sort());
   });
 
-  it("예외 목록이 비었으면 «예전에 예외였던 파일» 이 램프 셀렉터를 전부 받는다", async () => {
+  it("when the exception list is empty, \"files that used to be exceptions\" receive every ramp selector", async () => {
     // While exceptions existed the question was "is it an exception in name only".
     // With the list empty the opposite is asked — if the exception was deleted but the
     // path is still uncovered for another reason (a glob typo, block order), only the
@@ -197,11 +197,11 @@ describe("램프 부채 예외 장부", () => {
     for (const file of FORMERLY_EXEMPT) {
       const applied = new Set(selectorsFor(await eslint.calculateConfigForFile(file)));
       const missing = rampSelectors.filter((selector) => !applied.has(selector));
-      expect(missing, `${file} 가 램프 셀렉터를 못 받는다: ${missing.length}종`).toEqual([]);
+      expect(missing, `${file} does not receive the ramp selectors: ${missing.length} kinds`).toEqual([]);
     }
   }, ESLINT_CASE_TIMEOUT_MS);
 
-  it("예외 파일의 부채가 장부를 넘지 않고, 0이 된 파일은 예외에서 뺀다", async () => {
+  it("the debt of exception files does not exceed the ledger, and a file that reached 0 leaves the exceptions", async () => {
     // With an empty list there is nothing to ratchet, so **whether it is really 0** is
     // measured instead — "the exception was deleted" and "there are no violations" are
     // different facts, and only the latter is the spec.
@@ -213,7 +213,7 @@ describe("램프 부채 예외 장부", () => {
           r.messages.filter((m) => m.ruleId === "no-restricted-syntax").length,
         ] as const)
         .filter(([, n]) => n > 0);
-      expect(left, `예외를 지웠는데 위반이 남아 있다: ${JSON.stringify(left)}`).toEqual([]);
+      expect(left, `the exception was removed but violations remain: ${JSON.stringify(left)}`).toEqual([]);
       return;
     }
     const actual = await measureExemptDebt();
@@ -222,8 +222,8 @@ describe("램프 부채 예외 장부", () => {
 
     for (const [file, budget] of EXEMPT_DEBT) {
       const count = actual.get(file) ?? 0;
-      if (count > budget) grown.push(`  ${file}: ${budget} → ${count} (늘었다)`);
-      if (count === 0) cleared.push(`  ${file}: 장부 ${budget} → 실측 0 (예외에서 빼라)`);
+      if (count > budget) grown.push(`  ${file}: ${budget} → ${count} (grew)`);
+      if (count === 0) cleared.push(`  ${file}: ledger ${budget} → measured 0 (remove from exceptions)`);
     }
 
     expect(

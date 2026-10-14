@@ -26,18 +26,18 @@ function readRaw(name: string): string {
   // (`html[...]`) are judged separately, and mixing them here blurs which value was
   // measured.
   const match = CSS.match(new RegExp(`--${name}:\\s*([^;]+);`));
-  if (!match) throw new Error(`토큰을 못 찾음: --${name}`);
+  if (!match) throw new Error(`token not found: --${name}`);
   return match[1].trim();
 }
 
 /** Follows aliases (`var(--other)`) one step at a time to the final hex. */
 function readToken(name: string, depth = 0): string {
-  if (depth > 4) throw new Error(`별칭이 너무 깊음: --${name}`);
+  if (depth > 4) throw new Error(`alias chain too deep: --${name}`);
   const raw = readRaw(name);
   const alias = raw.match(/^var\(\s*--([\w-]+)\s*\)$/);
   if (alias) return readToken(alias[1], depth + 1);
   const hex = raw.match(/^(#[0-9a-fA-F]{6})$/);
-  if (!hex) throw new Error(`hex 도 별칭도 아님: --${name} = ${raw}`);
+  if (!hex) throw new Error(`neither a hex nor an alias: --${name} = ${raw}`);
   return hex[1];
 }
 
@@ -72,7 +72,7 @@ const NODE_LADDER = [
 ];
 
 describe("topology ink contrast contract", () => {
-  it("모든 엣지·노드 stroke 가 3:1 이상이다", () => {
+  it("every edge and node stroke is at least 3:1", () => {
     const tokens = [...EDGE_LADDER, ...NODE_LADDER, "map-edge-depends"];
     const failures = tokens
       .map((name) => ({ name, value: readToken(name), ratio: contrast(readToken(name), CANVAS) }))
@@ -80,7 +80,7 @@ describe("topology ink contrast contract", () => {
     expect(failures.map((f) => `${f.name}=${f.value} (${f.ratio.toFixed(2)}:1)`)).toEqual([]);
   });
 
-  it("캔버스 라벨이 모두 본문 대비 4.5:1 이상이다", () => {
+  it("every canvas label is at least 4.5:1 against body", () => {
     // Measured against `--map-canvas-bg-near`, not the page canvas: that is
     // the surface the labels are actually painted over, and it is the lighter of the
     // two, so it is the conservative denominator.
@@ -91,7 +91,7 @@ describe("topology ink contrast contract", () => {
     expect(failures.map((f) => `${f.name}=${f.value} (${f.ratio.toFixed(2)}:1)`)).toEqual([]);
   });
 
-  it("라벨 잉크 사다리의 순서가 유지된다 (element < capability < domain)", () => {
+  it("the label ink ladder keeps its order (element < capability < domain)", () => {
     // Raising a floor must not invert the hierarchy it sits in. The gateway's brighter
     // element ink (7.09:1) would have done exactly that here — above capability's
     // 5.33:1 — so the workbench takes the dimmest value that clears the text floor
@@ -103,21 +103,21 @@ describe("topology ink contrast contract", () => {
     }
   });
 
-  it("containment 잉크 사다리의 순서가 유지된다 (l2 < 기본 < l0)", () => {
+  it("the containment ink ladder keeps its order (l2 < default < l0)", () => {
     const ratios = EDGE_LADDER.map((name) => contrast(readToken(name), CANVAS));
     for (let i = 1; i < ratios.length; i += 1) {
       expect(ratios[i], EDGE_LADDER[i]).toBeGreaterThan(ratios[i - 1]);
     }
   });
 
-  it("노드 stroke 사다리의 순서가 유지된다 (element < capability < domain < project)", () => {
+  it("the node stroke ladder keeps its order (element < capability < domain < project)", () => {
     const ratios = NODE_LADDER.map((name) => contrast(readToken(name), CANVAS));
     for (let i = 1; i < ratios.length; i += 1) {
       expect(ratios[i], NODE_LADDER[i]).toBeGreaterThan(ratios[i - 1]);
     }
   });
 
-  it("크롬(클러스터 칩)은 rest 에서 어떤 노드보다 어둡다", () => {
+  it("chrome (the cluster chip) is darker than any node at rest", () => {
     // At rest the cluster chip must sit on the ramp bottom step, below every node ink.
     const chip = ["map-cluster-chip-border-rest", "map-cluster-chip-ink-rest"].map(
       (name) => contrast(readToken(name), CANVAS),
@@ -131,7 +131,7 @@ describe("topology ink contrast contract", () => {
     }
   });
 
-  it("노드 stroke 와 containment 엣지가 **같은 깊이 축**을 참조한다", () => {
+  it("node strokes and containment edges reference the **same depth axis**", () => {
     // Node stroke and containment edge draw the same tree depth, so the alias relationship is pinned
     // rather than the values.
     const AXIS_PAIRS = [
@@ -146,7 +146,7 @@ describe("topology ink contrast contract", () => {
     }
   });
 
-  it("`depends` 는 축 밖이되 가장 밝은 마크를 넘지 않는다", () => {
+  it("`depends` sits off the axis but does not exceed the brightest mark", () => {
     // This is a relation **category**, not a hierarchy, so it is not a step on the
     // ladder (it is distinguished by a dashed stroke plus an indigo tint). No
     // cross-ladder ceiling such as "edge ≤ node × 0.8" is applied, because the premise
@@ -158,12 +158,12 @@ describe("topology ink contrast contract", () => {
     expect(depends).toBeLessThan(loudestMark);
   });
 
-  it("관문 스테이지가 엣지 잉크를 **강등**하지 않는다", () => {
+  it("the gate stage does not **demote** the edge ink", () => {
     // The gateway no longer mounts a map, so reviving the `html[data-gateway-stage]` scope fails here.
     expect(CSS).not.toMatch(/html\[data-gateway-stage\]\s*\{/);
   });
 
-  it("깊이 선명도 알파와 **합성해도** 잉크 사다리가 3:1 바닥 위다", () => {
+  it("the ink ladder stays above the 3:1 floor even **composited** with the depth clarity alpha", () => {
     // Composited with the alpha the renderer multiplies by (`realmDepthClarityAlpha`), since the
     // standalone check cannot see the loss. The 3D dome depth fog is outside this floor.
     const surface = readToken("map-canvas-bg-near");
@@ -182,7 +182,7 @@ describe("topology ink contrast contract", () => {
       const composed = compositeHex(readToken(token), alpha, surface);
       expect(
         contrast(composed, surface),
-        `${token} × 알파 ${alpha} 합성`,
+        `${token} composited at alpha ${alpha}`,
       ).toBeGreaterThanOrEqual(MIN_CONTRAST);
     }
   });

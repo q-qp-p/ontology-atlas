@@ -54,23 +54,23 @@ const BODY_AA = 4.5;
 function ratioOnPanel(token: string): number {
   const surface = resolve(SURFACE_TOKEN);
   const ink = resolve(token);
-  expect(surface, `${SURFACE_TOKEN} 를 못 읽었다`).toBeTruthy();
-  expect(ink, `${token} 를 못 읽었다`).toBeTruthy();
+  expect(surface, `could not read ${SURFACE_TOKEN}`).toBeTruthy();
+  expect(ink, `could not read ${token}`).toBeTruthy();
   const bg = parseColor(surface);
   const fg = parseColor(ink);
-  expect(bg, `${SURFACE_TOKEN} 값을 색으로 못 읽었다: ${surface}`).toBeTruthy();
-  expect(fg, `${token} 값을 색으로 못 읽었다: ${ink}`).toBeTruthy();
+  expect(bg, `could not read the value of ${SURFACE_TOKEN} as a color: ${surface}`).toBeTruthy();
+  expect(fg, `could not read the value of ${token} as a color: ${ink}`).toBeTruthy();
   return contrastRatio(composite(fg, bg), bg);
 }
 
-describe('지도 패널 잉크 램프 (표면 전용 두 번째 램프)', () => {
-  it('장부가 비어 있지 않고 표면 토큰이 실재한다', () => {
+describe('map panel ink ramp (a second ramp for the surface only)', () => {
+  it('the ledger is not empty and the surface token exists', () => {
     // Idling guard — an empty ledger or an unreadable surface would make every test below pass.
     expect(INK_LEDGER.length).toBeGreaterThan(3);
     expect(resolve(SURFACE_TOKEN)).toMatch(/^#|^rgb/);
   });
 
-  it('선언된 잉크가 globals.css 의 패널 잉크 **전부**를 덮는다', () => {
+  it('the declared inks cover **every** panel ink in globals.css', () => {
     /**
      * Coverage assertion — it measures "sees the whole set", not "is not an empty
      * set" (`.claude/rules/design-gates.md`: the icon ratchet missing 3/4 by seeing
@@ -88,22 +88,22 @@ describe('지도 패널 잉크 램프 (표면 전용 두 번째 램프)', () => 
     const defined = allInks.filter((t) => !isAccentInk(t));
     expect(
       allInks.length - defined.length,
-      '강조 잉크를 하나도 못 갈랐다 — 분류가 깨졌다',
+      'could not separate out a single emphasis ink, so the classification is broken',
     ).toBeGreaterThan(0);
-    expect(defined.length, '패널 잉크 토큰을 하나도 못 찾았다 — 스캔이 깨졌다').toBeGreaterThan(3);
+    expect(defined.length, 'found no panel ink token at all, so the scan is broken').toBeGreaterThan(3);
     const declared = new Set(INK_LEDGER.map(([t]) => t));
     const missing = [...new Set(defined)].filter((t) => !declared.has(t));
     expect(
       missing,
-      `장부에 없는 패널 잉크: ${missing.join(', ')} — 새 잉크를 더했으면 대비를 재서 INK_LEDGER 에 등재한다`,
+      `panel inks missing from the ledger: ${missing.join(', ')}; if you added a new ink, measure its contrast and register it in INK_LEDGER`,
     ).toEqual([]);
   });
 
-  it.each(INK_LEDGER)('%s 가 패널 표면 위에서 본문 AA 를 넘는다', (token) => {
+  it.each(INK_LEDGER)('%s clears body AA on the panel surface', (token) => {
     expect(ratioOnPanel(token)).toBeGreaterThanOrEqual(BODY_AA);
   });
 
-  it.each(INK_LEDGER)('%s 의 실측 대비가 장부와 같다', (token, ratio) => {
+  it.each(INK_LEDGER)('the measured contrast of %s equals the ledger', (token, ratio) => {
     expect(
       Number(ratioOnPanel(token).toFixed(2)),
       `The contrast of ${token} differs from the ledger (${ratio}). If you changed the value, update INK_LEDGER with it; ` +
@@ -111,7 +111,7 @@ describe('지도 패널 잉크 램프 (표면 전용 두 번째 램프)', () => 
     ).toBeCloseTo(ratio, 1);
   });
 
-  it('잉크 위계가 순서대로 내려간다', () => {
+  it('the ink hierarchy descends in order', () => {
     /**
      * An inverted hierarchy makes "primary" fainter than "secondary" — the class of
      * defect where every value rule passes while the reading order collapses on screen.
@@ -121,12 +121,12 @@ describe('지도 패널 잉크 램프 (표면 전용 두 번째 램프)', () => 
     for (let i = 1; i < ratios.length; i += 1) {
       expect(
         ratios[i],
-        `${INK_LEDGER[i][0]}(${ratios[i]}) 가 ${INK_LEDGER[i - 1][0]}(${ratios[i - 1]}) 보다 진하다 — 위계 역전`,
+        `${INK_LEDGER[i][0]}(${ratios[i]}) is stronger than ${INK_LEDGER[i - 1][0]}(${ratios[i - 1]}), so the hierarchy is inverted`,
       ).toBeLessThan(ratios[i - 1]);
     }
   });
 
-  it('전역 램프와 값이 같아진 잉크는 별칭이 아니라 같은 값으로 남는다', () => {
+  it('an ink that has become equal to the global ramp stays the same value rather than an alias', () => {
     /** `text-quaternary` equals the global value; pinned so a converged place cannot quietly diverge. */
     expect(resolve('--map-panel-text-quaternary')?.toLowerCase()).toBe(
       resolve('--color-text-quaternary')?.toLowerCase(),

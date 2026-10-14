@@ -11,15 +11,15 @@ const CSS = readGlobalCss();
 /** CSS with comments stripped, so explanatory sentences are not mistaken for rules. */
 const CODE = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
 
-describe('퇴장 모션 재시작 계약', () => {
-  it('등장 키프레임을 reverse 로 되감는 퇴장 선언이 없다', () => {
+describe('exit motion restart contract', () => {
+  it('no exit declaration rewinds the entrance keyframes with reverse', () => {
     // The `animation: <entrance name> … reverse` pattern is banned outright. It does
     // work where the element remounts each time, but two idioms coexisting in one
     // file drop the next person into the same trap — exits use one idiom only.
     const offenders = [...CODE.matchAll(/animation[^;]*\breverse\b[^;]*;/g)].map((m) =>
       m[0].replace(/\s+/g, ' ').trim(),
     );
-    expect(offenders, `퇴장이 조용히 1프레임이 될 수 있다:\n${offenders.join('\n')}`).toEqual([]);
+    expect(offenders, `an exit may silently collapse to one frame:\n${offenders.join('\n')}`).toEqual([]);
   });
 
   /**
@@ -69,24 +69,24 @@ describe('퇴장 모션 재시작 계약', () => {
     return CODE.slice(open + 1, i);
   };
 
-  it('사라지는 규칙을 CSS 에서 실제로 찾아낸다 — 빈손으로 통과하지 않는다', () => {
+  it('actually finds the disappearing rules in CSS, so it does not pass empty-handed', () => {
     // A drop means a rule disappeared or the scanner went blind.
-    expect(exitRules.length, `사라지는 규칙을 ${exitRules.length}개만 찾았다 — 스캐너가 헛돈다`).toBeGreaterThanOrEqual(6);
-    expect(enterKeyframes.size, '등장 규칙을 하나도 못 찾았다').toBeGreaterThan(2);
+    expect(exitRules.length, `found only ${exitRules.length} disappearing rules, so the scanner is spinning idle`).toBeGreaterThanOrEqual(6);
+    expect(enterKeyframes.size, 'found no entrance rule at all').toBeGreaterThan(2);
   });
 
-  it('사라지는 규칙은 등장 이름을 재사용하지 않는다', () => {
+  it('disappearing rules do not reuse an entrance name', () => {
     const offenders = exitRules
       .flatMap((rule) =>
         rule.keyframes.filter((name) => enterKeyframes.has(name)).map((name) => `${rule.selector} → ${name}`),
       );
     expect(
       offenders,
-      `등장 이름을 그대로 쓰면 같은 원소에서 애니메이션이 재시작하지 않는다:\n${offenders.join('\n')}`,
+      `reusing the entrance name means the animation does not restart on the same element:\n${offenders.join('\n')}`,
     ).toEqual([]);
   });
 
-  it('사라지는 키프레임은 실제로 사라지는 방향이다', () => {
+  it('disappearing keyframes really go in the disappearing direction', () => {
     const offenders: string[] = [];
     for (const rule of exitRules) {
       // Judged per rule — if **any one** of several animations disappears, that rule disappears.
@@ -94,7 +94,7 @@ describe('퇴장 모션 재시작 계약', () => {
       for (const name of rule.keyframes) {
         const body = keyframeBody(name);
         if (body === null) {
-          offenders.push(`${rule.selector} → @keyframes ${name} 가 없다`);
+          offenders.push(`${rule.selector} → @keyframes ${name} is missing`);
           continue;
         }
         const split = body.indexOf('to');
@@ -104,9 +104,9 @@ describe('퇴장 모션 재시작 계약', () => {
         if (fades || shrinks) disappears = true;
       }
       if (!disappears) {
-        offenders.push(`${rule.selector} → ${rule.keyframes.join(' + ')} 중 사라지는 것이 없다`);
+        offenders.push(`${rule.selector} → none of ${rule.keyframes.join(' + ')} disappears`);
       }
     }
-    expect(offenders, `사라지는 방향이 아닌 퇴장:\n${offenders.join('\n')}`).toEqual([]);
+    expect(offenders, `exits that do not go in the disappearing direction:\n${offenders.join('\n')}`).toEqual([]);
   });
 });

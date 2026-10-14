@@ -25,16 +25,16 @@ const fixture = JSON.parse(readFileSync(FIXTURE, 'utf-8')) as {
   hosts: Record<string, string>;
 };
 
-describe('명명 벤더 목적지 계약 (Rust 전송 ↔ 웹 문구)', () => {
-  it('화면이 약속하는 호스트가 Rust 가 실제로 부르는 호스트와 같다', () => {
+describe('named vendor destination contract (Rust transport to web wording)', () => {
+  it('the hosts the screen promises equal the hosts Rust really calls', () => {
     expect(SECRET_PROVIDER_HOSTS).toEqual(fixture.hosts);
   });
 
-  it('허용된 벤더 전부가 목적지를 밝힌다 — 말없이 나가는 벤더가 없다', () => {
+  it('every allowed vendor states its destination, so no vendor sends silently', () => {
     expect([...SECRET_PROVIDERS].sort()).toEqual(Object.keys(fixture.hosts).sort());
   });
 
-  it('명명 벤더는 3에서 동결돼 있다', () => {
+  it('named vendors are frozen at 3', () => {
     // A fourth is added only when both hold: it cannot be absorbed through Bearer
     // compatibility, and there is evidence of demand. Full rationale: the PROVIDERS
     // comment in `src-tauri/src/secrets.rs`.

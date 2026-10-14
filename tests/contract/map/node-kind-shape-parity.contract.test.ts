@@ -36,12 +36,12 @@ function domShapeFamily(kind: (typeof KINDS)[number]): ShapeFamily {
   throw new Error(`no recognizable silhouette tag for kind=${kind}`);
 }
 
-describe("kind → 실루엣 매핑 — 캔버스 게이트웨이와 DOM 게이트웨이의 parity", () => {
-  it.each(KINDS)("%s 는 두 게이트웨이에서 같은 도형 계열을 그린다", (kind) => {
+describe("kind to silhouette mapping: parity between the canvas gateway and the DOM gateway", () => {
+  it.each(KINDS)("%s draws the same shape family in both gateways", (kind) => {
     expect(domShapeFamily(kind)).toBe(canvasShapeFamily(kind));
   });
 
-  it("project=hex · domain/element=사각 · capability=원 — 문서화된 불변 규칙 그대로", () => {
+  it("project=hex, domain/element=square, capability=circle, exactly as the documented invariant says", () => {
     expect(canvasShapeFamily("project")).toBe("hex6");
     expect(canvasShapeFamily("domain")).toBe("rect4");
     expect(canvasShapeFamily("capability")).toBe("circle");

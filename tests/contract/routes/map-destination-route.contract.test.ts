@@ -20,7 +20,7 @@ const MAP_ROUTE = "/topology";
  * independent of the copy.
  */
 const MAP_DESTINED = [
-  { testid: "gateway-hero-web-cta", why: "히어로의 「브라우저에서 열기」 — 웹 제품을 여는 버튼" },
+  { testid: "gateway-hero-web-cta", why: "hero button that opens the web product in the browser" },
   /**
    * Removing a row does not weaken the gate: it guards that a control promising the map goes to the
    * map. Reviving a removed control means restoring its row here.
@@ -50,7 +50,7 @@ function collectSources(): string {
     }
   }
   // If the parser dies this fails here first, rather than reporting "0 violations".
-  if (scanned < 200) throw new Error(`소스 스캔이 ${scanned}개에서 멈췄다 — 순회가 깨졌다`);
+  if (scanned < 200) throw new Error(`source scan stopped at ${scanned} files, so the walk is broken`);
   return chunks.join("\n");
 }
 
@@ -74,11 +74,11 @@ function hrefForTestid(source: string, testid: string): string[] {
   return found;
 }
 
-describe("지도를 약속하는 링크의 목적지", () => {
+describe("destination of links that promise the map", () => {
   const source = collectSources();
 
   for (const { testid, why } of MAP_DESTINED) {
-    it(`${testid} 는 ${MAP_ROUTE} 로 간다 — ${why}`, () => {
+    it(`${testid} goes to ${MAP_ROUTE}: ${why}`, () => {
       const hrefs = hrefForTestid(source, testid);
 
       expect(
@@ -103,7 +103,7 @@ describe("지도를 약속하는 링크의 목적지", () => {
    * `hrefs.length` becomes 0 and the test above fails with "not found"; this proves
    * that failure is **the correct behaviour**.
    */
-  it("추출기가 실제로 href 를 읽는다 (탐지기 무장 확인)", () => {
+  it("the extractor really reads href (confirms the detector is armed)", () => {
     const probe = `
       <Link href="/" data-testid="probe-root">홈</Link>
       <Link data-testid="probe-map" href="/topology">지도</Link>
@@ -193,16 +193,16 @@ function hrefForLabelKey(source: string, key: string): string[] {
   return found;
 }
 
-describe("라벨이 「지도」인 링크는 등록 없이도 감시된다", () => {
+describe("links labeled \"map\" are watched even without registration", () => {
   const source = collectSources();
   const keys = [...mapLabelKeys()].sort();
 
-  it("i18n 에서 지도 라벨 키를 실제로 찾는다 (탐지기 무장 확인)", () => {
+  it("really finds the map label key in i18n (confirms the detector is armed)", () => {
     // At 0 the whole test idles — this blocks the silent disarming.
     expect(keys.length).toBeGreaterThan(0);
   });
 
-  it("그 라벨을 렌더하는 링크는 전부 지도로 간다", () => {
+  it("every link that renders that label goes to the map", () => {
     const violations: string[] = [];
     for (const key of keys) {
       for (const href of hrefForLabelKey(source, key)) {
@@ -220,7 +220,7 @@ describe("라벨이 「지도」인 링크는 등록 없이도 감시된다", ()
     ).toEqual([]);
   });
 
-  it("추출기가 감싸인 라벨의 href 도 읽는다 (탐지기 무장 확인)", () => {
+  it("the extractor also reads the href of a wrapped label (confirms the detector is armed)", () => {
     const probe = `
       <Link href="/topology"><span>{t("crumbBack")}</span></Link>
       <Link href="/">{t("someOther")}</Link>
@@ -235,7 +235,7 @@ describe("라벨이 「지도」인 링크는 등록 없이도 감시된다", ()
    * The extractor must read variable and single-quoted `href` forms; these probes stop the gate
    * from narrowing silently.
    */
-  it("추출기가 변수 href 와 작은따옴표 href 도 읽는다 (사정거리 프로브)", () => {
+  it("the extractor also reads variable hrefs and single-quoted hrefs (range probe)", () => {
     const viaConst = `
       const workspaceHref = '/';
       <Link href={workspaceHref}>{t("crumbBack")}</Link>
