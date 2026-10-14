@@ -16,34 +16,34 @@ import {
 const SKILL = (name, description, body = '') =>
   `---\nname: ${name}\ndescription: ${description}\n---\n\n${body}`;
 
-test('parseSkill — 발동을 정하는 두 값을 뽑는다', () => {
+test('parseSkill extracts the two values that decide activation', () => {
   const parsed = parseSkill(SKILL('pdf', 'Extract text from PDF files', 'body here'));
   assert.equal(parsed.name, 'pdf');
   assert.equal(parsed.description, 'Extract text from PDF files');
   assert.match(parsed.body, /body here/);
 });
 
-test('parseSkill — 접힌 여러 줄 설명도 한 줄로 모은다', () => {
+test('parseSkill folds a multi-line description into one line', () => {
   const raw = '---\nname: x\ndescription: |-\n  first line\n  second line\n---\n\nbody';
   const parsed = parseSkill(raw);
   assert.match(parsed.description, /first line/);
   assert.match(parsed.description, /second line/);
 });
 
-test('parseSkill — frontmatter 가 없으면 null (스킬이 아니다)', () => {
+test('parseSkill returns null without frontmatter, since it is not a skill', () => {
   assert.equal(parseSkill('# just markdown\n'), null);
 });
 
-test('distinctiveTerms — 어느 스킬에나 나오는 말은 뺀다', () => {
+test('distinctiveTerms drops words that appear in every skill', () => {
   const terms = distinctiveTerms('Use this skill when the user wants to create a PDF invoice');
-  assert.ok(terms.includes('pdf'), 'pdf 는 남아야 한다');
-  assert.ok(terms.includes('invoice'), 'invoice 는 남아야 한다');
+  assert.ok(terms.includes('pdf'), 'pdf must remain');
+  assert.ok(terms.includes('invoice'), 'invoice must remain');
   for (const generic of ['use', 'this', 'skill', 'when', 'user', 'wants', 'create']) {
-    assert.ok(!terms.includes(generic), `"${generic}" 은 빠져야 한다 — 안 빼면 모든 쌍이 겹쳐 보인다`);
+    assert.ok(!terms.includes(generic), `"${generic}" must be dropped; otherwise every pair looks overlapping`);
   }
 });
 
-test('classifyReferences — 자기 폴더 참조와 조건부 참조를 가른다', () => {
+test('classifyReferences separates own-folder references from conditional ones', () => {
   const { bundled, conditional } = classifyReferences(
     'Read references/spec.md and scripts/run.py. If the project has src/tokens.js or docs/design.md, read those too.',
   );
@@ -52,7 +52,7 @@ test('classifyReferences — 자기 폴더 참조와 조건부 참조를 가른�
   assert.ok(conditional.includes('docs/design.md'));
 });
 
-test('auditSkills — 같은 이름인데 설명이 다른 것을 위험으로 표시한다', () => {
+test('auditSkills flags same-name skills with different descriptions as a risk', () => {
   const skills = [
     { name: 'dup', description: 'Build frontend interfaces', body: '', file: '/a/SKILL.md', terms: ['frontend'] },
     { name: 'dup', description: 'Guidance for visual design', body: '', file: '/b/SKILL.md', terms: ['visual'] },
@@ -64,11 +64,11 @@ test('auditSkills — 같은 이름인데 설명이 다른 것을 위험으로 �
   assert.equal(report.uniqueNames, 2);
   const dup = report.duplicates.find((d) => d.name === 'dup');
   const same = report.duplicates.find((d) => d.name === 'same');
-  assert.equal(dup.descriptionsDiffer, true, '설명이 다르면 발동 조건이 경쟁한다 — 표시해야 한다');
-  assert.equal(same.descriptionsDiffer, false, '설명이 같으면 사본일 뿐이다');
+  assert.equal(dup.descriptionsDiffer, true, 'different descriptions make activation conditions compete, so it must be flagged');
+  assert.equal(same.descriptionsDiffer, false, 'identical descriptions are just a copy');
 });
 
-test('auditSkills — 이름이 다른데 트리거가 겹치는 쌍을 찾는다', () => {
+test('auditSkills finds differently named pairs whose triggers overlap', () => {
   const skills = [
     { name: 'a', description: '', body: '', file: '/a', terms: ['invoice', 'pdf', 'export', 'ledger'] },
     { name: 'b', description: '', body: '', file: '/b', terms: ['invoice', 'pdf', 'export', 'receipt'] },
@@ -76,28 +76,28 @@ test('auditSkills — 이름이 다른데 트리거가 겹치는 쌍을 찾는�
   ];
   const report = auditSkills(skills, { exists: () => true });
   const found = report.overlaps.find((o) => (o.a === 'a' && o.b === 'b') || (o.a === 'b' && o.b === 'a'));
-  assert.ok(found, 'a↔b 는 세 낱말을 공유하므로 잡혀야 한다');
-  assert.ok(found.score > 0.4, `겹침 점수가 낮다: ${found?.score}`);
+  assert.ok(found, 'a↔b shares three words, so it must be caught');
+  assert.ok(found.score > 0.4, `overlap score is low: ${found?.score}`);
   assert.ok(
     !report.overlaps.some((o) => o.a === 'c' || o.b === 'c'),
-    '아무것도 공유하지 않는 c 는 안 잡혀야 한다 — 안 그러면 이 계기가 무엇이든 겹쳤다고 말한다',
+    'c shares nothing and must not be caught; otherwise this instrument calls anything overlapping',
   );
 });
 
-test('auditSkills — 이름이 같은 쌍은 겹침으로 두 번 세지 않는다', () => {
+test('auditSkills does not count a same-name pair twice as an overlap', () => {
   const skills = [
     { name: 'twin', description: '', body: '', file: '/a', terms: ['alpha', 'beta', 'gamma'] },
     { name: 'twin', description: '', body: '', file: '/b', terms: ['alpha', 'beta', 'gamma'] },
   ];
   const report = auditSkills(skills, { exists: () => true });
-  assert.equal(report.overlaps.length, 0, '이름 충돌은 ① 에서 세므로 ② 에서 또 세면 순위가 오염된다');
+  assert.equal(report.overlaps.length, 0, 'name collisions are counted in (1); counting them again in (2) pollutes the ranking');
 });
 
 /**
  * The core this test protects — **conditional references are not counted as
  * defects.** If this collapses, the noise of "700 things to fix" returns.
  */
-test('auditSkills — 없는 조건부 참조는 결함으로 세지 않고, 없는 자기 폴더 참조만 센다', () => {
+test('auditSkills counts only missing own-folder references as defects, not missing conditional ones', () => {
   const skills = [
     {
       name: 'x',
@@ -114,14 +114,14 @@ test('auditSkills — 없는 조건부 참조는 결함으로 세지 않고, 없
   assert.equal(report.references.bundledMissing.length, 1);
   assert.equal(report.references.bundledMissing[0].ref, 'references/gone.md');
   assert.equal(report.references.conditionalTotal, 1);
-  assert.equal(report.references.conditionalMissing, 1, '조건부는 세기는 하되');
+  assert.equal(report.references.conditionalMissing, 1, 'conditional ones are counted, but separately');
   assert.ok(
     !report.references.bundledMissing.some((m) => m.ref.includes('maybe')),
-    '조건부 참조가 결함 목록에 섞이면 안 된다',
+    'conditional references must not mix into the defect list',
   );
 });
 
-test('계기가 살아 있다 — 완전히 깨끗한 뭉치에서는 아무것도 보고하지 않는다', () => {
+test('the instrument is alive: a fully clean bundle reports nothing', () => {
   const skills = [
     { name: 'one', description: '', body: 'references/a.md', file: '/s/one/SKILL.md', terms: ['alpha'] },
     { name: 'two', description: '', body: 'references/b.md', file: '/s/two/SKILL.md', terms: ['bravo'] },
@@ -132,7 +132,7 @@ test('계기가 살아 있다 — 완전히 깨끗한 뭉치에서는 아무것�
   assert.equal(report.references.bundledMissing.length, 0);
 });
 
-test('installedPluginRoots — 정본이 지목한 installPath 만 돌려준다', async () => {
+test('installedPluginRoots returns only the installPath the canonical file points to', async () => {
   const { installedPluginRoots } = await import('./audit-claude-skills.mjs');
   const roots = installedPluginRoots('/home', () => ({
     version: 2,
@@ -148,7 +148,7 @@ test('installedPluginRoots — 정본이 지목한 installPath 만 돌려준다'
   ]);
 });
 
-test('installedPluginRoots — 정본을 못 읽으면 빈 목록 (부풀린 숫자보다 「못 셌다」가 낫다)', async () => {
+test('installedPluginRoots returns an empty list when the canonical file is unreadable, since "could not count" beats an inflated number', async () => {
   const { installedPluginRoots } = await import('./audit-claude-skills.mjs');
   assert.deepEqual(
     installedPluginRoots('/home', () => {
@@ -162,7 +162,7 @@ test('installedPluginRoots — 정본을 못 읽으면 빈 목록 (부풀린 숫
  * A reference found at the repository root is not a defect — without this check all 7
  * of our skills were reported as broken references, and all 7 existed.
  */
-test('auditSkills — 저장소 루트에 있는 참조는 깨진 것으로 세지 않는다', async () => {
+test('auditSkills does not count a reference found at the repository root as broken', async () => {
   const { auditSkills } = await import('./audit-claude-skills.mjs');
   const skills = [
     {
@@ -178,10 +178,10 @@ test('auditSkills — 저장소 루트에 있는 참조는 깨진 것으로 세�
     exists: (p) => p === '/repo/scripts/at-repo.mjs',
   });
   assert.equal(report.references.bundledTotal, 2);
-  assert.equal(report.references.repoRelative, 1, '저장소 루트에서 찾은 것은 따로 센다');
+  assert.equal(report.references.repoRelative, 1, 'references found at the repository root are counted separately');
   assert.deepEqual(
     report.references.bundledMissing.map((m) => m.ref),
     ['scripts/nowhere.mjs'],
-    '어디에도 없는 것만 결함이다',
+    'only what exists nowhere is a defect',
   );
 });

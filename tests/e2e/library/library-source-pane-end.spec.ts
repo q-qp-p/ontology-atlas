@@ -159,7 +159,7 @@ for (const [width, height] of [
   [1512, 901],
   [1040, 720],
 ] as const) {
-  test(`원본 창은 내용이 끝나는 자리에서 한 여백 뒤에 끝난다 (${width}x${height})`, async ({ page }) => {
+  test(`the source pane ends one margin after its content ends (${width}x${height})`, async ({ page }) => {
     await page.setViewportSize({ width, height });
     await seedFirstRunSeen(page);
     await stubDirectoryPicker(page, VAULT);
@@ -211,21 +211,21 @@ for (const [width, height] of [
       () => document.querySelector('[data-testid="library-pane-body"]')?.getAnimations().length === 0,
     );
     const measured = (await page.evaluate(PANE_END)) as PaneEnd | null;
-    expect(measured, "원본 창을 재지 못했다").not.toBeNull();
+    expect(measured, "could not measure the source pane").not.toBeNull();
     const pane = measured!;
 
     // ── The pane is a document: nothing between it and the shell stretches or centres it.
     for (const link of pane.chain) {
-      expect(link.minHeight, `${link.id} 가 최소 높이를 들고 있다`).toMatch(/^(0px|auto)$/);
-      expect(link.justify, `${link.id} 가 내용을 세로로 가운데 둔다`).toBe("normal");
-      expect(link.align, `${link.id} 가 내용을 가로로 가운데 둔다`).toBe("normal");
+      expect(link.minHeight, `${link.id} holds a minimum height`).toMatch(/^(0px|auto)$/);
+      expect(link.justify, `${link.id} centers its content vertically`).toBe("normal");
+      expect(link.align, `${link.id} centers its content horizontally`).toBe("normal");
     }
 
     // ── The last block sits one gutter inside the pane's end — a gutter, never filler.
-    expect(pane.blocks, "창의 블록을 충분히 재지 못했다").toBeGreaterThan(3);
+    expect(pane.blocks, "could not measure enough blocks of the pane").toBeGreaterThan(3);
     expect(
       pane.paneBottom - pane.lastBlockBottom,
-      `마지막 블록과 창 끝 사이: ${pane.paneBottom - pane.lastBlockBottom}px`,
+      `between the last block and the pane end: ${pane.paneBottom - pane.lastBlockBottom}px`,
     ).toBe(GUTTER);
 
     /*
@@ -234,18 +234,18 @@ for (const [width, height] of [
      */
     expect(
       pane.scrollEnd - pane.lastBlockBottom,
-      `스크롤 끝에서 마지막 블록이 창 바닥에 붙었다 (${pane.lastBlockBottom} / ${pane.scrollEnd})`,
+      `at scroll end the last block is stuck to the pane bottom (${pane.lastBlockBottom} / ${pane.scrollEnd})`,
     ).toBeGreaterThanOrEqual(GUTTER);
 
     // ── The ground below is the landing's ground, not a second panel.
-    expect(pane.paintedGround.colour, "창 아래 바닥이 캔버스가 아니다").toBe(pane.canvas);
-    expect(pane.paintedGround.on, "창 아래에 다른 판이 깔렸다").toBe("library-page");
+    expect(pane.paintedGround.colour, "the ground under the pane is not the canvas").toBe(pane.canvas);
+    expect(pane.paintedGround.on, "another surface is laid under the pane").toBe("library-page");
 
     // ── The sha256 row is one line, and the whole value is still on the cell.
-    expect(pane.hashCell, "sha256 줄을 못 찾았다").toBeTruthy();
-    expect(pane.hashCell!.lines, `sha256 줄 수: ${pane.hashCell!.text}`).toBe(1);
-    expect(pane.hashCell!.text, "해시가 줄임 없이 통째로 들어갔다").toContain("…");
-    expect(pane.hashCell!.title, "전체 해시가 셀에서 사라졌다").toHaveLength(64);
-    expect(pane.hashCell!.title, "제목이 실제 값이 아니다").toMatch(/^[0-9a-f]{64}$/);
+    expect(pane.hashCell, "the sha256 row was not found").toBeTruthy();
+    expect(pane.hashCell!.lines, `sha256 line count: ${pane.hashCell!.text}`).toBe(1);
+    expect(pane.hashCell!.text, "the hash went in whole without truncation").toContain("…");
+    expect(pane.hashCell!.title, "the full hash disappeared from the cell").toHaveLength(64);
+    expect(pane.hashCell!.title, "the title is not the real value").toMatch(/^[0-9a-f]{64}$/);
   });
 }

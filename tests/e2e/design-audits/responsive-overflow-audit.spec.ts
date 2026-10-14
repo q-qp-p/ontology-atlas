@@ -30,7 +30,7 @@ const SELECTOR = "button, a, h1, h2, h3, p, li, dt, dd, input, kbd, [role='tab']
 
 for (const vp of WIDTHS) {
   for (const route of ROUTES) {
-    test(`${vp.label} ${vp.width}px — ${route} 가로 오버플로·겹침 없음`, async ({ page }) => {
+    test(`${vp.label} ${vp.width}px: ${route} has no horizontal overflow or overlap`, async ({ page }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(route === "/ko/docs/" ? "/ko/library/?tab=ontology" : route);
       if (route === "/ko/docs/") {
@@ -91,18 +91,18 @@ for (const vp of WIDTHS) {
 
       expect(
         report.docScrollWidth,
-        `문서가 가로로 스크롤됨 (${report.docScrollWidth} > ${report.docClientWidth})`,
+        `the document scrolls horizontally (${report.docScrollWidth} > ${report.docClientWidth})`,
       ).toBeLessThanOrEqual(report.docClientWidth + 1);
 
       expect(
         report.offenderCount,
-        `뷰포트를 벗어난 요소: ${JSON.stringify(report.offenders, null, 2)}`,
+        `elements outside the viewport: ${JSON.stringify(report.offenders, null, 2)}`,
       ).toBe(0);
 
       // #62 — zero conflicting overlays open at once. The first-visit auto tour may have one.
       expect(
         report.dialogCount,
-        "role=dialog 가 둘 이상 동시에 열려 있음 (#62 오버레이 배타 위반)",
+        "more than one role=dialog is open at once (overlay exclusivity violation)",
       ).toBeLessThanOrEqual(1);
     });
   }

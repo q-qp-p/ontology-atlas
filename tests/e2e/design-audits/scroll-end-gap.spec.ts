@@ -258,7 +258,7 @@ async function measure(page: import("@playwright/test").Page): Promise<Measured>
 }
 
 for (const vp of VIEWPORTS) {
-  test(`스크롤 끝 하단 여백 — ${vp.label}`, async ({ page }) => {
+  test(`bottom gap at scroll end: ${vp.label}`, async ({ page }) => {
     await seedFirstRunSeen(page);
     await page.setViewportSize({ width: vp.w, height: vp.h });
 
@@ -281,7 +281,7 @@ for (const vp of VIEWPORTS) {
       if (!m.slot) {
         expect(
           SLOTLESS_ROUTES.has(url),
-          `${label}: 셸 본문 슬롯을 못 찾았다 — 셸 구조가 바뀌면 이 게이트가 죽는다`,
+          `${label}: the shell body slot was not found; if the shell structure changes, this gate dies`,
         ).toBe(true);
         continue;
       }
@@ -305,7 +305,7 @@ for (const vp of VIEWPORTS) {
         framedWidths.add(m.frameWidth);
         if (m.rootPaddingBottom < MIN_FRAME_RESERVE) {
           violations.push(
-            `${label}: 페이지 틀을 입고도 데스크톱 바닥 예약이 ${m.rootPaddingBottom}px (< ${MIN_FRAME_RESERVE})`,
+            `${label}: despite wearing the page frame, the desktop bottom reserve is ${m.rootPaddingBottom}px (< ${MIN_FRAME_RESERVE})`,
           );
         }
       }
@@ -316,34 +316,34 @@ for (const vp of VIEWPORTS) {
       // ① No compression — the page box must carry the content height for the reservation to stay in place.
       if (m.rootHeight < m.scrollHeight - 1) {
         violations.push(
-          `${label}: 페이지 루트가 압축됐다 (박스 ${m.rootHeight} < 내용 ${m.scrollHeight})`,
+          `${label}: the page root is compressed (box ${m.rootHeight} < content ${m.scrollHeight})`,
         );
       }
       // ② A gap must remain at the end of the scroll. **Failing to measure is not a pass.**
       if (m.gap === null) {
         violations.push(
-          `${label}: 잉크를 하나도 못 찾았다 — 계측 실패이지 통과가 아니다 (슬롯 구조가 바뀌었나)`,
+          `${label}: no ink was found, which is a measurement failure and not a pass (did the slot structure change?)`,
         );
       } else if (m.gap < MIN_GAP) {
-        violations.push(`${label}: 스크롤 끝 하단 여백 ${m.gap}px (< ${MIN_GAP})`);
+        violations.push(`${label}: bottom gap at scroll end ${m.gap}px (< ${MIN_GAP})`);
       }
       // ③ With a bottom tab bar present, nothing may slip behind it.
       if (m.tabClearance !== null) {
         if (m.tabClearance < MIN_GAP) {
-          violations.push(`${label}: 마지막 줄이 하단 탭바에 가렸다 (여유 ${m.tabClearance}px)`);
+          violations.push(`${label}: the last line is covered by the bottom tab bar (clearance ${m.tabClearance}px)`);
         }
       }
     }
 
     // Gate liveness — no scrolling route at all is a defect, not a pass.
-    expect(scrolledRoutes, "스크롤되는 라우트가 없다 — 매트릭스가 결함을 못 본다").toBeGreaterThan(1);
+    expect(scrolledRoutes, "no route scrolls, so the matrix cannot see the defect").toBeGreaterThan(1);
 
     // The slot-found route count is asserted **as a derived value** — pinning a
     // number by hand means a person must follow every route addition, and a gate goes
     // stale when they do not.
     expect(
       slotRoutes,
-      "셸 본문 슬롯이 있어야 하는 라우트 수가 안 맞는다 — 셸 구조나 404 배선이 바뀌었다",
+      "the number of routes that must have a shell body slot does not match; the shell structure or 404 wiring changed",
     ).toBe(ROUTES.length - SLOTLESS_ROUTES.size);
 
     /*
@@ -365,7 +365,7 @@ for (const vp of VIEWPORTS) {
        */
       expect(
         [...framedWidths],
-        `${vp.label}: 960 폼 틀을 한 번도 계측하지 못했다 — 폭 판별이 옛 틀만 안다`,
+        `${vp.label}: the 960 form frame was never measured, so the width discrimination knows only the old frame`,
       ).toContain(FORM_FRAME_WIDTH);
     }
 
@@ -402,7 +402,7 @@ const VAULT_VIEWPORTS = [
 ] as const;
 
 for (const vp of VAULT_VIEWPORTS) {
-  test(`스크롤 끝 하단 여백 — 폴더를 연 ${vp.label}`, async ({ page }) => {
+  test(`bottom gap at scroll end with a folder open: ${vp.label}`, async ({ page }) => {
     test.setTimeout(180_000);
     // The Library measurement below needs a wiki page long enough to scroll; the shared
     // fixture is map-only, so this pass adds one source and one long page of its own.
@@ -453,7 +453,7 @@ for (const vp of VAULT_VIEWPORTS) {
     await page.getByTestId("vault-guide-pick-existing").click();
     await expect(
       page.getByTestId("first-run-starter"),
-      "볼트가 안 물렸다 — 아래 측정은 전부 무의미하다",
+      "no vault is attached, so every measurement below is meaningless",
     ).toHaveCount(0, { timeout: 30_000 });
 
     const violations: string[] = [];
@@ -463,17 +463,17 @@ for (const vp of VAULT_VIEWPORTS) {
       await page.goto(url, { waitUntil: "domcontentloaded" });
       await routeSettled(page);
       const m = await measure(page);
-      expect(m.slot, `${url}: 셸 본문 슬롯을 못 찾았다 — 셸 구조가 바뀌었다`).toBe(true);
+      expect(m.slot, `${url}: the shell body slot was not found, so the shell structure changed`).toBe(true);
       if (!m.scrollable) continue;
       scrolledRoutes += 1;
 
       if (m.rootHeight < m.scrollHeight - 1) {
-        violations.push(`${url}: 페이지 루트가 압축됐다 (박스 ${m.rootHeight} < 내용 ${m.scrollHeight})`);
+        violations.push(`${url}: the page root is compressed (box ${m.rootHeight} < content ${m.scrollHeight})`);
       }
       if (m.gap === null) {
-        violations.push(`${url}: 잉크를 하나도 못 찾았다 — 계측 실패이지 통과가 아니다`);
+        violations.push(`${url}: no ink was found, which is a measurement failure and not a pass`);
       } else if (m.gap < MIN_GAP) {
-        violations.push(`${url}: 스크롤 끝 하단 여백 ${m.gap}px (< ${MIN_GAP})`);
+        violations.push(`${url}: bottom gap at scroll end ${m.gap}px (< ${MIN_GAP})`);
       }
     }
 
@@ -484,7 +484,7 @@ for (const vp of VAULT_VIEWPORTS) {
      */
     expect(
       scrolledRoutes,
-      `${vp.label}: 폴더를 열고도 스크롤되는 라우트가 없다 — 이 검사가 통째로 공회전했다`,
+      `${vp.label}: no route scrolls even with a folder open, so this whole check spun idle`,
     ).toBeGreaterThan(0);
 
     /*
@@ -504,8 +504,8 @@ for (const vp of VAULT_VIEWPORTS) {
       await waitForBoxStill(page.getByTestId("library-reading-pane"));
       const reader = await measureInner(page, '[data-testid="library-reading-pane"]');
       if (reader.scrollable) {
-        if (reader.gap === null) violations.push("/ko/library/ reader: 잉크를 하나도 못 찾았다 — 계측 실패이지 통과가 아니다");
-        else if (reader.gap < MIN_GAP) violations.push(`/ko/library/ reader: 스크롤 끝 하단 여백 ${reader.gap}px (< ${MIN_GAP})`);
+        if (reader.gap === null) violations.push("/ko/library/ reader: no ink was found, which is a measurement failure and not a pass");
+        else if (reader.gap < MIN_GAP) violations.push(`/ko/library/ reader: bottom gap at scroll end ${reader.gap}px (< ${MIN_GAP})`);
         /*
          * The gap must clear the floating back-to-top pill's top edge, not just exist: the pill body sits
          * 60px above the scroller's bottom edge and covers the last line otherwise.
@@ -513,17 +513,17 @@ for (const vp of VAULT_VIEWPORTS) {
         const pill = await measureBackToTopClearance(page, '[data-testid="library-reading-pane"]');
         if (pill === null) {
           violations.push(
-            "/ko/library/ reader: 「맨 위로」 알약이나 잉크를 못 찾았다 — ⑥가 통째로 공회전했다",
+            "/ko/library/ reader: the back-to-top pill or ink was not found, so step 6 spun idle entirely",
           );
         } else if (pill < MIN_PILL_CLEARANCE) {
-          violations.push(`/ko/library/ reader: 마지막 줄이 「맨 위로」 알약에 가렸다 (여유 ${pill}px)`);
+          violations.push(`/ko/library/ reader: the last line is covered by the back-to-top pill (clearance ${pill}px)`);
         }
       }
     }
     const index = await measureInner(page, '[data-testid="library-index-scroll"]');
     if (index.scrollable) {
-      if (index.gap === null) violations.push("/ko/library/ index: 잉크를 하나도 못 찾았다 — 계측 실패이지 통과가 아니다");
-      else if (index.gap < MIN_GAP) violations.push(`/ko/library/ index: 스크롤 끝 하단 여백 ${index.gap}px (< ${MIN_GAP})`);
+      if (index.gap === null) violations.push("/ko/library/ index: no ink was found, which is a measurement failure and not a pass");
+      else if (index.gap < MIN_GAP) violations.push(`/ko/library/ index: bottom gap at scroll end ${index.gap}px (< ${MIN_GAP})`);
     }
 
     expect(violations, violations.join("\n")).toEqual([]);

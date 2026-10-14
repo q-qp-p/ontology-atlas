@@ -43,7 +43,7 @@ const MIN_RULES_PASSED_PER_ROUTE = 15;
  */
 const MIN_MAIN_ELEMENTS_PER_ROUTE = 13;
 
-test("접근성 래칫 — 새 룰 위반 0, 기존 개수는 늘지 않는다", async ({ page }) => {
+test("accessibility ratchet: zero new rule violations and no growth in existing counts", async ({ page }) => {
   // Routes went 8 → 17. At 2.5s of settle time per route plus the axe run, this
   // exceeds the default 60s.
   test.setTimeout(240_000);
@@ -97,11 +97,11 @@ test("접근성 래칫 — 새 룰 위반 0, 기존 개수는 늘지 않는다",
       () => document.querySelectorAll("main *").length,
     );
     if (mainElements < MIN_MAIN_ELEMENTS_PER_ROUTE) {
-      emptyBodies.push(`  ${route}: <main> 안 요소 ${mainElements}`);
+      emptyBodies.push(`  ${route}: elements in <main>: ${mainElements}`);
     }
 
     if (result.rulesPassed < MIN_RULES_PASSED_PER_ROUTE) {
-      thinRuns.push(`  ${route}: 내용에 적용돼 통과한 룰 ${result.rulesPassed}`);
+      thinRuns.push(`  ${route}: rules applied to content and passed: ${result.rulesPassed}`);
     }
     for (const v of result.violations) {
       counts.set(v.id, (counts.get(v.id) ?? 0) + v.count);
@@ -147,7 +147,7 @@ test("접근성 래칫 — 새 룰 위반 0, 기존 개수는 늘지 않는다",
   // regress**. Not leaving slack free is the other half of a ratchet.
   const slack = Object.entries(BASELINE)
     .filter(([id, max]) => (counts.get(id) ?? 0) < max)
-    .map(([id, max]) => `  ${id}: 기준선 ${max} · 실측 ${counts.get(id) ?? 0}`);
+    .map(([id, max]) => `  ${id}: baseline ${max} · measured ${counts.get(id) ?? 0}`);
   expect(
     slack,
     `Accessibility violations fell, so lower this file's BASELINE with them; otherwise the difference ` +

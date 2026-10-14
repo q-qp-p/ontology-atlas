@@ -118,7 +118,7 @@ async function walkUntilCameraMoves(page: import("@playwright/test").Page) {
   return null;
 }
 
-test.describe("카메라 전환 규격", () => {
+test.describe("camera transition spec", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1512, height: 982 });
     await seedFirstRunSeen(page);
@@ -135,7 +135,7 @@ test.describe("카메라 전환 규격", () => {
    * Locks that the camera reacts within a few frames of the input, not one specific code path.
    * Canvas hard cuts are not measured: reading pixels every frame distorts the timing.
    */
-  test("입력 뒤 카메라와 팝오버가 한 사건으로 시작한다", async ({ page }) => {
+  test("the camera and the popover start as one event after input", async ({ page }) => {
     const canvas = page.getByTestId("ontology-map-canvas");
     await canvas.focus();
     const measured = await page.evaluate(async () => {
@@ -247,12 +247,12 @@ test.describe("카메라 전환 규격", () => {
       };
     });
 
-    expect(measured, "측정 창구를 못 열었다").not.toBeNull();
+    expect(measured, "the measurement hook did not open").not.toBeNull();
     const { cameraFrames, popoverFrames, totalFrames, settled } = measured!;
-    expect(totalFrames, "프레임이 돌지 않았다 — 이 시험이 공회전한다").toBeGreaterThan(10);
-    expect(settled, "카메라가 멈추기를 기다리지 못했다 — 잔여 정착이 판정을 오염시킨다").toBe(true);
-    expect(cameraFrames, "카메라가 아예 안 움직였다").not.toBeNull();
-    expect(popoverFrames, "팝오버 안에서 도는 애니메이션을 못 봤다 — 등장이 하드컷이다").not.toBeNull();
+    expect(totalFrames, "no frames ran, so this test spins idle").toBeGreaterThan(10);
+    expect(settled, "did not wait for the camera to stop, and leftover settling pollutes the verdict").toBe(true);
+    expect(cameraFrames, "the camera did not move at all").not.toBeNull();
+    expect(popoverFrames, "saw no animation inside the popover, so it appears as a hard cut").not.toBeNull();
 
     /*
      * The one-event window is expressed in **frames**. At 60fps, 6 frames is 100ms,
@@ -263,11 +263,11 @@ test.describe("카메라 전환 규격", () => {
     const ONE_EVENT_FRAMES = 6;
     expect(
       cameraFrames!,
-      `카메라가 입력 뒤 ${cameraFrames}프레임에 움직였다 — 한 사건의 창(${ONE_EVENT_FRAMES}프레임)을 넘었다`,
+      `the camera moved ${cameraFrames} frames after input, beyond the one-event window (${ONE_EVENT_FRAMES} frames)`,
     ).toBeLessThanOrEqual(ONE_EVENT_FRAMES);
     expect(
       popoverFrames!,
-      `팝오버가 입력 뒤 ${popoverFrames}프레임에 시작했다 — 한 사건의 창을 넘었다`,
+      `the popover started ${popoverFrames} frames after input, beyond the one-event window`,
     ).toBeLessThanOrEqual(ONE_EVENT_FRAMES);
     expect(
       Math.abs(cameraFrames! - popoverFrames!),
@@ -276,9 +276,9 @@ test.describe("카메라 전환 규격", () => {
     ).toBeLessThanOrEqual(ONE_EVENT_FRAMES);
   });
 
-  test("전환이 200~420ms 안에 끝난다 — 코드가 주장하는 그 창", async ({ page }) => {
+  test("the transition ends within 200-420ms, the window the code claims", async ({ page }) => {
     const moved = await walkUntilCameraMoves(page);
-    expect(moved, "방향키로 카메라 전환을 한 번도 일으키지 못했다").not.toBeNull();
+    expect(moved, "the arrow keys never triggered a camera transition").not.toBeNull();
     const { span } = moved!;
     /*
      * Slack on the ceiling: two frame intervals (≈16.7ms each) can fit, and the last
@@ -289,9 +289,9 @@ test.describe("카메라 전환 규격", () => {
     const FRAME_MS = 1000 / 60;
     expect(
       span.durationMs,
-      `전환이 ${span.durationMs.toFixed(0)}ms 였다 — 코드의 창은 200~420ms 다`,
+      `the transition took ${span.durationMs.toFixed(0)}ms; the code's window is 200-420ms`,
     ).toBeLessThanOrEqual(420 + FRAME_MS * 3);
-    expect(span.durationMs, "전환이 한 프레임 만에 끝났다 — 하드컷이다").toBeGreaterThan(FRAME_MS * 2);
+    expect(span.durationMs, "the transition ended in one frame, a hard cut").toBeGreaterThan(FRAME_MS * 2);
   });
 
   /*
@@ -318,7 +318,7 @@ test.describe("카메라 전환 규격", () => {
    * right place.
    */
 
-  test("전환 중에 멈춘 프레임이 없다", async ({ page }) => {
+  test("no frame stalls during the transition", async ({ page }) => {
     const moved = await walkUntilCameraMoves(page);
     expect(moved).not.toBeNull();
     const { trace, span } = moved!;
@@ -334,8 +334,8 @@ test.describe("카메라 전환 규격", () => {
      * The floor is 2: the frame count in a 200-420ms transition depends on the machine.
      * The count is logged.
      */
-    console.log(`[camera] 전환 표본 ${steps.length}개 · ${span.durationMs.toFixed(0)}ms`);
-    expect(steps.length, "구간이 비었다 — 아무것도 재지 못했다").toBeGreaterThanOrEqual(2);
+    console.log(`[camera] transition samples ${steps.length} · ${span.durationMs.toFixed(0)}ms`);
+    expect(steps.length, "the interval is empty and nothing was measured").toBeGreaterThanOrEqual(2);
     /*
      * A **fully stopped frame** (0) in the middle half means it stalled. The ends are
      * not counted because ease-in-out is slow there by design — near-zero at the ends
@@ -348,10 +348,10 @@ test.describe("카메라 전환 규격", () => {
         ? steps.slice(Math.floor(steps.length * 0.25), Math.ceil(steps.length * 0.75))
         : steps;
     const stalled = interior.filter((s) => s === 0).length;
-    expect(stalled, `전환 중에 멈춘 프레임이 ${stalled}개 있다 (표본 ${interior.length})`).toBe(0);
+    expect(stalled, `${stalled} frames stalled during the transition (sample ${interior.length})`).toBe(0);
   });
 
-  test("목표를 지나치지 않는다 — 되돌아오는 프레임이 없다", async ({ page }) => {
+  test("does not overshoot the target, so no frame moves back", async ({ page }) => {
     const moved = await walkUntilCameraMoves(page);
     expect(moved).not.toBeNull();
     const { trace, span } = moved!;
@@ -369,6 +369,6 @@ test.describe("카메라 전환 규격", () => {
       if (remaining > previous + 0.5) increased += 1;
       previous = remaining;
     }
-    expect(increased, `목표를 지나쳐 되돌아온 프레임이 ${increased}개 있다`).toBe(0);
+    expect(increased, `${increased} frames overshot the target and came back`).toBe(0);
   });
 });

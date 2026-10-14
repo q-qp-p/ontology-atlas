@@ -22,10 +22,10 @@ async function documentScrollSlack(page: Page): Promise<number> {
   });
 }
 
-test.describe("문서 스크롤 잠금 — 셸이 뷰포트를 소유한다", () => {
+test.describe("document scroll lock: the shell owns the viewport", () => {
   for (const { w, h } of WIDTHS) {
     for (const route of ROUTES) {
-      test(`${route} @ ${w}×${h} — 문서 스크롤 범위 0`, async ({ page }) => {
+      test(`${route} @ ${w}×${h}: document scroll range is 0`, async ({ page }) => {
         await seedFirstRunSeen(page);
         await page.setViewportSize({ width: w, height: h });
         await page.goto(

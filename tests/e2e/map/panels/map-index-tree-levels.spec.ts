@@ -6,7 +6,7 @@ import { waitForMapStill } from "../../settle";
  * Rows are DOM siblings with no nested `role="group"`, so each needs `aria-level` to announce
  * its depth. Walks the live panel because levels must survive the real tree.
  */
-test("INDEX 트리의 모든 행이 자기 단계를 말한다", async ({ page }) => {
+test("every row of the INDEX tree states its own level", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 900 });
   await seedFirstRunSeen(page);
@@ -28,8 +28,8 @@ test("INDEX 트리의 모든 행이 자기 단계를 말한다", async ({ page }
     });
 
   const roots = await read();
-  expect(roots.length, "트리에 행이 없다 — 이 스펙이 공회전한다").toBeGreaterThan(3);
-  expect(roots.filter((r) => r.level === null), "단계를 말하지 않는 행").toEqual([]);
+  expect(roots.length, "the tree has no rows, so this spec spins idle").toBeGreaterThan(3);
+  expect(roots.filter((r) => r.level === null), "rows that do not state a level").toEqual([]);
   // One project at level 1, its domains one step in.
   expect(roots[0].level).toBe("1");
   expect(new Set(roots.slice(1).map((r) => r.level))).toEqual(new Set(["2"]));
@@ -42,6 +42,6 @@ test("INDEX 트리의 모든 행이 자기 단계를 말한다", async ({ page }
   await page.locator('[data-testid="topology-index-tree"] [role="treeitem"]').nth(1).click();
   await expect.poll(async () => (await read()).length, { timeout: 10_000 }).toBeGreaterThan(roots.length);
   const expanded = await read();
-  expect(expanded.filter((r) => r.level === null), "펼친 뒤 단계를 잃은 행").toEqual([]);
-  expect(expanded.some((r) => r.level === "3"), "펼친 자식이 부모와 같은 단계로 읽힌다").toBe(true);
+  expect(expanded.filter((r) => r.level === null), "rows that lost their level after expanding").toEqual([]);
+  expect(expanded.some((r) => r.level === "3"), "an expanded child reads as the same level as its parent").toBe(true);
 });

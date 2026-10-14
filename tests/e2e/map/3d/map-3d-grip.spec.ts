@@ -74,7 +74,7 @@ async function domeScreenBox(page: import("@playwright/test").Page) {
   });
 }
 
-test("3D — 돔 안을 끌면 돌고, 돔 밖 검은 자리를 끌면 지도가 따라온다", async ({ page }) => {
+test("3D: dragging inside the dome rotates it, and dragging the black area outside pans the map", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 900 });
   await seedFirstRunSeen(page);
@@ -91,13 +91,13 @@ test("3D — 돔 안을 끌면 돌고, 돔 밖 검은 자리를 끌면 지도가
   await waitForDomeEntered(page);
 
   const box = await domeScreenBox(page);
-  expect(box, "3D 노드를 하나도 못 읽었다 — 계기가 공회전하고 있다").not.toBeNull();
+  expect(box, "no 3D node could be read, so the instrument is spinning idle").not.toBeNull();
   const b = box!;
 
   // Top-left margin — well outside the drawn nodes, unambiguously outside.
   const outsideX = Math.max(b.left + 8, b.left + b.minX - 160);
   const outsideY = Math.max(b.top + 8, b.top + b.minY - 120);
-  expect(outsideX, "돔이 화면을 꽉 채워 «바깥»이 없다 — 시험이 성립 안 한다").toBeLessThan(
+  expect(outsideX, "the dome fills the screen so there is no outside, and the test cannot hold").toBeLessThan(
     b.left + b.minX - 40,
   );
 
@@ -123,11 +123,11 @@ test("3D — 돔 안을 끌면 돌고, 돔 밖 검은 자리를 끌면 지도가
 
   expect(
     Math.hypot(after1!.camX - before1!.camX, after1!.camY - before1!.camY),
-    "돔 밖을 끌었는데 지도가 안 움직였다 — 이 시험이 생긴 이유가 그 결함이다",
+    "dragging outside the dome did not move the map, the defect this test exists for",
   ).toBeGreaterThan(20);
   expect(
     Math.abs(after1!.yaw - before1!.yaw),
-    "돔 밖을 끌었는데 돔이 돌았다 — 바깥은 이동이어야 한다",
+    "dragging outside the dome rotated it; outside must pan",
   ).toBeLessThan(0.02);
 
   /* ── ② Drag inside the dome = orbit rotation ───────────────────────────── */
@@ -138,7 +138,7 @@ test("3D — 돔 안을 끌면 돌고, 돔 밖 검은 자리를 끌면 지도가
    * state it created itself.
    */
   const box2 = await domeScreenBox(page);
-  expect(box2, "팬 뒤에 돔이 화면 밖으로 나갔다 — ①의 이동량이 과하다").not.toBeNull();
+  expect(box2, "the dome left the screen after the pan, so the movement in step 1 is too large").not.toBeNull();
   const b2 = box2!;
   const insideX2 = b2.left + b2.insideX;
   const insideY2 = b2.top + b2.insideY;
@@ -161,15 +161,15 @@ test("3D — 돔 안을 끌면 돌고, 돔 밖 검은 자리를 끌면 지도가
 
   expect(
     Math.abs(after2!.yaw - before2!.yaw),
-    "돔 안을 끌었는데 안 돌았다 — 안쪽은 회전이어야 한다",
+    "dragging inside the dome did not rotate it; inside must rotate",
   ).toBeGreaterThan(0.1);
   expect(
     Math.hypot(after2!.camX - before2!.camX, after2!.camY - before2!.camY),
-    "돔 안을 끌었는데 지도가 따라왔다 — 안쪽은 회전만이어야 한다",
+    "dragging inside the dome moved the map along; inside must only rotate",
   ).toBeLessThan(1);
 });
 
-test("3D — 커서가 두 구역을 말한다 (돔 위 grab · 바깥 move)", async ({ page }) => {
+test("3D: the cursor names two zones (grab over the dome, move outside)", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 900 });
   await seedFirstRunSeen(page);
@@ -181,7 +181,7 @@ test("3D — 커서가 두 구역을 말한다 (돔 위 grab · 바깥 move)", a
   await waitForDomeEntered(page);
 
   const box = await domeScreenBox(page);
-  expect(box, "3D 노드를 하나도 못 읽었다 — 계기가 공회전하고 있다").not.toBeNull();
+  expect(box, "no 3D node could be read, so the instrument is spinning idle").not.toBeNull();
   const b = box!;
   const cursor = () =>
     page.evaluate(() => {
@@ -196,7 +196,7 @@ test("3D — 커서가 두 구역을 말한다 (돔 위 grab · 바깥 move)", a
   const outsideX = Math.max(b.left + 8, b.left + b.minX - 160);
   const outsideY = Math.max(b.top + 8, b.top + b.minY - 120);
   await page.mouse.move(outsideX, outsideY);
-  await expect.poll(cursor, { message: "돔 바깥에서 «옮길 수 있다»는 표시가 없다" }).toBe("move");
+  await expect.poll(cursor, { message: "there is no indication outside the dome that it can be moved" }).toBe("move");
 
   // Pick empty space between the rings, avoiding node discs — over a node the node's
   // cursor wins (a separate contract; measuring it here blurs what is being
@@ -224,7 +224,7 @@ test("3D — 커서가 두 구역을 말한다 (돔 위 grab · 바깥 move)", a
     }
     return null;
   });
-  expect(gap, "돔 안에서 노드와 겹치지 않는 빈 자리를 못 찾았다").not.toBeNull();
+  expect(gap, "found no empty spot inside the dome that avoids the nodes").not.toBeNull();
   await page.mouse.move(gap!.px, gap!.py);
-  await expect.poll(cursor, { message: "돔 위에서 «잡아 돌릴 수 있다»는 표시가 없다" }).toBe("grab");
+  await expect.poll(cursor, { message: "there is no indication over the dome that it can be grabbed and rotated" }).toBe("grab");
 });

@@ -269,13 +269,13 @@ const TITLE_EXEMPT: ReadonlyArray<{ route: string; why: string }> = [
   {
     route: "/ko/topology/",
     why:
-      "그려진 제목이 없다 — h1 「지형도」는 `sr-only`(1×1 · clip inset(50%) · 상속 16px). " +
-      "주목 승자는 지도 자체이고, 제목 급 글자라는 기준이 이 화면엔 없다. " +
-      "대신 아래 「제목 없는 화면은 정말 없다」가 «그려진 h1 0개» 를 못박는다",
+      "No drawn title: the h1 for the terrain map is `sr-only` (1×1, clip inset(50%), inherited 16px). " +
+      "The attention winner is the map itself, and this screen has no title-sized text baseline. " +
+      "Instead the test below, that a screen without a title really has none, pins zero drawn h1.",
   },
   {
     route: "/ko/docs/",
-    why: "통합 Ontology reader의 h1이 `sr-only` 1×1이다. 같은 검사가 못박는다",
+    why: "The h1 of the unified Ontology reader is `sr-only` 1×1. The same check pins it.",
   },
 ];
 const TITLE_EXEMPT_ROUTES = new Set(TITLE_EXEMPT.map((e) => e.route));
@@ -311,11 +311,11 @@ const ACCENT_EXEMPT: ReadonlyArray<{ route: string; why: string }> = [
 ];
 const ACCENT_EXEMPT_ROUTES = new Set(ACCENT_EXEMPT.map((e) => e.route));
 
-test.describe("화면 위계 — 감사 대상 전 라우트", () => {
+test.describe("screen hierarchy: every audited route", () => {
   test.use({ viewport: { width: 1512, height: 900 } });
 
   /* Both rules read the same `measureRoute` result, so one walk serves both. */
-  test("① 페이지 제목보다 크거나 같은 글자가 제목 밖에 없다 · ② 채워진 강조색 면이 화면에 최대 하나다", async ({ page }) => {
+  test("no text outside the title is as large as or larger than the page title, and at most one filled accent surface is on screen", async ({ page }) => {
     test.setTimeout(240_000);
 
     const titleViolations: string[] = [];
@@ -334,14 +334,14 @@ test.describe("화면 위계 — 감사 대상 전 라우트", () => {
       // ① Idling guard ⓐ — per route. If almost no text was scanned, a 0 below means
       // "we did not look", not "it is clean". The floor is 3 because 404 really has
       // only 4 (measured) — the thinnest screen sets the floor.
-      expect(m.scanned, `${route}: 글자 원소를 거의 못 훑었다 — 스캐너가 죽었다`).toBeGreaterThan(2);
+      expect(m.scanned, `${route}: almost no text elements were scanned, so the scanner is dead`).toBeGreaterThan(2);
       // ② Idling guard ⓐ — were the reference colours **actually read** from `:root`?
       // If a token is renamed, this check sees "0 accents" and goes green forever.
-      expect(m.accentTokens, `${route}: 악센트 토큰을 :root 에서 못 읽었다 — 색 기준을 잃었다`).toBeGreaterThan(2);
-      expect(m.considered, `${route}: 배경색을 들여다본 원소가 없다 — 스캐너가 죽었다`).toBeGreaterThan(20);
+      expect(m.accentTokens, `${route}: could not read the accent tokens from :root, so the color baseline is lost`).toBeGreaterThan(2);
+      expect(m.considered, `${route}: no element had its background inspected, so the scanner is dead`).toBeGreaterThan(20);
 
       if (!ACCENT_EXEMPT_ROUTES.has(route) && m.filled.length > 1) {
-        accentViolations.push(`${route} → ${m.filled.length}개: ${JSON.stringify(m.filled)}`);
+        accentViolations.push(`${route} → ${m.filled.length}: ${JSON.stringify(m.filled)}`);
       }
 
       if (TITLE_EXEMPT_ROUTES.has(route)) continue;
@@ -350,37 +350,37 @@ test.describe("화면 위계 — 감사 대상 전 라우트", () => {
       // disappears this check silently measures nothing. That state is not a pass.
       expect(
         m.titlePx,
-        `${route}: 그려진 h1 이 없다 — 기준을 잃었다. 의도한 것이면 TITLE_EXEMPT 에 실측치와 함께 등재하라`,
+        `${route}: no drawn h1, so the baseline is lost. If intended, list it in TITLE_EXEMPT with the measured value`,
       ).toBeGreaterThan(0);
       routesWithTitle += 1;
 
       const figures = TITLE_FIGURE_IDS.get(route);
       for (const o of m.offenders) {
         if (figures && o.testid && figures.has(o.testid)) continue;
-        titleViolations.push(`${route} → "${o.text}" ${o.px}px ≥ 제목 ${m.titlePx}px (${o.testid ?? "-"})`);
+        titleViolations.push(`${route} → "${o.text}" ${o.px}px ≥ title ${m.titlePx}px (${o.testid ?? "-"})`);
       }
     }
 
     // ① Idling guard ⓑ — across the whole sweep. Measured 964 (887 excluding the 3 exception routes).
-    expect(totalScanned, "전 라우트를 합쳐도 훑은 글자가 적다 — 스윕이 죽었다").toBeGreaterThan(600);
-    expect(routesWithTitle, "제목을 가진 라우트를 거의 못 찾았다 — 기준 판정기가 죽었다").toBeGreaterThan(10);
+    expect(totalScanned, "few text elements were scanned across all routes, so the sweep is dead").toBeGreaterThan(600);
+    expect(routesWithTitle, "almost no route with a title was found, so the baseline judge is dead").toBeGreaterThan(10);
     // ② Idling guard ⓑ — finding none makes "at most one everywhere" true, but that
     // is a measurement failure. Measured 9 (7 excluding the 2 exception routes).
     expect(
       totalFilled,
-      "채워진 악센트 컨트롤을 전 라우트에서 하나도 못 찾았다 — 판정기가 죽었다(측정 실패)",
+      "no filled accent control was found on any route, so the judge is dead (measurement failure)",
     ).toBeGreaterThan(5);
     // The floor comes from measurement (2974 considered), not a guess: pinning higher turns a
     // healthy state red.
-    expect(totalConsidered, "그려진 원소를 거의 못 봤다 — 스윕이 죽었다").toBeGreaterThan(2000);
+    expect(totalConsidered, "almost no painted elements were seen, so the sweep is dead").toBeGreaterThan(2000);
 
     expect(
       titleViolations,
-      "페이지 제목과 같거나 큰 글자가 제목 밖에 있다 — 무엇이 먼저인지가 사라진다",
+      "text as large as or larger than the page title is outside the title, so what comes first is lost",
     ).toEqual([]);
     expect(
       accentViolations,
-      "채워진 강조색 면이 한 화면에 둘 이상이다 — 주 CTA 가 둘이면 하나는 거짓말이다",
+      "two or more filled accent surfaces are on one screen; with two primary CTAs one of them lies",
     ).toEqual([]);
   });
 
@@ -389,14 +389,14 @@ test.describe("화면 위계 — 감사 대상 전 라우트", () => {
    * alone, no layer of this file runs on that screen — it stays green even if a
    * title appears, even if the ties grow to four.
    */
-  test("예외가 낡지 않았다 — 제목 없는 화면은 정말 제목이 없다", async ({ page }) => {
+  test("exceptions are not stale: a screen without a title really has none", async ({ page }) => {
     for (const route of ["/ko/topology/", "/ko/docs/"]) {
       const m = await measureRoute(page, route);
       expect(
         m.paintedH1,
-        `${route}: 그려진 제목이 생겼다 — TITLE_EXEMPT 에서 이 줄을 지우고 규칙을 켜라`,
+        `${route}: a drawn title now exists; remove this line from TITLE_EXEMPT and turn the rule on`,
       ).toBe(0);
-      expect(m.titlePx, `${route}: 기준이 생겼다 — 예외가 낡았다`).toBe(0);
+      expect(m.titlePx, `${route}: a baseline now exists, so the exception is stale`).toBe(0);
     }
   });
 
@@ -409,12 +409,12 @@ test.describe("화면 위계 — 감사 대상 전 라우트", () => {
   test("the selected Analysis finding remains larger than its navigation title", async ({ page }) => {
     for (const figure of TITLE_FIGURES) {
       const m = await measureRoute(page, figure.route);
-      expect(m.titlePx, `${figure.route}: 그려진 h1 이 없다 — 숫자 예외는 제목이 있어야 성립한다`).toBeGreaterThan(0);
+      expect(m.titlePx, `${figure.route}: no drawn h1; a numeric exception needs a title to hold`).toBeGreaterThan(0);
       const seen = new Set(m.offenders.map((o) => o.testid));
       for (const id of figure.testids) {
         expect(
           seen.has(id),
-          `${figure.route}: ${id} 가 제목보다 크지 않다 — TITLE_FIGURES 에서 이 줄을 지우고 규칙을 켜라`,
+          `${figure.route}: ${id} is not larger than the title; remove this line from TITLE_FIGURES and turn the rule on`,
         ).toBe(true);
       }
     }
@@ -429,16 +429,16 @@ test.describe("화면 위계 — 감사 대상 전 라우트", () => {
    * inverting the fix (demoting the top one and filling the bottom one) would still
    * be green. Only that direction is pinned here.
    */
-  test("편집 화면의 채워진 주 CTA 는 위쪽 sticky 저장이다", async ({ page }) => {
+  test("the filled primary CTA on the edit screen is the sticky save at the top", async ({ page }) => {
     const m = await measureRoute(page, "/ko/project/storefront/edit/");
     expect(
       m.filled.map((f) => f.testid),
-      "편집 화면의 채워진 악센트가 상단 sticky 저장 하나가 아니다 — 방향이 뒤집혔거나 둘로 늘었다",
+      "the filled accent on the edit screen is not the single top sticky save; the direction flipped or it grew to two",
     ).toEqual(["project-save-top"]);
     // The bottom Save must stay alive — this was a demotion, not a removal.
     await expect(
       page.getByTestId("project-save"),
-      "폼 끝의 저장이 사라졌다 — 이건 강등이 아니라 기능 제거다",
+      "the save at the end of the form is gone, which is a feature removal and not a downgrade",
     ).toBeVisible();
   });
 });

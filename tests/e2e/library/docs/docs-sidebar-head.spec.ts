@@ -75,7 +75,7 @@ function expectHeadHolds(geometry: HeadGeometry) {
   expect([...heights]).toHaveLength(1);
 }
 
-test("문서함 머리줄이 데스크톱 280px 칸에서 잘리지 않는다", async ({ page }) => {
+test("the document box header row is not clipped in the desktop 280px column", async ({ page }) => {
   await page.setViewportSize({ width: 1040, height: 800 });
   await seedFirstRunSeen(page);
   await page.goto("/ko/library/?tab=ontology");

@@ -223,7 +223,7 @@ describe('focused check suggestion CLI', () => {
 });
 
 describe('focused checks --run', () => {
-  it('추천을 순서대로 다 돌린다', () => {
+  it('runs every recommendation in order', () => {
     const ran = [];
     const code = runFocusedChecks({
       commands: [{ command: 'a' }, { command: 'b' }],
@@ -237,7 +237,7 @@ describe('focused checks --run', () => {
     assert.deepEqual(ran, ['a', 'b']);
   });
 
-  it('첫 실패에서 멈추고 그 종료 코드를 그대로 올린다', () => {
+  it('stops at the first failure and passes its exit code through', () => {
     const ran = [];
     const code = runFocusedChecks({
       commands: [{ command: 'ok' }, { command: 'bad' }, { command: 'never' }],
@@ -252,7 +252,7 @@ describe('focused checks --run', () => {
     assert.deepEqual(ran, ['ok', 'bad']);
   });
 
-  it('spawn 이 상태를 안 주면 실패로 친다 — 모르는 것을 통과로 바꾸지 않는다', () => {
+  it('counts a spawn that reports no status as a failure, never turning unknown into a pass', () => {
     const code = runFocusedChecks({
       commands: [{ command: 'x' }],
       stdout: { write() {} },
@@ -261,11 +261,11 @@ describe('focused checks --run', () => {
     assert.equal(code, 1);
   });
 
-  it('돌릴 것이 없으면 0 이다 — 없는 것을 실패로 만들지 않는다', () => {
+  it('exits 0 when there is nothing to run, so absence is not a failure', () => {
     assert.equal(runFocusedChecks({ commands: [], stdout: { write() {} } }), 0);
   });
 
-  it('`--run` 은 경로로 새지 않는다', () => {
+  it('`--run` does not leak into paths', () => {
     // Without filtering, that string is treated as a changed file and the recommendations change entirely.
     const ran = [];
     runSuggestFocusedChecks({
@@ -277,19 +277,19 @@ describe('focused checks --run', () => {
         return { status: 0 };
       },
     });
-    assert.ok(ran.length > 0, '추천이 하나도 안 돌았다');
+    assert.ok(ran.length > 0, 'no recommendation ran');
     assert.ok(
       ran.every((entry) => entry.shell),
-      '검사는 셸로 돌아야 한다(파이프·인용이 든 명령이 있다)',
+      'checks must run through a shell (some commands contain pipes and quotes)',
     );
     assert.ok(
       // `vitest related --run` is the one command that carries the flag on purpose.
       !ran.some((entry) => String(entry.command).replace('vitest related --run', '').includes('--run')),
-      '`--run` 이 경로로 새어 명령에 들어갔다',
+      '`--run` leaked into a path and ended up in a command',
     );
   });
 
-  it('`--run` 없이는 아무것도 실행하지 않는다 — 추천만 한다', () => {
+  it('without `--run` nothing is executed and only recommendations are made', () => {
     let spawned = 0;
     runSuggestFocusedChecks({
       argv: ['--', 'src/shared/lib/cn.ts'],
@@ -304,7 +304,7 @@ describe('focused checks --run', () => {
 });
 
 describe('deleted paths', () => {
-  it('git 이 준 목록에서 실재하지 않는 경로를 뺀다', () => {
+  it('drops paths that do not exist from the list git returned', () => {
     const paths = changedPathsFromGit({
       cwd: process.cwd(),
       exists: (path) => !String(path).includes('gone'),
@@ -315,11 +315,11 @@ describe('deleted paths', () => {
           : ['scripts/ci/suggest-focused-checks.mjs', 'src/widgets/gone/Deleted.tsx'].join('\n'),
       }),
     });
-    assert.ok(paths.includes('scripts/ci/suggest-focused-checks.mjs'), '살아 있는 파일이 빠졌다');
-    assert.ok(!paths.includes('src/widgets/gone/Deleted.tsx'), '지워진 파일이 남았다');
+    assert.ok(paths.includes('scripts/ci/suggest-focused-checks.mjs'), 'an existing file was dropped');
+    assert.ok(!paths.includes('src/widgets/gone/Deleted.tsx'), 'a deleted file remained');
   });
 
-  it('손으로 준 경로는 거르지 않는다 — 아직 없는 파일 세트를 미리 물어볼 수 있다', () => {
+  it('does not filter hand-given paths, so a not-yet-existing file set can be asked about in advance', () => {
     // The docs describe `pnpm checks:changed -- <path...>` as a way to ask about files
     // you are **planning** to touch. Requiring existence there would kill that use.
     const output = [];

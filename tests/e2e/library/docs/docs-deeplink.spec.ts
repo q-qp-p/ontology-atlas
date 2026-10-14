@@ -34,7 +34,7 @@ async function openVaultChipMenu(page: import("@playwright/test").Page): Promise
       {
         timeout: 20_000,
         message:
-          "볼트 칩 메뉴가 열리지 않았다 — dev 에서는 하이드레이션 전 클릭이 유실되므로 다시 눌러야 한다",
+          "the vault chip menu did not open; in dev a click before hydration is lost, so press again",
       },
     )
     .toBe(true);
@@ -89,12 +89,12 @@ async function waitForIntegratedOntologyReader(
     page.locator('#library-workspace-tabpanel-ontology [data-docs-viewer]'),
   ).toBeVisible({ timeout: 20_000 });
   const slug = new URL(page.url()).searchParams.get("slug");
-  expect(slug, "통합 Ontology reader가 선택 문서 없이 준비되었다").not.toBeNull();
+  expect(slug, "the unified Ontology reader became ready without a selected document").not.toBeNull();
   return slug!;
 }
 
-test.describe("문서함 딥링크 — URL 이 이긴다", () => {
-  test("로컬 볼트 복원 뒤의 콜드 로드에서 ?slug= 가 살아남는다", async ({ page }) => {
+test.describe("document box deep link: the URL wins", () => {
+  test("?slug= survives a cold load after the local vault is restored", async ({ page }) => {
     test.setTimeout(120_000);
     await stubDirectoryPicker(page, FIXTURE_VAULT);
 
@@ -115,7 +115,7 @@ test.describe("문서함 딥링크 — URL 이 이긴다", () => {
       .poll(async () => new URL(page.url()).searchParams.get("slug"), { timeout: 20_000 })
       .not.toBeNull();
     const restedSlug = new URL(page.url()).searchParams.get("slug");
-    expect(restedSlug, "기본 선택이 아무 문서도 못 열었다 — 이 시험이 헛돈다").not.toBeNull();
+    expect(restedSlug, "the default selection opened no document, so this test spins idle").not.toBeNull();
     expect(restedSlug).not.toBe(DEEP_SLUG);
 
     // ③ Cold-load deep link — if the defect is alive, the URL is overwritten here with ②'s slug.
@@ -131,7 +131,7 @@ test.describe("문서함 딥링크 — URL 이 이긴다", () => {
     ).toContainText(DEEP_TITLE, { timeout: 20_000 });
   });
 
-  test("정착 뒤 샘플로 바꾸면 볼트 전용 슬러그를 걷어낸다 — 2026-08-01 보장 유지", async ({
+  test("switching to the sample after settling drops the vault-only slug, keeping the earlier guarantee", async ({
     page,
   }) => {
     test.setTimeout(120_000);
@@ -163,7 +163,7 @@ test.describe("문서함 딥링크 — URL 이 이긴다", () => {
    * Covers a profile whose stored source preference is `server`: the sample window reads as settled and
    * the later landing auto-switch is mistaken for a user vault switch.
    */
-  test("샘플을 먼저 쓰던 프로필의 콜드 로드에서도 로컬 전용 딥링크가 살아남는다", async ({
+  test("a local-only deep link survives a cold load even for a profile that used the sample first", async ({
     page,
   }) => {
     test.setTimeout(120_000);
@@ -221,13 +221,13 @@ test.describe("문서함 딥링크 — URL 이 이긴다", () => {
     const trace = await page.evaluate(
       () => (window as unknown as { __urlTrace?: string[] }).__urlTrace ?? [],
     );
-    expect(trace.length, "replaceState 가 한 번도 안 불렸다 — 계측이 헛돈다").toBeGreaterThan(0);
+    expect(trace.length, "replaceState was never called, so the instrumentation spins idle").toBeGreaterThan(0);
     const dropped = trace.filter(
       (url) => !url.includes(`slug=${encodeURIComponent(DEEP_SLUG)}`),
     );
     expect(
       dropped,
-      "부팅 중 주소가 딥링크를 잃었다 — 이 찰나를 탭 복원이 굳히면 실기기 사고가 된다",
+      "the address lost the deep link during boot; if tab restore fixes this instant in place, it becomes a real-device incident",
     ).toEqual([]);
   });
 
@@ -235,7 +235,7 @@ test.describe("문서함 딥링크 — URL 이 이긴다", () => {
    * With a stored `local` preference the one-shot landing ref is never spent and bounces
    * the first manual switch back; the landing decision must conclude once.
    */
-  test("저장 취향이 로컬인 부팅에서 첫 샘플 전환이 즉시 먹는다", async ({ page }) => {
+  test("with a stored local preference at boot, the first switch to the sample takes effect immediately", async ({ page }) => {
     test.setTimeout(120_000);
     await stubDirectoryPicker(page, FIXTURE_VAULT);
     await seedFirstRunSeen(page);

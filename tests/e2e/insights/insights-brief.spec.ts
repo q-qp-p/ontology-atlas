@@ -66,7 +66,7 @@ const SEED: Record<string, string> = {
   ].join("\n"),
 };
 
-test("브리핑은 연 폴더의 위키·에이전트를 이름으로 말하고, 못 잰 것은 못 쟀다고 말한다", async ({ page }) => {
+test("the brief names the open folder's wiki and agents, and says so for what it could not measure", async ({ page }) => {
   test.setTimeout(180_000);
   await page.setViewportSize({ width: 1512, height: 900 });
   await seedFirstRunSeen(page);
@@ -113,7 +113,7 @@ test("브리핑은 연 폴더의 위키·에이전트를 이름으로 말하고,
 
 });
 
-test("앱에서 지침을 아직 읽는 동안 헤드라인은 부분 합을 그리지 않고 세는 중이라고 말한다", async ({ page }) => {
+test("while the app is still reading instructions, the headline shows no partial sum and says it is counting", async ({ page }) => {
   test.setTimeout(180_000);
   await page.setViewportSize({ width: 1512, height: 949 });
   await installHarnessRuntime(page);

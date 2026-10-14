@@ -6,7 +6,7 @@ import { seedFirstRunSeen } from "../first-run-seed";
  * Measures the effect, not the cause: per-second rAF callback time as a fraction of the awake
  * cost from the same page. A small extra canvas left awake under the bound's share would pass unseen.
  */
-test("관문은 무입력이 이어지면 프레임 일을 그만두고, 입력 하나에 되살아난다", async ({ page }) => {
+test("the gateway stops frame work after sustained idleness and wakes on a single input", async ({ page }) => {
   // 30 s delay + 2 s ramp + measurement window — the default 60 s timeout is not enough.
   test.setTimeout(120_000);
   await seedFirstRunSeen(page);
@@ -50,7 +50,7 @@ test("관문은 무입력이 이어지면 프레임 일을 그만두고, 입력 
   await page.waitForTimeout(6_000);
   const awake = await idleCost(4_000);
   expect(awake.frames).toBeGreaterThan(20);
-  expect(awake.busyFrames, "깨어 있는 관문에 일한 프레임이 없다 — 측정기가 헛돈다").toBeGreaterThan(20);
+  expect(awake.busyFrames, "an awake gateway has no busy frames, so the meter spins idle").toBeGreaterThan(20);
 
   // ② After the delay (30 s) plus ramp (2 s) it sleeps. At the 38.5 s mark, measure
   //    the last 4 s (entirely inside the sleeping window). Numbers sit at the
@@ -74,5 +74,5 @@ test("관문은 무입력이 이어지면 프레임 일을 그만두고, 입력 
   await page.mouse.move(700, 450, { steps: 10 });
   await page.waitForTimeout(1_500);
   const woken = await idleCost(1_500);
-  expect(woken.busyFrames, "입력 뒤에도 관문이 안 깨어난다").toBeGreaterThan(5);
+  expect(woken.busyFrames, "the gateway does not wake even after input").toBeGreaterThan(5);
 });

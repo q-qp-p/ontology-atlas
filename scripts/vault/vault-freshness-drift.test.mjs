@@ -67,7 +67,7 @@ describe("vault-freshness-drift script arguments", () => {
     }
   });
 
-  it("같은 픽스처에서 걸리는 파일은 실제로 건다 — 탐지기가 늘 0을 내는 게 아니다", () => {
+  it("flags the files it should on the same fixture, so the detector does not always report 0", () => {
     const dir = makeVaultFixture();
     try {
       const result = run(

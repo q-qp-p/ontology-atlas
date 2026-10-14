@@ -45,8 +45,8 @@ test.use({
   },
 });
 
-test.describe("실제 브라우저 글자 크기 설정 200%", () => {
-  test("계측 상태가 진짜다 — rem 미디어 쿼리가 실제로 움직였다", async ({ page }) => {
+test.describe("real browser text size setting at 200%", () => {
+  test("the measurement state is real: rem media queries actually moved", async ({ page }) => {
     await page.setViewportSize({ width: 1512, height: 900 });
     await openOntologyAudit(page);
     await expect(page.locator("main").first()).toBeVisible({ timeout: 30_000 });
@@ -65,10 +65,10 @@ test.describe("실제 브라우저 글자 크기 설정 200%", () => {
       "48rem holds at 1512, so it is measured against the author-set root, not the browser's 32px default " +
         "font size. Every layout claim in this group becomes meaningless",
     ).toBe(false);
-    expect(state.pxBreakpoint, "레포의 px 미디어 쿼리는 그대로여야 한다").toBe(true);
+    expect(state.pxBreakpoint, "the repository's px media queries must stay as they are").toBe(true);
   });
 
-  test("선택된 공유 탭이 확대된 라인 박스를 경계 안에 담는다", async ({ page }) => {
+  test("the selected shared tab keeps the enlarged line box within its bounds", async ({ page }) => {
     await page.setViewportSize({ width: 1040, height: 900 });
     await seedFirstRunSeen(page);
     await page.addInitScript(() => {
@@ -97,10 +97,10 @@ test.describe("실제 브라우저 글자 크기 설정 200%", () => {
     });
 
     expect(measured.root).toBe(`${ZOOMED_ROOT_PX}px`);
-    expect(measured.labelHeight, "선택 탭 라벨의 라인 박스를 재지 못했다").toBeGreaterThan(0);
+    expect(measured.labelHeight, "could not measure the line box of the selected tab label").toBeGreaterThan(0);
     expect(
       measured.contained,
-      `확대 라인 ${measured.labelHeight}px 이 선택 탭 ${measured.tabHeight}px 경계를 벗어났다`,
+      `the enlarged line ${measured.labelHeight}px exceeds the selected tab bounds ${measured.tabHeight}px`,
     ).toBe(true);
   });
 
@@ -108,7 +108,7 @@ test.describe("실제 브라우저 글자 크기 설정 200%", () => {
   // too, so the app floor alone draws the narrowest layout the reader meets.
   for (const width of [1040] as const) {
     for (const route of TEXT_ZOOM_ROUTES) {
-      test(`${route} · ${width}px — 잘린 채 닿을 수 없는 글자가 없다`, async ({ page }) => {
+      test(`${route} · ${width}px: no text is clipped and unreachable`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 });
         await page.goto(route, { waitUntil: "domcontentloaded" });
         await expect(page.locator("main").first()).toBeVisible({ timeout: 30_000 });
@@ -175,7 +175,7 @@ test.describe("실제 브라우저 글자 크기 설정 200%", () => {
     await expect(page.getByTestId("first-run-starter")).toHaveCount(0);
   });
 
-  test("게이트웨이 헤드라인이 자기 섹션 제목보다 작아지지 않는다", async ({ page }) => {
+  test("the gateway headline never gets smaller than its section title", async ({ page }) => {
     await page.setViewportSize({ width: 1040, height: 900 });
     await page.goto("/ko/download/", { waitUntil: "domcontentloaded" });
     await expect(page.locator("h1").first()).toBeVisible({ timeout: 30_000 });
@@ -192,8 +192,8 @@ test.describe("실제 브라우저 글자 크기 설정 200%", () => {
         h2: [...document.querySelectorAll("h2")].filter(painted).map(size),
       };
     });
-    expect(sizes.h1.length, "h1 이 없다 — 측정 대상이 없다").toBeGreaterThan(0);
-    expect(sizes.h2.length, "h2 가 없다 — 비교 대상이 없다").toBeGreaterThan(0);
+    expect(sizes.h1.length, "there is no h1, so nothing to measure").toBeGreaterThan(0);
+    expect(sizes.h2.length, "there is no h2, so nothing to compare").toBeGreaterThan(0);
     expect(Math.min(...sizes.h1)).toBeGreaterThanOrEqual(Math.max(...sizes.h2));
   });
 });

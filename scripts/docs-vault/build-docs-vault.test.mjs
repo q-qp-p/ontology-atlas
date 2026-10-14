@@ -91,7 +91,7 @@ describe('resolveWikilinkTargetSlug / extractOutLinksWithContext — nested onto
   // src/shared/lib/vault-document/parse-frontmatter.test.ts. This .mjs copy is the one that
   // actually builds the static dogfood manifest (`docs-vault:build`), so it
   // needs its own regression guard against the same drift.
-  it('ontology/ 문서 안의 위키링크는 ontology/ 접두사를 붙여 정규화한다', () => {
+  it('normalizes wikilinks inside ontology/ documents by adding the ontology/ prefix', () => {
     assert.equal(
       resolveWikilinkTargetSlug('capabilities/topology-canvas-render', 'ontology/elements/sigma-graphology'),
       'ontology/capabilities/topology-canvas-render',
@@ -104,14 +104,14 @@ describe('resolveWikilinkTargetSlug / extractOutLinksWithContext — nested onto
     assert.equal(contexts[0].target, 'ontology/capabilities/topology-canvas-render');
   });
 
-  it('이미 ontology/ 접두사가 붙은 위키링크는 이중으로 접두사를 붙이지 않는다', () => {
+  it('does not prefix a wikilink that already carries the ontology/ prefix', () => {
     assert.equal(
       resolveWikilinkTargetSlug('ontology/project', 'ontology/domains/views'),
       'ontology/project',
     );
   });
 
-  it('ontology/ 바깥(최상위) 문서의 위키링크는 그대로 vault 루트 기준을 유지한다', () => {
+  it('keeps wikilinks in top-level documents outside ontology/ relative to the vault root', () => {
     assert.equal(resolveWikilinkTargetSlug('FEATURES', 'CHANGELOG'), 'FEATURES');
   });
 });
@@ -121,7 +121,7 @@ describe('resolveWikilinkTargetSlug / extractOutLinksWithContext — nested onto
  * depending on the wall clock or commit time diverges once a squash-merge, rebase or amend
  * restamps the commit. So the tests restamp only the commit time and check byte identity.
  */
-describe('build-docs-vault 결정성 계약', () => {
+describe('build-docs-vault determinism contract', () => {
   let repo = null;
 
   const git = (args, env = {}) =>
@@ -161,7 +161,7 @@ describe('build-docs-vault 결정성 계약', () => {
     if (repo) await rm(repo, { recursive: true, force: true });
   });
 
-  it('두 번 연속 생성하면 바이트 동일하다', async () => {
+  it('generating twice in a row is byte-identical', async () => {
     const first = await scan();
     const second = await scan();
     assert.equal(
@@ -171,7 +171,7 @@ describe('build-docs-vault 결정성 계약', () => {
     assert.equal(JSON.stringify(first.content), JSON.stringify(second.content));
   });
 
-  it('같은 날 안에서 커밋 시각이 다시 찍혀도(squash-merge·rebase) 바이트 동일하다', async () => {
+  it('stays byte-identical when commit times are restamped within the same day (squash-merge, rebase)', async () => {
     const before = await scan();
     assert.equal(before.manifest.docs[0].updatedAt, '2026-03-04');
 
@@ -185,11 +185,11 @@ describe('build-docs-vault 결정성 계약', () => {
     assert.equal(
       JSON.stringify(before.manifest),
       JSON.stringify(after.manifest),
-      '커밋 시각 재기록만으로 생성물이 흔들리면 리베이스 충돌 회귀다',
+      'if rewriting commit times alone shakes the output, rebase conflicts regress',
     );
   });
 
-  it('날짜가 실제로 바뀌면 값도 따라 바뀐다 (정확성은 희생하지 않는다)', async () => {
+  it('changes the value when the date really changes, so accuracy is not sacrificed', async () => {
     git(['commit', '-q', '--amend', '--no-edit'], {
       GIT_AUTHOR_DATE: '2026-03-06T10:00:00+09:00',
       GIT_COMMITTER_DATE: '2026-03-06T10:00:00+09:00',
@@ -199,7 +199,7 @@ describe('build-docs-vault 결정성 계약', () => {
     assert.equal(manifest.generatedAt, '2026-03-06');
   });
 
-  it('워킹트리에서 고치는 중인 문서는 mtime **날짜** 로 기록한다 (시각 아님)', async () => {
+  it('records a document being edited in the working tree by mtime **date**, not time', async () => {
     const edited = path.join(repo, 'docs', 'GUIDE.md');
     await writeFile(edited, '# Guide\n\n본문 두 줄.\n추가.\n', 'utf8');
     /*
@@ -212,7 +212,7 @@ describe('build-docs-vault 결정성 계약', () => {
     assert.equal(manifest.docs[0].updatedAt, localDayStamp(mtime));
   });
 
-  it('localDayStamp 는 로컬 날짜만 남기고 시각을 버린다', () => {
+  it('localDayStamp keeps only the local date and drops the time', () => {
     const morning = new Date(2026, 2, 4, 1, 2, 3);
     const night = new Date(2026, 2, 4, 23, 58, 59);
     assert.equal(localDayStamp(morning), '2026-03-04');
@@ -221,7 +221,7 @@ describe('build-docs-vault 결정성 계약', () => {
     assert.equal(localDayStamp('not a date'), null);
   });
 
-  it('generatedAt 은 문서 날짜의 최대값이고 벽시계가 아니다', () => {
+  it('generatedAt is the maximum document date, not the wall clock', () => {
     assert.equal(
       deterministicGeneratedAt([
         { updatedAt: '2026-03-04' },

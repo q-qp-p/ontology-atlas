@@ -36,8 +36,8 @@ async function openDatasheetByKeyboard(page: import("@playwright/test").Page) {
   });
 }
 
-test.describe("키보드 경로 (신뢰 이벤트)", () => {
-  test("데이터시트는 이름을 가진 그룹이다 (스크린리더가 등장을 안다)", async ({ page }) => {
+test.describe("keyboard path (trusted events)", () => {
+  test("the datasheet is a named group, so a screen reader knows it appeared", async ({ page }) => {
     await openTopology(page);
     await openDatasheetByKeyboard(page);
 
@@ -50,7 +50,7 @@ test.describe("키보드 경로 (신뢰 이벤트)", () => {
     expect(label?.trim()).toBeTruthy();
   });
 
-  test("Escape 는 연 표면을 닫는다", async ({ page }) => {
+  test("Escape closes the surface that was opened", async ({ page }) => {
     await openTopology(page);
     await openDatasheetByKeyboard(page);
 
@@ -63,8 +63,8 @@ test.describe("키보드 경로 (신뢰 이벤트)", () => {
 });
 
 /** When the return target is gone, focus goes to `<main>`; a surviving trigger always wins. */
-test.describe("포커스 반환", () => {
-  test("단축키 시트를 닫으면 body 가 아니라 본문으로 간다", async ({ page }) => {
+test.describe("focus return", () => {
+  test("closing the shortcuts sheet moves focus to the main content, not body", async ({ page }) => {
     await seedFirstRunSeen(page);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/ko/topology/?guides=off", { waitUntil: "domcontentloaded" });
@@ -85,7 +85,7 @@ test.describe("포커스 반환", () => {
             .then(() => true)
             .catch(() => false);
         },
-        { timeout: 25_000, message: "단축키 시트가 안 열렸다 — Enter 가 아직 안 붙었나" },
+        { timeout: 25_000, message: "the shortcuts sheet did not open; is Enter not attached yet" },
       )
       .toBe(true);
     await page.keyboard.press("Escape");
@@ -99,7 +99,7 @@ test.describe("포커스 반환", () => {
    * **A surviving trigger still wins** — a fallback that overrides correct restoration
    * is a change, not a fix.
    */
-  test("살아남은 트리거에서 열면 그 트리거로 정확히 돌아온다", async ({ page }) => {
+  test("opening from a surviving trigger returns exactly to that trigger", async ({ page }) => {
     await seedFirstRunSeen(page);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/ko/topology/?guides=off", { waitUntil: "domcontentloaded" });

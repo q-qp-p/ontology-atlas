@@ -73,12 +73,12 @@ function validPayload({ markers: markerOverrides, ...overrides } = {}) {
   };
 }
 
-test("payload contract · 워크벤치 마커가 현행 한국어 셸을 받는다", () => {
+test("payload contract · the workbench markers accept the current Korean shell", () => {
   const koreanShell = "Atlas\n지도\n문서함\n공방\n인사이트\n프로젝트\n지형도\nINDEX\n내 프로젝트";
   assert.equal(
     WEBVIEW_WORKBENCH_MARKERS.every((marker) => marker.test(koreanShell)),
     true,
-    "현행 셸 문구가 마커를 통과하지 못한다 — 마커가 낡았다",
+    "the current shell copy does not pass the markers, so the markers are stale",
   );
   // Idling guard: if the markers pass anything, this check does not exist.
   assert.equal(
@@ -87,7 +87,7 @@ test("payload contract · 워크벤치 마커가 현행 한국어 셸을 받는�
   );
 });
 
-test("payload contract · Agents 라우트는 지도 문구 없이 자기 본문으로 증명한다", () => {
+test("payload contract · the Agents route proves itself by its own body without map copy", () => {
   const markers = webviewWorkbenchMarkersForPath("/ko/agents/");
   assert.equal(
     markers.every((marker) =>
@@ -129,7 +129,7 @@ test("Insights accepts both localized subject previews without map or brand body
   }
 });
 
-test("payload contract · 정상 페이로드는 통과한다", () => {
+test("payload contract · a valid payload passes", () => {
   assert.equal(validateWebviewVerifyPayload(validPayload()), null);
 });
 
@@ -218,7 +218,7 @@ test("payload contract accepts populated and empty Ontology panels only with ren
   }
 });
 
-test("payload contract · v2 캔버스 픽셀 증거가 없으면 멈춘다", () => {
+test("payload contract · stops without v2 canvas pixel evidence", () => {
   assert.match(
     validateOntologyMapCanvasEvidence({ topologyMapEngine: "v2" }),
     /rendered pixels/,
@@ -233,7 +233,7 @@ test("payload contract · v2 캔버스 픽셀 증거가 없으면 멈춘다", ()
   );
 });
 
-test("payload contract · 모양이 틀린 페이로드를 이유와 함께 막는다", () => {
+test("payload contract · rejects a malformed payload with a reason", () => {
   assert.match(validateWebviewVerifyPayload(null), /missing WebView verification payload/);
   assert.match(
     validateWebviewVerifyPayload(validPayload({ href: "https://example.com/" })),
@@ -266,7 +266,7 @@ test("payload contract · 모양이 틀린 페이로드를 이유와 함께 막�
   );
 });
 
-test("payload contract · 라우트를 확인한다", () => {
+test("payload contract · checks the route", () => {
   assert.equal(validateWebviewVerifyPayload(validPayload(), { expectedPath: "/ko/docs/" }), null);
   assert.match(
     validateWebviewVerifyPayload(validPayload(), { expectedPath: "/en/docs/" }),
@@ -274,7 +274,7 @@ test("payload contract · 라우트를 확인한다", () => {
   );
 });
 
-test("payload contract · 픽스처 볼트가 그 볼트인지 확인한다", () => {
+test("payload contract · checks that the fixture vault is that vault", () => {
   const vault = "/tmp/atlas-fixture";
   // Blocks a different vault (or none) when a vault was requested — the accident
   // this guards against is claiming verification after reading the user's real
@@ -299,7 +299,7 @@ test("payload contract · 픽스처 볼트가 그 볼트인지 확인한다", ()
   );
 });
 
-test("payload contract · WebView 크기 상·하한을 잰다", () => {
+test("payload contract · measures the WebView size bounds", () => {
   assert.match(
     validateWebviewVerifyPayload(validPayload({ width: 900, height: 600 }), {
       minWebviewSize: { width: 1400, height: 860 },
@@ -361,15 +361,15 @@ test("payload contract · launch stdout wires the isolation verdict into the pay
   );
 });
 
-test("payload contract · 감속 모션을 요구하면 그 사실을 확인한다", () => {
+test("payload contract · confirms reduced motion when it is required", () => {
   const message = validateWebviewVerifyPayload(validPayload(), {
     requireWebviewReducedMotion: true,
   });
-  assert.equal(typeof message, "string", "감속 요구가 아무것도 확인하지 않는다");
+  assert.equal(typeof message, "string", "the reduced-motion requirement checks nothing");
   assert.match(message, /reduced/i);
 });
 
-test("payload contract · 중첩 JSON 을 그대로 되읽는다", () => {
+test("payload contract · reads nested JSON back unchanged", () => {
   const payload = validPayload({ markers: { ontologyNav: true, nested: { a: [1, 2, { b: "c" }] } } });
   const stdout = `noise\n[ontology-atlas-webview-verify] ${JSON.stringify(JSON.stringify(payload))}\nmore noise\n`;
   assert.deepEqual(parseWebviewVerifyPayload(stdout), payload);

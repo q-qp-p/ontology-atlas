@@ -17,7 +17,7 @@ type Probe = {
 
 const NEEDS = ["capability:return-pickup", "capability:stock-reservation"];
 
-test("선택한 개념이 다른 도메인의 이웃도 지도에 나온다", async ({ page }) => {
+test("a selected concept also shows its neighbors from other domains on the map", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 900 });
   await seedFirstRunSeen(page);
@@ -52,15 +52,15 @@ test("선택한 개념이 다른 도메인의 이웃도 지도에 나온다", as
   // The camera has arrived: the focus target lies inside its leash, so the idle
   // gate can close. Before, the target sat 370 world units out and the loop ran
   // at full frame rate for as long as the node stayed selected.
-  expect(read.gap, "카메라가 목표에 닿지 못하고 있다").toBeLessThan(0.5);
-  expect(read.owns, "평면 다이얼이 이 화면을 그리지 않는다").toBe(true);
+  expect(read.gap, "the camera is not reaching its target").toBeLessThan(0.5);
+  expect(read.owns, "the flat dial does not draw this screen").toBe(true);
   for (const [i, id] of NEEDS.entries()) {
     const disc = read.discs[i];
-    expect(disc, `${id} 가 그려지지 않았다`).not.toBeNull();
+    expect(disc, `${id} was not drawn`).not.toBeNull();
     // Drawn is not seen: before the screen-sized leash the two dependencies
     // landed under the panel (x 1349 and 1369, panel from 1128).
-    expect(disc!.right, `${id} 가 상세 패널 아래에 있다`).toBeLessThan(read.panelLeft);
-    expect(disc!.left, `${id} 가 캔버스 왼쪽 밖으로 밀렸다`).toBeGreaterThan(read.canvasLeft);
+    expect(disc!.right, `${id} is under the detail panel`).toBeLessThan(read.panelLeft);
+    expect(disc!.left, `${id} was pushed outside the left edge of the canvas`).toBeGreaterThan(read.canvasLeft);
   }
-  expect(read.named, "다른 도메인의 이웃 이름이 없다").toEqual(NEEDS);
+  expect(read.named, "the names of neighbors from other domains are missing").toEqual(NEEDS);
 });

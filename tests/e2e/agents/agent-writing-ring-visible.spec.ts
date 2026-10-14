@@ -29,7 +29,7 @@ function heartbeatLine(slug: string, atIso: string): string {
   });
 }
 
-test("보고 있는 동안 에이전트가 쓴 노드를 지도가 집는다", async ({ page }) => {
+test("while watching, the map picks out the node the agent wrote", async ({ page }) => {
   test.setTimeout(300_000);
   await page.setViewportSize({ width: 1512, height: 900 });
   await stubDirectoryPicker(page, { ...FIXTURE_VAULT });
@@ -41,7 +41,7 @@ test("보고 있는 동안 에이전트가 쓴 노드를 지도가 집는다", a
   await page.getByTestId("vault-guide-pick-existing").click();
   await expect(
     page.getByTestId("first-run-starter"),
-    "볼트가 안 물렸다 — 아래 측정은 전부 무의미하다.",
+    "no vault is attached, so every measurement below is meaningless.",
   ).toHaveCount(0, { timeout: 30_000 });
 
   await expect(page.getByTestId("ontology-map-canvas")).toBeVisible({ timeout: 30_000 });
@@ -62,7 +62,7 @@ test("보고 있는 동안 에이전트가 쓴 노드를 지도가 집는다", a
   await expect
     .poll(focused, { timeout: 30_000 })
     .not.toBeNull();
-  expect(await focused(), "시작부터 켜져 있다 — 이 시험은 무엇도 못 잰다").toEqual([]);
+  expect(await focused(), "it is on from the start, so this test measures nothing").toEqual([]);
 
   // ── Plant the heartbeat saying "an agent is editing this node right now" ──
   const seeded = await page.evaluate(
@@ -101,15 +101,15 @@ test("보고 있는 동안 에이전트가 쓴 노드를 지도가 집는다", a
       heartbeatLine(WRITTEN_SLUG, new Date().toISOString()),
     ],
   );
-  expect(seeded, "활동 기록을 못 심었다").toBe(true);
+  expect(seeded, "could not seed the activity record").toBe(true);
 
   // Wait for polling (1.5 s right after a change, 5 s when quiet) to pick it up.
   await expect
     .poll(focused, {
       timeout: 30_000,
       message:
-        "보고 있는 동안 fresh heartbeat가 생겼는데 지도가 target을 모른다. " +
-        "끊긴 곳은 **되묻기(폴링) 재독해** 또는 heartbeat→focus 배선이다.",
+        "A fresh heartbeat arrived while watching, but the map does not know the target. " +
+        "The break is in the **polling re-read** or in the heartbeat-to-focus wiring.",
     })
     .not.toEqual([]);
   await expect(page.getByTestId("agent-activity-status")).toHaveText("Claude Code · 편집 중");

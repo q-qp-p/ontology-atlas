@@ -24,7 +24,7 @@ const YIELD_WINDOW_END_MS = NAVIGATION_YIELD_MS - 80;
 /** Below this many samples in the yield window the reading is invalid, so retry the cycle. */
 const MIN_YIELD_SAMPLE = 6;
 
-test("이동 신호가 오면 지도가 그리기를 멈추고, 손이 움직이면 돌아온다", async ({ page }) => {
+test("the map stops drawing on a navigation signal and resumes when the hand moves", async ({ page }) => {
   // The worst path (10s proof polling × 3 retries) can exceed the default 60s.
   test.setTimeout(90_000);
   await seedFirstRunSeen(page);
@@ -94,13 +94,13 @@ test("이동 신호가 오면 지도가 그리기를 멈추고, 손이 움직이
             (window as unknown as { __atlasMap?: { dome: () => unknown } }).__atlasMap?.dome() ??
             null,
         ),
-      { message: "3D 가 켜지지 않았다 — 이 표본은 처방이 겨냥한 구간이 아니다", timeout: 15_000 },
+      { message: "3D did not turn on, so this sample is not the interval the fix targets", timeout: 15_000 },
     )
     .not.toBeNull();
 
   // Premise ②: the map must really be drawing *before* the signal. If it is asleep,
   // "it yielded" and "it was never drawing" are the same green — the idling guard.
-  await proveDrawing("신호 전 지도가 유휴다 — 이 표본으로는 처방을 검증할 수 없다");
+  await proveDrawing("the map is idle before the signal, so this sample cannot verify the fix");
 
   /**
    * Fires the signal and returns the samples inside the yield window. The signal is
@@ -130,22 +130,22 @@ test("이동 신호가 오면 지도가 그리기를 멈추고, 손이 움직이
   for (let attempt = 2; yielded.frames < MIN_YIELD_SAMPLE && attempt <= 3; attempt += 1) {
     await page.mouse.move(cx, cy);
     await page.mouse.move(cx + 8, cy + 8);
-    await proveDrawing(`재시도 ${attempt}: 양보를 풀었는데 지도가 다시 그리지 않는다`);
+    await proveDrawing(`retry ${attempt}: the map does not draw again after yielding was released`);
     yielded = await measureYield();
   }
   expect(
     yielded.frames,
-    "양보 구간에 rAF 표본이 재시도 후에도 부족하다 — 측정 무효",
+    "rAF samples in the yield interval are still too few after retries, so the measurement is invalid",
   ).toBeGreaterThanOrEqual(MIN_YIELD_SAMPLE);
   // The 2 is a count of events, not of speed — the frames already in flight before
   // the signal landed. Measured: with the fix 0; without it nearly every frame in the
   // window (20–26 at 60fps, 6–9 on a slow runner).
-  expect(yielded.busy, "이동 신호를 받고도 지도가 계속 그린다").toBeLessThanOrEqual(2);
+  expect(yielded.busy, "the map keeps drawing despite the navigation signal").toBeLessThanOrEqual(2);
 
   // The return contract — a cancelled navigation must not stop the map forever. A
   // hand moving over the canvas releases it on the spot, without waiting for
   // expiry.
   await page.mouse.move(cx, cy);
   await page.mouse.move(cx + 8, cy + 8);
-  await proveDrawing("양보가 풀리지 않았다 — 지도가 얼어붙는다");
+  await proveDrawing("yielding was not released, so the map freezes");
 });

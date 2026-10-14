@@ -14,7 +14,7 @@ import { stubDirectoryPicker } from "../../vault-picker-stub";
 /** Minimum share that must be visible on the first screen. Measured 19/20 = 95%. */
 const MIN_ON_SCREEN_RATIO = 0.8;
 
-test("첫 화면이 노드를 거의 다 보여 준다", async ({ page }) => {
+test("the first screen shows almost every node", async ({ page }) => {
   test.setTimeout(300_000);
   await page.setViewportSize({ width: 1512, height: 900 });
   await stubDirectoryPicker(page, { ...FIXTURE_VAULT });
@@ -54,10 +54,10 @@ test("첫 화면이 노드를 거의 다 보여 준다", async ({ page }) => {
     return { total: nodes.length, inside: inside.length, outside: nodes.length - inside.length, cam };
   });
 
-  expect(census, "지도 창구가 안 열렸다 — 아무것도 못 쟀다").not.toBeNull();
+  expect(census, "the map hook did not open and nothing was measured").not.toBeNull();
   const { total, inside, outside } = census as { total: number; inside: number; outside: number };
-  console.log(`[census] 노드 ${total} · 화면 안 ${inside} · 화면 밖 ${outside}`);
-  expect(total, "노드를 하나도 못 읽었다 — 이 시험은 아무것도 못 잰다").toBeGreaterThan(3);
+  console.log(`[census] nodes ${total} · on screen ${inside} · off screen ${outside}`);
+  expect(total, "no node could be read, so this test measures nothing").toBeGreaterThan(3);
   expect(
     inside / total,
     `The first screen shows only ${Math.round((inside / total) * 100)}% of the nodes ` +

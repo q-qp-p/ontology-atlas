@@ -71,11 +71,11 @@ async function openVault(page: import("@playwright/test").Page, query: string) {
   }
   // Until the layout has been drawn — decided by value (a fixed wait rides machine speed).
   await expect
-    .poll(() => readablePixelCount(page), { timeout: 30_000, message: "지도가 아무것도 안 그렸다" })
+    .poll(() => readablePixelCount(page), { timeout: 30_000, message: "the map drew nothing" })
     .toBeGreaterThan(-1);
 }
 
-test("문서함이 보내는 프로젝트 딥링크로 들어와도 지도가 읽힌다", async ({ page }) => {
+test("the map stays readable when entered through a project deep link from the document box", async ({ page }) => {
   test.setTimeout(120_000);
 
   // Baseline — how bright it is when opened with no parameters.
@@ -95,19 +95,19 @@ test("문서함이 보내는 프로젝트 딥링크로 들어와도 지도가 �
     .poll(() => readablePixelCount(page), {
       timeout: 30_000,
       message:
-        "프로젝트 딥링크로 들어오니 지도에 읽을 수 있는 픽셀이 없다 — " +
-        "맞는 노드가 없는 선택이 「전부 흐리게」로 번역된 것이다",
+        "entering through a project deep link leaves no readable pixels on the map; " +
+        "a selection with no matching node was translated into dim everything",
     })
     .toBeGreaterThan(0);
 
   // Must reach half the baseline — "one pixel is enough to pass" would go green on a
   // state where only a label survives and every node has sunk.
   await expect
-    .poll(() => readablePixelCount(page), { timeout: 30_000, message: `프로젝트 딥링크가 파라미터 없는 화면(${plain})보다 크게 어둡다` })
+    .poll(() => readablePixelCount(page), { timeout: 30_000, message: `the project deep link is much darker than the screen without a parameter (${plain})` })
     .toBeGreaterThan(plain / 2);
 });
 
-test("지도에 없는 노드를 가리키는 딥링크는 아무것도 안 고른 것으로 떨어진다", async ({ page }) => {
+test("a deep link to a node absent from the map falls back to nothing selected", async ({ page }) => {
   test.setTimeout(120_000);
 
   await openVault(page, "");
@@ -128,7 +128,7 @@ test("지도에 없는 노드를 가리키는 딥링크는 아무것도 안 고�
   await expect
     .poll(() => readablePixelCount(page), {
       timeout: 30_000,
-      message: "없는 노드를 가리키는 딥링크가 지도를 통째로 가라앉혔다",
+      message: "a deep link to a missing node dimmed the whole map",
     })
     .toBeGreaterThan(plain / 2);
 });

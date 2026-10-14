@@ -85,7 +85,7 @@ for (const width of [1280, 1512]) {
   test.describe(`agents → models at ${width}`, () => {
     test.use({ viewport: { width, height: width === 1512 ? 982 : 800 } });
 
-    test("the tab reads 에이전트 | 모델 | MCP and holds its address", async ({ page }) => {
+    test("the tab row lists the agent, model and MCP tabs and holds its address", async ({ page }) => {
       await openModelsTab(page);
       await expect(page.getByRole("tab")).toHaveText(["에이전트", "모델", /^MCP/]);
       await expect(page.getByTestId("agents-tab-models")).toHaveAttribute("aria-selected", "true");

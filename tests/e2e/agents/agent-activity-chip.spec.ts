@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { seedFirstRunSeen } from "../first-run-seed";
 import { stubDirectoryPicker } from "../vault-picker-stub";
 
-test("fresh heartbeat만 현재 단계와 지도 대상을 말하고, 제거되면 변경 감지로 내린다", async ({ page }) => {
+test("only a fresh heartbeat states the current step and map target, and removal falls back to change detection", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 900 });
 
@@ -41,7 +41,7 @@ test("fresh heartbeat만 현재 단계와 지도 대상을 말하고, 제거되�
   await page.getByTestId("vault-guide-pick-existing").click();
 
   const status = page.getByTestId("agent-activity-status");
-  await expect(status, "fresh heartbeat가 상태 칩에 닿지 않았다").toBeVisible({
+  await expect(status, "the fresh heartbeat did not reach the status chip").toBeVisible({
     timeout: 30_000,
   });
   await expect(status).toHaveText("Codex · 검증 중");
@@ -96,7 +96,7 @@ test("fresh heartbeat만 현재 단계와 지도 대상을 말하고, 제거되�
  * seed is two writes from 20 minutes ago: they group into one job, and since it has
  * gone quiet there is a completion notification.
  */
-test("알림함의 작업 알림이 에이전트 이름으로 말한다", async ({ page }) => {
+test("job notifications in the inbox speak by agent name", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 900 });
 
@@ -127,7 +127,7 @@ test("알림함의 작업 알림이 에이전트 이름으로 말한다", async 
   await page.getByTestId("vault-guide-pick-existing").click();
 
   const bell = page.getByTestId("agent-activity-bell");
-  await expect(bell, "알림 벨이 안 떴다").toBeVisible({ timeout: 30_000 });
+  await expect(bell, "the notification bell did not appear").toBeVisible({ timeout: 30_000 });
   // Dev server only: Next's dev badge (<nextjs-portal>, bottom right) floats in the
   // same corner as the bell and intercepts the click (measured — 0 console errors, a
   // pure badge). It does not exist in the product, so removing it does not distort the
@@ -144,11 +144,11 @@ test("알림함의 작업 알림이 에이전트 이름으로 말한다", async 
    */
   const resultRow = page.getByTestId("agent-inbox-result-row");
   await expect(resultRow).toHaveCount(1);
-  await expect(resultRow, "끝난 작업 줄이 이름을 잃었다").toContainText("Claude Code");
+  await expect(resultRow, "the finished job row lost its name").toContainText("Claude Code");
   await page.getByRole("tab", { name: /기록/ }).click();
   const endRow = page
     .getByTestId("agent-inbox-history-row")
     .and(page.locator('[data-kind="task-end"]'));
   await expect(endRow).toHaveCount(1);
-  await expect(endRow, "기록의 접힌 작업이 이름을 잃었다").toContainText("Claude Code");
+  await expect(endRow, "the collapsed job in the history lost its name").toContainText("Claude Code");
 });

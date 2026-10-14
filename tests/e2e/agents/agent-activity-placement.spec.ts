@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { seedFirstRunSeen } from "../first-run-seed";
 import { stubDirectoryPicker } from "../vault-picker-stub";
 
-test("활동 줄은 한 곳에만 있고, 알림함은 열었을 때 다 보인다", async ({ page }) => {
+test("the activity row exists in one place only, and the inbox is fully visible when opened", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 900 });
 
@@ -30,41 +30,41 @@ test("활동 줄은 한 곳에만 있고, 알림함은 열었을 때 다 보인�
   await page.getByTestId("vault-guide-pick-existing").click();
 
   const bell = page.getByTestId("agent-activity-bell");
-  await expect(bell, "알림 종이 안 떴다 — 20분 전 쓰기는 알림 창 안이다").toBeVisible({
+  await expect(bell, "the bell did not appear; a write from 20 minutes ago lives inside the inbox").toBeVisible({
     timeout: 30_000,
   });
 
   // ① The same fact must not appear in two places.
   await expect(
     page.getByTestId("agent-activity-chip"),
-    "활동 줄이 두 곳에 그려졌다. 하나는 지워야 한다",
+    "the activity row is drawn in two places; one must go",
   ).toHaveCount(1);
 
   // ② The bell is a control holding a single icon — a text-row box stretches it horizontally.
   const bellBox = (await bell.boundingBox())!;
   expect(
     +(bellBox.width / bellBox.height).toFixed(2),
-    `종이 가로로 늘어났다 (${Math.round(bellBox.width)}×${Math.round(bellBox.height)})`,
+    `the bell stretched horizontally (${Math.round(bellBox.width)}×${Math.round(bellBox.height)})`,
   ).toBeLessThanOrEqual(1.35);
 
   // The bell's status cell is not inside the row, but in the rightmost single cell of the top-right toolbar.
   const utilityRow = page.getByTestId('topology-utility-action-row');
   const utilityRowBox = (await utilityRow.boundingBox())!;
-  expect(Math.abs(bellBox.y - utilityRowBox.y), '종이 위쪽 도구줄과 같은 행이 아니다').toBeLessThanOrEqual(1);
+  expect(Math.abs(bellBox.y - utilityRowBox.y), 'the bell is not on the same row as the utility row above').toBeLessThanOrEqual(1);
   expect(
     Math.abs(bellBox.x + bellBox.width - (utilityRowBox.x + utilityRowBox.width)),
-    '종이 도구줄 맨 오른쪽이 아니다',
+    'the bell is not at the far right of the utility row',
   ).toBeLessThanOrEqual(1);
   const statusBox = (await page.getByTestId('agent-activity-status-trigger').boundingBox())!;
-  expect(Math.abs(statusBox.y - bellBox.y), '작업 상태가 종과 같은 줄이 아니다').toBeLessThanOrEqual(1);
+  expect(Math.abs(statusBox.y - bellBox.y), 'the job status is not on the same line as the bell').toBeLessThanOrEqual(1);
   expect(
     Math.abs(statusBox.x + statusBox.width - bellBox.x),
-    '작업 상태가 종에 붙어 있지 않다',
+    'the job status is not attached to the bell',
   ).toBeLessThanOrEqual(1);
   const statusLabelFits = await page.getByTestId('agent-activity-status').evaluate(
     (element) => element.scrollWidth <= element.clientWidth + 1,
   );
-  expect(statusLabelFits, 'Codex와 마지막 작업 시각이 도구줄 폭에 묶여 잘렸다').toBe(true);
+  expect(statusLabelFits, 'Codex and the last job time were clipped by the utility row width').toBe(true);
 
   // ③ When opened, everything must be visible — it must not go off-screen or cover the utility bar.
   await bell.click();
@@ -73,17 +73,17 @@ test("활동 줄은 한 곳에만 있고, 알림함은 열었을 때 다 보인�
   const inboxBox = (await inbox.boundingBox())!;
   const view = page.viewportSize()!;
 
-  expect(inboxBox.width, '알림함이 280px짜리 좁은 예전 폭에 머물렀다').toBeGreaterThanOrEqual(340);
+  expect(inboxBox.width, 'the inbox stayed at the old narrow 280px width').toBeGreaterThanOrEqual(340);
 
-  expect(Math.round(inboxBox.y), "알림함 윗변이 화면 위로 잘렸다").toBeGreaterThanOrEqual(0);
+  expect(Math.round(inboxBox.y), "the top edge of the inbox is cut off above the screen").toBeGreaterThanOrEqual(0);
   expect(
     Math.round(inboxBox.y + inboxBox.height),
-    "알림함 아랫변이 화면 아래로 잘렸다",
+    "the bottom edge of the inbox is cut off below the screen",
   ).toBeLessThanOrEqual(view.height);
-  expect(Math.round(inboxBox.x), "알림함 왼변이 화면 밖이다").toBeGreaterThanOrEqual(0);
+  expect(Math.round(inboxBox.x), "the left edge of the inbox is outside the screen").toBeGreaterThanOrEqual(0);
   expect(
     Math.round(inboxBox.x + inboxBox.width),
-    "알림함 오른변이 화면 밖이다",
+    "the right edge of the inbox is outside the screen",
   ).toBeLessThanOrEqual(view.width);
 
   // Covering the utility row (agents, recent changes) makes those buttons unreadable.
@@ -94,7 +94,7 @@ test("활동 줄은 한 곳에만 있고, 알림함은 열었을 때 다 보인�
     laneBox.x < inboxBox.x + inboxBox.width &&
     inboxBox.y < laneBox.y + laneBox.height &&
     laneBox.y < inboxBox.y + inboxBox.height;
-  expect(overlaps, "알림함이 위쪽 유틸 버튼 줄을 덮었다").toBe(false);
+  expect(overlaps, "the inbox covers the utility button row above").toBe(false);
 
   /*
    * Judged by what is actually hit at the point (elementFromPoint);
@@ -102,7 +102,7 @@ test("활동 줄은 한 곳에만 있고, 알림함은 열었을 때 다 보인�
    */
   const topAtInbox = await page.evaluate(() => {
     const inbox = document.querySelector('[data-testid="agent-activity-inbox"]');
-    if (!inbox) return { ok: false, reason: "알림함이 없다" };
+    if (!inbox) return { ok: false, reason: "there is no inbox" };
     const r = inbox.getBoundingClientRect();
     /*
      * ⚠️ **Sample all the way to the edges.** The first version sampled only
@@ -127,7 +127,7 @@ test("활동 줄은 한 곳에만 있고, 알림함은 열었을 때 다 보인�
   expect(topAtInbox.ok, topAtInbox.reason).toBe(true);
   expect(
     topAtInbox.covered,
-    "알림함 위에 다른 것이 그려졌다 — 유틸 레인의 쌓임 맥락에 갇힌 것이다",
+    "something else is drawn over the inbox, trapped in the utility lane's stacking context",
   ).toEqual([]);
 
   // On a translucent panel, even a winning z-index shows the control behind it
@@ -151,6 +151,6 @@ test("활동 줄은 한 곳에만 있고, 알림함은 열었을 때 다 보인�
   });
   expect(
     outsideControlOverlaps,
-    "알림함 뒤의 지도 도구가 비쳐 행 액션처럼 보인다 — 도구 열과 rect를 갈라야 한다",
+    "map tools behind the inbox show through and look like row actions; the tool column and rect must be separated",
   ).toEqual([]);
 });

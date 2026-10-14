@@ -89,7 +89,7 @@ test("data marks do not add card vocabulary, while real cards and chart frames d
   expect(new Set((await page.evaluate(collectSurfaceVocabulary)).map((row) => row.key)).size).toBe(3);
 });
 
-test("표면 조합이 늘지 않는다", async ({ page }) => {
+test("surface combinations do not grow", async ({ page }) => {
   await seedFirstRunSeen(page);
   await page.setViewportSize({ width: 1440, height: 900 });
 
@@ -126,7 +126,7 @@ test("표면 조합이 늘지 않는다", async ({ page }) => {
 
   // Idling guard — measuring nothing and passing with "0 combinations" is this
   // ratchet's worst failure.
-  expect(painted, "표면을 하나도 못 쟀다 — 이 래칫이 헛돈다").toBeGreaterThan(40);
+  expect(painted, "no surface could be measured, so this ratchet spins idle").toBeGreaterThan(40);
 
   expect(
     surfaces.size,

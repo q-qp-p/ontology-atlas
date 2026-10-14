@@ -10,7 +10,7 @@ const WIDTHS = [1512, 1040] as const;
 const DIALOG_W_SM = 420;
 const VIEWPORT_INSET = 32; // calc(100vw - 2rem)
 
-test("center Dialog 는 세 폭에서 스크림·폭 공식·수납을 지킨다", async ({ page }) => {
+test("the center Dialog keeps its scrim, width formula and containment at three widths", async ({ page }) => {
   const pageErrors: string[] = [];
   page.on("pageerror", (err) => pageErrors.push(String(err)));
   await seedFirstRunSeen(page);
@@ -64,26 +64,26 @@ test("center Dialog 는 세 폭에서 스크림·폭 공식·수납을 지킨다
         vh: window.innerHeight,
       };
     });
-    expect(rects, `${width}px — 대화상자가 사라졌다`).not.toBeNull();
+    expect(rects, `${width}px: the dialog disappeared`).not.toBeNull();
     if (!rects) return;
 
     // ① The scrim covers the whole viewport.
-    expect(rects.scrim.x, `${width}px 스크림 x`).toBe(0);
-    expect(rects.scrim.y, `${width}px 스크림 y`).toBe(0);
-    expect(Math.round(rects.scrim.w), `${width}px 스크림 폭`).toBe(rects.vw);
-    expect(Math.round(rects.scrim.h), `${width}px 스크림 높이`).toBe(rects.vh);
+    expect(rects.scrim.x, `${width}px scrim x`).toBe(0);
+    expect(rects.scrim.y, `${width}px scrim y`).toBe(0);
+    expect(Math.round(rects.scrim.w), `${width}px scrim width`).toBe(rects.vw);
+    expect(Math.round(rects.scrim.h), `${width}px scrim height`).toBe(rects.vh);
 
     // ② The width formula min(420, vw − 2rem), tolerating 1px of sub-pixel error.
     const expected = Math.min(DIALOG_W_SM, rects.vw - VIEWPORT_INSET);
     expect(
       Math.abs(rects.panel.w - expected),
-      `${width}px 패널 폭 ${rects.panel.w} ≠ 공식 ${expected}`,
+      `${width}px panel width ${rects.panel.w} ≠ formula ${expected}`,
     ).toBeLessThanOrEqual(1);
 
     // ③ The panel sits entirely inside the viewport.
-    expect(rects.panel.x, `${width}px 패널 좌측`).toBeGreaterThanOrEqual(0);
-    expect(rects.panel.y, `${width}px 패널 상단`).toBeGreaterThanOrEqual(0);
-    expect(rects.panel.x + rects.panel.w, `${width}px 패널 우측`).toBeLessThanOrEqual(rects.vw + 1);
-    expect(rects.panel.y + rects.panel.h, `${width}px 패널 하단`).toBeLessThanOrEqual(rects.vh + 1);
+    expect(rects.panel.x, `${width}px panel left`).toBeGreaterThanOrEqual(0);
+    expect(rects.panel.y, `${width}px panel top`).toBeGreaterThanOrEqual(0);
+    expect(rects.panel.x + rects.panel.w, `${width}px panel right`).toBeLessThanOrEqual(rects.vw + 1);
+    expect(rects.panel.y + rects.panel.h, `${width}px panel bottom`).toBeLessThanOrEqual(rects.vh + 1);
   }
 });

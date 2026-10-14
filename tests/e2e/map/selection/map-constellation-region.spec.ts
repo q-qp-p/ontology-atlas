@@ -7,7 +7,7 @@ import { waitForMapStill } from "../../settle";
  * The chip must not claim `aria-haspopup="dialog"` without a dialog;
  * the panel needs an accessible name and `aria-controls`.
  */
-test("별자리 칩은 이름 있는 영역을 펼치고, 그 영역을 가리킨다", async ({ page }) => {
+test("the constellation chip opens a named region and points at it", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 900 });
   await seedFirstRunSeen(page);
@@ -17,16 +17,16 @@ test("별자리 칩은 이름 있는 영역을 펼치고, 그 영역을 가리�
   const trigger = page.getByTestId("saved-constellations-open");
   const region = page.getByRole("region", { name: koMessages.constellations.listTitle });
   await expect(trigger).toHaveAttribute("aria-expanded", "false");
-  expect(await region.count(), "열기 전에 이미 영역이 있다").toBe(0);
+  expect(await region.count(), "the region already exists before opening").toBe(0);
 
   await trigger.click();
   await expect(region).toBeVisible();
   const id = await region.getAttribute("id");
-  expect(id, "영역에 id 가 없어 칩과 묶을 수 없다").toBeTruthy();
+  expect(id, "the region has no id, so it cannot be tied to the chip").toBeTruthy();
   await expect(trigger).toHaveAttribute("aria-controls", id!);
   await expect(trigger).toHaveAttribute("aria-expanded", "true");
   // It never claims to be a dialog, because nothing about it is modal.
-  expect(await page.getByRole("dialog").count(), "모달이 아닌데 대화상자라고 말한다").toBe(0);
+  expect(await page.getByRole("dialog").count(), "claims to be a dialog although it is not modal").toBe(0);
 
   // The chip keeps focus, Escape closes.
   await expect(trigger).toBeFocused();

@@ -73,8 +73,8 @@ interface Opened {
   dy: number;
 }
 
-test.describe("잠깐 뜨는 표면 3계약", () => {
-  test("선언한 표면이 자기 계약을 지킨다", async ({ page }) => {
+test.describe("three contracts for transient surfaces", () => {
+  test("each declared surface keeps its own contract", async ({ page }) => {
     test.setTimeout(300_000);
     await page.setViewportSize({ width: 1512, height: 900 });
     await seedFirstRunSeen(page);
@@ -204,11 +204,11 @@ test.describe("잠깐 뜨는 표면 3계약", () => {
           });
 
           if (!shot.animated) {
-            violations.push(`하드컷 · ${route} ${trigger.name} → ${shot.kind}`);
+            violations.push(`hard cut · ${route} ${trigger.name} → ${shot.kind}`);
           }
           if (FOCUSLESS.has(shot.kind) && shot.tookFocus) {
             violations.push(
-              `초점을 가져갔다 · ${route} ${trigger.name} → ${shot.kind} (키를 가로채고 스스로 사라지지 못한다)`,
+              `took focus · ${route} ${trigger.name} → ${shot.kind} (intercepts keys and cannot disappear by itself)`,
             );
           }
 
@@ -260,10 +260,10 @@ test.describe("잠깐 뜨는 표면 3계약", () => {
             { open: stillOpen, name: trigger.name },
           );
           if (NEEDS_ESCAPE.has(shot.kind)) {
-            if (after.stillOpen) violations.push(`Escape 로 안 닫힌다 · ${route} ${trigger.name} → ${shot.kind}`);
+            if (after.stillOpen) violations.push(`not closed by Escape · ${route} ${trigger.name} → ${shot.kind}`);
             else if (!after.focusBack) {
               violations.push(
-                `초점이 안 돌아온다 · ${route} ${trigger.name} → ${shot.kind} (초점은 "${after.landed}" 에 있다)`,
+                `focus does not return · ${route} ${trigger.name} → ${shot.kind} (focus is on "${after.landed}")`,
               );
             }
           }
@@ -278,29 +278,29 @@ test.describe("잠깐 뜨는 표면 3계약", () => {
     }
 
     console.log(
-      `[transient-sweep] 라우트 ${ROUTES.length} · 열어 본 표면 ${opened.length}개 · ` +
-        `종류 ${[...new Set(opened.map((o) => o.kind))].join(",")}`,
+      `[transient-sweep] routes ${ROUTES.length} · surfaces opened ${opened.length} · ` +
+        `kinds ${[...new Set(opened.map((o) => o.kind))].join(",")}`,
     );
 
     for (const kind of SWEEP_MUST_OPEN) {
       expect(
         opened.map((o) => o.kind),
-        `스윕이 ${kind} 를 한 번도 열지 못했다 — 사정거리가 줄었다`,
+        `the sweep never opened ${kind}, so its reach shrank`,
       ).toContain(kind);
     }
 
     expect(
       opened.length,
-      `선언한 표면을 ${opened.length}개만 열었다 — 이 스윕이 공회전한다(표시가 빠졌거나 트리거를 못 눌렀다)`,
+      `only ${opened.length} declared surfaces were opened, so this sweep spins idle (a declaration is missing or a trigger could not be pressed)`,
     ).toBeGreaterThanOrEqual(MIN_OPENED);
-    expect(violations, `잠깐 뜨는 표면 계약 위반:\n${violations.join("\n")}`).toEqual([]);
+    expect(violations, `Transient surface contract violations:\n${violations.join("\n")}`).toEqual([]);
   });
 
   /**
    * The dead-end notice must not take focus; the sweep covers only trigger-opened surfaces, so this
    * keyboard-only surface is measured separately.
    */
-  test("키보드로만 나타나는 안내도 초점을 받지 않는다", async ({ page }) => {
+  test("a notice that appears only by keyboard does not take focus either", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await seedFirstRunSeen(page);
     /*
@@ -336,7 +336,7 @@ test.describe("잠깐 뜨는 표면 3계약", () => {
         break;
       }
     }
-    expect(found, "안내가 종류를 선언하지 않는다 — 스윕이 이것을 잴 수 없다").toBe(true);
+    expect(found, "the notice declares no kind, so the sweep cannot measure it").toBe(true);
     const state = await page.evaluate(() => {
       const el = document.querySelector('[data-transient-surface="notice"]')!;
       return {
@@ -345,16 +345,16 @@ test.describe("잠깐 뜨는 표면 3계약", () => {
         animated: (el.getAnimations?.({ subtree: true }) ?? []).length > 0,
       };
     });
-    expect(state.tookFocus, "안내가 초점을 가져갔다").toBe(false);
-    expect(state.canFocus, "안내 안에 초점을 받을 수 있는 것이 있다 — 그것이 키를 가로챈다").toBe(0);
-    expect(state.animated, "안내가 하드컷으로 나타났다").toBe(true);
+    expect(state.tookFocus, "the notice took focus").toBe(false);
+    expect(state.canFocus, "the notice contains something focusable, which would intercept keys").toBe(0);
+    expect(state.animated, "the notice appeared as a hard cut").toBe(true);
   });
 
   /**
    * Opens a node popover (`anchored`) for real: the route sweep only reaches `sheet` kinds. Select with
    * arrow keys, not the mouse, since a panel over the map eats the click when no vault is chosen.
    */
-  test("노드 팝오버가 부른 것 옆에 서고 Escape 로 닫힌다", async ({ page }) => {
+  test("the node popover stands beside what summoned it and closes with Escape", async ({ page }) => {
     test.setTimeout(180_000);
     await page.setViewportSize({ width: 1512, height: 900 });
     await seedFirstRunSeen(page);
@@ -368,7 +368,7 @@ test.describe("잠깐 뜨는 표면 3계약", () => {
 
     await page.keyboard.press("ArrowRight");
     const anchored = page.locator('[data-transient-surface="anchored"]').first();
-    await expect(anchored, "노드를 골랐는데 팝오버가 종류를 선언하지 않는다").toBeVisible({ timeout: 8_000 });
+    await expect(anchored, "a node was selected but the popover declares no kind").toBeVisible({ timeout: 8_000 });
 
     const geom = await page.evaluate(() => {
       const probe = window.__atlasMap;
@@ -385,11 +385,11 @@ test.describe("잠깐 뜨는 표면 3계약", () => {
         tookFocus: el.contains(document.activeElement),
       };
     });
-    expect(geom, "고른 노드를 못 찾았다 — 이 시험이 공회전한다").not.toBeNull();
+    expect(geom, "the selected node was not found, so this test spins idle").not.toBeNull();
     // Beside what called it: farther than half the canvas and it no longer reads as connected.
-    expect(geom!.dx, "팝오버가 고른 노드에서 너무 멀다").toBeLessThan(geom!.canvasWidth / 2);
+    expect(geom!.dx, "the popover is too far from the selected node").toBeLessThan(geom!.canvasWidth / 2);
     /* After an arrow-key selection focus must stay put, or the next arrow key never reaches the map. */
-    expect(geom!.tookFocus, "방향키로 열린 팝오버가 초점을 가져갔다 — 다음 걸음이 막힌다").toBe(false);
+    expect(geom!.tookFocus, "the popover opened by arrow keys took focus, blocking the next step").toBe(false);
 
     /*
      * ⚠️ **Close after the camera transition finishes.** A version that pressed Escape
@@ -399,11 +399,11 @@ test.describe("잠깐 뜨는 표면 3계약", () => {
      */
     await waitForMapStill(page, { what: "camera" });
     await page.keyboard.press("Escape");
-    await expect(anchored, "Escape 로 팝오버가 닫히지 않는다").toBeHidden({ timeout: 4_000 });
+    await expect(anchored, "the popover does not close with Escape").toBeHidden({ timeout: 4_000 });
     // Focus must stay on the canvas — here the canvas is what called it.
     expect(
       await page.evaluate(() => document.activeElement?.getAttribute("data-surface-role") === "map-canvas"),
-      "팝오버를 닫고 나서 초점이 지도를 떠났다",
+      "focus left the map after the popover closed",
     ).toBe(true);
   });
 });

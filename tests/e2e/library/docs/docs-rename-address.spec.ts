@@ -10,7 +10,7 @@ const VAULT = {
     "---\nkind: capability\nslug: capabilities/cart\ntitle: 장바구니\nuid: 22222222-2222-4222-8222-222222222222\nrelations:\n  - type: belongs_to\n    to: domains/order\n---\n\n장바구니 역량.\n",
 };
 
-test("이름 변경 뒤 — 경고가 안 뜨고 주소가 새 이름을 가리킨다", async ({ page }) => {
+test("after a rename, no warning appears and the address points at the new name", async ({ page }) => {
   test.setTimeout(150_000);
   // Record native dialogs so their appearance fails the test instead of being answered.
   const nativeDialogs: string[] = [];
@@ -47,7 +47,7 @@ test("이름 변경 뒤 — 경고가 안 뜨고 주소가 새 이름을 가리�
   // The command answers to its old Korean name through its keywords.
   await page.keyboard.press("Meta+k");
   const palette = page.getByRole("dialog").filter({ has: page.locator('input[type="text"]') }).first();
-  await expect(palette, "팔레트가 안 열렸다").toBeVisible();
+  await expect(palette, "the palette did not open").toBeVisible();
   await page.keyboard.type("이름 변경");
   // Enter takes the **active** row, so the condition is that the active row is the
   // command we typed for — not that 600 ms of this machine has gone by.
@@ -69,16 +69,16 @@ test("이름 변경 뒤 — 경고가 안 뜨고 주소가 새 이름을 가리�
   for (let i = 0; i < 12; i += 1) {
     // measurement window: the banner must stay absent across the whole manifest-refresh gap.
     await page.waitForTimeout(500);
-    expect(await banner.count(), `이름 변경 ${(i + 1) * 0.5}s 후 거짓 「못 찾았어요」 경고`).toBe(0);
+    expect(await banner.count(), `false not-found warning ${(i + 1) * 0.5}s after the rename`).toBe(0);
   }
 
   // The address points at the new name, and the document is still open.
   expect(page.url()).toContain("slug=capabilities%2Fcart-renamed");
   await expect(page.getByText("장바구니").first()).toBeVisible();
-  expect(nativeDialogs, "이름 변경이 브라우저 입력창을 띄웠다").toEqual([]);
+  expect(nativeDialogs, "the rename opened a browser prompt").toEqual([]);
 });
 
-test("삭제 뒤 — 경고가 안 뜨고 주소가 지운 문서를 가리키지 않는다", async ({ page }) => {
+test("after a delete, no warning appears and the address does not point at the deleted document", async ({ page }) => {
   test.setTimeout(150_000);
   const nativeDialogs: string[] = [];
   page.on("dialog", (d) => {
@@ -113,7 +113,7 @@ test("삭제 뒤 — 경고가 안 뜨고 주소가 지운 문서를 가리키�
 
   await page.keyboard.press("Meta+k");
   const palette = page.getByRole("dialog").filter({ has: page.locator('input[type="text"]') }).first();
-  await expect(palette, "팔레트가 안 열렸다").toBeVisible();
+  await expect(palette, "the palette did not open").toBeVisible();
   await page.keyboard.type("삭제");
   // Enter takes the **active** row, so the condition is that the active row is the
   // command we typed for — not that 600 ms of this machine has gone by.
@@ -126,8 +126,8 @@ test("삭제 뒤 — 경고가 안 뜨고 주소가 지운 문서를 가리키�
   for (let i = 0; i < 12; i += 1) {
     // measurement window: the banner must stay absent across the whole manifest-refresh gap.
     await page.waitForTimeout(500);
-    expect(await banner.count(), `삭제 ${(i + 1) * 0.5}s 후 거짓 「못 찾았어요」 경고`).toBe(0);
+    expect(await banner.count(), `false not-found warning ${(i + 1) * 0.5}s after the delete`).toBe(0);
   }
   expect(page.url()).not.toContain("slug=capabilities%2Fcart");
-  expect(nativeDialogs, "삭제가 브라우저 확인창을 띄웠다").toEqual([]);
+  expect(nativeDialogs, "the delete opened a browser confirm dialog").toEqual([]);
 });
