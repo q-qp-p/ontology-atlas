@@ -275,7 +275,7 @@ diff (`.claude/rules/forbidden.md`, `.claude/rules/local-first.md`).
 
 | Idea | Portable? | Why |
 |---|---|---|
-| A catalogue of well-known servers with package, args, required variables and `isSecret` | **yes, as a committed generated file** | CC0 data; refreshed by a person; `scripts/build-acp-registry.mjs` already sets this precedent for the ACP runtime list |
+| A catalogue of well-known servers with package, args, required variables and `isSecret` | **yes, as a committed generated file** | CC0 data; refreshed by a person; `scripts/registry-snapshots/build-acp-registry.mjs` already sets this precedent for the ACP runtime list |
 | Fetching that catalogue at runtime | **no** | breaks "works offline" and "nothing leaves unless turned on" at once — the exact reasoning already written at the top of `build-acp-registry.mjs` |
 | Hosted marketplaces (Smithery et al.) | **no** | account-gated, and one of them proxies the traffic |
 | A deep link that pre-fills and waits for a press | **yes** | it writes nothing on its own; the confirmation must show the decoded command in full, which is the lesson of CVE-2025-54133 |
@@ -287,7 +287,7 @@ diff (`.claude/rules/forbidden.md`, `.claude/rules/local-first.md`).
 ## 8. Recommendation
 
 1. **Ship a committed catalogue.** Generated from the CC0 registry plus
-   hand-verified vendor facts by `scripts/build-mcp-catalogue.mjs`, stating its
+   hand-verified vendor facts by `scripts/registry-snapshots/build-mcp-catalogue.mjs`, stating its
    entry count and generation date in the file, never fetched at runtime. Notion,
    Atlassian and GitHub are the first three rows, each carrying both a remote and
    a local variant.

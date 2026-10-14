@@ -102,8 +102,8 @@ describe('focused check suggestions', () => {
     const lint = (paths) => commandNames(suggestFocusedChecks(paths)).find(isScriptLint);
     // A scripts-only change once planned no lint and landed a warning on main (train #1921).
     assert.equal(
-      lint(['scripts/pr-land.test.mjs', 'tests/e2e/settle.ts', 'mcp/src/index.js']),
-      'pnpm exec eslint --max-warnings 0 --no-warn-ignored scripts/pr-land.test.mjs tests/e2e/settle.ts mcp/src/index.js',
+      lint(['scripts/landing/pr-land.test.mjs', 'tests/e2e/settle.ts', 'mcp/src/index.js']),
+      'pnpm exec eslint --max-warnings 0 --no-warn-ignored scripts/landing/pr-land.test.mjs tests/e2e/settle.ts mcp/src/index.js',
     );
     assert.equal(lint(['src/shared/lib/cn.ts']), undefined, 'src and app keep their own lint command');
     assert.equal(lint(['docs/README.md']), undefined, 'non-code paths plan no lint');
@@ -239,7 +239,7 @@ describe('focused check suggestions', () => {
       'src/widgets/example/ui/Example.test.tsx',
       'tests/e2e/rail-destinations.spec.ts',
       'tests/contract/page-frame.contract.test.ts',
-      'scripts/desktop-smoke.test.mjs',
+      'scripts/desktop/desktop-smoke.test.mjs',
       'mcp/src/analyze.test.mjs',
       'cli/src/integration.test.mjs',
     ];
@@ -250,7 +250,7 @@ describe('focused check suggestions', () => {
     for (const path of tests) {
       assert.ok(commandNames(suggestFocusedChecks([path])).includes(TEST_HYGIENE_COMMAND), path);
     }
-    for (const path of ['src/shared/lib/cn.ts', 'scripts/desktop-smoke.mjs', 'tests/e2e/settle.ts', 'app/globals.css']) {
+    for (const path of ['src/shared/lib/cn.ts', 'scripts/desktop/desktop-smoke.mjs', 'tests/e2e/settle.ts', 'app/globals.css']) {
       assert.ok(!commandNames(suggestFocusedChecks([path])).includes(TEST_HYGIENE_COMMAND), path);
     }
   });
@@ -296,17 +296,17 @@ describe('focused check suggestions', () => {
 
   it('suggests narrow vault tooling tests for vault helper scripts', () => {
     const result = suggestFocusedChecks([
-      'scripts/build-docs-vault.mjs',
-      'scripts/validate-vault.mjs',
-      'scripts/audit-vault-paths.test.mjs',
-      'scripts/migrate-vault.mjs',
+      'scripts/docs-vault/build-docs-vault.mjs',
+      'scripts/vault/validate-vault.mjs',
+      'scripts/vault/audit-vault-paths.test.mjs',
+      'scripts/vault/migrate-vault.mjs',
       'scripts/migrations/2026-05-04-trim-frontmatter-values.mjs',
     ]);
 
     assert.deepEqual(domainCommands(result), [
-      'pnpm exec node --test scripts/build-docs-vault.test.mjs',
-      'pnpm exec node --test scripts/validate-vault-script.test.mjs',
-      'pnpm exec node --test scripts/audit-vault-paths.test.mjs',
+      'pnpm exec node --test scripts/docs-vault/build-docs-vault.test.mjs',
+      'pnpm exec node --test scripts/vault/validate-vault-script.test.mjs',
+      'pnpm exec node --test scripts/vault/audit-vault-paths.test.mjs',
       'pnpm test:docs-vault',
       'pnpm test:vault:validate',
       'pnpm test:vault:audit',
@@ -320,10 +320,10 @@ describe('focused check suggestions', () => {
   });
 
   it('wires the concurrent-ledger resolver to its runtime test and docs-vault suite', () => {
-    const result = suggestFocusedChecks(['scripts/resolve-docs-vault-conflicts.mjs']);
+    const result = suggestFocusedChecks(['scripts/docs-vault/resolve-docs-vault-conflicts.mjs']);
 
     assert.deepEqual(domainCommands(result), [
-      'pnpm exec node --test scripts/resolve-docs-vault-conflicts.test.mjs',
+      'pnpm exec node --test scripts/docs-vault/resolve-docs-vault-conflicts.test.mjs',
       'pnpm test:docs-vault',
     ]);
   });
@@ -340,10 +340,10 @@ describe('focused check suggestions', () => {
   });
 
   it('suggests direct locale message validation before the package shortcut', () => {
-    const result = suggestFocusedChecks(['scripts/validate-messages.test.mjs']);
+    const result = suggestFocusedChecks(['scripts/i18n/validate-messages.test.mjs']);
 
     assert.deepEqual(domainCommands(result), [
-      'pnpm exec node --test scripts/validate-messages.test.mjs',
+      'pnpm exec node --test scripts/i18n/validate-messages.test.mjs',
       'pnpm test:i18n:messages',
     ]);
   });
@@ -759,16 +759,16 @@ describe('focused check suggestions', () => {
   it('suggests narrow dogfood helper tests before broader dogfood gates', () => {
     const result = suggestFocusedChecks([
       'scripts/lib/dogfood-walk/dogfood-args.mjs',
-      'scripts/dogfood-compile-fix.test.mjs',
-      'scripts/dogfood-status.mjs',
-      'scripts/dogfood-graph-db-pack.mjs',
+      'scripts/dogfood/dogfood-compile-fix.test.mjs',
+      'scripts/dogfood/dogfood-status.mjs',
+      'scripts/dogfood/dogfood-graph-db-pack.mjs',
     ]);
 
     assert.deepEqual(domainCommands(result), [
       'pnpm exec node --test scripts/lib/dogfood-walk/dogfood-args.test.mjs',
-      'pnpm exec node --test scripts/dogfood-compile-fix.test.mjs',
-      'pnpm exec node --test scripts/dogfood-status.test.mjs',
-      'pnpm exec node --test scripts/dogfood-graph-db-pack.test.mjs',
+      'pnpm exec node --test scripts/dogfood/dogfood-compile-fix.test.mjs',
+      'pnpm exec node --test scripts/dogfood/dogfood-status.test.mjs',
+      'pnpm exec node --test scripts/dogfood/dogfood-graph-db-pack.test.mjs',
       'pnpm test:dogfood:args',
       'pnpm test:dogfood:compile-fix',
       'pnpm test:dogfood:status',
@@ -780,8 +780,8 @@ describe('focused check suggestions', () => {
 
   it('suggests direct script helper unit tests before broader script-ref gates', () => {
     const result = suggestFocusedChecks([
-      'scripts/run-focused-node-test.mjs',
-      'scripts/run-focused-node-test.test.mjs',
+      'scripts/ci/run-focused-node-test.mjs',
+      'scripts/ci/run-focused-node-test.test.mjs',
       'scripts/lib/ci/focused-check-suggestions.mjs',
       'scripts/lib/pnpm-script-refs.mjs',
       'scripts/lib/ci/test-name-pattern.mjs',
@@ -790,7 +790,7 @@ describe('focused check suggestions', () => {
 
     assert.deepEqual(domainCommands(result), [
       'pnpm test:ci:impact',
-      'pnpm exec node --test scripts/run-focused-node-test.test.mjs',
+      'pnpm exec node --test scripts/ci/run-focused-node-test.test.mjs',
       'pnpm exec node --test scripts/lib/ci/focused-check-suggestions.test.mjs',
       'pnpm exec node --test scripts/lib/pnpm-script-refs.test.mjs',
       'pnpm exec node --test scripts/lib/ci/test-name-pattern.test.mjs',
@@ -799,11 +799,11 @@ describe('focused check suggestions', () => {
     ]);
     assert.deepEqual(
       result.commands.find(
-        (row) => row.command === 'pnpm exec node --test scripts/run-focused-node-test.test.mjs',
+        (row) => row.command === 'pnpm exec node --test scripts/ci/run-focused-node-test.test.mjs',
       )?.paths,
       [
-      'scripts/run-focused-node-test.mjs',
-      'scripts/run-focused-node-test.test.mjs',
+      'scripts/ci/run-focused-node-test.mjs',
+      'scripts/ci/run-focused-node-test.test.mjs',
       ],
     );
     assert.deepEqual(
@@ -818,10 +818,10 @@ describe('focused check suggestions', () => {
   });
 
   it('suggests script-reference checks when dogfood help text changes', () => {
-    const result = suggestFocusedChecks(['scripts/dogfood-mcp-walk.mjs']);
+    const result = suggestFocusedChecks(['scripts/dogfood/dogfood-mcp-walk.mjs']);
 
     assert.deepEqual(domainCommands(result), [
-      'pnpm exec node --test scripts/dogfood-mcp-walk.test.mjs',
+      'pnpm exec node --test scripts/dogfood/dogfood-mcp-walk.test.mjs',
       'pnpm test:dogfood:script-refs',
       'pnpm test:mcp:dogfood:timeout',
       'pnpm test:mcp:dogfood',
@@ -837,14 +837,14 @@ describe('focused check suggestions', () => {
       '.codex/hooks.json',
       '.codex/hooks/block-npm-publish.sh',
       '.codex/hooks/inject-ontology-summary.sh',
-      'scripts/claude-hooks.test.mjs',
+      'scripts/harness/claude-hooks.test.mjs',
     ]);
 
     // Every path here is also inventoried by `agent-files`, and `.claude/settings.json`
     // carries the `permissions.deny` rules the secret-read guard derives from
     // `.gitignore`, so all three gates apply.
     assert.deepEqual(domainCommands(result), [
-      'pnpm exec node --test scripts/claude-hooks.test.mjs',
+      'pnpm exec node --test scripts/harness/claude-hooks.test.mjs',
       'pnpm test:claude:hooks',
       'pnpm agents:check',
       'pnpm exec vitest run tests/contract/agent-files.contract.test.ts tests/contract/nested-agents-pointers.contract.test.ts tests/contract/skill-routing.contract.test.ts tests/contract/rules-path-scope.contract.test.ts tests/contract/secret-read-guard.contract.test.ts tests/contract/node-test-reachability.contract.test.ts tests/contract/agent-file-citations.contract.test.ts',
@@ -861,8 +861,8 @@ describe('focused check suggestions', () => {
 
   it('routes installed-app WebView verifier changes to the desktop contract suite', () => {
     const result = suggestFocusedChecks([
-      'scripts/verify-macos-app-launch.mjs',
-      'scripts/verify-macos-app-launch.payload-contract.test.mjs',
+      'scripts/verify-macos/verify-macos-app-launch.mjs',
+      'scripts/verify-macos/verify-macos-app-launch.payload-contract.test.mjs',
       'scripts/lib/verify-macos/payload-contract.mjs',
     ]);
 
@@ -874,8 +874,8 @@ describe('focused check suggestions', () => {
 
   it('routes every ACP launch-boundary input to the registry compatibility gate', () => {
     const subjects = [
-      'scripts/build-acp-registry.mjs',
-      'scripts/build-acp-registry.test.mjs',
+      'scripts/registry-snapshots/build-acp-registry.mjs',
+      'scripts/registry-snapshots/build-acp-registry.test.mjs',
       'src-tauri/src/acp-registry.json',
       'src-tauri/src/acp.rs',
       'src-tauri/src/acp/isolation.rs',
@@ -899,17 +899,17 @@ describe('focused check suggestions', () => {
 
   it('suggests desktop readiness checks for macOS desktop distribution files', () => {
     const result = suggestFocusedChecks([
-      'scripts/check-desktop-readiness.mjs',
-      'scripts/check-desktop-readiness.test.mjs',
-      'scripts/desktop-doctor.mjs',
-      'scripts/desktop-doctor.test.mjs',
-      'scripts/desktop-smoke.mjs',
-      'scripts/desktop-smoke.test.mjs',
-      'scripts/verify-macos-dmg.mjs',
-      'scripts/verify-macos-install-smoke.mjs',
+      'scripts/desktop/check-desktop-readiness.mjs',
+      'scripts/desktop/check-desktop-readiness.test.mjs',
+      'scripts/desktop/desktop-doctor.mjs',
+      'scripts/desktop/desktop-doctor.test.mjs',
+      'scripts/desktop/desktop-smoke.mjs',
+      'scripts/desktop/desktop-smoke.test.mjs',
+      'scripts/verify-macos/verify-macos-dmg.mjs',
+      'scripts/verify-macos/verify-macos-install-smoke.mjs',
       'scripts/lib/macos-artifact/macos-dmg-layout.mjs',
       'scripts/lib/desktop-release/redact-command.mjs',
-      'scripts/check-macos-download-release.mjs',
+      'scripts/download/check-macos-download-release.mjs',
       'docs/DESKTOP-MACOS.md',
       'src/shared/lib/vault-folder/tauri-vault-fs.ts',
       'src/shared/lib/vault-folder/tauri-vault-fs.test.ts',
@@ -923,10 +923,10 @@ describe('focused check suggestions', () => {
     ]);
 
     assert.deepEqual(domainCommands(result), [
-      'pnpm exec node --test scripts/check-desktop-readiness.test.mjs',
-      'pnpm exec node --test scripts/desktop-doctor.test.mjs',
-      'pnpm exec node --test scripts/desktop-smoke.test.mjs',
-      'pnpm exec node --test scripts/verify-macos-install-smoke.test.mjs',
+      'pnpm exec node --test scripts/desktop/check-desktop-readiness.test.mjs',
+      'pnpm exec node --test scripts/desktop/desktop-doctor.test.mjs',
+      'pnpm exec node --test scripts/desktop/desktop-smoke.test.mjs',
+      'pnpm exec node --test scripts/verify-macos/verify-macos-install-smoke.test.mjs',
       'pnpm exec node --test scripts/lib/macos-artifact/macos-dmg-layout.test.mjs',
       'pnpm exec node --test scripts/lib/desktop-release/redact-command.test.mjs',
       'pnpm exec eslint --max-warnings 0 src/shared/lib/vault-folder/tauri-vault-fs.ts src/shared/lib/vault-folder/tauri-vault-fs.test.ts ' +
@@ -956,8 +956,8 @@ describe('focused check suggestions', () => {
       'pnpm exec playwright test tests/e2e/scroll-end-gap.spec.ts',
     ]);
     assert.deepEqual(result.commands[0].paths, [
-      'scripts/check-desktop-readiness.mjs',
-      'scripts/check-desktop-readiness.test.mjs',
+      'scripts/desktop/check-desktop-readiness.mjs',
+      'scripts/desktop/check-desktop-readiness.test.mjs',
     ]);
   });
 
@@ -1054,17 +1054,17 @@ describe('focused check suggestions', () => {
 
   it('suggests ontology design guard checks when the design surface guard changes', () => {
     const result = suggestFocusedChecks([
-      'scripts/check-ontology-design-surface.mjs',
-      'scripts/check-ontology-design-surface.test.mjs',
+      'scripts/design/check-ontology-design-surface.mjs',
+      'scripts/design/check-ontology-design-surface.test.mjs',
     ]);
 
     assert.deepEqual(domainCommands(result), [
-      'pnpm exec node --test scripts/check-ontology-design-surface.test.mjs',
+      'pnpm exec node --test scripts/design/check-ontology-design-surface.test.mjs',
       'pnpm design:ontology',
     ]);
     assert.deepEqual(result.commands[0].paths, [
-      'scripts/check-ontology-design-surface.mjs',
-      'scripts/check-ontology-design-surface.test.mjs',
+      'scripts/design/check-ontology-design-surface.mjs',
+      'scripts/design/check-ontology-design-surface.test.mjs',
     ]);
   });
 
@@ -1148,11 +1148,11 @@ describe('focused check suggestions', () => {
       'src/i18n/navigation.ts',
       'messages/en.json',
       'messages/ko.json',
-      'scripts/validate-messages.test.mjs',
+      'scripts/i18n/validate-messages.test.mjs',
     ]);
 
     assert.deepEqual(domainCommands(result), [
-      'pnpm exec node --test scripts/validate-messages.test.mjs',
+      'pnpm exec node --test scripts/i18n/validate-messages.test.mjs',
       'pnpm exec eslint --max-warnings 0 src/i18n/routing.ts src/i18n/request.ts src/i18n/navigation.ts',
       'pnpm typecheck',
       'pnpm test:desktop:check',
@@ -1418,22 +1418,22 @@ describe('focused check suggestions', () => {
 
   it('suggests focused benchmark and onboarding smoke checks', () => {
     const result = suggestFocusedChecks([
-      'scripts/benchmark.mjs',
-      'scripts/benchmark-change-flow.mjs',
-      'scripts/benchmark-scale.mjs',
-      'scripts/perf-vault.mjs',
-      'scripts/perf-graph.mjs',
-      'scripts/smoke-clean-onboarding.mjs',
-      'scripts/smoke-memory-loop.mjs',
+      'scripts/benchmark/benchmark.mjs',
+      'scripts/benchmark/benchmark-change-flow.mjs',
+      'scripts/benchmark/benchmark-scale.mjs',
+      'scripts/perf/perf-vault.mjs',
+      'scripts/perf/perf-graph.mjs',
+      'scripts/dogfood/smoke-clean-onboarding.mjs',
+      'scripts/dogfood/smoke-memory-loop.mjs',
     ]);
 
     assert.deepEqual(domainCommands(result), [
-      'pnpm exec node --test scripts/benchmark-change-flow.test.mjs',
+      'pnpm exec node --test scripts/benchmark/benchmark-change-flow.test.mjs',
       'pnpm benchmark --dry-run',
       'pnpm benchmark:change-flow --dry-run',
       'pnpm benchmark:scale --dry-run',
-      'node scripts/perf-vault.mjs 10',
-      'node --test scripts/perf-graph.test.mjs',
+      'node scripts/perf/perf-vault.mjs 10',
+      'node --test scripts/perf/perf-graph.test.mjs',
       'pnpm perf:graph:check',
       'pnpm perf:graph:scale',
       'pnpm smoke:onboarding',
@@ -1476,7 +1476,7 @@ describe('focused check suggestions', () => {
     const result = suggestFocusedChecks([
       'cli/src/commands/mcp-verify.mjs',
       'mcp/scripts/verify.mjs',
-      'scripts/smoke-packed-cli.mjs',
+      'scripts/packaging/smoke-packed-cli.mjs',
     ]);
 
     assert.deepEqual(domainCommands(result), [
@@ -1642,12 +1642,12 @@ describe('focused check suggestions', () => {
   it('suggests the advisor self-test when the focused-check advisor changes', () => {
     const result = suggestFocusedChecks([
       'scripts/lib/ci/focused-check-suggestions.mjs',
-      'scripts/suggest-focused-checks.test.mjs',
+      'scripts/ci/suggest-focused-checks.test.mjs',
     ]);
 
     assert.deepEqual(domainCommands(result), [
       'pnpm exec node --test scripts/lib/ci/focused-check-suggestions.test.mjs',
-      'pnpm exec node --test scripts/suggest-focused-checks.test.mjs',
+      'pnpm exec node --test scripts/ci/suggest-focused-checks.test.mjs',
       'pnpm test:ci:impact',
       'pnpm test:checks:changed',
     ]);
@@ -1655,14 +1655,14 @@ describe('focused check suggestions', () => {
 
   it('routes every CI impact surface to its planner and executor contract', () => {
     const paths = [
-      'scripts/classify-change.mjs',
-      'scripts/classify-change.test.mjs',
-      'scripts/run-ci-lane.mjs',
-      'scripts/run-ci-lane.test.mjs',
+      'scripts/ci/classify-change.mjs',
+      'scripts/ci/classify-change.test.mjs',
+      'scripts/ci/run-ci-lane.mjs',
+      'scripts/ci/run-ci-lane.test.mjs',
       'scripts/lib/ci/focused-check-suggestions.mjs',
       'scripts/lib/ci/focused-check-suggestions.test.mjs',
-      'scripts/suggest-focused-checks.mjs',
-      'scripts/suggest-focused-checks.test.mjs',
+      'scripts/ci/suggest-focused-checks.mjs',
+      'scripts/ci/suggest-focused-checks.test.mjs',
       '.github/workflows/checks.yml',
       '.github/workflows/e2e.yml',
       '.github/actions/setup-playwright/action.yml',
@@ -1681,10 +1681,10 @@ describe('focused check suggestions', () => {
     const commands = ['pnpm test:po', 'pnpm po:pilot -- --check'];
     const paths = [
       'scripts/lib/records/po-risk-router.mjs',
-      'scripts/po-risk-router.mjs',
+      'scripts/records/po-risk-router.mjs',
       'scripts/lib/records/po-pilot.mjs',
-      'scripts/po-pilot.mjs',
-      'scripts/check-decision-record.mjs',
+      'scripts/records/po-pilot.mjs',
+      'scripts/records/check-decision-record.mjs',
       'tests/contract/po-route.contract.test.ts',
       'tests/contract/reviewer-wiring.contract.test.ts',
       'docs/PRODUCT-OWNER-OPERATING-SYSTEM.md',
@@ -1709,9 +1709,9 @@ describe('focused check suggestions', () => {
   it('routes every active design policy surface to the fact-derived proof contracts', () => {
     const paths = [
       'scripts/lib/design/design-proof-router.mjs',
-      'scripts/design-proof-router.mjs',
+      'scripts/design/design-proof-router.mjs',
       'scripts/lib/design/design-spec-census.mjs',
-      'scripts/check-decision-record.mjs',
+      'scripts/records/check-decision-record.mjs',
       'tests/contract/design-proof-router.contract.test.ts',
       'tests/contract/design-spec-ledger.contract.test.ts',
       'tests/contract/reviewer-wiring.contract.test.ts',
@@ -1736,25 +1736,25 @@ describe('focused check suggestions', () => {
 
   it('suggests docs contracts when the shared package contract test changes', () => {
     const result = suggestFocusedChecks([
-      'scripts/check-package-contracts.mjs',
-      'scripts/check-package-contracts.test.mjs',
+      'scripts/packaging/check-package-contracts.mjs',
+      'scripts/packaging/check-package-contracts.test.mjs',
     ]);
 
     assert.deepEqual(domainCommands(result), [
-      'pnpm exec node --test scripts/check-package-contracts.test.mjs',
+      'pnpm exec node --test scripts/packaging/check-package-contracts.test.mjs',
       'pnpm test:mcp:package',
       'pnpm test:mcp:docs',
     ]);
     assert.deepEqual(result.commands[0].paths, [
-      'scripts/check-package-contracts.mjs',
-      'scripts/check-package-contracts.test.mjs',
+      'scripts/packaging/check-package-contracts.mjs',
+      'scripts/packaging/check-package-contracts.test.mjs',
     ]);
   });
 
   it('formats no-change and mapped suggestions for terminal use', () => {
     assert.match(formatFocusedCheckSuggestions(suggestFocusedChecks([])), /no changed paths/);
 
-    const output = formatFocusedCheckSuggestions(suggestFocusedChecks(['scripts/dogfood-status.mjs']));
+    const output = formatFocusedCheckSuggestions(suggestFocusedChecks(['scripts/dogfood/dogfood-status.mjs']));
     assert.match(output, /\[focused-checks\] 1 changed path/);
     assert.match(output, /pnpm test:dogfood:status/);
     assert.match(output, /pnpm test:mcp:maintenance/);
@@ -1826,7 +1826,7 @@ describe('focused check suggestions', () => {
         (s) => s.command === 'pnpm typecheck',
       );
     assert.ok(!typecheck('docs/DECISIONS.md'));
-    assert.ok(!typecheck('scripts/build-docs-vault.mjs'));
+    assert.ok(!typecheck('scripts/docs-vault/build-docs-vault.mjs'));
   });
 
   /**
@@ -2084,18 +2084,18 @@ describe('node tests for a changed script', () => {
     const markdown = commandsFor(['scripts/quality/markdown-language/inventory.mjs']);
     assert.ok(markdown.includes('pnpm exec node --test scripts/quality/markdown-language/inventory.test.mjs'));
     assert.ok(!markdown.includes('pnpm exec node --test scripts/quality/source-language/inventory.test.mjs'));
-    assert.ok(commandsFor(['scripts/lib/design/ui-audit-checks.mjs']).includes('pnpm exec node --test scripts/ui-audit.test.mjs'));
+    assert.ok(commandsFor(['scripts/lib/design/ui-audit-checks.mjs']).includes('pnpm exec node --test scripts/design/ui-audit.test.mjs'));
   });
 
   it('lists a command once even when two rules reach it', () => {
-    const commands = commandsFor(['scripts/lib/ci/focused-check-suggestions.mjs', 'scripts/suggest-focused-checks.mjs']);
+    const commands = commandsFor(['scripts/lib/ci/focused-check-suggestions.mjs', 'scripts/ci/suggest-focused-checks.mjs']);
     assert.equal(commands.length, new Set(commands).size);
   });
 });
 
 describe('files changed only in comments', () => {
   it('keep their lint and language checks but run none of their tests', () => {
-    const paths = ['tests/e2e/map-viewport-reframe.spec.ts', 'src/widgets/ontology-map/interaction/free-area.ts', 'scripts/review-facts.mjs'];
+    const paths = ['tests/e2e/map-viewport-reframe.spec.ts', 'src/widgets/ontology-map/interaction/free-area.ts', 'scripts/harness/review-facts.mjs'];
     const all = suggestFocusedChecks(paths).commands.map((item) => item.command);
     const skipped = suggestFocusedChecks(paths, { commentOnlyPaths: paths }).commands.map((item) => item.command);
     const tests = (commands) => commands.filter((command) => /playwright test|vitest related|node --test/.test(command));

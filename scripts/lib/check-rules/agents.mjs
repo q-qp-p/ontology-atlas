@@ -20,7 +20,7 @@ export const rules = [
       /^\.codex\/hooks\/.+\.sh$/,
       /^\.githooks\/(?:commit-msg|commit-msg-language\.mjs)$/,
       /^\.gitignore$/,
-      /^scripts\/claude-hooks\.test\.mjs$/,
+      /^scripts\/harness\/claude-hooks\.test\.mjs$/,
     ],
   },
   {
@@ -74,8 +74,8 @@ export const rules = [
     command: 'pnpm test:po',
     reason: 'Atlas outcome routing, reviewer lenses, or measured pilot contract changed',
     matches: [
-      /^scripts\/(?:lib\/records\/po-(?:risk-router|pilot)|po-(?:risk-router|pilot))\.mjs$/,
-      /^scripts\/check-decision-record\.mjs$/,
+      /^scripts\/(?:lib\/)?records\/po-(?:risk-router|pilot)\.mjs$/,
+      /^scripts\/records\/check-decision-record\.mjs$/,
       /^tests\/contract\/(?:po-route|reviewer-wiring)\.contract\.test\.ts$/,
       /^docs\/(?:PRODUCT-OWNER-OPERATING-SYSTEM|PO-PILOT)\.md$/,
       /^docs\/records\/po-(?:runs|updates|policy)\//,
@@ -91,8 +91,8 @@ export const rules = [
     command: 'pnpm po:pilot -- --check',
     reason: 'Atlas PO pilot policy or register changed — validate metrics and the forced sunset',
     matches: [
-      /^scripts\/(?:lib\/records\/po-(?:risk-router|pilot)|po-(?:risk-router|pilot))\.mjs$/,
-      /^scripts\/check-decision-record\.mjs$/,
+      /^scripts\/(?:lib\/)?records\/po-(?:risk-router|pilot)\.mjs$/,
+      /^scripts\/records\/check-decision-record\.mjs$/,
       /^tests\/contract\/(?:po-route|reviewer-wiring)\.contract\.test\.ts$/,
       /^docs\/(?:PRODUCT-OWNER-OPERATING-SYSTEM|PO-PILOT)\.md$/,
       /^docs\/records\/po-(?:runs|updates|policy)\//,
@@ -107,6 +107,6 @@ export const rules = [
     order: 700,
     command: 'pnpm test:skills:audit',
     reason: 'Claude skill integrity instrument changed',
-    matches: [/^scripts\/audit-claude-skills\.(?:mjs|test\.mjs)$/],
+    matches: [/^scripts\/harness\/audit-claude-skills\.(?:mjs|test\.mjs)$/],
   },
 ];

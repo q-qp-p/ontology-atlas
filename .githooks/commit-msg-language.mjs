@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Subject-shape and language checks for `.githooks/commit-msg`. They live in this
 // file so
-// `scripts/claude-hooks.test.mjs` can call the decision directly instead of
+// `scripts/harness/claude-hooks.test.mjs` can call the decision directly instead of
 // spawning a shell, and so the pattern sits beside its tests.
 //
 // The character classes match `agent-language` in `cli/src/lib/agent-files.mjs`:

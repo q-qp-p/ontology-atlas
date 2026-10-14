@@ -28,7 +28,7 @@ function git(args: string[], cwd: string): string {
 }
 
 /**
- * Same resolution as `scripts/check-decision-record.mjs`: `DECISION_BASE_REF` when CI
+ * Same resolution as `scripts/records/check-decision-record.mjs`: `DECISION_BASE_REF` when CI
  * supplies one, then the merge base with `origin/main`, then with `main`.
  */
 export function resolveRatchetBase(cwd = process.cwd(), env = process.env): string | null {

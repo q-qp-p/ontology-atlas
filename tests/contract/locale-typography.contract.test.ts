@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { listLocales } from '../../scripts/build-messages.mjs';
-import { checkEntry, checkLocale, TYPOGRAPHY_RULES } from '../../scripts/check-translation-coverage.mjs';
+import { listLocales } from '../../scripts/i18n/build-messages.mjs';
+import { checkEntry, checkLocale, TYPOGRAPHY_RULES } from '../../scripts/i18n/check-translation-coverage.mjs';
 
 const NO_RULES = ['en', 'ko'];
 const locales = listLocales();

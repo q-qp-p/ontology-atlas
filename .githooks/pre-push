@@ -76,7 +76,7 @@ trap "rm -rf '$TMP'" EXIT INT TERM
 
 MERGE_BASE=$(git merge-base "$BASE_REF" HEAD)
 node scripts/lib/prepush/fast-checks.mjs "--base=$MERGE_BASE" "--output=$TMP"
-UNIT_COMMAND=$(node scripts/prepush-unit-plan.mjs "--base=$MERGE_BASE")
+UNIT_COMMAND=$(node scripts/ci/prepush-unit-plan.mjs "--base=$MERGE_BASE")
 
 lane_names=""
 lane_count=0
@@ -110,7 +110,7 @@ APP='^src/|^app/'
 DOCS='^docs/|^[A-Z0-9_-]+\.md$|^\.claude/|^\.agents/'
 
 # Materialize once before parallel readers; derived output is never staged.
-if touched '^docs/|^samples/storefront/|^scripts/(build-docs-vault|lib/(record-ledgers|po-pilot-records|parse-frontmatter))'; then
+if touched '^docs/|^samples/storefront/|^scripts/(docs-vault/build-docs-vault|lib/(records/record-ledgers|records/po-pilot-records|parse-frontmatter))'; then
   pnpm docs-vault:build || exit 1
 fi
 
@@ -142,7 +142,7 @@ if [ -n "$UNIT_COMMAND" ] && [ "$UNIT_COMMAND" != ':' ]; then
     lane unit "$UNIT_COMMAND"
   fi
 fi
-touched '^messages/|^scripts/validate-messages' && lane i18n 'pnpm test:i18n:messages'
+touched '^messages/|^scripts/i18n/validate-messages' && lane i18n 'pnpm test:i18n:messages'
 # The lane selector covers agents:check's full subject set: `.codex/**` (the
 # hook/config mirror and the MCP-grant denominator via .codex/config.toml),
 # `.mcp.json` (the other grant denominator), and every nested AGENTS.md (an
@@ -153,9 +153,9 @@ touched '^messages/|^scripts/validate-messages' && lane i18n 'pnpm test:i18n:mes
 touched '^AGENTS\.md$|^CLAUDE\.md$|^\.claude/|^\.agents/|^\.codex/|^\.mcp\.json$|(^|/)AGENTS\.md$' && lane agents 'pnpm agents:check'
 touched "$DOCS" '^src/entities/docs-vault/data/' && lane docs 'pnpm docs:language && pnpm docs:links'
 # The gateway shows one vault file verbatim; the committed copy must match the vault.
-touched '^docs/ontology/' '^scripts/generate-evidence-specimen' '^src/views/download/model/evidence-specimen' && lane specimen 'pnpm gateway:specimen:check'
+touched '^docs/ontology/' '^scripts/download/generate-evidence-specimen' '^src/views/download/model/evidence-specimen' && lane specimen 'pnpm gateway:specimen:check'
 touched '^mcp/|^cli/' && lane mcp 'pnpm docs:surface:check'
-touched '^(mcp/)?(package\.json|pnpm-lock\.yaml)$' '^src-tauri/Cargo\.(toml|lock)$' '^scripts/(check-licenses|build-notice)' '^scripts/lib/licenses/(license-policy|third-party-|attribution-marker)' '^scripts/data/license-exceptions\.json$' '^NOTICE\.md$' '^public/third-party-licenses\.txt$' && lane licenses 'pnpm licenses:check && pnpm notice:check'
+touched '^(mcp/)?(package\.json|pnpm-lock\.yaml)$' '^src-tauri/Cargo\.(toml|lock)$' '^scripts/licenses/(check-licenses|build-notice)' '^scripts/lib/licenses/(license-policy|third-party-|attribution-marker)' '^scripts/data/license-exceptions\.json$' '^NOTICE\.md$' '^public/third-party-licenses\.txt$' && lane licenses 'pnpm licenses:check && pnpm notice:check'
 # The design system's table of contents is generated from its own headings, and only this file
 # can move it. It was missing here: a section added on 2026-08-28 shipped with a stale contents
 # list through thirteen green lanes, because `docs:check` runs this check and the docs lane
@@ -174,7 +174,7 @@ if [ "$SOURCE_CHANGED" != "no" ] || touched '^scripts/quality/source-language/|^
 fi
 # A citation can break when its source or its Markdown target changes.
 if [ "$SOURCE_CHANGED" != "no" ] || touched '\.md$'; then
-  lane comment_refs 'node scripts/check-comment-refs.mjs'
+  lane comment_refs 'node scripts/docs/check-comment-refs.mjs'
 fi
 # Full contract and Knip evidence is owned by the impact-planned PR CI.
 lane decisions 'pnpm decisions:check'

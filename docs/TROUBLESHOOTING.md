@@ -85,7 +85,7 @@ Fix: `git stash` or `git commit` your work, then re-run. Or override with `--for
 
 ### `pnpm dogfood:walk` fails with `Vault path does not exist`
 
-The walk runs against `docs/ontology/` by default. If you renamed/moved that folder, update `scripts/dogfood-mcp-walk.mjs` (the `VAULT` constant near the top).
+The walk runs against `docs/ontology/` by default. If you renamed/moved that folder, update `scripts/dogfood/dogfood-mcp-walk.mjs` (the `VAULT` constant near the top).
 
 ---
 

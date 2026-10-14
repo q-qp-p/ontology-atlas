@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { MASCOT_PALETTE } from '../../scripts/build-brand-assets.mjs';
+import { MASCOT_PALETTE } from '../../scripts/brand/build-brand-assets.mjs';
 
 const ROOT = process.cwd();
 const APP_SOURCE_ROOTS = ['app', 'src'] as const;
@@ -51,7 +51,7 @@ describe('mascot palette boundary', () => {
     ).toEqual(['app/globals.css: #65bde9']);
     expect(
       mascotPaletteLeaks([
-        { path: 'scripts/build-brand-assets.mjs', source: "signal: '#65BDE9'" },
+        { path: 'scripts/brand/build-brand-assets.mjs', source: "signal: '#65BDE9'" },
       ].filter(({ path: file }) => APP_SOURCE_ROOTS.some((root) => file.startsWith(`${root}/`)))),
     ).toEqual([]);
   });

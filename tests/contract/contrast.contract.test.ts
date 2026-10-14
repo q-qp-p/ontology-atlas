@@ -155,7 +155,7 @@ describe("인접 마크 — hue 로만 갈리는 설계를 잡는다", () => {
 });
 
 describe("계기가 스스로를 설명한다", () => {
-  const SOURCE = readFileSync(join(SRC_DIR, "contrast.mjs"), "utf8");
+  const SOURCE = readFileSync(join(SRC_DIR, "design", "contrast.mjs"), "utf8");
 
   it("알파 합성이 계산에서 빠지지 않는다", () => {
     /*

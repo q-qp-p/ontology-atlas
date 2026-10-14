@@ -1,0 +1,214 @@
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { describe, it } from "node:test";
+import { fileURLToPath } from "node:url";
+
+import {
+  parseValidateVaultArgs,
+  validateVaultUsage,
+} from "./validate-vault.mjs";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT = join(__dirname, "../..");
+const SCRIPT = join(__dirname, "validate-vault.mjs");
+
+describe("validate-vault script arguments", () => {
+  it("parses help before resolving a vault path", () => {
+    assert.deepEqual(
+      parseValidateVaultArgs({
+        argv: ["node", "validate-vault.mjs", "--help"],
+        cwd: ROOT,
+      }),
+      { help: true },
+    );
+    assert.match(validateVaultUsage(), /Usage: node scripts\/vault\/validate-vault\.mjs \[vaultDir\]/);
+    assert.match(validateVaultUsage(), /Defaults to docs\/ontology/);
+  });
+
+  it("rejects unknown options before scanning the filesystem", () => {
+    assert.deepEqual(
+      parseValidateVaultArgs({
+        argv: ["node", "validate-vault.mjs", "--wat"],
+        cwd: ROOT,
+      }),
+      {
+        error: "Unknown option: --wat",
+        exitCode: 2,
+      },
+    );
+    assert.deepEqual(
+      parseValidateVaultArgs({
+        argv: ["node", "validate-vault.mjs", "--", "--wat"],
+        cwd: ROOT,
+      }),
+      {
+        error: "Unknown option: --wat",
+        exitCode: 2,
+      },
+    );
+  });
+
+  it("prints help without treating --help as a vault folder", () => {
+    const result = spawnSync(process.execPath, [SCRIPT, "--help"], {
+      cwd: ROOT,
+      encoding: "utf8",
+    });
+
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /Usage: node scripts\/vault\/validate-vault\.mjs \[vaultDir\]/);
+    assert.match(result.stdout, /-h, --help/);
+    assert.equal(result.stderr, "");
+  });
+
+  it("reports missing or non-directory vault paths without a stack trace", () => {
+    const missing = spawnSync(process.execPath, [SCRIPT, "./not-a-vault"], {
+      cwd: ROOT,
+      encoding: "utf8",
+    });
+
+    assert.equal(missing.status, 2);
+    assert.equal(missing.stdout, "");
+    assert.match(missing.stderr, /Vault path does not exist:/);
+    assert.doesNotMatch(missing.stderr, /at async/);
+
+    const dir = mkdtempSync(join(tmpdir(), "ontology-atlas-validate-vault-"));
+    const file = join(dir, "not-a-dir.md");
+    try {
+      writeFileSync(file, "---\nkind: project\n---\n");
+      const notDirectory = spawnSync(process.execPath, [SCRIPT, file], {
+        cwd: ROOT,
+        encoding: "utf8",
+      });
+
+      assert.equal(notDirectory.status, 2);
+      assert.equal(notDirectory.stdout, "");
+      assert.match(notDirectory.stderr, /Vault path is not a directory:/);
+      assert.doesNotMatch(notDirectory.stderr, /at async/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("does not read a Markdown file under sources/ as a vault document", () => {
+    const dir = mkdtempSync(join(tmpdir(), "ontology-atlas-validate-vault-sources-"));
+    try {
+      mkdirSync(join(dir, "sources"));
+      writeFileSync(join(dir, "sources", "roadmap.md"), "---\nkind: domain\ntitle: Roadmap\nelements\n---\n");
+      const result = spawnSync(process.execPath, [SCRIPT, dir], { cwd: ROOT, encoding: "utf8" });
+      assert.equal(result.status, 0, result.stdout);
+      assert.match(result.stdout, /0 files scanned/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("fails closed when frontmatter parser reports malformed lines", () => {
+    const dir = mkdtempSync(join(tmpdir(), "ontology-atlas-validate-vault-malformed-"));
+    const file = join(dir, "broken.md");
+    try {
+      writeFileSync(
+        file,
+        "---\n" +
+          "uid: 01890f3e-7b5d-4c0a-8f14-123456789abc\n" +
+          "kind: capability\n" +
+          "domain: domains/probe\n" +
+          "elements\n" +
+          "  - elements/orphan\n" +
+          "---\n",
+      );
+
+      const result = spawnSync(process.execPath, [SCRIPT, dir], {
+        cwd: ROOT,
+        encoding: "utf8",
+      });
+
+      assert.equal(result.status, 1);
+      assert.equal(
+        result.stdout.match(/\[malformed-frontmatter-line\]/g)?.length,
+        2,
+      );
+      assert.match(result.stdout, /error 1/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("fails closed when a scalar closes its quote before the end of the value", () => {
+    const dir = mkdtempSync(join(tmpdir(), "ontology-atlas-validate-vault-quoted-"));
+    const file = join(dir, "agents-destination.md");
+    try {
+      writeFileSync(
+        file,
+        "---\n" +
+          "uid: 981cd7f6-506a-4b2b-b62c-cd56896e81b0\n" +
+          "kind: element\n" +
+          "domain: domains/agent-integration\n" +
+          "title: Agents Destination\n" +
+          'display_ko: "에이전트" 목적지\n' +
+          "---\n",
+      );
+
+      const result = spawnSync(process.execPath, [SCRIPT, dir], {
+        cwd: ROOT,
+        encoding: "utf8",
+      });
+
+      assert.equal(result.status, 1);
+      assert.match(result.stdout, /\[malformed-quoted-scalar\]/);
+      assert.match(result.stdout, /display_ko: 에이전트 목적지/);
+      assert.match(result.stdout, /error 1/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("accepts a correctly quoted, unquoted or escaped scalar", () => {
+    const dir = mkdtempSync(join(tmpdir(), "ontology-atlas-validate-vault-quoted-ok-"));
+    try {
+      writeFileSync(
+        join(dir, "clean.md"),
+        "---\n" +
+          "uid: 981cd7f6-506a-4b2b-b62c-cd56896e81b0\n" +
+          "kind: element\n" +
+          "domain: domains/agent-integration\n" +
+          'title: "Agents Destination"\n' +
+          "display_ko: 에이전트 목적지\n" +
+          'display_en: "a \\"quoted\\" word"\n' +
+          "---\n",
+      );
+
+      const result = spawnSync(process.execPath, [SCRIPT, dir], {
+        cwd: ROOT,
+        encoding: "utf8",
+      });
+
+      assert.equal(result.status, 0);
+      assert.doesNotMatch(result.stdout, /malformed-quoted-scalar/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("does not let a keyless malformed block pass the zero-key fast path", () => {
+    const dir = mkdtempSync(join(tmpdir(), "ontology-atlas-validate-vault-keyless-"));
+    const file = join(dir, "broken.md");
+    try {
+      writeFileSync(file, "---\nmalformed declaration\n---\n");
+
+      const result = spawnSync(process.execPath, [SCRIPT, dir], {
+        cwd: ROOT,
+        encoding: "utf8",
+      });
+
+      assert.equal(result.status, 1);
+      assert.match(result.stdout, /\[malformed-frontmatter-line\]/);
+      assert.match(result.stdout, /\[parse-zero-keys\]/);
+      assert.match(result.stdout, /error 1/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});

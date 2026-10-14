@@ -56,7 +56,7 @@ describe('E2E impact planning precedes expensive setup', () => {
       );
     }
     const planner = stepBlock(changes, 'Build impact plan');
-    expect(planner).toContain('node scripts/classify-change.mjs');
+    expect(planner).toContain('node scripts/ci/classify-change.mjs');
     expect(planner).toContain('EVENT_NAME: ${{ github.event_name }}');
     expect(planner).toContain('BASE_REF: ${{ github.base_ref }}');
     // A merge group has no base branch ref, so the comparison falls back to the SHA GitHub provides for

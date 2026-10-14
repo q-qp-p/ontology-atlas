@@ -8,9 +8,9 @@ name: Vault freshness
 # the caller grants).
 #
 # What it checks (side effect 0 on the vault itself):
-#   1. `scripts/validate-vault.mjs` — frontmatter integrity (same check as
+#   1. `scripts/vault/validate-vault.mjs` — frontmatter integrity (same check as
 #      the local `pnpm vault:validate`).
-#   2. `scripts/vault-freshness-drift.mjs` — capability/element nodes whose
+#   2. `scripts/vault/vault-freshness-drift.mjs` — capability/element nodes whose
 #      referenced source changed in this PR but whose own `.md` did not.
 # Drift found → one PR comment (created once, then updated in place on every
 # push — never a new comment per push). Drift 0 → no comment, and any
@@ -73,11 +73,11 @@ jobs:
       # No `pnpm install` — both scripts below only import node builtins +
       # scripts/lib, so the whole job stays install-free and fast.
       - name: Validate vault frontmatter
-        run: node scripts/validate-vault.mjs "$VAULT_DIR"
+        run: node scripts/vault/validate-vault.mjs "$VAULT_DIR"
 
       - name: Compute vault freshness drift
         run: |
-          node scripts/vault-freshness-drift.mjs \
+          node scripts/vault/vault-freshness-drift.mjs \
             --vault "$VAULT_DIR" \
             --base "$BASE_SHA" \
             --head "$HEAD_SHA" \

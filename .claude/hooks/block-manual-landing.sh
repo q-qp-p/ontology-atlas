@@ -22,7 +22,7 @@
 #   one CI run per pull request, fired by `pnpm pr:land` after main is merged in.
 #
 # What is passed: `pnpm pr:land`, `pnpm pr:queue`, `pnpm pr:ci`, `node
-# scripts/pr-land.mjs`, `gh pr create --draft`, and everything else. Exits 0 with no
+# scripts/landing/pr-land.mjs`, `gh pr create --draft`, and everything else. Exits 0 with no
 # output.
 #
 # **If the user explicitly instructed**, the user runs it themselves in the terminal
@@ -83,7 +83,7 @@ for line in command.splitlines():
 # 2. Split into statements and drop the sanctioned lander. It never contains the
 #    refused strings, so this is the rule made explicit rather than a loophole.
 SANCTIONED = re.compile(
-    r"^(?:pnpm(?:\s+run)?\s+pr:(?:land|queue|ci)\b|node\s+scripts/pr-land\.mjs\b)"
+    r"^(?:pnpm(?:\s+run)?\s+pr:(?:land|queue|ci)\b|node\s+scripts/landing/pr-land\.mjs\b)"
 )
 statements = [
     statement.strip()

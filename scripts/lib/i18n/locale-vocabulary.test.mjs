@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { listLocales } from '../../build-messages.mjs';
+import { listLocales } from '../../i18n/build-messages.mjs';
 import {
   VOCABULARY,
   appliesTo,

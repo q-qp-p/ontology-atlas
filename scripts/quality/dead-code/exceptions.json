@@ -16,55 +16,55 @@
     {
       "key": "cli:runtime:exports:src/lib/relation-types.mjs:RELATION_TYPE_VALUES",
       "reason": "The package contract test compares CLI relation types against the MCP schema; the export is consumed outside its Knip scope, where the lane cannot see it.",
-      "consumer": "scripts/check-package-contracts.test.mjs",
+      "consumer": "scripts/packaging/check-package-contracts.test.mjs",
       "witness": "RELATION_TYPE_VALUES"
     },
     {
       "key": "cli:runtime:exports:src/lib/schema.mjs:generateNodeUid",
-      "reason": "The UID migration (scripts/migrate-node-uids.mjs inventory) mints node UIDs through the CLI's schema shim; the cli runtime lane cannot see that cross-scope consumer. Dropping the export broke pnpm test:vault:migrate on 2026-08-31.",
+      "reason": "The UID migration (scripts/vault/migrate-node-uids.mjs inventory) mints node UIDs through the CLI's schema shim; the cli runtime lane cannot see that cross-scope consumer. Dropping the export broke pnpm test:vault:migrate on 2026-08-31.",
       "consumer": "scripts/migrations/2026-08-02-add-node-uids.mjs",
       "witness": "generateNodeUid"
     },
     {
-      "key": "frontend:runtime:binaries:scripts/benchmark-change-flow.mjs:codex",
+      "key": "frontend:runtime:binaries:scripts/benchmark/benchmark-change-flow.mjs:codex",
       "reason": "Root package scripts expose the change-flow benchmark executable.",
-      "consumer": "scripts/benchmark-change-flow.mjs",
+      "consumer": "scripts/benchmark/benchmark-change-flow.mjs",
       "witness": "codex"
     },
     {
-      "key": "frontend:runtime:binaries:scripts/benchmark-grade.mjs:codex",
+      "key": "frontend:runtime:binaries:scripts/benchmark/benchmark-grade.mjs:codex",
       "reason": "The independent grader invokes the external Codex executable intentionally, so a second reader with no memory of this repository's conversation can score a saved packet.",
-      "consumer": "scripts/benchmark-grade.mjs",
+      "consumer": "scripts/benchmark/benchmark-grade.mjs",
       "witness": "codex"
     },
     {
-      "key": "frontend:runtime:binaries:scripts/benchmark-lifecycle.mjs:codex",
+      "key": "frontend:runtime:binaries:scripts/benchmark/benchmark-lifecycle.mjs:codex",
       "reason": "Root package scripts expose the lifecycle benchmark executable.",
-      "consumer": "scripts/benchmark-lifecycle.mjs",
+      "consumer": "scripts/benchmark/benchmark-lifecycle.mjs",
       "witness": "codex"
     },
     {
-      "key": "frontend:runtime:binaries:scripts/benchmark-scale.mjs:codex",
+      "key": "frontend:runtime:binaries:scripts/benchmark/benchmark-scale.mjs:codex",
       "reason": "Root package scripts expose the external benchmark executable.",
-      "consumer": "scripts/benchmark-scale.mjs",
+      "consumer": "scripts/benchmark/benchmark-scale.mjs",
       "witness": "codex"
     },
     {
-      "key": "frontend:runtime:binaries:scripts/benchmark.mjs:codex",
+      "key": "frontend:runtime:binaries:scripts/benchmark/benchmark.mjs:codex",
       "reason": "Root package scripts expose the external benchmark executable.",
-      "consumer": "scripts/benchmark.mjs",
+      "consumer": "scripts/benchmark/benchmark.mjs",
       "witness": "codex"
     },
     {
-      "key": "frontend:runtime:binaries:scripts/deploy-macos-app-local.mjs:pgrep",
+      "key": "frontend:runtime:binaries:scripts/desktop/deploy-macos-app-local.mjs:pgrep",
       "reason": "Root package scripts expose the macOS deployment process inspector.",
-      "consumer": "scripts/deploy-macos-app-local.mjs",
+      "consumer": "scripts/desktop/deploy-macos-app-local.mjs",
       "witness": "pgrep"
     },
     {
-      "key": "frontend:runtime:binaries:scripts/deploy-macos-app-local.mjs:pkill",
+      "key": "frontend:runtime:binaries:scripts/desktop/deploy-macos-app-local.mjs:pkill",
       "reason": "Root package scripts expose the macOS deployment process terminator.",
-      "consumer": "scripts/deploy-macos-app-local.mjs",
+      "consumer": "scripts/desktop/deploy-macos-app-local.mjs",
       "witness": "pkill"
     },
     {
@@ -76,7 +76,7 @@
     {
       "key": "frontend:runtime:dependencies:package.json:pretendard",
       "reason": "Pretendard is read directly as a raster-build asset rather than imported by the module graph.",
-      "consumer": "scripts/build-brand-raster.mjs",
+      "consumer": "scripts/brand/build-brand-raster.mjs",
       "witness": "node_modules/pretendard/dist/web/variable/woff2/PretendardVariable.woff2"
     },
     {
@@ -134,45 +134,45 @@
       "witness": "SCRIM_FADE_REDUCED"
     },
     {
-      "key": "frontend:verification:binaries:scripts/benchmark-change-flow.mjs:codex",
+      "key": "frontend:verification:binaries:scripts/benchmark/benchmark-change-flow.mjs:codex",
       "reason": "Knip follows root script declarations while the verification lane isolates test symbols.",
-      "consumer": "scripts/benchmark-change-flow.mjs",
+      "consumer": "scripts/benchmark/benchmark-change-flow.mjs",
       "witness": "codex"
     },
     {
-      "key": "frontend:verification:binaries:scripts/benchmark-grade.mjs:codex",
+      "key": "frontend:verification:binaries:scripts/benchmark/benchmark-grade.mjs:codex",
       "reason": "The independent grader invokes the external Codex executable intentionally, so a second reader with no memory of this repository's conversation can score a saved packet.",
-      "consumer": "scripts/benchmark-grade.mjs",
+      "consumer": "scripts/benchmark/benchmark-grade.mjs",
       "witness": "codex"
     },
     {
-      "key": "frontend:verification:binaries:scripts/benchmark-lifecycle.mjs:codex",
+      "key": "frontend:verification:binaries:scripts/benchmark/benchmark-lifecycle.mjs:codex",
       "reason": "Knip follows root script declarations while the verification lane isolates test symbols.",
-      "consumer": "scripts/benchmark-lifecycle.mjs",
+      "consumer": "scripts/benchmark/benchmark-lifecycle.mjs",
       "witness": "codex"
     },
     {
-      "key": "frontend:verification:binaries:scripts/benchmark-scale.mjs:codex",
+      "key": "frontend:verification:binaries:scripts/benchmark/benchmark-scale.mjs:codex",
       "reason": "Knip follows root script declarations while the verification lane isolates test symbols.",
-      "consumer": "scripts/benchmark-scale.mjs",
+      "consumer": "scripts/benchmark/benchmark-scale.mjs",
       "witness": "codex"
     },
     {
-      "key": "frontend:verification:binaries:scripts/benchmark.mjs:codex",
+      "key": "frontend:verification:binaries:scripts/benchmark/benchmark.mjs:codex",
       "reason": "Knip follows root script declarations while the verification lane isolates test symbols.",
-      "consumer": "scripts/benchmark.mjs",
+      "consumer": "scripts/benchmark/benchmark.mjs",
       "witness": "codex"
     },
     {
-      "key": "frontend:verification:binaries:scripts/deploy-macos-app-local.mjs:pgrep",
+      "key": "frontend:verification:binaries:scripts/desktop/deploy-macos-app-local.mjs:pgrep",
       "reason": "Knip follows root script declarations while the verification lane isolates test symbols.",
-      "consumer": "scripts/deploy-macos-app-local.mjs",
+      "consumer": "scripts/desktop/deploy-macos-app-local.mjs",
       "witness": "pgrep"
     },
     {
-      "key": "frontend:verification:binaries:scripts/deploy-macos-app-local.mjs:pkill",
+      "key": "frontend:verification:binaries:scripts/desktop/deploy-macos-app-local.mjs:pkill",
       "reason": "Knip follows root script declarations while the verification lane isolates test symbols.",
-      "consumer": "scripts/deploy-macos-app-local.mjs",
+      "consumer": "scripts/desktop/deploy-macos-app-local.mjs",
       "witness": "pkill"
     },
     {
@@ -196,7 +196,7 @@
     {
       "key": "mcp:runtime:exports:src/meaning-evaluation.mjs:candidateProposalFromAnalysis",
       "reason": "The meaning-corpus evaluator script builds candidate proposals with it; the export is consumed outside its Knip scope, where the lane cannot see it.",
-      "consumer": "scripts/evaluate-meaning-corpus.mjs",
+      "consumer": "scripts/benchmark/evaluate-meaning-corpus.mjs",
       "witness": "candidateProposalFromAnalysis"
     },
     {
@@ -232,7 +232,7 @@
     {
       "key": "mcp:runtime:exports:src/validate.mjs:KNOWN_VAULT_KINDS",
       "reason": "The vault validation script reads the known kinds; the export is consumed outside its Knip scope, where the lane cannot see it.",
-      "consumer": "scripts/validate-vault.mjs",
+      "consumer": "scripts/vault/validate-vault.mjs",
       "witness": "KNOWN_VAULT_KINDS"
     },
     {
@@ -272,45 +272,45 @@
       "witness": "src/wiki-report.mjs"
     },
     {
-      "key": "scripts:runtime:binaries:scripts/benchmark-change-flow.mjs:codex",
+      "key": "scripts:runtime:binaries:scripts/benchmark/benchmark-change-flow.mjs:codex",
       "reason": "Change-flow benchmark invokes the external Codex executable intentionally.",
-      "consumer": "scripts/benchmark-change-flow.mjs",
+      "consumer": "scripts/benchmark/benchmark-change-flow.mjs",
       "witness": "codex"
     },
     {
-      "key": "scripts:runtime:binaries:scripts/benchmark-grade.mjs:codex",
+      "key": "scripts:runtime:binaries:scripts/benchmark/benchmark-grade.mjs:codex",
       "reason": "The independent grader invokes the external Codex executable intentionally, so a second reader with no memory of this repository's conversation can score a saved packet.",
-      "consumer": "scripts/benchmark-grade.mjs",
+      "consumer": "scripts/benchmark/benchmark-grade.mjs",
       "witness": "codex"
     },
     {
-      "key": "scripts:runtime:binaries:scripts/benchmark-lifecycle.mjs:codex",
+      "key": "scripts:runtime:binaries:scripts/benchmark/benchmark-lifecycle.mjs:codex",
       "reason": "Lifecycle benchmark invokes the external Codex executable intentionally.",
-      "consumer": "scripts/benchmark-lifecycle.mjs",
+      "consumer": "scripts/benchmark/benchmark-lifecycle.mjs",
       "witness": "codex"
     },
     {
-      "key": "scripts:runtime:binaries:scripts/benchmark-scale.mjs:codex",
+      "key": "scripts:runtime:binaries:scripts/benchmark/benchmark-scale.mjs:codex",
       "reason": "Benchmark invokes the external Codex executable intentionally.",
-      "consumer": "scripts/benchmark-scale.mjs",
+      "consumer": "scripts/benchmark/benchmark-scale.mjs",
       "witness": "codex"
     },
     {
-      "key": "scripts:runtime:binaries:scripts/benchmark.mjs:codex",
+      "key": "scripts:runtime:binaries:scripts/benchmark/benchmark.mjs:codex",
       "reason": "Benchmark invokes the external Codex executable intentionally.",
-      "consumer": "scripts/benchmark.mjs",
+      "consumer": "scripts/benchmark/benchmark.mjs",
       "witness": "codex"
     },
     {
-      "key": "scripts:runtime:binaries:scripts/deploy-macos-app-local.mjs:pgrep",
+      "key": "scripts:runtime:binaries:scripts/desktop/deploy-macos-app-local.mjs:pgrep",
       "reason": "Local macOS deployment uses the system process inspector intentionally.",
-      "consumer": "scripts/deploy-macos-app-local.mjs",
+      "consumer": "scripts/desktop/deploy-macos-app-local.mjs",
       "witness": "pgrep"
     },
     {
-      "key": "scripts:runtime:binaries:scripts/deploy-macos-app-local.mjs:pkill",
+      "key": "scripts:runtime:binaries:scripts/desktop/deploy-macos-app-local.mjs:pkill",
       "reason": "Local macOS deployment uses the system process terminator intentionally.",
-      "consumer": "scripts/deploy-macos-app-local.mjs",
+      "consumer": "scripts/desktop/deploy-macos-app-local.mjs",
       "witness": "pkill"
     },
     {
@@ -358,56 +358,56 @@
     {
       "key": "scripts:runtime:exports:scripts/migrations/2026-08-02-add-node-uids.mjs:description",
       "reason": "The migration runner imports every migration module dynamically and lists its description.",
-      "consumer": "scripts/migrate-vault.mjs",
+      "consumer": "scripts/vault/migrate-vault.mjs",
       "witness": "mod.description"
     },
     {
       "key": "scripts:runtime:exports:scripts/migrations/2026-08-02-add-node-uids.mjs:id",
       "reason": "The migration runner imports every migration module dynamically and selects it by id.",
-      "consumer": "scripts/migrate-vault.mjs",
+      "consumer": "scripts/vault/migrate-vault.mjs",
       "witness": "mod.id"
     },
     {
-      "key": "scripts:runtime:files:scripts/install-brand-icons.mjs:scripts/install-brand-icons.mjs",
+      "key": "scripts:runtime:files:scripts/brand/install-brand-icons.mjs:scripts/brand/install-brand-icons.mjs",
       "reason": "Manual brand-raster installer is intentionally invoked from the brand asset procedure.",
       "consumer": "docs/design/brand.md",
-      "witness": "scripts/install-brand-icons.mjs"
+      "witness": "scripts/brand/install-brand-icons.mjs"
     },
     {
       "key": "scripts:runtime:files:scripts/lib/mcp-memory-probe.mjs:scripts/lib/mcp-memory-probe.mjs",
       "reason": "The memory check loads this test-only preload into the server with node --import by path, so no module imports it.",
-      "consumer": "scripts/perf-mcp-memory.mjs",
+      "consumer": "scripts/perf/perf-mcp-memory.mjs",
       "witness": "scripts/lib/mcp-memory-probe.mjs"
     },
     {
-      "key": "scripts:runtime:files:scripts/measure-a11y.mjs:scripts/measure-a11y.mjs",
+      "key": "scripts:runtime:files:scripts/design/measure-a11y.mjs:scripts/design/measure-a11y.mjs",
       "reason": "Manual axe census precedes a11y-ratchet baseline decisions.",
       "consumer": "docs/DEVELOPMENT-CHECKS.md",
-      "witness": "scripts/measure-a11y.mjs"
+      "witness": "scripts/design/measure-a11y.mjs"
     },
     {
-      "key": "scripts:runtime:files:scripts/measure-contrast.mjs:scripts/measure-contrast.mjs",
+      "key": "scripts:runtime:files:scripts/design/measure-contrast.mjs:scripts/design/measure-contrast.mjs",
       "reason": "Manual contrast instrument shares the CI contrast collector and has a documented design-check consumer.",
       "consumer": "docs/DEVELOPMENT-CHECKS.md",
-      "witness": "scripts/measure-contrast.mjs"
+      "witness": "scripts/design/measure-contrast.mjs"
     },
     {
-      "key": "scripts:runtime:files:scripts/measure-graph-readability.mjs:scripts/measure-graph-readability.mjs",
+      "key": "scripts:runtime:files:scripts/design/measure-graph-readability.mjs:scripts/design/measure-graph-readability.mjs",
       "reason": "Manual map-readability instrument is a documented graph design check.",
       "consumer": "docs/engineering/map-testability.md",
-      "witness": "scripts/measure-graph-readability.mjs"
+      "witness": "scripts/design/measure-graph-readability.mjs"
     },
     {
-      "key": "scripts:runtime:files:scripts/perf-node-drag.mjs:scripts/perf-node-drag.mjs",
+      "key": "scripts:runtime:files:scripts/perf/perf-node-drag.mjs:scripts/perf/perf-node-drag.mjs",
       "reason": "Manual drag-performance probe is consumed by the map-performance operating skill.",
       "consumer": ".agents/skills/ui-proof/guides/map-perf.md",
-      "witness": "scripts/perf-node-drag.mjs"
+      "witness": "scripts/perf/perf-node-drag.mjs"
     },
     {
-      "key": "scripts:runtime:files:scripts/perf-vault.mjs:scripts/perf-vault.mjs",
+      "key": "scripts:runtime:files:scripts/perf/perf-vault.mjs:scripts/perf/perf-vault.mjs",
       "reason": "Manual vault-performance probe is an explicit focused-check recommendation.",
       "consumer": "scripts/lib/check-rules/dogfood.mjs",
-      "witness": "scripts/perf-vault.mjs"
+      "witness": "scripts/perf/perf-vault.mjs"
     },
     {
       "key": "scripts:runtime:unresolved:scripts/lib/verify-macos/process-lock.mjs:/usr/libexec/PlistBuddy",
@@ -420,45 +420,45 @@
       ]
     },
     {
-      "key": "scripts:verification:binaries:scripts/benchmark-change-flow.mjs:codex",
+      "key": "scripts:verification:binaries:scripts/benchmark/benchmark-change-flow.mjs:codex",
       "reason": "Knip follows root script declarations while the verification lane isolates test symbols.",
-      "consumer": "scripts/benchmark-change-flow.mjs",
+      "consumer": "scripts/benchmark/benchmark-change-flow.mjs",
       "witness": "codex"
     },
     {
-      "key": "scripts:verification:binaries:scripts/benchmark-grade.mjs:codex",
+      "key": "scripts:verification:binaries:scripts/benchmark/benchmark-grade.mjs:codex",
       "reason": "The independent grader invokes the external Codex executable intentionally, so a second reader with no memory of this repository's conversation can score a saved packet.",
-      "consumer": "scripts/benchmark-grade.mjs",
+      "consumer": "scripts/benchmark/benchmark-grade.mjs",
       "witness": "codex"
     },
     {
-      "key": "scripts:verification:binaries:scripts/benchmark-lifecycle.mjs:codex",
+      "key": "scripts:verification:binaries:scripts/benchmark/benchmark-lifecycle.mjs:codex",
       "reason": "Knip follows root script declarations while the verification lane isolates test symbols.",
-      "consumer": "scripts/benchmark-lifecycle.mjs",
+      "consumer": "scripts/benchmark/benchmark-lifecycle.mjs",
       "witness": "codex"
     },
     {
-      "key": "scripts:verification:binaries:scripts/benchmark-scale.mjs:codex",
+      "key": "scripts:verification:binaries:scripts/benchmark/benchmark-scale.mjs:codex",
       "reason": "Knip follows root script declarations while the verification lane isolates test symbols.",
-      "consumer": "scripts/benchmark-scale.mjs",
+      "consumer": "scripts/benchmark/benchmark-scale.mjs",
       "witness": "codex"
     },
     {
-      "key": "scripts:verification:binaries:scripts/benchmark.mjs:codex",
+      "key": "scripts:verification:binaries:scripts/benchmark/benchmark.mjs:codex",
       "reason": "Knip follows root script declarations while the verification lane isolates test symbols.",
-      "consumer": "scripts/benchmark.mjs",
+      "consumer": "scripts/benchmark/benchmark.mjs",
       "witness": "codex"
     },
     {
-      "key": "scripts:verification:binaries:scripts/deploy-macos-app-local.mjs:pgrep",
+      "key": "scripts:verification:binaries:scripts/desktop/deploy-macos-app-local.mjs:pgrep",
       "reason": "Knip follows root script declarations while the verification lane isolates test symbols.",
-      "consumer": "scripts/deploy-macos-app-local.mjs",
+      "consumer": "scripts/desktop/deploy-macos-app-local.mjs",
       "witness": "pgrep"
     },
     {
-      "key": "scripts:verification:binaries:scripts/deploy-macos-app-local.mjs:pkill",
+      "key": "scripts:verification:binaries:scripts/desktop/deploy-macos-app-local.mjs:pkill",
       "reason": "Knip follows root script declarations while the verification lane isolates test symbols.",
-      "consumer": "scripts/deploy-macos-app-local.mjs",
+      "consumer": "scripts/desktop/deploy-macos-app-local.mjs",
       "witness": "pkill"
     }
   ]

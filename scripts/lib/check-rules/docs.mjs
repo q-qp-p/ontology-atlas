@@ -29,7 +29,7 @@ export const rules = [
     // The materialization test copies a hand-picked file set into a scratch repository, so a new
     // import in any of those files breaks it without touching the test.
     matches: [
-      /^scripts\/(?:build-docs-vault|build-messages|resolve-docs-vault-conflicts|prepare-worktree|new-record|worktree-materialization)\.(?:mjs|test\.mjs)$/,
+      /^scripts\/(?:docs-vault\/(?:build-docs-vault|resolve-docs-vault-conflicts)|i18n\/build-messages|prepare-worktree|records\/new-record|worktree-materialization)\.(?:mjs|test\.mjs)$/,
       /^\.githooks\/post-(?:checkout|merge)$/,
       /^scripts\/lib\/(?:records\/)?(?:record-ledgers|po-pilot-records|parse-frontmatter)\.(?:mjs|test\.mjs)$/,
     ],
@@ -70,7 +70,7 @@ export const rules = [
     matches: [
       /^docs\/guide\/[^/]+\.md$/,
       /^examples\/external-judgment\//,
-      /^scripts\/check-guide-frontmatter-examples\.test\.mjs$/,
+      /^scripts\/docs\/check-guide-frontmatter-examples\.test\.mjs$/,
     ],
   },
   {
@@ -97,9 +97,9 @@ export const rules = [
     command: 'pnpm test:docs:checks',
     reason: 'docs surface, doc-link, doc-metadata or doc-move tooling changed',
     matches: [
-      /^scripts\/build-docs-surface\.(?:mjs|test\.mjs)$/,
-      /^scripts\/check-doc-links\.(?:mjs|test\.mjs)$/,
-      /^scripts\/(?:check-doc-meta|docs-move|new-doc|doc-history)\.(?:mjs|test\.mjs)$/,
+      /^scripts\/docs\/build-docs-surface\.(?:mjs|test\.mjs)$/,
+      /^scripts\/docs\/check-doc-links\.(?:mjs|test\.mjs)$/,
+      /^scripts\/docs\/(?:check-doc-meta|docs-move|new-doc|doc-history)\.(?:mjs|test\.mjs)$/,
       /^scripts\/lib\/docs\/(?:docs-surface|doc-links|doc-types)\.mjs$/,
     ],
   },
@@ -127,7 +127,7 @@ export const rules = [
       /^docs\/ontology\//,
       /^mcp\/README\.md$/,
       /^cli\/README\.md$/,
-      /^scripts\/check-package-contracts\.test\.mjs$/,
+      /^scripts\/packaging\/check-package-contracts\.test\.mjs$/,
     ],
   },
   {
@@ -150,9 +150,9 @@ export const rules = [
 
 export const directTests = {
   script: [
-    ['scripts/build-docs-vault.mjs', 'scripts/build-docs-vault.test.mjs'],
-    ['scripts/build-docs-vault.test.mjs', 'scripts/build-docs-vault.test.mjs'],
-    ['scripts/resolve-docs-vault-conflicts.mjs', 'scripts/resolve-docs-vault-conflicts.test.mjs'],
-    ['scripts/resolve-docs-vault-conflicts.test.mjs', 'scripts/resolve-docs-vault-conflicts.test.mjs'],
+    ['scripts/docs-vault/build-docs-vault.mjs', 'scripts/docs-vault/build-docs-vault.test.mjs'],
+    ['scripts/docs-vault/build-docs-vault.test.mjs', 'scripts/docs-vault/build-docs-vault.test.mjs'],
+    ['scripts/docs-vault/resolve-docs-vault-conflicts.mjs', 'scripts/docs-vault/resolve-docs-vault-conflicts.test.mjs'],
+    ['scripts/docs-vault/resolve-docs-vault-conflicts.test.mjs', 'scripts/docs-vault/resolve-docs-vault-conflicts.test.mjs'],
   ],
 };

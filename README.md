@@ -134,7 +134,7 @@ implementation still require exhaustive CI.
 
 | Command | What it answers |
 |---|---|
-| `node scripts/run-playwright-ci.mjs --help` | Browser shard options, without discovering or running tests; unknown options fail before execution |
+| `node scripts/ci/run-playwright-ci.mjs --help` | Browser shard options, without discovering or running tests; unknown options fail before execution |
 | `pnpm agents:check` | Each harness's instruction files are valid; Codex and Claude files need not match |
 | `pnpm brief:new -- --slug=<slug> --owns=<path,...>` | A delegation brief with the port, scratch, checks and merge lines filled in |
 | `pnpm build:static` | The static export in `out/`, rebuilt only when a build input changed since the last build |

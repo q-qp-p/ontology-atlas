@@ -8,10 +8,10 @@ import {
   DESIGN_CHANGE_SIGNALS,
   routeDesignProof,
 } from '../../scripts/lib/design/design-proof-router.mjs';
-import { parseDesignRouteArgs } from '../../scripts/design-proof-router.mjs';
+import { parseDesignRouteArgs } from '../../scripts/design/design-proof-router.mjs';
 
 const ROOT = process.cwd();
-const CLI = 'scripts/design-proof-router.mjs';
+const CLI = 'scripts/design/design-proof-router.mjs';
 const read = (path: string) => readFileSync(join(ROOT, path), 'utf8');
 const proofNames = (changes: string[]) => routeDesignProof({ changes }).proofs.map((item) => item.name);
 
@@ -173,7 +173,7 @@ describe('Atlas design proof routing', () => {
 
   it('keeps the active policy reachable from the package entrypoint', () => {
     expect(JSON.parse(read('package.json')).scripts['design:route']).toBe(
-      'node scripts/design-proof-router.mjs',
+      'node scripts/design/design-proof-router.mjs',
     );
   });
 });

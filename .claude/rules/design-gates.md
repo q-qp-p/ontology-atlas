@@ -2,7 +2,7 @@
 paths:
   - "eslint.config.mjs"
   - "tests/contract/**"
-  - "scripts/check-*.mjs"
+  - "scripts/*/check-*.mjs"
   - "scripts/lib/design/design-spec-census.mjs"
   - ".claude/rules/design.md"
 ---

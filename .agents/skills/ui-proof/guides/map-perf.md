@@ -44,7 +44,7 @@ Implementation: the final effect in
 
 ```bash
 pnpm build && npx serve out -l 4173
-node scripts/perf-node-drag.mjs
+node scripts/perf/perf-node-drag.mjs
 ```
 
 Discard output unless the harness explicitly reports a successful node grab.

@@ -11,7 +11,7 @@ the vendor's design.
 | Source | [ACP Registry](https://cdn.agentclientprotocol.com/registry/v1/latest/registry.json) — assets published by the protocol organization **for client UIs** |
 | Acquisition Time | Once at build time (`pnpm acp:registry`). The app does not fetch images at runtime — per Trust Charter ① (runs offline) and ② (zero communication unless enabled by user) |
 | Modifications | None. Committed exactly as received |
-| Filtering | SVGs containing `<script>` or external `href` are excluded (`scripts/build-acp-registry.mjs`) |
+| Filtering | SVGs containing `<script>` or external `href` are excluded (`scripts/registry-snapshots/build-acp-registry.mjs`) |
 | Rendering Method | Used as a **mask** (`VendorMark`). Content inside the SVG is not drawn on screen; only the silhouette remains, so other companies' files cannot affect our UI |
 
 The registry rejects **filled-color SVGs** via registration rules — all of them are
@@ -23,7 +23,7 @@ monochrome with `fill="currentColor"`. Therefore, colors come separately below.
 |---|---|
 | Source | `hex` values from [simple-icons](https://github.com/simple-icons/simple-icons) `data/simple-icons.json` (CC0-1.0) |
 | What We Use | **Only the color value**. Path data is not used — the graphics are the vendor's own marks from the registry above |
-| Pairing | `BRAND_MARK` in `scripts/build-acp-registry.mjs` — **only manually verified pairs** are included |
+| Pairing | `BRAND_MARK` in `scripts/registry-snapshots/build-acp-registry.mjs` — **only manually verified pairs** are included |
 | If Missing | Rendered in grayscale (`--color-vendor-mark-ink`) |
 
 ### Why Not Automatic Pairing?

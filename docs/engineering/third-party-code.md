@@ -74,4 +74,4 @@ and one that excuses nothing fails the gate.
 8. Check the license of every asset taken from three.js `examples/` (models,
    textures, fonts, environment maps); many are not MIT. Ship one only under a
    permitted license, and name its source, license and holder in the
-   hand-written part of `NOTICE.md` (`PREAMBLE` in `scripts/build-notice.mjs`).
+   hand-written part of `NOTICE.md` (`PREAMBLE` in `scripts/licenses/build-notice.mjs`).

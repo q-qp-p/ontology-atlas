@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import { suggestFocusedChecks } from '../../scripts/lib/ci/focused-check-suggestions.mjs';
-import { FULL_LANE_COMMANDS } from '../../scripts/classify-change.mjs';
+import { FULL_LANE_COMMANDS } from '../../scripts/ci/classify-change.mjs';
 
 const PACKAGE = JSON.parse(readFileSync('package.json', 'utf8')) as {
   scripts: Record<string, string>;
@@ -76,7 +76,7 @@ describe('dead-code gate wiring', () => {
     expect(FULL_LANE_COMMANDS.unit.filter((command: string) => command === COMMAND)).toHaveLength(1);
     expect(unit.indexOf('pnpm install --frozen-lockfile')).toBeGreaterThanOrEqual(0);
     expect(unit.indexOf('pnpm --dir mcp install --frozen-lockfile')).toBeGreaterThanOrEqual(0);
-    expect(unit.indexOf('node scripts/run-ci-lane.mjs --lane=unit')).toBeGreaterThan(
+    expect(unit.indexOf('node scripts/ci/run-ci-lane.mjs --lane=unit')).toBeGreaterThan(
       unit.indexOf('pnpm --dir mcp install --frozen-lockfile'),
     );
     expect(gates).not.toContain('--lane=unit');

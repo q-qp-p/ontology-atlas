@@ -18,9 +18,9 @@ export const rules = [
     command: 'pnpm test:mcp:bundle && pnpm mcp:registry:check',
     reason: 'the MCP ecosystem channel changed — bundle build, container image, registry entry, or release upload',
     matches: [
-      /^scripts\/(?:build-mcp-bundle|build-server-json)\.mjs$/,
+      /^scripts\/packaging\/(?:build-mcp-bundle|build-server-json)\.mjs$/,
       /^scripts\/lib\/packaging\/mcp-bundle\.mjs$/,
-      /^scripts\/mcp-bundle\.test\.mjs$/,
+      /^scripts\/packaging\/mcp-bundle\.test\.mjs$/,
       /^mcp\/Dockerfile$/,
       /^mcp\/package\.json$/,
       /^\.github\/workflows\/release-macos\.yml$/,
@@ -37,7 +37,7 @@ export const rules = [
     command: 'pnpm mcp:catalogue:check',
     reason: 'the committed MCP connector catalogue or its generator changed',
     matches: [
-      /^scripts\/build-mcp-catalogue\.(?:mjs|test\.mjs)$/,
+      /^scripts\/registry-snapshots\/build-mcp-catalogue\.(?:mjs|test\.mjs)$/,
       /^src\/shared\/config\/mcp-catalogue(?:\.generated)?\.ts$/,
     ],
   },
@@ -125,7 +125,7 @@ export const escalations = [
     order: 20,
     command: 'pnpm dogfood:verify',
     reason: 'shared MCP/CLI verification surface changed',
-    matches: [/^mcp\//, /^cli\/src\/commands\/mcp-verify\.mjs$/, /^scripts\/smoke-packed-cli\.mjs$/],
+    matches: [/^mcp\//, /^cli\/src\/commands\/mcp-verify\.mjs$/, /^scripts\/packaging\/smoke-packed-cli\.mjs$/],
   },
 ];
 

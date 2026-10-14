@@ -57,7 +57,7 @@ Added on 2026-08-03. Until then, **there was no metric for whether the map was r
   (`quadraticCurveTo`). Connecting only endpoints and counting intersections **counts intersections not on screen
   and misses those on screen** — the number is produced, so this error is silent.
 - Edges touching folded subtrees are excluded. Same condition as the first gate in the draw loop.
-- Consumer: `scripts/measure-graph-readability.mjs`.
+- Consumer: `scripts/design/measure-graph-readability.mjs`.
 
 ### `interaction()` — Is what's being dragged a node or the background?
 
@@ -101,7 +101,7 @@ There have been cases where a chip was engraved with `+24` but only one was actu
 
 ```bash
 pnpm build && npx serve out -l 4173
-node scripts/perf-node-drag.mjs
+node scripts/perf/perf-node-drag.mjs
 ```
 
 If the output does not contain `node noise ✓`, discard that metric—the harness judges it itself.
@@ -109,8 +109,8 @@ If the output does not contain `node noise ✓`, discard that metric—the harne
 **Readability** (crossings · overlaps) is a separate harness and requires no real input, so it is headless:
 
 ```bash
-node scripts/serve-static-export.mjs --port=4173 &
-node scripts/measure-graph-readability.mjs
+node scripts/web/serve-static-export.mjs --port=4173 &
+node scripts/design/measure-graph-readability.mjs
 ```
 
 Because the batch is deterministic, two runs under the same conditions are **byte-for-byte identical** (empirically). Thus, this metric can be used for regression testing. Baseline as of 2026-08-03 (1512×900, after convergence):

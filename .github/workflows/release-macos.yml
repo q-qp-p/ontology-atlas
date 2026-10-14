@@ -248,7 +248,7 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$APPLE_KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
 
       # The updater key signs the archive repacked from the signed app, and only that stage
-      # receives it (scripts/build-macos-release-artifact.mjs).
+      # receives it (scripts/desktop-release/build-macos-release-artifact.mjs).
       - name: Sign and notarize release artifact
         run: pnpm desktop:release-artifact -- --phase=sign
         env:
@@ -282,7 +282,7 @@ jobs:
       # it, a crash report from this build names addresses and nothing else. A release that
       # silently lost its symbols looks exactly like one that kept them, so it fails here instead.
       - name: Stage release assets
-        run: node scripts/stage-macos-release-assets.mjs --arch="${TAURI_ARCH}" --require-dsym
+        run: node scripts/download/stage-macos-release-assets.mjs --arch="${TAURI_ARCH}" --require-dsym
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -363,7 +363,7 @@ jobs:
           }
 
       - name: Windows release contract tests
-        run: node --test scripts/lib/packaging/mcp-binary.test.mjs scripts/stage-windows-release-assets.test.mjs scripts/verify-mcp-binary.test.mjs
+        run: node --test scripts/lib/packaging/mcp-binary.test.mjs scripts/download/stage-windows-release-assets.test.mjs scripts/packaging/verify-mcp-binary.test.mjs
 
       - name: Desktop readiness
         run: pnpm desktop:check
@@ -439,7 +439,7 @@ jobs:
           $sidecar = Join-Path (Split-Path $app) 'ontology-atlas-mcp.exe'
           if (-not (Test-Path $sidecar)) { throw "The installed app is missing ontology-atlas-mcp.exe." }
           $vault = (Resolve-Path 'docs/ontology').Path
-          node scripts/verify-mcp-binary.mjs "--binary=$sidecar" "--vault=$vault"
+          node scripts/packaging/verify-mcp-binary.mjs "--binary=$sidecar" "--vault=$vault"
 
           $process = Start-Process $app -PassThru
           Start-Sleep -Seconds 10
@@ -450,7 +450,7 @@ jobs:
         shell: pwsh
         run: |
           $packageVersion = (Get-Content package.json | ConvertFrom-Json).version
-          node scripts/stage-windows-release-assets.mjs "--version=$packageVersion"
+          node scripts/download/stage-windows-release-assets.mjs "--version=$packageVersion"
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -564,7 +564,7 @@ jobs:
 
       - name: Build updater manifest
         run: |
-          node scripts/build-updater-manifest.mjs \
+          node scripts/desktop-release/build-updater-manifest.mjs \
             --dir=release-assets --out=release-assets/latest.json \
             --tag="${RELEASE_TAG}" --repo="${GITHUB_REPOSITORY}"
 

@@ -45,10 +45,10 @@ if [ -n "$added_composites" ]; then
   exit 1
 fi
 # Same measurement as the Docs Vault block below: the staged index, not the tree.
-if printf '%s\n' "$staged" | grep -qE '^(messages/|scripts/build-messages\.mjs$)'; then
+if printf '%s\n' "$staged" | grep -qE '^(messages/|scripts/i18n/build-messages\.mjs$)'; then
   messages_tree=$(mktemp -d)
-  git checkout-index --prefix="$messages_tree/" -- $(git ls-files -- 'messages/' 'scripts/build-messages.mjs')
-  if ! node "$messages_tree/scripts/build-messages.mjs" --validate; then
+  git checkout-index --prefix="$messages_tree/" -- $(git ls-files -- 'messages/' 'scripts/i18n/build-messages.mjs')
+  if ! node "$messages_tree/scripts/i18n/build-messages.mjs" --validate; then
     rm -rf "$messages_tree"
     echo ""
     echo "[pre-commit] staged message parts cannot be composed (measured on the index)."
@@ -59,7 +59,7 @@ if printf '%s\n' "$staged" | grep -qE '^(messages/|scripts/build-messages\.mjs$)
 fi
 
 # Generator/parser changes can invalidate every document even when no Markdown changed.
-if ! printf '%s\n' "$staged" | grep -vE '^docs/records/lessons/' | grep -qE '^(docs/.*\.md|docs/records/.*\.json|samples/storefront/.*\.md|scripts/build-docs-vault\.mjs|scripts/lib/(parse-frontmatter|records/record-ledgers|records/po-pilot-records)\.mjs)'; then
+if ! printf '%s\n' "$staged" | grep -vE '^docs/records/lessons/' | grep -qE '^(docs/.*\.md|docs/records/.*\.json|samples/storefront/.*\.md|scripts/docs-vault/build-docs-vault\.mjs|scripts/lib/(parse-frontmatter|records/record-ledgers|records/po-pilot-records)\.mjs)'; then
   exit 0
 fi
 
@@ -79,7 +79,7 @@ GIT_DIR=$(git rev-parse --absolute-git-dir)
 GIT_WORK_TREE=$staging_tree
 export GIT_DIR GIT_WORK_TREE
 
-if ! out=$(cd "$staging_tree" && node scripts/build-docs-vault.mjs 2>&1); then
+if ! out=$(cd "$staging_tree" && node scripts/docs-vault/build-docs-vault.mjs 2>&1); then
   printf '%s\n' "$out"
   echo ""
   echo "[pre-commit] staged Docs Vault sources cannot be generated."

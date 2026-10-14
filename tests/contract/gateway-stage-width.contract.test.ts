@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
 import { describe, expect, it } from "vitest";
-import { collectTokens } from '../../scripts/design-tokens.mjs';
+import { collectTokens } from '../../scripts/design/design-tokens.mjs';
 import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**

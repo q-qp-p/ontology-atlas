@@ -93,7 +93,7 @@ describe("pnpm script reference helpers", () => {
   });
 
   it("reports missing package scripts", () => {
-    const scripts = { "dogfood:help": "node scripts/dogfood-mcp-walk.mjs --help" };
+    const scripts = { "dogfood:help": "node scripts/dogfood/dogfood-mcp-walk.mjs --help" };
 
     assert.deepEqual(missingPnpmScripts("pnpm dogfood:help\npnpm dogfood:missing", scripts), [
       "dogfood:missing",

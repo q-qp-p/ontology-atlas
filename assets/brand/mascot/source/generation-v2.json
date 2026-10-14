@@ -1,6 +1,6 @@
 {
   "created": "2026-10-03",
-  "method": "Built-in image_gen with the owner's cartographer robot, pixel asset sheet and brand kit references; native-grid registration by scripts/build-traveler-sprites.mjs.",
+  "method": "Built-in image_gen with the owner's cartographer robot, pixel asset sheet and brand kit references; native-grid registration by scripts/brand/build-traveler-sprites.mjs.",
   "reference": [
     "별빛 지도 제작자 로봇-3 (1).png",
     "온톨로지 아틀라스 픽셀 에셋 시트-2 (1).png",

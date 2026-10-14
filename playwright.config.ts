@@ -84,7 +84,7 @@ export default defineConfig({
     // serve the built static export: some specs measure layers absent in dev, e.g. same-route
     // navigation that only fails in production.
     command: servesStaticExport
-      ? `node scripts/serve-static-export.mjs --port=${webServerPort}`
+      ? `node scripts/web/serve-static-export.mjs --port=${webServerPort}`
       : `pnpm dev -p ${webServerPort}`,
     url: webServerOrigin,
     reuseExistingServer: !process.env.CI && !servesStaticExport,

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { inflateSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { MASCOT_MOTION_ROWS } from '../../scripts/build-brand-assets.mjs';
+import { MASCOT_MOTION_ROWS } from '../../scripts/brand/build-brand-assets.mjs';
 import { MASCOT_WALK_MS } from '../../src/features/agent-activity/ui/AgentMascotPresence';
 import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 

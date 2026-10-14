@@ -26,7 +26,7 @@ describe('installed-app updater feed', () => {
     expect(packageJson.scripts?.['desktop:stage-hosted-updater']).toContain(
       'out/update/latest.json',
     );
-    expect(read('scripts/check-hosted-download-surface.mjs')).toContain(
+    expect(read('scripts/download/check-hosted-download-surface.mjs')).toContain(
       '/update/latest.json',
     );
   });

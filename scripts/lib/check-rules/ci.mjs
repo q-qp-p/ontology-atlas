@@ -6,19 +6,19 @@
  * rule files here are planner surface too.
  */
 export const BROWSER_EXECUTION_SURFACE_PATTERNS = Object.freeze([
-  /^scripts\/run-playwright-ci(?:\.test)?\.mjs$/,
+  /^scripts\/ci\/run-playwright-ci(?:\.test)?\.mjs$/,
   /^scripts\/data\/playwright-file-durations\.json$/,
 ]);
 
 export const CI_PLANNER_SURFACE_PATTERNS = Object.freeze([
-  /^scripts\/(?:lib\/ci\/)?reviewed-main-push(?:\.test)?\.mjs$/,
+  /^scripts\/(?:lib\/)?ci\/reviewed-main-push(?:\.test)?\.mjs$/,
   /^scripts\/fixtures\/reviewed-main-push\.json$/,
-  /^scripts\/classify-change(?:\.test)?\.mjs$/,
-  /^scripts\/run-ci-lane(?:\.test)?\.mjs$/,
+  /^scripts\/ci\/classify-change(?:\.test)?\.mjs$/,
+  /^scripts\/ci\/run-ci-lane(?:\.test)?\.mjs$/,
   /^scripts\/lib\/ci\/focused-check-suggestions(?:\.test)?\.mjs$/,
   /^scripts\/lib\/check-rules\//,
   /^scripts\/lib\/import-graph\//,
-  /^scripts\/suggest-focused-checks(?:\.test)?\.mjs$/,
+  /^scripts\/ci\/suggest-focused-checks(?:\.test)?\.mjs$/,
   /^\.github\/workflows\/(?:checks|e2e)\.yml$/,
   /^\.github\/actions\/setup-playwright\/action\.yml$/,
 ]);
@@ -26,17 +26,17 @@ export const CI_PLANNER_SURFACE_PATTERNS = Object.freeze([
 export const rules = [
   {
     order: 50,
-    command: 'node --test scripts/run-playwright-ci.test.mjs',
+    command: 'node --test scripts/ci/run-playwright-ci.test.mjs',
     reason: 'browser file allocation, coverage verification, or timing estimates changed',
-    matches: [/^scripts\/run-playwright-ci(?:\.test)?\.mjs$/, /^scripts\/data\/playwright-file-durations\.json$/, /^scripts\/refresh-playwright-durations\.mjs$/, /^scripts\/run-ci-lane(?:\.test)?\.mjs$/],
+    matches: [/^scripts\/ci\/run-playwright-ci(?:\.test)?\.mjs$/, /^scripts\/data\/playwright-file-durations\.json$/, /^scripts\/ci\/refresh-playwright-durations\.mjs$/, /^scripts\/ci\/run-ci-lane(?:\.test)?\.mjs$/],
   },
   {
     order: 55,
-    command: 'node --test scripts/gate-yield.test.mjs',
+    command: 'node --test scripts/ci/gate-yield.test.mjs',
     reason: 'the CI gate-yield report or its aggregation changed',
-    matches: [/^scripts\/gate-yield(?:\.test)?\.mjs$/],
+    matches: [/^scripts\/ci\/gate-yield(?:\.test)?\.mjs$/],
   },
-  { order: 60, command: 'node --test scripts/prepush.test.mjs', reason: 'pre-push scope or failure propagation changed', matches: [/^scripts\/prepush(?:-unit-plan)?(?:\.test)?\.mjs$/, /^scripts\/lib\/prepush\//, /^\.githooks\/pre-push$/, /^scripts\/suggest-focused-checks\.mjs$/] },
+  { order: 60, command: 'node --test scripts/ci/prepush.test.mjs', reason: 'pre-push scope or failure propagation changed', matches: [/^scripts\/ci\/prepush(?:-unit-plan)?(?:\.test)?\.mjs$/, /^scripts\/lib\/prepush\//, /^\.githooks\/pre-push$/, /^scripts\/ci\/suggest-focused-checks\.mjs$/] },
   {
     order: 70,
     command: 'pnpm test:ci:impact',
@@ -47,7 +47,7 @@ export const rules = [
     order: 80,
     command: 'pnpm test:pr:land',
     reason: 'the landing sequence or its state machine changed',
-    matches: [/^scripts\/pr-land(?:\.test)?\.mjs$/, /^scripts\/lib\/landing\/landing-train(?:\.test)?\.mjs$/],
+    matches: [/^scripts\/landing\/pr-land(?:\.test)?\.mjs$/, /^scripts\/lib\/landing\/landing-train(?:\.test)?\.mjs$/],
   },
   {
     order: 640,
@@ -55,16 +55,16 @@ export const rules = [
     reason: 'changed-path focused-check advisor changed',
     matches: [
       /^scripts\/lib\/ci\/focused-check-suggestions\.(?:mjs|test\.mjs)$/,
-      /^scripts\/suggest-focused-checks\.(?:mjs|test\.mjs)$/,
+      /^scripts\/ci\/suggest-focused-checks\.(?:mjs|test\.mjs)$/,
       /^scripts\/lib\/check-rules\//,
       /^scripts\/lib\/import-graph\//,
     ],
   },
   {
     order: 680,
-    command: 'pnpm exec node --test scripts/classify-change.test.mjs',
+    command: 'pnpm exec node --test scripts/ci/classify-change.test.mjs',
     reason: 'the CI change classifier decides what CI runs at all',
-    matches: [/^scripts\/classify-change\.(?:mjs|test\.mjs)$/],
+    matches: [/^scripts\/ci\/classify-change\.(?:mjs|test\.mjs)$/],
   },
   {
     order: 690,
@@ -86,12 +86,12 @@ export const directTests = {
     ['scripts/lib/landing/run-main-copy.test.mjs', 'scripts/lib/landing/run-main-copy.test.mjs'],
     ['scripts/lib/ci/playwright-server-owner.mjs', 'scripts/lib/ci/playwright-server-owner.test.mjs'],
     ['scripts/lib/ci/playwright-server-owner.test.mjs', 'scripts/lib/ci/playwright-server-owner.test.mjs'],
-    ['scripts/bundle-branches.mjs', 'scripts/bundle-branches.test.mjs'],
-    ['scripts/bundle-branches.test.mjs', 'scripts/bundle-branches.test.mjs'],
+    ['scripts/landing/bundle-branches.mjs', 'scripts/landing/bundle-branches.test.mjs'],
+    ['scripts/landing/bundle-branches.test.mjs', 'scripts/landing/bundle-branches.test.mjs'],
     ['scripts/lib/ci/focused-check-suggestions.mjs', 'scripts/lib/ci/focused-check-suggestions.test.mjs'],
   ],
   focusedCheck: [
-    ['scripts/suggest-focused-checks.mjs', 'scripts/suggest-focused-checks.test.mjs'],
-    ['scripts/suggest-focused-checks.test.mjs', 'scripts/suggest-focused-checks.test.mjs'],
+    ['scripts/ci/suggest-focused-checks.mjs', 'scripts/ci/suggest-focused-checks.test.mjs'],
+    ['scripts/ci/suggest-focused-checks.test.mjs', 'scripts/ci/suggest-focused-checks.test.mjs'],
   ],
 };

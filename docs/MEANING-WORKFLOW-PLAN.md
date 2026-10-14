@@ -76,7 +76,7 @@ evaluated without interpreting a percentage or reading the runner source.
 **Negative cases:** all discovery/oracle results green with zero projected
 competency answers; one failed fixture hidden by good aggregate counts; empty
 corpus. None may imply qualified construction or silently disappear.
-**Dependencies/owners:** no later slice; `scripts/evaluate-meaning-corpus.mjs`,
+**Dependencies/owners:** no later slice; `scripts/benchmark/evaluate-meaning-corpus.mjs`,
 its tests and `docs/ONTOLOGY-QUALITY.md`. This is the first implementation slice,
 not an improvement claim about the analyzer's business interpretation.
 

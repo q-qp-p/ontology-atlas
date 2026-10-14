@@ -29,7 +29,7 @@ export interface VaultDocGitState {
 }
 
 /**
- * Change dates by the manifest's rule (`scripts/build-docs-vault.mjs`, `latestInputDay`): Git's
+ * Change dates by the manifest's rule (`scripts/docs-vault/build-docs-vault.mjs`, `latestInputDay`): Git's
  * last commit unless Git shows the file changed since. A file date alone is not a change date,
  * since a clone or checkout stamps every file.
  */

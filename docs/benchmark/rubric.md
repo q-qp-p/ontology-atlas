@@ -200,7 +200,7 @@ Recorded, never scored. They are useful for one thing only: reading *how* an age
 reached its answer, the same way you would read a stack trace. A cell is decided by
 the axes above and below this one.
 
-`scripts/benchmark.mjs` captures both. If you do look at them, read the median
+`scripts/benchmark/benchmark.mjs` captures both. If you do look at them, read the median
 across runs and never a single cell: on 2026-08-25 a single-shot C2 read 10,534
 tokens in one mode and 49,196 in the other, for two identical shell commands.
 

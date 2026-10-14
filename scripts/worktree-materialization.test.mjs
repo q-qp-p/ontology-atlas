@@ -27,7 +27,7 @@ const PILOT = `---\nstarted: 2026-09-01\ndecision_target: 20\ndecision_deadline:
 
 function seed(root) {
   for (const path of [
-    'scripts/build-docs-vault.mjs', 'scripts/build-messages.mjs', 'scripts/new-record.mjs', 'scripts/prepare-worktree.mjs',
+    'scripts/docs-vault/build-docs-vault.mjs', 'scripts/i18n/build-messages.mjs', 'scripts/records/new-record.mjs', 'scripts/prepare-worktree.mjs',
     'scripts/lib/parse-frontmatter.mjs', 'scripts/lib/records/record-ledgers.mjs',
     'scripts/lib/records/po-pilot-records.mjs', 'scripts/lib/records/po-pilot.mjs',
     'scripts/lib/records/po-risk-router.mjs', 'scripts/lib/records/decision-record-template.mjs',
@@ -52,8 +52,8 @@ function seed(root) {
   git(root, 'config', 'commit.gpgsign', 'false');
   git(root, 'add', '.');
   git(root, 'commit', '-qm', 'fixture');
-  node(root, 'scripts/build-docs-vault.mjs');
-  node(root, 'scripts/build-messages.mjs');
+  node(root, 'scripts/docs-vault/build-docs-vault.mjs');
+  node(root, 'scripts/i18n/build-messages.mjs');
   git(root, 'config', 'core.hooksPath', '.githooks');
 }
 
@@ -75,15 +75,15 @@ test('prepare configures Git when present, propagates config failure, and builds
   };
   assert.equal(prepareWorktree({ root: '/tmp/archive', spawn: archiveSpawn }), 0);
   assert.deepEqual(calls.slice(-2), [
-    [process.execPath, ['scripts/build-docs-vault.mjs']],
-    [process.execPath, ['scripts/build-messages.mjs']],
+    [process.execPath, ['scripts/docs-vault/build-docs-vault.mjs']],
+    [process.execPath, ['scripts/i18n/build-messages.mjs']],
   ]);
 
   calls.length = 0;
   const failing = (command, args) => {
     calls.push([command, args]);
     if (command === 'git') return { status: 128 };
-    return { status: args[0] === 'scripts/build-docs-vault.mjs' ? 3 : 0 };
+    return { status: args[0] === 'scripts/docs-vault/build-docs-vault.mjs' ? 3 : 0 };
   };
   assert.equal(prepareWorktree({ root: '/tmp/archive', spawn: failing }), 3, 'a failed materializer was hidden');
 });
@@ -122,7 +122,7 @@ test('parallel worktrees merge immutable records and every checkout materializes
     for (const [cwd, slug, id] of [[left, 'left-record', UUID_A], [right, 'right-record', UUID_B]]) {
       const body = join(cwd, 'decision.md');
       writeFileSync(body, `## 2026-09-13 — ${slug}\n\n**Why**: parallel\n**Prior**: 2026-09-01\n**Decision**: ${slug}\n**Dissent**: none\n**Falsifier**: conflict\n**Owner**: test\n`);
-      node(cwd, 'scripts/new-record.mjs', '--kind=decision', '--date=2026-09-13', `--slug=${slug}`, `--input=${body}`, `--id=${id}`);
+      node(cwd, 'scripts/records/new-record.mjs', '--kind=decision', '--date=2026-09-13', `--slug=${slug}`, `--input=${body}`, `--id=${id}`);
       rmSync(body);
       assert.equal(git(cwd, 'status', '--short', '--untracked-files=all'), `?? docs/records/decisions/2026-09-13-${slug}-${id}.md`);
       git(cwd, 'add', 'docs/records/decisions');
@@ -130,7 +130,7 @@ test('parallel worktrees merge immutable records and every checkout materializes
     }
     git(repo, 'merge', '--no-edit', 'left');
     git(repo, 'merge', '--no-edit', 'right');
-    const composed = node(repo, '--input-type=module', '-e', `import {readLedgerSource} from './scripts/lib/record-ledgers.mjs'; console.log(readLedgerSource('docs/DECISIONS.md',{root:process.cwd()}).content)`);
+    const composed = node(repo, '--input-type=module', '-e', `import {readLedgerSource} from './scripts/lib/records/record-ledgers.mjs'; console.log(readLedgerSource('docs/DECISIONS.md',{root:process.cwd()}).content)`);
     assert.match(composed, /left-record/);
     assert.match(composed, /right-record/);
     const materialized = readFileSync(join(repo, 'public/docs-vault/DECISIONS.md'), 'utf8');
@@ -141,7 +141,7 @@ test('parallel worktrees merge immutable records and every checkout materializes
     const duplicate = join(repo, `docs/records/decisions/2026-09-13-duplicate-${UUID_A}.md`);
     writeFileSync(duplicate, `---\nid: ${UUID_A}\ndate: 2026-09-13\n---\n## 2026-09-13 — Duplicate\n\n**Why**: duplicate\n**Prior**: none\n**Decision**: duplicate\n**Dissent**: none\n**Falsifier**: none\n**Owner**: test\n`);
     assert.throws(
-      () => node(repo, 'scripts/build-docs-vault.mjs'),
+      () => node(repo, 'scripts/docs-vault/build-docs-vault.mjs'),
       /duplicate id/,
       'the real generator accepted duplicate fragments after a clean worktree merge',
     );

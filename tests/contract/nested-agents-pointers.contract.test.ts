@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 /**
  * Non-Claude agents do not read `.claude/**`, so each directory a rule reaches needs a nested
  * `AGENTS.md` that points at exactly those rules, derived from frontmatter. `docs/` is excluded
- * because `scripts/build-docs-vault.mjs` would ship a nested agent file there as product surface.
+ * because `scripts/docs-vault/build-docs-vault.mjs` would ship a nested agent file there as product surface.
  */
 
 const RULES_DIR = join(process.cwd(), ".claude/rules");

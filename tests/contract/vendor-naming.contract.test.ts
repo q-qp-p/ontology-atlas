@@ -86,7 +86,7 @@ describe('남의 제품 이름 — 그쪽이 허용한 형태로만', () => {
      * the next update even while the check above passes — and by then nobody is
      * watching.
      */
-    const script = readFileSync(join(ROOT, 'scripts', 'build-acp-registry.mjs'), 'utf8');
+    const script = readFileSync(join(ROOT, 'scripts', 'registry-snapshots', 'build-acp-registry.mjs'), 'utf8');
     const block = /const DISPLAY_NAME = \{([\s\S]*?)\};/.exec(script);
     expect(block, 'DISPLAY_NAME 이 사라졌다면 이 계약을 다시 볼 때다').not.toBeNull();
     expect(
@@ -97,7 +97,7 @@ describe('남의 제품 이름 — 그쪽이 허용한 형태로만', () => {
 
   it('근거가 문서에 남아 있다', () => {
     // A rule with no cited source gets reverted by the next person as needless inconvenience.
-    const script = readFileSync(join(ROOT, 'scripts', 'build-acp-registry.mjs'), 'utf8');
+    const script = readFileSync(join(ROOT, 'scripts', 'registry-snapshots', 'build-acp-registry.mjs'), 'utf8');
     expect(script).toContain('code.claude.com/docs/en/agent-sdk/overview');
   });
 });

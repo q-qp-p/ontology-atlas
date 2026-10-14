@@ -3,7 +3,7 @@
 //
 // Everything here derives from code (the MCP tool registry and the CLI command
 // registry). Sentences a person wrote are unknown to this module, and need to
-// stay that way. `scripts/build-docs-surface.mjs` builds
+// stay that way. `scripts/docs/build-docs-surface.mjs` builds
 // `docs/.generated/mcp-surface.json` with these functions and re-generates with
 // the same ones to diff.
 

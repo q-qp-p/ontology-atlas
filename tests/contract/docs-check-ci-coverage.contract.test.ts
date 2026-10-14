@@ -12,7 +12,7 @@ const ROOT = process.cwd();
 const read = (rel: string): string => readFileSync(join(ROOT, rel), 'utf8');
 
 const WORKFLOW = '.github/workflows/checks.yml';
-const CI_REGISTRY = 'scripts/classify-change.mjs';
+const CI_REGISTRY = 'scripts/ci/classify-change.mjs';
 
 /** Extracts the sub-script names `docs:check` actually invokes from its definition. */
 function docsCheckSubScripts(): string[] {
@@ -42,6 +42,6 @@ describe('docs:check — 하위 검사가 전부 CI 에서 불린다', () => {
         `A sub-check added to docs:check needs its CI step too. ` +
         `(The workflow runs this registry; checks that start a server belong in the mcp lane.)`,
     ).toBe(true);
-    expect(workflow).toContain('node scripts/run-ci-lane.mjs');
+    expect(workflow).toContain('node scripts/ci/run-ci-lane.mjs');
   });
 });

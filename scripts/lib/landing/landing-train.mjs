@@ -1,7 +1,7 @@
 /**
  * The landing train's decisions, as pure functions.
  *
- * `scripts/pr-land.mjs` owns the input/output: `gh`, `git`, the clock and the lock. Everything that
+ * `scripts/landing/pr-land.mjs` owns the input/output: `gh`, `git`, the clock and the lock. Everything that
  * decides something — which pull requests ride the next train, how a red train splits, whether a
  * pull request may skip the train, what integration merge metadata says, what a waiter's exit code is — lives
  * here, so it is tested from literals with no network at all. The header of `pr-land.mjs` carries

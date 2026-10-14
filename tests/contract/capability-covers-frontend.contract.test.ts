@@ -124,7 +124,7 @@ describe('the window capability covers what the frontend actually calls', () => 
           .map((gap) => `  ${gap.rule} (first used in ${gap.firstUser}) needs ${gap.permission}`)
           .join('\n')}\n` +
         `Add the permission to src-tauri/capabilities/default.json AND to the reviewed list in ` +
-        `scripts/check-desktop-readiness.mjs, naming the caller.`,
+        `scripts/desktop/check-desktop-readiness.mjs, naming the caller.`,
     ).toEqual([]);
   });
 

@@ -4,7 +4,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 
-import { FULL_LANE_COMMANDS } from "../../scripts/classify-change.mjs";
+import { FULL_LANE_COMMANDS } from "../../scripts/ci/classify-change.mjs";
 
 /**
  * Lint warning ratchet — **the warning count can never rise, and when it falls the cap falls with it.**
@@ -122,7 +122,7 @@ describe("CI 가 이 상한을 지나간다 — 안 물린 게이트는 주석�
     expect(checks, ".github/workflows/checks.yml 이 없다").toBeDefined();
     expect(FULL_LANE_COMMANDS.gates).toContain("pnpm lint");
     expect(
-      checks!.source.includes("node scripts/run-ci-lane.mjs --lane=gates"),
+      checks!.source.includes("node scripts/ci/run-ci-lane.mjs --lane=gates"),
       "checks.yml does not invoke the lane containing the lint warning cap",
     ).toBe(true);
   });

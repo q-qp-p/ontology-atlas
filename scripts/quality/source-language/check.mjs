@@ -84,7 +84,7 @@ export const SOURCE_STRING_LANGUAGE_ALLOWLIST = Object.freeze([
   }),
   Object.freeze({
     id: 'benchmark-korean-prompts',
-    path: 'scripts/benchmark.mjs',
+    path: 'scripts/benchmark/benchmark.mjs',
     why:
       'The prompts are the measurement stimulus. Transcripts recorded under docs/benchmark/results '
       + 'were produced with this exact wording, so rewriting them silently breaks comparability.',
@@ -92,7 +92,7 @@ export const SOURCE_STRING_LANGUAGE_ALLOWLIST = Object.freeze([
   }),
   Object.freeze({
     id: 'benchmark-scale-korean-prompt',
-    path: 'scripts/benchmark-scale.mjs',
+    path: 'scripts/benchmark/benchmark-scale.mjs',
     why:
       'The same measurement stimulus as the row above, for the scale run — recorded results were '
       + 'produced with this wording, so rewriting it breaks comparability rather than a sentence.',

@@ -44,7 +44,7 @@ pnpm desktop:release-preflight            # local pre-tag gate; its steps are th
 
 - `desktop:doctor` exits 0 as a report; add `-- --require-runtime` to fail on a
   missing prerequisite. An ad-hoc signed local bundle is a warning, not a block.
-- `desktop:check` (`scripts/check-desktop-readiness.mjs`) owns the list of what
+- `desktop:check` (`scripts/desktop/check-desktop-readiness.mjs`) owns the list of what
   it enforces. The security-relevant parts:
   - `package.json`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml`
     carry one version, so bundle metadata, DMG filename, and tag agree.
@@ -85,7 +85,7 @@ pnpm desktop:release-preflight            # local pre-tag gate; its steps are th
   of an unsigned artifact. Source MCP and ontology readiness run separately in
   `pnpm dogfood:release-gate`.
 - `desktop:release-artifact` is the credentialed local path;
-  `scripts/build-macos-release-artifact.mjs` owns the order: rebuild,
+  `scripts/desktop-release/build-macos-release-artifact.mjs` owns the order: rebuild,
   route-smoke, sign the `.app`, repack the updater archive, package the DMG,
   sign the DMG (`desktop:sign:dmg`), notarize and staple,
   `desktop:verify-release-dmg`, then install-smoke the final DMG. The release
@@ -121,7 +121,7 @@ tag with a pre-release or build suffix such as `v1.4.0-rc.1`, so there is no
 release-candidate channel; to soak a build, install the draft the workflow
 stages before approving publication. The public `/download` facts describe the
 release the workflow published, and the hosted updater manifest
-(`scripts/stage-hosted-updater-manifest.mjs`, served at the updater endpoint in
+(`scripts/download/stage-hosted-updater-manifest.mjs`, served at the updater endpoint in
 `src-tauri/tauri.conf.json`) follows the newest published plain release, which
 the app checks for automatically
 (`src/features/app-update/model/use-app-update.ts`).
@@ -172,9 +172,9 @@ The run builds, signs, notarizes, and install-smokes the Apple Silicon macOS app
 (Intel builds stopped after v1.5.0) and builds the Windows x64 installer. Each lane writes DMG filename, size, and
 SHA-256 to the step summary. The run also ships the MCP bundle and lists the
 server in the official MCP Registry (the `list-mcp-registry` job), so a
-dispatch publishes outside GitHub Releases. `scripts/check-macos-release-slot.mjs` refuses a
+dispatch publishes outside GitHub Releases. `scripts/desktop-release/check-macos-release-slot.mjs` refuses a
 tag that already has any Release. Assets are staged
-(`scripts/stage-macos-release-assets.mjs`) and uploaded as a draft, then
+(`scripts/download/stage-macos-release-assets.mjs`) and uploaded as a draft, then
 verified with `pnpm desktop:verify-download -- --allow-draft --require-updater`.
 
 Do not land changes under `.github/workflows` between tagging and publish:
@@ -246,14 +246,14 @@ secrets: the job generates the keychain password with `openssl rand -base64 24`
 and masks it with `::add-mask::`, and derives the identity from the imported
 certificate. An `always()` step deletes the temporary keychain and decoded
 `.p12` after the per-arch handoff, even on failure.
-`scripts/check-macos-release-secrets.mjs` rejects a missing, blank, or
+`scripts/desktop-release/check-macos-release-secrets.mjs` rejects a missing, blank, or
 structurally unusable secret (including base64 that is not PKCS#12 DER) before
 build. The `.p8` is written to a `0600` temporary file only for notarization.
 
-In the workflow, `scripts/sign-macos-app.mjs` deep-signs the `.app` with
+In the workflow, `scripts/desktop/sign-macos-app.mjs` deep-signs the `.app` with
 hardened runtime and verifies with strict deep `codesign`, and with `--dmg`
 signs the DMG before notarization;
-`scripts/notarize-macos-dmg.mjs` submits via `xcrun notarytool`, waits,
+`scripts/desktop-release/notarize-macos-dmg.mjs` submits via `xcrun notarytool`, waits,
 staples, validates, refreshes the `.sha256` (stapling changes the bytes), and
 redacts credential arguments from failure logs.
 `pnpm desktop:verify-release-dmg` adds strict `codesign` on the mounted app, a
@@ -273,7 +273,7 @@ them.
 ### Create a Developer ID certificate
 
 Needed about once per certificate validity period (five years).
-`scripts/apple-signing-setup.mjs` (`pnpm desktop:signing-setup`) owns the
+`scripts/desktop-release/apple-signing-setup.mjs` (`pnpm desktop:signing-setup`) owns the
 procedure; if this page disagrees, the script is right. People handle only the
 credential moments: Apple login with 2FA, and generating and downloading the
 App Store Connect API key `.p8` once.
@@ -281,7 +281,7 @@ App Store Connect API key `.p8` once.
 1. **Keypair and CSR.**
 
    ```bash
-   node scripts/apple-signing-setup.mjs csr \
+   node scripts/desktop-release/apple-signing-setup.mjs csr \
      --name="Legal Full Name" --email="Apple Account Email"
    ```
 
@@ -312,7 +312,7 @@ App Store Connect API key `.p8` once.
 3. **Assemble the `.p12`.**
 
    ```bash
-   node scripts/apple-signing-setup.mjs bundle --cer=~/Downloads/developerID_application.cer
+   node scripts/desktop-release/apple-signing-setup.mjs bundle --cer=~/Downloads/developerID_application.cer
    ```
 
    It combines the `.cer` with the private key into a `.p12`, writes
@@ -337,7 +337,7 @@ App Store Connect API key `.p8` once.
 5. **Verify.**
 
    ```bash
-   node scripts/apple-signing-setup.mjs verify
+   node scripts/desktop-release/apple-signing-setup.mjs verify
    ```
 
    Once all seven are registered, the next dispatched tag takes the signing
@@ -374,9 +374,9 @@ updater artifacts.
 
 | Symptom | Next step |
 |---|---|
-| `desktop:smoke` reports a missing route, asset, or offline doc | Rebuild with `pnpm build`; if only copy or a component marker differs, compare the product and `scripts/desktop-smoke.mjs` before rebuilding once |
+| `desktop:smoke` reports a missing route, asset, or offline doc | Rebuild with `pnpm build`; if only copy or a component marker differs, compare the product and `scripts/desktop/desktop-smoke.mjs` before rebuilding once |
 | `desktop:verify-app` exits early or finds no window | Rerun with `--kill-existing --print-window-diagnostics`; a stale `/Applications` copy shares the bundle id |
-| Workflow fails before build on secrets | `pnpm desktop:release-github -- --tag=<tag>`, then `node scripts/apple-signing-setup.mjs verify`; set values with the commands above |
+| Workflow fails before build on secrets | `pnpm desktop:release-github -- --tag=<tag>`, then `node scripts/desktop-release/apple-signing-setup.mjs verify`; set values with the commands above |
 | Admission fails: version | Align the three version files; `pnpm desktop:release-tag -- --tag=<tag>` |
 | Admission fails: release facts | The previous release's facts PR has not landed; land it or `pnpm desktop:release-run -- --tag=<previous tag> --refresh-only` |
 | Admission fails: ACP registry | Refresh drift with `pnpm acp:registry` and land it |

@@ -27,7 +27,7 @@ function readDoc() {
 
 describe("디자인 규격 → 원장 게이트", () => {
   it("트리거 목록은 정본 문서에서 유도된다 (코드에 복제본이 없다)", () => {
-    const gate = readFileSync("scripts/check-decision-record.mjs", "utf8");
+    const gate = readFileSync("scripts/records/check-decision-record.mjs", "utf8");
     expect(gate).toContain("design-spec-census.mjs");
     expect(gate).toContain("parseTriggerFiles");
     // A gate holding its own list makes two copies, and drift becomes the default.

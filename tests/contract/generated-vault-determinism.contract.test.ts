@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { FULL_LANE_COMMANDS } from '../../scripts/classify-change.mjs';
+import { FULL_LANE_COMMANDS } from '../../scripts/ci/classify-change.mjs';
 
 /**
  * Generated dates are day precision so a merge restamping the commit time leaves them unchanged
@@ -63,7 +63,7 @@ describe.each(MANIFESTS)('%s — 커밋된 생성물에 벽시계가 없다', (n
 
 describe('build-docs-vault.mjs — 생성기가 벽시계를 읽지 않는다', () => {
   const source = readFileSync(
-    path.join(process.cwd(), 'scripts', 'build-docs-vault.mjs'),
+    path.join(process.cwd(), 'scripts', 'docs-vault', 'build-docs-vault.mjs'),
     'utf8',
   );
 

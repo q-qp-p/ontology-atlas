@@ -1,4 +1,4 @@
-// The manifest shape `scripts/build-docs-vault.mjs` emits.
+// The manifest shape `scripts/docs-vault/build-docs-vault.mjs` emits.
 
 export interface VaultHeading {
   depth: number;

@@ -24,14 +24,14 @@ export const rules = [
     order: 105,
     command: 'pnpm test:design:tokens',
     reason: 'the token printer or its tests changed',
-    matches: [/^scripts\/design-tokens(?:\.test)?\.mjs$/],
+    matches: [/^scripts\/design\/design-tokens(?:\.test)?\.mjs$/],
   },
   {
     order: 360,
     command: 'pnpm design:ontology',
     reason: 'ontology workbench design surface or its guard changed',
     matches: [
-      /^scripts\/check-ontology-design-surface\.(?:mjs|test\.mjs)$/,
+      /^scripts\/design\/check-ontology-design-surface\.(?:mjs|test\.mjs)$/,
       /^scripts\/quality\/source-language\/(?:inventory|source-paths)\.mjs$/,
       /^src\/views\/ontology-insights\//,
     ],
@@ -41,8 +41,8 @@ export const rules = [
     command: 'pnpm test:design-gates',
     reason: 'Atlas design proof routing, iterative Computer Use contract, motion evidence, or independent-review lens policy changed',
     matches: [
-      /^scripts\/(?:lib\/design\/design-proof-router|design-proof-router)\.mjs$/,
-      /^scripts\/(?:lib\/design\/design-spec-census|check-decision-record)\.mjs$/,
+      /^scripts\/(?:lib\/)?design\/design-proof-router\.mjs$/,
+      /^scripts\/(?:lib\/design\/design-spec-census|records\/check-decision-record)\.mjs$/,
       /^tests\/contract\/(?:design-(?:proof-router|spec-ledger)|reviewer-wiring)\.contract\.test\.ts$/,
       /^docs\/PRODUCT-DESIGN-OPERATING-SYSTEM\.md$/,
       /^docs\/engineering\/motion-recording\.md$/,
@@ -57,7 +57,7 @@ export const rules = [
 
 export const directTests = {
   script: [
-    ['scripts/check-ontology-design-surface.mjs', 'scripts/check-ontology-design-surface.test.mjs'],
-    ['scripts/check-ontology-design-surface.test.mjs', 'scripts/check-ontology-design-surface.test.mjs'],
+    ['scripts/design/check-ontology-design-surface.mjs', 'scripts/design/check-ontology-design-surface.test.mjs'],
+    ['scripts/design/check-ontology-design-surface.test.mjs', 'scripts/design/check-ontology-design-surface.test.mjs'],
   ],
 };

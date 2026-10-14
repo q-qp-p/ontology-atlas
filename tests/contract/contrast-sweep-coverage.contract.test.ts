@@ -9,7 +9,7 @@ import { AUDITED_ROUTES, EXCLUDED_ROUTES } from "../e2e/audited-routes";
  * The contrast sweep must cover every route in `AUDITED_ROUTES`; an unmeasured screen is not a
  * passing screen. A new route breaks `audited-route-coverage` first, then this contract.
  */
-const HARNESS = join(process.cwd(), "scripts/measure-contrast.mjs");
+const HARNESS = join(process.cwd(), "scripts/design/measure-contrast.mjs");
 
 function harnessRoutes(): string[] {
   const source = readFileSync(HARNESS, "utf8");

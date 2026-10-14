@@ -2,12 +2,12 @@
 # Refresh ignored Docs Vault assets and message composites after Git merges authored
 # changes.
 root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
-if [ -f "$root/scripts/build-docs-vault.mjs" ] && ! out=$(cd "$root" && node scripts/build-docs-vault.mjs 2>&1); then
+if [ -f "$root/scripts/docs-vault/build-docs-vault.mjs" ] && ! out=$(cd "$root" && node scripts/docs-vault/build-docs-vault.mjs 2>&1); then
   printf '%s\n' "$out" >&2
   echo "[post-merge] Docs Vault materialization failed; run pnpm docs-vault:build after fixing the error." >&2
   exit 1
 fi
-if [ -f "$root/scripts/build-messages.mjs" ] && ! out=$(cd "$root" && node scripts/build-messages.mjs 2>&1); then
+if [ -f "$root/scripts/i18n/build-messages.mjs" ] && ! out=$(cd "$root" && node scripts/i18n/build-messages.mjs 2>&1); then
   printf '%s\n' "$out" >&2
   echo "[post-merge] message composition failed; run pnpm messages:build after fixing the error." >&2
   exit 1
