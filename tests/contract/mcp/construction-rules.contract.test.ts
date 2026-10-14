@@ -67,7 +67,7 @@ describe("구축 규격 텍스트 — LLM 이 읽는 자리에 도달한다", ()
 
   it("세 상수를 정말 import 한다", () => {
     expect(SERVER_SOURCE).toMatch(
-      /import \{[\s\S]*?CONSTRUCTION_RULES_EN[\s\S]*?\} from '\.\.?\/construction-rules\.mjs';/,
+      /import \{[\s\S]*?CONSTRUCTION_RULES_EN[\s\S]*?\} from '\.\.\/construction\/construction-rules\.mjs';/,
     );
   });
 });
