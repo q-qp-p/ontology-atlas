@@ -18,8 +18,8 @@ interface ValidatorReport {
   }>;
 }
 
-describe('KNOWN_CODES drift contract — list-codes / fail-on UX 진실원', () => {
-  it('KNOWN_CODES 의 code set 이 fixture 가 elicit 하는 모든 code 와 동일', () => {
+describe('KNOWN_CODES drift contract — source of truth for list-codes / fail-on UX', () => {
+  it('the code set of KNOWN_CODES equals every code the fixture elicits', () => {
     const fixtureCodes = new Set<string>();
     for (const c of VALIDATE_CASES) {
       for (const code of c.expectedCodes) fixtureCodes.add(code);
@@ -31,19 +31,19 @@ describe('KNOWN_CODES drift contract — list-codes / fail-on UX 진실원', () 
     expect([...knownCodes].sort()).toEqual([...fixtureCodes].sort());
   });
 
-  it('KNOWN_CODES 에 중복 code 없음', () => {
+  it('KNOWN_CODES has no duplicate code', () => {
     const codes = KNOWN_CODES.map((c) => c.code);
     const unique = new Set(codes);
     expect(codes.length).toBe(unique.size);
   });
 
-  it('MCP validate_vault issue-code enum 이 CLI KNOWN_CODES 전체와 동일', () => {
+  it('the issue-code enum of MCP validate_vault equals the whole of CLI KNOWN_CODES', () => {
     expect([...VAULT_ISSUE_CODE_VALUES].sort()).toEqual(
       KNOWN_CODES.map((c) => c.code).sort(),
     );
   });
 
-  it('각 KNOWN_CODES.severity 가 validator 실제 출력 severity 와 일치', () => {
+  it('each KNOWN_CODES.severity matches the severity the validator actually outputs', () => {
     // For each code, find the first fixture case eliciting it, run the real validator, and
     // compare severities.
     for (const known of KNOWN_CODES.filter((c) => c.scope !== 'vault')) {
@@ -63,7 +63,7 @@ describe('KNOWN_CODES drift contract — list-codes / fail-on UX 진실원', () 
     }
   });
 
-  it('각 KNOWN_CODES 엔트리에 description 이 비어있지 않은 string', () => {
+  it('each KNOWN_CODES entry has a non-empty string description', () => {
     for (const c of KNOWN_CODES) {
       expect(typeof c.description).toBe('string');
       expect(c.description.length).toBeGreaterThan(10);

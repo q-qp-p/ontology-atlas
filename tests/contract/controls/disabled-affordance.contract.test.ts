@@ -20,7 +20,7 @@ const read = (p: string) => readFileSync(join(process.cwd(), p), 'utf8');
  */
 const DISABLED_STEP = (() => {
   const m = CONTROL_DISABLED_CLASS.match(/disabled:opacity-(\d+)/);
-  if (!m) throw new Error('CONTROL_DISABLED_CLASS 에 비활성 흐림 값이 없다');
+  if (!m) throw new Error('CONTROL_DISABLED_CLASS has no disabled dimming value');
   return m[1];
 })();
 
@@ -41,8 +41,8 @@ const PRESSABLE_PRIMITIVES = [
 /** Composing the constant brings all four treatments at once: dimming, cursor, shadow, and hover suppression. */
 const composesConstant = (source: string) => source.includes('CONTROL_DISABLED_CLASS');
 
-describe('비활성 어포던스 — 값 층', () => {
-  it('CONTROL_DISABLED_CLASS 가 네 처리를 한 세트로 싣는다', () => {
+describe('disabled affordance — value layer', () => {
+  it('CONTROL_DISABLED_CLASS carries the four treatments as one set', () => {
     // Dimming alone leaves a mouse user unaware until they click; a cursor alone gives
     // touch users no signal at all; and a live hover makes the hand conclude it is
     // pressable before the eye does.
@@ -52,24 +52,24 @@ describe('비활성 어포던스 — 값 층', () => {
     expect(CONTROL_DISABLED_CLASS).toMatch(/disabled:hover:/);
   });
 
-  it.each(PRESSABLE_PRIMITIVES)('%s — 비활성 처리를 값 층 또는 자기 리터럴로 받는다', (path) => {
+  it.each(PRESSABLE_PRIMITIVES)('%s — takes the disabled treatment from the value layer or its own literal', (path) => {
     const source = read(path);
     if (composesConstant(source)) return; // Receives the whole value-layer set
-    expect(source, `${path}: 비활성 흐림 처리가 없다`).toMatch(/disabled:opacity-/);
-    expect(source, `${path}: 비활성 커서 처리가 없다`).toContain('disabled:cursor-not-allowed');
-    expect(source, `${path}: 비활성 호버 무력화가 없다`).toMatch(/disabled:hover:/);
+    expect(source, `${path}: no disabled dimming treatment`).toMatch(/disabled:opacity-/);
+    expect(source, `${path}: no disabled cursor treatment`).toContain('disabled:cursor-not-allowed');
+    expect(source, `${path}: no disabled hover neutralisation`).toMatch(/disabled:hover:/);
   });
 
-  it('비활성 흐림 값이 경로마다 갈리지 않는다', () => {
+  it('the disabled dimming value does not diverge per path', () => {
     // Drawing one state with two values is coincidence, not a system.
     const values = new Set(
       PRESSABLE_PRIMITIVES.flatMap((p) => [...read(p).matchAll(/disabled:opacity-(\d+)/g)].map((m) => m[1])),
     );
     values.add(DISABLED_STEP);
-    expect([...values], `비활성 불투명도가 여러 값이다: ${[...values].join(', ')}`).toEqual([DISABLED_STEP]);
+    expect([...values], `the disabled opacity has several values: ${[...values].join(', ')}`).toEqual([DISABLED_STEP]);
   });
 
-  it('lint 게이트가 허용하는 값과 값 층의 값이 같다', () => {
+  it('the value the lint gate allows equals the value of the value layer', () => {
     // eslint's disabledAffordanceSelectors take the form "forbid anything but 55", so
     // the number 55 is written in the lint config too. When the value layer moves, this
     // turns red and forces both to move together. (This comparison was chosen over a
@@ -77,15 +77,15 @@ describe('비활성 어포던스 — 값 층', () => {
     // re-spread the selector array.)
     const eslintConfig = read('eslint.config.mjs');
     const gates = [...eslintConfig.matchAll(/disabled\):opacity-\(\?!(\d+)/g)].map((m) => m[1]);
-    expect(gates.length, 'disabledAffordanceSelectors 가 eslint.config.mjs 에 없다').toBeGreaterThanOrEqual(2);
-    expect(new Set(gates), 'lint 가 허용하는 비활성 흐림 값이 값 층과 다르다').toEqual(new Set([DISABLED_STEP]));
+    expect(gates.length, 'disabledAffordanceSelectors is missing from eslint.config.mjs').toBeGreaterThanOrEqual(2);
+    expect(new Set(gates), 'the disabled dimming value lint allows differs from the value layer').toEqual(new Set([DISABLED_STEP]));
   });
 });
 
-describe('최근 변경 칩 — 못 쓰는 이유를 모드별로 말한다', () => {
+describe('recent-changes chip — states the reason it cannot be used per mode', () => {
   const HOME = read('src/views/home/ui/TopologyCommandChrome.tsx');
 
-  it('샘플과 내 폴더의 사유를 다른 문장으로 낸다', () => {
+  it('emits different sentences for the sample reason and the my-folder reason', () => {
     // Telling someone viewing the sample to "edit a document" **presumes they have a
     // document to edit.** The real reason is different: the sample's date is when this
     // repository last touched the fixture, which has nothing to do with the user, and
@@ -94,13 +94,13 @@ describe('최근 변경 칩 — 못 쓰는 이유를 모드별로 말한다', ()
     expect(HOME).toContain('spotlightEmptyTooltip');
   });
 
-  it.each(['ko', 'en'])('%s 문구가 샘플 사유를 폴더로 설명한다', (locale) => {
+  it.each(['ko', 'en'])('the %s copy explains the sample reason with a folder', (locale) => {
     const messages = JSON.parse(read(`messages/${locale}.json`));
     const text: string = messages.topology.controls.spotlightSampleTooltip;
-    expect(text, `${locale}: 샘플 사유 문구가 없다`).toBeTruthy();
+    expect(text, `${locale}: no sample reason copy`).toBeTruthy();
     // Without "what to do next" it is an apology, not guidance — the same discipline as
     // the degradation contract in `surfaces.md` (why plus where).
-    expect(text, `${locale}: 다음 행동(폴더)을 안 말한다`).toMatch(locale === 'ko' ? /폴더/ : /folder/i);
+    expect(text, `${locale}: does not state the next action (folder)`).toMatch(locale === 'ko' ? /폴더/ : /folder/i);
   });
 });
 

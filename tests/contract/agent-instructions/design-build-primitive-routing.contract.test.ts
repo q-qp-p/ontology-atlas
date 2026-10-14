@@ -47,23 +47,23 @@ export function exportedComponents(source: string): string[] {
   return [...names].filter((n) => !/^[A-Z0-9_]+$/.test(n)).sort();
 }
 
-describe("design-build 안내판 — 비준한 부품은 라우팅된다", () => {
+describe("design-build signpost — ratified parts are routed", () => {
   const components = PRIMITIVE_FILES.flatMap((rel) =>
     exportedComponents(readFileSync(path.join(ROOT, rel), "utf8")).map(
       (name) => [rel, name] as const,
     ),
   );
 
-  it("탐지기가 공회전하지 않는다 — 감시 파일에서 실제로 부품을 뽑는다", () => {
-    expect(components.length, "프리미티브 export 를 하나도 못 찾았다").toBeGreaterThanOrEqual(8);
+  it("the detector does not idle — it really extracts parts from the watched files", () => {
+    expect(components.length, "could not find a single primitive export").toBeGreaterThanOrEqual(8);
     const names = components.map(([, n]) => n);
     // If these four disappear, either the files moved or the regex went stale.
     for (const known of ["Chip", "Dialog", "Input", "SegmentedControl"]) {
-      expect(names, `${known} 을 못 찾았다 — 추출 규칙이 낡았다`).toContain(known);
+      expect(names, `could not find ${known} — the extraction rule is stale`).toContain(known);
     }
   });
 
-  it.each(SKILL_COPIES)("%s 가 모든 프리미티브를 이름으로 라우팅한다", (skillPath) => {
+  it.each(SKILL_COPIES)("%s routes every primitive by name", (skillPath) => {
     const skill = readSkillProcedure(path.join(ROOT, skillPath));
     const missing = components
       .filter(([, name]) => !new RegExp(`\\b${name}\\b`).test(skill))
@@ -76,7 +76,7 @@ describe("design-build 안내판 — 비준한 부품은 라우팅된다", () =>
   });
 
   /* ── Standing probes (/gate-probe: passing is not evidence) ── */
-  it("프로브: 컴포넌트만 세고 타입·상수는 세지 않는다", () => {
+  it("probe: counts only components, not types or constants", () => {
     const sample = [
       "export function Dialog() {}",
       "export const Input = forwardRef(function Input() {});",

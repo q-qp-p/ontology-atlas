@@ -59,8 +59,8 @@ function collectTsxFiles(dir: string, acc: string[] = []): string[] {
   return acc;
 }
 
-describe('디자인 토큰 가드 — inline style 에 raw hex 색 금지', () => {
-  it('어떤 .tsx 도 색 CSS 속성에 hardcoded hex 를 inline 대입하지 않는다', () => {
+describe('design token guard — no raw hex colour in inline style', () => {
+  it('no .tsx assigns a hardcoded hex colour to a colour CSS property inline', () => {
     const files = collectTsxFiles(SRC_DIR);
     // Ensures the scanner really walked the tree (no false pass on an empty glob).
     expect(files.length).toBeGreaterThan(20);

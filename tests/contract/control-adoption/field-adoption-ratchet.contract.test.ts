@@ -112,64 +112,64 @@ const SPECIAL_REGISTERED: ReadonlyArray<readonly [file: string, count: number, w
   [
     "src/widgets/app-settings-menu/ui/settings-primitives.tsx",
     1,
-    "Slider(type=range) — 소비자가 설정 시트 2곳뿐이라 shared 승격 반려(2026-08-15 체계석). 두 번째 소비 표면이 생기면 그 PR 에서 승격한다.",
+    "Slider(type=range) — its only consumers are 2 settings sheets, so promotion to shared was rejected (design-system council, 2026-08-15). Promote it in the PR that adds a second consuming surface.",
   ],
 ];
 
-describe("폼 채택 래칫", () => {
+describe("form adoption ratchet", () => {
   const scan = scanProduction();
   const textLedger = new Map(TEXT_CAP);
   const specialLedger = new Map(
     SPECIAL_REGISTERED.map(([file, count]) => [file, count] as const),
   );
 
-  it("탐지기가 공회전하지 않는다 — 분모가 실재하고 장부 파일이 실재한다", () => {
+  it("the detector does not idle — the denominator exists and the ledger files exist", () => {
     const total = [...scan.text.values()].reduce((a, b) => a + b, 0);
-    expect(total, "raw 폼 원소를 하나도 못 세었다 — 워커가 죽었다").toBeGreaterThan(20);
+    expect(total, "could not count a single raw form element — the worker died").toBeGreaterThan(20);
     for (const [file] of [...TEXT_CAP, ...SPECIAL_REGISTERED]) {
-      expect(statSync(path.join(ROOT, file)).isFile(), `${file} 이 실재하지 않는다`).toBe(true);
+      expect(statSync(path.join(ROOT, file)).isFile(), `${file} does not exist`).toBe(true);
     }
   });
 
-  it("텍스트류 raw <input>/<textarea> 는 상한을 넘지 못한다 — 새 파일은 Input/Textarea 로", () => {
+  it("raw text-type <input>/<textarea> cannot exceed the cap — new files use Input/Textarea", () => {
     const over: string[] = [];
     for (const [file, count] of scan.text) {
       const cap = textLedger.get(file) ?? 0;
-      if (count > cap) over.push(`${file}: ${count} > 상한 ${cap}`);
+      if (count > cap) over.push(`${file}: ${count} > cap ${cap}`);
     }
     expect(
       over,
-      "raw 텍스트 필드를 새로 쓰지 마라 — Input/Textarea(shared/ui/fields/input.tsx)가 이름 강제와 오류 배선을 소유한다.",
+      "do not write new raw text fields — Input/Textarea (shared/ui/fields/input.tsx) owns name enforcement and error wiring.",
     ).toEqual([]);
   });
 
-  it("checkbox/radio 는 0 이고 range 는 등재 하나뿐이다", () => {
+  it("checkbox/radio are 0 and range has a single registration", () => {
     const over: string[] = [];
     for (const [file, count] of scan.special) {
       const cap = specialLedger.get(file) ?? 0;
-      if (count > cap) over.push(`${file}: ${count} > 등재 ${cap}`);
+      if (count > cap) over.push(`${file}: ${count} > registered ${cap}`);
     }
     expect(
       over,
-      "raw checkbox 는 Checkbox(shared/ui/fields/checkbox.tsx)를 쓴다. radio/range 신설은 체계석 소집이 먼저다.",
+      "raw checkbox uses Checkbox (shared/ui/fields/checkbox.tsx). Creating radio/range needs the design-system council convened first.",
     ).toEqual([]);
   });
 
-  it("상한의 회수분은 내린다 — 실측보다 후한 장부는 래칫이 아니다", () => {
+  it("reclaimed caps come down — a ledger more generous than the measurement is not a ratchet", () => {
     const stale: string[] = [];
     for (const [file, cap] of TEXT_CAP) {
       const actual = scan.text.get(file) ?? 0;
-      if (actual < cap) stale.push(`${file}: 상한 ${cap} > 실측 ${actual} — 상한을 내려라`);
+      if (actual < cap) stale.push(`${file}: cap ${cap} > measured ${actual} — lower the cap`);
     }
     for (const [file, cap] of SPECIAL_REGISTERED) {
       const actual = scan.special.get(file) ?? 0;
-      if (actual < cap) stale.push(`${file}: 등재 ${cap} > 실측 ${actual}`);
+      if (actual < cap) stale.push(`${file}: registered ${cap} > measured ${actual}`);
     }
     expect(stale).toEqual([]);
   });
 
   /* ── Resident probes (/gate-probe: passing is not evidence) ── */
-  it("프로브: 분류·주석·다행 태그가 전부 옳게 계수된다", () => {
+  it("probe: classification, comments and multi-line tags are all counted correctly", () => {
     const probe = (body: string): FieldScan => {
       const acc: FieldScan = { text: new Map(), special: new Map() };
       scanFieldSource("probe.tsx", body, acc);

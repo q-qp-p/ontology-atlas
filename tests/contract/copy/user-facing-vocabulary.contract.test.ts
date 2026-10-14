@@ -36,13 +36,13 @@ function hits(word: string): string[] {
     .map((entry) => entry.path);
 }
 
-describe('사용자가 읽는 말 — 한 가지는 한 이름으로', () => {
+describe('words the user reads — one thing, one name', () => {
   /*
    * The folder the person chose. Four names for it was the worst split found. The survivor is
    * the settled term — the domain's own term for what is actually in there, not a plainer word and
    * not another product's coinage.
    */
-  it('온톨로지 폴더를 vault·볼트·워크스페이스로 부르지 않는다', () => {
+  it('does not call the ontology folder vault, "bol-teu" or workspace', () => {
     /*
      * ⚠️ `vault` survives where it is somebody's **actual name**, and it must: `pnpm vault:validate`
      * is a command a person types, and `validate_vault` is an MCP tool an agent calls. Renaming
@@ -58,7 +58,7 @@ describe('사용자가 읽는 말 — 한 가지는 한 이름으로', () => {
         .map((entry) => entry.path);
       expect(
         offenders,
-        `「${banned}」는 the settled term와 같은 것을 가리키는 두 번째 이름이다`,
+        `"${banned}" is a second name for the same thing as the settled term`,
       ).toEqual([]);
     }
   });
@@ -68,7 +68,7 @@ describe('사용자가 읽는 말 — 한 가지는 한 이름으로', () => {
    * and was banned then. Keeping the ban here means one gate owns the whole vocabulary rather than
    * one screen's test owning one word.
    */
-  it('토폴로지는 화면에 나오지 않는다 — 렌더러 이름이다', () => {
+  it('topology does not appear on screen — it is a renderer name', () => {
     for (const word of column('rendererName', 'ko').words) expect(hits(word)).toEqual([]);
   });
 
@@ -84,7 +84,7 @@ describe('사용자가 읽는 말 — 한 가지는 한 이름으로', () => {
    * The coding agent connected to this folder has one name; "AI" is honest where it names the category.
    * A ratchet rather than a ban: the count must not climb back.
    */
-  it('「AI」 사용이 늘지 않는다 — 이 폴더의 에이전트는 「에이전트」다', () => {
+  it('"AI" usage does not grow — the agent of this folder is "agent"', () => {
     /*
      * The baseline moves only with a measurement beside it; entries naming the category are the
      * use this ratchet allows.
@@ -98,7 +98,7 @@ describe('사용자가 읽는 말 — 한 가지는 한 이름으로', () => {
     ).toBeLessThanOrEqual(AI_BASELINE);
   });
 
-  it('「프로젝트」 사용이 늘지 않는다 — 종류를 말할 때만 쓴다', () => {
+  it('"project" usage does not grow — used only when naming a kind', () => {
     /*
      * The count moves for a translation of a filter or a count of projects, never for a new sentence that
      * reaches for the kind name to mean anything on the map.
@@ -116,7 +116,7 @@ describe('사용자가 읽는 말 — 한 가지는 한 이름으로', () => {
    * The five kinds have fixed names; copy must not translate them into plainer words, because people
    * who then open a file, the CLI or MCP meet the real names. A ratchet: both words have honest uses.
    */
-  it('종류 이름을 쉬운 말로 바꿔 부르지 않는다 — 도메인은 a plainer word for domain이 아니다', () => {
+  it('does not rename a kind with an easier word — domain is not a plainer word for domain', () => {
     /*
      * Counted uses of a softened word that name a view or an app feature rather than the kind are the
      * allowed ones; the baseline moves only for those.
@@ -150,7 +150,7 @@ describe('사용자가 읽는 말 — 한 가지는 한 이름으로', () => {
     ).toBeLessThanOrEqual(NODE_BASELINE);
   });
 
-  it('빈 지도 화면은 종류 이름으로 말하지 않는다', () => {
+  it('the empty-map screen does not speak in kind names', () => {
     // The exact sentence that started this: it described the node count as a count of projects.
     const empty = (ko as { topology: { empty: Record<string, string> } }).topology.empty;
     const { word } = column('projectKindWord', 'ko');

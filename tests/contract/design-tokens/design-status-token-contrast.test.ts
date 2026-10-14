@@ -50,16 +50,16 @@ function contrast(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-describe('status 토큰 다크 캔버스 대비 (WCAG AA)', () => {
+describe('status token contrast on the dark canvas (WCAG AA)', () => {
   const block = themeBlock();
   const canvas = tokenValue(block, '--color-canvas');
 
-  it('다크 캔버스 토큰이 hex 로 정의돼 있다', () => {
+  it('the dark canvas tokens are defined as hex', () => {
     expect(canvas).toMatch(/^#[0-9a-fA-F]{6}$/);
   });
 
   for (const token of STATUS_TOKENS) {
-    it(`${token} 가 다크 캔버스 위에서 >= ${AA_TEXT}:1`, () => {
+    it(`${token} is >= ${AA_TEXT}:1 on the dark canvas`, () => {
       const value = tokenValue(block, token);
       expect(value).toMatch(/^#[0-9a-fA-F]{6}$/);
       const ratio = contrast(value, canvas);

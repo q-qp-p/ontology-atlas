@@ -17,16 +17,16 @@ import { collectProbeSelectors, findDeadSelectors, readProbeSources } from "../l
  */
 const KNOWN_STALE_OPTIONAL = new Set<string>();
 
-describe("WebView 프로브 셀렉터 계약", () => {
+describe("WebView probe selectors contract", () => {
   const probeSources = readProbeSources(process.cwd());
   const selectors = collectProbeSelectors(probeSources);
 
-  it("프로브가 실제로 testid 를 조회한다 (파서 자체가 죽지 않았는지)", () => {
+  it("the probe really queries testid (the parser itself is not dead)", () => {
     // If the parser returns 0, this whole test passes meaninglessly — that trap is blocked here.
     expect(selectors.length).toBeGreaterThan(10);
   });
 
-  it("프로브가 찾는 testid 가 전부 살아 있는 UI 를 가리킨다", () => {
+  it("every testid the probe looks for points at live UI", () => {
     const dead = findDeadSelectors(selectors, process.cwd());
     const unexpected = dead.filter((id) => !KNOWN_STALE_OPTIONAL.has(id));
 
@@ -40,14 +40,14 @@ describe("WebView 프로브 셀렉터 계약", () => {
     ).toEqual([]);
   });
 
-  it("allowlist 가 실제로 죽은 것만 담고 있다 (되살아난 항목은 빼라)", () => {
+  it("the allowlist holds only what is really dead (remove revived entries)", () => {
     // If the UI came back but the allowlist entry remains, the next deletion is silent.
     const dead = new Set(findDeadSelectors(selectors, process.cwd()));
     const revived = [...KNOWN_STALE_OPTIONAL].filter((id) => !dead.has(id));
-    expect(revived, `allowlist 에서 제거할 항목: ${revived.join(", ")}`).toEqual([]);
+    expect(revived, `entries to remove from the allowlist: ${revived.join(", ")}`).toEqual([]);
   });
 
-  it("Sigma 시대 셀렉터가 프로브에 남아 있지 않다 (이번 회귀 고정)", () => {
+  it("selectors from the Sigma era do not remain in the probe (pins the regression)", () => {
     // The two that actually killed a gate cannot return, not even via the allowlist.
     expect(probeSources).not.toContain(".sigma-mouse");
     expect(probeSources).not.toContain("canvas.sigma-nodes");

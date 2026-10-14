@@ -85,21 +85,21 @@ function scan(root = process.cwd()) {
   return { byFile, total, callsSeen, axisUsers };
 }
 
-describe("호버 축 채택 래칫", () => {
+describe("hover axis adoption ratchet", () => {
   const census = scan();
 
-  it("탐지기가 공회전하지 않는다 — 호출을 실제로 끊고 축 소비처가 실재한다", () => {
-    expect(census.callsSeen, "controlClass 호출을 못 끊었다 — 파서가 죽었다").toBeGreaterThan(200);
+  it("the detector does not idle — it really splits calls and axis consumers exist", () => {
+    expect(census.callsSeen, "could not split the controlClass calls — the parser is dead").toBeGreaterThan(200);
     /*
      * **The axis must have consumers.** The discipline this repository adopted after
      * killing three components with zero consumers: an option with no consumer is
      * misinformation, not a spec. The day this assertion reaches 0 is the day the axis
      * died.
      */
-    expect(census.axisUsers, "호버 축을 쓰는 호출이 없다 — 축이 소비처 0 이다").toBeGreaterThan(20);
+    expect(census.axisUsers, "no call uses the hover axis — the axis has zero consumers").toBeGreaterThan(20);
   });
 
-  it("손으로 쓴 호버가 늘지 않는다", () => {
+  it("hand-written hover does not grow", () => {
     const verdict = judgeRatchet({
       gate: "hand-hover-declarations",
       measure: (root) => (root === process.cwd() ? census : scan(root)).total,
@@ -116,15 +116,15 @@ describe("호버 축 채택 래칫", () => {
     ).toBeLessThanOrEqual(verdict.ceiling);
   });
 
-  it("탐지기가 심은 위반을 잡고 축 사용은 안 잡는다", () => {
+  it("the detector catches the planted violation and not axis usage", () => {
     const hand = `controlClass({ shape: 'chip', className: 'hover:text-[color:var(--color-text-primary)]' })`;
     const axis = `controlClass({ shape: 'chip', hoverInk: 'strong' })`;
     const outside = `<button className="hover:text-[color:var(--color-text-primary)]" />`;
     const count = (s: string) =>
       callBlocks(s).reduce((a, b) => a + [...b.matchAll(HAND_HOVER)].length, 0);
 
-    expect(count(hand), "손 호버를 못 잡는다").toBe(1);
-    expect(count(axis), "축 사용을 위반으로 센다 — 그러면 쓸 이유가 사라진다").toBe(0);
-    expect(count(outside), "호출 밖은 이 래칫의 관할이 아니다").toBe(0);
+    expect(count(hand), "does not catch hand hover").toBe(1);
+    expect(count(axis), "counts axis usage as a violation — then the reason to use it disappears").toBe(0);
+    expect(count(outside), "outside a call is not this ratchet's jurisdiction").toBe(0);
   });
 });

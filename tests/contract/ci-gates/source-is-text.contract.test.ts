@@ -25,11 +25,11 @@ function sourceFiles(): string[] {
   return found;
 }
 
-describe("소스는 텍스트다 — git 과 grep 이 볼 수 있어야 한다", () => {
-  it("어떤 소스 파일도 NUL 바이트를 갖지 않는다", () => {
+describe("source is text — git and grep must be able to see it", () => {
+  it("no source file has a NUL byte", () => {
     const files = sourceFiles();
     // Idling guard — with an empty list, the "0 violations" below proves nothing.
-    expect(files.length, "스캔한 파일이 없다 — 경로 목록이 낡았다").toBeGreaterThan(1_000);
+    expect(files.length, "no file scanned — the path list is stale").toBeGreaterThan(1_000);
 
     const offenders = files.filter((file) => readFileSync(file).includes(0x00));
     expect(

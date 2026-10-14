@@ -159,7 +159,7 @@ function collect(files: string[]): Site[] {
 
 const sites = collect(ROOTS.flatMap(walk));
 
-describe('네이티브 체크박스·라디오의 타깃 크기 (WCAG 2.5.8 AA)', () => {
+describe('target size of native checkboxes and radios (WCAG 2.5.8 AA)', () => {
   /**
    * Idling guard. This repository has repeatedly built gates that cannot distinguish
    * "0 because it is clean" from "0 because nothing was looked at" — if the scanner
@@ -169,22 +169,22 @@ describe('네이티브 체크박스·라디오의 타깃 크기 (WCAG 2.5.8 AA)'
    * Never put a lower bound on the target count; assert the scanner is alive instead (enough files
    * scanned, a synthetic checkbox extracted).
    */
-  it('탐지기가 살아 있다 — 시야가 넓고, 합성 체크박스를 실제로 뽑는다', () => {
+  it('the detector is alive — wide view, and it really extracts synthetic checkboxes', () => {
     expect(
       ROOTS.flatMap(walk).length,
-      '훑은 파일이 너무 적다 — 스캐너의 시야가 죽었다',
+      'too few files scanned — the scanner is blind',
     ).toBeGreaterThan(300);
 
     const probe = collectFromSource(
       'probe.tsx',
       '<input type="checkbox" className="size-4" onChange={(e) => go(e)} />',
     );
-    expect(probe.length, '합성 체크박스를 못 뽑았다 — 태그 파서가 죽었다').toBe(1);
-    expect(probe[0].ownPx, '합성 체크박스의 크기를 못 읽었다').toBe(16);
+    expect(probe.length, 'could not extract the synthetic checkbox — the tag parser is dead').toBe(1);
+    expect(probe[0].ownPx, 'could not read the size of the synthetic checkbox').toBe(16);
   });
 
   it.each(sites.map((s) => [`${s.file} (${s.type})`, s] as const))(
-    '%s — 자기 24px 이거나 감싸는 라벨이 24px 바닥을 갖는다',
+    '%s — is itself 24px or its wrapping label has a 24px floor',
     (_name, site) => {
       const ownOk = site.ownPx !== null && site.ownPx >= AA_MIN_PX;
       const labelOk = site.labelFloorPx !== null && site.labelFloorPx >= AA_MIN_PX;
@@ -205,22 +205,22 @@ describe('네이티브 체크박스·라디오의 타깃 크기 (WCAG 2.5.8 AA)'
    * state.
    */
   it.each(sites.map((s) => [s.file, s] as const))(
-    '%s — 크기를 UA 기본값에 맡기지 않는다',
+    '%s — does not leave the size to the UA default',
     (_file, site) => {
       expect(
         site.ownPx,
-        '크기 클래스가 없다. 브라우저마다 다른 값이 그려지고, 값이 코드에 안 남아 lint 도 못 본다.',
+        'has no size class. Browsers draw different values, and since the value is not in the code lint cannot see it either.',
       ).not.toBeNull();
     },
   );
 
-  it('손가락에서도 바닥이 있다 — 라벨로 타깃을 낸 자리는 coarse 44 도 함께 받는다', () => {
+  it('there is a floor for fingers too — spots targeted through a label also get coarse 44', () => {
     const labelTargeted = sites.filter((s) => !(s.ownPx !== null && s.ownPx >= AA_MIN_PX));
-    expect(labelTargeted.length, '라벨로 타깃을 내는 자리가 없다면 이 단언은 헛돈다').toBeGreaterThan(0);
+    expect(labelTargeted.length, 'if no spot is targeted through a label this assertion idles').toBeGreaterThan(0);
     const missing = labelTargeted.filter((s) => !s.hasCoarseFloor);
     expect(
       missing.map((s) => s.file),
-      'AA 24 는 마우스 기준이다. 손가락(coarse)에서는 `atlas-touch-floor` 가 44 를 낸다.',
+      'AA 24 is a mouse standard. For fingers (coarse), `atlas-touch-floor` emits 44.',
     ).toEqual([]);
   });
 
@@ -229,8 +229,8 @@ describe('네이티브 체크박스·라디오의 타깃 크기 (WCAG 2.5.8 AA)'
    * 14 · 14 · 14 · UA default — the same part carrying a different value per place is
    * the defect this repository calls "50 distinct combinations".
    */
-  it('체크박스 시각 크기가 한 값으로 모인다', () => {
+  it('the visual checkbox size converges on one value', () => {
     const sizes = [...new Set(sites.map((s) => s.ownPx))].sort();
-    expect(sizes.length, `체크박스 크기가 ${sizes.join(' · ')} 로 갈렸다`).toBe(1);
+    expect(sizes.length, `checkbox sizes diverged into ${sizes.join(' · ')}`).toBe(1);
   });
 });

@@ -15,17 +15,17 @@ const PRIMITIVES = readFileSync(
 );
 const CSS = readGlobalCss();
 
-describe('설정 시트 — 산문은 읽는 폭을 지킨다', () => {
-  it('창 머리 문장은 산문 measure 를 쓴다', () => {
+describe('settings sheet — prose keeps a readable measure', () => {
+  it('the window lead sentence uses the prose measure', () => {
     expect(CSS).toMatch(/--git-setup-measure:\s*\d+px/);
     const head = PRIMITIVES.slice(PRIMITIVES.indexOf('export function SettingsPaneHead'));
     expect(
       (head.slice(0, head.indexOf('\n}\n')).match(/max-w-\[var\(--git-setup-measure\)\]/g) ?? []).length,
-      '창 머리 문장이 산문 measure 를 안 쓴다',
+      'the window lead sentence does not use the prose measure',
     ).toBe(1);
   });
 
-  it('은퇴한 행 측정폭 토큰이 되살아나지 않는다', () => {
+  it('the retired row measure token does not come back', () => {
     expect(CSS).not.toContain('--settings-content-measure');
   });
 });

@@ -29,11 +29,11 @@ type Rgba = readonly number[];
 
 function cssToken(css: string, name: string): Rgba {
   const m = new RegExp(`${name}:\\s*([^;]+);`).exec(css);
-  if (!m) throw new Error(`globals.css 에 ${name} 이 없다`);
+  if (!m) throw new Error(`${name} is missing from globals.css`);
   const v = m[1].trim();
   if (v.startsWith("var(")) return cssToken(css, v.slice(4, -1).trim());
   const parsed = parseColor(v);
-  if (!parsed) throw new Error(`${name} 값(${v})을 색으로 못 읽는다`);
+  if (!parsed) throw new Error(`cannot read the value of ${name} (${v}) as a colour`);
   return parsed as Rgba;
 }
 
@@ -71,11 +71,11 @@ const TINTS = {
 const ratioOn = (ink: Rgba, bg: Rgba) =>
   contrastRatio(composite(ink, bg), bg);
 
-describe("인디고 잉크 라이선스 — 값이 아니라 대비가 판정한다", () => {
+describe("indigo ink licence — contrast judges, not the value", () => {
   const accent = cssToken(css, "--color-indigo-accent");
   const soft = cssToken(css, "--color-indigo-text-soft");
 
-  it("톤 → 토큰 매핑이 서 있다 — accent 는 표식 인디고, accentOnTint 는 글자 인디고", () => {
+  it("the tone → token mapping stands — accent is the marker indigo, accentOnTint is the text indigo", () => {
     /*
      * Contrast alone cannot lock this mapping: soft also passes on the base
      * backgrounds, so swapping `accent` ink for soft keeps the licence below green.
@@ -89,25 +89,25 @@ describe("인디고 잉크 라이선스 — 값이 아니라 대비가 판정한
     );
   });
 
-  it("accent 의 라이선스: 맨 바탕 3단 전부에서 AA(4.5:1)", () => {
+  it("licence of accent: AA (4.5:1) on all three bare backgrounds", () => {
     for (const [name, base] of Object.entries(BASES)) {
       const r = ratioOn(accent, base);
-      expect(r, `accent(#7170ff) 가 맨 ${name} 위에서 ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+      expect(r, `accent(#7170ff) on bare ${name} is ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
     }
   });
 
-  it("accentOnTint 의 라이선스: 모든 바탕 × 모든 틴트 합성에서 AA(4.5:1) — 어디서나 안전한 잉크", () => {
+  it("licence of accentOnTint: AA (4.5:1) on every background × every tint composite — an ink safe anywhere", () => {
     for (const [bn, base] of Object.entries(BASES)) {
-      expect(ratioOn(soft, base), `soft 가 맨 ${bn} 위에서 미달`).toBeGreaterThanOrEqual(4.5);
+      expect(ratioOn(soft, base), `soft falls short on bare ${bn}`).toBeGreaterThanOrEqual(4.5);
       for (const [tn, tint] of Object.entries(TINTS)) {
         const bg = composite(tint, base);
         const r = ratioOn(soft, bg);
-        expect(r, `soft 가 ${tn}/${bn} 합성 위에서 ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+        expect(r, `soft on the ${tn}/${bn} composite is ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
       }
     }
   });
 
-  it("분리의 근거가 아직 실재한다 — accent 는 틴트 위에서 실제로 AA 를 깬다", () => {
+  it("the reason for the split still exists — accent really breaks AA on a tint", () => {
     /*
      * `/gate-probe`: no detector may idle on an empty set. The day this assertion
      * turns red is the day the tokens converged and accent passes everywhere, and on
@@ -116,7 +116,7 @@ describe("인디고 잉크 라이선스 — 값이 아니라 대비가 판정한
      */
     expect(
       ratioOn(accent, composite(TINTS["indigo-a24"], BASES.canvas)),
-      "accent 가 a24/canvas 에서도 AA 를 통과한다 — 톤 분리를 접을 수 있는지 재평가하라",
+      "accent passes AA on a24/canvas too — re-evaluate whether the tone split can be folded",
     ).toBeLessThan(4.5);
     expect(ratioOn(accent, composite(TINTS["indigo-line-a13"], BASES.elevated))).toBeLessThan(4.5);
   });
@@ -131,7 +131,7 @@ describe("인디고 잉크 라이선스 — 값이 아니라 대비가 판정한
  * background, so no tint falls inside the window — a new one turns this red, and
  * the prescription is `accentOnTint`, not a ban.
  */
-describe("accent × 틴트 페어링 금지 — lint 가 못 보는 상수 우회까지", () => {
+describe("accent × tint pairing ban — including constant bypasses lint cannot see", () => {
   const TINT_RE = /bg-\[color:var\(--color-(indigo|amber)/;
   const TONE_RE = /tone(?::\s*|=)["']accent["']/;
 
@@ -197,7 +197,7 @@ describe("accent × 틴트 페어링 금지 — lint 가 못 보는 상수 우�
     return hits;
   };
 
-  it("손글씨 accent × 틴트가 늘지 않는다 — `tone` 을 안 쓰면 이 게이트가 못 보던 층", () => {
+  it("hand-written accent × tint does not grow — a layer this gate could not see when `tone` is unused", () => {
     const hits = handWritten();
     expect(
       hits.length,
@@ -207,25 +207,25 @@ describe("accent × 틴트 페어링 금지 — lint 가 못 보는 상수 우�
     ).toBeLessThanOrEqual(BASELINE_HAND_WRITTEN_ACCENT_ON_TINT);
   });
 
-  it("갚았으면 기준선도 내린다 — 여유를 무료로 두지 않는다", () => {
+  it("when paid off the baseline comes down too — slack is not left free", () => {
     expect(
       handWritten().length,
-      "손글씨 accent×틴트가 줄었다 — BASELINE_HAND_WRITTEN_ACCENT_ON_TINT 도 같이 내려라.",
+      "hand-written accent×tint shrank — lower BASELINE_HAND_WRITTEN_ACCENT_ON_TINT too.",
     ).toBeGreaterThanOrEqual(BASELINE_HAND_WRITTEN_ACCENT_ON_TINT);
   });
 
-  it("탐지기가 공회전하지 않는다 — 합성 프로브를 실제로 잡고, 정상 짝은 놓아준다", () => {
+  it("the detector does not idle — it catches the synthetic probe and lets the proper pair go", () => {
     const offender = `<span className="rounded-full bg-[color:var(--color-indigo-a16)] text-[color:var(--color-indigo-accent)]">1</span>`;
     const fixed = `<span className="rounded-full bg-[color:var(--color-indigo-a16)] text-[color:var(--color-indigo-text-soft)]">1</span>`;
     const bare = `<span className="text-[color:var(--color-indigo-accent)]">1</span>`;
     const hit = (s: string) =>
       openingTags(s).some((t) => HAND_WRITTEN_INK.test(t) && HAND_WRITTEN_TINT.test(t));
-    expect(hit(offender), "일부러 만든 위반을 못 잡는다 — 탐지기가 죽었다").toBe(true);
-    expect(hit(fixed), "고친 짝을 위반으로 센다 — 그러면 고칠 이유가 사라진다").toBe(false);
-    expect(hit(bare), "맨 바탕 위 accent 는 라이선스 안이다").toBe(false);
+    expect(hit(offender), "does not catch the deliberate violation — the detector is dead").toBe(true);
+    expect(hit(fixed), "counts the fixed pair as a violation — then the reason to fix disappears").toBe(false);
+    expect(hit(bare), "accent on a bare background is within the licence").toBe(false);
   });
 
-  it("위반 0 — 틴트를 지는 주 행동 잉크는 accentOnTint 다", () => {
+  it("zero violations — the primary-action ink carrying a tint is accentOnTint", () => {
     const offenders: string[] = [];
     for (const file of walk(join(process.cwd(), "src"))) {
       const src = stripComments(readFileSync(file, "utf8"));
@@ -250,7 +250,7 @@ describe("accent × 틴트 페어링 금지 — lint 가 못 보는 상수 우�
     }
     expect(
       offenders,
-      `tone accent 가 인디고/앰버 틴트 채움과 같은 컨트롤에 있다 — accentOnTint 로:\n${offenders.join("\n")}`,
+      `tone accent shares a control with an indigo/amber tint fill — use accentOnTint:\n${offenders.join("\n")}`,
     ).toEqual([]);
   });
 });

@@ -28,15 +28,15 @@ import { KNOWLEDGE_EDGE_TYPES } from '../../../src/entities/knowledge-graph/mode
 const ROOT = process.cwd();
 
 const SURFACE_FILES: ReadonlyArray<{ label: string; file: string }> = [
-  { label: '지도 도움말 관계 가이드 (ShortcutSheet)', file: 'src/widgets/shortcut-sheet/ui/ShortcutSheet.tsx' },
+  { label: 'map help relation guide (ShortcutSheet)', file: 'src/widgets/shortcut-sheet/ui/ShortcutSheet.tsx' },
   { label: 'Analysis relationship workspace', file: 'src/views/ontology-insights/ui/analysis/AnalysisWorkspace.tsx' },
-  { label: '데이터시트 (HomePage — nodeDatasheet labels)', file: 'src/views/home/model/use-topology-preferences.tsx' },
+  { label: 'data sheet (HomePage — nodeDatasheet labels)', file: 'src/views/home/model/use-topology-preferences.tsx' },
 ];
 
 const IMPORT_MARKERS = ['useRelationVocabulary', 'useEdgeTypeLabel'];
 
-describe('relation-vocabulary contract — 3 표면 공용 사전', () => {
-  it('지도 범례 · 인사이트 · 데이터시트가 모두 공유 사전(useRelationVocabulary/useEdgeTypeLabel)을 import 한다', () => {
+describe('relation-vocabulary contract — a dictionary shared by 3 surfaces', () => {
+  it('the map legend, insights and data sheet all import the shared dictionary (useRelationVocabulary/useEdgeTypeLabel)', () => {
     const missing: string[] = [];
     for (const surface of SURFACE_FILES) {
       const source = readFileSync(path.join(ROOT, surface.file), 'utf8');
@@ -57,7 +57,7 @@ describe('relation-vocabulary contract — 3 표면 공용 사전', () => {
   });
 
   it.each(['formal', 'plain'] as const)(
-    '%s 레지스터가 모든 KnowledgeEdgeType 을 ko/en 양쪽에 정의한다',
+    '%s register defines every KnowledgeEdgeType in both ko/en',
     (register) => {
       const namespace = register === 'formal' ? 'edgeTypes' : 'edgeTypesPlain';
       for (const [localeName, messages] of [
@@ -67,13 +67,13 @@ describe('relation-vocabulary contract — 3 표면 공용 사전', () => {
         const dict = (messages as Record<string, unknown>)[namespace] as
           | Record<string, string>
           | undefined;
-        expect(dict, `messages/${localeName}.json 에 "${namespace}" 네임스페이스가 없습니다`).toBeDefined();
+        expect(dict, `messages/${localeName}.json has no "${namespace}" namespace`).toBeDefined();
         const missingTypes = KNOWLEDGE_EDGE_TYPES.filter(
           (type) => typeof dict?.[type] !== 'string' || dict[type].trim() === '',
         );
         expect(
           missingTypes,
-          `messages/${localeName}.json "${namespace}" 에 다음 타입이 비어있거나 없습니다: ${missingTypes.join(', ')}`,
+          `in messages/${localeName}.json "${namespace}" the following types are empty or missing: ${missingTypes.join(', ')}`,
         ).toEqual([]);
       }
     },

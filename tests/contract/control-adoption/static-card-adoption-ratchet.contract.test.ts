@@ -45,24 +45,24 @@ const DEBT: ReadonlyArray<readonly [file: string, count: number]> = [
   ["src/widgets/vault-agent-panel/ui/AgentScopeSheet.tsx", 1],
 ];
 
-describe("섹션 카드 채택 래칫", () => {
+describe("section card adoption ratchet", () => {
   const census = censusStaticSurfaces(ROOT);
   const found = census.cards;
   const ledger = new Map(DEBT);
 
-  it("탐지기가 공회전하지 않는다 — 파일을 훑고 장부가 실재한다", () => {
-    expect(census.scanned, "훑은 파일이 너무 적다 — 워커가 죽었다").toBeGreaterThan(100);
-    expect([...found.values()].reduce((a, b) => a + b, 0), "카드를 하나도 못 찾았다").toBeGreaterThan(0);
+  it("the detector does not idle — it scans files and the ledger exists", () => {
+    expect(census.scanned, "too few files scanned — the worker died").toBeGreaterThan(100);
+    expect([...found.values()].reduce((a, b) => a + b, 0), "could not find a single card").toBeGreaterThan(0);
     for (const [file] of DEBT) {
-      expect(statSync(path.join(ROOT, file)).isFile(), `${file} 이 실재하지 않는다`).toBe(true);
+      expect(statSync(path.join(ROOT, file)).isFile(), `${file} does not exist`).toBe(true);
     }
   });
 
-  it("손으로 쓴 상자 인셋은 장부를 넘지 못한다 — 새 파일은 첫날부터 0", () => {
+  it("hand-written box insets cannot exceed the ledger — a new file starts at 0 on day one", () => {
     const over: string[] = [];
     for (const [file, count] of found) {
       const allowed = ledger.get(file) ?? 0;
-      if (count > allowed) over.push(`${file}: ${count} > 장부 ${allowed}`);
+      if (count > allowed) over.push(`${file}: ${count} > ledger ${allowed}`);
     }
     expect(
       over,
@@ -72,17 +72,17 @@ describe("섹션 카드 채택 래칫", () => {
     ).toEqual([]);
   });
 
-  it("장부의 회수분은 내린다 — 실측보다 후한 장부는 래칫이 아니다", () => {
+  it("reclaimed ledger entries come down — a ledger more generous than the measurement is not a ratchet", () => {
     const stale: string[] = [];
     for (const [file, allowed] of DEBT) {
       const actual = found.get(file) ?? 0;
-      if (actual < allowed) stale.push(`${file}: 장부 ${allowed} > 실측 ${actual} — 내려라`);
+      if (actual < allowed) stale.push(`${file}: ledger ${allowed} > measured ${actual} — lower it`);
     }
     expect(stale).toEqual([]);
   });
 
   /* ── Resident probes (/gate-probe) ── */
-  it("프로브: 손 인셋은 잡고 토큰 채택·비대상 반경은 안 잡는다", () => {
+  it("probe: hand insets are caught, token adoption and non-target radii are not", () => {
     expect(isHandCard('<div className="rounded-panel border px-4 py-4"')).toBe(true);
     expect(isHandCard('<section className="rounded-card p-3"')).toBe(true);
     expect(isHandCard('<div className="rounded-panel border p-[var(--card-pad)]"')).toBe(false);

@@ -82,21 +82,21 @@ function runBlocks(source: string): { text: string; indents: number[] }[] {
   return blocks;
 }
 
-describe('머지 후 스위프 목록은 실재하는 스펙만 담는다', () => {
-  it('비어 있지 않고, 중복이 없다', () => {
+describe('the post-merge sweep list holds only specs that exist', () => {
+  it('is non-empty and has no duplicates', () => {
     expect(POST_MERGE_SPECS.length).toBeGreaterThanOrEqual(5);
     expect(new Set(POST_MERGE_SPECS).size).toBe(POST_MERGE_SPECS.length);
   });
 
-  it.each([...POST_MERGE_SPECS])('%s 가 tests/e2e 에 실재한다', (file) => {
+  it.each([...POST_MERGE_SPECS])('%s exists in tests/e2e', (file) => {
     // A renamed or deleted spec left in the list belongs to no project and silently
     // disappears — that state is made red here.
-    expect(existsSync(join(E2E_DIR, file)), `${file} 이 없다 — rename 했다면 목록도 고쳐라`).toBe(
+    expect(existsSync(join(E2E_DIR, file)), `${file} is missing — if renamed, fix the list too`).toBe(
       true,
     );
   });
 
-  it('워크플로·스크립트가 파일명으로 직접 부르는 스펙은 목록에 못 들어온다', () => {
+  it('specs that workflows or scripts call directly by file name cannot enter the list', () => {
     // The `web-surface-smoke` job and `test:e2e:static` name files directly. Putting
     // such a file in the post-merge list still runs it (a file argument beats a
     // project filter), but the job's reason for existing ("runs on every PR") and the
@@ -105,7 +105,7 @@ describe('머지 후 스위프 목록은 실재하는 스펙만 담는다', () =
     const invoked = [...(workflow + runner + pkg).matchAll(/tests\/e2e\/((?:[\w-]+\/)*[\w-]+\.spec\.ts)/g)].map(
       (m) => m[1],
     );
-    expect(invoked.length, '직접 부르는 스펙을 하나도 못 찾았다 — 스캐너가 죽었다').toBeGreaterThan(0);
+    expect(invoked.length, 'could not find a single directly invoked spec — the scanner is dead').toBeGreaterThan(0);
     for (const file of invoked) {
       expect(POST_MERGE_SPECS).not.toContain(file);
     }
@@ -150,14 +150,14 @@ describe('post-merge specs reach the pull requests that change their owner', () 
   });
 });
 
-describe('Playwright 프로젝트가 그 목록에서 나온다', () => {
+describe('Playwright projects come from that list', () => {
   const projects = playwrightConfig.projects ?? [];
 
-  it('smoke 와 post-merge 두 프로젝트가 있다', () => {
+  it('there are two projects, smoke and post-merge', () => {
     expect(projects.map((p) => p.name).sort()).toEqual(['post-merge', 'smoke']);
   });
 
-  it('post-merge 는 목록과 정확히 일치하고, smoke 는 그 여집합이다', () => {
+  it('post-merge matches the list exactly, and smoke is its complement', () => {
     const globs = POST_MERGE_SPECS.map((file) => `**/${file}`);
     const smoke = projects.find((p) => p.name === 'smoke');
     const postMerge = projects.find((p) => p.name === 'post-merge');
@@ -166,8 +166,8 @@ describe('Playwright 프로젝트가 그 목록에서 나온다', () => {
   });
 });
 
-describe('정적 export CI만 runner의 두 CPU를 쓴다', () => {
-  it('CI와 정적 export가 함께 선언될 때만 worker를 둘로 늘린다', () => {
+describe('only the static-export CI uses the runner\'s two CPUs', () => {
+  it('raises workers to two only when CI and static export are declared together', () => {
     expect(resolvePlaywrightWorkers({ CI: 'true', PLAYWRIGHT_STATIC: '1' })).toBe(2);
     expect(resolvePlaywrightWorkers({ CI: '1', PLAYWRIGHT_STATIC: '1' })).toBe(2);
     expect(resolvePlaywrightWorkers({ CI: 'true' })).toBe(1);
@@ -180,12 +180,12 @@ describe('정적 export CI만 runner의 두 CPU를 쓴다', () => {
   });
 });
 
-describe('워크플로 분기가 살아 있다', () => {
+describe('workflow branches are alive', () => {
   const blocks = runBlocks(workflow);
   const suiteBlocks = blocks.filter((b) => b.text.includes('--shard='));
 
-  it('샤드 실행 블록을 실제로 찾았다 — 빈 집합 위의 초록이 아니다', () => {
-    expect(suiteBlocks.length, 'e2e.yml 에서 --shard 실행 블록을 못 찾았다').toBeGreaterThan(0);
+  it('the shard run block was really found — not green over an empty set', () => {
+    expect(suiteBlocks.length, 'could not find the --shard run block in e2e.yml').toBeGreaterThan(0);
   });
 
   it('shard steps invoke the browser lane executor', () => {
@@ -196,7 +196,7 @@ describe('워크플로 분기가 살아 있다', () => {
     }
   });
 
-  it('샤드 블록에 더 들여쓴 연속 줄이 없다 — 접힘 스칼라의 literal 함정', () => {
+  it('no shard block has a further-indented continuation line — the literal trap of folded scalars', () => {
     // #1178's first run died in exactly this shape: a more-indented line stayed
     // literal, the script became two lines, and line 2's `--shard=…` exited 127. With
     // this assertion that diff goes red here, before it reaches CI.

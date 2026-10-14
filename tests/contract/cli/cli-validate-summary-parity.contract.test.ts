@@ -44,8 +44,8 @@ afterAll(() => {
   for (const root of roots) rmSync(root, { recursive: true, force: true });
 });
 
-describe("cli validate — 텍스트 요약과 --json 이 같은 수를 말한다", () => {
-  it("결함 볼트에서 error/warning 이 **문제 수**로 일치한다", () => {
+describe("cli validate — the text summary and --json state the same numbers", () => {
+  it("on a defective vault error/warning agree as the **problem count**", () => {
     const root = materialize(BROKEN_VAULT);
 
     const parsed = JSON.parse(runValidate(root, true)) as {
@@ -68,7 +68,7 @@ describe("cli validate — 텍스트 요약과 --json 이 같은 수를 말한�
           problem.issues.some((issue) => issue.severity === "error") &&
           problem.issues.some((issue) => issue.severity !== "error"),
       ),
-      "픽스처가 이 계약의 사각지대를 재현하지 못한다",
+      "the fixture does not reproduce the blind spot of this contract",
     ).toBe(true);
 
     const text = runValidate(root, false)
@@ -80,7 +80,7 @@ describe("cli validate — 텍스트 요약과 --json 이 같은 수를 말한�
     expect(summary).toContain(`${issues.length} issues`);
   });
 
-  it("정상 볼트는 clean 이라고 말한다 (항상-빨강 아님)", () => {
+  it("a healthy vault says clean (not always red)", () => {
     const root = materialize(HEALTHY_VAULT);
     const parsed = JSON.parse(runValidate(root, true)) as { problems: unknown[] };
     expect(parsed.problems).toEqual([]);

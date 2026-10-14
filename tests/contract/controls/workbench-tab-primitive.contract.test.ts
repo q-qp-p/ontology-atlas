@@ -67,15 +67,15 @@ describe('meaning workbench — sections are tabs', () => {
     // and a detector that reads its own rationale as a violation is a detector nobody can document
     // around.
     const code = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-    expect(code, '워크벤치가 TabBar 를 안 쓴다').toContain('TabBar');
-    expect(code, 'SegmentedControl 은 값 고르개다 — 이 셋은 한 화면의 보기다').not.toContain(
+    expect(code, 'the workbench does not use TabBar').toContain('TabBar');
+    expect(code, 'SegmentedControl is a value picker — these three are views of one screen').not.toContain(
       'SegmentedControl',
     );
     // The stripper must not be so eager that the assertion becomes unfailable.
-    expect(code, '주석을 걷어내니 파일이 비었다 — 이 시험이 공회전한다').toContain('TabBar');
+    expect(code, 'with the comments stripped the file is empty — this test idles').toContain('TabBar');
     expect(
       `${code} SegmentedControl`,
-      '심은 위반을 못 잡는다',
+      'does not catch the planted violation',
     ).toContain('SegmentedControl');
   });
 
@@ -87,13 +87,13 @@ describe('meaning workbench — sections are tabs', () => {
     const prefix = declaredIdPrefix(source);
     const keys = tabKeys(source);
     // Non-empty in both directions, or the whole file measures nothing.
-    expect(keys.length, '탭 키를 못 읽었다 — 이 시험이 공회전한다').toBeGreaterThan(2);
+    expect(keys.length, 'could not read the tab keys — this test idles').toBeGreaterThan(2);
     const found = panels(source);
-    expect(found.length, '패널을 못 읽었다').toBe(keys.length);
+    expect(found.length, 'could not read the panels').toBe(keys.length);
     for (const key of keys) {
       expect(
         found,
-        `${key} 탭이 가리키는 패널이 없다 — 선택된 탭의 aria-controls 가 허공을 가리킨다`,
+        `the ${key} tab has no panel to point at — the aria-controls of the selected tab points at nothing`,
       ).toContainEqual({
         id: `${prefix}-tabpanel-${key}`,
         labelledBy: `${prefix}-tab-${key}`,
@@ -106,7 +106,7 @@ describe('meaning workbench — sections are tabs', () => {
    * ⚠️ **A gate that can only pass is not a gate.** Both halves of the consumer's contract are
    * planted: a missing panel id, and a prefix that drifts from the tabs'.
    */
-  it('탐지기 프로브 — 빠진 패널과 어긋난 접두사를 실제로 잡는다', () => {
+  it('detector probe — really catches a missing panel and a mismatched prefix', () => {
     const withoutPanel = source.replace('id="workbench-tabpanel-history"', 'id="history-panel"');
     expect(withoutPanel).not.toBe(source);
     expect(panels(withoutPanel).map((panel) => panel.id)).not.toContain(

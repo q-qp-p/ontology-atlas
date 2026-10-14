@@ -36,9 +36,9 @@ describe.each(['.claude', '.agents'])('design-build references in %s', (tree) =>
     ['controlClass', 'src/shared/ui/control-class.ts'],
   ];
 
-  it.each(PRESCRIBED_PRIMITIVES)('`%s` 를 처방하고, 그것이 실재한다', (name, file) => {
-    expect(existsSync(join(ROOT, file)), `${file} 이 없다`).toBe(true);
-    expect(read(file), `${file} 이 ${name} 를 안 내보낸다`).toMatch(
+  it.each(PRESCRIBED_PRIMITIVES)('prescribes `%s`, and it exists', (name, file) => {
+    expect(existsSync(join(ROOT, file)), `${file} is missing`).toBe(true);
+    expect(read(file), `${file} does not export ${name}`).toMatch(
       new RegExp(`export (const|function) ${name}\\b`),
     );
   });
@@ -54,8 +54,8 @@ describe.each(['.claude', '.agents'])('design-build references in %s', (tree) =>
     `${tree}/skills/gate-probe/SKILL.md`,
   ];
 
-  it.each(PRESCRIBED_INSTRUMENTS)('%s 가 실재한다', (path) => {
-    expect(existsSync(join(ROOT, path)), `${path} 이 없다`).toBe(true);
+  it.each(PRESCRIBED_INSTRUMENTS)('%s exists', (path) => {
+    expect(existsSync(join(ROOT, path)), `${path} is missing`).toBe(true);
   });
 
   /**
@@ -71,8 +71,8 @@ describe.each(['.claude', '.agents'])('design-build references in %s', (tree) =>
     ['control-class', 'tests/contract/controls/control-class.contract.test.ts'],
   ] as const;
 
-  it.each(ANNOUNCED_GATES)('`%s` 를 예고하고, 그 게이트가 실재한다', (name, path) => {
-    expect(existsSync(join(ROOT, path)), `${path} 이 없다`).toBe(true);
+  it.each(ANNOUNCED_GATES)('announces `%s`, and that gate exists', (name, path) => {
+    expect(existsSync(join(ROOT, path)), `${path} is missing`).toBe(true);
   });
 
   /** Backticked tokens, the shape the recipe cites a file or a gate in. */

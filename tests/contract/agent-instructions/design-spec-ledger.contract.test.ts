@@ -25,8 +25,8 @@ function readDoc() {
   return readFileSync(TRIGGER_SECTION_DOC, "utf8");
 }
 
-describe("디자인 규격 → 원장 게이트", () => {
-  it("트리거 목록은 정본 문서에서 유도된다 (코드에 복제본이 없다)", () => {
+describe("design spec → ledger gate", () => {
+  it("the trigger list is derived from the canonical document (no copy in code)", () => {
     const gate = readFileSync("scripts/records/check-decision-record.mjs", "utf8");
     expect(gate).toContain("design-spec-census.mjs");
     expect(gate).toContain("parseTriggerFiles");
@@ -34,22 +34,22 @@ describe("디자인 규격 → 원장 게이트", () => {
     for (const path of parseTriggerFiles(readDoc()) as string[]) {
       expect(
         gate.includes(`"${path}"`) || gate.includes(`'${path}'`),
-        `${path} 가 게이트 스크립트에 하드코딩돼 있다 — 목록은 ${TRIGGER_SECTION_DOC} 한 곳에만.`,
+        `${path} is hard-coded in the gate script — the list lives in ${TRIGGER_SECTION_DOC} only.`,
       ).toBe(false);
     }
   });
 
-  it("목록의 모든 경로가 실재한다", () => {
+  it("every path in the list exists", () => {
     const files = parseTriggerFiles(readDoc()) as string[];
     expect(files.length).toBeGreaterThan(0);
     for (const path of files) {
-      expect(existsSync(path), `${TRIGGER_SECTION_DOC} 가 없는 파일을 가리킨다: ${path}`).toBe(
+      expect(existsSync(path), `${TRIGGER_SECTION_DOC} points at a missing file: ${path}`).toBe(
         true,
       );
     }
   });
 
-  it("각 트리거 파일이 오늘 실제로 규격 항목을 낸다 (탐지기가 공회전하지 않는다)", () => {
+  it("each trigger file really yields spec entries today (the detector does not idle)", () => {
     for (const path of parseTriggerFiles(readDoc()) as string[]) {
       const census = censusFor(path, path === "app/globals.css" ? readGlobalCss() : readFileSync(path, "utf8")) as Map<string, string>;
       expect(
@@ -60,15 +60,15 @@ describe("디자인 규격 → 원장 게이트", () => {
     }
   });
 
-  it("절 제목이 살아 있다 (파서가 조용히 빈손이 되지 않는다)", () => {
+  it("the section heading is alive (the parser does not silently come back empty-handed)", () => {
     expect(readDoc()).toContain(SPEC_RULE_SECTION as string);
   });
 
-  describe("무엇을 규격 변경으로 보는가", () => {
+  describe("what counts as a spec change", () => {
     const css = "app/globals.css";
     const control = "src/shared/ui/control-class.ts";
 
-    it("램프 토큰의 추가·삭제·값 변경을 잡는다", () => {
+    it("catches adding, deleting and changing the value of a ramp token", () => {
       const before = censusFor(css, ":root { --text-body: 12.5px; --radius-chip: 6px; }");
       const added = censusFor(
         css,
@@ -82,7 +82,7 @@ describe("디자인 규격 → 원장 게이트", () => {
       expect(diffCensus(before, removed)).toHaveLength(1);
     });
 
-    it("주석·공백·선언 순서만 바뀐 CSS 는 규격 변경이 아니다", () => {
+    it("CSS with only comments, whitespace or declaration order changed is not a spec change", () => {
       const before = censusFor(css, ":root { --text-body: 12.5px; --radius-chip: 6px; }");
       const after = censusFor(
         css,
@@ -91,20 +91,20 @@ describe("디자인 규격 → 원장 게이트", () => {
       expect(diffCensus(before, after)).toEqual([]);
     });
 
-    it("표면 전용 색 토큰은 램프가 아니다 (오탐 억제)", () => {
+    it("surface-only colour tokens are not ramps (false-positive suppression)", () => {
       const before = censusFor(css, ":root { --color-indigo-a08: rgba(1,2,3,0.08); }");
       const after = censusFor(css, ":root { --color-indigo-a08: rgba(1,2,3,0.09); }");
       expect(before.size).toBe(0);
       expect(diffCensus(before, after)).toEqual([]);
     });
 
-    it("팔레트의 뿌리가 움직이면 규격 변경이다", () => {
+    it("a moved palette root is a spec change", () => {
       const before = censusFor(css, ":root { --color-indigo-brand: #5e6ad2; }");
       const after = censusFor(css, ":root { --color-indigo-brand: #6070e0; }");
       expect(diffCensus(before, after)).toHaveLength(1);
     });
 
-    it("cva 축·선택지·기본값의 증감을 잡는다", () => {
+    it("catches added or removed cva axes, options and defaults", () => {
       const base = `const c = cva('', { variants: { shape: { chip: 'a', icon: 'b' } }, defaultVariants: { shape: 'chip' } });`;
       const newOption = `const c = cva('', { variants: { shape: { chip: 'a', icon: 'b', tile: 'c' } }, defaultVariants: { shape: 'chip' } });`;
       const newAxis = `const c = cva('', { variants: { shape: { chip: 'a', icon: 'b' }, scope: { app: '', panel: '' } }, defaultVariants: { shape: 'chip' } });`;
@@ -115,13 +115,13 @@ describe("디자인 규격 → 원장 게이트", () => {
       expect(diffCensus(censusFor(control, base), censusFor(control, newDefault))).toHaveLength(1);
     });
 
-    it("선택지가 내는 클래스 문자열만 바뀐 것은 규격 변경이 아니다", () => {
+    it("a change only in the class string an option emits is not a spec change", () => {
       const before = `const c = cva('', { variants: { shape: { chip: 'gap-1.5 rounded-chip' } } });`;
       const after = `const c = cva('', { variants: { shape: { chip: 'gap-2 rounded-chip' } } });`;
       expect(diffCensus(censusFor(control, before), censusFor(control, after))).toEqual([]);
     });
 
-    it("주석 안의 예시 코드를 규격으로 세지 않는다 (TS 파서를 쓰는 이유)", () => {
+    it("example code inside a comment is not counted as a spec (the reason a TS parser is used)", () => {
       const withComment = `/** 예: variants: { ghost: { on: 'x' } } — 쓰지 말 것 */\nconst c = cva('', { variants: { shape: { chip: 'a' } } });`;
       const census = censusFor(control, withComment) as Map<string, string>;
       expect([...census.keys()]).toEqual(["axis shape"]);

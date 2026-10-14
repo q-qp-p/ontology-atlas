@@ -38,21 +38,21 @@ function makeManifest(docs: VaultDoc[]): VaultManifest {
   };
 }
 
-describe("relation-keys contract — 웹 derive 가 MCP 관계 키를 전부 읽는다", () => {
-  it("fixture 표가 MCP GRAPH_ARRAY_KEYS 전집합을 덮는다 (새 키 → 즉시 fail)", () => {
+describe("relation-keys contract — the web derive reads every MCP relation key", () => {
+  it("the fixture table covers the full set of MCP GRAPH_ARRAY_KEYS (a new key fails at once)", () => {
     const fixtureKeys = RELATION_KEY_CASES.map((c) => c.key).sort();
     const mcpKeys = [...GRAPH_ARRAY_KEYS].sort();
     expect(fixtureKeys).toEqual(mcpKeys);
   });
 
   // Idling guard — with an empty table the loop below proves nothing.
-  it("fixture 표는 공집합이 아니다", () => {
+  it("the fixture table is not an empty set", () => {
     expect(RELATION_KEY_CASES.length).toBeGreaterThanOrEqual(9);
   });
 
   for (const c of RELATION_KEY_CASES) {
     describe(`key: ${c.key}`, () => {
-      it("MCP collectNeighborRefs 가 이 키를 읽는다", () => {
+      it("MCP collectNeighborRefs reads this key", () => {
         const refs = collectNeighborRefs({ frontmatter: c.frontmatter }) as {
           key: string;
           ref: string;
@@ -60,7 +60,7 @@ describe("relation-keys contract — 웹 derive 가 MCP 관계 키를 전부 읽
         expect(refs.length).toBeGreaterThanOrEqual(1);
       });
 
-      it("웹 derive 가 같은 키에서 엣지를 만든다", () => {
+      it("the web derive builds an edge from the same key", () => {
         const result = deriveOntologyFromVault(
           makeManifest([makeDoc(`fixtures/${c.key}-case`, c.frontmatter)]),
         );
@@ -70,18 +70,18 @@ describe("relation-keys contract — 웹 derive 가 MCP 관계 키를 전부 읽
     });
   }
 
-  describe("relation array 스칼라 거절 — 웹이 컴파일러보다 관계를 더 만들지 않는다", () => {
+  describe("relation array scalar rejection — the web never builds more relations than the compiler", () => {
     for (const c of RELATION_KEY_CASES) {
       const sourceFrontmatter = c.frontmatter as Record<string, unknown>;
       const scalar = (sourceFrontmatter[c.key] as string[])[0];
       const frontmatter = { ...sourceFrontmatter, [c.key]: scalar };
 
-      it(`MCP: ${c.key} 스칼라를 관계로 읽지 않는다`, () => {
+      it(`MCP: does not read a ${c.key} scalar as a relation`, () => {
         const refs = collectNeighborRefs({ frontmatter }) as { key: string; ref: string }[];
         expect(refs.filter((ref) => ref.key === c.key)).toEqual([]);
       });
 
-      it(`웹 derive: ${c.key} 스칼라를 엣지로 만들지 않는다`, () => {
+      it(`web derive: does not build an edge from a ${c.key} scalar`, () => {
         const result = deriveOntologyFromVault(
           makeManifest([makeDoc(`fixtures/${c.key}-scalar`, frontmatter)]),
         );
@@ -90,8 +90,8 @@ describe("relation-keys contract — 웹 derive 가 MCP 관계 키를 전부 읽
     }
   });
 
-  describe("dependencies + depends_on 합집합 — 같은 대상은 한 번만", () => {
-    it("MCP: canonical dependencies ref 3개", () => {
+  describe("dependencies + depends_on union — the same target only once", () => {
+    it("MCP: 3 canonical dependencies refs", () => {
       const refs = collectNeighborRefs({ frontmatter: DEPENDS_UNION_CASE.frontmatter }) as {
         key: string;
         ref: string;
@@ -100,7 +100,7 @@ describe("relation-keys contract — 웹 derive 가 MCP 관계 키를 전부 읽
       expect(depRefs.sort()).toEqual(DEPENDS_UNION_CASE.expectedRefs);
     });
 
-    it("웹 derive: depends_on 엣지 3개", () => {
+    it("web derive: 3 depends_on edges", () => {
       const result = deriveOntologyFromVault(
         makeManifest([makeDoc("capabilities/union-case", DEPENDS_UNION_CASE.frontmatter)]),
       );
