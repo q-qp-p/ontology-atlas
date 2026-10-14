@@ -7,7 +7,7 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
@@ -15,14 +15,16 @@ import { parseJsonRpcResponses } from '../../mcp/scripts/json-rpc-lines.mjs';
 import {
   BUNDLE_ENTRY_POINT,
   BUNDLE_SERVER_DIR,
-  STRIPPED_MODULE,
-  TYPED_MODULE,
   bundleFileList,
   bundleManifest,
   bundlePackageJson,
   bundleProvenance,
   dependencyClosure,
+  importsTypedModule,
   isBundleBallast,
+  isTypedModule,
+  pointAtStrippedModules,
+  strippedName,
 } from '../lib/packaging/mcp-bundle.mjs';
 
 const ROOT = process.cwd();
@@ -91,44 +93,50 @@ function packageManifest(dir) {
 }
 
 /**
- * `mcp/src/analysis-history/analysis-record.mts` is imported directly and relies on Node's type
- * stripping, unflagged only from Node 23.6. A host supplies its own Node, so the
- * one typed module is compiled to `.mjs` for the bundle and its importer is
- * pointed at the stripped name. Nothing else in the server is TypeScript.
+ * Typed modules are imported directly and rely on Node's type stripping,
+ * unflagged only from Node 23.6. A host supplies its own Node, so each one is
+ * compiled to `.mjs` for the bundle and every staged importer is pointed at it.
  */
-function stripTypedModule(stageServerDir) {
-  const source = path.join(MCP_DIR, TYPED_MODULE);
-  const compiled = spawnSync(
-    'pnpm',
-    [
-      'exec',
-      'tsc',
-      '--ignoreConfig',
-      source,
-      '--target',
-      'es2022',
-      '--module',
-      'nodenext',
-      '--moduleResolution',
-      'nodenext',
-      '--outDir',
-      path.join(stageServerDir, path.dirname(TYPED_MODULE)),
-    ],
-    { cwd: ROOT, encoding: 'utf8' },
-  );
-  if (compiled.status !== 0) {
-    fail(`could not strip types from ${TYPED_MODULE}:\n${compiled.stderr || compiled.stdout}`);
+function stripTypedModules(stageServerDir, declaredFiles) {
+  const typed = declaredFiles.filter(isTypedModule);
+  if (typed.length > 0) {
+    const compiled = spawnSync(
+      'pnpm',
+      [
+        'exec',
+        'tsc',
+        '--ignoreConfig',
+        ...typed.map((file) => path.join(MCP_DIR, file)),
+        '--target',
+        'es2022',
+        '--module',
+        'nodenext',
+        '--moduleResolution',
+        'nodenext',
+        '--rootDir',
+        MCP_DIR,
+        '--outDir',
+        stageServerDir,
+      ],
+      { cwd: ROOT, encoding: 'utf8' },
+    );
+    if (compiled.status !== 0) {
+      fail(`could not strip types from ${typed.join(', ')}:\n${compiled.stderr || compiled.stdout}`);
+    }
+    for (const file of typed) {
+      if (!existsSync(path.join(stageServerDir, strippedName(file)))) fail(`type stripping produced no ${strippedName(file)}`);
+    }
   }
-  const stripped = path.join(stageServerDir, STRIPPED_MODULE);
-  if (!existsSync(stripped)) fail(`type stripping produced no ${STRIPPED_MODULE}`);
-  rmSync(path.join(stageServerDir, TYPED_MODULE), { force: true });
 
-  // The importer must follow. It is the only file that names the typed module.
-  const importer = path.join(stageServerDir, 'src', 'analysis-history', 'analysis-records.mjs');
-  const before = readFileSync(importer, 'utf8');
-  const after = before.replaceAll('./analysis-record.mts', './analysis-record.mjs');
-  if (after === before) fail('src/analysis-history/analysis-records.mjs no longer imports the typed module — update this build');
-  writeFileSync(importer, after);
+  for (const entry of readdirSync(stageServerDir, { recursive: true, withFileTypes: true })) {
+    const file = path.join(entry.parentPath, entry.name);
+    if (entry.isFile() && isTypedModule(entry.name)) fail(`the bundle would carry a typed module: ${path.relative(stageServerDir, file)}`);
+    if (!entry.isFile() || !/\.(?:mjs|js)$/.test(entry.name)) continue;
+    const before = readFileSync(file, 'utf8');
+    const after = pointAtStrippedModules(before);
+    if (importsTypedModule(after)) fail(`${path.relative(stageServerDir, file)} still imports a typed module`);
+    if (after !== before) writeFileSync(file, after);
+  }
 }
 
 export function stage(pkg) {
@@ -137,7 +145,7 @@ export function stage(pkg) {
   mkdirSync(serverDir, { recursive: true });
 
   for (const file of pkg.files) {
-    if (file === TYPED_MODULE) continue; // compiled below
+    if (isTypedModule(file)) continue; // compiled below
     if (bundleFileList(pkg.files).includes(file) === false) continue; // excluded fixtures
     const source = path.join(MCP_DIR, file);
     if (!existsSync(source)) fail(`mcp/package.json declares a file that is missing: ${file}`);
@@ -152,7 +160,7 @@ export function stage(pkg) {
   // manifest.json and the image label both say MIT; the artifact should carry the
   // licence that claim refers to.
   cpSync(path.join(ROOT, 'LICENSE'), path.join(serverDir, 'LICENSE'));
-  stripTypedModule(serverDir);
+  stripTypedModules(serverDir, pkg.files);
 
   const { packages, missing } = dependencyClosure({
     rootDependencies: pkg.dependencies,
@@ -248,9 +256,6 @@ async function main() {
   const pkg = readJson(path.join(MCP_DIR, 'package.json'));
   for (const file of pkg.files) {
     if (!existsSync(path.join(MCP_DIR, file))) fail(`mcp/package.json declares a file that is missing: ${file}`);
-  }
-  if (!existsSync(path.join(MCP_DIR, TYPED_MODULE))) {
-    fail(`${TYPED_MODULE} is gone — the type-stripping step in this build is stale`);
   }
   if (!statSync(VERIFY_VAULT, { throwIfNoEntry: false })?.isDirectory()) {
     fail(`verification vault is missing: ${path.relative(ROOT, VERIFY_VAULT)}`);

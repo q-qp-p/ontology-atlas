@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
-import { readFileSync, rmSync } from 'node:fs';
+import { readdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
@@ -9,8 +9,6 @@ import {
   OWNERSHIP_LABEL,
   REGISTRY_DESCRIPTION_LIMIT,
   REGISTRY_SERVER_NAME,
-  STRIPPED_MODULE,
-  TYPED_MODULE,
   artifactUrlProblems,
   bundleArtifactName,
   bundleDownloadUrl,
@@ -19,10 +17,14 @@ import {
   bundlePackageJson,
   bundleProvenance,
   dependencyClosure,
+  importsTypedModule,
   isBundleBallast,
+  isTypedModule,
+  pointAtStrippedModules,
   registryInvariantProblems,
   serverJson,
   serverJsonProblems,
+  strippedName,
 } from '../lib/packaging/mcp-bundle.mjs';
 import { parseArgs, tagProblems, usage } from './build-server-json.mjs';
 import { stage } from './build-mcp-bundle.mjs';
@@ -50,13 +52,49 @@ describe('bundle contents', () => {
    * maintained separately, a new module would reach npm's `files` and silently
    * miss the bundle, which fails only at a user's install.
    */
-  it('carries every declared shipping file, with the typed module renamed', () => {
+  it('carries every declared shipping file, with each typed module renamed', () => {
     const bundled = bundleFileList(MCP_PACKAGE.files);
+    const typed = MCP_PACKAGE.files.filter(isTypedModule);
 
-    assert.ok(MCP_PACKAGE.files.includes(TYPED_MODULE), 'mcp/package.json must still declare the typed module');
-    assert.ok(bundled.includes(STRIPPED_MODULE), 'the bundle must carry the stripped twin');
-    assert.ok(!bundled.includes(TYPED_MODULE), 'the bundle must not carry the .mts source');
+    assert.ok(typed.length > 0, 'mcp/package.json declares no typed module, so this proves nothing');
+    for (const file of typed) assert.ok(bundled.includes(strippedName(file)), `the bundle must carry ${strippedName(file)}`);
+    assert.deepEqual(bundled.filter(isTypedModule), [], 'the bundle must not carry a .mts source');
     assert.equal(bundled.length, MCP_PACKAGE.files.length - EXCLUDED_FROM_BUNDLE.length);
+  });
+
+  /** A host's Node may not strip types, so one `.mts` left behind breaks every tool that loads it. */
+  it('stages every typed module as JavaScript and points its importers at it', () => {
+    const { stageDir } = stage({ ...MCP_PACKAGE, dependencies: {} });
+    try {
+      const server = join(stageDir, 'server');
+      const modules = readdirSync(server, { recursive: true }).filter((file) => /\.(?:mjs|js|mts)$/.test(file));
+      assert.deepEqual(modules.filter(isTypedModule), []);
+      assert.deepEqual(modules.filter((file) => importsTypedModule(readFileSync(join(server, file), 'utf8'))), []);
+      for (const file of MCP_PACKAGE.files.filter(isTypedModule)) assert.ok(modules.includes(strippedName(file)), strippedName(file));
+    } finally {
+      rmSync(stageDir, { recursive: true, force: true });
+    }
+  });
+
+  it('points static, re-export and dynamic imports of a typed module at its twin', () => {
+    const source = [
+      "import { a } from './a.mts';",
+      'export * from "../b/c.mts";',
+      "const d = await import('./d.mts');",
+      "import { e } from './e.mjs';",
+      "import { f } from 'pkg/f.mts';",
+    ].join('\n');
+    const pointed = pointAtStrippedModules(source);
+
+    assert.equal(pointed, [
+      "import { a } from './a.mjs';",
+      'export * from "../b/c.mjs";',
+      "const d = await import('./d.mjs');",
+      "import { e } from './e.mjs';",
+      "import { f } from 'pkg/f.mts';",
+    ].join('\n'));
+    assert.equal(importsTypedModule(source), true);
+    assert.equal(importsTypedModule(pointed), false);
   });
 
   it('leaves the test fixture behind, because a host has no test runner', () => {

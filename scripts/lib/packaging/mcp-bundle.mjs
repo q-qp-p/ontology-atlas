@@ -1,16 +1,26 @@
 /**
  * The pure part of the `.mcpb` build: a zip holding one MCP server plus a `manifest.json`. It
- * carries exactly `mcp/package.json`'s `files` list. `mcp/src/analysis-history/analysis-record.mts` is compiled to
- * `.mjs` because Node type stripping is unflagged only from Node 23.6.
+ * carries exactly `mcp/package.json`'s `files` list. Each `.mts` module is compiled to `.mjs`
+ * because Node type stripping is unflagged only from Node 23.6.
  */
 
 /** The bundle's own layout. `server/` mirrors `mcp/`, so entry paths stay readable. */
 export const BUNDLE_SERVER_DIR = 'server';
 export const BUNDLE_ENTRY_POINT = `${BUNDLE_SERVER_DIR}/src/index.js`;
 
-/** The typed module the server imports directly, and the plain name it takes in a bundle. */
-export const TYPED_MODULE = 'src/analysis-history/analysis-record.mts';
-export const STRIPPED_MODULE = 'src/analysis-history/analysis-record.mjs';
+/** A typed module the server imports directly, and the plain name it takes in a bundle. */
+export const isTypedModule = (file) => file.endsWith('.mts');
+export const strippedName = (file) => file.replace(/\.mts$/, '.mjs');
+
+const TYPED_SPECIFIER = /((?:\bfrom|\bimport)\s*\(?\s*)(['"])(\.{1,2}\/[^'"]+)\.mts\2/g;
+
+/** Points every relative `.mts` import at its stripped `.mjs` twin. */
+export function pointAtStrippedModules(source) {
+  return source.replace(TYPED_SPECIFIER, '$1$2$3.mjs$2');
+}
+
+/** Whether a module still imports a typed module by its `.mts` name. */
+export const importsTypedModule = (source) => new RegExp(TYPED_SPECIFIER.source).test(source);
 
 /**
  * A test fixture is not a shipping surface. `mcp/package.json` lists it because
@@ -90,11 +100,11 @@ export function isBundleBallast(relativePath) {
   );
 }
 
-/** The files copied into `server/`, with the typed module renamed to its stripped twin. */
+/** The files copied into `server/`, with each typed module renamed to its stripped twin. */
 export function bundleFileList(declaredFiles) {
   return declaredFiles
     .filter((file) => !EXCLUDED_FROM_BUNDLE.includes(file))
-    .map((file) => (file === TYPED_MODULE ? STRIPPED_MODULE : file))
+    .map((file) => (isTypedModule(file) ? strippedName(file) : file))
     .sort();
 }
 
