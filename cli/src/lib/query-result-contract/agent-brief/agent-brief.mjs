@@ -24,8 +24,12 @@ import { assertQueryOperation } from '../query-operation.mjs';
 import { hasNonEmptyString, isPlainObject, validCount } from '../value-checks.mjs';
 import { DIAGNOSIS_STATUSES, validHealthCheck, validNextAction } from '../workspace-health.mjs';
 
+export function isCompactContract(result) {
+  return result?.contract === 'agentBriefCompact:v3' || result?.contract === 'agentBriefCompact:v2';
+}
+
 export function assertAgentBriefResponseShape(result) {
-  return result?.contract === 'agentBriefCompact:v2'
+  return isCompactContract(result)
     ? assertAgentBriefCompactShape(result)
     : assertAgentBriefShape(result);
 }
@@ -197,7 +201,7 @@ export function assertAgentBriefShape(result) {
 }
 
 export function agentBriefExitCode(result) {
-  if (result?.contract === 'agentBriefCompact:v2') {
+  if (isCompactContract(result)) {
     if (!DIAGNOSIS_STATUSES.has(result.status)) return 1;
     if (!isPlainObject(result.readiness) || !AGENT_READINESS_STATUSES.has(result.readiness.status)) return 1;
     if (!validCount(result.readiness.score)) return 1;

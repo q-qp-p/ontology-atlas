@@ -83,10 +83,10 @@ MCP design contracts this package treats as release-critical:
   and tool annotations (`title`, `readOnlyHint`, `destructiveHint`,
   `idempotentHint`, `openWorldHint:false`).
 - Tool results must include `structuredContent`; when text JSON is also present,
-  the verify helpers compare both payloads for parity. Compact agent brief v2 is
-  the versioned non-duplicating exception: typed facts stay in
-  `structuredContent`, `content.text` is the exact `handoffPrompt`, and the CLI
-  verifies that equality.
+  the verify helpers compare both payloads for parity. Compact agent brief v3 is
+  the versioned exception: `structuredContent` carries the typed facts without
+  `handoffPrompt`, `content[0].text` is a self-sufficient handoff, and the CLI
+  checks the text against the structure.
 - Read tools must stay side-effect free. Write tools must keep explicit
   `expected_mtime`, dry-run, `confirm`, `overwrite`, and `force` safety gates.
 - Every destructive dry-run exposes the same machine decision fields:
@@ -746,11 +746,21 @@ explicitly unavailable to MCP because the server does not own the loaded UI stat
 explicit `project`; Atlas does not silently pick the first project. Omitted
 `detail` and `detail:"full"` return the complete diagnostic contract. For a
 known coding task, `detail:"compact"` requires a request-local `task` of at most
-2,000 characters and returns no more than 12,000 UTF-8 JSON bytes, measured as
-`Buffer.byteLength(JSON.stringify(completeCompactObject), "utf8")`, including
-`handoffPrompt`. Display indentation is excluded; the combined connection and
-compact wire guard is 22,000 characters, including the construction card. The compact
-v2 contract keeps final source/meaning currentness, `meaningRepairCompact:v1` (repair
+2,000 characters and returns `structuredContent` plus a handoff text of at most
+12,000 UTF-8 bytes together, measured as
+`Buffer.byteLength(JSON.stringify(structuredContent), "utf8") + Buffer.byteLength(text, "utf8")`.
+The combined connection and compact wire guard is 22,000 characters, including
+the construction card. The compact v3 contract (`agentBriefCompact:v3`) sends each
+channel alone: `content[0].text` is a self-sufficient handoff that adds `Safety:`,
+the verbatim `Repair step 1:` call with its three guards, and the exact `Full:`
+call; `structuredContent` carries the typed facts once, without `handoffPrompt`,
+and adds `readerRules`. Rows no first decision needs (`purpose`, `project.scope`,
+`task.terms`, `meaningRepair.writePolicy`, the five question rows now counted by
+`currentness.meaning.questionCount`, `focus.selectionPolicy`,
+`verification.nextAction`, `fullDetail.reason`, `nextReads[].reason`, each anchor's
+`relation` and `qualifiers.fullBodyRead`) stay in `detail:"full"` or are copies of
+a row that remains. Optional qualifier and uncertainty units fill both channels
+identically. It keeps final source/meaning currentness, `meaningRepairCompact:v2` (repair
 status, conflict guards, the first step verbatim, and the ids of the steps only
 `detail:"full"` repeats), approval and no-auto-write/finalize guards, one broad capability selected only when its
 persisted Definition/Includes/Excludes are compatible with the task, cited
@@ -1059,8 +1069,8 @@ returned mtimes before requesting human approval. Stale provenance returns a
 blocked page; malformed/foreign cursors fail closed. CLI/MCP verification rejects
 missing, duplicate, reordered, oversized, stale, or mismatched page chains.
 
-Compact agent_brief carries `meaningRepairCompact:v1` instead: the same status, questions,
-provenance, reviewRevision, write policy and first step, with `omitted.steps`,
+Compact agent_brief carries `meaningRepairCompact:v2` instead: the same status, questions,
+provenance, reviewRevision and first step (its write policy is the response's `safety`), with `omitted.steps`,
 `omitted.stopConditions` and `omitted.recovery:"fullDetail"` naming what only the full
 packet repeats.
 
@@ -1977,8 +1987,8 @@ It also requires every exercised direct read, write row-isolation smoke,
 destructive dry-run smoke, maintenance cursor, and
 `query_ontology` graph-query response to include `structuredContent`, and
 compares that payload with text JSON when both carry JSON. Compact agent brief
-v2 instead verifies `content.text === structuredContent.handoffPrompt`, so typed
-facts are not serialized twice. Agents can consume MCP results without reparsing
+v3 sends a handoff text instead of JSON text; the CLI checks that text against
+`structuredContent`, so typed facts are not serialized twice. Agents can consume MCP results without reparsing
 human text. Successful verify output summarizes the
 direct-read, write, maintenance-cursor, and graph-query `structuredContent` coverage
 that was enforced in the run.

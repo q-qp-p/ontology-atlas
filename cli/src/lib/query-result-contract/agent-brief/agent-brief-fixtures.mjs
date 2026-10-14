@@ -554,3 +554,34 @@ export function validAgentBrief() {
     ],
   };
 }
+
+export function repairProxySource(fixtures, realMcp) {
+  return [
+    "import { spawn } from 'node:child_process';",
+    "import readline from 'node:readline';",
+    `import { humanMeaningRepair, humanMeaningRepairCompact } from ${JSON.stringify(fixtures)};`,
+    `const child = spawn(process.execPath, [${JSON.stringify(realMcp)}], { stdio: ['pipe', 'pipe', 'inherit'], env: process.env });`,
+    "process.stdin.pipe(child.stdin);",
+    "readline.createInterface({ input: child.stdout }).on('line', (line) => {",
+    "  const message = JSON.parse(line);",
+    "  const structured = message.result?.structuredContent;",
+    "  if (structured?.contract === 'agentBriefCompact:v3') {",
+    "    if (process.env.REPAIR_SHAPE === 'legacy') structured.meaningRepair = humanMeaningRepair(structured.project.slug);",
+    "    else {",
+    "      const { writePolicy, ...repair } = humanMeaningRepairCompact(structured.project.slug);",
+    "      structured.meaningRepair = { ...repair, contract: 'meaningRepairCompact:v2' };",
+    "      const call = repair.firstStep.calls[0];",
+    "      const lines = message.result.content[0].text.split('\\n');",
+    "      lines.splice(lines.findIndex((line) => line.startsWith('Next read:')), 0,",
+    "        'Meaning repair: human_review_required; run Repair step 1 now; steps 2-6 (human_semantic_approval to finalize) and 9 stop conditions omitted; read Full before step 2.',",
+    "        `Repair step 1: ${call.tool} ${JSON.stringify(call.arguments)}`);",
+    "      structured.readerRules.push('Meaning repair: run meaningRepair.firstStep only; read fullDetail before step 2.');",
+    "      message.result.content = [{ type: 'text', text: lines.join('\\n') }];",
+    "    }",
+    "  }",
+    "  console.log(JSON.stringify(message));",
+    "});",
+    "child.on('exit', (code) => process.exit(code ?? 0));",
+    '',
+  ].join('\n');
+}
