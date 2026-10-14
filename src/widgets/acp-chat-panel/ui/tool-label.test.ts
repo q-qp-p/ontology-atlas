@@ -16,8 +16,8 @@ import ko from '../../../../messages/ko.json';
  */
 const OURS = 'atlas-vault';
 
-describe('도구 줄 — 아는 것만 뜻으로 옮긴다', () => {
-  it('우리가 꽂아 준 도구는 뜻으로 옮긴다', () => {
+describe('tool line: translates only what it knows', () => {
+  it('a tool we installed is translated into its meaning', () => {
     expect(toolLabel('mcp__atlas-vault__add_concept', OURS)).toEqual({
       kind: 'known',
       text: 'addNode',
@@ -28,7 +28,7 @@ describe('도구 줄 — 아는 것만 뜻으로 옮긴다', () => {
     });
   });
 
-  it('우리 서버인데 모르는 도구는 **이름만** 보여 준다 — 지어내지 않는다', () => {
+  it('an unknown tool on our own server shows **only its name**, with nothing invented', () => {
     /*
      * It means the tool set grew. Fudging it as "did something" makes the line carry
      * nothing, and inventing something plausible diverges from what was actually done.
@@ -39,7 +39,7 @@ describe('도구 줄 — 아는 것만 뜻으로 옮긴다', () => {
     });
   });
 
-  it('남의 MCP 도구는 서버 접두사만 벗긴다', () => {
+  it('a third-party MCP tool only loses its server prefix', () => {
     expect(toolLabel('mcp__some-server__write_file', OURS)).toEqual({
       kind: 'raw',
       text: 'write_file',
@@ -51,16 +51,16 @@ describe('도구 줄 — 아는 것만 뜻으로 옮긴다', () => {
     });
   });
 
-  it('MCP 가 아닌 도구는 그대로 둔다', () => {
+  it('a non-MCP tool is left as it is', () => {
     expect(toolLabel('Terminal', OURS)).toEqual({ kind: 'raw', text: 'Terminal' });
     expect(toolLabel('Read File', OURS)).toEqual({ kind: 'raw', text: 'Read File' });
   });
 
-  it('빈 제목에 아무 말도 지어내지 않는다', () => {
+  it('an empty title is not given an invented label', () => {
     expect(toolLabel('   ', OURS)).toEqual({ kind: 'raw', text: '' });
   });
 
-  it('서버 이름이 바뀌면 우리 도구도 남의 도구가 된다 — 이름을 박아 두지 않았다', () => {
+  it('when the server name changes, our tools become third-party tools, because the name is not hard-coded', () => {
     // The contract that the test is **the injected name**, not a literal.
     expect(toolLabel('mcp__atlas-vault__add_concept', 'other-name').kind).toBe('raw');
   });
@@ -80,30 +80,30 @@ describe('isVaultTool — whose answer is this', () => {
   });
 });
 
-describe('labelWithoutRepeatedPath — 한 줄이 같은 경로를 두 번 찍지 않는다', () => {
+describe('labelWithoutRepeatedPath: a line never prints the same path twice', () => {
   const raw = (text: string): ToolLabel => ({ kind: 'raw', text });
 
-  it('제목 끝의 경로를 떼고 동사만 남긴다 — 실측한 기본 쓰기 도구', () => {
+  it('strips the trailing path from the title and keeps the verb (measured default write tool)', () => {
     const path = '/Users/probe/Ontology Atlas/launch/wiki/architecture.md';
     expect(labelWithoutRepeatedPath(raw(`Write ${path}`), path)).toEqual({ kind: 'raw', text: 'Write' });
     expect(labelWithoutRepeatedPath(raw(`Edit: ${path}`), path)).toEqual({ kind: 'raw', text: 'Edit' });
     expect(labelWithoutRepeatedPath(raw(`Read · ${path}`), path)).toEqual({ kind: 'raw', text: 'Read' });
   });
 
-  it('경로만 있고 동사가 없으면 줄이 빈 채로 남지 않게 그대로 둔다', () => {
+  it('leaves a path-only title unchanged, so the line is never left empty', () => {
     const path = 'wiki/architecture.md';
     expect(labelWithoutRepeatedPath(raw(path), path)).toEqual(raw(path));
     expect(labelWithoutRepeatedPath(raw(`  ${path}  `), path)).toEqual(raw(`  ${path}  `));
   });
 
-  it('정확히 끝나는 경우에만 자른다 — 비슷한 경로나 가운데 언급은 건드리지 않는다', () => {
+  it('cuts only on an exact ending and leaves similar paths and mid-title mentions alone', () => {
     expect(labelWithoutRepeatedPath(raw('Write wiki/architecture.md then stop'), 'wiki/architecture.md'))
       .toEqual(raw('Write wiki/architecture.md then stop'));
     expect(labelWithoutRepeatedPath(raw('Write docs/architecture.md'), 'wiki/architecture.md'))
       .toEqual(raw('Write docs/architecture.md'));
   });
 
-  it('뜻을 아는 도구 이름과 빈 경로는 손대지 않는다', () => {
+  it('leaves known tool names and empty paths untouched', () => {
     const known: ToolLabel = { kind: 'known', text: 'addNode' };
     expect(labelWithoutRepeatedPath(known, '/a/b.md')).toBe(known);
     expect(labelWithoutRepeatedPath(raw('Write /a/b.md'), null)).toEqual(raw('Write /a/b.md'));

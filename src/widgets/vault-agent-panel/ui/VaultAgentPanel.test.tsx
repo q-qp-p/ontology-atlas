@@ -149,7 +149,7 @@ describe('VaultAgentPanel', () => {
     gitBridge.commits = [];
   });
 
-  it('웹에서는 입력칸 대신 정직 강등을 그린다', () => {
+  it('on the web it draws an honest demotion instead of the input', () => {
     // Drawing a composer with nowhere safe to keep a key and no route to send is a lie.
     bridge.available = false;
     renderPanel();
@@ -157,14 +157,14 @@ describe('VaultAgentPanel', () => {
     expect(screen.queryByTestId('vault-agent-input')).not.toBeInTheDocument();
   });
 
-  it('폴더가 없으면 먼저 폴더를 열라고 말한다', () => {
+  it('with no folder it first tells the user to open one', () => {
     bridge.available = true;
     renderPanel({ vaultPath: null });
     expect(screen.getByTestId('vault-agent-notice')).toBeInTheDocument();
     expect(screen.queryByTestId('vault-agent-input')).not.toBeInTheDocument();
   });
 
-  it('경로만 복원되고 manifest가 없으면 샘플 지도에 숨은 폴더 에이전트를 열지 않는다', async () => {
+  it('when only the path is restored and there is no manifest, it does not open a hidden folder agent on the sample map', async () => {
     bridge.available = true;
     renderPanel({
       vaultPath: '/restored-but-unreadable-vault',
@@ -182,7 +182,7 @@ describe('VaultAgentPanel', () => {
     expect(screen.queryByTestId('agent-meta-handoff')).not.toBeInTheDocument();
   });
 
-  it('첫 턴 전에는 범위 시트가 먼저 서고 입력칸이 없다', async () => {
+  it('before the first turn the scope sheet stands first and there is no input', async () => {
     // Before sending, it states once what goes where.
     bridge.available = true;
     renderPanel();
@@ -193,7 +193,7 @@ describe('VaultAgentPanel', () => {
     expect(screen.queryByTestId('vault-agent-input')).not.toBeInTheDocument();
   });
 
-  it('리플로우는 폭 하나로 두 컬럼을 함께 움직인다', () => {
+  it('reflow moves both columns together with a single width', () => {
     bridge.available = true;
     const { rerender } = renderPanel();
     const panel = screen.getByTestId('vault-agent-panel');
@@ -229,7 +229,7 @@ describe('VaultAgentPanel', () => {
     expect(screen.getByTestId('vault-agent-panel').style.width).toBe('0px');
   });
 
-  it('키가 없으면 말로 길을 알려주는 대신 그 자리로 가는 문을 준다', async () => {
+  it('with no key it offers a door to the place instead of giving directions in words', async () => {
     // With no key the panel offers a door to settings in the composer's position rather than directions.
     bridge.available = true;
     secrets.stored = false;
@@ -245,7 +245,7 @@ describe('VaultAgentPanel', () => {
     secrets.stored = true;
   });
 
-  it('키를 넣고 돌아오면 새로고침 없이 살아난다', async () => {
+  it('after entering a key and coming back it comes alive without a refresh', async () => {
     // Demanding F5 from a user who just registered a key is a defect.
     bridge.available = true;
     secrets.stored = false;
@@ -258,7 +258,7 @@ describe('VaultAgentPanel', () => {
     expect(screen.queryByTestId('vault-agent-open-settings')).not.toBeInTheDocument();
   });
 
-  it('브라우저 강등은 설정이 아니라 앱으로 보낸다', () => {
+  it('the browser demotion sends the user to the app, not to settings', () => {
     // The web has nowhere to keep a key at all — sending them to settings here is a door that does not open.
     bridge.available = false;
     renderPanel();
@@ -269,7 +269,7 @@ describe('VaultAgentPanel', () => {
     expect(screen.queryByTestId('vault-agent-open-settings')).not.toBeInTheDocument();
   });
 
-  it('빈 대화에 첫 마디 칩이 먼저 앉는다 — 백지를 내밀지 않는다', async () => {
+  it('an empty conversation gets first-words chips first, rather than handing over a blank page', async () => {
     bridge.available = true;
     loadQueueFolder();
     renderPanel({ insight: { nodes: [payNode, refundNode], edges: [] } as never });
@@ -285,7 +285,7 @@ describe('VaultAgentPanel', () => {
     expect(chips[0]).toHaveTextContent('결제 처리');
   });
 
-  it('칩을 눌러도 아무것도 나가지 않는다 — 프리필이지 전송이 아니다', async () => {
+  it('pressing a chip sends nothing, because it prefills rather than sends', async () => {
     // This slice's core contract. A chip calling the model would be a transmission
     // without consent, and it spends someone else's money (BYOK charges).
     bridge.available = true;
@@ -306,7 +306,7 @@ describe('VaultAgentPanel', () => {
     expect(screen.getAllByTestId('agent-first-words-chip').length).toBeGreaterThan(0);
   });
 
-  it('빈 폴더에서는 칩을 셋으로 억지로 채우지 않는다', async () => {
+  it('an empty folder does not force the chips up to three', async () => {
     bridge.available = true;
     renderPanel({ insight: { nodes: [], edges: [] } as never });
     fireEvent.click(await screen.findByTestId('agent-scope-accept'));
@@ -315,7 +315,7 @@ describe('VaultAgentPanel', () => {
     expect(chips[0].dataset.firstWordsIntent).toBe('empty-vault');
   });
 
-  it('키가 없는 상태의 목록도 같은 생성기에서 나온다 — 다만 평문이다', async () => {
+  it('the list without a key comes from the same generator, only as plain text', async () => {
     // Drawing a button in a moment that cannot be completed is a trap. Same sentence, different clothes.
     bridge.available = true;
     secrets.stored = false;
@@ -328,7 +328,7 @@ describe('VaultAgentPanel', () => {
     secrets.stored = true;
   });
 
-  it('키를 맡길지 정하는 자리에서 쓰기 동의 약속이 읽힌다', async () => {
+  it('the write-consent promise can be read where the user decides whether to entrust a key', async () => {
     // A safeguard in the code is not enough — if "files change only after I confirm"
     // is not on screen at **the moment** a person decides whether to entrust their key
     // and docs folder, that safeguard does nothing for the decision.
@@ -341,7 +341,7 @@ describe('VaultAgentPanel', () => {
     secrets.stored = true;
   });
 
-  it('범위 시트가 승낙 범위에 쓰기가 있다는 것을 말한다', async () => {
+  it('the scope sheet says that the granted scope includes writing', async () => {
     // Speaking only of reading, sending and logging while omitting writing makes it consent with an unknown scope.
     bridge.available = true;
     renderPanel();
@@ -350,7 +350,7 @@ describe('VaultAgentPanel', () => {
     );
   });
 
-  it('S7 — 바깥에서 건너온 첫 마디가 입력칸에 앉는다(전송 없이)', async () => {
+  it('the first words handed over from outside land in the input without sending', async () => {
     bridge.available = true;
     const { llmChat } = await import('@/shared/lib/llm-connection/tauri-llm');
     vi.mocked(llmChat).mockClear();
@@ -361,7 +361,7 @@ describe('VaultAgentPanel', () => {
     expect(llmChat).not.toHaveBeenCalled();
   });
 
-  it('진전이 없으면 헤더 부제는 그대로다 — 자리는 하나뿐이다', async () => {
+  it('with no progress the header subtitle stays as it was, since there is only one place for it', async () => {
     bridge.available = true;
     renderPanel();
     expect(screen.getByTestId('vault-agent-panel-subtitle')).toHaveTextContent(
@@ -369,7 +369,7 @@ describe('VaultAgentPanel', () => {
     );
   });
 
-  it('이어가기를 펼치면 경계와 함께 폴더 절대경로·부탁 문장이 온다', async () => {
+  it('expanding resume shows the boundary together with the absolute folder path and the request sentence', async () => {
     bridge.available = true;
     renderPanel();
     fireEvent.click(await screen.findByTestId('agent-scope-accept'));
@@ -386,7 +386,7 @@ describe('VaultAgentPanel', () => {
     );
   });
 
-  it('곁가지는 한 번에 하나만 열린다 — 임시 표면을 겹쳐 쌓지 않는다', async () => {
+  it('a side branch opens only one at a time, so transient surfaces do not stack', async () => {
     bridge.available = true;
     renderPanel();
     fireEvent.click(await screen.findByTestId('agent-scope-accept'));
@@ -405,13 +405,13 @@ describe('VaultAgentPanel', () => {
     const exiting = screen.getByTestId('agent-meta-disclosure');
     expect(exiting).toHaveAttribute('data-surface-state', 'exiting');
     expect(exiting).toHaveAttribute('inert');
-    expect(exiting, '나가는 프레임은 못 눌린다').toHaveClass('pointer-events-none');
+    expect(exiting, 'the exiting frame cannot be pressed').toHaveClass('pointer-events-none');
     await waitFor(() =>
       expect(screen.queryByTestId('agent-handoff-card')).not.toBeInTheDocument(),
     );
   });
 
-  it('아직 아무 말도 안 한 사람에게는 이어갈 것이 없다 — 자리표시가 다르다', async () => {
+  it('someone who has said nothing yet has nothing to resume, so the placeholder differs', async () => {
     // The locked strip and the real composer use **the same copy**: even after a key
     // arrives, the same text stays in the same place, so it reads as "this opened".
     bridge.available = true;

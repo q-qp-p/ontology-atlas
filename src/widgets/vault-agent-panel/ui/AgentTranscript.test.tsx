@@ -65,7 +65,7 @@ function renderTranscript(t: AgentTurn, elapsedSeconds: number | null = null) {
 }
 
 describe('AgentTranscript', () => {
-  it('사용자 말풍선에 화면 문맥이 그대로 에코된다', () => {
+  it('the user bubble echoes the on-screen context as is', () => {
     // What the agent saw always stays on screen — the mismatch being visible is the signal to correct.
     renderTranscript(turn());
     expect(screen.getByTestId('agent-screen-context-echo')).toHaveTextContent(
@@ -73,7 +73,7 @@ describe('AgentTranscript', () => {
     );
   });
 
-  it('도구 행은 무엇을 읽고 몇 자가 나갔는지 실측으로 말한다', () => {
+  it('a tool row says what was read and how many characters went out, from measurement', () => {
     renderTranscript(
       turn({
         events: [
@@ -98,7 +98,7 @@ describe('AgentTranscript', () => {
     expect(line).toHaveTextContent('1020자');
   });
 
-  it('진행 중에는 대기 점과 함께 텍스트가 항상 같이 있다', () => {
+  it('while running, text is always present together with the waiting dots', () => {
     // Even with the dot's pulse stopped under reduced-motion, the information must not
     // shrink — the text carries the "still working" the motion was carrying.
     renderTranscript(turn({ status: 'running' }), 2);
@@ -106,12 +106,12 @@ describe('AgentTranscript', () => {
     expect(screen.getByTestId('agent-pending')).toHaveTextContent('생각 중');
   });
 
-  it('5초를 넘으면 실제 경과 초를 병기한다', () => {
+  it('past 5 seconds it adds the real elapsed seconds', () => {
     renderTranscript(turn({ status: 'running' }), 7);
     expect(screen.getByTestId('agent-pending')).toHaveTextContent('생각 중 · 7초');
   });
 
-  it('아무것도 안 읽고 나온 답은 강등해서 그린다', () => {
+  it('an answer that read nothing is drawn demoted', () => {
     renderTranscript(
       turn({
         events: [
@@ -132,7 +132,7 @@ describe('AgentTranscript', () => {
    * The agent read grounding, yet the screen said "Answered without reading grounding"; a read answer
    * with missing notation is corrected from the read list, not demoted.
    */
-  it('읽었는데 표기만 없는 답은 강등하지 않고 읽은 목록으로 보정한다', () => {
+  it('an answer that read something but lacks the marking is not demoted and is corrected with the list of what was read', () => {
     const { onFocusNode } = renderTranscript(
       turn({
         events: [
@@ -178,7 +178,7 @@ describe('AgentTranscript', () => {
       ],
     });
 
-  it('아무것도 안 읽은 턴에는 되돌아갈 길이 붙는다 — 새 배너가 아니라 같은 칩 슬롯', () => {
+  it('a turn that read nothing gets a way back, in the same chip slot rather than a new banner', () => {
     const { onPrefill } = renderTranscript(noToolCallTurn());
     expect(screen.getByTestId('agent-retry-title')).toHaveTextContent(
       '1/6번째에서 멈췄어요 — 읽고 다시 답하게 하기',
@@ -187,7 +187,7 @@ describe('AgentTranscript', () => {
     expect(onPrefill).toHaveBeenCalledWith('이 개념에 빠진 연결 이어줘');
   });
 
-  it('경고 줄은 한 턴에 둘까지다 — 알림은 칩 제목이 흡수한다', () => {
+  it('warning lines are limited to two per turn, and the chip title absorbs the notice', () => {
     const fixture = noToolCallTurn();
     // It remains in the data: absorption is the render's business, not erasing a fact.
     expect(
@@ -206,7 +206,7 @@ describe('AgentTranscript', () => {
     ]);
   });
 
-  it('흡수할 칩이 안 서면 알림은 그대로 남는다 — 사실이 사라지지 않는다', () => {
+  it('when no chip stands to absorb the notice it stays as is, so the fact does not disappear', () => {
     // A turn with no original question (no sentence for the chip to seat). Absorption
     // only holds when the absorbing side actually exists.
     renderTranscript(
@@ -229,7 +229,7 @@ describe('AgentTranscript', () => {
     );
   });
 
-  it('강등 판정은 턴의 결론에만 붙는다 — 중간 서술은 주장이 아니다', () => {
+  it('the demotion verdict attaches only to the conclusion of a turn, since intermediate narration is not a claim', () => {
     // The demotion attaches only to the turn's conclusion; remarks like "let me read first" are not
     // claims and repeating the warning makes it wallpaper.
     renderTranscript(
@@ -266,7 +266,7 @@ describe('AgentTranscript', () => {
     expect(screen.getAllByTestId('agent-answer-unsupported')).toHaveLength(1);
   });
 
-  it('멎은 턴에는 되돌아갈 길이 있다 — 누르면 같은 말이 입력칸에 앉는다', () => {
+  it('a stalled turn has a way back, and pressing it puts the same words in the input', () => {
     // Stating a reason without giving a route makes that position a dead end. It is a
     // prefill rather than a send, so this slice's "nothing goes out before you send" holds.
     const { onPrefill } = renderTranscript(
@@ -287,7 +287,7 @@ describe('AgentTranscript', () => {
     expect(onPrefill).toHaveBeenCalledWith('이 개념에 빠진 연결 이어줘');
   });
 
-  it('진행 보고(중단·상한)는 조용한 채로 남는다', () => {
+  it('progress reports (interrupted, capped) stay quiet', () => {
     renderTranscript(
       turn({ events: [...turn().events, { kind: 'notice', code: 'aborted', text: '여기까지 읽었어요.' }] }),
     );
@@ -295,7 +295,7 @@ describe('AgentTranscript', () => {
     expect(screen.queryByTestId('agent-retry')).not.toBeInTheDocument();
   });
 
-  it('인용 칩을 누르면 지도 선택과 같은 경로를 탄다', () => {
+  it('pressing a citation chip takes the same path as selecting on the map', () => {
     const { onFocusNode } = renderTranscript(
       turn({
         events: [
@@ -317,7 +317,7 @@ describe('AgentTranscript', () => {
     expect(onFocusNode).toHaveBeenCalledWith('capabilities/payment');
   });
 
-  it('읽은 적 없는 이름은 칩이 되지 않는다', () => {
+  it('a name that was never read does not become a chip', () => {
     // Drawn as a chip, pressing it would take you somewhere empty.
     renderTranscript(
       turn({
@@ -334,13 +334,13 @@ describe('AgentTranscript', () => {
     expect(screen.queryByTestId('agent-citation-chip')).not.toBeInTheDocument();
   });
 
-  it('푸터는 답이 없어도 자리를 지킨다 (치수 규칙성)', () => {
+  it('the footer keeps its place even without an answer (dimension regularity)', () => {
     renderTranscript(turn({ auditCount: 0, status: 'sending' }));
     // One row is always reserved so an arriving answer does not push the content above it.
     expect(screen.getByTestId('agent-turn-footer')).toBeInTheDocument();
   });
 
-  it('다음 한 걸음은 칩 하나로 붙고, 눌러도 전송하지 않는다', () => {
+  it('the next step attaches as one chip, and pressing it does not send', () => {
     // Zero extra calls — this sentence already arrived in the same turn's response. The
     // chip is a prefill, so it does not create a second live proposal either.
     const { onPrefill } = renderTranscript(
@@ -360,7 +360,7 @@ describe('AgentTranscript', () => {
     expect(onPrefill).toHaveBeenCalledWith('「환불」과 「정산」 사이 연결을 살펴줘');
   });
 
-  it('다음 걸음이 없으면 그 자리는 아예 없다', () => {
+  it('with no next step the slot does not exist at all', () => {
     renderTranscript(
       turn({
         events: [

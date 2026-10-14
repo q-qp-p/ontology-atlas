@@ -91,7 +91,7 @@ describe("buildRealmRuntimeData", () => {
     expect(data!.wardingRadius).toBeGreaterThan(0);
   });
 
-  it("exposes depthById for every member (root=0) — S5 깊이 연출 런타임 데이터", () => {
+  it("exposes depthById for every member (root=0), the runtime data for depth staging", () => {
     const data = buildRealmRuntimeData(buildFixtureWorld(), "d", tokens)!;
     // Every member has a depth, and the root's is 0.
     expect(new Set(data.depthById.keys())).toEqual(new Set(data.memberIds));
@@ -114,12 +114,12 @@ describe("buildRealmRuntimeData", () => {
   });
 
   // S8 defect 2 — entryCamera is null at build time (the camera is unknown). The entry effect fills it.
-  it("entryCamera 는 빌드 직후 null 이다 (진입 effect 가 카메라 값으로 채움)", () => {
+  it("entryCamera is null right after the build (the entry effect fills it with a camera value)", () => {
     const data = buildRealmRuntimeData(buildFixtureWorld(), "d", tokens)!;
     expect(data.entryCamera).toBeNull();
   });
 
-  it("realmCameraTarget centers on the content bbox (결계가 아니라 콘텐츠가 주인공) and clamps scale", () => {
+  it("realmCameraTarget centers on the content bbox (the content, not the realm boundary, is the subject) and clamps scale", () => {
     const data = buildRealmRuntimeData(buildFixtureWorld(), "d", tokens)!;
   // S9 defects 1/2 — realmCameraTarget now takes bounds directly (on the visible-member basis).
     const target = realmCameraTarget(data.bounds, tokens, 1000, 800);
@@ -195,7 +195,7 @@ describe("buildRealmRuntimeData — depth-derived realm ring fill (Slice A)", ()
  * d ⊃ cap c ⊃ (threshold + 8) elements. When cap c collapses its element children are
  * invisible, so they have to drop out of the warding circle.
  */
-describe("buildRealmRuntimeData — 가시 멤버 기준 결계/프레이밍 (S9 결함 2)", () => {
+describe("buildRealmRuntimeData: realm boundary and framing based on visible members", () => {
   function buildDenseWorld() {
     const childIds = Array.from({ length: DENSITY_GATE_THRESHOLD + 8 }, (_, i) => `el-${i}`);
     const nodes: OntologyMapNode[] = [
@@ -210,7 +210,7 @@ describe("buildRealmRuntimeData — 가시 멤버 기준 결계/프레이밍 (S9
     return { world: buildTopologyWorld(nodes, edges, tokens), childIds };
   }
 
-  it("접힌 자식은 결계 반경을 부풀리지 않는다 (펼침 vs 접힘 반경 비교)", () => {
+  it("collapsed children do not inflate the realm radius (expanded vs collapsed radius comparison)", () => {
     const { world } = buildDenseWorld();
     // c collapsed (the default): only root d is expanded → every element child of c is clustered.
     const collapsed = buildRealmRuntimeData(world, "d", tokens, new Set(["d"]))!;
@@ -223,7 +223,7 @@ describe("buildRealmRuntimeData — 가시 멤버 기준 결계/프레이밍 (S9
     expect(wCollapsed).toBeLessThan(wExpanded);
   });
 
-  it("realmVisibleBounds 는 칩 확장/접힘에 따라 프레이밍을 재적합한다", () => {
+  it("realmVisibleBounds refits the framing as chips expand and collapse", () => {
     const { world } = buildDenseWorld();
     const data = buildRealmRuntimeData(world, "d", tokens, new Set(["d"]))!;
     const collapsedBounds = realmVisibleBounds(world, data, new Set(["d"]), tokens);

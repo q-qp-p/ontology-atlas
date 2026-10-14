@@ -202,7 +202,7 @@ afterEach(() => {
   bridge.hangStart = false;
 });
 
-describe('대화 패널 — 일어난 일만 그린다', () => {
+describe('chat panel: draws only what happened', () => {
   it('renders an empty panel and a streamed turn without newer backward-search array methods', async () => {
     const last = Object.getOwnPropertyDescriptor(Array.prototype, 'findLast')!;
     const lastIndex = Object.getOwnPropertyDescriptor(Array.prototype, 'findLastIndex')!;
@@ -235,7 +235,7 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
     release({ status: 'unavailable', capturedAt: 'now', vaultId: '/vault', scope: { requestedSlugs: [], capturedSlugs: [] }, counts: { requested: 0, captured: 0, bytes: 0 }, sourceUnavailableReasons: [], reasons: ['empty_scope'], documents: [], meaningBasis: null, sourceBasis: null });
     await waitFor(() => expect(bridge.sent.some((message) => message.method === 'session/prompt')).toBe(true));
   });
-  it('재 보지 않은 작업 방식은 안전한 것처럼 보이지 않는다', async () => {
+  it('a work mode that was never measured does not look safe', async () => {
     render(
       <AcpChatPanel
         runtimeId="claude-acp"
@@ -266,7 +266,7 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
     expect(screen.getByText('modeUnverifiedHint')).toBeInTheDocument();
   });
 
-  it('모델·작업 방식은 빈 상자나 정지 버튼과 겹치는 고정 폭이 되지 않는다', async () => {
+  it('the model and work mode do not become a fixed width that collides with the empty box or the stop button', async () => {
     render(
       <AcpChatPanel
         runtimeId="claude-acp"
@@ -327,7 +327,7 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
   });
 
   /** The whole request stays one disclosure away; the transcript opens on the readable sentence only. */
-  it('앱이 지은 요청은 읽을 문장만 서고, 전문은 한 번 펼쳐서 그대로 남는다', async () => {
+  it('a request the app built stands as only a readable sentence, and the full text stays once expanded', async () => {
     await bootSession();
     const composed = [
       '이 온톨로지의 뜻과 경계를 검토해 줘.',
@@ -348,7 +348,7 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
     expect(document.getElementById(fold.getAttribute('aria-controls')!)).toHaveTextContent('Scope: {"projectSlug":"storefront"}.');
   });
 
-  it('사람이 직접 쓴 줄바꿈은 말풍선에서도 줄바꿈으로 남는다', async () => {
+  it('line breaks a person typed stay line breaks in the bubble', async () => {
     await bootSession();
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '첫째 줄\n둘째 줄' } });
     fireEvent.click(screen.getByTestId('acp-chat-send'));
@@ -358,7 +358,7 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
     expect(bubble.className).toContain('whitespace-pre-wrap');
   });
 
-  it('세션이 서면 준비됨이 되고, 보낸 말과 받은 말이 각각 남는다', async () => {
+  it('once the session stands it becomes ready, and what was sent and received each stay', async () => {
     await bootSession();
 
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '이 폴더 정리해줘' } });
@@ -385,7 +385,7 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
    * The answer column is 260px at the dock floor, so a long command sits behind `overflow-x`
    * and needs a copy control.
    */
-  it('답에 실린 명령은 통째로 가져갈 수 있다 — 잘려 보이더라도', async () => {
+  it('a command in an answer can be taken whole, even if it looks cut off', async () => {
     const written: string[] = [];
     Object.defineProperty(window.navigator, 'clipboard', {
       configurable: true,
@@ -408,7 +408,7 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
     await waitFor(() => expect(chip.textContent).toBe('codeCopied'));
   });
 
-  it('표에는 복사 칩이 붙지 않는다 — 명령이 아니라 읽을 것이라서', async () => {
+  it('a table gets no copy chip, because it is for reading and not a command', async () => {
     await bootSession();
     emit({
       jsonrpc: '2.0',
@@ -421,7 +421,7 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
     expect(screen.queryByTestId('acp-chat-code-copy')).toBeNull();
   });
 
-  it('에이전트의 GFM 표를 좁은 패널에서도 구획과 가로 스크롤이 있는 표로 그린다', async () => {
+  it('draws the GFM table from the agent as a table with cell borders and horizontal scroll even in a narrow panel', async () => {
     await bootSession();
     emit({
       jsonrpc: '2.0',
@@ -441,7 +441,7 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
     expect(screen.getByRole('cell', { name: '연결 안 됨' })).toBeInTheDocument();
   });
 
-  it('생각과 말을 다른 것으로 그린다 — 중간 과정을 결론으로 읽지 않게', async () => {
+  it('draws thinking and speech as different things, so the intermediate process is not read as the conclusion', async () => {
     await bootSession();
     emit({
       jsonrpc: '2.0',
@@ -788,7 +788,7 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
    * A cancelled adapter simply stops reporting, so a row left open by Stop must not keep claiming
    * it is running.
    */
-  it('중지한 턴의 열린 도구 줄은 진행 중이라고 우기지 않는다', async () => {
+  it('an open tool line in a stopped turn does not insist it is still running', async () => {
     await bootSession();
     await startUserTurn('go');
     emit({
@@ -1074,7 +1074,7 @@ describe('대화 패널 — 일어난 일만 그린다', () => {
   });
 });
 
-describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
+describe('chat panel: the permission card really blocks', () => {
   /** An MCP tool call has no `file_path`; the absent-input case needs its own test. */
   function mcpPermissionRequest(
     toolName: string,
@@ -1097,7 +1097,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     };
   }
 
-  it('단일 관계 변경안을 지도에 즉시 내보내고 승인부터 도구 완료까지 실선 단계로 잇는다', async () => {
+  it('sends a single relation change proposal to the map at once and links it in solid steps from approval to tool completion', async () => {
     const previews: Array<{
       sourceSlug: string;
       targetSlug: string;
@@ -1185,7 +1185,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     await waitFor(() => expect(previews.at(-1)).toBeNull());
   });
 
-  it('관계 변경을 거절하면 실선 단계 없이 지도 변경안을 즉시 거둔다', async () => {
+  it('rejecting a relation change withdraws the map proposal at once, without solid steps', async () => {
     const previews: Array<AcpOntologyRelationPreview | null> = [];
     await bootSession({
       onOntologyRelationPreviewChange: (preview) => previews.push(preview),
@@ -1330,7 +1330,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
    * The session's own state is untouched — `data-acp-status` is still `thinking` — and only the
    * word a person reads changes.
    */
-  it('말로는 기다린다고 하고, 세션 상태는 그대로 둔다', async () => {
+  it('says in words that it is waiting and leaves the session state alone', async () => {
     await bootSession();
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '관계를 정리해줘' } });
     fireEvent.click(screen.getByTestId('acp-chat-send'));
@@ -1359,7 +1359,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     expect(panel.getAttribute('data-acp-status')).toBe('thinking');
   });
 
-  it('권한 카드가 길어져도 답할 두 버튼은 스크롤 밖에 남는다', async () => {
+  it('the two answer buttons stay outside the scroll area even when the permission card gets long', async () => {
     await bootSession();
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '관계를 정리해줘' } });
     fireEvent.click(screen.getByTestId('acp-chat-send'));
@@ -1386,7 +1386,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     expect(card.closest('[data-surface-state]')?.className).toContain('max-h-[70%]');
   });
 
-  it('온톨로지 쓰기의 사람 결정과 최종 도구 상태를 작업 영수증으로 내보낸다', async () => {
+  it('sends the human decision on an ontology write and the final tool state out as a work receipt', async () => {
     const receipts: AcpWorkReceipt[] = [];
     await bootSession({ onWorkReceipt: (receipt) => receipts.push(receipt) });
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '관계를 정리해줘' } });
@@ -1419,7 +1419,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     expect(receipts.at(-1)?.items[0].relation?.to).toBe('domains/b');
   });
 
-  it('거절한 변경은 실행 안 함 영수증으로 즉시 닫는다', async () => {
+  it('a rejected change closes at once with a not-executed receipt', async () => {
     const receipts: AcpWorkReceipt[] = [];
     await bootSession({ onWorkReceipt: (receipt) => receipts.push(receipt) });
     await startUserTurn('새 개념 제안을 검토해줘');
@@ -1439,7 +1439,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     });
   });
 
-  it('여러 관계 요청은 모든 행을 보여 주고 고른 행 하나만 지도에 내보낸다', async () => {
+  it('multiple relation requests show every row and send only the one chosen row to the map', async () => {
     const previews: Array<AcpOntologyRelationPreview | null> = [];
     await bootSession({
       onOntologyRelationPreviewChange: (preview) => previews.push(preview),
@@ -1481,7 +1481,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     expect(screen.getByTestId('task-review-batch-remaining')).toHaveTextContent('1');
   });
 
-  it('대량 온톨로지 구축은 모든 개념 제안을 보여 준 뒤에만 한 번에 허용한다', async () => {
+  it('a bulk ontology build is allowed in one go only after every concept proposal has been shown', async () => {
     await bootSession();
     await startUserTurn('저장소 온톨로지를 구축해줘');
     emit(
@@ -1494,7 +1494,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     );
 
     await waitFor(() => expect(screen.getByTestId('acp-permission-card')).toBeInTheDocument());
-    expect(answerFor(91), '전체 제안이 검토되기 전에 ACP가 계속 실행되면 안 된다').toBeUndefined();
+    expect(answerFor(91), 'ACP must not keep running before the whole proposal has been reviewed').toBeUndefined();
     fireEvent.click(screen.getByTestId('task-review-depth-details'));
     const rows = screen.getAllByTestId('acp-ontology-change-item');
     expect(rows).toHaveLength(2);
@@ -1529,7 +1529,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     expect(answerFor(102)).toBeUndefined();
   });
 
-  it('우리가 꽂아 준 볼트의 읽기 도구는 경로가 없어도 막지 않는다', async () => {
+  it('a read tool of the vault we installed is not blocked even without a path', async () => {
     await bootSession();
     emit(mcpPermissionRequest('mcp__atlas-vault__list_concepts'));
 
@@ -1538,7 +1538,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     expect(screen.queryByTestId('acp-permission-card')).toBeNull();
   });
 
-  it('우리 볼트의 쓰기 도구는 경로가 없어도 변경안을 보여 주고 답을 기다린다', async () => {
+  it('a write tool of our vault shows the change proposal even without a path and waits for the answer', async () => {
     await bootSession();
     await startUserTurn('새 개념을 추가해줘');
     emit(
@@ -1552,13 +1552,13 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
 
     fireEvent.click(await screen.findByTestId('task-review-depth-details'));
     await waitFor(() => expect(screen.getByTestId('acp-ontology-change-review')).toBeInTheDocument());
-    expect(answerFor(83), '사람이 답하기 전에 ACP 세션을 이어가면 안 된다').toBeUndefined();
+    expect(answerFor(83), 'the ACP session must not continue before a person answers').toBeUndefined();
     expect(screen.getByText('capabilities/contextual-editing')).toBeInTheDocument();
     expect(screen.getByText('Contextual Meaning Editing')).toBeInTheDocument();
     expect(screen.queryByTestId('acp-permission-allow-always')).toBeNull();
   });
 
-  it('**우리 도구라도 볼트 밖 경로면 묻는다** — 이름이 통행증이 아니다', async () => {
+  it('**even our own tool is asked about when the path is outside the vault**, because the name is not a pass', async () => {
     /*
      * `absorb_document` edits the source file relative to the repository root, not the vault, so a name
      * starting with `mcp__atlas-vault__` must not skip the path check.
@@ -1590,7 +1590,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     expect(answerFor(81)).toBeUndefined();
   });
 
-  it('폴더를 훑는 도구도 볼트 밖이면 묻는다 — 인자 이름이 `rootPath` 다', async () => {
+  it('a tool that scans a folder is also asked about when outside the vault, because the argument name is `rootPath`', async () => {
     /*
      * `analyze_repo_structure` · `index_project` · `infer_imports` take a
      * **directory**, not a file. The decision is ultimately 「is this path inside the
@@ -1621,7 +1621,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     expect(answerFor(82)).toBeUndefined();
   });
 
-  it('남의 MCP 도구는 경로가 없으면 그대로 묻는다', async () => {
+  it('a third-party MCP tool with no path is asked about as is', async () => {
     await bootSession();
     emit(mcpPermissionRequest('mcp__some-other-server__write_file', 79));
 
@@ -1630,7 +1630,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     expect(answerFor(79)).toBeUndefined();
   });
 
-  it('이름을 흉내 낸 도구는 통과하지 못한다', async () => {
+  it('a tool that imitates our name does not get through', async () => {
     await bootSession();
     // If something merely prefix-similar (`atlas-vault-evil`) passed, the decision would be meaningless.
     emit(mcpPermissionRequest('mcp__atlas-vault-evil__write_file', 80));
@@ -1639,7 +1639,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     expect(answerFor(80)).toBeUndefined();
   });
 
-  it('볼트 안 **읽기**는 카드를 안 띄우고 앱이 대신 허용한다', async () => {
+  it('a **read** inside the vault shows no card and the app allows it on behalf of the user', async () => {
     bridge.verdict = 'allow-inside-vault';
     await bootSession();
     emit(permissionRequest('/vault/notes.md', 77, 'read'));
@@ -1652,7 +1652,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     expect(screen.queryByTestId('acp-permission-card')).toBeNull();
   });
 
-  it('볼트 안이라도 **편집**은 카드를 띄운다 — 경로 안전과 변경 승인은 다른 질문이다', async () => {
+  it('even inside the vault an **edit** shows the card, because path safety and change approval are different questions', async () => {
     // Path containment must not auto-allow the edit tool on vault Markdown; that bypasses write review.
     bridge.verdict = 'allow-inside-vault';
     await bootSession();
@@ -1720,7 +1720,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
    * `use-rounds-runner` answers `autoDecide` with `{ reject }` outside a round's scope; the notice must
    * say it refused rather than fall through to `notice.gateOff`.
    */
-  it('자동 거절은 거절했다고 말하고, 무엇을 막았는지 이름을 댄다', async () => {
+  it('an automatic rejection says it rejected and names what it blocked', async () => {
     await bootSession({ autoDecide: () => ({ reject: 'wiki/out-of-scope.md' }) });
     emit(permissionRequest('/vault/wiki/out-of-scope.md', 93, 'edit'));
 
@@ -1735,7 +1735,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     expect(notice.textContent).toContain('notice.autoRefused');
   });
 
-  it('볼트 밖이면 카드를 띄우고, 답하기 전에는 아무 답도 보내지 않는다', async () => {
+  it('outside the vault it shows the card and sends no answer before one is given', async () => {
     await bootSession();
     emit(permissionRequest('/somewhere/else.md'));
 
@@ -1746,7 +1746,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     expect(screen.getByTestId('acp-permission-path')).toHaveTextContent('/somewhere/else.md');
   });
 
-  it('「안 할래요」를 누르면 거절이 전해지고 카드가 사라진다', async () => {
+  it('pressing decline delivers the rejection and the card disappears', async () => {
     await bootSession();
     emit(permissionRequest('/somewhere/else.md'));
     await waitFor(() => expect(screen.getByTestId('acp-permission-card')).toBeInTheDocument());
@@ -1761,12 +1761,12 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
      */
     const card = screen.queryByTestId('acp-permission-card');
     if (card) {
-      expect(card.closest('[inert]'), '퇴장 중인 카드가 여전히 눌린다').not.toBeNull();
+      expect(card.closest('[inert]'), 'the exiting card can still be pressed').not.toBeNull();
     }
     await waitFor(() => expect(screen.queryByTestId('acp-permission-card')).toBeNull());
   });
 
-  it('「이번만 허용」을 누르면 그 한 번만 허용된다', async () => {
+  it('pressing allow once allows only that one time', async () => {
     await bootSession();
     emit(permissionRequest('/somewhere/else.md'));
     await waitFor(() => expect(screen.getByTestId('acp-permission-card')).toBeInTheDocument());
@@ -1776,7 +1776,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     await waitFor(() => expect(answerFor(77)).toEqual({ outcome: 'selected', optionId: 'allow' }));
   });
 
-  it('카드에는 닫는 X 가 없다 — 답하지 않고 치울 수 있으면 관문이 아니다', async () => {
+  it('the card has no close X, because if it can be dismissed without answering it is not a gate', async () => {
     await bootSession();
     emit(permissionRequest('/somewhere/else.md'));
     const card = await screen.findByTestId('acp-permission-card');
@@ -1789,7 +1789,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
     ]);
   });
 
-  it('「이 폴더 전체 허용」은 주 행동과 같은 무게로 두지 않는다', async () => {
+  it('allow for this whole folder does not carry the same weight as the primary action', async () => {
     // This option widens the boundary wholesale in one click. At the same size as the
     // other two, people pick the easiest one.
     await bootSession();
@@ -1804,7 +1804,7 @@ describe('대화 패널 — 권한 카드가 실제로 막는다', () => {
   });
 });
 
-describe('대화 패널 — 대화방처럼 관리한다', () => {
+describe('chat panel: managed like a chat room', () => {
   /** Imitate a `session/list` response, mixing in another folder's — that is what really happens. */
   function replyToList() {
     const call = [...bridge.sent].reverse().find((m) => m.method === 'session/list');
@@ -1822,7 +1822,7 @@ describe('대화 패널 — 대화방처럼 관리한다', () => {
     return true;
   }
 
-  it('지난 대화가 있으면 목록 문이 생기고, 이 폴더 것만 담긴다', async () => {
+  it('with past conversations a list door appears, holding only conversations from this folder', async () => {
     await bootSession();
     await waitFor(() => expect(replyToList()).toBe(true));
 
@@ -1836,7 +1836,7 @@ describe('대화 패널 — 대화방처럼 관리한다', () => {
     expect(screen.queryByText('남의 폴더 작업')).toBeNull();
   });
 
-  it('Esc 로 닫힌다 — 이 앱의 다른 표면이 다 그러므로', async () => {
+  it('closes with Esc, since every other surface in this app does', async () => {
     await bootSession();
     await waitFor(() => expect(replyToList()).toBe(true));
     fireEvent.click(await screen.findByTestId('acp-chat-history'));
@@ -1847,7 +1847,7 @@ describe('대화 패널 — 대화방처럼 관리한다', () => {
     await waitFor(() => expect(screen.queryByTestId('acp-chat-history-scrim')).toBeNull());
   });
 
-  it('지난 대화를 고르면 그것을 이어 받는다', async () => {
+  it('choosing a past conversation resumes it', async () => {
     await bootSession();
     await waitFor(() => expect(replyToList()).toBe(true));
     fireEvent.click(await screen.findByTestId('acp-chat-history'));
@@ -1877,7 +1877,7 @@ describe('대화 패널 — 대화방처럼 관리한다', () => {
     ).toBeLessThan([...bridge.sent].reverse().findIndex((m) => m.method === 'session/new'));
   });
 
-  it('지난 대화가 없으면 목록 문을 만들지 않는다', async () => {
+  it('with no past conversations no list door is made', async () => {
     await bootSession();
     const call = [...bridge.sent].reverse().find((m) => m.method === 'session/list');
     emit({ jsonrpc: '2.0', id: call?.id, result: { sessions: [] } });
@@ -1886,7 +1886,7 @@ describe('대화 패널 — 대화방처럼 관리한다', () => {
     expect(screen.queryByTestId('acp-chat-history')).toBeNull();
   });
 
-  it('「새 대화」는 기록을 비우고 새로 연다', async () => {
+  it('new conversation clears the history and opens fresh', async () => {
     await bootSession();
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '먼저 한 말' } });
     fireEvent.click(screen.getByTestId('acp-chat-send'));
@@ -1899,8 +1899,8 @@ describe('대화 패널 — 대화방처럼 관리한다', () => {
   });
 });
 
-describe('대화 패널 — 못 하는 일은 정직하게', () => {
-  it('세션이 끝나면 상태로 말하고 작성 칸을 잠근다', async () => {
+describe('chat panel: honest about what it cannot do', () => {
+  it('when the session ends it says so as a status and locks the composer', async () => {
     await bootSession();
     // An exit event arrives when the adapter dies. A protocol error stands in for it here.
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '안녕' } });
@@ -1919,7 +1919,7 @@ describe('대화 패널 — 못 하는 일은 정직하게', () => {
    * `prompt` has no timeout, so a turn that stopped answering must not look like a long
    * one: these two check that the panel says so and points at the way out.
    */
-  it('턴이 오래 조용하면 사실대로 말하고 나가는 길을 가리킨다', async () => {
+  it('when a turn is quiet for long it says so plainly and points to the way out', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     try {
       await bootSession();
@@ -1941,7 +1941,7 @@ describe('대화 패널 — 못 하는 일은 정직하게', () => {
     }
   });
 
-  it('말을 계속하는 턴은 아무리 길어도 멈췄다고 하지 않는다', async () => {
+  it('a turn that keeps talking is never called stalled however long it runs', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     try {
       await bootSession();
@@ -1983,7 +1983,7 @@ describe('대화 패널 — 못 하는 일은 정직하게', () => {
    * already explains the wait, and telling somebody nothing is happening while they are the thing
    * not happening is worse than saying nothing.
    */
-  it('승인 카드가 떠 있는 동안은 조용해도 멈췄다고 하지 않는다', async () => {
+  it('while an approval card is up it is not called stalled even when quiet', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     try {
       await bootSession();
@@ -2001,22 +2001,22 @@ describe('대화 패널 — 못 하는 일은 정직하게', () => {
     }
   });
 
-  it('빈 말은 보내지 않는다', async () => {
+  it('does not send an empty message', async () => {
     await bootSession();
     expect(screen.getByTestId('acp-chat-send')).toBeDisabled();
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '   ' } });
     expect(screen.getByTestId('acp-chat-send')).toBeDisabled();
   });
 
-  it('화면이 사라지면 프로세스도 끝낸다', async () => {
+  it('ends the process when the screen goes away', async () => {
     await bootSession();
     cleanup();
     await waitFor(() => expect(bridge.stopped).toContain('acp-1-999'));
   });
 });
 
-describe('대화 패널 — 사람이 읽는 화면이다', () => {
-  it('에이전트의 답을 마크다운으로 그린다 — 백틱이 글자로 남지 않게', async () => {
+describe('chat panel: a screen a person reads', () => {
+  it('draws the answer from the agent as markdown, so backticks do not stay as characters', async () => {
     /*
      * On the real thing it came out like this: ``This folder (`my-ontology-2`) is …`` —
      * backticks and all. This repository already has a renderer and only this screen
@@ -2046,7 +2046,7 @@ describe('대화 패널 — 사람이 읽는 화면이다', () => {
     expect(body.querySelectorAll('li')).toHaveLength(2);
   });
 
-  it('도구 줄은 함수 이름이 아니라 일어난 일을 적는다', async () => {
+  it('a tool line writes what happened, not the function name', async () => {
     await bootSession();
     emit({
       jsonrpc: '2.0',
@@ -2072,7 +2072,7 @@ describe('대화 패널 — 사람이 읽는 화면이다', () => {
     expect(row.textContent).not.toContain('add_concept');
   });
 
-  it('모르는 도구는 이름만 보여 준다 — 그럴듯한 말을 지어내지 않는다', async () => {
+  it('an unknown tool shows only its name, with no plausible-sounding wording invented', async () => {
     await bootSession();
     emit({
       jsonrpc: '2.0',
@@ -2097,18 +2097,18 @@ describe('대화 패널 — 사람이 읽는 화면이다', () => {
   });
 });
 
-describe('대화 패널 — 어댑터를 두 개 띄우지 않는다', () => {
+describe('chat panel: never starts two adapters', () => {
   /**
    * The lock was a single `clientRef`, set only after the process launches; a second call in between
    * would start another adapter and strand the first, so only one session may open.
    */
-  it('띄우는 중에 또 불려도 세션은 하나만 연다', async () => {
+  it('opens only one session even when called again while starting', async () => {
     render(<AcpChatPanel runtimeId="claude-acp" runtimeLabel="Claude Agent" vaultRoot="/vault" />);
 
     // Wait until the first handshake goes out — that moment is 「launching」.
     await waitFor(() => expect(bridge.sent.some((m) => m.method === 'initialize')).toBe(true));
     const initializes = bridge.sent.filter((m) => m.method === 'initialize').length;
-    expect(initializes, '띄우는 중에 악수가 두 번 나가면 프로세스가 둘이다').toBe(1);
+    expect(initializes, 'two handshakes during startup would mean two processes').toBe(1);
 
     replyTo('initialize', { protocolVersion: 1 });
     await waitFor(() => expect(bridge.sent.some((m) => m.method === 'session/new')).toBe(true));
@@ -2116,7 +2116,7 @@ describe('대화 패널 — 어댑터를 두 개 띄우지 않는다', () => {
     expect(bridge.sent.filter((m) => m.method === 'session/new')).toHaveLength(1);
   });
 
-  it('매 렌더 새 배열이 와도 다시 띄우지 않는다', async () => {
+  it('does not start again when a new array arrives on every render', async () => {
     /*
      * That was one of this defect's triggers — a parent rebuilding `mcpServers` every
      * render changes the hook's `start` identity, and the effect watching it re-runs.
@@ -2146,8 +2146,8 @@ describe('대화 패널 — 어댑터를 두 개 띄우지 않는다', () => {
   });
 });
 
-describe('작성 칸 — 안내가 쓰는 글을 가리지 않는다', () => {
-  it('손이 갔고 **비어 있을 때만** 안내를 띄운다', async () => {
+describe('composer: the hint does not cover what is being written', () => {
+  it('shows the hint **only when touched and empty**', async () => {
     await bootSession();
     const box = screen.getByRole('textbox');
 
@@ -2178,7 +2178,7 @@ describe('작성 칸 — 안내가 쓰는 글을 가리지 않는다', () => {
     expect(box).toHaveAttribute('placeholder', 'composerPlaceholder');
   });
 
-  it('세션 제어 아이콘 버튼은 이름을 갖고, 작지 않다', async () => {
+  it('session control icon buttons have a name and are not small', async () => {
     /*
      * An icon-only button has no visible name. The accessible name is enforced by the
      * type (`IconButton.label`), but for **someone looking at the screen** the tooltip
@@ -2195,12 +2195,12 @@ describe('작성 칸 — 안내가 쓰는 글을 가리지 않는다', () => {
        * own controls, and they kept the top step when they moved down onto the composer row —
        * the send button beside them is 32px too, and one row of controls has one height.
        */
-      expect(button.className, `${id}: 크기가 한 단 내려갔다`).toContain('h-8 w-8');
+      expect(button.className, `${id}: the size dropped a step`).toContain('h-8 w-8');
     }
   });
 });
 
-describe('대화 패널 — 떠 있는 것은 떠 있어야 한다', () => {
+describe('chat panel: what floats must float', () => {
   function replyToList() {
     const call = [...bridge.sent].reverse().find((m) => m.method === 'session/list');
     if (!call) return false;
@@ -2216,7 +2216,7 @@ describe('대화 패널 — 떠 있는 것은 떠 있어야 한다', () => {
     return true;
   }
 
-  it('목록은 흐름을 밀지 않는다 — 떠서 덮는다', async () => {
+  it('the list does not push the flow and floats over it instead', async () => {
     await bootSession();
     await waitFor(() => expect(replyToList()).toBe(true));
     fireEvent.click(await screen.findByTestId('acp-chat-history'));
@@ -2224,10 +2224,10 @@ describe('대화 패널 — 떠 있는 것은 떠 있어야 한다', () => {
     const list = await screen.findByTestId('acp-chat-history-list');
     // Some ancestor has to be out of the flow (`absolute`).
     const floating = list.closest('.absolute');
-    expect(floating, '목록이 흐름 안에 있으면 열 때 대화가 밀려난다').not.toBeNull();
+    expect(floating, 'a list inside the flow pushes the conversation away when opened').not.toBeNull();
   });
 
-  it('막이 있고, 아무 데나 누르면 닫힌다', async () => {
+  it('has a scrim and closes when anywhere is pressed', async () => {
     await bootSession();
     await waitFor(() => expect(replyToList()).toBe(true));
     fireEvent.click(await screen.findByTestId('acp-chat-history'));
@@ -2237,7 +2237,7 @@ describe('대화 패널 — 떠 있는 것은 떠 있어야 한다', () => {
     await waitFor(() => expect(screen.queryByTestId('acp-chat-history-scrim')).toBeNull());
   });
 
-  it('언제 한 대화인지 보여 준다 — 이미 받아 온 값을 버리지 않는다', async () => {
+  it('shows when a conversation took place, without discarding a value already received', async () => {
     await bootSession();
     await waitFor(() => expect(replyToList()).toBe(true));
     fireEvent.click(await screen.findByTestId('acp-chat-history'));
@@ -2245,12 +2245,12 @@ describe('대화 패널 — 떠 있는 것은 떠 있어야 한다', () => {
     const item = await screen.findByTestId('acp-chat-history-item');
     expect(item.textContent).toContain('어제 하던 정리');
     // The time is the basis for choosing among conversations with similar titles.
-    expect(item.textContent, '날짜가 없으면 무엇을 고를지 알 수 없다').toMatch(/2026/);
+    expect(item.textContent, 'without a date there is no telling which to pick').toMatch(/2026/);
   });
 });
 
-describe('대화 패널 — 내 질문과 답이 갈린다', () => {
-  it('두 번째 질문부터는 차례 경계가 그어진다', async () => {
+describe('chat panel: my question and the answer are separated', () => {
+  it('a turn boundary is drawn from the second question on', async () => {
     await bootSession();
     const box = screen.getByRole('textbox');
 
@@ -2275,13 +2275,13 @@ describe('대화 패널 — 내 질문과 답이 갈린다', () => {
     fireEvent.click(screen.getByTestId('acp-chat-send'));
 
     await waitFor(() =>
-      expect(document.querySelectorAll('[data-turn-start]'), '차례가 바뀌었는데 경계가 없다').toHaveLength(1),
+      expect(document.querySelectorAll('[data-turn-start]'), 'the turn changed but there is no boundary').toHaveLength(1),
     );
   });
 });
 
-describe('대화 패널 — 오류는 사람의 말로 말하고 다음 할 일을 준다', () => {
-  it('로그인이 풀린 것을 알아보고, 원문은 접어 둔다', async () => {
+describe('chat panel: errors are told in human words with a next step', () => {
+  it('recognises that the login has lapsed and folds the original text away', async () => {
     await bootSession();
     fireEvent.change(screen.getAllByRole('textbox')[0], { target: { value: '안녕' } });
     fireEvent.click(screen.getByTestId('acp-chat-send'));
@@ -2314,7 +2314,7 @@ describe('대화 패널 — 오류는 사람의 말로 말하고 다음 할 일�
     expect(details?.textContent).toContain('authentication_failed');
   });
 
-  it('같은 실패를 두 번 말하지 않는다 — 어댑터가 메시지로도 보낸 원문은 안 그린다', async () => {
+  it('does not report the same failure twice, and skips the original text the adapter also sent as a message', async () => {
     /*
      * The adapter also sends the error text as a `session/update` message;
      * it must not render outside the card.
@@ -2358,10 +2358,10 @@ describe('대화 패널 — 오류는 사람의 말로 말하고 다음 할 일�
     const outsideAlert = [...transcript.querySelectorAll('*')].filter(
       (el) => el.textContent === echo && !alert.contains(el),
     );
-    expect(outsideAlert, '영문 원문이 카드 밖에 또 있다').toHaveLength(0);
+    expect(outsideAlert, 'the English original appears again outside the card').toHaveLength(0);
   });
 
-  it('깨진 npx 캐시로 죽은 것을 알아본다 — 오류 문자열이 아무 말도 안 해도 (2026-08-19 실기계)', async () => {
+  it('recognises a death from a broken npx cache even when the error string says nothing (real machine, 2026-08-19)', async () => {
     /* The error is only `acp session closed` with the clue in stderr; it must read as the install branch. */
     render(
       <AcpChatPanel
@@ -2390,7 +2390,7 @@ describe('대화 패널 — 오류는 사람의 말로 말하고 다음 할 일�
     expect(details?.textContent).toContain('_npx/8757e2301903ae53');
   });
 
-  it('카드가 시킨 그 행동을 카드가 준다 — 「다시 시도」가 실제로 새 세션을 띄운다', async () => {
+  it('the card provides the very action it asked for, and retry really starts a new session', async () => {
     render(
       <AcpChatPanel
         runtimeId="claude-acp"
@@ -2407,7 +2407,7 @@ describe('대화 패널 — 오류는 사람의 말로 말하고 다음 할 일�
 
     const alert = await screen.findByTestId('acp-chat-error');
     const retry = alert.querySelector<HTMLButtonElement>('[data-testid="acp-chat-error-retry"]');
-    expect(retry, '오류 카드가 「다시 시도」를 주지 않는다').not.toBeNull();
+    expect(retry, 'the error card does not offer retry').not.toBeNull();
     fireEvent.click(retry as HTMLButtonElement);
     await waitFor(() =>
       expect(
@@ -2485,8 +2485,8 @@ describe('대화 패널 — 오류는 사람의 말로 말하고 다음 할 일�
   });
 });
 
-describe('첫 내려받기 — 「켜는 중」만으로는 부족하다 (2026-08-19)', () => {
-  it('받는 중이라는 사실과 실측 진행(MB)을 말하고, 준비되면 거둔다', async () => {
+describe('first download: a starting indicator alone is not enough (2026-08-19)', () => {
+  it('says that it is downloading with measured progress (MB) and withdraws it when ready', async () => {
     render(
       <AcpChatPanel
         runtimeId="claude-acp"
@@ -2523,7 +2523,7 @@ describe('첫 내려받기 — 「켜는 중」만으로는 부족하다 (2026-0
     expect(screen.queryByTestId('acp-starting')).toBeNull();
   });
 
-  it('첫 알림을 놓쳐도 진행 알림만으로 표시를 만든다 — 구독 전에 나간 알림은 유실될 수 있다', async () => {
+  it('builds the indicator from progress notices alone even if the first notice was missed, since a notice sent before subscribing can be lost', async () => {
     render(
       <AcpChatPanel
         runtimeId="claude-acp"
@@ -2564,7 +2564,7 @@ describe('첫 내려받기 — 「켜는 중」만으로는 부족하다 (2026-0
     expect(composer.getAttribute('placeholder')).toContain('Checkout');
   });
 
-  it('내려받기가 없는 평범한 시작도 화면 가운데서 기다린다 — 우측 상단 칩 하나로는 부족하다', async () => {
+  it('an ordinary start with no download also waits in the middle of the screen, since one chip at the top right is not enough', async () => {
     render(
       <AcpChatPanel
         runtimeId="claude-acp"
@@ -2617,14 +2617,14 @@ describe('첫 내려받기 — 「켜는 중」만으로는 부족하다 (2026-0
     await screen.findByTestId('acp-answer-wait');
   });
 
-  it('준비되면 기다림 표시는 사라진다', async () => {
+  it('the waiting indicator disappears when ready', async () => {
     await bootSession();
     expect(screen.queryByTestId('acp-starting')).toBeNull();
     expect(screen.queryByTestId('brand-waiting-mark')).toBeNull();
   });
 
   /* A door's first turn waits for `ready`: a prompt sent into a starting session is swallowed. */
-  it('문이 실은 첫 말은 세션이 준비된 뒤에, 한 번만 나간다', async () => {
+  it('the first words carried in by the door go out once, after the session is ready', async () => {
     render(
       <AcpChatPanel
         runtimeId="claude-acp"
@@ -2637,7 +2637,7 @@ describe('첫 내려받기 — 「켜는 중」만으로는 부족하다 (2026-0
     await waitFor(() => expect(bridge.sent.some((m) => m.method === 'initialize')).toBe(true));
     const promptsWhileStarting = () =>
       bridge.sent.filter((m) => m.method === 'session/prompt').length;
-    expect(promptsWhileStarting(), '아직 시작 중인데 보냈다 — 삼켜진다').toBe(0);
+    expect(promptsWhileStarting(), 'sent while still starting, so it is swallowed').toBe(0);
 
     replyTo('initialize', { protocolVersion: 1 });
     await waitFor(() => expect(bridge.sent.some((m) => m.method === 'session/new')).toBe(true));
@@ -2676,8 +2676,8 @@ describe('첫 내려받기 — 「켜는 중」만으로는 부족하다 (2026-0
   });
 });
 
-describe('권한 카드 — 놓칠 수 없어야 한다', () => {
-  it('카드가 뜨면 **초점이 그 안으로** 온다 — 거절 쪽으로', async () => {
+describe('permission card: must be impossible to miss', () => {
+  it('when the card appears **focus moves into it**, onto the reject side', async () => {
     /* Focus goes to reject, not allow, so a key press to move past cannot land on the irreversible side. */
     bridge.verdict = 'ask';
     await bootSession();
@@ -2685,7 +2685,7 @@ describe('권한 카드 — 놓칠 수 없어야 한다', () => {
 
     const card = await screen.findByTestId('acp-permission-card');
     await waitFor(() =>
-      expect(card.contains(document.activeElement), '초점이 카드 밖에 있다').toBe(true),
+      expect(card.contains(document.activeElement), 'focus is outside the card').toBe(true),
     );
     expect(document.activeElement).toBe(screen.getByTestId('acp-permission-reject'));
     // The other thing the role promises — a body that reads out what is being asked.
@@ -2693,14 +2693,14 @@ describe('권한 카드 — 놓칠 수 없어야 한다', () => {
   });
 });
 
-describe('빈 대화의 추천 — 이 폴더에 대한 것만 그린다', () => {
+describe('suggestions for an empty conversation: draws only what concerns this folder', () => {
   /**
    * What the model (`chat-suggestions.ts`) suggests is pinned by its own test. What is
    * pinned here is **whether the screen actually draws it and seats the sentence in
    * the composer on click**. A green model with a screen that does not draw it means
    * nothing happens.
    */
-  it('도크 첫 프레임부터 완성된 빈 대화를 그리고, 연결만 뒤에서 기다린다', () => {
+  it('draws a finished empty conversation from the first frame of the dock, with only the connection waiting behind', () => {
     render(
       <AcpChatPanel
         runtimeId="claude-acp"
@@ -2721,7 +2721,7 @@ describe('빈 대화의 추천 — 이 폴더에 대한 것만 그린다', () =>
     expect(bridge.sent.some((message) => message.method === 'initialize')).toBe(false);
   });
 
-  it('추천을 받으면 그려지고, 누르면 입력칸에 문장이 앉는다', async () => {
+  it('suggestions are drawn when received, and pressing one puts the sentence in the input', async () => {
     render(
       <AcpChatPanel
         runtimeId="claude-acp"
@@ -2754,7 +2754,7 @@ describe('빈 대화의 추천 — 이 폴더에 대한 것만 그린다', () =>
     const composer = screen
       .getByTestId('acp-chat-composer')
       .querySelector('textarea') as HTMLTextAreaElement;
-    expect(composer, '작성 칸을 못 찾았다 — 이 단언은 무엇도 재지 못한다').toBeTruthy();
+    expect(composer, 'the composer was not found, so this assertion measures nothing').toBeTruthy();
     await waitFor(() =>
       expect((composer as HTMLTextAreaElement).value).toContain('capabilities/invoice'),
     );
@@ -2763,13 +2763,13 @@ describe('빈 대화의 추천 — 이 폴더에 대한 것만 그린다', () =>
     expect(bridge.sent.some((m) => m.method === 'session/prompt')).toBe(false);
   });
 
-  it('추천이 없으면 그 칸 자체가 없다 — 빈 상자를 그리지 않는다', async () => {
+  it('with no suggestions that slot does not exist, and no empty box is drawn', async () => {
     await bootSession();
     expect(screen.getByTestId('acp-chat-empty')).toBeTruthy();
     expect(screen.queryByTestId('acp-chat-suggestions')).toBeNull();
   });
 
-  it('소스 연결 추천은 에이전트 문장으로 바꾸지 않고 앱의 연결 행동으로 보낸다', async () => {
+  it('a source-connection suggestion goes to the connect action of the app instead of becoming an agent sentence', async () => {
     const onSuggestionAction = vi.fn(() => true);
     await bootSession({
       suggestions: [{ kind: 'connectSource', params: { count: 1 } }],
@@ -2785,7 +2785,7 @@ describe('빈 대화의 추천 — 이 폴더에 대한 것만 그린다', () =>
   });
 });
 
-describe('완료된 대화의 추천 — 답변에서 다음 행동으로 잇는다', () => {
+describe('suggestions for a finished conversation: connect the answer to the next action', () => {
   async function completeTurn() {
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '첫 온톨로지를 만들어 줘' } });
     fireEvent.click(screen.getByTestId('acp-chat-send'));
@@ -2803,7 +2803,7 @@ describe('완료된 대화의 추천 — 답변에서 다음 행동으로 잇는
     await waitFor(() => expect(screen.getByText('첫 온톨로지가 준비됐어요.')).toBeInTheDocument());
   }
 
-  it('답변이 끝난 뒤에만 추천을 붙이고, 눌러도 자동 전송하지 않는다', async () => {
+  it('attaches suggestions only after the answer is done, and pressing one does not send automatically', async () => {
     await bootSession({ suggestions: [{ kind: 'explain', params: { count: 12 } }] });
     await completeTurn();
 
@@ -2827,7 +2827,7 @@ describe('완료된 대화의 추천 — 답변에서 다음 행동으로 잇는
     );
   });
 
-  it('같은 대화에서 볼트 상태가 갱신되면 끝낸 행동을 버리고 최신 다음 행동으로 바꾼다', async () => {
+  it('when the vault state refreshes in the same conversation it drops the finished action and switches to the latest next action', async () => {
     const initialSuggestions = [{ kind: 'bootstrap', params: { count: 5 } }] as const;
     const { rerenderPanel } = await bootSession({ suggestions: initialSuggestions });
     await completeTurn();
@@ -3008,7 +3008,7 @@ describe('완료된 대화의 추천 — 답변에서 다음 행동으로 잇는
     });
   });
 
-  it('사용자가 쓰거나 권한을 검토하는 동안은 추천이 물러난다', async () => {
+  it('suggestions step back while the user writes or reviews a permission', async () => {
     await bootSession({ suggestions: [{ kind: 'explain', params: { count: 12 } }] });
     await completeTurn();
     replyTo('session/prompt', { stopReason: 'end_turn' });
@@ -3025,7 +3025,7 @@ describe('완료된 대화의 추천 — 답변에서 다음 행동으로 잇는
     await waitFor(() => expect(screen.queryByTestId('acp-chat-post-turn-suggestions')).toBeNull());
   });
 
-  it('이전 답변을 새 무응답 turn의 다음 행동처럼 붙이지 않는다', async () => {
+  it('does not attach a previous answer as the next action of a new unanswered turn', async () => {
     await bootSession({ suggestions: [{ kind: 'explain', params: { count: 12 } }] });
     await completeTurn();
     replyTo('session/prompt', { stopReason: 'end_turn' });
@@ -3042,7 +3042,7 @@ describe('완료된 대화의 추천 — 답변에서 다음 행동으로 잇는
     await waitFor(() => expect(screen.queryByTestId('acp-chat-post-turn-suggestions')).toBeNull());
   });
 
-  it('새 turn이 실패하면 이전 추천보다 오류와 복구 경로를 우선한다', async () => {
+  it('when a new turn fails, the error and recovery path take priority over the previous suggestion', async () => {
     await bootSession({ suggestions: [{ kind: 'explain', params: { count: 12 } }] });
     await completeTurn();
     replyTo('session/prompt', { stopReason: 'end_turn' });
@@ -3062,7 +3062,7 @@ describe('완료된 대화의 추천 — 답변에서 다음 행동으로 잇는
     );
   });
 
-  it('사용자 질문 없이 온 에이전트 문장을 완료 turn으로 꾸미지 않는다', async () => {
+  it('does not dress up an agent sentence that arrived without a user question as a completed turn', async () => {
     await bootSession({ suggestions: [{ kind: 'explain', params: { count: 12 } }] });
     emit({
       jsonrpc: '2.0',
@@ -3078,7 +3078,7 @@ describe('완료된 대화의 추천 — 답변에서 다음 행동으로 잇는
     expect(screen.queryByTestId('acp-chat-post-turn-suggestions')).toBeNull();
   });
 
-  it('앱 이동 행동은 post-turn에서 빼고 프롬프트 선택은 앱 callback 없이 작성칸으로 보낸다', async () => {
+  it('app navigation actions are left out of post-turn, and a prompt choice goes to the composer without an app callback', async () => {
     const onSuggestionAction = vi.fn((suggestion: { kind: string }) => suggestion.kind === 'connectSource');
     await bootSession({
       suggestions: [
@@ -3099,7 +3099,7 @@ describe('완료된 대화의 추천 — 답변에서 다음 행동으로 잇는
   });
 });
 
-describe('답변 속 노드 이름 — 지도와 잇는다', () => {
+describe('node names in an answer: linked to the map', () => {
   /**
    * What the model (`link-slugs.ts`) picks out is pinned by its own test. What is
    * pinned here is **whether the marks really appear inside the answer, and whether
@@ -3144,36 +3144,36 @@ describe('답변 속 노드 이름 — 지도와 잇는다', () => {
     return hovered;
   }
 
-  it('아는 이름에 표시가 달리고, 올리면 그 이름이 나간다', async () => {
+  it('a known name gets a mark, and hovering it sends that name out', async () => {
     const hovered = await agentSays('먼저 capabilities/invoice 를 봤어요.');
 
     const mark = await screen.findByTestId('acp-chat-slug');
     expect(mark.getAttribute('data-slug')).toBe('capabilities/invoice');
 
     fireEvent.pointerEnter(mark);
-    expect(hovered.at(-1), '마우스를 올렸는데 지도에 아무것도 안 나갔다').toBe(
+    expect(hovered.at(-1), 'hovered but nothing was sent to the map').toBe(
       'capabilities/invoice',
     );
     fireEvent.pointerLeave(mark);
     // It must be cleared on leave — otherwise the highlight stays on.
-    expect(hovered.at(-1), '마우스가 벗어났는데 강조가 안 꺼진다').toBeNull();
+    expect(hovered.at(-1), 'the mouse left but the highlight did not turn off').toBeNull();
   });
 
-  it('모르는 이름에는 표시를 달지 않는다 — 눌러도 아무 데도 안 가는 링크를 만들지 않는다', async () => {
+  it('an unknown name gets no mark, so no link is made that goes nowhere when pressed', async () => {
     await agentSays('src/features/acp-session/model/x.ts 를 고쳤어요.');
     await waitFor(() => expect(document.querySelectorAll('[data-acp-entry="agent"]').length).toBe(1));
     expect(screen.queryAllByTestId('acp-chat-slug')).toHaveLength(0);
   });
 
-  it('아는 이름을 안 넘기면 아무것도 안 단다 — 볼트를 모르면 짐작하지 않는다', async () => {
+  it('without the known names it marks nothing, and does not guess when it does not know the vault', async () => {
     await agentSays('먼저 capabilities/invoice 를 봤어요.', { knownSlugs: undefined });
     await waitFor(() => expect(document.querySelectorAll('[data-acp-entry="agent"]').length).toBe(1));
     expect(screen.queryAllByTestId('acp-chat-slug')).toHaveLength(0);
   });
 });
 
-describe('도구 줄 — 어느 노드를 만졌는지 말한다', () => {
-  it('도구가 만진 노드를 적고, 올리면 지도로 나간다', async () => {
+describe('tool line: says which node was touched', () => {
+  it('writes the node the tool touched, and hovering it goes out to the map', async () => {
     const hovered: (string | null)[] = [];
     render(
       <AcpChatPanel
@@ -3211,7 +3211,7 @@ describe('도구 줄 — 어느 노드를 만졌는지 말한다', () => {
     expect(hovered.at(-1)).toBe('capabilities/invoice');
   });
 
-  it('모르는 노드를 만지면 적지 않는다 — 없는 것을 가리키지 않는다', async () => {
+  it('touching an unknown node writes nothing, so it never points at something that does not exist', async () => {
     render(
       <AcpChatPanel
         runtimeId="claude-acp"
@@ -3247,8 +3247,8 @@ describe('도구 줄 — 어느 노드를 만졌는지 말한다', () => {
   });
 });
 
-describe('도구 호출 — 지도를 정확한 대상으로 움직인다', () => {
-  it('get_concept 입력을 실재 노드 포커스로 한 번만 전달한다', async () => {
+describe('tool call: moves the map to the exact target', () => {
+  it('passes get_concept input once as a focus on a real node', async () => {
     const onMapIntent = vi.fn();
     await bootSession({
       knownSlugs: new Set(['capabilities/order']),
@@ -3293,7 +3293,7 @@ describe('도구 호출 — 지도를 정확한 대상으로 움직인다', () =
     await waitFor(() => expect(onMapIntent).toHaveBeenCalledTimes(1));
   });
 
-  it('find_path의 두 끝점을 경로 의도로 전달하고 답변 문장은 해석하지 않는다', async () => {
+  it('passes the two endpoints of find_path as a path intent and does not interpret the answer sentence', async () => {
     const onMapIntent = vi.fn();
     await bootSession({
       knownSlugs: new Set(['capabilities/cart', 'capabilities/order']),
@@ -3341,8 +3341,8 @@ describe('도구 호출 — 지도를 정확한 대상으로 움직인다', () =
   });
 });
 
-describe('Ontology DNA 발표 — 같은 ACP turn을 장면으로 본다', () => {
-  it('지도 callback 없이도 분석 안에서 열리고 지도 이동은 별도 선택으로 남는다', async () => {
+describe('Ontology DNA presentation: sees the same ACP turn as scenes', () => {
+  it('opens inside the analysis without a map callback, and moving the map stays a separate choice', async () => {
     const onDraftPresenceChange = vi.fn();
     const onPresentationOpenMap = vi.fn();
     const slugs = ['ontology-atlas', 'domains/agent-integration', 'capabilities/mcp-server'];
@@ -3409,7 +3409,7 @@ describe('Ontology DNA 발표 — 같은 ACP turn을 장면으로 본다', () =>
     expect(onPresentationOpenMap).toHaveBeenCalledWith('ontology-atlas', 'analysis-read-1');
   });
 
-  it('source-hidden full reads가 끝난 답변만 발표로 열고 장면마다 같은 노드를 포커스한다', async () => {
+  it('opens the presentation only for an answer after source-hidden full reads finish, and focuses the same node in every scene', async () => {
     const onMapIntent = vi.fn();
     const onPresentationVisibilityChange = vi.fn();
     const slugs = [
@@ -3529,7 +3529,7 @@ describe('Ontology DNA 발표 — 같은 ACP turn을 장면으로 본다', () =>
     expect(screen.queryByTestId('acp-presentation-blocked')).toBeNull();
   });
 
-  it('비-Atlas 도구가 섞인 turn은 이름 붙은 상태 설명으로 막고 발표 문을 열지 않는다', async () => {
+  it('a turn mixed with non-Atlas tools is blocked with a named status explanation and the presentation door stays closed', async () => {
     await bootSession({
       knownSlugs: new Set(['ontology-atlas']),
       knownRelations: new Set(),
@@ -3600,8 +3600,8 @@ describe('Ontology DNA 발표 — 같은 ACP turn을 장면으로 본다', () =>
   });
 });
 
-describe('답하다 죽은 것과 다 끝난 것은 다른 말이다', () => {
-  it('차례가 도는 중에 죽으면 그렇게 말한다', async () => {
+describe('dying while answering and being fully finished are different statements', () => {
+  it('dying while a turn is running says exactly that', async () => {
     await bootSession();
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '봐줘' } });
     fireEvent.click(screen.getByTestId('acp-chat-send'));
@@ -3621,7 +3621,7 @@ describe('답하다 죽은 것과 다 끝난 것은 다른 말이다', () => {
       const said = [...document.querySelectorAll('[data-acp-entry="notice"]')].map((n) =>
         n.getAttribute('data-notice'),
       );
-      expect(said, '답하다 죽었는데 화면이 아무 말도 안 한다').toContain('died-mid-turn');
+      expect(said, 'it died while answering but the screen says nothing').toContain('died-mid-turn');
     });
   });
 
@@ -3672,7 +3672,7 @@ describe('답하다 죽은 것과 다 끝난 것은 다른 말이다', () => {
     expect(screen.queryByText('notice.gateOff')).toBeNull();
   });
 
-  it('차례가 안 도는 중에 죽으면 그 말은 안 한다 — 없는 사건을 지어내지 않는다', async () => {
+  it('dying while no turn is running does not say that, so no event is invented', async () => {
     await bootSession();
     bridge.exit?.(0);
     await waitFor(() =>
@@ -3686,8 +3686,8 @@ describe('답하다 죽은 것과 다 끝난 것은 다른 말이다', () => {
 });
 
 /** Activity is reported only while a turn runs; reporting it when idle would state a falsehood. */
-describe('대화 패널 — 차례가 도는 동안만 알린다', () => {
-  it('도구가 실제로 호출된 동안만 구조화된 입력을 전달하고 끝나면 지운다', async () => {
+describe('chat panel: announces only while a turn is running', () => {
+  it('passes structured input only while the tool is actually called and clears it afterward', async () => {
     const seen: Array<{ id: string; toolKind: string | null; rawInput: unknown } | null> = [];
     await bootSession({ onTurnToolActivityChange: (activity) => seen.push(activity) });
 
@@ -3723,7 +3723,7 @@ describe('대화 패널 — 차례가 도는 동안만 알린다', () => {
     await waitFor(() => expect(seen.at(-1)).toBeNull());
   });
 
-  it('완료한 도구 행은 뒤의 차례 취소와 무관하게 한 번만 즉시 관찰로 넘긴다', async () => {
+  it('a finished tool row is handed to observation once and at once, regardless of a later turn cancellation', async () => {
     const observed: Array<{ id: string; status: string; toolKind: string }> = [];
     await bootSession({ onTerminalToolObservation: (event) => observed.push(event) });
 
@@ -3777,7 +3777,7 @@ describe('대화 패널 — 차례가 도는 동안만 알린다', () => {
     expect(observed).toEqual([expect.objectContaining({ id: 'last-read', status: 'completed' })]);
   });
 
-  it('보내면 켜지고, 답이 끝나면 꺼진다', async () => {
+  it('turns on when sent and off when the answer ends', async () => {
     const seen: Array<{ state: string; summary: string | null } | null> = [];
     render(
       <AcpChatPanel
@@ -3797,7 +3797,7 @@ describe('대화 패널 — 차례가 도는 동안만 알린다', () => {
     );
 
     // Nothing has been asked yet — it must never have lit.
-    expect(seen.some(Boolean), '세션만 열었는데 활동 중이라고 말한다').toBe(false);
+    expect(seen.some(Boolean), 'says it is active though only the session was opened').toBe(false);
 
     fireEvent.change(screen.getAllByRole('textbox')[0], { target: { value: '안녕' } });
     fireEvent.click(screen.getByTestId('acp-chat-send'));
@@ -3808,7 +3808,7 @@ describe('대화 패널 — 차례가 도는 동안만 알린다', () => {
     await waitFor(() => expect(seen.at(-1)).toBeNull());
   });
 
-  it('패널이 사라지면 꺼 준다 — 켠 채로 남기지 않는다', async () => {
+  it('turns it off when the panel disappears, rather than leaving it on', async () => {
     const seen: Array<{ state: string } | null> = [];
     const toolSeen: Array<{ id: string } | null> = [];
     const view = render(
@@ -3828,7 +3828,7 @@ describe('대화 패널 — 차례가 도는 동안만 알린다', () => {
   });
 });
 
-describe('작성 칸 — `/` 메뉴', () => {
+describe('composer: the `/` menu', () => {
   async function openMenu() {
     await bootSession();
     emit({
@@ -3851,20 +3851,20 @@ describe('작성 칸 — `/` 메뉴', () => {
     return box;
   }
 
-  it('온 명령만 보여 준다', async () => {
+  it('shows only the commands that arrived', async () => {
     await openMenu();
     const menu = screen.getByTestId('acp-chat-slash-menu');
     expect(menu.textContent).toContain('/alpha');
     expect(menu.textContent).toContain('/beta');
   });
 
-  it('아무것도 안 오면 `/` 를 쳐도 안 열린다 — 없는 기능을 지어내지 않는다', async () => {
+  it('when nothing arrives typing `/` does not open it, so no nonexistent feature is invented', async () => {
     await bootSession();
     fireEvent.change(screen.getAllByRole('textbox')[0], { target: { value: '/' } });
     expect(screen.queryByTestId('acp-chat-slash-menu')).toBeNull();
   });
 
-  it('키보드로 옮기고 Enter 로 고른다', async () => {
+  it('moves with the keyboard and chooses with Enter', async () => {
     const box = await openMenu();
     const selected = () =>
       [...screen.getByTestId('acp-chat-slash-menu').querySelectorAll('[role="option"]')].findIndex(
@@ -3872,27 +3872,27 @@ describe('작성 칸 — `/` 메뉴', () => {
       );
     expect(selected()).toBe(0);
     fireEvent.keyDown(box, { key: 'ArrowDown' });
-    expect(selected(), '아래로 못 옮긴다').toBe(1);
+    expect(selected(), 'cannot move down').toBe(1);
     fireEvent.keyDown(box, { key: 'ArrowUp' });
     expect(selected()).toBe(0);
     fireEvent.keyDown(box, { key: 'Enter' });
     expect((box as HTMLTextAreaElement).value).toBe('/alpha ');
   });
 
-  it('짚은 줄이 화면에 표시된다 — 안 그러면 어디 있는지 모른다', async () => {
+  it('the highlighted line is shown on screen, otherwise no one knows where it is', async () => {
     await openMenu();
     const options = screen.getByTestId('acp-chat-slash-menu').querySelectorAll('[role="option"]');
     expect(options[0].getAttribute('aria-selected')).toBe('true');
     expect(options[1].getAttribute('aria-selected')).toBe('false');
   });
 
-  it('바깥을 누르면 닫힌다', async () => {
+  it('closes when outside is pressed', async () => {
     await openMenu();
     fireEvent.mouseDown(document.body);
     await waitFor(() => expect(screen.queryByTestId('acp-chat-slash-menu')).toBeNull());
   });
 
-  it('닫은 뒤 다시 치면 열린다 — 세션 내내 잠기지 않는다', async () => {
+  it('typing again after closing reopens it, so it is not locked for the whole session', async () => {
     const box = await openMenu();
     fireEvent.mouseDown(document.body);
     await waitFor(() => expect(screen.queryByTestId('acp-chat-slash-menu')).toBeNull());
@@ -3900,7 +3900,7 @@ describe('작성 칸 — `/` 메뉴', () => {
     await screen.findByTestId('acp-chat-slash-menu');
   });
 
-  it('Esc 로도 닫힌다', async () => {
+  it('also closes with Esc', async () => {
     const box = await openMenu();
     fireEvent.keyDown(box, { key: 'Escape' });
     await waitFor(() => expect(screen.queryByTestId('acp-chat-slash-menu')).toBeNull());
@@ -4008,7 +4008,7 @@ describe('reopening the panel — the folder\'s latest conversation, not a blank
   });
 });
 
-describe('대화 패널 — 앉힌 요청은 읽을 문장만 서고, 붙은 지시는 그대로 따라간다', () => {
+describe('chat panel: a seated request stands as only a readable sentence, and the attached instruction follows unchanged', () => {
   const LEAD = 'Explain this Analysis tab from the current ontology evidence only.';
   const DETAIL = [
     READ_ONLY_TOOL_INSTRUCTION.en,
@@ -4066,7 +4066,7 @@ describe('대화 패널 — 앉힌 요청은 읽을 문장만 서고, 붙은 지
     expect(screen.getByRole('textbox')).toHaveValue('A fresh investigation.');
   });
 
-  it('상자에는 읽을 문장만 앉고, 붙은 지시는 한 번 펼쳐 그대로 보인다', async () => {
+  it('the box holds only the readable sentence, and the attached instruction shows unchanged once expanded', async () => {
     await seat();
     expect(screen.getByRole('textbox')).toHaveValue(LEAD);
     const summary = screen.getByTestId('acp-chat-seated-detail');
@@ -4076,7 +4076,7 @@ describe('대화 패널 — 앉힌 요청은 읽을 문장만 서고, 붙은 지
     expect(screen.getByTestId('acp-chat-seated-detail-text').textContent).toBe(DETAIL.trim());
   });
 
-  it('손대지 않고 보내면 호출자가 앉힌 바이트 그대로 나간다', async () => {
+  it('sending untouched goes out as the exact bytes the caller seated', async () => {
     await seat();
     fireEvent.click(screen.getByTestId('acp-chat-send'));
     await waitFor(() => expect(bridge.sent.some((m) => m.method === 'session/prompt')).toBe(true));
@@ -4088,7 +4088,7 @@ describe('대화 패널 — 앉힌 요청은 읽을 문장만 서고, 붙은 지
     expect(screen.queryByTestId('acp-chat-seated-detail')).toBeNull();
   });
 
-  it('문장을 고쳐 보내면 붙은 지시가 고친 문장 뒤에 그대로 따라간다', async () => {
+  it('when the sentence is edited and sent, the attached instruction follows after the edited sentence unchanged', async () => {
     await seat();
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Explain the top two only.' } });
     fireEvent.click(screen.getByTestId('acp-chat-send'));
@@ -4098,7 +4098,7 @@ describe('대화 패널 — 앉힌 요청은 읽을 문장만 서고, 붙은 지
     expect(params.prompt[0].text).toBe(`Explain the top two only.\n\n${DETAIL.trim()}`);
   });
 
-  it('상자를 비우면 붙은 지시도 함께 사라진다 — 문장 없는 지시만 보내지지 않게', async () => {
+  it('clearing the box removes the attached instruction too, so an instruction without a sentence is never sent', async () => {
     await seat();
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '' } });
     expect(screen.queryByTestId('acp-chat-seated-detail')).toBeNull();
@@ -4106,14 +4106,14 @@ describe('대화 패널 — 앉힌 요청은 읽을 문장만 서고, 붙은 지
     expect(bridge.sent.some((m) => m.method === 'session/prompt')).toBe(false);
   });
 
-  it('접힐 기계 반쪽이 없는 짧은 요청은 예전 그대로 통째로 앉는다', async () => {
+  it('a short request with no machine half to fold seats whole, as before', async () => {
     const plain = 'Draw the business flow of this folder.';
     await bootSession({ prefillRequest: { text: plain, nonce: 1 } });
     expect(screen.getByRole('textbox')).toHaveValue(plain);
     expect(screen.queryByTestId('acp-chat-seated-detail')).toBeNull();
   });
 
-  it('앉힌 요청이 기다리면 빈 대화는 백지에서 시작하라고 하지 않는다', async () => {
+  it('when a seated request is waiting, the empty conversation does not say to start from a blank page', async () => {
     await seat();
     const empty = screen.getByTestId('acp-chat-empty');
     // This harness echoes message keys, so the key is the fact to check, not the sentence.
@@ -4121,7 +4121,7 @@ describe('대화 패널 — 앉힌 요청은 읽을 문장만 서고, 붙은 지
     expect(empty.textContent).toBe('emptySeatedHint');
   });
 
-  it('상자를 비우면 정말로 백지이므로 원래 문장이 돌아온다', async () => {
+  it('clearing the box makes it truly blank, so the original sentence returns', async () => {
     await seat();
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '' } });
     const empty = screen.getByTestId('acp-chat-empty');
@@ -4129,7 +4129,7 @@ describe('대화 패널 — 앉힌 요청은 읽을 문장만 서고, 붙은 지
     expect(empty.textContent).toBe('emptyHint');
   });
 
-  it('아무것도 앉히지 않은 독은 열린 초대를 그대로 쓴다', async () => {
+  it('a dock with nothing seated uses the open invitation as is', async () => {
     await bootSession({});
     const empty = screen.getByTestId('acp-chat-empty');
     expect(empty.getAttribute('data-acp-empty')).toBe('open');
