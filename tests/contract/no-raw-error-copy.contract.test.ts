@@ -458,8 +458,8 @@ const REPAIRED = [
   'src/features/first-run-starter/ui/BuildFromCodeConfirmDialog.tsx',
   'src/features/first-run-starter/ui/BuildFromCodeDoor.tsx',
   'src/features/first-run-starter/ui/FirstRunStarterModule.tsx',
-  'src/features/library/lib/answer-revision-store.ts',
-  'src/features/library/lib/answer-revision.ts',
+  'src/features/library/lib/questions/answer-revision-store.ts',
+  'src/features/library/lib/questions/answer-revision.ts',
   'src/features/project-edit/ui/ProjectForm.tsx',
   'src/features/project-quick-edit/ui/ProjectQuickEditPanel.tsx',
 ] as const;

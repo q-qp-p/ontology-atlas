@@ -82,7 +82,7 @@ vi.mock('@/features/acp-session', async () => ({
 vi.mock('@/features/library', async () => ({
   appendWikiLog: vi.fn(async () => undefined),
   buildCompileBrief: () => 'compile brief',
-  judgePageWrite: (await import('@/features/library/lib/judge-page-write')).judgePageWrite,
+  judgePageWrite: (await import('@/features/library/lib/wiki/judge-page-write')).judgePageWrite,
   writeWikiFile: vi.fn(async (_vault: unknown, path: string, text: string) => {
     h.files[path] = text;
   }),

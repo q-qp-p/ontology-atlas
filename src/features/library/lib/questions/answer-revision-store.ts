@@ -4,7 +4,7 @@ import { getTauriVaultRootPath, nativeVaultFileHashes } from '@/shared/lib/vault
 import { validateWikiPage } from '@/shared/lib/library/wiki-page-schema';
 import type { AnswerPageResult } from './answer-page';
 import { answerHistoryUnreadable, isRetainedAnswerPath } from './answer-revision';
-import { createWikiFile } from './write-wiki-file';
+import { createWikiFile } from '../wiki/write-wiki-file';
 
 export interface AnswerRevisionStore {
   read: (slug: string) => Promise<string>;

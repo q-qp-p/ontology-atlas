@@ -1,5 +1,5 @@
 import { withAnswerLanguage } from "@/i18n/answer-language";
-import { isRetainedAnswerPath } from './answer-revision';
+import { isRetainedAnswerPath } from '../questions/answer-revision';
 import { sourceNeedsCompile, type LibrarySourceRow, type LibraryWikiPage } from "@/entities/docs-vault";
 import {
   WIKI_DIR,

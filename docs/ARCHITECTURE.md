@@ -516,7 +516,7 @@ graph. The separation is a property of the **walk**, not a filter applied later.
   writes register with the vault session's existing one-shot self-write ledger,
   so the polling toaster reports external changes without duplicating File's
   success and Undo feedback.
-- Retained answer refresh lives in `src/features/library/lib/answer-revision.ts`
+- Retained answer refresh lives in `src/features/library/lib/questions/answer-revision.ts`
   and `answer-revision-store.ts`; view hooks own the proposal and comparison
   lifecycle. ACP returns a draft, and an explicit save exclusively creates its
   Markdown revision after checking previous text and observed source bytes.
@@ -543,7 +543,7 @@ graph. The separation is a property of the **walk**, not a filter applied later.
   `evaluate:wiki` runner uses this index and the production Compile executor, loop,
   review builder and proposal applier against memory-only fixtures; its textual
   omission rubric is not a production gate or a semantic truth assessment.
-- `src/features/library/lib/question-desk.ts` ranks bounded local Wiki fact and
+- `src/features/library/lib/questions/question-desk.ts` ranks bounded local Wiki fact and
   decision leads and source units for the Wiki tab's unselected question desk.
   `LibraryQuestionDesk` retains its in-memory source-unit cache only for the
   current vault and inventoried file version, reports unread and omitted work,

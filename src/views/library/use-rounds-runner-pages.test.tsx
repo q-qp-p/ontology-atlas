@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ko from '../../../messages/ko.json';
 import { type RoundLedger, type RoundRecord, createMemoryRoundLedger, createMemoryRoundStore, parseRoundLedger, roundFingerprint } from '@/entities/library-round';
 import { writeWikiFile } from '@/features/library';
-import { proposedPageText } from '@/features/library/lib/judge-page-write';
+import { proposedPageText } from '@/features/library/lib/wiki/judge-page-write';
 import { recordApproval } from '@/shared/lib/connectors/machine-approvals';
 import { WIKI_PAGE_TEMPLATE } from '@/shared/lib/library/wiki-page-schema';
 
@@ -46,7 +46,7 @@ vi.mock('@/features/acp-session', async () => ({
 vi.mock('@/features/library', async () => ({
   appendWikiLog: vi.fn(async () => undefined),
   buildCompileBrief: () => 'compile brief',
-  judgePageWrite: (await import('@/features/library/lib/judge-page-write')).judgePageWrite,
+  judgePageWrite: (await import('@/features/library/lib/wiki/judge-page-write')).judgePageWrite,
   writeWikiFile: vi.fn(async (_vault: unknown, path: string, text: string) => {
     h.files[path] = text;
   }),

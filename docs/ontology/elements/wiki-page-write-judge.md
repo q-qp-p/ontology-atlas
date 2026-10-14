@@ -6,7 +6,7 @@ title: Wiki page write judge
 display_en: Wiki page write judge
 display_ko: 위키 페이지 쓰기 심사
 domain: domains/human-workbench
-path: src/features/library/lib/judge-page-write.ts
+path: src/features/library/lib/wiki/judge-page-write.ts
 created_by: "agent:claude-code"
 ---
 

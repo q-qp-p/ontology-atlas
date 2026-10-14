@@ -8,7 +8,7 @@ import {
   prepareAnswerRefresh,
   saveAnswerRevision,
   type AnswerRevisionStore,
-} from '@/features/library/lib/answer-revision-store';
+} from '@/features/library/lib/questions/answer-revision-store';
 import { useFailureSentence, type FailureCopy } from '@/shared/lib/failures/use-failure-sentence';
 import type { AnswerObservation } from '@/features/library';
 
