@@ -233,7 +233,7 @@ function getCallText(responses, id) {
 
 function getCallParsed(responses, id) {
   const structured = getCallStructured(responses, id);
-  if (structured?.contract === "agentBriefCompact:v2") return structured;
+  if (structured?.contract === "agentBriefCompact:v3") return structured;
   return JSON.parse(getCallText(responses, id));
 }
 
@@ -1734,7 +1734,7 @@ await test("tools/list — each single-item tool description cross-references it
     );
     assert.match(
       findTool("query_ontology")?.description ?? "",
-      /agent_brief[\s\S]*detail:\"compact\"[\s\S]*12000 UTF-8 JSON bytes[\s\S]*taskNavigation[\s\S]*never searches the repository[\s\S]*never proves source behavior/,
+      /agent_brief[\s\S]*detail:\"compact\"[\s\S]*12000 UTF-8 bytes together[\s\S]*taskNavigation[\s\S]*never searches the repository[\s\S]*never proves source behavior/,
       "query_ontology description documents the bounded task handoff and evidence limit",
     );
     assert.match(
@@ -10369,18 +10369,13 @@ await test("query_ontology agent_brief — selected project and compact task han
     assert.match(full.handoffPrompt, new RegExp(`status ${full.status}\\.`));
 
     const compact = getCallParsed(responses, 3);
-    assert.equal(compact.contract, "agentBriefCompact:v2");
+    const compactText = getCallText(responses, 3);
+    assert.equal(compact.contract, "agentBriefCompact:v3");
     assert.equal(compact.operation, "agent_brief");
     assert.equal(compact.detail, "compact");
     assert.equal(compact.sideEffect, false);
     assert.equal(compact.project.slug, "project-a");
-    assert.deepEqual(compact.project.scope, {
-      nodes: 4,
-      domains: 1,
-      capabilities: 1,
-      elements: 1,
-      internalEdges: 5,
-    });
+    assert.equal(Object.hasOwn(compact, "handoffPrompt"), false);
     assert.equal(compact.task.requestLocal, true);
     assert.equal(compact.task.persisted, false);
     assert.equal(compact.task.text, undefined);
@@ -10397,10 +10392,9 @@ await test("query_ontology agent_brief — selected project and compact task han
     assert.equal(compact.focus.taskNavigation.primary, null);
     assert.equal(compact.focus.impact.completeness, "unknown");
     assert.ok(compact.focus.unknowns.length > 1);
-    const textUnknowns = getCallText(responses, 3).split('\n')
+    const textUnknowns = compactText.split('\n')
       .filter((line) => line.startsWith('Unknown: ')).map((line) => JSON.parse(line.slice('Unknown: '.length)).text);
     assert.deepEqual([...textUnknowns].sort(), [...compact.focus.unknowns].sort());
-    assert.equal(getCallText(responses, 3), compact.handoffPrompt);
     assert.ok(compact.nextReads.some((row) => row.tool === "get_concepts" && row.arguments.body === "full"));
     const recovery = compact.nextReads[0];
     assert.deepEqual(recovery.arguments.slugs, ['project-a', 'capabilities/write-values', 'elements/writer']);
@@ -10417,7 +10411,6 @@ await test("query_ontology agent_brief — selected project and compact task han
     assert.deepEqual(compact.fullDetail, {
       tool: "query_ontology",
       arguments: { operation: "agent_brief", project: "project-a", detail: "full" },
-      reason: "Read complete diagnostics only when compact is insufficient.",
     });
     assert.deepEqual(compact.safety, {
       humanApprovalRequiredForMeaningWrites: true,
@@ -10429,12 +10422,12 @@ await test("query_ontology agent_brief — selected project and compact task han
     assert.equal(Object.hasOwn(compact, "cliFallbackCommands"), false);
     assert.doesNotMatch(JSON.stringify(compact), /project-b|domains\/example|capabilities\/example|elements\/example/);
     assert.ok(
-      Buffer.byteLength(JSON.stringify(compact), "utf8") <= 12000,
-      "compact agent brief must fit the 12 KiB first-contact budget",
+      Buffer.byteLength(JSON.stringify(compact), "utf8") + Buffer.byteLength(compactText, "utf8") <= 12000,
+      "compact agent brief must fit the 12 KiB first-contact budget across both channels",
     );
-    assert.match(compact.handoffPrompt, new RegExp(`Current source: ${compact.currentness.source.status}/${compact.currentness.source.currentness}`));
-    assert.match(compact.handoffPrompt, /Task navigation: blocked/);
-    assert.match(compact.handoffPrompt, new RegExp(`Meaning: ${compact.currentness.meaning.status}`));
+    assert.match(compactText, new RegExp(`Current source: ${compact.currentness.source.status}/${compact.currentness.source.currentness}`));
+    assert.match(compactText, /Task navigation: blocked/);
+    assert.match(compactText, new RegExp(`Meaning: ${compact.currentness.meaning.status}`));
     assert.doesNotMatch(
       loadVaultDocs(root).map((doc) => `${doc.frontmatter?.title ?? ""}\n${doc.body}`).join("\n"),
       new RegExp(task.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
@@ -10578,12 +10571,12 @@ await test("query_ontology agent_brief: persisted claim boundaries outrank task 
     for (const [index, [task, expectedSlug]] of taskCases.entries()) {
       const compact = getCallParsed(responses, index + 2);
       assert.equal(compact.focus.capability?.slug, expectedSlug, task);
-      assert.match(compact.focus.selectionPolicy, /Definition, Includes, and Excludes compatibility/);
+      assert.equal(compact.readerRules.includes("Capability: selection, not proof."), Boolean(expectedSlug), task);
       assert.equal(compact.task.text, undefined);
       assert.doesNotMatch(JSON.stringify(compact), new RegExp(task.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
       assert.equal(compact.safety.automaticWrite, false);
       assert.equal(compact.safety.automaticFinalize, false);
-      assert.ok(Buffer.byteLength(JSON.stringify(compact), "utf8") <= 12000);
+      assert.ok(Buffer.byteLength(JSON.stringify(compact), "utf8") + Buffer.byteLength(getCallText(responses, index + 2), "utf8") <= 12000);
     }
   } finally {
     rmSync(root, { recursive: true, force: true });
@@ -10607,7 +10600,7 @@ await test("query_ontology agent_brief: literal claims do not become a selected 
     assert.equal(refused.focus.refusal.reason, "no_match");
     assert.equal(refused.focus.taskNavigation.primary, null);
     assert.equal(refused.safety.automaticWrite, false);
-    assert.equal(getCallText(responses, 2), refused.handoffPrompt);
+    assert.ok(getCallText(responses, 2).includes("Task refusal: no_match;"));
     const selected = getCallParsed(responses, 3);
     assert.equal(selected.focus.capability?.slug, "capabilities/catalog");
     assert.ok(selected.focus.qualifiers.units.some((unit) => unit.text.includes("only after approval")));
@@ -10700,11 +10693,10 @@ DER parsing and unrelated encodings.
     ], 3000);
     const compact = getCallParsed(responses, 2);
     const compactText = getCallText(responses, 2);
-    assert.equal(compactText, compact.handoffPrompt);
-    const recovery = compact.focus.qualifiers.fullBodyRead;
+    const recovery = compact.nextReads[0];
     assert.ok(compactText.includes(`${recovery.tool} ${JSON.stringify(recovery.arguments)}`),
       "MCP text must retain the exact full-body recovery call alongside ready source navigation");
-    assert.equal(compact.contract, "agentBriefCompact:v2");
+    assert.equal(compact.contract, "agentBriefCompact:v3");
     assert.equal(compact.focus.taskNavigation.status, "ready");
     assert.deepEqual(compact.focus.taskNavigation.primary, {
       path: "src/writer.ts",
@@ -10717,15 +10709,15 @@ DER parsing and unrelated encodings.
     assert.equal(compact.focus.taskNavigation.supporting.symbol, "writeOptionalValue");
     assert.equal(compact.focus.taskNavigation.tests[0].symbol, "writes optional DER SET values");
     assert.equal(compact.focus.taskNavigation.readPlan.targetCount, 3);
-    assert.match(compact.handoffPrompt, /Primary: "src\/writer\.ts#writeDerSet:1"/);
-    assert.match(compact.handoffPrompt, /Focused tests: \["tests\/writer\.test\.ts#writes optional DER SET values:1"\]/);
-    assert.match(compact.handoffPrompt, /IN: "DER SET output ordering and optional values\."/);
-    assert.match(compact.handoffPrompt, /OUT: "DER parsing and unrelated encodings\."/);
-    assert.match(compact.handoffPrompt, /Verify: runner unknown/);
-    assert.match(compact.handoffPrompt, /Read: .*stop_on_match/);
-    assert.match(compact.handoffPrompt, /Tests: named positive \+ negative regression; exact observable output\./);
-    assert.equal(JSON.stringify(compact).includes(repo), false, "private source root must not cross MCP output");
-    assert.ok(Buffer.byteLength(JSON.stringify(compact), "utf8") <= 12000);
+    assert.match(compactText, /Primary: "src\/writer\.ts#writeDerSet:1"/);
+    assert.match(compactText, /Focused tests: \["tests\/writer\.test\.ts#writes optional DER SET values:1"\]/);
+    assert.match(compactText, /IN: "DER SET output ordering and optional values\."/);
+    assert.match(compactText, /OUT: "DER parsing and unrelated encodings\."/);
+    assert.match(compactText, /Verify: runner unknown/);
+    assert.match(compactText, /Read: .*stop_on_match/);
+    assert.match(compactText, /Tests: named positive \+ negative regression; exact observable output\./);
+    assert.equal(JSON.stringify(compact).includes(repo) || compactText.includes(repo), false, "private source root must not cross MCP output");
+    assert.ok(Buffer.byteLength(JSON.stringify(compact), "utf8") + Buffer.byteLength(compactText, "utf8") <= 12000);
   } finally {
     rmSync(vault, { recursive: true, force: true });
     rmSync(repo, { recursive: true, force: true });
@@ -10776,14 +10768,17 @@ await test("query_ontology agent_brief — read-only known-task wire path stays 
     assert.equal(compact.focus.taskNavigation.currentness, "current");
     assert.equal(compact.focus.verification.runner, "package-script");
     assert.equal(compact.focus.verification.manifest, "mcp/package.json");
-    const compactBytes = Buffer.byteLength(JSON.stringify(compact), "utf8");
-    console.log(`    compact agent_brief ${compactBytes} bytes; headroom ${12000 - compactBytes}`);
+    const structureBytes = Buffer.byteLength(JSON.stringify(compact), "utf8");
+    const textBytes = Buffer.byteLength(getCallText(responses, 3), "utf8");
+    const compactBytes = structureBytes + textBytes;
+    const uncertaintyUnits = compact.focus.uncertainty.sources.reduce((sum, row) => sum + row.unknownIndexes.length, 0);
+    console.log(`    compact agent_brief structure ${structureBytes} + text ${textBytes} = ${compactBytes} bytes; headroom ${12000 - compactBytes}; units ${compact.focus.qualifiers?.units.length ?? 0} qualifier + ${uncertaintyUnits} uncertainty`);
     assert.ok(
       compactBytes <= 12000,
       `compact agent_brief is ${compactBytes} bytes; budget 12000, headroom ${12000 - compactBytes}`,
     );
     const repair = compact.meaningRepair;
-    assert.equal(repair.contract, "meaningRepairCompact:v1");
+    assert.equal(repair.contract, "meaningRepairCompact:v2");
     assert.equal(repair.status, "human_review_required");
     const [firstCall] = repair.firstStep.calls;
     assert.equal(firstCall.arguments.operation, "meaning_repair_review");
@@ -10841,10 +10836,9 @@ await test("query_ontology agent_brief — a valid 501-node project keeps full a
     assert.equal(full.projectSlug, "large-project");
     assert.equal(full.meaningAssessment.status, "invalid");
     const compact = getCallParsed(responses, 4);
-    assert.equal(compact.project.scope.nodes, 501);
     assert.equal(compact.focus.status, "not_recorded");
     assert.equal(compact.currentness.meaning.status, "invalid");
-    assert.ok(Buffer.byteLength(JSON.stringify(compact), "utf8") <= 12000);
+    assert.ok(Buffer.byteLength(JSON.stringify(compact), "utf8") + Buffer.byteLength(getCallText(responses, 4), "utf8") <= 12000);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
