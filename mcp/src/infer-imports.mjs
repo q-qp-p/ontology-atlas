@@ -14,7 +14,7 @@ import {
   existsSync,
   withConfinedSourceReads,
   confinedSourceReadsEnabled,
-} from './confined-source-fs.mjs';
+} from './infer-imports/confined-source-fs.mjs';
 import { join, dirname, relative, extname } from 'node:path';
 import { detectAutotoolsC } from './infer-imports/autotools-c.mjs';
 import { GO_SOURCE_EXTENSION, inferGoPackageImports } from './infer-imports/go-imports.mjs';

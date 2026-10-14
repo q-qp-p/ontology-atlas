@@ -7,7 +7,7 @@ display_en: Analysis archive
 display_ko: 분석 기록 보관소
 domain: domains/code-evidence
 elements: []
-path: mcp/src/analysis-records.mjs
+path: mcp/src/analysis-history/analysis-records.mjs
 created_by: "agent:claude-code"
 ---
 

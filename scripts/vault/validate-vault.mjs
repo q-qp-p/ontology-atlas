@@ -25,7 +25,7 @@ import { inspectMergedUids, nodeUidIssue } from "../../cli/src/lib/mcp-bridge/sc
  * `meaning-findings.mjs` and `parser.mjs` import only sibling `mcp/src` modules
  * and `node:` builtins, so a plain `node` run resolves them with no install.
  */
-import { bodyMeaningFindings } from "../../mcp/src/meaning-findings.mjs";
+import { bodyMeaningFindings } from "../../mcp/src/meaning/meaning-findings.mjs";
 import { parseFrontmatter as parseMcpFrontmatter } from "../../mcp/src/parser.mjs";
 import { VAULT_SOURCES_DIR, folderForKind } from "../../cli/src/lib/mcp-bridge/schema.mjs";
 

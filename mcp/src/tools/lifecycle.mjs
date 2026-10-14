@@ -8,7 +8,7 @@ import {
   buildMarkdown,
   parseFrontmatter,
 } from '../parser.mjs';
-import { containmentEntryKeptMessage } from '../construction-rules.mjs';
+import { containmentEntryKeptMessage } from '../construction/construction-rules.mjs';
 import {
   defaultBody,
   flatSlugIssue,

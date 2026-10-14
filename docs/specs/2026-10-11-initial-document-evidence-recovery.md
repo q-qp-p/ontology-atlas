@@ -51,7 +51,7 @@ commit `a2cf7789a`. The implemented contract is specified in Flow and owned by
   bounded continuations and typed refusals. `sourceOnly:true` avoids another
   candidate scan and returns `canWrite:false`
   (`mcp/src/tools/repo-analysis.mjs:50-65`). Hash mismatch returns no source text
-  (`mcp/src/source-evidence.mjs:265-305`). Limits and guards remain owned by
+  (`mcp/src/evidence-search/source-evidence.mjs:265-305`). Limits and guards remain owned by
   `mcp/README.md:1435-1506` and `source-evidence.mjs:16-28`.
 - Full bodies read through the live MCP: `capabilities/repo-structure-analysis`,
   `capabilities/project-source-binding`, `capabilities/evidence-drift-detection`.
@@ -182,7 +182,7 @@ unused catalogue keys for a future screen. The public contract belongs in
    not call only the parser.
 4. Given the document changes, is replaced or becomes unsafe before replay,
    when recovery runs, then existing guards return no body/citation under the
-   old hash and the draft is not written. Verify `mcp/src/source-evidence.test.mjs`
+   old hash and the draft is not written. Verify `mcp/src/evidence-search/source-evidence.test.mjs`
    plus the same public-tool replay fixture, retaining current symlink/escape
    and oversized-line guards.
 5. Given short content, Hangul, a multiline paragraph and a partly selected

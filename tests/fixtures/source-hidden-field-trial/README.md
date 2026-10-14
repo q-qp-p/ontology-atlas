@@ -23,5 +23,5 @@ human approval, and the four phases in
 Run the focused contract:
 
 ```bash
-node --test mcp/src/source-hidden-field-trial.test.mjs
+node --test mcp/src/meaning/source-hidden-field-trial.test.mjs
 ```

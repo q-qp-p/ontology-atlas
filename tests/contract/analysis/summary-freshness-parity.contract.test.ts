@@ -1,12 +1,12 @@
 /**
- * The summary-freshness rule exists twice (`mcp/src/stale-parent.mjs` and
+ * The summary-freshness rule exists twice (`mcp/src/git/stale-parent.mjs` and
  * `src/entities/docs-vault/lib/summary-freshness.ts`) because `src/` cannot import `mcp/`.
  * Both run the same cases and compare the outcome and the lag, not the object shape.
  */
 
 import { describe, expect, it } from 'vitest';
 
-import { findStaleParentSummaries, revisionClocks } from '../../../mcp/src/stale-parent.mjs';
+import { findStaleParentSummaries, revisionClocks } from '../../../mcp/src/git/stale-parent.mjs';
 import {
   summaryStalenessOf,
   createSummaryStalenessScan,

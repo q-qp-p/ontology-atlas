@@ -6,7 +6,7 @@ title: Growth hint
 display_en: Growth hint
 display_ko: 성장 힌트
 domain: domains/meaning-layer
-path: mcp/src/growth-hint.mjs
+path: mcp/src/ontology-engine/growth-hint.mjs
 created_by: "agent:claude-code"
 ---
 

@@ -174,7 +174,7 @@ Exact diagnostic wording remains technical validation copy, not a new product UI
 1. **Default recovery:** Given unset or explicit `full`, when initializing and
    listing tools, then names, schemas, annotations, and inventory proof equal
    the baseline. Check in `mcp/src/integration.test.mjs` and
-   `mcp/src/tool-inventory.test.mjs`; restoring full after construction is covered.
+   `mcp/src/server/tool-inventory.test.mjs`; restoring full after construction is covered.
 2. **Selected discovery:** Given `construction`, when initializing, listing, and
    reading connection proof, then the exact 20 unique names above agree across
    those surfaces and retain their schemas/annotations. Check profile integration
@@ -183,7 +183,7 @@ Exact diagnostic wording remains technical validation copy, not a new product UI
    when a direct known write is attempted, then read-only rejects it and consent
    still requires its existing approval outcome before mutation. A known tool
    omitted only by the profile still dispatches under existing guards. Check
-   profile integration and `mcp/src/write-consent.test.mjs`; never claim hidden
+   profile integration and `mcp/src/server/write-consent.test.mjs`; never claim hidden
    tools cannot execute merely because they are not advertised.
 4. **Invalid selection:** Given an unsupported or whitespace-only value, when
    launching, then startup exits nonzero and identifies profile recovery; when

@@ -159,7 +159,7 @@ const BODY_INFO_OUTPUT_SCHEMA = Object.freeze({
   additionalProperties: false,
 });
 
-// Attached only to an empty or unresolved read, never to a success; `mcp/src/growth-hint.mjs` fills it from real vault data.
+// Attached only to an empty or unresolved read, never to a success; `mcp/src/ontology-engine/growth-hint.mjs` fills it from real vault data.
 const GROWTH_HINT_OUTPUT_SCHEMA = Object.freeze({
   type: 'object',
   properties: {

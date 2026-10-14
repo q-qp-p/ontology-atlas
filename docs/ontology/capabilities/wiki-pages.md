@@ -7,7 +7,7 @@ display_en: Wiki pages
 display_ko: 위키 페이지
 domain: domains/meaning-layer
 elements: []
-path: mcp/src/wiki-schema.mjs
+path: mcp/src/library/wiki-schema.mjs
 created_by: "agent:claude-code"
 dependencies: [elements/frontmatter-parser]
 relation_notes: { elements/frontmatter-parser: "You asked me to turn imports I actually witnessed into dependencies: wiki-schema.mjs imports parseFrontmatter from parser.mjs, read in its source." }

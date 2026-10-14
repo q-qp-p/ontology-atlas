@@ -1,4 +1,4 @@
-import { evaluateConstructionLifecycle } from '../../../../../mcp/src/construction-lifecycle.mjs';
+import { evaluateConstructionLifecycle } from '../../../../../mcp/src/construction/construction-lifecycle.mjs';
 import { CONTRACTS, EXIT } from './contracts.mjs';
 import {
   artifactDigest,

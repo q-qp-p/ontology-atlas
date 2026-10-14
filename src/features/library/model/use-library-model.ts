@@ -43,7 +43,7 @@ export interface LibraryUiModel extends LibraryModel {
   /** Last Compile and Check runs from `wiki/_log.md`; null when the log has no such line. */
   log: { lastCompile: WikiLogEntry | null; lastLint: WikiLogEntry | null };
   /**
-   * Verdicts regrouped by `mcp/src/wiki-report.mjs`, the module the CLI and MCP use, so the app
+   * Verdicts regrouped by `mcp/src/library/wiki-report.mjs`, the module the CLI and MCP use, so the app
    * and a terminal count one folder one way. The `unmeasured` field names pages not yet read.
    */
   structural: WikiReport;

@@ -305,7 +305,7 @@ tooling.
 
 Elements have no `arrayDefaults` — no array key is auto-emitted on creation.
 
-**Element slug — one writer pattern** (from `mcp/src/construction-rules.mjs`):
+**Element slug — one writer pattern** (from `mcp/src/construction/construction-rules.mjs`):
 
 | pattern | example | when to use |
 |---|---|---|
@@ -566,7 +566,7 @@ and does not claim to catch it.
 The last eight are advisories about a node's body, its address, and the code it
 stands on rather than about frontmatter shape, so **body scope** above means
 they read the Markdown after the frontmatter. The judgement lives in one place,
-`mcp/src/meaning-findings.mjs`, and reaches a reader through four channels: the
+`mcp/src/meaning/meaning-findings.mjs`, and reaches a reader through four channels: the
 `add_concept` / `add_concepts` / `patch_concept` response, `query_ontology({operation:"maintenance_plan"})`,
 `validate_vault`, and the CLI's validate command. `src/shared/lib/vault-document/meaning-findings.ts`
 is the browser port of the same rules, checked against the canonical module by
@@ -859,7 +859,7 @@ something a reader can check.
 
 ### 11.4 Validation
 
-`validateWikiPage` (`mcp/src/wiki-schema.mjs`, mirrored in
+`validateWikiPage` (`mcp/src/library/wiki-schema.mjs`, mirrored in
 `src/shared/lib/library/wiki-page-schema.ts`, run by `ontology-atlas wiki-validate`)
 returns these codes. Wording MAY differ between implementations; **codes MUST
 NOT**.

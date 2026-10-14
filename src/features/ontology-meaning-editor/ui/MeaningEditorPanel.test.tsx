@@ -221,7 +221,7 @@ describe('removing the last relation of a key writes no empty key', () => {
     'title: Wiki pages',
     'domain: domains/meaning-layer',
     'elements: []',
-    'path: mcp/src/wiki-schema.mjs',
+    'path: mcp/src/library/wiki-schema.mjs',
     'dependencies: [elements/frontmatter-parser]',
     'relation_notes: { elements/frontmatter-parser: "wiki-schema.mjs imports parseFrontmatter from parser.mjs." }',
     '---',

@@ -1,4 +1,4 @@
-import { readdirSync, lstatSync, realpathSync } from '../confined-source-fs.mjs';
+import { readdirSync, lstatSync, realpathSync } from './confined-source-fs.mjs';
 import { join } from 'node:path';
 import { pathResolvesInsideRoot } from './path-confinement.mjs';
 import { DEFAULT_IGNORE } from './source-files.mjs';

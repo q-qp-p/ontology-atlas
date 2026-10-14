@@ -8,7 +8,7 @@
  * watches it; a change here changes what every connected agent sees.
  */
 
-import { parseConsentEnv } from '../write-consent.mjs';
+import { parseConsentEnv } from './write-consent.mjs';
 import { ABSORB_DOCUMENT_TOOL } from './tool-definitions/absorb.mjs';
 import { ANALYZE_REPO_STRUCTURE_TOOL } from './tool-definitions/analyze-repo-structure.mjs';
 import {

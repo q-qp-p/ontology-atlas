@@ -1,4 +1,4 @@
-import { lstatSync, realpathSync } from '../confined-source-fs.mjs';
+import { lstatSync, realpathSync } from './confined-source-fs.mjs';
 import { relative, isAbsolute, sep } from 'node:path';
 
 export function pathResolvesInsideRoot(rootPath, path) {

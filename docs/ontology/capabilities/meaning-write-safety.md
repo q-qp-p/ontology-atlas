@@ -7,7 +7,7 @@ display_en: Meaning write safety
 display_ko: 의미 기록 안전장치
 domain: domains/meaning-layer
 elements: [elements/frontmatter-parser, elements/vault-file-store, elements/vault-kind-schema]
-path: mcp/src/write-consent.mjs
+path: mcp/src/server/write-consent.mjs
 created_by: "agent:claude-code"
 relation_notes: { elements/vault-file-store: You asked for element nodes named by role under the capability that uses them; the store performs the write and holds the stale-overwrite check., elements/vault-kind-schema: You asked for element nodes named by role under the capability that uses them; the schema declares what a valid write has to carry., elements/frontmatter-parser: You asked for element nodes named by role under the capability that uses them; a safe rewrite has to read the existing file first. }
 ---
@@ -23,4 +23,4 @@ Lets a change land in the vault files without silently erasing a concurrent edit
 - Version history, which Git owns.
 
 ## Uncertainty
-- Read from `mcp/src/write-consent.mjs` by name alongside prose describing the modification-time guard (`VaultConflictError`, `getFileMtime` in `mcp/src/vault/atomic-writes.mjs`); neither file's implementation was read, and no concurrent write was exercised in this scan.
+- Read from `mcp/src/server/write-consent.mjs` by name alongside prose describing the modification-time guard (`VaultConflictError`, `getFileMtime` in `mcp/src/vault/atomic-writes.mjs`); neither file's implementation was read, and no concurrent write was exercised in this scan.

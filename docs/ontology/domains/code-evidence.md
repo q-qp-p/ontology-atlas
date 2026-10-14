@@ -25,4 +25,4 @@ The link from a recorded meaning back to the source file that proves it, and the
 - Copying the analyzed code into the vault.
 
 ## Uncertainty
-- Read from the module names under `mcp/src/analyze/`, `mcp/src/infer-imports.mjs`, `mcp/src/detect-drift.mjs`, `mcp/src/architecture-profile.mjs` and `mcp/src/tools/project-source.mjs`, plus one live `analyze_repo_structure` and one focused `infer_imports` run against this repository. Which languages the scanner handles well in practice, and how drift behaves on a repository with a long history, were not measured here.
+- Read from the module names under `mcp/src/analyze/`, `mcp/src/infer-imports.mjs`, `mcp/src/drift/detect-drift.mjs`, `mcp/src/architecture/architecture-profile.mjs` and `mcp/src/tools/project-source.mjs`, plus one live `analyze_repo_structure` and one focused `infer_imports` run against this repository. Which languages the scanner handles well in practice, and how drift behaves on a repository with a long history, were not measured here.

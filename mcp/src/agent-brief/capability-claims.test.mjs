@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { buildCompactAgentBrief } from '../agent-brief-compact.mjs';
+import { buildCompactAgentBrief } from './agent-brief-compact.mjs';
 
 const project = { slug: 'project', frontmatter: { kind: 'project', title: 'Operations' }, body: 'Local operations.' };
 const capability = (slug, body, title = 'Archive Catalog') => ({

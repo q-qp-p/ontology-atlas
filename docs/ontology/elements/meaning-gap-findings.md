@@ -6,7 +6,7 @@ title: Meaning gap findings
 display_en: Meaning gap findings
 display_ko: 의미 결락 검출
 domain: domains/meaning-layer
-path: mcp/src/meaning-findings.mjs
+path: mcp/src/meaning/meaning-findings.mjs
 created_by: "agent:claude-code"
 ---
 
@@ -24,4 +24,4 @@ Reads a node's prose rather than its frontmatter and names what a concept is mis
 - Reading call sites: an import proves the file is brought in, not that the imported symbol is called.
 
 ## Uncertainty
-- Read the dependency-witness rule end to end (`mcp/src/meaning-findings.mjs`: `witnessNamesFor`, `moduleSpecifiers` and `textWitnesses` for the specifier reader, `dependencyWitnessFinding` for the edge walk), including why a note path is also looked for from each ancestor folder of the citing file. The starter-example rule was read only at its opening; its body was not opened. The specifier patterns were exercised on this vault (7 edges exposed and repaired) and on one Rust vault (2 exposed); no Go or Python vault has been validated under them.
+- Read the dependency-witness rule end to end (`mcp/src/meaning/meaning-findings.mjs`: `witnessNamesFor`, `moduleSpecifiers` and `textWitnesses` for the specifier reader, `dependencyWitnessFinding` for the edge walk), including why a note path is also looked for from each ancestor folder of the citing file. The starter-example rule was read only at its opening; its body was not opened. The specifier patterns were exercised on this vault (7 edges exposed and repaired) and on one Rust vault (2 exposed); no Go or Python vault has been validated under them.

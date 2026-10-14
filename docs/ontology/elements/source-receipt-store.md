@@ -6,7 +6,7 @@ title: Source receipt store
 display_en: Source receipt store
 display_ko: 소스 영수증 저장소
 domain: domains/code-evidence
-path: mcp/src/project-source-receipt.mjs
+path: mcp/src/project-source/project-source-receipt.mjs
 created_by: "agent:claude-code"
 dependencies: [elements/source-inspection-probe]
 relation_notes: { elements/source-inspection-probe: "You asked me to turn imports I actually witnessed into dependencies: the scan shows project-source-receipt.mjs importing project-source-inspection.mjs to take a fresh reading before judging staleness." }

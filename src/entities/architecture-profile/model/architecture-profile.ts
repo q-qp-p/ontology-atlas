@@ -235,7 +235,7 @@ export function parseArchitectureProfile(frontmatter: Record<string, unknown>): 
 
 /**
  * Identical `profile_uid` and frontmatter is one record reached twice (e.g. a generated mirror);
- * any other collision fails naming both documents. Mirrored in `mcp/src/architecture-profile.mjs`.
+ * any other collision fails naming both documents. Mirrored in `mcp/src/architecture/architecture-profile.mjs`.
  */
 function profileFingerprint(frontmatter: Record<string, unknown>): string {
   // Key order must not decide identity.

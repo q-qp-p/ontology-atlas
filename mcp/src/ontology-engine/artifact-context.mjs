@@ -1,4 +1,4 @@
-import { buildSlugNotFoundGrowthHint } from '../growth-hint.mjs';
+import { buildSlugNotFoundGrowthHint } from './growth-hint.mjs';
 import { suggestCompiledSlugs } from '../suggestions.mjs';
 import { edgeSortKey } from './query-primitives.mjs';
 

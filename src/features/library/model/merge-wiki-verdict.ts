@@ -17,7 +17,7 @@ export interface WikiVerdictLike {
 }
 
 /**
- * The folder and advisory code sets live in `mcp/src/wiki-report.mjs` so the app and the CLI split
+ * The folder and advisory code sets live in `mcp/src/library/wiki-report.mjs` so the app and the CLI split
  * findings one way.
  */
 export { isWikiFolderCode };

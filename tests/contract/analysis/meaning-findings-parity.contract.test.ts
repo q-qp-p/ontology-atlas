@@ -4,7 +4,7 @@ import {
   definitionFinding as definitionMcp,
   epistemicExclusionFinding as epistemicMcp,
   uncertaintyFinding as uncertaintyMcp,
-} from "../../../mcp/src/meaning-findings.mjs";
+} from "../../../mcp/src/meaning/meaning-findings.mjs";
 import { defaultBody, folderForKind } from "../../../mcp/src/schema.mjs";
 import {
   BODY_BOUNDARY_SECTIONS as BOUNDARY_TS,
@@ -21,12 +21,12 @@ import {
   BODY_DEFINITION_SECTIONS as DEFINITION_MCP,
   BODY_UNCERTAINTY_SECTIONS as UNCERTAINTY_MCP,
   isEpistemicExclusionBoundary as epistemicRuleMcp,
-} from "../../../mcp/src/construction-rules.mjs";
+} from "../../../mcp/src/construction/construction-rules.mjs";
 
 /**
  * **The body half of the validator contract.**
  *
- * `mcp/src/meaning-findings.mjs` is the canonical judgement and reaches for
+ * `mcp/src/meaning/meaning-findings.mjs` is the canonical judgement and reaches for
  * `node:fs`, so the browser cannot execute it; `src/shared/lib/vault-document/meaning-findings.ts`
  * is the port. Two implementations of one rule drift — that is the accident this
  * repository already recorded for the parser and for the frontmatter validator —

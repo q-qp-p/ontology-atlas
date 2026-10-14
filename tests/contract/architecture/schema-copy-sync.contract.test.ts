@@ -13,12 +13,12 @@ const CLI_LIB = join(process.cwd(), "cli", "src", "lib", "mcp-bridge");
 const SHIMS = [
   { cli: "schema.mjs", mcp: "schema.mjs" },
   { cli: "validate.mjs", mcp: "validate.mjs" },
-  { cli: "absorb.mjs", mcp: "absorb.mjs" },
+  { cli: "absorb.mjs", mcp: "vault/absorb.mjs" },
   { cli: "suggestions.mjs", mcp: "suggestions.mjs" },
   { cli: "parse-frontmatter.mjs", mcp: "parser.mjs" },
-  { cli: "vault-sidecar.mjs", mcp: "vault-sidecar.mjs" },
-  { cli: "architecture-record.mjs", mcp: "architecture-record.mjs" },
-  { cli: "activity-log.mjs", mcp: "activity-log.mjs" },
+  { cli: "vault-sidecar.mjs", mcp: "vault/vault-sidecar.mjs" },
+  { cli: "architecture-record.mjs", mcp: "architecture/architecture-record.mjs" },
+  { cli: "activity-log.mjs", mcp: "vault/activity-log.mjs" },
 ];
 
 /**

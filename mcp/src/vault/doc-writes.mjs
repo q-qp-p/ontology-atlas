@@ -1,7 +1,7 @@
 import { mkdirSync, existsSync, unlinkSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { buildMarkdown } from '../parser.mjs';
-import { previewDocumentPatch } from '../document-patch.mjs';
+import { previewDocumentPatch } from './document-patch.mjs';
 import { flatSlugIssue, generateNodeUid, inspectMergedUids, nodeUidIssue } from '../schema.mjs';
 
 import {

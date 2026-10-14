@@ -6,7 +6,7 @@ title: Compiled graph cache
 display_en: Compiled graph cache
 display_ko: 컴파일 그래프 캐시
 domain: domains/meaning-layer
-path: mcp/src/compiled-cache.mjs
+path: mcp/src/server/compiled-cache.mjs
 created_by: "agent:claude-code"
 ---
 

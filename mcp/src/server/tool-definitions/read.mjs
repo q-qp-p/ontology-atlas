@@ -1,7 +1,7 @@
-import { CONSTRUCTION_GUIDE_TOPICS } from '../../construction-card.mjs';
+import { CONSTRUCTION_GUIDE_TOPICS } from '../../construction/construction-card.mjs';
 import { NODE_KIND_VALUES, RELATION_TYPE_VALUES } from '../../ontology-engine.mjs';
 import { NODE_UID_PATTERN } from '../../schema.mjs';
-import { READ_SOURCE_DEFAULT_LIMIT, READ_SOURCE_MAX_LIMIT } from '../../source-text.mjs';
+import { READ_SOURCE_DEFAULT_LIMIT, READ_SOURCE_MAX_LIMIT } from '../../library/source-text.mjs';
 import {
   NON_BLANK_MULTILINE_TEXT_SCHEMA,
   NON_BLANK_STRING_SCHEMA,

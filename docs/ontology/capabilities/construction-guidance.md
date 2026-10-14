@@ -7,7 +7,7 @@ display_en: Construction guidance
 display_ko: 구축 지침
 domain: domains/meaning-layer
 elements: []
-path: mcp/src/construction-rules.mjs
+path: mcp/src/construction/construction-rules.mjs
 created_by: "agent:claude-code"
 ---
 
@@ -25,6 +25,6 @@ Tells a person or an agent how to build this graph well, from one written source
 - Rules about the format of a file, which the schema owns.
 
 ## Uncertainty
-- Read today: the two message literals this module authors, `dependencyUnwitnessedMessage` and `starterExampleNodeMessage` in `mcp/src/construction-rules.mjs`, and the import block that pulls both, plus the starter's slug and body markers, into the detector (`mcp/src/meaning-findings.mjs`). The dependency message insists a cited path be written repository-relative or it is ignored, and asks for the symbol the cited file imports or calls rather than a line number, because a line moves with every edit above it; whether writers actually do so was not measured here.
+- Read today: the two message literals this module authors, `dependencyUnwitnessedMessage` and `starterExampleNodeMessage` in `mcp/src/construction/construction-rules.mjs`, and the import block that pulls both, plus the starter's slug and body markers, into the detector (`mcp/src/meaning/meaning-findings.mjs`). The dependency message insists a cited path be written repository-relative or it is ignored, and asks for the symbol the cited file imports or calls rather than a line number, because a line moves with every edit above it; whether writers actually do so was not measured here.
 - Otherwise read from the module header, which records the 2026-07-31 decision that produced it and the case it was written against. The full rule text was not read, and whether following it measurably improves a vault is not a claim the repository makes.
-- Re-read 2026-09-26: the one literal added since, `containmentEntryKeptMessage` in `mcp/src/construction-rules.mjs` (bundle #1874); the rest of the module was not re-read.
+- Re-read 2026-09-26: the one literal added since, `containmentEntryKeptMessage` in `mcp/src/construction/construction-rules.mjs` (bundle #1874); the rest of the module was not re-read.

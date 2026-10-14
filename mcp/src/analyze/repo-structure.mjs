@@ -4,8 +4,8 @@
 
 import { readdirSync, statSync, existsSync } from 'node:fs';
 import { join, basename, relative } from 'node:path';
-import { validateMeaningProposalAgainstAnalysis } from '../meaning-evaluation.mjs';
-import { evaluateConstructionLifecycle } from '../construction-lifecycle.mjs';
+import { validateMeaningProposalAgainstAnalysis } from '../meaning/meaning-evaluation.mjs';
+import { evaluateConstructionLifecycle } from '../construction/construction-lifecycle.mjs';
 import { discoverDeclaredWorkspacePackages } from '../infer-imports/workspace-packages.mjs';
 import { collectRustFeatureConfigurationEvidence } from '../rust-feature-evidence.mjs';
 import {

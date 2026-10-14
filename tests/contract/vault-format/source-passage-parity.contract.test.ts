@@ -22,7 +22,7 @@ import {
   READ_SOURCE_DEFAULT_LIMIT as MCP_DEFAULT_LIMIT,
   READ_SOURCE_MAX_CHARS as MCP_MAX_CHARS,
   READ_SOURCE_MAX_LIMIT as MCP_MAX_LIMIT,
-} from '../../../mcp/src/source-text.mjs';
+} from '../../../mcp/src/library/source-text.mjs';
 
 type UnitLike = { anchor: string; text: string; kind: string; heading?: string; sheet?: string };
 
@@ -50,7 +50,7 @@ const readSourceTextMcp = readSourceTextUntyped as (
  * **One address, one passage — whoever resolves it.**
  *
  * `[[src:sources/settlement-policy.md#l14]]` is written by an agent through the MCP
- * server's `read_source` (`mcp/src/source-text.mjs`) and, since slice U1, resolved for a
+ * server's `read_source` (`mcp/src/library/source-text.mjs`) and, since slice U1, resolved for a
  * person by the Library pane through `src/shared/lib/library/source-passage.ts`. Two physical
  * modules exist for the reason `tests/contract/library/wiki-page-schema.contract.test.ts` gives
  * about the wiki format: the MCP package ships separately from the web bundle, and
@@ -178,7 +178,7 @@ describe('the bundle inflates a zip entry the way node:zlib does', () => {
       Buffer.from('abcabcabcabcabcabc'.repeat(64)),
       Buffer.from(Array.from({ length: 70_000 }, (_, index) => (index * 37) % 251)),
       Buffer.from('가나다라'.repeat(2_000)),
-      readFileSync('mcp/src/source-text.mjs'),
+      readFileSync('mcp/src/library/source-text.mjs'),
     ];
     for (const sample of samples) {
       // level 0 is a stored block, 1 reaches fixed Huffman, 6 and 9 dynamic Huffman.

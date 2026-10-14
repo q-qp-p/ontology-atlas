@@ -43,7 +43,7 @@ import {
   CHAT_RULES_DELTA_EN,
   CONSTRUCTION_RULES_EN,
   META_MODEL_RULES_EN,
-} from "../../../mcp/src/construction-rules.mjs";
+} from "../../../mcp/src/construction/construction-rules.mjs";
 import { KNOWN_VAULT_KINDS } from "../../../mcp/src/validate.mjs";
 
 /**
@@ -241,7 +241,7 @@ describe("display_<locale> 정규화 2-way contract", () => {
 
 /**
  * Value authority for the node qualification gate. The logic lives in `commitDoc` (`mcp/src/vault/`)
- * and the text in `mcp/src/construction-rules.mjs`; the CLI imports the same module.
+ * and the text in `mcp/src/construction/construction-rules.mjs`; the CLI imports the same module.
  */
 describe("노드 자격 게이트 상수 — 값 정본", () => {
   it("잠긴 값들", () => {

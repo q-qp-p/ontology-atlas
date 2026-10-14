@@ -3,7 +3,7 @@ import {
   CONSTRUCTION_ADMISSION_TIERS,
   CONSTRUCTION_LIFECYCLE_CONTRACT,
   CONSTRUCTION_LIFECYCLE_PHASES,
-} from '../../construction-lifecycle.mjs';
+} from '../../construction/construction-lifecycle.mjs';
 import { WRITE_RELATION_TYPE_VALUES } from '../../ontology-engine.mjs';
 import { NON_BLANK_STRING_SCHEMA } from './field-primitives.mjs';
 

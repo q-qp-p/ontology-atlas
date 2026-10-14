@@ -252,7 +252,7 @@ class OutputBuffer {
  * @param bytes one zip entry's compressed body (no zlib or gzip header)
  * @param expectedSize the size the zip's directory claims: decoding stops past it, or past
  *   `cap` when none is claimed, so a bomb fails early; a shorter stream is returned and the
- *   caller compares, as `mcp/src/source-text.mjs` does.
+ *   caller compares, as `mcp/src/library/source-text.mjs` does.
  */
 export function inflateRaw(bytes: Uint8Array, expectedSize?: number, cap = INFLATE_MAX_BYTES): Uint8Array {
   const reader = new BitReader(bytes);
