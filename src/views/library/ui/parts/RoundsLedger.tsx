@@ -14,7 +14,7 @@ import { controlClass } from "@/shared/ui/control-class";
 import { ICON_SIZE } from "@/shared/ui/tokens/icon-size";
 import { Chip } from "@/shared/ui";
 
-import { groupLedgerByDay, passDurationSeconds } from "../../lib/round-presentation";
+import { groupLedgerByDay, passDurationSeconds } from "../../lib/rounds/round-presentation";
 
 /**
  * **The ledger** — passes on a time axis, newest first.

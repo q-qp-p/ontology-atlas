@@ -10,8 +10,8 @@ import {
 import { DocReadingPane, shouldShowOutlineRail } from "@/widgets/doc-reading-pane";
 import { DocsVaultViewer } from "@/widgets/docs-vault";
 import { cn } from "@/shared/lib/cn";
-import { useLibraryAgent } from "../../lib/use-library-agent";
-import { useAnswerRefresh } from "../../lib/use-answer-refresh";
+import { useLibraryAgent } from "../../lib/agent/use-library-agent";
+import { useAnswerRefresh } from "../../lib/questions/use-answer-refresh";
 import { LibraryCheckReport } from "../parts/LibraryCheckReport";
 import { SelectionAsk } from "../parts/SelectionAsk";
 import { SourceSummary } from "../parts/SourceSummary";

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { LibrarySourceRow } from "@/entities/docs-vault";
 
 import { libraryBrainLabel, libraryCompileBlockedReason } from "./compile-availability";
-import type { LibraryLocalModel } from "./use-library-agent";
+import type { LibraryLocalModel } from "../agent/use-library-agent";
 
 /**
  * Two surfaces ask "why can Compile not run" — the shelf's step two and a source with no

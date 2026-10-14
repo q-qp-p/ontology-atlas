@@ -19,7 +19,7 @@ import { Button, controlClass, Dialog, Disclosure } from '@/shared/ui';
 import { SegmentedControl } from '@/shared/ui/fields/segmented-control';
 import { LG_BREAKPOINT_PX, useViewportBelow } from '@/shared/lib/use-viewport-below';
 import { describeWikiProblem, type WikiTemplateProblem } from '@/features/library';
-import { sectionSlices } from '../../lib/section-slices';
+import { sectionSlices } from '../../lib/wiki/section-slices';
 
 /**
  * `text-reading` travels with it because `--measure-prose` is `ch`, which resolves in the element's

@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/shared/lib/cn";
 
 import { libraryEyebrowClass } from "../../lib/page-eyebrow";
-import type { SinceSpan, SinceSummary } from "../../lib/round-presentation";
+import type { SinceSpan, SinceSummary } from "../../lib/rounds/round-presentation";
 import { pageName, RoundChip } from "./RoundsLedger";
 
 /**

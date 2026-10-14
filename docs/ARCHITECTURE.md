@@ -483,7 +483,7 @@ graph. The separation is a property of the **walk**, not a filter applied later.
   `rounds-ledger.jsonl` pass ledger (500-line cap). `src/features/library-rounds/`
   holds the pure judges: the standing scope (`round-scope.ts`, the decision's table as
   code), the service pass brief, the local consistency pass, and the tick planner.
-  `src/views/library/lib/use-rounds-runner.ts` is the clock and the hands: one
+  `src/views/library/lib/rounds/use-rounds-runner.ts` is the clock and the hands: one
   60-second tick, one pass at a time, local rounds first, a catch-up once after sleep,
   and a headless `useAcpSession` whose `autoDecide` answers every permission request
   from the scope and can now refuse (`{ reject }`). `LibraryRoundsProvider` mounts it

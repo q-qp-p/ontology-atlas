@@ -10,7 +10,7 @@ import { BookText, Check, CloudDownload, FilePlus2, FileText, ListFilter, Pencil
 
 import { formatSourceBytes, type LibrarySourceRow } from "@/entities/docs-vault";
 import { humanPageSlug } from "@/features/library";
-import { writerLabel } from "../../lib/writer-label";
+import { writerLabel } from "../../lib/wiki/writer-label";
 import { cn } from "@/shared/lib/cn";
 import { BrandMark } from "@/shared/ui/marks/brand-mark";
 import { controlClass } from "@/shared/ui/control-class";
@@ -26,8 +26,8 @@ import {
 } from "@/shared/lib/preferences/appearance-preferences";
 
 import { isAdvisoryWikiCode, isWikiFolderCode, libraryOffTemplateCount, passageLabelText } from "@/features/library";
-import { captionWindow } from "../../lib/caption-window";
-import { useSourceSearch } from "../../lib/use-source-search";
+import { captionWindow } from "../../lib/sources/caption-window";
+import { useSourceSearch } from "../../lib/sources/use-source-search";
 import { LibraryShelf } from "./LibraryShelf";
 import { useRovingRows } from "@/shared/lib/list-rows/use-roving-rows";
 import { isImeComposing } from "@/shared/lib/keyboard/ime-composition";

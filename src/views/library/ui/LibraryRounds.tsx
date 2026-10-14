@@ -17,10 +17,10 @@ import { ICON_SIZE } from "@/shared/ui/tokens/icon-size";
 import { PAGE_FRAME_FORM, PAGE_LEDE, PAGE_TITLE } from "@/shared/ui/tokens/page-frame";
 import { Button, EmptyState, RowButton, buttonVariants } from "@/shared/ui";
 
-import { useLibraryRounds } from "../lib/library-rounds-context";
-import { capitalize } from "../lib/round-presentation";
+import { useLibraryRounds } from "../lib/rounds/library-rounds-context";
+import { capitalize } from "../lib/rounds/round-presentation";
 import { libraryEyebrowClass } from "../lib/page-eyebrow";
-import { lastOutcome, nextRound, sinceSpan, summarizeSince } from "../lib/round-presentation";
+import { lastOutcome, nextRound, sinceSpan, summarizeSince } from "../lib/rounds/round-presentation";
 import { RoundsLedger } from "./parts/RoundsLedger";
 import { SinceYouLeft } from "./parts/SinceYouLeft";
 import { RoundsHistoryEmpty } from "./parts/RoundsHistoryEmpty";

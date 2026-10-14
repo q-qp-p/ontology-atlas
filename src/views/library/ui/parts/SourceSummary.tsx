@@ -15,9 +15,9 @@ import type { SourceOutline, SourceUnit } from "@/shared/lib/library/source-pass
 import { RowButton } from "@/shared/ui";
 import { controlClass } from "@/shared/ui/control-class";
 import { ICON_SIZE } from "@/shared/ui/tokens/icon-size";
-import type { CitedPassageState } from "../../lib/use-cited-passage";
-import type { SourceOutlineState } from "../../lib/use-source-outline";
-import { elideHashMiddle } from "../../lib/elide-hash";
+import type { CitedPassageState } from "../../lib/sources/use-cited-passage";
+import type { SourceOutlineState } from "../../lib/sources/use-source-outline";
+import { elideHashMiddle } from "../../lib/sources/elide-hash";
 import { AgentDoor } from "./AgentDoor";
 
 const SOURCE_PASSAGE_HEADING_ID = "library-source-passage-heading";

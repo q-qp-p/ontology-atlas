@@ -10,7 +10,7 @@ import { proposedPageText } from '@/features/library/lib/wiki/judge-page-write';
 import { recordApproval } from '@/shared/lib/connectors/machine-approvals';
 import { WIKI_PAGE_TEMPLATE } from '@/shared/lib/library/wiki-page-schema';
 
-import { useRoundsRunner } from './lib/use-rounds-runner';
+import { useRoundsRunner } from './lib/rounds/use-rounds-runner';
 
 const h = vi.hoisted(() => ({
   store: null as unknown,

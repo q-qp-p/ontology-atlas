@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import enMessages from "../../../../../messages/en.json";
 import type { LibrarySourceRow } from "@/entities/docs-vault";
 import type { CitedPassage } from "@/shared/lib/library/source-passage";
-import type { CitedPassageState } from "../../lib/use-cited-passage";
+import type { CitedPassageState } from "../../lib/sources/use-cited-passage";
 import { SourceSummary } from "./SourceSummary";
 
 const ROW: LibrarySourceRow = {

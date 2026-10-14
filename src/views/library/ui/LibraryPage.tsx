@@ -38,8 +38,8 @@ import {
 import { useFailureSentence } from "@/shared/lib/failures/use-failure-sentence";
 import { Button, Chip, useToast, useToastAnchor } from "@/shared/ui";
 import { isWikiFurnitureSlug } from "@/shared/lib/library/wiki-page-schema";
-import { useLibraryAgent } from "../lib/use-library-agent";
-import { useAnswerRefresh } from "../lib/use-answer-refresh";
+import { useLibraryAgent } from "../lib/agent/use-library-agent";
+import { useAnswerRefresh } from "../lib/questions/use-answer-refresh";
 import { LocalCompileCard } from "./parts/LocalCompileCard";
 import { LibraryStatusStrip } from "./parts/LibraryStatusStrip";
 import { LibraryAgentDock } from "./parts/LibraryAgentDock";

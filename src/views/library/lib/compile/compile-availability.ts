@@ -5,7 +5,7 @@ import type { useTranslations } from "next-intl";
 import type { LibrarySourceRow } from "@/entities/docs-vault";
 import { PARSER_SOURCE_FORMATS, selectLocalCompileTargets } from "@/features/vault-agent";
 
-import type { LibraryLocalModel } from "./use-library-agent";
+import type { LibraryLocalModel } from "../agent/use-library-agent";
 
 /**
  * **Why Compile cannot run right now — one sentence, in one place.**

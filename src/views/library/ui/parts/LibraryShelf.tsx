@@ -8,10 +8,10 @@ import { cn } from "@/shared/lib/cn";
 import { useRovingRows } from "@/shared/lib/list-rows/use-roving-rows";
 import { useWindowedRows } from "@/shared/lib/list-rows/use-windowed-rows";
 import { controlClass } from "@/shared/ui/control-class";
-import { spineFreshness, type SpineFreshness } from "../../lib/spine-shape";
+import { spineFreshness, type SpineFreshness } from "../../lib/wiki/spine-shape";
 import type { LibraryUiModel } from "@/features/library";
 import { isWikiFolderCode } from "@/features/library";
-import { writerLabel } from "../../lib/writer-label";
+import { writerLabel } from "../../lib/wiki/writer-label";
 import { BookText } from "lucide-react";
 import { ICON_SIZE } from "@/shared/ui/tokens/icon-size";
 

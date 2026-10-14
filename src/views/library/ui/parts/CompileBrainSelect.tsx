@@ -4,8 +4,8 @@ import type { useTranslations } from "next-intl";
 
 import { Select } from "@/shared/ui";
 
-import type { CompileBrain } from "../../lib/compile-brain";
-import type { LibraryLocalModel } from "../../lib/use-library-agent";
+import type { CompileBrain } from "../../lib/compile/compile-brain";
+import type { LibraryLocalModel } from "../../lib/agent/use-library-agent";
 
 /**
  * **Which brain Compile runs on**, when this computer offers two.

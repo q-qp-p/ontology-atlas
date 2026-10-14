@@ -6,7 +6,7 @@ import type { useTranslations } from "next-intl";
 import { controlClass } from "@/shared/ui/control-class";
 
 import { libraryDanglingLinkCount, libraryOffTemplateCount, selectCompileTargets } from "@/features/library";
-import { libraryStepStates } from "../../lib/stage-steps";
+import { libraryStepStates } from "../../lib/compile/stage-steps";
 import type { LibraryUiModel } from "@/features/library";
 
 /**

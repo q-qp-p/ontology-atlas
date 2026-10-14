@@ -3,7 +3,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import ko from '../../../../messages/ko.json';
+import ko from '../../../../../messages/ko.json';
 import {
   type RoundLedger,
   type RoundPassEntry,

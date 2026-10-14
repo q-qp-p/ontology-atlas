@@ -14,8 +14,8 @@ import { useVaultAgentRuntime } from "@/widgets/acp-chat-panel";
 
 import type { LibrarySourceRow } from "@/entities/docs-vault";
 
-import { resolveCompileBrain, useCompileBrainChoice } from "./compile-brain";
-import type { LibraryAgentOpeningRequest } from "../ui/parts/LibraryAgentDock";
+import { resolveCompileBrain, useCompileBrainChoice } from "../compile/compile-brain";
+import type { LibraryAgentOpeningRequest } from "../../ui/parts/LibraryAgentDock";
 
 /**
  * Whether the Library can start an in-app agent turn. `route` is `agent` only when a verified

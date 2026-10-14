@@ -11,7 +11,7 @@ import { usePanelPresence } from "@/shared/lib/render-timing/use-presence";
 import { AGENT_DOCK_INSET_SURFACE_CLASS, agentDockReflowStyle, Chip, Surface, Tooltip } from "@/shared/ui";
 import { AcpChatPanel, AcpChatResizeHandle, AcpDockHeader } from "@/widgets/acp-chat-panel";
 
-import { LIBRARY_HANDOFF_APPENDIX } from "../../lib/library-handoff";
+import { LIBRARY_HANDOFF_APPENDIX } from "../../lib/agent/library-handoff";
 import type { ComponentProps } from "react";
 
 type AcpChatPanelProps = ComponentProps<typeof AcpChatPanel>;

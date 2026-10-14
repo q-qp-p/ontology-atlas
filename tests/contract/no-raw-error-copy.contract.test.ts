@@ -442,7 +442,7 @@ const REPAIRED = [
   'src/views/library/ui/library-page/use-library-sources.ts',
   'src/views/library/ui/library-page/use-library-turns.ts',
   'src/views/library/ui/library-page/use-wiki-template-problems.ts',
-  'src/views/library/lib/use-answer-refresh.ts',
+  'src/views/library/lib/questions/use-answer-refresh.ts',
   'src/views/library/ui/parts/RetainedAnswerContext.tsx',
   'src/views/library/ui/parts/AnswerRevisionComparison.tsx',
   'src/views/home/ui/HomePage.tsx',

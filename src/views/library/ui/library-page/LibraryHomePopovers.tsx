@@ -1,8 +1,8 @@
 import type { RefObject, Dispatch, SetStateAction } from "react";
 import { useTranslations } from "next-intl";
 import { controlClass } from "@/shared/ui/control-class";
-import { libraryWaitingLine } from "../../lib/stage-steps";
-import { useLibraryAgent } from "../../lib/use-library-agent";
+import { libraryWaitingLine } from "../../lib/compile/stage-steps";
+import { useLibraryAgent } from "../../lib/agent/use-library-agent";
 import { AgentDoor } from "../parts/AgentDoor";
 import { CompileBrainSelect } from "../parts/CompileBrainSelect";
 import { LibraryStage } from "../parts/LibraryStage";

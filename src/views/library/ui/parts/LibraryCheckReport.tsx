@@ -18,7 +18,7 @@ import {
   type WikiProblemWhere,
   type WikiProblemWords,
 } from "@/features/library";
-import { localizeWikiLogSummary } from "../../lib/wiki-log-summary";
+import { localizeWikiLogSummary } from "../../lib/wiki/wiki-log-summary";
 import { AgentMissingNotice } from "./AgentMissingNotice";
 import { WikiProblemSentence, type WikiProblemDoors } from "./WikiTemplateProblems";
 

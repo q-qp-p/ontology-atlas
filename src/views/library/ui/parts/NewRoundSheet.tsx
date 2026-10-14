@@ -32,7 +32,7 @@ import { transientSurface } from "@/shared/ui/surfaces/transient-surface";
 import { Button, Chip, Dialog, DialogBody, DialogFooter, IconButton, Surface } from "@/shared/ui";
 import { Input } from "@/shared/ui/fields/input";
 
-import { capitalize, serviceExample, unusedRoundName } from "../../lib/round-presentation";
+import { capitalize, serviceExample, unusedRoundName } from "../../lib/rounds/round-presentation";
 
 /**
  * A scheduled check as one sentence, one list of places and one rail. `deriveRoundKind` alone

@@ -15,17 +15,17 @@ import {
   libraryCompileBlockedReason,
   libraryTransferSentence,
   type CompileAvailability,
-} from "../../lib/compile-availability";
+} from "../../lib/compile/compile-availability";
 
-import type { CompileBrain } from "../../lib/compile-brain";
+import type { CompileBrain } from "../../lib/compile/compile-brain";
 import {
   libraryCoverageCaption,
   libraryStepStates,
   libraryWaitingLine,
   type LibraryStepState,
-} from "../../lib/stage-steps";
+} from "../../lib/compile/stage-steps";
 import type { LibraryUiModel } from "@/features/library";
-import type { LibraryLocalModel } from "../../lib/use-library-agent";
+import type { LibraryLocalModel } from "../../lib/agent/use-library-agent";
 import { CompileBrainSelect } from "./CompileBrainSelect";
 import { AgentDoor } from "./AgentDoor";
 

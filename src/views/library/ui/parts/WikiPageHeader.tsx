@@ -8,7 +8,7 @@ import type { LibraryOriginalLink, VaultDoc } from "@/entities/docs-vault";
 import { Chip, RowButton } from "@/shared/ui";
 import { Disclosure } from "@/shared/ui/controls/disclosure";
 import { ICON_SIZE } from "@/shared/ui/tokens/icon-size";
-import { wikiStatusLabel, writerLabel } from "../../lib/writer-label";
+import { wikiStatusLabel, writerLabel } from "../../lib/wiki/writer-label";
 
 /**
  * Names the open page, its writer, status and cited sources. A cited file not in this folder is
