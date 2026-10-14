@@ -148,7 +148,7 @@ describe('the compact agent brief reads Definition, Includes and Excludes', () =
   const focus = (title: string, body: string, task = 'Rotate encryption keys.') => {
     const docs = [project, { slug: 'capabilities/catalog', frontmatter: { kind: 'capability', title }, body }];
     return buildCompactAgentBrief({
-      brief: { projectSlug: 'project' },
+      brief: { projectSlug: 'project', meaningRepair: { workflow: [], stopWhen: ['source_not_current'] } },
       artifact: { nodes: docs.map((d) => ({ slug: d.slug, ...d.frontmatter })), edges: [] },
       docs,
       task,

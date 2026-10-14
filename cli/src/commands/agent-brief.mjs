@@ -626,8 +626,13 @@ function renderCompact(result) {
     + `${repair.primaryQuestion ? ` · question ${repair.primaryQuestion}` : ''}`
     + ` · approval required · automatic write/finalize off\n`,
   );
-  const repairCall = repair.workflow?.flatMap((step) => step.calls ?? [])[0];
+  const repairCall = repair.firstStep?.calls?.[0] ?? repair.workflow?.[0]?.calls?.[0];
   if (repairCall) process.stdout.write(`${COLORS.dim}REPAIR READ${COLORS.reset} ${formatToolCall(repairCall)}\n`);
+  if (repair.omitted?.steps.length > 0) {
+    process.stdout.write(
+      `${COLORS.dim}REPAIR OMITTED${COLORS.reset} ${omissionSummary(repair.omitted)}; read FULL DETAIL before step 2\n`,
+    );
+  }
   process.stdout.write(`${COLORS.dim}PURPOSE${COLORS.reset} ${result.purpose.statement || 'not recorded'}\n`);
   process.stdout.write(`${COLORS.dim}TASK MATCH${COLORS.reset} ${result.focus.capability?.slug ?? 'not recorded'}\n`);
   for (const anchor of result.focus.evidenceAnchors) {
@@ -668,6 +673,10 @@ function formatTaskNavigationTarget(target) {
   return target
     ? `${target.path}#${target.symbol}:${target.line}${target.endLine === target.line ? '' : `-${target.endLine}`}`
     : 'unknown';
+}
+
+function omissionSummary({ steps, stopConditions }) {
+  return `steps 2-${steps.length + 1} (${steps[0]} to ${steps.at(-1)}) and ${stopConditions} stop conditions`;
 }
 
 function compactGapLabel(gap) {

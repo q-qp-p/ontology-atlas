@@ -750,8 +750,9 @@ known coding task, `detail:"compact"` requires a request-local `task` of at most
 `Buffer.byteLength(JSON.stringify(completeCompactObject), "utf8")`, including
 `handoffPrompt`. Display indentation is excluded; the combined connection and
 compact wire guard is 22,000 characters, including the construction card. The compact
-v2 contract keeps final source/meaning currentness, `meaningRepair:v2`, approval
-and no-auto-write/finalize guards, one broad capability selected only when its
+v2 contract keeps final source/meaning currentness, `meaningRepairCompact:v1` (repair
+status, conflict guards, the first step verbatim, and the ids of the steps only
+`detail:"full"` repeats), approval and no-auto-write/finalize guards, one broad capability selected only when its
 persisted Definition/Includes/Excludes are compatible with the task, cited
 element/path anchors, explicit impact/verification unknowns, one bounded
 full-body read, and an exact `detail:"full"` follow-up. Desired work must be
@@ -1027,7 +1028,7 @@ assessment fails closed as `review_required`; the gap is
 When current graph/source evidence can narrow an incomplete `abilities` or
 `evidence` answer, `agent_brief.nextActions[0]` is
 `review_competency_repair` and points to `agent_brief.meaningRepair`
-(`meaningRepair:v2`). The compact manifest reports disposition counts while the
+(the v2 manifest, `meaningRepair:v2`). The compact manifest reports disposition counts while the
 read-only `query_ontology({operation:"meaning_repair_review", ...})` operation
 pages the complete typed evidence: current declarations, typed-containment
 candidates, canonical-path candidates supported by the current source receipt,
@@ -1057,6 +1058,11 @@ each full-body read, and compare
 returned mtimes before requesting human approval. Stale provenance returns a
 blocked page; malformed/foreign cursors fail closed. CLI/MCP verification rejects
 missing, duplicate, reordered, oversized, stale, or mismatched page chains.
+
+Compact agent_brief carries `meaningRepairCompact:v1` instead: the same status, questions,
+provenance, reviewRevision, write policy and first step, with `omitted.steps`,
+`omitted.stopConditions` and `omitted.recovery:"fullDetail"` naming what only the full
+packet repeats.
 
 Semantic document discovery is bounded before content enters the packet: the
 combined `docs/`·`site/`·`website/` walk stops at 200 Markdown files or 1,000
