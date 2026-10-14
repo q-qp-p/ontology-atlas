@@ -8,18 +8,15 @@
 export const BUNDLE_SERVER_DIR = 'server';
 export const BUNDLE_ENTRY_POINT = `${BUNDLE_SERVER_DIR}/src/index.js`;
 
-/** A typed module the server imports directly, and the plain name it takes in a bundle. */
 export const isTypedModule = (file) => file.endsWith('.mts');
 export const strippedName = (file) => file.replace(/\.mts$/, '.mjs');
 
 const TYPED_SPECIFIER = /((?:\bfrom|\bimport)\s*\(?\s*)(['"])(\.{1,2}\/[^'"]+)\.mts\2/g;
 
-/** Points every relative `.mts` import at its stripped `.mjs` twin. */
 export function pointAtStrippedModules(source) {
   return source.replace(TYPED_SPECIFIER, '$1$2$3.mjs$2');
 }
 
-/** Whether a module still imports a typed module by its `.mts` name. */
 export const importsTypedModule = (source) => new RegExp(TYPED_SPECIFIER.source).test(source);
 
 /**
@@ -100,7 +97,6 @@ export function isBundleBallast(relativePath) {
   );
 }
 
-/** The files copied into `server/`, with each typed module renamed to its stripped twin. */
 export function bundleFileList(declaredFiles) {
   return declaredFiles
     .filter((file) => !EXCLUDED_FROM_BUNDLE.includes(file))

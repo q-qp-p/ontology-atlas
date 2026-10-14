@@ -62,7 +62,6 @@ describe('bundle contents', () => {
     assert.equal(bundled.length, MCP_PACKAGE.files.length - EXCLUDED_FROM_BUNDLE.length);
   });
 
-  /** A host's Node may not strip types, so one `.mts` left behind breaks every tool that loads it. */
   it('stages every typed module as JavaScript and points its importers at it', () => {
     const { stageDir } = stage({ ...MCP_PACKAGE, dependencies: {} });
     try {

@@ -92,11 +92,7 @@ function packageManifest(dir) {
   return existsSync(file) ? readJson(file) : null;
 }
 
-/**
- * Typed modules are imported directly and rely on Node's type stripping,
- * unflagged only from Node 23.6. A host supplies its own Node, so each one is
- * compiled to `.mjs` for the bundle and every staged importer is pointed at it.
- */
+/** A host supplies its own Node, which may not strip types. */
 function stripTypedModules(stageServerDir, declaredFiles) {
   const typed = declaredFiles.filter(isTypedModule);
   if (typed.length > 0) {
