@@ -1,5 +1,5 @@
 {
-  "file": "src/views/library/ui/parts/AgentDoor.tsx",
+  "file": "src/views/library/ui/parts/agent/AgentDoor.tsx",
   "count": 1,
   "claim": "standard-button",
   "proof": "buttonVariants",

@@ -52,9 +52,9 @@ import { isWikiFurnitureSlug } from "@/shared/lib/library/wiki-page-schema";
 import { libraryCompileBlockedReason, libraryTransferSentence } from "../../lib/compile/compile-availability";
 import { useLibraryAgent } from "../../lib/agent/use-library-agent";
 import { useAnswerRefresh } from "../../lib/questions/use-answer-refresh";
-import { findingKey, reportOutline } from "../parts/LibraryCheckReport";
-import type { LibraryAgentOpeningRequest } from "../parts/LibraryAgentDock";
-import type { QuestionDeskReportRequest } from "../parts/LibraryQuestionDesk";
+import { findingKey, reportOutline } from "../parts/wiki/LibraryCheckReport";
+import type { LibraryAgentOpeningRequest } from "../parts/agent/LibraryAgentDock";
+import type { QuestionDeskReportRequest } from "../parts/questions/LibraryQuestionDesk";
 import type { LibrarySelection } from "./library-page-state";
 import type { useLibraryWorkActivity } from "./use-library-work-activity";
 

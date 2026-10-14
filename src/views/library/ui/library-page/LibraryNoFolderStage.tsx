@@ -2,7 +2,7 @@ import { useTranslations } from "next-intl";
 import { OpenVaultCta } from "@/features/docs-vault-local";
 import { PAGE_COLUMN_STAGE, PAGE_LEDE, PAGE_TITLE } from "@/shared/ui/tokens/page-frame";
 import { libraryEyebrowClass } from "../../lib/page-eyebrow";
-import { LibraryConstellation } from "../parts/LibraryConstellation";
+import { LibraryConstellation } from "../parts/first-run/LibraryConstellation";
 
 export function LibraryNoFolderStage({
   t, locale,

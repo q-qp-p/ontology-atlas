@@ -1,6 +1,6 @@
 import { useTranslations } from "next-intl";
-import { LibraryStartStage } from "../parts/LibraryStartStage";
-import { LibrarySynapseField } from "../parts/LibrarySynapseField";
+import { LibraryStartStage } from "../parts/first-run/LibraryStartStage";
+import { LibrarySynapseField } from "../parts/first-run/LibrarySynapseField";
 import type { ReactNode } from "react";
 import type { useLibrarySources } from "./use-library-sources";
 

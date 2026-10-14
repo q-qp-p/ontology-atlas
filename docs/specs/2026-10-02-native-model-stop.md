@@ -31,7 +31,7 @@ Source baseline: `112127a49`. These are source facts, not runtime measurements.
   frontend controller and clears the running state
   (`src/widgets/vault-agent-panel/model/use-vault-agent.ts:165`). Local Compile
   similarly returns to idle (`src/features/vault-agent/model/compile/use-local-compile.ts:162`);
-  its running card has Stop (`src/views/library/ui/parts/LocalCompileCard.tsx:39`).
+  its running card has Stop (`src/views/library/ui/parts/compile/LocalCompileCard.tsx:39`).
 - Both callers invoke `llmChat` without cancellation
   (`src/widgets/vault-agent-panel/model/use-vault-agent.ts:217`,
   `src/features/vault-agent/model/compile/use-local-compile.ts:235`). The loop's normal

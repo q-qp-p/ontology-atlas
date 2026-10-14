@@ -64,7 +64,7 @@ describe("agent dock inset surface", () => {
       "src/views/home/ui/TopologyAgentDock.tsx",
       "src/views/project-detail/ui/parts/ProjectAgentDock.tsx",
       "src/views/architecture/ui/ArchitectureAgentDock.tsx",
-      "src/views/library/ui/parts/LibraryAgentDock.tsx",
+      "src/views/library/ui/parts/agent/LibraryAgentDock.tsx",
       "src/views/ontology-insights/ui/parts/InsightsAgentDock.tsx",
     ].map((path) => [path, readFileSync(path, "utf8")] as const);
     for (const [path, source] of docks) {

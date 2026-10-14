@@ -302,7 +302,7 @@ FSD placement:
   `views/library/lib/agent/use-library-agent.ts`: runtime id, mcpServers, availability —
   no UI state), `ui/NewRoundSheet.tsx`, `index.ts`.
 - `src/views/library/ui/LibraryRounds.tsx` + `parts/RoundsIndex.tsx`,
-  `parts/SinceYouLeft.tsx`, `parts/RoundsLedger.tsx`, `parts/RoundsTimeAxis.tsx`.
+  `parts/rounds/SinceYouLeft.tsx`, `parts/rounds/RoundsLedger.tsx`, `parts/RoundsTimeAxis.tsx`.
 - `src/app/library-workspace/index.tsx` — the fifth tab.
 - `src/entities/vault-session/model/LocalVaultProvider.tsx` — mounts `RoundsRunner`
   (a thin component from the feature, exported for the provider; the entity layer

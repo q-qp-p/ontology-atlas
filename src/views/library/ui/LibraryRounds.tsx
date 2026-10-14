@@ -21,9 +21,9 @@ import { useLibraryRounds } from "../lib/rounds/library-rounds-context";
 import { capitalize } from "../lib/rounds/round-presentation";
 import { libraryEyebrowClass } from "../lib/page-eyebrow";
 import { lastOutcome, nextRound, sinceSpan, summarizeSince } from "../lib/rounds/round-presentation";
-import { RoundsLedger } from "./parts/RoundsLedger";
-import { SinceYouLeft } from "./parts/SinceYouLeft";
-import { RoundsHistoryEmpty } from "./parts/RoundsHistoryEmpty";
+import { RoundsLedger } from "./parts/rounds/RoundsLedger";
+import { SinceYouLeft } from "./parts/rounds/SinceYouLeft";
+import { RoundsHistoryEmpty } from "./parts/rounds/RoundsHistoryEmpty";
 
 /**
  * **Check history** — the Library's read side of document rounds.

@@ -30,7 +30,7 @@ The local workspace for gathering originals, writing and checking Wiki pages tha
 - Background Jev transfer, a required service key, or a report action that implicitly authorizes writing.
 
 ## Evidence
-- `src/views/library/ui/LibraryPage.tsx` coordinates the authoring and question/report flows; `src/views/library/ui/parts/LibraryQuestionDesk.tsx` owns the inquiry surface and guarded source opening.
+- `src/views/library/ui/LibraryPage.tsx` coordinates the authoring and question/report flows; `src/views/library/ui/parts/questions/LibraryQuestionDesk.tsx` owns the inquiry surface and guarded source opening.
 - `src/features/library/lib/questions/question-desk.ts` implements bounded local retrieval; `src/features/library/lib/questions/question-desk-brief.ts` owns the report brief, section handling and inert export boundary.
 - `src/app/library-workspace/index.tsx` owns navigation and legacy set-link canonicalization. `tests/e2e/library-question-desk.spec.ts` and `tests/e2e/library-workspace.spec.ts` cover search, current report behavior, source reach, URL identity and draft recovery.
 

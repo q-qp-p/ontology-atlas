@@ -7,7 +7,7 @@ import { vaultImageUrl } from "@/shared/lib/library/open-vault-file";
 import { useCitedPassage } from "../../lib/sources/use-cited-passage";
 import { useSourceOutline } from "../../lib/sources/use-source-outline";
 import { useAnswerHistory } from "../../lib/questions/use-answer-history";
-import { advisoryReportSlugs } from "../parts/LibraryCheckReport";
+import { advisoryReportSlugs } from "../parts/wiki/LibraryCheckReport";
 import type { LibrarySelection } from "./library-page-state";
 
 export function useLibraryReader({
