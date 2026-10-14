@@ -54,11 +54,11 @@ agents meets compact only through `agent-brief --compact`.
   1,936 characters against its 1,940 cap (`mcp/src/construction-card.mjs:14`). It delivers **0 of
   23 qualifier units and 0 of 10 uncertainty units**; unbounded, the same selection delivers 4 and 8.
 - **CLI.** It accepts compact only when the text equals `structuredContent.handoffPrompt`, otherwise
-  parses the text as JSON (`cli/src/lib/mcp-call.mjs:332-344`), and spawns the sibling server unless
+  parses the text as JSON (`cli/src/lib/mcp-bridge/mcp-call.mjs:332-344`), and spawns the sibling server unless
   `OATLAS_MCP_PATH` is set (`:27-44`). The validator measures the whole object and requires the
   prompt facts in `handoffPrompt` (`cli/src/lib/query-result-contract/agent-brief/agent-brief-compact.mjs:38-40`,
   `:206-236`). `--json` prints the object, `--prompt` prints `.handoffPrompt`
-  (`cli/src/commands/agent-brief.mjs:88-94`), and human output prints `purpose.statement` (PURPOSE,
+  (`cli/src/commands/diagnosis/agent-brief.mjs:88-94`), and human output prints `purpose.statement` (PURPOSE,
   `:636`) and `verification.nextAction` (VERIFY, `:650`) but no qualifier unit. Integration tests
   compare `--prompt` and human output with `--json`'s `.handoffPrompt`
   (`cli/src/integration.test.mjs:6892`, `:6898`, `:6979`, `:7084`, `:7086`).
@@ -287,7 +287,7 @@ No `messages/` entries: MCP text and CLI output are English protocol text.
    `handoffPrompt` and no moved row; every `readerRules` entry but the capability and repair rules
    is a text line, the `Verify:` rule included; both channels report the same coverage. A fixture over the bound throws the error with both sizes.
 3. **The CLI rejects drift** (`cli/src/lib/query-result-contract/agent-brief/agent-brief-compact.test.mjs`,
-   `cli/src/lib/mcp-call.test.mjs`). A `v3` pair passes. It fails when the text's guard, `Full:`
+   `cli/src/lib/mcp-bridge/mcp-call.test.mjs`). A `v3` pair passes. It fails when the text's guard, `Full:`
    call, a coordinate or a coverage count differs from the structure, when the structure carries
    `handoffPrompt` or a moved row, or when the bound is exceeded. A legacy `v2` still passes.
 4. **CLI output** (`cli/src/integration.test.mjs`). `--prompt` prints `content[0].text` byte for

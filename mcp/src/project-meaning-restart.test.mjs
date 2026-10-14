@@ -11,7 +11,7 @@ import {
   renderProjectCompetencyMarkdown,
 } from './project-meaning-receipt.mjs';
 import { runJsonRpcProcess } from '../../scripts/lib/mcp-test-rpc.mjs';
-import { parseMcpToolResponse } from '../../cli/src/lib/mcp-call.mjs';
+import { parseMcpToolResponse } from '../../cli/src/lib/mcp-bridge/mcp-call.mjs';
 import { assertAgentBriefResponseShape } from '../../cli/src/lib/query-result-contract/agent-brief/agent-brief.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
