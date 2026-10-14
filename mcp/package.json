@@ -166,6 +166,7 @@
     "src/ontology-engine/traversal-analysis.mjs",
     "src/agent-brief-compact.mjs",
     "src/agent-brief/recorded-evidence.mjs",
+    "src/agent-brief/compact-handoff-text.mjs",
     "src/task-navigation-evidence.mjs",
     "src/agent-brief/reviewed-evidence.mjs",
     "src/project-source-graph-hash.mjs",
