@@ -2,7 +2,7 @@
 // Tests for the dogfood MCP walk's human-readable summary/format helpers:
 // rpc response completion helpers, maintenanceBucketSummary, and
 // maintenanceNextActionSummary.
-// Split out of scripts/dogfood-mcp-walk.test.mjs (structural decomposition, logic unchanged).
+// Split out of scripts/dogfood/dogfood-mcp-walk.test.mjs (structural decomposition, logic unchanged).
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
@@ -52,7 +52,7 @@ import {
   workspaceNextActionSummary,
   writeMetadataAbsenceSummary,
   writeRowLabelGuidanceSummary,
-} from "../../dogfood-mcp-walk.mjs";
+} from "../../dogfood/dogfood-mcp-walk.mjs";
 import {
   EXPECTED_TOOLS,
   expectedToolsListAnnotationSummary,
@@ -659,7 +659,7 @@ describe("rpc response completion helpers", () => {
     const usage = dogfoodUsage();
     assert.match(usage, /pnpm dogfood:help/);
     assert.match(usage, /pnpm dogfood:walk -- \[--help\]/);
-    assert.match(usage, /node scripts\/dogfood-mcp-walk\.mjs \[--help\]/);
+    assert.match(usage, /node scripts\/dogfood\/dogfood-mcp-walk\.mjs \[--help\]/);
     assert.match(usage, /Print this help without starting the MCP server/);
     assert.match(usage, /No positional vault argument is accepted/);
     assert.match(usage, /OATLAS_DOGFOOD_TIMEOUT_MS/);
@@ -697,7 +697,7 @@ describe("rpc response completion helpers", () => {
     // Structural decomposition (scripts/lib/dogfood-walk/*.mjs) split the walk
     // across an entry orchestrator (spawn/rpc client + exit-code guard) and a
     // console report module (the return-code branches) — check each seam.
-    const entrySource = readFileSync("scripts/dogfood-mcp-walk.mjs", "utf-8");
+    const entrySource = readFileSync("scripts/dogfood/dogfood-mcp-walk.mjs", "utf-8");
     const rpcClientSource = readFileSync("scripts/lib/dogfood-walk/rpc-client.mjs", "utf-8");
     const reportSource = readFileSync("scripts/lib/dogfood-walk/report.mjs", "utf-8");
 

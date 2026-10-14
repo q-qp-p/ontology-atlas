@@ -1,0 +1,444 @@
+import assert from 'node:assert/strict';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { cpSync } from 'node:fs';
+import { mkdtemp, mkdir, rm, stat, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { after, before, describe, it, test } from 'node:test';
+
+/** This checkout's root — the source the bare-worktree probe below copies from. */
+const SOURCE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+
+import {
+  comparableDoc,
+  comparableManifest,
+  deterministicGeneratedAt,
+  documentRevision,
+  extractOutLinksWithContext,
+  localDayStamp,
+  movedSlugAliases,
+  parseArgs,
+  resolveWikilinkTargetSlug,
+  scanVaultDir,
+  usage,
+} from './build-docs-vault.mjs';
+
+describe('build-docs-vault script helpers', () => {
+  it('parses check/help flags and rejects accidental writes from unknown args', () => {
+    assert.deepEqual(parseArgs([]), { check: false });
+    assert.deepEqual(parseArgs(['--check']), { check: true });
+    assert.deepEqual(parseArgs(['--help']), { help: true });
+    assert.deepEqual(parseArgs(['-h']), { help: true });
+    assert.deepEqual(parseArgs(['--check', 'extra']), {
+      error: 'Unexpected argument: extra',
+    });
+    assert.deepEqual(parseArgs(['--fix']), {
+      error: 'Unknown option: --fix',
+    });
+  });
+
+  it('keeps usage explicit about check mode being read-only', () => {
+    assert.match(usage(), /Usage: node scripts\/docs-vault\/build-docs-vault\.mjs \[--check\]/);
+    assert.match(usage(), /Verify generated outputs are current without writing/);
+  });
+
+  // `--check` still excludes the date stamp from the comparison. A baseline can be a
+  // day stale — a PR merged across midnight, where the date of the new commit the
+  // merge creates is unknowable at generation time — and turning main red for that is
+  // noise rather than a gate. Determinism is proven directly by the "determinism
+  // contract" suite below.
+  it('ignores timestamp-only manifest churn while preserving content drift', () => {
+    const baseDoc = {
+      slug: 'README',
+      title: 'Readme',
+      wordCount: 10,
+      updatedAt: '2026-05-18',
+    };
+    const nextDoc = {
+      ...baseDoc,
+      updatedAt: '2026-05-19',
+    };
+    assert.deepEqual(comparableDoc(baseDoc), comparableDoc(nextDoc));
+    assert.notDeepEqual(
+      comparableDoc(baseDoc),
+      comparableDoc({ ...nextDoc, wordCount: 11 }),
+    );
+
+    const baseManifest = {
+      version: '2026-04-23',
+      generatedAt: '2026-05-18',
+      docs: [baseDoc],
+    };
+    const nextManifest = {
+      ...baseManifest,
+      generatedAt: '2026-05-19',
+      docs: [nextDoc],
+    };
+    assert.deepEqual(comparableManifest(baseManifest), comparableManifest(nextManifest));
+    assert.notDeepEqual(
+      comparableManifest(baseManifest),
+      comparableManifest({
+        ...nextManifest,
+        docs: [{ ...nextDoc, title: 'Changed' }],
+      }),
+    );
+  });
+});
+
+describe('resolveWikilinkTargetSlug / extractOutLinksWithContext — nested ontology/ vault', () => {
+  // persona QA (fix/persona-findings ③) — mirror of the shared TS test in
+  // src/shared/lib/vault-document/parse-frontmatter.test.ts. This .mjs copy is the one that
+  // actually builds the static dogfood manifest (`docs-vault:build`), so it
+  // needs its own regression guard against the same drift.
+  it('ontology/ 문서 안의 위키링크는 ontology/ 접두사를 붙여 정규화한다', () => {
+    assert.equal(
+      resolveWikilinkTargetSlug('capabilities/topology-canvas-render', 'ontology/elements/sigma-graphology'),
+      'ontology/capabilities/topology-canvas-render',
+    );
+    const { contexts } = extractOutLinksWithContext(
+      '같은 캔버스 엔진 얘기는 [[capabilities/topology-canvas-render]] 참고.',
+      'ontology/elements/sigma-graphology',
+    );
+    assert.equal(contexts.length, 1);
+    assert.equal(contexts[0].target, 'ontology/capabilities/topology-canvas-render');
+  });
+
+  it('이미 ontology/ 접두사가 붙은 위키링크는 이중으로 접두사를 붙이지 않는다', () => {
+    assert.equal(
+      resolveWikilinkTargetSlug('ontology/project', 'ontology/domains/views'),
+      'ontology/project',
+    );
+  });
+
+  it('ontology/ 바깥(최상위) 문서의 위키링크는 그대로 vault 루트 기준을 유지한다', () => {
+    assert.equal(resolveWikilinkTargetSlug('FEATURES', 'CHANGELOG'), 'FEATURES');
+  });
+});
+
+/**
+ * Determinism contract: generating twice from the same source yields identical bytes. Output
+ * depending on the wall clock or commit time diverges once a squash-merge, rebase or amend
+ * restamps the commit. So the tests restamp only the commit time and check byte identity.
+ */
+describe('build-docs-vault 결정성 계약', () => {
+  let repo = null;
+
+  const git = (args, env = {}) =>
+    execFileSync('git', args, {
+      cwd: repo,
+      encoding: 'utf8',
+      env: { ...process.env, ...env },
+    });
+
+  const scan = async () =>
+    scanVaultDir(path.join(repo, 'docs'), {
+      rootDir: repo,
+      check: true,
+      publicOutDir: null,
+    });
+
+  before(async () => {
+    repo = await mkdtemp(path.join(os.tmpdir(), 'docs-vault-determinism-'));
+    git(['init', '-q', '-b', 'main']);
+    git(['config', 'user.email', 'test@example.com']);
+    git(['config', 'user.name', 'Determinism Probe']);
+    git(['config', 'commit.gpgsign', 'false']);
+    await mkdir(path.join(repo, 'docs'), { recursive: true });
+    await writeFile(
+      path.join(repo, 'docs', 'GUIDE.md'),
+      '# Guide\n\n본문 한 줄.\n',
+      'utf8',
+    );
+    git(['add', '-A']);
+    git(['commit', '-q', '-m', 'docs: add guide'], {
+      GIT_AUTHOR_DATE: '2026-03-04T01:02:03+09:00',
+      GIT_COMMITTER_DATE: '2026-03-04T01:02:03+09:00',
+    });
+  });
+
+  after(async () => {
+    if (repo) await rm(repo, { recursive: true, force: true });
+  });
+
+  it('두 번 연속 생성하면 바이트 동일하다', async () => {
+    const first = await scan();
+    const second = await scan();
+    assert.equal(
+      JSON.stringify(first.manifest),
+      JSON.stringify(second.manifest),
+    );
+    assert.equal(JSON.stringify(first.content), JSON.stringify(second.content));
+  });
+
+  it('같은 날 안에서 커밋 시각이 다시 찍혀도(squash-merge·rebase) 바이트 동일하다', async () => {
+    const before = await scan();
+    assert.equal(before.manifest.docs[0].updatedAt, '2026-03-04');
+
+    // What a merge does: restamps the same content as a new commit, changing only the time.
+    git(['commit', '-q', '--amend', '--no-edit'], {
+      GIT_AUTHOR_DATE: '2026-03-04T23:58:59+09:00',
+      GIT_COMMITTER_DATE: '2026-03-04T23:58:59+09:00',
+    });
+
+    const after = await scan();
+    assert.equal(
+      JSON.stringify(before.manifest),
+      JSON.stringify(after.manifest),
+      '커밋 시각 재기록만으로 생성물이 흔들리면 리베이스 충돌 회귀다',
+    );
+  });
+
+  it('날짜가 실제로 바뀌면 값도 따라 바뀐다 (정확성은 희생하지 않는다)', async () => {
+    git(['commit', '-q', '--amend', '--no-edit'], {
+      GIT_AUTHOR_DATE: '2026-03-06T10:00:00+09:00',
+      GIT_COMMITTER_DATE: '2026-03-06T10:00:00+09:00',
+    });
+    const { manifest } = await scan();
+    assert.equal(manifest.docs[0].updatedAt, '2026-03-06');
+    assert.equal(manifest.generatedAt, '2026-03-06');
+  });
+
+  it('워킹트리에서 고치는 중인 문서는 mtime **날짜** 로 기록한다 (시각 아님)', async () => {
+    const edited = path.join(repo, 'docs', 'GUIDE.md');
+    await writeFile(edited, '# Guide\n\n본문 두 줄.\n추가.\n', 'utf8');
+    /*
+     * Derive the expected value from that file's mtime, not `new Date()`: the two can fall on
+     * different days around midnight.
+     */
+    const { mtime } = await stat(edited);
+    const { manifest } = await scan();
+    assert.match(manifest.docs[0].updatedAt, /^\d{4}-\d{2}-\d{2}$/);
+    assert.equal(manifest.docs[0].updatedAt, localDayStamp(mtime));
+  });
+
+  it('localDayStamp 는 로컬 날짜만 남기고 시각을 버린다', () => {
+    const morning = new Date(2026, 2, 4, 1, 2, 3);
+    const night = new Date(2026, 2, 4, 23, 58, 59);
+    assert.equal(localDayStamp(morning), '2026-03-04');
+    assert.equal(localDayStamp(night), '2026-03-04');
+    assert.equal(localDayStamp(new Date(2026, 2, 5, 0, 0, 1)), '2026-03-05');
+    assert.equal(localDayStamp('not a date'), null);
+  });
+
+  it('generatedAt 은 문서 날짜의 최대값이고 벽시계가 아니다', () => {
+    assert.equal(
+      deterministicGeneratedAt([
+        { updatedAt: '2026-03-04' },
+        { updatedAt: '2026-07-27' },
+        { updatedAt: '2026-01-09' },
+      ]),
+      '2026-07-27',
+    );
+    // Values that are not date-shaped (an old ISO timestamp, say) are excluded as stamp
+    // candidates, so wall-clock precision has no path back in.
+    assert.equal(
+      deterministicGeneratedAt([{ updatedAt: '2026-05-18T01:00:00.000Z' }]),
+      '1970-01-01',
+    );
+    assert.equal(deterministicGeneratedAt([]), '1970-01-01');
+  });
+});
+
+test('virtual ledger keeps its public slug, hides record fragments, and takes the newest input date', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'docs-vault-virtual-ledger-'));
+  const git = (args, env = {}) => execFileSync('git', args, {
+    cwd: root,
+    encoding: 'utf8',
+    env: { ...process.env, ...env },
+  });
+  try {
+    await mkdir(path.join(root, 'docs', 'records', 'decisions'), { recursive: true });
+    await writeFile(path.join(root, 'docs', 'DECISIONS.md'), '# Decisions\n\nLegacy.\n', 'utf8');
+    await writeFile(path.join(root, 'docs', 'records', 'README.md'), '# Recording guide\n', 'utf8');
+    await writeFile(path.join(root, 'docs', 'records', 'decisions', 'new.md'), 'new record\n', 'utf8');
+    git(['init', '-q', '-b', 'main']);
+    git(['config', 'user.email', 'test@example.com']);
+    git(['config', 'user.name', 'Virtual Ledger Probe']);
+    git(['config', 'commit.gpgsign', 'false']);
+    git(['add', '-A']);
+    git(['commit', '-q', '-m', 'docs: seed virtual ledger'], {
+      GIT_AUTHOR_DATE: '2026-03-04T01:02:03+09:00',
+      GIT_COMMITTER_DATE: '2026-03-04T01:02:03+09:00',
+    });
+    await writeFile(path.join(root, 'docs', 'records', 'decisions', 'new.md'), 'newer record\n', 'utf8');
+    git(['add', '-A']);
+    git(['commit', '-q', '-m', 'docs: update record'], {
+      GIT_AUTHOR_DATE: '2026-03-08T01:02:03+09:00',
+      GIT_COMMITTER_DATE: '2026-03-08T01:02:03+09:00',
+    });
+
+    const result = await scanVaultDir(path.join(root, 'docs'), {
+      rootDir: root,
+      check: true,
+      sourceReaders: [(relativePath) => relativePath === 'docs/DECISIONS.md' ? {
+        content: '# Decisions\n\nComposed.\n',
+        inputs: ['docs/DECISIONS.md', 'docs/records/decisions/new.md'],
+      } : null],
+    });
+    assert.deepEqual(Object.keys(result.content), ['DECISIONS', 'records/README']);
+    assert.equal(result.content.DECISIONS, '# Decisions\n\nComposed.\n');
+    assert.equal(result.manifest.docs[0].updatedAt, '2026-03-08');
+    assert.deepEqual(result.publicFiles.map((file) => file.relativePath), ['DECISIONS.md', 'records/README.md']);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('a revision counts commits on the path and on the path it had before a move, plus pending edits', () => {
+  const history = {
+    commits: new Map([['docs/area/new.md', 1], ['docs/OLD.md', 4]]),
+    dirty: new Set(),
+  };
+  assert.equal(documentRevision('docs/area/new.md', history, { 'docs/area/new.md': 'docs/OLD.md' }), 5);
+  assert.equal(documentRevision('docs/area/new.md', history), 1);
+  history.dirty.add('docs/area/new.md');
+  assert.equal(documentRevision('docs/area/new.md', history, { 'docs/area/new.md': 'docs/OLD.md' }), 6);
+  assert.equal(documentRevision('docs/NEVER.md', { commits: new Map(), dirty: new Set() }), 0);
+});
+
+test('a moved document keeps its old slug as an alias, but only toward a slug that ships', () => {
+  const aliases = movedSlugAliases(
+    {
+      'docs/LOGO.md': 'docs/design/logo.md',
+      'docs/SHOOT.md': 'docs/launch/shoot.md',
+    },
+    new Set(['design/logo', 'FEATURES']),
+  );
+  assert.deepEqual(aliases, { LOGO: 'design/logo' });
+});
+
+test('dated evidence, drafts, plans and launch copy stay in the repository but leave the app', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'docs-vault-unshipped-'));
+  try {
+    const docs = path.join(root, 'docs');
+    for (const dir of ['archive', 'audits', 'benchmark', 'plans', 'prototypes', 'launch', 'guide/plans']) {
+      await mkdir(path.join(docs, dir), { recursive: true });
+      await writeFile(path.join(docs, dir, 'NOTE.md'), `# ${dir}\n`, 'utf8');
+    }
+    await writeFile(path.join(docs, 'GUIDE.md'), '# Guide\n', 'utf8');
+
+    const result = await scanVaultDir(docs, { rootDir: root, check: true, publicOutDir: null });
+    // Only the top-level folder name is excluded; a nested folder that happens to
+    // share the name still ships.
+    assert.deepEqual(Object.keys(result.content).sort(), ['GUIDE', 'guide/plans/NOTE']);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+/**
+ * **The manifest records what the validator hears about each body — or says it did not ask.**
+ *
+ * The five portable meaning findings come from `mcp/src`, a sibling package this script
+ * imports rather than retypes, so the static manifest and the app's own builder answer
+ * with one rule. That import is optional: `prepare` copies this script alone into a bare
+ * worktree, and a checkout with no `mcp/` must still build a manifest — recording `null`
+ * (nobody asked) rather than `[]` (asked and clean), because a later reader turning the
+ * second into "this file is fine" is the whole failure this field exists to prevent.
+ */
+test('meaning findings ride the scan: codes for a node, no key for a plain document', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'docs-vault-meaning-findings-'));
+  try {
+    await mkdir(path.join(root, 'docs', 'ontology', 'capabilities'), { recursive: true });
+    await writeFile(
+      path.join(root, 'docs', 'ontology', 'capabilities', 'pay.md'),
+      ['---', 'title: Pay', 'kind: capability', '---', '# Pay', ''].join('\n'),
+      'utf8',
+    );
+    await writeFile(path.join(root, 'docs', 'GUIDE.md'), '# Guide\n\nPlain prose.\n', 'utf8');
+
+    const result = await scanVaultDir(path.join(root, 'docs'), {
+      rootDir: root,
+      check: true,
+      publicOutDir: null,
+      vaultSlugPrefix: 'ontology/',
+    });
+    const bySlug = new Map(result.manifest.docs.map((doc) => [doc.slug, doc]));
+    assert.deepEqual(bySlug.get('ontology/capabilities/pay').meaningFindings, [
+      'definition-missing',
+      'boundary-missing',
+      'boundary-missing',
+      'uncertainty-missing',
+    ]);
+    // The vault root is `docs/ontology`, so the node is inside its kind folder and the
+    // position finding stays quiet — without the prefix subtraction every sample node
+    // would be accused of sitting outside its own folder.
+    assert.equal(
+      bySlug.get('ontology/capabilities/pay').meaningFindings.includes('slug-outside-kind-folder'),
+      false,
+    );
+    assert.equal('meaningFindings' in bySlug.get('GUIDE'), false);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('a checkout with no mcp/ records null, not an empty list, and says why', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'docs-vault-no-mcp-'));
+  try {
+    // The shape `prepare` materializes: this script and the libraries it imports, no `mcp/`.
+    await mkdir(path.join(root, 'scripts', 'lib'), { recursive: true });
+    for (const relative of [
+      'scripts/docs-vault/build-docs-vault.mjs',
+      'scripts/lib/parse-frontmatter.mjs',
+      'scripts/lib/records/record-ledgers.mjs',
+      'scripts/lib/records/po-pilot-records.mjs',
+      'scripts/lib/records/po-pilot.mjs',
+      'scripts/lib/records/po-risk-router.mjs',
+      'scripts/lib/records/decision-record-template.mjs',
+    ]) {
+      cpSync(path.join(SOURCE_ROOT, relative), path.join(root, relative));
+    }
+    await mkdir(path.join(root, 'docs', 'capabilities'), { recursive: true });
+    await writeFile(
+      path.join(root, 'docs', 'capabilities', 'pay.md'),
+      ['---', 'title: Pay', 'kind: capability', '---', '# Pay', ''].join('\n'),
+      'utf8',
+    );
+
+    const probe = [
+      "const { scanVaultDir } = await import('./scripts/docs-vault/build-docs-vault.mjs');",
+      "const result = await scanVaultDir(process.cwd() + '/docs', { rootDir: process.cwd(), check: true, publicOutDir: null });",
+      "console.log(JSON.stringify(result.manifest.docs.map((doc) => [doc.slug, doc.meaningFindings])));",
+    ].join('\n');
+    const run = spawnSync(process.execPath, ['--input-type=module', '-e', probe], {
+      cwd: root,
+      encoding: 'utf8',
+    });
+    assert.equal(run.status, 0, run.stderr);
+    const rows = JSON.parse(run.stdout.trim().split('\n').at(-1));
+    assert.deepEqual(rows, [['capabilities/pay', null]]);
+    // The silence is named once, where whoever reads the build output can see it.
+    assert.match(run.stderr, /mcp\/src is not in this checkout/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+
+test('generated manifests retain eligible definitions without flattening boundaries', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'definition-preview-'));
+  const intro = 'Retries a failed read, but does not persist a report.';
+  const cases = [
+    ['inline-pipe-qualification', 'title: Retry\n', 'Retry dispatch may write reports\nonly for `ReadRequest | WriteRequest` with explicit approval.', 'Retry dispatch may write reports only for `ReadRequest | WriteRequest` with explicit approval.'],
+    ['indented-qualification', 'title: Retry\n', 'Retry dispatch may write reports\n    only with explicit approval.', 'Retry dispatch may write reports only with explicit approval.'],
+    ['tabbed-qualification', 'title: Retry\n', 'Retry dispatch may write reports\n\tonly with explicit approval.', 'Retry dispatch may write reports only with explicit approval.'],
+    ['intro', 'title: Retry\n', intro + '\n\n## Excludes\nPersisting a report.', intro],
+    ['title', 'title: Retry\n', '# Retry\n\n' + intro, intro],
+    ['display', 'title: Retry\ndisplay_ko: 재시도\n', '# 재시도\n\n다시 읽지만\n보고서를 저장하지 않는다.', '다시 읽지만 보고서를 저장하지 않는다.'],
+    ['misleading', 'title: Retry\n', '# Excludes\nPersisting a report.', undefined],
+    ['inferred-title', '', '# Excludes\nPersisting a report.', undefined],
+    ['section', 'title: Retry\n', '## Excludes\nPersisting a report.', undefined],
+    ['list', 'title: Retry\n', '- Persisting a report.', undefined],
+    ['long', 'title: Retry\n', 'A retry is allowed. '.repeat(20) + 'But this is uncertain.', undefined],
+  ];
+  try {
+    await mkdir(path.join(root, 'docs'));
+    for (const [name, metadata, body] of cases) await writeFile(path.join(root, 'docs', `${name}.md`), `---\nkind: capability\n${metadata}---\n${body}`);
+    const { manifest, content } = await scanVaultDir(path.join(root, 'docs'), { rootDir: root, check: true, publicOutDir: null });
+    for (const [name, , , expected] of cases) assert.equal(manifest.docs.find(doc => doc.slug === name).definitionPreview, expected, name);
+    assert.match(manifest.docs.find(doc => doc.slug === 'intro').excerpt, /Persisting a report/);
+    assert.match(content.intro, /## Excludes\nPersisting a report/);
+  } finally { await rm(root, { recursive: true, force: true }); }
+});

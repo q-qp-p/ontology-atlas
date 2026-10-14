@@ -11,7 +11,7 @@ use std::time::Duration;
 
 use serde::Serialize;
 
-/// Must match `MCP_BINARY_NAME` in `scripts/lib/mcp-binary.mjs`; Tauri's `externalBin`
+/// Must match `MCP_BINARY_NAME` in `scripts/lib/packaging/mcp-binary.mjs`; Tauri's `externalBin`
 /// bakes it into Contents/MacOS.
 const MCP_BINARY_NAME: &str = "ontology-atlas-mcp";
 

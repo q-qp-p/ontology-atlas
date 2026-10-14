@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 const CSS = readGlobalCss();
 const CJK_LOCALES = ['ja', 'zh'] as const;

@@ -20,7 +20,7 @@ export const AI_SETTINGS_AUDIT_CLOCK_SLACK_MS = 5000;
  * Row cap for list growth — must equal `LISTBOX_MAX_ROWS` in
  * `src/shared/ui/fields/select-growth.ts`. The duplicate exists because this script does
  * not import the app bundle; if the two drift,
- * `scripts/verify-macos-app-launch.ai-settings.test.mjs` catches it.
+ * `scripts/verify-macos/verify-macos-app-launch.ai-settings.test.mjs` catches it.
  */
 export const AI_SETTINGS_LISTBOX_MAX_ROWS = 8;
 

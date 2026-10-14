@@ -44,7 +44,7 @@ pnpm vault:migrate 2026-08-02-add-node-uids --vault /path/to/vault --write
 
 Issues UIDs only for `kind:` nodes that lack one. Valid existing UIDs are preserved;
 malformed, primary/merged conflicts, and irregular merge histories are rejected during
-the planning phase, failing before any files are written. `scripts/migrate-node-uids.mjs`
+the planning phase, failing before any files are written. `scripts/vault/migrate-node-uids.mjs`
 is a first-party compatible wrapper using the same implementation; use the canonical
 runner above for new usage.
 

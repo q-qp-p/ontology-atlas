@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { isAttributionMarker } from "../../scripts/lib/attribution-marker.mjs";
+import { isAttributionMarker } from "../../scripts/lib/licenses/attribution-marker.mjs";
 import { areaGate, changedPaths, sourceArea } from "../../scripts/quality/source-areas.mjs";
 import { extractCommentTokens, isSupportedSourcePath } from "../../scripts/quality/source-language/inventory.mjs";
 import { judgeRatchet, resolveRatchetBase } from "./lib/ratchet-base";

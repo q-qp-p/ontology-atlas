@@ -13,8 +13,8 @@ export const rules = [
       /^cli\/package\.json$/,
       /^\.github\/workflows\/release-macos\.yml$/,
       /^\.github\/PULL_REQUEST_TEMPLATE\.md$/,
-      /^scripts\/check-package-contracts\.(?:mjs|test\.mjs)$/,
-      /^scripts\/smoke-packed-cli\.mjs$/,
+      /^scripts\/packaging\/check-package-contracts\.(?:mjs|test\.mjs)$/,
+      /^scripts\/packaging\/smoke-packed-cli\.mjs$/,
     ],
   },
 ];
@@ -32,15 +32,15 @@ export const escalations = [
       /^cli\/package\.json$/,
       /^\.github\/workflows\/release-macos\.yml$/,
       /^\.github\/PULL_REQUEST_TEMPLATE\.md$/,
-      /^scripts\/check-package-contracts\.(?:mjs|test\.mjs)$/,
-      /^scripts\/smoke-packed-cli\.mjs$/,
+      /^scripts\/packaging\/check-package-contracts\.(?:mjs|test\.mjs)$/,
+      /^scripts\/packaging\/smoke-packed-cli\.mjs$/,
     ],
   },
 ];
 
 export const directTests = {
   script: [
-    ['scripts/check-package-contracts.mjs', 'scripts/check-package-contracts.test.mjs'],
-    ['scripts/check-package-contracts.test.mjs', 'scripts/check-package-contracts.test.mjs'],
+    ['scripts/packaging/check-package-contracts.mjs', 'scripts/packaging/check-package-contracts.test.mjs'],
+    ['scripts/packaging/check-package-contracts.test.mjs', 'scripts/packaging/check-package-contracts.test.mjs'],
   ],
 };

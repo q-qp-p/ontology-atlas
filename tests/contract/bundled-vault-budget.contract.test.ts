@@ -6,8 +6,8 @@ import { trimToRecentSections } from '@/views/gateway-doc/lib/vault-doc';
 import {
   GATEWAY_CHANGELOG_KEEP_SECTIONS,
   trimToRecentSections as generatorTrim,
-} from '../../scripts/build-docs-vault.mjs';
-import { readLedgerSource } from '../../scripts/lib/record-ledgers.mjs';
+} from '../../scripts/docs-vault/build-docs-vault.mjs';
+import { readLedgerSource } from '../../scripts/lib/records/record-ledgers.mjs';
 
 /**
  * Always-on size gate: data JSON statically imported into the shared chunk is measurable as file
@@ -70,7 +70,7 @@ describe('번들 볼트 데이터 상시 예산', () => {
       const inline = manifest.docs.filter((doc) => doc.headings.length > 0);
       expect(
         inline.map((doc) => doc.slug),
-        `${name} 에 headings 가 도로 인라인됐다 — 263KB 가 모든 라우트 공통 청크로 돌아간다. scripts/build-docs-vault.mjs 의 splitManifestHeadings 를 보라.`,
+        `${name} 에 headings 가 도로 인라인됐다 — 263KB 가 모든 라우트 공통 청크로 돌아간다. scripts/docs-vault/build-docs-vault.mjs 의 splitManifestHeadings 를 보라.`,
       ).toEqual([]);
     }
     // The extracted map really has content — both being empty is loss, not separation.

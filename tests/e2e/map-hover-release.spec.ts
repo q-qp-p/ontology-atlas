@@ -13,7 +13,7 @@ test("커서가 캔버스를 벗어나면 지도가 프레임을 그만 그린�
   await seedFirstRunSeen(page);
   // Accumulates the time rAF callbacks spent **synchronously** — frame intervals are
   // contaminated by refresh rate, but callback time belongs to the app (the same
-  // discipline as scripts/perf-node-drag.mjs).
+  // discipline as scripts/perf/perf-node-drag.mjs).
   await page.addInitScript(() => {
     const w = window as unknown as { __frameWork?: { w: number; t: number }[] };
     w.__frameWork = [];

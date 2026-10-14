@@ -1,0 +1,520 @@
+#!/usr/bin/env node
+// Check only what a machine can generate, never a sentence a human wrote (`docs/DECISIONS.md`):
+// values derived from code, referential integrity (`pnpm` commands, vault nodes, globs),
+// executability and package structure.
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { describe, it } from 'node:test';
+
+import { expectedToolsListAnnotationSummary } from '../../mcp/scripts/verify/tools-list/inventory.mjs';
+import {
+  MAINTENANCE_KIND_VALUES,
+  MAINTENANCE_PHASE_VALUES,
+  MAINTENANCE_SEVERITY_VALUES,
+  RELATION_TYPE_VALUES,
+  WRITE_RELATION_TYPE_VALUES,
+} from '../../mcp/src/ontology-engine.mjs';
+import { RELATION_TYPE_VALUES as CLI_RELATION_TYPE_VALUES } from '../../cli/src/lib/relation-types.mjs';
+import { SERVER_VERSION } from '../../mcp/src/server-version.mjs';
+import { parseMcpToolMetadataFromDescription } from '../../cli/src/lib/mcp-metadata.mjs';
+import {
+  checkPackage,
+  checkMcpLeanTarballFiles,
+  importedSpecifiers,
+  isCoveredByFiles,
+  isPublishRuntimeScript,
+  packageEntrypoints,
+  parseScriptFileRefs,
+} from './check-package-contracts.mjs';
+import { assertPnpmScriptsExist } from '../lib/pnpm-script-refs.mjs';
+
+function withPackage(pkg, files, fn) {
+  const root = mkdtempSync(join(tmpdir(), 'ontology-atlas-package-contract-'));
+  try {
+    writeFileSync(join(root, 'package.json'), JSON.stringify(pkg, null, 2));
+    for (const [path, content] of Object.entries(files)) {
+      const full = join(root, path);
+      mkdirSync(dirname(full), { recursive: true });
+      writeFileSync(full, content);
+    }
+    fn(root);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
+function runNodeScript(args) {
+  return spawnSync(process.execPath, args, {
+    cwd: process.cwd(),
+    encoding: 'utf-8',
+  });
+}
+
+function generatedSurface() {
+  return JSON.parse(readFileSync('docs/.generated/mcp-surface.json', 'utf-8'));
+}
+
+describe('package contract helpers', () => {
+  /**
+   * **Referential integrity — does a `pnpm ...` a document names exist?**
+   *
+   * This is not a prose pin: the expectation is `package.json`'s script list, which a
+   * machine produces. The previous version kept about 150
+   * `assert.equal(pkg.scripts[x], '...')` assertions beside this one, duplicating each
+   * script body verbatim. That was not a contract but a **mirror** — a
+   * human-authored string written in two places, so changing one only forces you to
+   * change the other.
+   */
+  it('keeps every pnpm command named in the docs resolvable to a real root script', () => {
+    const pkg = JSON.parse(readFileSync('package.json', 'utf-8'));
+    const mcpPkg = JSON.parse(readFileSync('mcp/package.json', 'utf-8'));
+    /*
+     * Derived, not listed: a hand-written file list rots, so both sides are computed from the rule,
+     * skill and agent directories (`documentation.md`).
+     */
+    const agentFiles = [
+      ...readdirSync('.claude/rules').filter((name) => name.endsWith('.md'))
+        .map((name) => join('.claude/rules', name)),
+      ...readdirSync('.claude/agents').filter((name) => name.endsWith('.md'))
+        .map((name) => join('.claude/agents', name)),
+      ...readdirSync('.claude/skills', { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .flatMap((entry) => {
+          const dir = join('.claude/skills', entry.name);
+          return readdirSync(dir, { recursive: true })
+            .filter((name) => String(name).endsWith('.md'))
+            .map((name) => join(dir, String(name)));
+        }),
+    ].sort();
+    assert.ok(
+      agentFiles.length >= 30,
+      `agent-file sweep found only ${agentFiles.length} files — an empty sweep would pass vacuously`,
+    );
+
+    const docs = [
+      'README.md',
+      'docs/DEVELOPMENT-CHECKS.md',
+      'mcp/README.md',
+      'cli/README.md',
+      'docs/benchmark/README.md',
+      'scripts/migrations/README.md',
+      ...agentFiles,
+    ]
+      .map((file) => readFileSync(file, 'utf-8'))
+      .join('\n');
+
+    assertPnpmScriptsExist(docs, pkg.scripts, { filteredScripts: { './mcp': mcpPkg.scripts } });
+    // A `pnpm ...` one script calls from another must hold the same integrity.
+    assertPnpmScriptsExist(Object.values(pkg.scripts).join('\n'), pkg.scripts);
+  });
+
+  /**
+   * Measures whether discovery **actually covers everything** — "the script string
+   * looks like a glob" and "that glob matches every file on disk" are different
+   * claims.
+   *
+   * Without this check, `test:mcp:unit` listing 21 files while silently omitting 6 of
+   * 27 would have passed (one of the omitted, `verify-script.test.mjs`, was actually
+   * failing, and no workflow ran MCP so nobody saw it).
+   */
+  it('keeps the docs-vault freshness check executable from source checkout', () => {
+    const help = runNodeScript(['scripts/docs-vault/build-docs-vault.mjs', '--help']);
+    assert.equal(help.status, 0);
+    assert.match(help.stdout, /Usage: node scripts\/docs-vault\/build-docs-vault\.mjs \[--check\]/);
+    assert.equal(help.stderr, '');
+
+    const check = runNodeScript(['scripts/docs-vault/build-docs-vault.mjs', '--check']);
+    assert.equal(check.status, 0, check.stderr);
+    assert.match(check.stdout, /\[docs-vault\] current · \d+ docs/);
+    assert.equal(check.stderr, '');
+  });
+
+  /** The regenerate-and-diff net itself must actually run from a source checkout. */
+  it('keeps the generated docs surface check executable from source checkout', () => {
+    const help = runNodeScript(['scripts/docs/build-docs-surface.mjs', '--help']);
+    assert.equal(help.status, 0);
+    assert.match(help.stdout, /Usage: node scripts\/docs\/build-docs-surface\.mjs \[--check\]/);
+    assert.equal(help.stderr, '');
+
+    const links = runNodeScript(['scripts/docs/check-doc-links.mjs', '--help']);
+    assert.equal(links.status, 0);
+    assert.match(links.stdout, /Usage: node scripts\/docs\/check-doc-links\.mjs \[--external\]/);
+    assert.equal(links.stderr, '');
+  });
+
+  it('keeps source-checkout MCP registration templates wired to the dogfood vault', () => {
+    for (const file of ['.mcp.json', '.mcp.json.example']) {
+      const config = JSON.parse(readFileSync(file, 'utf-8'));
+      const server = config.mcpServers?.['ontology-atlas'];
+
+      assert.ok(server, `${file} must register the ontology-atlas MCP server`);
+      assert.equal(server.command, 'node');
+      assert.deepEqual(server.args, ['./mcp/src/index.js']);
+      assert.equal(server.env?.OATLAS_VAULT, './docs/ontology');
+    }
+
+    const codexConfig = readFileSync('.codex/config.toml', 'utf-8');
+    assert.match(codexConfig, /\[mcp_servers\.ontology-atlas\]/);
+    assert.match(codexConfig, /command\s*=\s*"node"/);
+    assert.match(codexConfig, /args\s*=\s*\["\.\/mcp\/src\/index\.js"\]/);
+    assert.match(codexConfig, /\[mcp_servers\.ontology-atlas\.env\]/);
+    assert.match(codexConfig, /OATLAS_VAULT\s*=\s*"\.\/docs\/ontology"/);
+  });
+
+  /**
+   * Checks that the shortcuts the README advertises actually run. Help text is prose and is not
+   * pinned verbatim; a help line naming a missing shortcut is caught by `assertPnpmScriptsExist` via
+   * `pnpm test:dogfood:script-refs`.
+   */
+  it('keeps the root README mcp-verify shortcut executable from source checkout', () => {
+    const result = runNodeScript(['cli/src/index.mjs', 'mcp-verify', '--help']);
+
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /Usage:/);
+    assert.match(result.stdout, /ontology-atlas mcp-verify \[vault\] \[--timeout-ms N\]/);
+    assert.equal(result.stderr, '');
+  });
+
+  it('keeps the CLI entrypoint on natural exit so large stdout can flush', () => {
+    const source = readFileSync('cli/src/index.mjs', 'utf-8');
+
+    assert.doesNotMatch(source, /import\s*\{[^}]*\bexit\b[^}]*\}\s+from ['"]node:process['"]/);
+    assert.doesNotMatch(source, /\bexit\s*\(/);
+    assert.match(source, /process\.exitCode\s*=\s*await main\(\)/);
+  });
+
+  it('keeps the MCP npm test verify entrypoint on natural exit so large stdout can flush', () => {
+    const source = readFileSync('mcp/scripts/verify.mjs', 'utf-8');
+
+    assert.doesNotMatch(source, /import\s*\{[^}]*\bexit\b[^}]*\}\s+from ['"]node:process['"]/);
+    assert.doesNotMatch(source, /\bprocess\.exit\s*\(/);
+    assert.match(source, /process\.exitCode\s*=\s*await main\(\)/);
+  });
+
+  it('keeps the CLI MCP dependency aligned with the local MCP package version', () => {
+    const cliPkg = JSON.parse(readFileSync('cli/package.json', 'utf-8'));
+    const mcpPkg = JSON.parse(readFileSync('mcp/package.json', 'utf-8'));
+
+    assert.equal(cliPkg.dependencies?.['ontology-atlas-mcp'], `^${mcpPkg.version}`);
+  });
+
+  it('keeps CLI relation type validation aligned with MCP query filters', () => {
+    assert.deepEqual(CLI_RELATION_TYPE_VALUES, RELATION_TYPE_VALUES);
+  });
+
+  /**
+   * **An enum is exactly the values the code holds.** The expected string is built
+   * from the engine's array, so adding a value fails here unless the docs follow —
+   * this is the argument/enum-consistency kind, categorically different from a prose
+   * pin.
+   */
+  it('keeps every relation and maintenance enum value documented from the engine', () => {
+    const mcpReadme = readFileSync('mcp/README.md', 'utf-8');
+    const features = readFileSync('docs/features/mcp-server.md', 'utf-8');
+    const strictInputSection = mcpReadme.split('String-array options are strict too:')[1]?.split('Scalar string options')[0] ?? '';
+    const addRelationRow = mcpReadme.split('| `add_relation` |')[1]?.split('\n')[0] ?? '';
+    const addRelationsRow = mcpReadme.split('| `add_relations` |')[1]?.split('\n')[0] ?? '';
+    const addRelationFeature = features.split('4. **add_relation**')[1]?.split('\n').slice(0, 3).join('\n') ?? '';
+
+    assert.notEqual(strictInputSection, '', 'MCP README lost the strict string-array options section — move this anchor');
+    assert.notEqual(addRelationRow, '', 'MCP README lost the add_relation row — move this anchor');
+
+    for (const value of WRITE_RELATION_TYPE_VALUES) {
+      assert.match(addRelationFeature, new RegExp(`\`${value}\``), `FEATURES documents add_relation type ${value}`);
+      assert.match(addRelationRow, new RegExp(`\`${value}\``), `MCP README documents add_relation type ${value}`);
+      assert.match(addRelationsRow, new RegExp(`\`${value}\``), `MCP README documents add_relations type ${value}`);
+    }
+
+    // Each filter's engine enum values appear backticked inside that filter's own span of
+    // the strict-input section, so a value listed under the wrong filter fails; the
+    // sentences around the values are prose and are not pinned.
+    const fieldSpans = [
+      ['`maintenance_plan.phases`', MAINTENANCE_PHASE_VALUES],
+      ['`maintenance_plan.severities`', MAINTENANCE_SEVERITY_VALUES],
+      ['`maintenance_plan.kinds`', MAINTENANCE_KIND_VALUES],
+    ];
+    const starts = fieldSpans.map(([field]) => strictInputSection.indexOf(field));
+    for (const [index, [field, values]] of fieldSpans.entries()) {
+      assert.ok(starts[index] >= 0, `MCP README strict-input section must describe ${field}`);
+      assert.ok(values.length >= 1, `engine enum for ${field} must not be empty`);
+      const end = starts.filter((start) => start > starts[index]).sort((a, b) => a - b)[0] ?? strictInputSection.length;
+      const span = strictInputSection.slice(starts[index], end);
+      for (const value of values) {
+        assert.ok(span.includes(`\`${value}\``), `MCP README must list \`${value}\` under ${field}`);
+      }
+    }
+    assert.ok(RELATION_TYPE_VALUES.length >= 1, 'relation-type enum must not be empty');
+    for (const value of RELATION_TYPE_VALUES) {
+      assert.ok(strictInputSection.includes(`\`${value}\``), `MCP README strict-input section must name \`${value}\``);
+    }
+
+  });
+
+  /**
+   * The **scope summary strings of the tuned brief/diagnostic are computed by
+   * verify** — the README transcript must contain that computed result verbatim. It
+   * does not change as the vault grows, so it cannot rot.
+   */
+  /**
+   * **Counts on the public contract** — the tool inventory and the annotation census.
+   * These change only when a tool is registered or removed, and that change is
+   * deliberate, so docs and smoke tests should follow it.
+   */
+  it('keeps the tools/list annotation census on its published contract', () => {
+    assert.equal(
+      expectedToolsListAnnotationSummary(),
+      '40/40 titled; 24/24 read; 16/16 write; 9/9 destructive; 3/3 idempotent; 40/40 local-only',
+    );
+  });
+
+  /**
+   * `mcp/package.json`'s description is the source from which the launch-docs gate
+   * (`src/shared/lib/public-pages/launch-docs-current.test.ts`) derives the current tool count.
+   * That string is human-written, so **without tying it to the registry here** the
+   * whole derived gate silently passes with a stale number as its truth.
+   */
+  it('keeps the MCP package description counts anchored to the generated registry surface', () => {
+    const surface = generatedSurface();
+    const metadata = parseMcpToolMetadataFromDescription(
+      JSON.parse(readFileSync('mcp/package.json', 'utf-8')).description,
+    );
+
+    assert.ok(metadata, 'mcp/package.json description must state the current tool surface');
+    assert.equal(Number(metadata.toolCount), surface.mcp.toolCount);
+    assert.equal(Number(metadata.readCount), surface.mcp.readToolCount);
+    assert.equal(Number(metadata.writeCount), surface.mcp.writeToolCount);
+  });
+
+  /**
+   * Referential integrity of the vault README: it must not point at a node that is gone after
+   * regeneration; a machine can decide that.
+   */
+  it('keeps the self-ontology README naming nodes that exist', () => {
+    const readme = readFileSync('docs/ontology/README.md', 'utf-8');
+    const referenced = [...readme.matchAll(/`((?:domains|capabilities|elements)\/[a-z0-9-]+|[a-z0-9-]+\.md)`/g)].map(
+      (match) => match[1],
+    );
+
+    assert.ok(referenced.length >= 3, 'the vault README should point at real entry points');
+    for (const slug of new Set(referenced)) {
+      const file = slug.endsWith('.md') ? `docs/ontology/${slug}` : `docs/ontology/${slug}.md`;
+      assert.ok(existsSync(file), `docs/ontology/README.md points at a node that does not exist: ${slug}`);
+    }
+  });
+
+  it('keeps the embedded SERVER_VERSION in sync with mcp/package.json', () => {
+    const pkg = JSON.parse(readFileSync('mcp/package.json', 'utf-8'));
+    // The `Server` construction lives in `server/instance.mjs`, the file that must import the version
+    // instead of writing one in.
+    const source = readFileSync('mcp/src/server/instance.mjs', 'utf-8');
+
+    assert.equal(SERVER_VERSION, pkg.version);
+    assert.equal(isCoveredByFiles('src/server-version.mjs', pkg.files), true);
+    assert.equal(isCoveredByFiles('src/server/instance.mjs', pkg.files), true);
+    assert.match(source, /import \{ SERVER_VERSION \} from '\.\.\/server-version\.mjs'/);
+    assert.doesNotMatch(source, /version: '\d+\.\d+\.\d+'/);
+  });
+
+  it('keeps MCP npm test runnable from the lean published tarball', () => {
+    const pkg = JSON.parse(readFileSync('mcp/package.json', 'utf-8'));
+
+    assert.equal(pkg.scripts?.test, 'node --test src/parser.test.mjs');
+    assert.equal(isCoveredByFiles('src/parser.test.mjs', pkg.files), true);
+    assert.equal(isCoveredByFiles('scripts/verify.mjs', pkg.files), true);
+    assert.equal(isCoveredByFiles('scripts/json-rpc-lines.mjs', pkg.files), true);
+    assert.equal(isCoveredByFiles('src/suggestions.test.mjs', pkg.files), false);
+    assert.equal(isCoveredByFiles('src/verify-script.test.mjs', pkg.files), false);
+  });
+
+  it('keeps CLI npm test runnable from the published tarball', () => {
+    const pkg = JSON.parse(readFileSync('cli/package.json', 'utf-8'));
+    const cliLibTests = readdirSync('cli/src/lib', { recursive: true })
+      .filter((file) => file.endsWith('.test.mjs'))
+      .sort();
+
+    assert.equal(isCoveredByFiles('src/lib/cli-args.test.mjs', pkg.files), true);
+    assert.ok(cliLibTests.length > 0, 'CLI test script must have concrete lib test subjects');
+    for (const testFile of cliLibTests) {
+      assert.equal(existsSync(join('cli/src/lib', testFile)), true, `${testFile} must still exist`);
+      assert.equal(isCoveredByFiles(`src/lib/${testFile}`, pkg.files), true, `${testFile} must ship for CLI npm test`);
+    }
+    assert.equal(isCoveredByFiles('src/lib/import-analysis-results.mjs', pkg.files), true);
+    assert.equal(isCoveredByFiles('src/lib/import-analysis-results.test.mjs', pkg.files), true);
+    assert.equal(isCoveredByFiles('src/lib/repo-analysis-results.mjs', pkg.files), true);
+    assert.equal(isCoveredByFiles('src/lib/repo-analysis-results.test.mjs', pkg.files), true);
+    assert.equal(isCoveredByFiles('src/lib/cli-commands.test.mjs', pkg.files), true);
+    assert.equal(isCoveredByFiles('src/lib/mcp-call.test.mjs', pkg.files), true);
+    assert.equal(isCoveredByFiles('src/index.mjs', pkg.files), true);
+    assert.equal(isCoveredByFiles('src/commands/mcp-verify.mjs', pkg.files), true);
+    assert.equal(isCoveredByFiles('src/lib/cli-commands.mjs', pkg.files), true);
+    assert.equal(isCoveredByFiles('templates/vault/project.md', pkg.files), true);
+  });
+
+  it('parses package script file references', () => {
+    assert.deepEqual(parseScriptFileRefs('node --test src/a.test.mjs scripts/check.mjs'), [
+      'src/a.test.mjs',
+      'scripts/check.mjs',
+    ]);
+  });
+
+  it('ignores test scripts when deriving publish runtime entrypoints', () => {
+    assert.equal(isPublishRuntimeScript('start'), true);
+    assert.equal(isPublishRuntimeScript('verify'), true);
+    assert.equal(isPublishRuntimeScript('test'), false);
+    assert.equal(isPublishRuntimeScript('test:smoke'), false);
+
+    withPackage(
+      {
+        name: 'scripts',
+        main: 'src/index.mjs',
+        scripts: {
+          verify: 'node scripts/verify.mjs',
+          test: 'node src/integration.test.mjs',
+          'test:smoke': 'node src/parser.test.mjs',
+        },
+        files: ['src/index.mjs', 'scripts/verify.mjs'],
+      },
+      {
+        'src/index.mjs': 'export const ok = true;\n',
+        'scripts/verify.mjs': 'export const verify = true;\n',
+        'src/integration.test.mjs': 'throw new Error("not runtime");\n',
+        'src/parser.test.mjs': 'throw new Error("not runtime");\n',
+      },
+      (dir) => {
+        const entrypoints = packageEntrypoints(
+          {
+            main: 'src/index.mjs',
+            scripts: {
+              verify: 'node scripts/verify.mjs',
+              test: 'node src/integration.test.mjs',
+              'test:smoke': 'node src/parser.test.mjs',
+            },
+          },
+          dir,
+        ).map((entry) => entry.replace(`${dir}/`, ''));
+
+        assert.deepEqual(entrypoints.sort(), ['scripts/verify.mjs', 'src/index.mjs']);
+      },
+    );
+  });
+
+  it('parses static side-effect, re-export, multiline, and dynamic imports', () => {
+    const source = `
+import './side-effect.mjs';
+export { value as reexported } from './re-export.mjs';
+import {
+  value,
+} from './multi-line.mjs';
+const mod = await import('./dynamic.mjs');
+writeFileSync('fixture.mjs', "import './not-real.mjs';");
+`;
+
+    assert.deepEqual(importedSpecifiers(source).sort(), [
+      './side-effect.mjs',
+      './re-export.mjs',
+      './multi-line.mjs',
+      './dynamic.mjs',
+    ].sort());
+  });
+
+  it('parses CLI command registry runner entries as reachable command modules', () => {
+    const source = `
+function runner(moduleFile, exportName) {
+  return { modulePath: \`./commands/\${moduleFile}\`, moduleFile, exportName };
+}
+export const CLI_COMMAND_RUNNERS = Object.freeze({
+  list: runner('list.mjs', 'runList'),
+  'mcp-verify': runner("mcp-verify.mjs", 'runMcpVerify'),
+});
+`;
+
+    assert.deepEqual(importedSpecifiers(source).sort(), [
+      '../commands/list.mjs',
+      '../commands/mcp-verify.mjs',
+    ].sort());
+  });
+
+  it('matches files entries by exact file, directory, and glob', () => {
+    assert.equal(isCoveredByFiles('src/index.mjs', ['src/index.mjs']), true);
+    assert.equal(isCoveredByFiles('src/lib/a.mjs', ['src/lib']), true);
+    assert.equal(isCoveredByFiles('src/lib/a.test.mjs', ['src/lib/*.test.mjs']), true);
+    assert.equal(isCoveredByFiles('src/lib/a.test.mjs', ['src/*.test.mjs']), false);
+  });
+
+  it('allows only the parser smoke fixture in the MCP tarball', () => {
+    assert.doesNotThrow(() =>
+      checkMcpLeanTarballFiles(['src/index.js', 'src/parser.mjs', 'src/parser.test.mjs']),
+    );
+
+    assert.throws(
+      () => checkMcpLeanTarballFiles(['src/index.js', 'src/*.test.mjs']),
+      /must not use broad test globs/,
+    );
+
+    assert.throws(
+      () => checkMcpLeanTarballFiles(['src/index.js', 'src/integration.test.mjs']),
+      /only src\/parser\.test\.mjs may ship/,
+    );
+  });
+});
+
+describe('checkPackage', () => {
+  it('passes when reachable files and files entries match', () => {
+    withPackage(
+      {
+        name: 'ok',
+        main: 'src/index.mjs',
+        files: ['src/index.mjs', 'src/lib'],
+      },
+      {
+        'src/index.mjs': "import './lib/util.mjs';\n",
+        'src/lib/util.mjs': 'export const ok = true;\n',
+      },
+      (dir) => {
+        assert.doesNotThrow(() => checkPackage({ label: 'ok', dir }, { silent: true }));
+      },
+    );
+  });
+
+  it('fails when a reachable import is missing from files', () => {
+    withPackage(
+      {
+        name: 'missing-reachable',
+        main: 'src/index.mjs',
+        files: ['src/index.mjs'],
+      },
+      {
+        'src/index.mjs': "import './lib/util.mjs';\n",
+        'src/lib/util.mjs': 'export const ok = true;\n',
+      },
+      (dir) => {
+        assert.throws(
+          () => checkPackage({ label: 'missing-reachable', dir }, { silent: true }),
+          /src\/lib\/util\.mjs is reachable/,
+        );
+      },
+    );
+  });
+
+  it('fails when a files entry matches nothing', () => {
+    withPackage(
+      {
+        name: 'stale-entry',
+        main: 'src/index.mjs',
+        files: ['src/index.mjs', 'src/missing/*.mjs'],
+      },
+      {
+        'src/index.mjs': 'export const ok = true;\n',
+      },
+      (dir) => {
+        assert.throws(
+          () => checkPackage({ label: 'stale-entry', dir }, { silent: true }),
+          /entry does not match any package file: src\/missing\/\*\.mjs/,
+        );
+      },
+    );
+  });
+});

@@ -12,7 +12,7 @@
 #   - public/docs-vault/**
 #
 # What needs fixing is not the output but the **input** (`docs/**/*.md`) or the builder
-# (`scripts/build-docs-vault.mjs`). Thanks to the determinism contract, regenerated
+# (`scripts/docs-vault/build-docs-vault.mjs`). Thanks to the determinism contract, regenerated
 # results are identical bytes on any machine (`docs/DEVELOPMENT-CHECKS.md`).
 #
 # ⚠️ **Bash does not block this.** `pnpm docs-vault:build` itself and the conflict resolution convention
@@ -80,7 +80,7 @@ if [[ -n "$VERDICT" ]]; then
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "deny",
-    "permissionDecisionReason": "Generated-output guard: \`${VERDICT}\` is produced by \`pnpm docs-vault:build\`, so it is never hand-edited.\n\nEdit the **input** instead — \`docs/**/*.md\` for content, \`scripts/build-docs-vault.mjs\` for how it is generated — then regenerate with \`pnpm docs-vault:build\`.\n\nOn a merge conflict either side is acceptable (determinism contract):\n  git checkout --ours src/entities/docs-vault/data public/docs-vault && pnpm docs-vault:build\n\nBasis: AGENTS.md, section \"Verification, documentation, and Git\" — generated docs-vault output is created only by \`pnpm docs-vault:build\` and never hand-edited."
+    "permissionDecisionReason": "Generated-output guard: \`${VERDICT}\` is produced by \`pnpm docs-vault:build\`, so it is never hand-edited.\n\nEdit the **input** instead — \`docs/**/*.md\` for content, \`scripts/docs-vault/build-docs-vault.mjs\` for how it is generated — then regenerate with \`pnpm docs-vault:build\`.\n\nOn a merge conflict either side is acceptable (determinism contract):\n  git checkout --ours src/entities/docs-vault/data public/docs-vault && pnpm docs-vault:build\n\nBasis: AGENTS.md, section \"Verification, documentation, and Git\" — generated docs-vault output is created only by \`pnpm docs-vault:build\` and never hand-edited."
   }
 }
 JSON

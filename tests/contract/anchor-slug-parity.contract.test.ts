@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 
 import { describe, expect, it } from "vitest";
 
-import { headingAnchorSlug, stripFencedBlocks } from "../../scripts/lib/doc-links.mjs";
+import { headingAnchorSlug, stripFencedBlocks } from "../../scripts/lib/docs/doc-links.mjs";
 import { githubAnchorSlug } from "../../src/shared/lib/library/github-anchor-slug";
 
 /**

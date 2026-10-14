@@ -6,13 +6,13 @@ import { afterAll, describe, expect, it, vi } from "vitest";
 import {
   artifactNameForArch,
   stageReleaseAssets,
-} from "../../scripts/stage-macos-release-assets.mjs";
-import { stageWindowsReleaseAssets } from "../../scripts/stage-windows-release-assets.mjs";
+} from "../../scripts/download/stage-macos-release-assets.mjs";
+import { stageWindowsReleaseAssets } from "../../scripts/download/stage-windows-release-assets.mjs";
 import {
   buildManifest,
   findUpdaterArtifacts,
   resolveArchDir,
-} from "../../scripts/build-updater-manifest.mjs";
+} from "../../scripts/desktop-release/build-updater-manifest.mjs";
 
 /**
  * Locks the **path contract** for release assets.
@@ -137,7 +137,7 @@ describe("릴리스 자산 경로 계약", () => {
     const upload = step(buildJob, "Upload workflow artifact");
     expect(yamlValues(upload, "path")).toEqual(["release-upload"]);
     expect(yamlValues(upload, "name")).toEqual(["ontology-atlas-macos-${{ matrix.arch }}"]);
-    expect(buildJob).toContain("node scripts/stage-macos-release-assets.mjs");
+    expect(buildJob).toContain("node scripts/download/stage-macos-release-assets.mjs");
   });
 
   it("아티팩트 폴더 이름이 아치를 나른다", () => {

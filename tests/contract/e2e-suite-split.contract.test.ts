@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import playwrightConfig, { resolvePlaywrightWorkers } from '../../playwright.config';
-import { loadCheckRules } from '../../scripts/lib/focused-check-suggestions.mjs';
+import { loadCheckRules } from '../../scripts/lib/ci/focused-check-suggestions.mjs';
 import { POST_MERGE_SPECS } from '../e2e/post-merge-specs';
 
 /**
@@ -18,7 +18,7 @@ import { POST_MERGE_SPECS } from '../e2e/post-merge-specs';
 const ROOT = process.cwd();
 const E2E_DIR = join(ROOT, 'tests', 'e2e');
 const workflow = readFileSync(join(ROOT, '.github', 'workflows', 'e2e.yml'), 'utf8');
-const runner = readFileSync(join(ROOT, 'scripts', 'run-ci-lane.mjs'), 'utf8');
+const runner = readFileSync(join(ROOT, 'scripts', 'ci', 'run-ci-lane.mjs'), 'utf8');
 
 it('CI rejects a focused test before accepting a partial run', () => {
   const scratch = realpathSync(mkdtempSync(join(tmpdir(), 'atlas-focused-test-')));
@@ -191,7 +191,7 @@ describe('워크플로 분기가 살아 있다', () => {
   it('shard steps invoke the browser lane executor', () => {
     for (const block of suiteBlocks) {
       expect(block.text, 'workflow no longer calls the browser lane executor').toContain(
-        'scripts/run-ci-lane.mjs --lane=e2e',
+        'scripts/ci/run-ci-lane.mjs --lane=e2e',
       );
     }
   });

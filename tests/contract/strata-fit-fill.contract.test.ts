@@ -11,7 +11,7 @@ import {
 } from "@/widgets/ontology-map/model/dome-view/projection";
 import type { DomeInputNode } from "@/widgets/ontology-map/model/dome-view/types";
 import { computeDomeFitCameraTarget } from "@/widgets/ontology-map/ui/camera/topology-camera-math";
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * The real fit is run at four viewport sizes against the Strata silhouette the model builds, at every

@@ -26,7 +26,7 @@ describe('vault freshness reusable workflow security', () => {
     expect(WORKFLOW).toContain("VAULT_DIR: ${{ inputs.vault-dir || 'docs/ontology' }}");
     expect(runBodies(WORKFLOW).length).toBeGreaterThan(0);
     expect(runBodies(WORKFLOW).join('\n')).not.toContain('${{');
-    expect(WORKFLOW).toContain('node scripts/validate-vault.mjs "$VAULT_DIR"');
+    expect(WORKFLOW).toContain('node scripts/vault/validate-vault.mjs "$VAULT_DIR"');
     expect(WORKFLOW).toContain('--vault "$VAULT_DIR"');
   });
 

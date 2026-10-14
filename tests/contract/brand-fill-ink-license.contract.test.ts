@@ -3,8 +3,8 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { composite, contrastRatio, parseColor } from "../../scripts/lib/contrast.mjs";
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { composite, contrastRatio, parseColor } from "../../scripts/lib/design/contrast.mjs";
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * Blank out comments before scanning, keeping line numbers, so prose cannot trip the

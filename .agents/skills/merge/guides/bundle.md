@@ -83,7 +83,7 @@ of picking either side's number. After the last merge, read every file the plan
 listed as shared, even without a textual conflict.
 
 ```bash
-node scripts/classify-change.mjs --base=origin/main   # the CI plan; gates=true means also run pnpm lint
+node scripts/ci/classify-change.mjs --base=origin/main   # the CI plan; gates=true means also run pnpm lint
 pnpm checks:changed -- --run
 git push -u origin HEAD
 gh pr create --draft --title "<type>: <what the bundle does>" --body-file <file>

@@ -15,9 +15,9 @@ This document is not the place to create new ontology rules. It is an authoritat
 corpus and checks an oracle proposal built from the expected data. Its candidate
 projection omits definitions and competency answers; the runner explicitly sets
 the definition, citation-recall, and competency-coverage thresholds to zero.
-Read the separate metrics with `node scripts/evaluate-meaning-corpus.mjs --json`.
+Read the separate metrics with `node scripts/benchmark/evaluate-meaning-corpus.mjs --json`.
 A candidate PASS is not a completed construction or a semantic quality score.
-The owners are `scripts/evaluate-meaning-corpus.mjs` and
+The owners are `scripts/benchmark/evaluate-meaning-corpus.mjs` and
 `mcp/src/meaning-evaluation.mjs`; the oracle checks the evaluator contract, not
 an independent agent's construction ability.
 

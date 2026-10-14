@@ -1,7 +1,7 @@
 # PR checks are impact-planned before any dependency install. The exact required
 # status names stay stable; inactive lanes start, explain the skip, and finish in
 # seconds. A missing plan is RED. Scheduled/manual runs and planner changes run every
-# command registered in `scripts/classify-change.mjs`.
+# command registered in `scripts/ci/classify-change.mjs`.
 #
 # A pull request is opened as a **draft** and runs nothing. `pnpm pr:land` puts
 # it on a landing train built from today's main, and the train's pull request
@@ -73,7 +73,7 @@ jobs:
           # A merge group has no base branch ref, and its two SHAs are minted by
           # GitHub, so they are data rather than a string anyone can choose.
           MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
-        run: node scripts/classify-change.mjs --event="$EVENT_NAME" --base="${MERGE_GROUP_BASE_SHA:-origin/$BASE_REF}"
+        run: node scripts/ci/classify-change.mjs --event="$EVENT_NAME" --base="${MERGE_GROUP_BASE_SHA:-origin/$BASE_REF}"
 
   gates:
     name: Types · Lint · Docs
@@ -125,14 +125,14 @@ jobs:
         if: env.ACTIVE == 'true'
         env:
           BASE_REF: ${{ github.base_ref }}
-        run: node scripts/run-ci-lane.mjs --lane=gates --base="${PUSH_BEFORE:-origin/$BASE_REF}"
+        run: node scripts/ci/run-ci-lane.mjs --lane=gates --base="${PUSH_BEFORE:-origin/$BASE_REF}"
 
       - name: Check live catalogue freshness
         if: env.ACTIVE == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         run: >-
-          node scripts/run-with-retry.mjs
+          node scripts/ci/run-with-retry.mjs
           --attempts=3 --timeout-ms=30000 --label="mcp catalogue live check"
-          -- node scripts/build-mcp-catalogue.mjs --check-online
+          -- node scripts/registry-snapshots/build-mcp-catalogue.mjs --check-online
 
       - name: Skip unaffected gate setup
         if: env.ACTIVE != 'true' && needs.plan.result == 'success'
@@ -217,7 +217,7 @@ jobs:
         if: env.ACTIVE == 'true'
         env:
           BASE_REF: ${{ github.base_ref }}
-        run: node scripts/run-ci-lane.mjs --lane=unit --base="${PUSH_BEFORE:-origin/$BASE_REF}" --shard=${{ matrix.shard }}/3
+        run: node scripts/ci/run-ci-lane.mjs --lane=unit --base="${PUSH_BEFORE:-origin/$BASE_REF}" --shard=${{ matrix.shard }}/3
 
       - name: Skip unaffected unit setup
         if: env.ACTIVE != 'true' && needs.plan.result == 'success'
@@ -293,7 +293,7 @@ jobs:
         if: env.ACTIVE == 'true'
         env:
           BASE_REF: ${{ github.base_ref }}
-        run: node scripts/run-ci-lane.mjs --lane=perf --base="${PUSH_BEFORE:-origin/$BASE_REF}"
+        run: node scripts/ci/run-ci-lane.mjs --lane=perf --base="${PUSH_BEFORE:-origin/$BASE_REF}"
 
       - name: Skip unaffected performance setup
         if: env.ACTIVE != 'true' && needs.plan.result == 'success'
@@ -397,7 +397,7 @@ jobs:
 
       - name: Run affected MCP and CLI boundary evidence
         if: env.ACTIVE == 'true'
-        run: node scripts/run-ci-lane.mjs --lane=mcp
+        run: node scripts/ci/run-ci-lane.mjs --lane=mcp
 
       - name: Skip unaffected MCP setup
         if: env.ACTIVE != 'true' && needs.plan.result == 'success'
@@ -479,7 +479,7 @@ jobs:
       # These readers parse authored Markdown, which is what a CRLF checkout changes.
       # They need no dependency tree of their own, so they cost seconds.
       - name: Ledger readers on a native CRLF checkout
-        run: node --test scripts/lib/record-ledgers.test.mjs scripts/lib/changelog-entry-template.test.mjs scripts/decisions-find.test.mjs scripts/lib/po-pilot-records.test.mjs
+        run: node --test scripts/lib/records/record-ledgers.test.mjs scripts/lib/records/changelog-entry-template.test.mjs scripts/records/decisions-find.test.mjs scripts/lib/records/po-pilot-records.test.mjs
 
       - name: Compose the changelog and the decision ledger
         run: |

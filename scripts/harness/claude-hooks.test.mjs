@@ -1,0 +1,931 @@
+import assert from 'node:assert/strict';
+import { access, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { constants } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { describe, it } from 'node:test';
+
+const HOOK_CONFIGS = [
+  {
+    name: 'Claude Code',
+    publishHook: '.claude/hooks/block-npm-publish.sh',
+    settingsFile: '.claude/settings.json',
+    expectedCommands: [
+      '"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-generated-edit.sh"',
+      '"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-manual-landing.sh"',
+      '"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-npm-publish.sh"',
+      '"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-unsafe-git.sh"',
+      '"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/fast-sensor.sh"',
+      // Once: a matcher-less SessionStart also fires for the `compact` source,
+      // and PreCompact stdout never reaches the model.
+      '"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/inject-ontology-summary.sh"',
+      '"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/session-length.sh"',
+    ],
+    expectedPreToolMatchers: ['Bash', 'Edit|Write|MultiEdit|NotebookEdit'],
+  },
+  {
+    name: 'Codex',
+    publishHook: '.codex/hooks/block-npm-publish.sh',
+    settingsFile: '.codex/hooks.json',
+    expectedCommands: [
+      'bash .codex/hooks/block-generated-edit.sh',
+      // The landing guard, in all three shell matcher groups. Counted, not
+      // named once, so a missing group fails here.
+      'bash .codex/hooks/block-manual-landing.sh',
+      'bash .codex/hooks/block-manual-landing.sh',
+      'bash .codex/hooks/block-manual-landing.sh',
+      'bash .codex/hooks/block-npm-publish.sh',
+      'bash .codex/hooks/block-npm-publish.sh',
+      'bash .codex/hooks/block-npm-publish.sh',
+      'bash .codex/hooks/block-secret-read.sh',
+      'bash .codex/hooks/block-secret-read.sh',
+      'bash .codex/hooks/block-secret-read.sh',
+      'bash .codex/hooks/block-unsafe-git.sh',
+      'bash .codex/hooks/block-unsafe-git.sh',
+      'bash .codex/hooks/block-unsafe-git.sh',
+      'bash .codex/hooks/fast-sensor.sh',
+      // Once: Codex PreCompact/PostCompact output carries no model context.
+      'bash .codex/hooks/inject-ontology-summary.sh',
+    ],
+    expectedPreToolMatchers: [
+      'Bash',
+      'Edit|Write|MultiEdit|NotebookEdit|apply_patch|functions.apply_patch',
+      'exec_command',
+      'functions.exec_command',
+    ],
+  },
+];
+
+describe('agent hooks', () => {
+  it('keeps configured hook commands present and executable', async () => {
+    for (const config of HOOK_CONFIGS) {
+      const settings = JSON.parse(await readFile(config.settingsFile, 'utf8'));
+      const commands = configuredHookCommands(settings);
+
+      assert.deepEqual(commands.sort(), config.expectedCommands, config.name);
+      assert.deepEqual(
+        configuredPreToolMatchers(settings).sort(),
+        config.expectedPreToolMatchers,
+        `${config.name}: PreToolUse matcher coverage`,
+      );
+
+      for (const command of commands) {
+        await access(executablePathFromHookCommand(command), constants.X_OK);
+      }
+    }
+  });
+
+  it('blocks publish commands at shell command boundaries', () => {
+    for (const config of HOOK_CONFIGS) {
+      for (const command of [
+        'npm publish',
+        'cd mcp && npm publish',
+        'echo ok\nnpm publish',
+        'pnpm publish --access public',
+        'echo ok; yarn publish',
+        'npm pack',
+        { tool_name: 'functions.exec_command', tool_input: { cmd: 'pnpm publish --access public' } },
+        'pnpm --dir mcp publish',
+        'pnpm -C mcp publish',
+        'npm --prefix mcp publish',
+        'bun publish',
+        '(cd mcp; npm publish)',
+        'env NPM_CONFIG_TAG=next npm publish',
+        'NPM_TOKEN=x sudo -u root npm publish',
+        'npx -y npm@10 publish',
+        "bash -lc 'cd mcp && pnpm publish'",
+        'echo "$(npm publish)"',
+        "npm publish 'unbalanced",
+        'npm pu',
+        'npm pub',
+        'npm publ --access public',
+        'npm publi',
+        'npm publis',
+        'npm exec -- npm pub',
+        'pnpm exec npm pub',
+        'npm pa',
+        'npm pac',
+      ]) {
+        const payload =
+          typeof command === 'string'
+            ? { tool_name: 'Bash', tool_input: { command } }
+            : command;
+        const result = runPublishHook(config.publishHook, payload);
+        assert.equal(result.status, 0, `${config.name}: ${result.stderr}`);
+        assert.match(result.stdout, /"permissionDecision": "deny"/, `${config.name}: ${command}`);
+        assert.match(result.stdout, /npm publish guard/, `${config.name}: ${command}`);
+      }
+    }
+  });
+
+  it('allows read-only package commands and non-Bash tools', () => {
+    for (const config of HOOK_CONFIGS) {
+      for (const payload of [
+        { tool_name: 'Bash', tool_input: { command: 'npm pack --dry-run' } },
+        { tool_name: 'Bash', tool_input: { command: 'npm whoami && npm view ontology-atlas-mcp' } },
+        { tool_name: 'Bash', tool_input: { command: 'cat <<EOF\nnpm publish\nEOF' } },
+        { tool_name: 'Read', tool_input: { command: 'npm publish' } },
+        { tool_name: 'Bash', tool_input: { command: 'git commit -m "npm publish"' } },
+        { tool_name: 'Bash', tool_input: { command: 'echo npm publish && rg "pnpm publish" docs' } },
+        { tool_name: 'Bash', tool_input: { command: 'pnpm vitest run scripts/publish.test.mjs' } },
+        { tool_name: 'Bash', tool_input: { command: 'npm pa --dry-run && npm view publisher && npm run build' } },
+      ]) {
+        const result = runPublishHook(config.publishHook, payload);
+        assert.equal(result.status, 0, `${config.name}: ${result.stderr}`);
+        assert.equal(result.stdout, '', config.name);
+      }
+    }
+  });
+
+  /**
+   * Each command defeats a step of `pnpm pr:land`: shared lock, main merge, local lanes, single CI
+   * run.
+   */
+  const LANDING_HOOKS = [
+    { name: 'Claude Code', hook: '.claude/hooks/block-manual-landing.sh' },
+    { name: 'Codex', hook: '.codex/hooks/block-manual-landing.sh' },
+  ];
+
+  function runLandingHook(hookPath, payload) {
+    return spawnSync('bash', [hookPath], { input: JSON.stringify(payload), encoding: 'utf8' });
+  }
+
+  it('refuses landing a pull request by hand', () => {
+    for (const config of LANDING_HOOKS) {
+      for (const command of [
+        'gh pr merge 1',
+        'gh pr merge 1572 --squash --delete-branch',
+        'cd /repo && gh pr merge 12 --admin',
+        'echo ok\ngh pr merge 3',
+        'gh pr update-branch 1572',
+        'gh pr create --title x --body y',
+        'gh pr create --fill',
+        'pnpm pr:land 1 && gh pr merge 2',
+        'gh api -X PUT repos/o/r/pulls/12/merge -f merge_method=squash',
+        { tool_name: 'functions.exec_command', tool_input: { cmd: 'gh pr merge 3' } },
+        { tool_name: 'exec_command', tool_input: { cmd: 'gh pr create --title x' } },
+      ]) {
+        const payload =
+          typeof command === 'string' ? { tool_name: 'Bash', tool_input: { command } } : command;
+        const result = runLandingHook(config.hook, payload);
+        assert.equal(result.status, 0, `${config.name}: ${result.stderr}`);
+        assert.match(result.stdout, /"permissionDecision": "deny"/, `${config.name}: ${JSON.stringify(command)}`);
+        assert.match(result.stdout, /merge guard/, `${config.name}: ${JSON.stringify(command)}`);
+        // A refusal that does not name the replacement is a wall, not a gate.
+        assert.match(result.stdout, /pnpm pr:land/, `${config.name}: ${JSON.stringify(command)}`);
+      }
+    }
+  });
+
+  it('passes the lander, a draft pull request, and every read-only gh command', () => {
+    for (const config of LANDING_HOOKS) {
+      for (const payload of [
+        { tool_name: 'Bash', tool_input: { command: 'pnpm pr:land 1572' } },
+        { tool_name: 'Bash', tool_input: { command: 'pnpm pr:land 1572 --cleanup /tmp/wt' } },
+        { tool_name: 'Bash', tool_input: { command: 'pnpm run pr:land 1572' } },
+        { tool_name: 'Bash', tool_input: { command: 'pnpm pr:queue' } },
+        { tool_name: 'Bash', tool_input: { command: 'pnpm pr:ci 1572' } },
+        { tool_name: 'Bash', tool_input: { command: 'node scripts/landing/pr-land.mjs 1572' } },
+        { tool_name: 'Bash', tool_input: { command: 'gh pr create --draft --title x --body y' } },
+        { tool_name: 'Bash', tool_input: { command: 'gh pr create -d --fill' } },
+        { tool_name: 'Bash', tool_input: { command: 'gh pr view 1572 --json state' } },
+        { tool_name: 'Bash', tool_input: { command: 'gh pr checks 1572' } },
+        { tool_name: 'Bash', tool_input: { command: 'gh pr list --state open' } },
+        { tool_name: 'Bash', tool_input: { command: 'gh api repos/o/r/pulls/12' } },
+        // A pull request body may quote the very commands this guard refuses.
+        { tool_name: 'Bash', tool_input: { command: 'gh pr create --draft --body "$(cat <<EOF\nnever gh pr merge by hand\nEOF\n)"' } },
+        { tool_name: 'Read', tool_input: { command: 'gh pr merge 1' } },
+      ]) {
+        const result = runLandingHook(config.hook, payload);
+        assert.equal(result.status, 0, `${config.name}: ${result.stderr}`);
+        assert.equal(result.stdout, '', `${config.name}: ${JSON.stringify(payload.tool_input)}`);
+      }
+    }
+  });
+});
+
+describe('Git safety guard', () => {
+  const GUARDS = ['.claude/hooks/block-unsafe-git.sh', '.codex/hooks/block-unsafe-git.sh'];
+  const run = (hook, command) =>
+    spawnSync('bash', [hook], { input: JSON.stringify({ tool_name: 'Bash', tool_input: { command } }), encoding: 'utf8' });
+
+  it('refuses bypass, force push, a push to main, and reset --hard in every spelling', () => {
+    for (const hook of GUARDS) {
+      for (const command of [
+        'git commit --no-verify -m x',
+        'git commit -n -m x',
+        'git push --force origin feat/x',
+        'git push --force-with-lease',
+        'git -C ../wt push -f origin feat/x',
+        'git push origin main',
+        'git push origin HEAD:main',
+        'git push origin feat/x:refs/heads/main',
+        'git reset --hard origin/main',
+        'git -c core.x=1 reset --hard',
+        'pnpm lint && git push --force',
+      ]) {
+        const result = run(hook, command);
+        assert.equal(result.status, 0, `${hook}: ${result.stderr}`);
+        assert.match(result.stdout, /"permissionDecision": "deny"/, `${hook}: ${command}`);
+      }
+    }
+  });
+
+  it('passes ordinary pushes, branches named after main, and read-only git', () => {
+    for (const hook of GUARDS) {
+      for (const command of [
+        'git push -u origin chore/harness',
+        'git push origin main-5',
+        'git -C /a/b status',
+        'git reset --soft HEAD~1',
+        'git log --oneline main',
+        'git commit -m "$(cat <<EOF\nnever --no-verify\nEOF\n)"',
+      ]) {
+        const result = run(hook, command);
+        assert.equal(result.status, 0, `${hook}: ${result.stderr}`);
+        assert.equal(result.stdout, '', `${hook}: ${command}`);
+      }
+    }
+  });
+});
+
+// The SessionStart inject hook pushes a vault summary into the agent context.
+// These verify that the mirrors for both agent runtimes (Claude Code, Codex) keep
+// the same output convention, and that both honour the contract "silent when
+// healthy, speak at the first moment when not".
+const INJECT_HOOKS = [
+  '.claude/hooks/inject-ontology-summary.sh',
+  '.codex/hooks/inject-ontology-summary.sh',
+];
+
+// Every node needs a `uid:`; without it the graph fails to compile and the hook stays silent, so
+// fixtures would compare an empty string to an empty string.
+const ALPHA_UID = '9b0f5a2c-7d31-4e58-b0c6-2f1a4e7d3c88';
+const BETA_UID = '4c7e1d90-6a2b-4f13-9d5e-8b0c3a6f2e41';
+
+// Clean vault — alpha depends on beta and beta exists → 0 unresolved.
+const CLEAN_VAULT = {
+  'alpha.md': `---\nkind: capability\nuid: ${ALPHA_UID}\nslug: alpha\ntitle: Alpha\ndependencies:\n  - beta\n---\n# Alpha\n`,
+  'beta.md': `---\nkind: capability\nuid: ${BETA_UID}\nslug: beta\ntitle: Beta\n---\n# Beta\n`,
+};
+
+// Vault with drift — alpha references a ghost slug that does not exist → 1
+// unresolved edge + 1 compile issue. The agent must notice this at session start.
+const DRIFT_VAULT = {
+  'alpha.md': `---\nkind: capability\nuid: ${ALPHA_UID}\nslug: alpha\ntitle: Alpha\ndependencies:\n  - beta\n  - ghost-nonexistent\n---\n# Alpha\n`,
+  'beta.md': `---\nkind: capability\nuid: ${BETA_UID}\nslug: beta\ntitle: Beta\n---\n# Beta\n`,
+};
+
+// **A vault that does not even compile** — the state anyone actually produces by
+// adding a node by hand (no `uid:`). If the hook is silent here, that session
+// starts with no ontology context at all and no idea why it is quiet.
+const BROKEN_VAULT = {
+  'alpha.md': '---\nkind: capability\nslug: alpha\ntitle: Alpha\n---\n# Alpha\n',
+};
+
+// python3 builds the summary body, so silence is correct where it is absent —
+// skip.
+const hasPython = spawnSync('python3', ['--version']).status === 0;
+
+async function writeVault(files) {
+  const dir = await mkdtemp(join(tmpdir(), 'ontology-atlas-hook-'));
+  for (const [name, content] of Object.entries(files)) {
+    await writeFile(join(dir, name), content);
+  }
+  return dir;
+}
+
+function runInjectHook(hookPath, vaultDir) {
+  return spawnSync('bash', [hookPath], {
+    env: { ...process.env, CLAUDE_PROJECT_DIR: '', OATLAS_VAULT: vaultDir },
+    encoding: 'utf8',
+  });
+}
+
+describe('inject-ontology-summary health awareness', () => {
+  it('injects census but stays silent on health when the vault is clean', async (t) => {
+    if (!hasPython) {
+      t.skip('python3 unavailable — hook is silent by design');
+      return;
+    }
+    const dir = await writeVault(CLEAN_VAULT);
+    try {
+      for (const hook of INJECT_HOOKS) {
+        const result = runInjectHook(hook, dir);
+        assert.equal(result.status, 0, `${hook}: ${result.stderr}`);
+        assert.match(result.stdout, /Ontology vault: 2 nodes/, `${hook}: census present`);
+        assert.ok(result.stdout.length < 500, `${hook}: session context stays compact`);
+        assert.doesNotMatch(
+          result.stdout,
+          /Needs attention/,
+          `${hook}: clean vault must not emit a health warning (no noise)`,
+        );
+      }
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('surfaces actionable drift (unresolved edges / compile issues) at session start', async (t) => {
+    if (!hasPython) {
+      t.skip('python3 unavailable — hook is silent by design');
+      return;
+    }
+    const dir = await writeVault(DRIFT_VAULT);
+    try {
+      for (const hook of INJECT_HOOKS) {
+        const result = runInjectHook(hook, dir);
+        assert.equal(result.status, 0, `${hook}: ${result.stderr}`);
+        assert.match(result.stdout, /Needs attention/, `${hook}: drift surfaced`);
+        assert.match(result.stdout, /unresolved edge/, `${hook}: names the unresolved edge`);
+        assert.match(
+          result.stdout,
+          /(?:ontology-atlas|index\.mjs) health/,
+          `${hook}: points to a fix command`,
+        );
+      }
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  // The hook's silence convention had a hole: the old code was
+  // `2>/dev/null … || exit 0`, which flattened **could not invoke the tool** and
+  // **found the vault but could not read it** into the same silence. The latter is
+  // the moment a session most needs to hear about — and adding one node by hand puts
+  // you in exactly that state.
+  it('speaks up: a vault that is found but will not compile is never silent', async (t) => {
+    if (!hasPython) {
+      t.skip('python3 unavailable — hook is silent by design');
+      return;
+    }
+    const dir = await writeVault(BROKEN_VAULT);
+    try {
+      for (const hook of INJECT_HOOKS) {
+        const result = runInjectHook(hook, dir);
+        // It never blocks the session — a SessionStart hook always exits 0.
+        assert.equal(result.status, 0, `${hook}: ${result.stderr}`);
+        assert.match(result.stdout, /will not compile/, `${hook}: does not stay silent`);
+        assert.match(result.stdout, /missing-uid/, `${hook}: names what is broken`);
+        assert.match(result.stdout, /(?:ontology-atlas|index\.mjs) health/, `${hook}: names the command that fixes it`);
+        assert.ok(result.stdout.length < 700, `${hook}: session context stays short`);
+      }
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  // The silence convention itself must hold — adding no noise to a repository with
+  // no vault is this hook's original contract. This measures that the check above
+  // did not widen it.
+  it('stays silent, as before, when there is no vault at all', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'ontology-atlas-hook-empty-'));
+    try {
+      for (const hook of INJECT_HOOKS) {
+        const result = runInjectHook(hook, dir);
+        assert.equal(result.status, 0, `${hook}: ${result.stderr}`);
+        assert.equal(result.stdout, '', `${hook}: says nothing in an empty folder`);
+      }
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+function configuredHookCommands(settings) {
+  const commands = [];
+  for (const event of Object.values(settings.hooks ?? {})) {
+    for (const group of event) {
+      for (const hook of group.hooks ?? []) {
+        if (hook.type === 'command') commands.push(hook.command);
+      }
+    }
+  }
+  return commands;
+}
+
+function configuredPreToolMatchers(settings) {
+  return (settings.hooks?.PreToolUse ?? []).map((group) => group.matcher ?? '');
+}
+
+/**
+ * Extracts the file that will run from **the command string exactly as
+ * configured**.
+ *
+ * The old implementation resolved only `bash <path>` and returned everything else
+ * verbatim. So once the Claude-side command became `"${CLAUDE_PROJECT_DIR:-.}/…"`
+ * it was checking a path that did not exist. An unrecognised shape now **throws
+ * rather than passing quietly** — going green without knowing what is being
+ * measured is exactly what this file did for two weeks.
+ */
+function executablePathFromHookCommand(command) {
+  let path = command.trim().replace(/^bash\s+/, '');
+  if (path.startsWith('"') && path.endsWith('"')) path = path.slice(1, -1);
+  // Hooks run from the project root, so the default `.` is the repository root.
+  path = path.replace('${CLAUDE_PROJECT_DIR:-.}/', '');
+  if (!/^\.(claude|codex)\/hooks\/[\w-]+\.sh$/.test(path)) {
+    throw new Error(`hook command shape not recognised: ${command}`);
+  }
+  return path;
+}
+
+function runPublishHook(hookPath, payload) {
+  return spawnSync('bash', [hookPath], {
+    input: JSON.stringify(payload),
+    encoding: 'utf8',
+  });
+}
+
+// The commit-message language gate. Its first draft used `grep -P`, which BSD
+// grep does not have, so on macOS `sh` resolved `/usr/bin/grep`, the `|| true`
+// swallowed the error and every Korean subject passed. It looked alive from an
+// interactive shell with GNU grep on PATH. These cases therefore drive the real
+// hook through `sh`, the way Git invokes it, rather than importing the module
+// and trusting that the wiring around it works.
+describe('commit-msg language gate', () => {
+  const runHook = async (message) => {
+    const dir = await mkdtemp(join(tmpdir(), 'commit-msg-'));
+    try {
+      const file = join(dir, 'COMMIT_EDITMSG');
+      await writeFile(file, message, 'utf8');
+      const result = spawnSync('sh', ['.githooks/commit-msg', file], {
+        cwd: process.cwd(),
+        encoding: 'utf8',
+      });
+      return { status: result.status, stderr: result.stderr ?? '' };
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  };
+
+  it('is wired as an executable hook where Git looks for it', async () => {
+    await access('.githooks/commit-msg', constants.X_OK);
+    await access('.githooks/commit-msg-language.mjs', constants.R_OK);
+    // Comments are allowed to name the trap; executable lines are not.
+    const code = (await readFile('.githooks/commit-msg', 'utf8'))
+      .split('\n')
+      .filter((line) => !/^\s*#/.test(line))
+      .join('\n');
+    assert.ok(
+      !/grep\s+-[a-zA-Z]*P/.test(code),
+      'commit-msg must not use grep -P: BSD grep has no PCRE and the gate fails open',
+    );
+  });
+
+  it('accepts an English subject and body', async () => {
+    const { status } = await runHook('fix: restore the alpha token\n\nThe ramp move dropped it.\n');
+    assert.equal(status, 0);
+  });
+
+  it('rejects a non-English subject and names the offending line', async () => {
+    const { status, stderr } = await runHook('feat: 관문 모션 셋\n');
+    assert.equal(status, 1, 'a Korean subject must not commit');
+    assert.match(stderr, /must be English/);
+    assert.match(stderr, /rules\/git\.md/);
+  });
+
+  it('rejects a non-English body under an English subject', async () => {
+    const { status } = await runHook('fix: restore tokens\n\n토큰이 빠졌다.\n');
+    assert.equal(status, 1);
+  });
+
+  it('catches kana and Han, not only Hangul', async () => {
+    assert.equal((await runHook('chore: テスト\n')).status, 1);
+    assert.equal((await runHook('docs: 测试\n')).status, 1);
+  });
+
+  it('catches jamo-only Korean and halfwidth kana too (bug sweep 2026-09-01)', async () => {
+    // Compatibility jamo (laughter shorthand, U+3131) and halfwidth forms sat
+    // outside the class while the markdown HANGUL inventory counts them.
+    assert.equal((await runHook(`fix: ${'\u3131\u3131'} cleanup\n`)).status, 1);
+    assert.equal((await runHook(`chore: ${'\uFF76\uFF80\uFF76\uFF85'} pass\n`)).status, 1);
+  });
+
+  it('refuses a subject with no conventional prefix and quotes the allowed list', async () => {
+    for (const subject of ['wip', 'wip2', 'WIP: the library work', 'just fixing things']) {
+      const { status, stderr } = await runHook(`${subject}\n`);
+      assert.equal(status, 1, `"${subject}" must not commit`);
+      assert.match(stderr, /conventional prefix/);
+      // A blocked agent reads only the refusal, so the whole list has to be in it.
+      for (const prefix of ['feat:', 'fix:', 'docs:', 'refactor:', 'chore:', 'test:', 'style:', 'perf:', 'design:']) {
+        assert.match(stderr, new RegExp(prefix.replace(':', ':')), `${prefix} missing from the refusal`);
+      }
+      assert.match(stderr, /rules\/git\.md/);
+      assert.match(stderr, /"wip" is not a prefix/);
+    }
+  });
+
+  it('accepts every prefix the rule lists, with and without a scope', async () => {
+    for (const prefix of ['feat', 'fix', 'docs', 'refactor', 'chore', 'test', 'style', 'perf', 'design']) {
+      assert.equal((await runHook(`${prefix}: make the thing clearer\n`)).status, 0, prefix);
+      assert.equal((await runHook(`${prefix}(map): make the thing clearer\n`)).status, 0, `${prefix}(map)`);
+    }
+  });
+
+  it('refuses a near-miss shape rather than guessing what was meant', async () => {
+    // No space after the colon, a capitalised prefix, and a prefix that is not on
+    // the list. Each one looks conventional and is not.
+    assert.equal((await runHook('feat:no space\n')).status, 1);
+    assert.equal((await runHook('Feat: capitalised\n')).status, 1);
+    assert.equal((await runHook('build: not on the list\n')).status, 1);
+    assert.equal((await runHook('feat(): empty scope\n')).status, 1);
+  });
+
+  it('refuses none of the last 200 real subjects — the gate matches the practice', async () => {
+    const { execFileSync } = await import('node:child_process');
+    const { checkCommitMessage } = await import('../../.githooks/commit-msg-language.mjs');
+    const subjects = execFileSync('git', ['log', '--format=%s', '-200'], { encoding: 'utf8' })
+      .split('\n')
+      .filter(Boolean);
+    assert.ok(subjects.length > 100, 'no history read — this test would be idling');
+    const refused = subjects.filter((subject) => !checkCommitMessage(`${subject}\n`).ok);
+    assert.deepEqual(
+      refused,
+      [],
+      `the gate refuses subjects this repository actually writes:\n${refused.join('\n')}`,
+    );
+  });
+
+  it('leaves generated subjects alone — merge, revert, fixup', async () => {
+    assert.equal((await runHook("Merge branch 'x' into main\n")).status, 0);
+    assert.equal((await runHook('Revert "feat: 관문 모션 셋"\n')).status, 0);
+    assert.equal((await runHook('fixup! feat: 관문 모션 셋\n')).status, 0);
+  });
+
+  it('ignores Git comment lines, which never ship', async () => {
+    const { status } = await runHook('# Please enter the commit message\n# 한국어 안내문\n');
+    assert.equal(status, 0);
+  });
+});
+
+// The Codex-side secret read guard. It exists because the Claude side has a
+// committable mechanism and Codex does not: deny-read filesystem policies are
+// documented only for the user-level `~/.codex/config.toml`, and `.codexignore`
+// was asked for repeatedly and never shipped. A project can still refuse the
+// command, which is what this does.
+//
+// Its two failure modes pull against each other. Too narrow and a secret walks
+// out through `head` or a pipeline; too broad and it refuses `cat .env.example`,
+// which is tracked precisely so people can read it. Both directions are asserted.
+describe('Codex secret read guard', () => {
+  const HOOK = '.codex/hooks/block-secret-read.sh';
+  const root = process.cwd();
+
+  const fire = (command) => {
+    const result = spawnSync('bash', [HOOK], {
+      cwd: root,
+      input: JSON.stringify({ tool_name: 'Bash', tool_input: { command } }),
+      encoding: 'utf8',
+      env: { ...process.env, ATLAS_HOOK_ROOT: root },
+    });
+    return (result.stdout ?? '').trim();
+  };
+  const blocks = (command) => fire(command) !== '';
+
+  it('is executable where .codex/hooks.json points', async () => {
+    await access(HOOK, constants.X_OK);
+  });
+
+  it('refuses a direct read of every name .gitignore treats as a secret', async () => {
+    const names = (await readFile('.gitignore', 'utf8'))
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => /^\.env(\.[A-Za-z0-9._-]+)?$/.test(line));
+    assert.ok(names.length >= 3, '.gitignore lists no .env names — this sweep would pass vacuously');
+    for (const name of names) {
+      assert.ok(blocks(`cat ${name}`), `cat ${name} must be refused`);
+    }
+  });
+
+  it('follows the secret through pipelines, chains and command substitution', () => {
+    for (const command of [
+      'pnpm build && cat .env',
+      'echo hi; sed -n 1p .env',
+      'xxd .env | head',
+      'echo $(cat .env)',
+      'grep KEY .env.prod',
+      'cat config/.env',
+    ]) {
+      assert.ok(blocks(command), `${command} must be refused`);
+    }
+  });
+
+  it('leaves the tracked placeholder and ordinary work alone', () => {
+    for (const command of [
+      'cat .env.example',
+      'cp .env.example .env.local',
+      'cat README.md',
+      'pnpm test',
+      'git commit -m "document .env handling"',
+      'rg SECRET .',
+    ]) {
+      assert.equal(blocks(command), false, `${command} must not be refused`);
+    }
+  });
+
+  it('treats a heredoc body as data, not as a command', () => {
+    assert.equal(blocks("cat <<'EOF'\ncat .env\nEOF"), false);
+  });
+
+  const KEY_SAMPLES = {
+    'Read(**/*.pem)': 'cat certs/server.pem',
+    'Read(**/*.p8)': 'cat ~/Downloads/AuthKey_ABC123.p8',
+    'Read(**/*.p12)': 'base64 < build/developer-id.p12',
+    'Read(**/*.key)': 'head -1 tauri-updater.key',
+    'Read(**/id_rsa)': 'cat deploy/id_rsa',
+    'Read(**/id_ed25519)': 'cat id_ed25519',
+    'Read(**/id_ecdsa*)': 'cat keys/id_ecdsa',
+    'Read(~/.ssh/**)': 'cat ~/.ssh/config',
+    'Read(~/.ontology-atlas-signing/**)': 'cat ~/.ontology-atlas-signing/notes.txt',
+    'Read(~/.config/gh/**)': 'cat ~/.config/gh/hosts.yml',
+    'Read(~/.npmrc)': 'cat ~/.npmrc',
+    'Read(~/.netrc)': 'cat $HOME/.netrc',
+    'Read(~/.aws/**)': 'cat /Users/someone/.aws/credentials',
+  };
+
+  it('refuses every key and credential file the Claude deny list names', async () => {
+    const deny = JSON.parse(await readFile('.claude/settings.json', 'utf8')).permissions.deny;
+    const keyRules = deny.filter((rule) => !/^Read\(\.env/.test(rule));
+    assert.ok(keyRules.length >= 10, 'the Claude deny list names no key files');
+    assert.deepEqual(keyRules.filter((rule) => !(rule in KEY_SAMPLES)), [], 'a Claude deny rule has no Codex sample');
+    for (const rule of keyRules) assert.ok(blocks(KEY_SAMPLES[rule]), `${KEY_SAMPLES[rule]} must be refused (${rule})`);
+    for (const command of ['cat src/keyboard.ts', 'ls ~/.ssh', 'cat docs/DESKTOP-MACOS.md']) {
+      assert.equal(blocks(command), false, `${command} must not be refused`);
+    }
+  });
+
+  it('names the file, the rule, and the readable alternative when it refuses', () => {
+    const parsed = JSON.parse(fire('cat .env'));
+    assert.equal(parsed.hookSpecificOutput.permissionDecision, 'deny');
+    const reason = parsed.hookSpecificOutput.permissionDecisionReason;
+    assert.match(reason, /\.env/);
+    assert.match(reason, /local-first\.md/);
+    assert.match(reason, /\.env\.example/);
+  });
+});
+
+// The fixture's stand-in for the markdown-language gate always fails, exercising the Markdown
+// branch without this repository's docs. The eslint branch runs against the real repository once.
+async function sensorFixture() {
+  const { mkdir } = await import('node:fs/promises');
+  const dir = await mkdtemp(join(tmpdir(), 'fast-sensor-'));
+  await mkdir(join(dir, 'scripts/quality/markdown-language'), { recursive: true });
+  await writeFile(
+    join(dir, 'scripts/quality/markdown-language/check.mjs'),
+    'console.error("planted language finding"); process.exit(1);\n',
+  );
+  await mkdir(join(dir, 'docs'), { recursive: true });
+  return dir;
+}
+
+describe('fast-sensor lane', () => {
+  const SENSOR = '.claude/hooks/fast-sensor.sh';
+
+  const fireHook = (hook, payload, projectDir) =>
+    spawnSync('bash', [hook], {
+      input: JSON.stringify(payload),
+      encoding: 'utf8',
+      env: { ...process.env, CLAUDE_PROJECT_DIR: projectDir },
+    });
+
+  const editPayload = (file) => ({ tool_name: 'Edit', tool_input: { file_path: file } });
+
+  it('hands a Markdown gate finding back as additional context', async () => {
+    const dir = await sensorFixture();
+    try {
+      const doc = join(dir, 'docs', 'note.md');
+      await writeFile(doc, 'A note.\n');
+      const result = fireHook(SENSOR, editPayload(doc), dir);
+      assert.equal(result.status, 0, result.stderr);
+      assert.match(result.stdout, /additionalContext/);
+      assert.match(result.stdout, /planted language finding/);
+      assert.match(result.stdout, /docs\/note\.md/);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('stays silent for a clean real source file, and never blocks', () => {
+    const result = fireHook(SENSOR, editPayload(join(process.cwd(), 'src/shared/lib/cn.ts')), process.cwd());
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout, '');
+  });
+
+  it('leaves a file outside the repository alone', async () => {
+    const dir = await sensorFixture();
+    const elsewhere = await mkdtemp(join(tmpdir(), 'sensor-elsewhere-'));
+    try {
+      const doc = join(elsewhere, 'note.md');
+      await writeFile(doc, 'A note that is not ours.\n');
+      const result = fireHook(SENSOR, editPayload(doc), dir);
+      assert.equal(result.status, 0, result.stderr);
+      assert.equal(result.stdout, '', 'a scratch file outside the root must not be judged');
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+      await rm(elsewhere, { recursive: true, force: true });
+    }
+  });
+});
+
+// Codex sends an edit as `apply_patch` with a patch envelope in `tool_input.command` and no
+// `file_path` key; these cases pin that payload.
+describe('Codex apply_patch payload parity', () => {
+  const codexEdit = (path) => ({
+    hook_event_name: 'PreToolUse',
+    tool_name: 'apply_patch',
+    session_id: 'codex-parity',
+    tool_input: {
+      command: `*** Begin Patch\n*** Update File: ${path}\n@@\n-old\n+new\n*** End Patch`,
+    },
+  });
+
+  const fire = (hook, payload, projectDir = process.cwd()) =>
+    spawnSync('bash', [hook], {
+      input: JSON.stringify(payload),
+      encoding: 'utf8',
+      env: { ...process.env, ATLAS_HOOK_ROOT: projectDir, CLAUDE_PROJECT_DIR: projectDir },
+    });
+
+  it('refuses a generated-output file named inside a patch envelope', () => {
+    for (const path of [
+      'public/docs-vault/manifest.json',
+      `${process.cwd()}/src/entities/docs-vault/data/content.json`,
+    ]) {
+      const result = fire('.codex/hooks/block-generated-edit.sh', codexEdit(path));
+      assert.equal(result.status, 0, result.stderr);
+      assert.match(result.stdout, /"permissionDecision": "deny"/, path);
+    }
+  });
+
+  it('leaves an ordinary file in a patch envelope alone', () => {
+    const result = fire('.codex/hooks/block-generated-edit.sh', codexEdit('src/app/page.tsx'));
+    assert.equal(result.stdout, '');
+  });
+
+  it('the Codex sensor reads a patch envelope, including a symlinked root', async () => {
+    const dir = await sensorFixture();
+    try {
+      const { realpath } = await import('node:fs/promises');
+      await writeFile(join(dir, 'docs', 'probe.md'), 'A probe.\n');
+      // macOS reports /private/tmp for a /tmp root; the sensor must still judge
+      // the file as repository-relative rather than silently finding nothing.
+      const reported = join(await realpath(dir), 'docs', 'probe.md');
+      const result = fire(
+        '.codex/hooks/fast-sensor.sh',
+        { ...codexEdit(reported), hook_event_name: 'PostToolUse' },
+        dir,
+      );
+      assert.equal(result.status, 0, result.stderr);
+      assert.match(result.stdout, /planted language finding/);
+      assert.match(result.stdout, /docs\/probe\.md/);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+// Execute the printed repair command with no globally installed Atlas CLI.
+// Spaces and shell metacharacters must reach the CLI as one unchanged path.
+describe('inject-ontology-summary CLI resolution', () => {
+  it('runs the checkout CLI before any ontology-atlas found on PATH, from any folder of the checkout', async (t) => {
+    if (!hasPython) {
+      t.skip('python3 unavailable — hook is silent by design');
+      return;
+    }
+    const root = await mkdtemp(join(tmpdir(), 'atlas-hook-cli-order-'));
+    const checkout = join(root, 'checkout');
+    const nested = join(checkout, 'docs', 'notes');
+    const bin = join(root, 'bin');
+    const marker = join(root, 'path-cli-ran');
+    const census = (nodes) => JSON.stringify({ byKind: { capability: nodes }, graph: { nodes, unresolvedEdges: 0 } });
+    const run = (hook, cwd, projectDir) => spawnSync(join(bin, 'bash'), [resolve(hook)], {
+      cwd,
+      encoding: 'utf8',
+      env: { ...process.env, PATH: bin, CLAUDE_PROJECT_DIR: projectDir, OATLAS_VAULT: join(checkout, 'vault') },
+    });
+    try {
+      await mkdir(join(checkout, 'cli', 'src'), { recursive: true });
+      await mkdir(join(checkout, 'vault'));
+      await mkdir(nested, { recursive: true });
+      await mkdir(bin);
+      for (const command of ['bash', 'cat', 'sed', 'grep', 'head', 'mktemp', 'rm', 'python3', 'git']) {
+        const found = spawnSync('which', [command], { encoding: 'utf8' });
+        assert.equal(found.status, 0, `fixture requires ${command}`);
+        await symlink(found.stdout.trim(), join(bin, command));
+      }
+      assert.equal(spawnSync('git', ['init', '-q', checkout]).status, 0, 'fixture requires git init');
+      await symlink(process.execPath, join(bin, 'node'));
+      await writeFile(join(checkout, 'cli', 'src', 'index.mjs'), `console.log(${JSON.stringify(census(2))});\n`);
+      await writeFile(join(bin, 'ontology-atlas'), `#!/bin/sh\n/usr/bin/touch '${marker}'\necho '${census(9)}'\n`, { mode: 0o755 });
+      const [claudeHook] = INJECT_HOOKS;
+      const outsideAnyWorkTree = root;
+      const sessions = [
+        ...INJECT_HOOKS.flatMap((hook) => [[hook, checkout, ''], [hook, nested, '']]),
+        [claudeHook, outsideAnyWorkTree, checkout],
+      ];
+      for (const [hook, cwd, projectDir] of sessions) {
+        const result = run(hook, cwd, projectDir);
+        assert.equal(result.status, 0, result.stderr);
+        assert.match(result.stdout, /Ontology vault: 2 nodes/, `${hook} from ${cwd}: ${result.stdout}`);
+        await assert.rejects(access(marker), `${hook} from ${cwd} ran the ontology-atlas found on PATH`);
+      }
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('inject-ontology-summary executable recovery', () => {
+  for (const scenario of ['broken', 'drift', 'missing-current', 'missing-legacy']) {
+    it(`runs the suggested recovery for ${scenario} in a source checkout`, async () => {
+      const root = await mkdtemp(join(tmpdir(), 'atlas-hook-recovery-'));
+      const checkout = join(root, "checkout with 'quote $dollar;");
+      const vault = join(checkout, 'vault with spaces');
+      const bin = join(root, 'bin');
+      try {
+        await mkdir(join(checkout, 'cli', 'src'), { recursive: true });
+        await mkdir(join(checkout, 'mcp', 'node_modules'), { recursive: true });
+        await mkdir(vault);
+        await mkdir(bin);
+        await writeFile(join(checkout, 'mcp', 'package.json'), '{}');
+        for (const command of ['bash', 'cat', 'sed', 'grep', 'head', 'mktemp', 'rm', 'python3']) {
+          const found = spawnSync('which', [command], { encoding: 'utf8' });
+          assert.equal(found.status, 0, `fixture requires ${command}`);
+          await symlink(found.stdout.trim(), join(bin, command));
+        }
+        await symlink(process.execPath, join(bin, 'node'));
+        await writeFile(join(bin, 'pnpm'), '#!/usr/bin/env node\n' +
+          'require("fs").writeFileSync(process.env.INSTALL_LOG, JSON.stringify(process.argv.slice(2)));',
+          { mode: 0o755 });
+        await writeFile(join(checkout, 'cli', 'src', 'index.mjs'), `
+          if (process.argv[2] === 'health') {
+            console.log(JSON.stringify(process.argv.slice(2)));
+          } else if (process.env.SCENARIO === 'drift') {
+            console.log(JSON.stringify({ byKind: { capability: 1 }, graph: { nodes: 1, unresolvedEdges: 1 } }));
+          } else {
+            console.error(process.env.SCENARIO === 'missing-current'
+              ? 'Source-checkout MCP dependencies are missing (@modelcontextprotocol/core).'
+              : process.env.SCENARIO === 'missing-legacy' ? 'ERR_MODULE_NOT_FOUND' : 'missing-uid');
+            process.exit(1);
+          }
+        `);
+        for (const hook of INJECT_HOOKS) {
+          const installLog = join(root, 'install.json');
+          await rm(installLog, { force: true });
+          const env = { ...process.env, PATH: bin, CLAUDE_PROJECT_DIR: '', OATLAS_VAULT: vault,
+            SCENARIO: scenario, INSTALL_LOG: installLog };
+          const result = spawnSync(join(bin, 'bash'), [resolve(hook)], {
+            cwd: checkout, env, encoding: 'utf8',
+          });
+          assert.equal(result.status, 0, result.stderr);
+          const command = result.stdout.match(/`([^`]+)`/u)?.[1];
+          assert.ok(command, `${hook}: no recovery command: ${result.stdout}`);
+          const repair = spawnSync(join(bin, 'bash'), ['-c', command], {
+            cwd: checkout, env, encoding: 'utf8',
+          });
+          assert.equal(repair.status, 0, `${hook}: ${repair.stderr}`);
+          assert.deepEqual(JSON.parse(repair.stdout), ['health', vault]);
+          if (scenario.startsWith('missing')) {
+            assert.deepEqual(JSON.parse(await readFile(installLog, 'utf8')),
+              ['--dir', 'mcp', 'install', '--frozen-lockfile']);
+          } else {
+            await assert.rejects(access(installLog));
+          }
+        }
+      } finally {
+        await rm(root, { recursive: true, force: true });
+      }
+    });
+  }
+});
+
+describe('session length notice', () => {
+  const runNotice = async (responses, dir) => {
+    const transcript = join(dir, 'session.jsonl');
+    const lines = [];
+    for (let i = 0; i < responses; i += 1) {
+      lines.push(JSON.stringify({ type: 'assistant', timestamp: new Date().toISOString(), message: { id: `msg_${i}` } }));
+      lines.push(JSON.stringify({ type: 'assistant', message: { id: `msg_${i}` } }));
+    }
+    await writeFile(transcript, `${lines.join('\n')}\n`, 'utf8');
+    return spawnSync('bash', ['.claude/hooks/session-length.sh'], {
+      input: JSON.stringify({ transcript_path: transcript, session_id: 'notice' }),
+      encoding: 'utf8',
+      env: { ...process.env, TMPDIR: dir },
+    });
+  };
+
+  it('tells the owner once a session passes the turn budget, counting each response once', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'session-length-'));
+    try {
+      assert.equal((await runNotice(299, dir)).stdout, '');
+      const first = await runNotice(300, dir);
+      assert.match(JSON.parse(first.stdout).systemMessage, /300 turns .* start a fresh session with \/clear/);
+      assert.equal((await runNotice(301, dir)).stdout, '');
+      assert.match(JSON.parse((await runNotice(450, dir)).stdout).systemMessage, /450 turns/);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+});

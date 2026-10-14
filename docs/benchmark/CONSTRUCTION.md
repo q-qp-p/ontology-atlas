@@ -66,7 +66,7 @@ For every comparison:
 2. Check `connection_info` roots before the build. Record time from first tool
    call to last write separately when the trace supplies it; gross wall time
    includes session setup and final synthesis. Reconstruct the app prompts with
-   `scripts/lib/construction-prompts.mjs`, which reads current TypeScript
+   `scripts/lib/benchmark/construction-prompts.mjs`, which reads current TypeScript
    declarations and shared language helpers, rather than copying prose.
 3. Use fresh vaults and the same model, prompt, source and approval conditions for
    full/profile comparisons. Report complete tool-list wire bytes separately

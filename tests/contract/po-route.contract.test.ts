@@ -1,6 +1,6 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { readPoPilotSource } from '../../scripts/lib/po-pilot-records.mjs';
+import { readPoPilotSource } from '../../scripts/lib/records/po-pilot-records.mjs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -15,13 +15,13 @@ import {
   PO_RISK_ROUTES,
   PO_SOLO_FIELDS,
   routePoDecision,
-} from '../../scripts/lib/po-risk-router.mjs';
+} from '../../scripts/lib/records/po-risk-router.mjs';
 import {
   evaluatePoPilot,
   parsePoPilot,
   pilotCheckFailures,
-} from '../../scripts/lib/po-pilot.mjs';
-import { parsePoRouteArgs } from '../../scripts/po-risk-router.mjs';
+} from '../../scripts/lib/records/po-pilot.mjs';
+import { parsePoRouteArgs } from '../../scripts/records/po-risk-router.mjs';
 
 /**
  * The PO gate derives its route from inspectable change signals, not a builder-declared risk.
@@ -32,8 +32,8 @@ const ROOT = process.cwd();
 const PO_OS = 'docs/PRODUCT-OWNER-OPERATING-SYSTEM.md';
 const PILOT = 'docs/PO-PILOT.md';
 const PASS_WORKFLOW = '.agents/skills/product-check/workflow.md';
-const CLI = 'scripts/po-risk-router.mjs';
-const PILOT_CLI = 'scripts/po-pilot.mjs';
+const CLI = 'scripts/records/po-risk-router.mjs';
+const PILOT_CLI = 'scripts/records/po-pilot.mjs';
 
 const RISK_NAMES = ['meaning', 'positioning', 'scope'] as const;
 type BoundaryState = 'unchanged' | 'affected' | 'unknown';

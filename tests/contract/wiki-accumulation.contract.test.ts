@@ -4,7 +4,7 @@ import { buildWikiRetrievalIndex, type VaultDoc } from '@/entities/docs-vault';
 import { createCompileExecutor } from '@/features/vault-agent/model/compile/compile-executor';
 import { parseFrontmatter } from '@/shared/lib/vault-document/parse-frontmatter';
 
-import { evaluateAccumulation } from '../../scripts/lib/wiki-accumulation-eval.mjs';
+import { evaluateAccumulation } from '../../scripts/lib/benchmark/wiki-accumulation-eval.mjs';
 import { accumulationCases, distractors, negativeRetrieval } from '../fixtures/wiki-accumulation-cases.mjs';
 
 function indexFor(fixture: typeof accumulationCases[number]) {

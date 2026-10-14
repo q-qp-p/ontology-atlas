@@ -100,7 +100,7 @@ for name in secrets:
         sys.exit(0)
 
 # The key material and credential stores Claude's permissions.deny names;
-# scripts/claude-hooks.test.mjs holds the two lists to each other.
+# scripts/harness/claude-hooks.test.mjs holds the two lists to each other.
 home = r"(?:~|\$HOME|\$\{HOME\}|/Users/[^/\s'\"]+|/home/[^/\s'\"]+)"
 KEY_FILES = (
     r"[^\s'\";|&)]*\.(?:p8|p12|key|pem)",

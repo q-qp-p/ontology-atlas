@@ -1,5 +1,5 @@
 /**
- * Colour-gate exemption (`ALLOWLIST` in `scripts/check-no-raw-color.mjs`): `rgba(236,236,240,...)`
+ * Colour-gate exemption (`ALLOWLIST` in `scripts/design/check-no-raw-color.mjs`): `rgba(236,236,240,...)`
  * feeds `ctx.fillStyle`, which cannot resolve `var(--...)`, and alpha is per star per frame.
  * Do not add colours here. Magnitude ranking is computed upstream and passed as `isBrightStar`.
  */

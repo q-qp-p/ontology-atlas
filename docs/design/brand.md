@@ -127,7 +127,7 @@ stay 64px and 16px. Unzoomed loading surfaces and portals keep their native size
 
 The companion game and related record screens are retired at the owner's request.
 Game scenery and the combined game sprite strip are no longer packaged or generated.
-The owner-selected traveler source art and `scripts/build-traveler-sprites.mjs`
+The owner-selected traveler source art and `scripts/brand/build-traveler-sprites.mjs`
 remain because they generate the shared identity, tray, waiting, read and completion
 artwork. Existing personal/game save bytes remain untouched.
 
@@ -163,11 +163,11 @@ inside that smoothly masked platform shape.
 ## Build Pipeline
 
 ```bash
-node scripts/build-traveler-sprites.mjs
-node scripts/build-brand-assets.mjs
-node scripts/build-brand-raster.mjs
+node scripts/brand/build-traveler-sprites.mjs
+node scripts/brand/build-brand-assets.mjs
+node scripts/brand/build-brand-raster.mjs
 # Open the printed loopback URL once so the browser canvas bakes the PNG family.
-node scripts/install-brand-icons.mjs
+node scripts/brand/install-brand-icons.mjs
 ```
 
 `build-brand-assets.mjs` validates dimensions and alpha for the three masters and

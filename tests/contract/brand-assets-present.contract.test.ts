@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { MASCOT_MOTION_ROWS } from '../../scripts/build-brand-assets.mjs';
+import { MASCOT_MOTION_ROWS } from '../../scripts/brand/build-brand-assets.mjs';
 
 const ROOT = join(import.meta.dirname, '../..');
 const readText = (path: string) => readFileSync(join(ROOT, path), 'utf8');
@@ -96,7 +96,7 @@ describe('pixel mascot brand outputs', () => {
   });
 
   it('every committed Tauri PNG is owned by the installation plan', () => {
-    const plan = readText('scripts/install-brand-icons.mjs');
+    const plan = readText('scripts/brand/install-brand-icons.mjs');
     const orphans = pngFiles('src-tauri/icons').filter((path) => !plan.includes(`'${path}'`));
     expect(orphans, 'an unplanned platform icon will keep the retired brand').toEqual([]);
   });

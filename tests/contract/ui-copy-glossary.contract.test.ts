@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { column } from "../../scripts/lib/locale-vocabulary.mjs";
+import { column } from "../../scripts/lib/i18n/locale-vocabulary.mjs";
 
 /**
  * Keeps code-style phrasing out of on-screen text (`messages/*.json`); the canonical source is

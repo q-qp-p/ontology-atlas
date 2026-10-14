@@ -16,7 +16,7 @@ export type SurfaceHref =
   | '/git';
 
 /**
- * A capture of a real destination (`scripts/capture-gateway-screens.mjs`), since a view may not
+ * A capture of a real destination (`scripts/download/capture-gateway-screens.mjs`), since a view may not
  * import another view. The caption and door belong to `ScreensStage`.
  */
 export function SurfaceCapture({

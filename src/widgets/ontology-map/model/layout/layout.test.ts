@@ -410,5 +410,5 @@ describe("computeConcentricLayout grid and brute force agree", () => {
   });
 
   // No wall-clock guard: it flakes under CPU contention. The byte-identity test pins the
-  // algorithm, and the scripts/perf-graph bench measures absolute cost.
+  // algorithm, and the scripts/perf/perf-graph bench measures absolute cost.
 });

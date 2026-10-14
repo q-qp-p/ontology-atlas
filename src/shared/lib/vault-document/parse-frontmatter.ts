@@ -5,7 +5,7 @@
 //   key: { x: 1, y: 2 }                 (inline object)
 //   key:\n  - item1\n  - item2          (block list)
 //   key:\n  child: 1\n  other: 2        (block object)
-// Same rules as scripts/build-docs-vault.mjs, but TS/browser compatible.
+// Same rules as scripts/docs-vault/build-docs-vault.mjs, but TS/browser compatible.
 
 export interface ParsedFrontmatter {
   frontmatter: Record<string, unknown>;

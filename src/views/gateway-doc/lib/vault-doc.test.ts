@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readLedgerSource } from '../../../../scripts/lib/record-ledgers.mjs';
+import { readLedgerSource } from '../../../../scripts/lib/records/record-ledgers.mjs';
 import {
   extractEntries,
   separateCategoryLines,

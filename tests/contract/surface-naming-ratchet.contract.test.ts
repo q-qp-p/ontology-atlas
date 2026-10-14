@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { column, concept } from '../../scripts/lib/locale-vocabulary.mjs';
+import { column, concept } from '../../scripts/lib/i18n/locale-vocabulary.mjs';
 import { judgeRatchet } from './lib/ratchet-base';
 
 /**

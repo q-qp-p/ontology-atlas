@@ -58,7 +58,7 @@ describe('CI 준비 스텝은 무한정 기다리지 않는다', () => {
   });
 
   it.each(playwrightInstalls)('상한과 재시도를 거쳐 돈다: %s', (block) => {
-    expect(block, '`run-with-retry.mjs` 를 거치지 않는다').toContain('scripts/run-with-retry.mjs');
+    expect(block, '`run-with-retry.mjs` 를 거치지 않는다').toContain('scripts/ci/run-with-retry.mjs');
     expect(block, '`--timeout-ms=` 가 없다 — 상한 없는 대기가 돌아왔다').toMatch(/--timeout-ms=\d+/);
     expect(block, '`--attempts=` 가 없다').toMatch(/--attempts=\d+/);
   });

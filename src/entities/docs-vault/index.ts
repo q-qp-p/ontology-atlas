@@ -6,7 +6,7 @@ export type {
   VaultTreeNode,
 } from './model/types';
 export { default as vaultManifest } from './data/manifest.json';
-// The storefront sample, built by `scripts/build-docs-vault.mjs` from `samples/storefront/`.
+// The storefront sample, built by `scripts/docs-vault/build-docs-vault.mjs` from `samples/storefront/`.
 export {
   resolveStaticVaultSource,
   type StaticVaultSource,

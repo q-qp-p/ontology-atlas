@@ -2,7 +2,7 @@
 //
 // One real node of this repository's own vault, the one the download page's conduction figure
 // casts. Re-run the generator when the node changes; `pnpm gateway:specimen:check` fails the
-// build when this file and the vault disagree. Rationale: `scripts/generate-evidence-specimen.mjs`.
+// build when this file and the vault disagree. Rationale: `scripts/download/generate-evidence-specimen.mjs`.
 
 interface EvidenceSpecimenName {
   readonly en: string;

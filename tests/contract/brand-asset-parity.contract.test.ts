@@ -15,8 +15,8 @@ import {
   readMascotMasters,
   readMascotMotionRows,
   readMascotTrayTemplates,
-} from '../../scripts/build-brand-assets.mjs';
-import { ICON_RASTER_PLAN } from '../../scripts/build-brand-raster.mjs';
+} from '../../scripts/brand/build-brand-assets.mjs';
+import { ICON_RASTER_PLAN } from '../../scripts/brand/build-brand-raster.mjs';
 
 const DETAILS: BrandMarkDetail[] = ['full', 'compact', 'micro'];
 

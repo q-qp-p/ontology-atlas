@@ -1,0 +1,1076 @@
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import {
+  chmodSync,
+  lstatSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import test from "node:test";
+
+import { inspectCodexRunContract } from "../lib/desktop/codex-run-contract.mjs";
+import { extractCommentTokens } from "../quality/source-language/inventory.mjs";
+
+// The release gates compare a tag against package.json/Tauri/Cargo, so the
+// fixtures have to follow the repo version instead of freezing one.
+const APP_VERSION = JSON.parse(readFileSync("package.json", "utf8")).version;
+const APP_TAG = `v${APP_VERSION}`;
+const APP_TAG_PATTERN = APP_TAG.replace(/\./g, "\\.");
+const STRUCTURALLY_VALID_P8 = Buffer.from(
+  "-----BEGIN PRIVATE KEY-----\nprivate-key-material\n-----END PRIVATE KEY-----\n",
+).toString("base64");
+const ENVIRONMENT_SECRET_NAMES = [
+  "APPLE_API_KEY_P8_BASE64",
+  "APPLE_API_KEY_ID",
+  "APPLE_API_ISSUER_ID",
+];
+const REPOSITORY_SECRET_NAMES = [
+  "APPLE_CERTIFICATE_P12_BASE64",
+  "APPLE_CERTIFICATE_PASSWORD",
+  "TAURI_SIGNING_PRIVATE_KEY",
+  "TAURI_SIGNING_PRIVATE_KEY_PASSWORD",
+];
+
+test("desktop readiness check proves Tauri macOS shell prerequisites", () => {
+  const result = spawnSync(
+    process.execPath,
+    ["scripts/desktop/check-desktop-readiness.mjs"],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+    },
+  );
+
+  // The release workflow may be changing in another worktree while this suite
+  // runs. This test proves the readiness checker can name each durable
+  // protected-release marker; the checker itself stays red until the live
+  // workflow supplies every marker.
+  assert.notEqual(result.signal, "SIGTERM", result.stderr);
+  const readinessOutput = `${result.stdout}\n${result.stderr}`;
+  assert.match(result.stdout, /macOS desktop Tauri-shell readiness/);
+  assert.match(result.stdout, /✓ Next\.js uses static export output/);
+  assert.match(result.stdout, /✓ Next\.js image optimization is disabled/);
+  assert.match(result.stdout, /✓ Next\.js emits trailing-slash routes/);
+  assert.match(result.stdout, /✓ build script refreshes docs-vault and composes message catalogues before next build/);
+  assert.match(
+    result.stdout,
+    /✓ TypeScript excludes Tauri target artifacts from Next\.js type checks/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop package, Tauri, and Rust crate versions stay aligned for release tags/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ Tauri Rust package builds a ontology-atlas executable, not an ontology-atlas app binary/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ root package dependencies stay Firebase SDK and Firebase CLI free for the local-only app/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ CLI\/MCP setup gate executes fallbacks while keeping advisory readiness in JSON/,
+  );
+  assert.match(result.stdout, /✓ desktop runtime doctor is available/);
+  assert.match(result.stdout, /✓ desktop packaged-route smoke is available/);
+  assert.match(
+    result.stdout,
+    /✓ desktop performance gate keeps static asset hard limits, report-only artifact totals, and explicit runtime\/MCP evidence boundaries/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop app launch verifier requires packaged WebView content, optional Accessibility text, and a single-run lock after \.app builds/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ Codex Run action builds without updater signing, launches, and verifies the freshly built macOS app bundle/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ Codex Run action syncs an existing Applications copy before Computer Use dogfood/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop local deploy command builds without release updater signing, installs, and verifies Relief health from \/Applications with default best-effort visual and WebView evidence/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop app launch verifier writes Add Concept composer blocking proof and saved\/unavailable screenshot handoff into WebView evidence for agents/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop install smoke proves the copied DMG app and its installed MCP sidecar both run/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop native vault bridge tests build the sidecar, then cover WebView handle shim, agent config validation, and Rust path guard/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop runtime split tests cover local intent, first-run routing, and hosted download routing/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop checker tests cover the GitHub release operator, source, run-watch, checksum filename, and completion gates/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop checker tests bound loopback-heavy Node test concurrency to 4/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop native vault bridge rejects symlink escapes without outside-vault side effects/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ Tauri capability grants only reviewed permissions to the main local workbench window/,
+  );
+  assert.match(result.stdout, /✓ desktop DMG verifier is available after packaging and checks the checksum filename/);
+  assert.match(
+    result.stdout,
+    /✓ desktop DMG packager puts the Ontology Atlas app bundle into ontology-atlas release assets/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop install verifier checks the checksum filename, copies the DMG app, and launch-smokes the installed copy/,
+  );
+  assert.match(result.stdout, /✓ desktop release DMG verifier requires signing and notarization/);
+  assert.match(
+    result.stdout,
+    /✓ desktop release DMG verifier treats notarization as requiring strict app signing/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop release DMG verifier runs Gatekeeper assessment for the app and DMG/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop public download verifier is available after release publishing/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ hosted website verifier sources expected download copy from the message catalog and requires the trust line plus both release-state CTAs/,
+  );
+  // The Firebase Hosting deploy preflight and fallback workflow checks went away in
+  // #617 (Firebase removed entirely, GitHub Pages as the single host). The hosting
+  // deployment contract is now covered by the hosted website verifier just above and
+  // the Pages workflow check below.
+  assert.match(
+    result.stdout,
+    /✓ GitHub Pages workflow builds the custom-domain root export, deploys the sole hosted download site on push\/release, and verifies the hosted download route/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop download verifier re-downloads and hashes the required macOS and Windows installers/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop local release preflight validates shipped vault data, builds the MCP sidecar before bridge tests, and proves app, DMG, and install artifacts without source dogfood state/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop release artifact command signs the app, packages, signs the DMG container, notarizes, and verifies the direct-download DMG/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ the hosted download page does not route into the browser workbench, and \/docs's own local-source tab stays desktop-only/,
+  );
+  assert.match(
+    result.stdout,
+    // Check the marker, not the sentence, so better copy is not blocked by the gate
+    // (`.claude/rules/documentation.md`).
+  /✓ .*(?:demotion|degrad).*(?:FSA|File System Access)/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ root README links to the configured download and release destinations/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ root entry derives the loaded-vault map, desktop first run, the launch chooser, and hosted gateway from runtime state/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ the topology empty state routes hosted users to the app download while preserving desktop vault picking/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ hosted download page states per-platform installability from the generated release state and keeps release-pipeline status internal/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ mobile bottom navigation hides only on the standalone download page, keeping global nav on the root map/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ macOS release workflow uses Node 24 action majors and Corepack pnpm without pnpm\/action-setup/,
+  );
+  assert.match(readinessOutput, /protected release trigger accepts only a dispatched tag input and names that tag in the run|release-macos\.yml must have only workflow_dispatch/);
+  assert.match(readinessOutput, /unprivileged release admission binds a protected branch dispatch to its trusted workflow commit|admit-release must be unprivileged/);
+  assert.match(readinessOutput, /macOS and Windows signing builds consume the admitted commit from release-signing|build-macos and build-windows must need admit-release/);
+  assert.match(readinessOutput, /staging and publication use the admitted commit and requested release tag|stage-macos and publish-macos must need admit-release/);
+  assert.match(readinessOutput, /Windows builds its installer with no signing secret in the job|build-windows must run desktop:build:windows and reference no secret/);
+  assert.match(result.stdout, /✓ desktop release secret gate blocks unsigned releases and malformed PKCS#12 or App Store Connect \.p8 credentials/);
+  assert.match(readinessOutput, /desktop release workflow and preflight route signing setup through the release-signing environment|release-macos\.yml must be dispatchable \(workflow_dispatch\) and sign under the release-signing environment/);
+  assert.match(
+    result.stdout,
+    /✓ desktop release slot gate blocks stale same-tag GitHub Release assets before upload/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop release tag gate receives the dispatched release tag before signing/,
+  );
+  assert.match(readinessOutput, /desktop GitHub release readiness gate checks the protected workflow and release-signing secret scope before dispatch|must check the protected workflow, branch-only release-signing environment/);
+  assert.match(
+    result.stdout,
+    /✓ desktop release run watcher dispatches the protected ref and watches its workflow_dispatch run/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop release status gate audits version alignment, PR readiness, release workflow availability, tag slots, Developer ID direct-download secrets, public release state, and download assets in JSON blocker snapshots and markdown operator checklists, with no Firebase Hosting dependency/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop goal audit requires PR and tag evidence before chaining local preflight with public release and hosted download blockers while writing default JSON and markdown evidence/,
+  );
+  assert.match(result.stdout, /✓ desktop signing script deeply signs the release app with hardened runtime and strict verification/);
+  assert.match(result.stdout, /✓ desktop notarization script is available for release builds/);
+  assert.match(result.stdout, /✓ Tauri CLI alias is available through pnpm tauri/);
+  assert.match(result.stdout, /✓ desktop dev script launches the Tauri shell/);
+  assert.match(
+    result.stdout,
+    /✓ desktop app-only build compiles the bundled MCP server and cleans stale macOS app bundles before Tauri rebuilds/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop local deploy command builds without release updater signing, installs, and verifies Relief health from \/Applications with default best-effort visual and WebView evidence/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop local build ad-hoc signs macOS \.app before packaging without updater credentials/,
+  );
+  assert.match(result.stdout, /✓ Tauri CLI dependency is installed/);
+  assert.match(result.stdout, /✓ Tauri JavaScript API dependency is installed/);
+  assert.match(result.stdout, /✓ Tauri scaffold exists/);
+  assert.match(result.stdout, /✓ Tauri loads the Next\.js static export from out\//);
+  assert.match(result.stdout, /✓ Tauri bundle target includes macOS \.app/);
+  assert.match(
+    result.stdout,
+    /✓ Tauri bundle config wires the Ontology Atlas app icons into \.app builds/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ Tauri presents Ontology Atlas with a Ontology Atlas bundle id, app bundle, executable, and DMG basename/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ macOS Info\.plist explains selected vault-folder access for protected locations/,
+  );
+  /*
+   * ★ `own-origin route payloads` is load-bearing. Without `'self'` in `connect-src` the App
+   * Router cannot read the arriving route out of the bundle and every rail press in the
+   * installed app becomes a full document load (inspection 122, B1/R1 — the measurement is in
+   * `scripts/lib/desktop/desktop-csp.mjs`).
+   */
+  assert.match(
+    result.stdout,
+    /✓ Tauri CSP is enabled for local app assets, images, styles, own-origin route payloads, and IPC only/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ Tauri native vault commands and browser handle shim are wired, including file and directory removal/,
+  );
+  assert.match(result.stdout, /✓ Tauri vault bridge uses the supported JavaScript invoke API/);
+  assert.match(
+    result.stdout,
+    /✓ desktop root entry renders the first-run surface for first launch and stale restored vaults without rendering marketing/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop docs intent shows a vault setup welcome before opening the native picker/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop zero-ontology workspace surfaces the ontology starter and opens the exact README in Document context after creation/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop ontology starter copies path-aware CLI and JSON agent gates/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop agent setup panel copies path-aware setup packets, CLI runbooks, and JSON gates/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop agent setup surface derives the absolute Tauri vault path and is actually mounted by the MCP destination/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ desktop workspace settings expose recent vault recall, absolute vault path copy\/reveal, stale-path cleanup, and vault-local agent config validation/,
+  );
+  assert.match(
+    result.stdout,
+    /✓ Tauri Rust entrypoint, default capability files, app icons, and release packagers exist/,
+  );
+});
+
+test("desktop release helper scripts expose credential-aware help", () => {
+  const sign = spawnSync(process.execPath, ["scripts/desktop/sign-macos-app.mjs", "--help"], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+  });
+  const notarize = spawnSync(process.execPath, ["scripts/desktop-release/notarize-macos-dmg.mjs", "--help"], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+  });
+  const releaseSecrets = spawnSync(
+    process.execPath,
+    ["scripts/desktop-release/check-macos-release-secrets.mjs", "--help"],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+    },
+  );
+  const verifyDmg = spawnSync(process.execPath, ["scripts/verify-macos/verify-macos-dmg.mjs", "--help"], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+  });
+  const verifyApp = spawnSync(
+    process.execPath,
+    ["scripts/verify-macos/verify-macos-app-launch.mjs", "--help"],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+    },
+  );
+  const verifyInstall = spawnSync(
+    process.execPath,
+    ["scripts/verify-macos/verify-macos-install-smoke.mjs", "--help"],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+    },
+  );
+  const verifyDownload = spawnSync(
+    process.execPath,
+    ["scripts/download/check-macos-download-release.mjs", "--help"],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+    },
+  );
+  const releaseGithub = spawnSync(
+    process.execPath,
+    ["scripts/desktop-release/check-macos-release-github.mjs", "--help"],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+    },
+  );
+  const releaseSource = spawnSync(
+    process.execPath,
+    ["scripts/desktop-release/check-macos-release-source.mjs", "--help"],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+    },
+  );
+  const releaseSlot = spawnSync(
+    process.execPath,
+    ["scripts/desktop-release/check-macos-release-slot.mjs", "--help"],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+    },
+  );
+
+  assert.equal(sign.status, 0, sign.stderr);
+  assert.match(sign.stdout, /hardened runtime/);
+  // The identity is derived from the certificate — one fewer secret for a person to
+  // register.
+  assert.match(sign.stdout, /find-identity|Required codesign identity|APPLE_SIGNING_IDENTITY/);
+
+  assert.equal(notarize.status, 0, notarize.stderr);
+  assert.match(notarize.stdout, /APPLE_API_KEY_ID/);
+  assert.match(notarize.stdout, /Password authentication is\s+not accepted/);
+  assert.match(notarize.stdout, /staples the/);
+
+  assert.equal(releaseSecrets.status, 0, releaseSecrets.stderr);
+  assert.match(releaseSecrets.stdout, /APPLE_CERTIFICATE_P12_BASE64/);
+  assert.match(releaseSecrets.stdout, /APPLE_API_ISSUER_ID/);
+  assert.match(releaseSecrets.stdout, /base64-encoded Developer ID/);
+
+  assert.equal(verifyDmg.status, 0, verifyDmg.stderr);
+  assert.match(verifyDmg.stdout, /--require-signed/);
+  assert.match(verifyDmg.stdout, /--require-notarized/);
+
+  assert.equal(verifyApp.status, 0, verifyApp.stderr);
+  assert.match(verifyApp.stdout, /--hold-ms=5000/);
+  assert.match(verifyApp.stdout, /early/);
+
+  assert.equal(verifyInstall.status, 0, verifyInstall.stderr);
+  assert.match(verifyInstall.stdout, /temporary install/);
+  assert.match(verifyInstall.stdout, /--hold-ms=5000/);
+
+  assert.equal(verifyDownload.status, 0, verifyDownload.stderr);
+  assert.match(verifyDownload.stdout, /public GitHub Release/);
+  assert.match(verifyDownload.stdout, /Apple Silicon/);
+  assert.match(verifyDownload.stdout, /aarch64/);
+  assert.match(verifyDownload.stdout, /exactly one per architecture/);
+  assert.doesNotMatch(verifyDownload.stdout, /Intel/);
+  assert.doesNotMatch(verifyDownload.stdout, /--allow-prerelease/);
+
+  assert.equal(releaseGithub.status, 0, releaseGithub.stderr);
+  assert.match(releaseGithub.stdout, /GitHub-side prerequisites/);
+  assert.match(releaseGithub.stdout, /APPLE_CERTIFICATE_P12_BASE64/);
+  assert.doesNotMatch(releaseGithub.stdout, /FIREBASE_SERVICE_ACCOUNT_JSON/);
+  assert.match(releaseGithub.stdout, /hosted website deploy is intentionally excluded/);
+
+  assert.equal(releaseSource.status, 0, releaseSource.stderr);
+  assert.match(releaseSource.stdout, /default-branch head/);
+  assert.match(releaseSource.stdout, /admitted SHA|default-branch head/);
+
+  assert.equal(releaseSlot.status, 0, releaseSlot.stderr);
+  assert.match(releaseSlot.stdout, /GitHub Release already exists/);
+  assert.match(releaseSlot.stdout, /stale DMG assets/);
+});
+
+/**
+ * This gate also reads local git tags, and `APP_TAG` comes from the package.json version, so a
+ * real tag of that version would collide with the fixture. `OATLAS_GIT_BIN` injects a fake git;
+ * `tagExists: false` makes `git rev-parse --verify --quiet` answer 1 (absent).
+ */
+function writeFakeGit(dir, { tagExists = false } = {}) {
+  const gitPath = join(dir, "git");
+  writeFileSync(
+    gitPath,
+    `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args[0] === 'rev-parse' && args.includes('--verify')) {
+  process.exit(${tagExists ? 0 : 1});
+}
+console.error('unexpected git args: ' + args.join(' '));
+process.exit(1);
+`,
+  );
+  chmodSync(gitPath, 0o755);
+  return gitPath;
+}
+
+test("desktop GitHub release readiness gate reports missing Developer ID direct-download secrets", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ontology-atlas-gh-"));
+  const ghPath = join(dir, "gh");
+  writeFileSync(
+    ghPath,
+    `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args[0] === 'auth' && args[1] === 'status') process.exit(0);
+if (args[0] === 'repo' && args[1] === 'view') { console.log('main'); process.exit(0); }
+if (args[0] === 'api' && args[1] && args[1].includes('/deployment-branch-policies')) {
+  console.log(JSON.stringify({ branch_policies: [{ name: 'main', type: 'branch' }] })); process.exit(0);
+}
+if (args[0] === 'api' && args[1] && args[1].includes('/environments/release-signing')) {
+  console.log(JSON.stringify({ can_admins_bypass: false, deployment_branch_policy: { protected_branches: false, custom_branch_policies: true }, protection_rules: [] })); process.exit(0);
+}
+if (args[0] === 'api' && args[1] && args[1].endsWith('/environments/release')) {
+  console.log(JSON.stringify({ can_admins_bypass: false, deployment_branch_policy: { protected_branches: false, custom_branch_policies: true }, protection_rules: [{ type: 'required_reviewers', reviewers: [{ reviewer: { login: 'owner' } }] }] })); process.exit(0);
+}
+if (args[0] === 'api') {
+  if (args[1] && args[1].includes('/git/ref/tags/')) {
+    console.error('gh: Not Found (HTTP 404)');
+    process.exit(1);
+  }
+  console.log(JSON.stringify({ state: 'active' }));
+  process.exit(0);
+}
+if (args[0] === 'secret' && args[1] === 'list') {
+  console.log(JSON.stringify([]));
+  process.exit(0);
+}
+console.error('unexpected gh args: ' + args.join(' '));
+process.exit(1);
+`,
+  );
+  chmodSync(ghPath, 0o755);
+  const gitPath = writeFakeGit(dir);
+  try {
+    const result = spawnSync(
+      process.execPath,
+      ["scripts/desktop-release/check-macos-release-github.mjs", `--tag=${APP_TAG}`],
+      {
+        cwd: process.cwd(),
+        encoding: "utf8",
+        env: { ...process.env, OATLAS_GH_BIN: ghPath, OATLAS_GIT_BIN: gitPath },
+      },
+    );
+
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /missing release-signing environment secrets/);
+    assert.doesNotMatch(result.stderr, /APPLE_CERTIFICATE_P12_BASE64/);
+    assert.match(result.stderr, /APPLE_API_ISSUER_ID/);
+    assert.doesNotMatch(result.stderr, /gh secret set APPLE_CERTIFICATE_P12_BASE64/);
+    assert.match(result.stderr, /gh secret set APPLE_API_ISSUER_ID --env release-signing --repo wlsdks\/ontology-atlas/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("desktop GitHub release readiness gate reports missing workflow on GitHub", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ontology-atlas-gh-"));
+  const ghPath = join(dir, "gh");
+  writeFileSync(
+    ghPath,
+    `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args[0] === 'auth' && args[1] === 'status') process.exit(0);
+if (args[0] === 'repo' && args[1] === 'view') { console.log('main'); process.exit(0); }
+if (args[0] === 'api' && args[1] && args[1].includes('/deployment-branch-policies')) {
+  console.log(JSON.stringify({ branch_policies: [{ name: 'main', type: 'branch' }] })); process.exit(0);
+}
+if (args[0] === 'api' && args[1] && args[1].includes('/environments/release-signing')) {
+  console.log(JSON.stringify({ can_admins_bypass: false, deployment_branch_policy: { protected_branches: false, custom_branch_policies: true }, protection_rules: [] })); process.exit(0);
+}
+if (args[0] === 'api' && args[1] && args[1].endsWith('/environments/release')) {
+  console.log(JSON.stringify({ can_admins_bypass: false, deployment_branch_policy: { protected_branches: false, custom_branch_policies: true }, protection_rules: [{ type: 'required_reviewers', reviewers: [{ reviewer: { login: 'owner' } }] }] })); process.exit(0);
+}
+if (args[0] === 'api') {
+  console.error('gh: Not Found (HTTP 404)');
+  process.exit(1);
+}
+console.error('unexpected gh args: ' + args.join(' '));
+process.exit(1);
+`,
+  );
+  chmodSync(ghPath, 0o755);
+  const gitPath = writeFakeGit(dir);
+  try {
+    const result = spawnSync(
+      process.execPath,
+      ["scripts/desktop-release/check-macos-release-github.mjs", `--tag=${APP_TAG}`],
+      {
+        cwd: process.cwd(),
+        encoding: "utf8",
+        env: { ...process.env, OATLAS_GH_BIN: ghPath, OATLAS_GIT_BIN: gitPath },
+      },
+    );
+
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /release-macos\.yml is not available to GitHub/);
+    assert.match(result.stderr, /merge that PR into the default branch/);
+    assert.match(result.stderr, /commit and push \.github\/workflows\/release-macos\.yml/i);
+    assert.doesNotMatch(result.stderr, /gh api repos/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("desktop GitHub release readiness gate accepts active workflow and required secret names", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ontology-atlas-gh-"));
+  const ghPath = join(dir, "gh");
+  const secretNames = ENVIRONMENT_SECRET_NAMES;
+  writeFileSync(
+    ghPath,
+    `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args[0] === 'auth' && args[1] === 'status') process.exit(0);
+if (args[0] === 'repo' && args[1] === 'view') { console.log('main'); process.exit(0); }
+if (args[0] === 'api' && args[1] && args[1].includes('/deployment-branch-policies')) {
+  console.log(JSON.stringify({ branch_policies: [{ name: 'main', type: 'branch' }] })); process.exit(0);
+}
+if (args[0] === 'api' && args[1] && args[1].includes('/environments/release-signing')) {
+  console.log(JSON.stringify({ can_admins_bypass: false, deployment_branch_policy: { protected_branches: false, custom_branch_policies: true }, protection_rules: [] })); process.exit(0);
+}
+if (args[0] === 'api' && args[1] && args[1].endsWith('/environments/release')) {
+  console.log(JSON.stringify({ can_admins_bypass: false, deployment_branch_policy: { protected_branches: false, custom_branch_policies: true }, protection_rules: [{ type: 'required_reviewers', reviewers: [{ reviewer: { login: 'owner' } }] }] })); process.exit(0);
+}
+if (args[0] === 'api') {
+  if (args[1] && args[1].includes('/git/ref/tags/')) {
+    console.error('gh: Not Found (HTTP 404)');
+    process.exit(1);
+  }
+  console.log(JSON.stringify({ state: 'active' }));
+  process.exit(0);
+}
+if (args[0] === 'secret' && args[1] === 'list') {
+  console.log(JSON.stringify(args.includes('--env') ? ${JSON.stringify(secretNames.map((name) => ({ name })))} : ${JSON.stringify(REPOSITORY_SECRET_NAMES.map((name) => ({ name })))}));
+  process.exit(0);
+}
+if (args[0] === 'release' && args[1] === 'view') {
+  console.error('release not found (HTTP 404)');
+  process.exit(1);
+}
+console.error('unexpected gh args: ' + args.join(' '));
+process.exit(1);
+`,
+  );
+  chmodSync(ghPath, 0o755);
+  const gitPath = writeFakeGit(dir);
+  try {
+    const result = spawnSync(
+      process.execPath,
+      ["scripts/desktop-release/check-macos-release-github.mjs", "--", `--tag=${APP_TAG}`],
+      {
+        cwd: process.cwd(),
+        encoding: "utf8",
+        env: { ...process.env, OATLAS_GH_BIN: ghPath, OATLAS_GIT_BIN: gitPath },
+      },
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /all required split-scope signing secret names/);
+    assert.match(result.stdout, new RegExp(`${APP_TAG_PATTERN} matches package, Tauri, and Cargo versions`));
+    assert.match(result.stdout, new RegExp(`${APP_TAG_PATTERN} has no existing GitHub Release`));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("desktop GitHub release readiness gate rejects an occupied release slot", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ontology-atlas-gh-"));
+  const ghPath = join(dir, "gh");
+  const secretNames = ENVIRONMENT_SECRET_NAMES;
+  writeFileSync(
+    ghPath,
+    `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args[0] === 'auth' && args[1] === 'status') process.exit(0);
+if (args[0] === 'repo' && args[1] === 'view') { console.log('main'); process.exit(0); }
+if (args[0] === 'api' && args[1] && args[1].includes('/deployment-branch-policies')) {
+  console.log(JSON.stringify({ branch_policies: [{ name: 'main', type: 'branch' }] })); process.exit(0);
+}
+if (args[0] === 'api' && args[1] && args[1].includes('/environments/release-signing')) {
+  console.log(JSON.stringify({ can_admins_bypass: false, deployment_branch_policy: { protected_branches: false, custom_branch_policies: true }, protection_rules: [] })); process.exit(0);
+}
+if (args[0] === 'api' && args[1] && args[1].endsWith('/environments/release')) {
+  console.log(JSON.stringify({ can_admins_bypass: false, deployment_branch_policy: { protected_branches: false, custom_branch_policies: true }, protection_rules: [{ type: 'required_reviewers', reviewers: [{ reviewer: { login: 'owner' } }] }] })); process.exit(0);
+}
+if (args[0] === 'api') {
+  if (args[1] && args[1].includes('/git/ref/tags/')) {
+    console.error('gh: Not Found (HTTP 404)');
+    process.exit(1);
+  }
+  console.log(JSON.stringify({ state: 'active' }));
+  process.exit(0);
+}
+if (args[0] === 'secret' && args[1] === 'list') {
+  console.log(JSON.stringify(args.includes('--env') ? ${JSON.stringify(secretNames.map((name) => ({ name })))} : ${JSON.stringify(REPOSITORY_SECRET_NAMES.map((name) => ({ name })))}));
+  process.exit(0);
+}
+if (args[0] === 'release' && args[1] === 'view') {
+  console.log(JSON.stringify({ tagName: '${APP_TAG}', isDraft: false, isPrerelease: false, url: 'https://example.test/release' }));
+  process.exit(0);
+}
+console.error('unexpected gh args: ' + args.join(' '));
+process.exit(1);
+`,
+  );
+  chmodSync(ghPath, 0o755);
+  const gitPath = writeFakeGit(dir);
+  try {
+    const result = spawnSync(
+      process.execPath,
+      ["scripts/desktop-release/check-macos-release-github.mjs", `--tag=${APP_TAG}`],
+      {
+        cwd: process.cwd(),
+        encoding: "utf8",
+        env: { ...process.env, OATLAS_GH_BIN: ghPath, OATLAS_GIT_BIN: gitPath },
+      },
+    );
+
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, new RegExp(`release ${APP_TAG_PATTERN} already exists`));
+    assert.match(result.stderr, /Delete the existing public release/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("desktop readiness checker defines durable protected-release markers", () => {
+  const checker = readFileSync("scripts/desktop/check-desktop-readiness.mjs", "utf8");
+
+  assert.ok(checker.includes("github\\.workflow_sha"));
+  assert.ok(checker.includes("github\\.ref_type"));
+  assert.ok(checker.includes("needs\\.admit-release\\.outputs\\.release_sha"));
+  assert.ok(checker.includes("pnpm desktop:build:windows"));
+  assert.ok(checker.includes("workflow_dispatch"));
+});
+
+test("desktop readiness guard covers strict ontology emptiness and the exact README handoff", () => {
+  const checker = readFileSync("scripts/desktop/check-desktop-readiness.mjs", "utf8");
+  const docsVaultPage = [
+    "src/views/docs-vault/ui/DocsVaultPage.tsx",
+    "src/views/docs-vault/ui/DocsVaultHeader.tsx",
+    "src/views/docs-vault/ui/DocsVaultDocumentPane.tsx",
+    "src/views/docs-vault/ui/DocsVaultSidebar.tsx",
+    ...readdirSync("src/views/docs-vault/model")
+      .filter((name) => !name.includes(".test."))
+      .map((name) => `src/views/docs-vault/model/${name}`),
+  ]
+    .map((file) => readFileSync(file, "utf8"))
+    .join("\n");
+
+  assert.ok(docsVaultPage.length > 0, "DocsVaultPage must remain a nonempty gate subject");
+  for (const marker of [
+    "scopedDocs.length === 0",
+    "return `/docs/${suffix ?",
+    "router.push(generalDocsHref('README'))",
+  ]) {
+    assert.ok(checker.includes(marker), `desktop readiness must require ${marker}`);
+    assert.ok(docsVaultPage.includes(marker), `DocsVaultPage must supply ${marker}`);
+  }
+  assert.ok(!checker.includes("manifest.docs.length === 0"));
+  assert.ok(!checker.includes("setSelectedSlug('README')"));
+});
+
+// Git for Windows checks tracked YAML out with CRLF by default. The readiness
+// checker parses workflow sections with line-anchored regular expressions, so
+// its read boundary must normalize line endings before those contracts run.
+test("desktop readiness checker normalizes Windows line endings", () => {
+  const checker = readFileSync("scripts/desktop/check-desktop-readiness.mjs", "utf8");
+
+  assert.ok(checker.includes('.replace(/\\r\\n?/g, "\\n")'));
+});
+
+test("Codex Run accepts one exact local build and rejects prefix or release lookalikes", () => {
+  const tail = [
+    "sync_existing_applications_copy",
+    'pnpm desktop:verify-app -- "$DOGFOOD_APP_PATH" \\',
+  ].join("\n");
+  assert.deepEqual(
+    inspectCodexRunContract(`pnpm desktop:build:app:local\n${tail}`),
+    { exactLocalBuild: true, ordered: true },
+  );
+  assert.deepEqual(
+    inspectCodexRunContract(`pnpm desktop:build:app:local-bogus\n${tail}`),
+    { exactLocalBuild: false, ordered: false },
+  );
+  assert.deepEqual(
+    inspectCodexRunContract(`# pnpm desktop:build:app:local\npnpm desktop:build:app\n${tail}`),
+    { exactLocalBuild: false, ordered: false },
+  );
+  assert.deepEqual(
+    inspectCodexRunContract(`pnpm desktop:build:app:local\npnpm desktop:build:app\n${tail}`),
+    { exactLocalBuild: false, ordered: true },
+  );
+});
+
+// A crash reads as "no gate", not "gate failed", so a missing target file must
+// end in a readable [desktop-check] failure message.
+test("desktop readiness check fails readably when a tracked source file disappears", () => {
+  const checker = readFileSync("scripts/desktop/check-desktop-readiness.mjs", "utf8");
+
+  // readText must downgrade a missing file to fail() — never a raw readFileSync
+  // crash.
+  assert.match(checker, /function readText\(relativePath\)/);
+  assert.match(checker, /existsSync\(absolute\)/);
+  assert.match(checker, /tracked source file is missing/);
+});
+
+// The repository with `edits` applied to copies; every other entry links back to the real tree.
+function readinessWith(edits) {
+  const repo = process.cwd();
+  const root = mkdtempSync(join(tmpdir(), "desktop-readiness-tree-"));
+  const link = (dir) => {
+    for (const name of readdirSync(join(repo, dir))) symlinkSync(join(repo, dir, name), join(root, dir, name));
+  };
+  try {
+    link("");
+    for (const [file, edit] of Object.entries(edits)) {
+      const parts = file.split("/");
+      for (let depth = 1; depth < parts.length; depth += 1) {
+        const dir = parts.slice(0, depth).join("/");
+        if (lstatSync(join(root, dir)).isSymbolicLink()) {
+          unlinkSync(join(root, dir));
+          mkdirSync(join(root, dir));
+          link(dir);
+        }
+      }
+      const before = readFileSync(join(repo, file), "utf8");
+      const after = edit(before);
+      assert.notEqual(after, before, `the plant did not change ${file}`);
+      unlinkSync(join(root, file));
+      writeFileSync(join(root, file), after);
+    }
+    return spawnSync(process.execPath, [join(repo, "scripts/desktop/check-desktop-readiness.mjs")], { cwd: root, encoding: "utf8" });
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
+const withoutComments = (file, source) =>
+  extractCommentTokens(file, source)
+    .reverse()
+    .reduce((text, { start, end }) => text.slice(0, start) + text.slice(end), source);
+
+test("desktop readiness verdicts survive deleting comments and comments that name a forbidden string", () => {
+  const strip = (file, appended = "") => [file, (source) => withoutComments(file, source) + appended];
+  const result = readinessWith(Object.fromEntries([
+    strip("src/widgets/bottom-tab-bar/lib/is-tab-active.ts", "// normalized === '/' && !hasLoadedVault\n"),
+    strip("src/widgets/topology-controls/ui/TopologyEmptyState.tsx"),
+    strip("src/views/download/model/macos-release.generated.ts"),
+    strip(
+      ".github/workflows/deploy-pages.yml",
+      "# NEXT_PUBLIC_BASE_PATH: /ontology-atlas\n# uses: pnpm/action-setup@v4\n# firebase-tools deploy --only hosting\n",
+    ),
+    strip(".github/workflows/release-macos.yml", "# uses: pnpm/action-setup@v4\n# GITHUB_REF_NAME\n"),
+    ["scripts/download/check-macos-download-release.mjs", (source) => `${source}// aarch64|x64|universal\n`],
+    ["src/views/download/ui/DownloadPage.tsx", (source) => `${source}// /docs/?intent=local\n`],
+    ["app/[locale]/download/page.tsx", (source) => `${source}// NEXT_PUBLIC_OATLAS_FIRST_RELEASE_PENDING\n`],
+    ["src/shared/lib/vault-folder/tauri-vault-fs.ts", (source) => `${source}// __TAURI_INTERNALS__\n`],
+  ]));
+
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test("desktop readiness does not pass a check on text that survives only in a comment", () => {
+  const result = readinessWith({
+    "src/shared/lib/vault-folder/tauri-vault-fs.ts": (source) =>
+      `${source.replace("from '@tauri-apps/api/core'", "from '@tauri-apps/api/mocks'")}// from '@tauri-apps/api/core'\n`,
+    ".github/workflows/deploy-pages.yml": (source) =>
+      source.replace(/uses: (actions\/setup-node)@([0-9a-f]{40})/g, "uses: $1@v6 # uses: $1@$2"),
+    "src-tauri/src/lib.rs": (source) =>
+      `${source.replaceAll("open_vault_in_finder", "open_vault_elsewhere")}// open_vault_in_finder\n`,
+  });
+
+  assert.equal(result.status, 1);
+  assert.doesNotMatch(result.stdout, /✓ Tauri vault bridge uses the supported JavaScript invoke API/);
+  assert.doesNotMatch(result.stdout, /✓ GitHub Pages workflow builds/);
+  assert.match(result.stderr, /Tauri native vault command bridge is incomplete: missing open_vault_in_finder/);
+});
+
+test("desktop release slot gate rejects an existing same-tag release", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ontology-atlas-gh-slot-"));
+  const ghPath = join(dir, "gh");
+  writeFileSync(
+    ghPath,
+    `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args[0] === 'release' && args[1] === 'view') {
+  console.log(JSON.stringify({ tagName: '${APP_TAG}', isDraft: true, isPrerelease: false, url: 'https://example.test/release' }));
+  process.exit(0);
+}
+console.error('unexpected gh args: ' + args.join(' '));
+process.exit(1);
+`,
+  );
+  chmodSync(ghPath, 0o755);
+  try {
+    const result = spawnSync(
+      process.execPath,
+      ["scripts/desktop-release/check-macos-release-slot.mjs", `--tag=${APP_TAG}`],
+      {
+        cwd: process.cwd(),
+        encoding: "utf8",
+        env: { ...process.env, OATLAS_GH_BIN: ghPath },
+      },
+    );
+
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, new RegExp(`release ${APP_TAG_PATTERN} already exists`));
+    assert.match(result.stderr, /Delete the existing draft release/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("desktop release slot gate accepts a missing same-tag release", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ontology-atlas-gh-slot-"));
+  const ghPath = join(dir, "gh");
+  writeFileSync(
+    ghPath,
+    `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args[0] === 'release' && args[1] === 'view') {
+  console.error('release not found (HTTP 404)');
+  process.exit(1);
+}
+console.error('unexpected gh args: ' + args.join(' '));
+process.exit(1);
+`,
+  );
+  chmodSync(ghPath, 0o755);
+  try {
+    const result = spawnSync(
+      process.execPath,
+      ["scripts/desktop-release/check-macos-release-slot.mjs", "--", `--tag=${APP_TAG}`],
+      {
+        cwd: process.cwd(),
+        encoding: "utf8",
+        env: { ...process.env, OATLAS_GH_BIN: ghPath },
+      },
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /has no existing GitHub Release/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("desktop release secret gate fails closed when Developer ID direct-download secrets are absent", () => {
+  const env = { ...process.env };
+  for (const key of [
+    "APPLE_CERTIFICATE_P12_BASE64",
+    "APPLE_CERTIFICATE_PASSWORD",
+    "APPLE_API_KEY_P8_BASE64",
+    "APPLE_API_KEY_ID",
+    "APPLE_API_ISSUER_ID",
+  ]) {
+    delete env[key];
+  }
+
+  const result = spawnSync(process.execPath, ["scripts/desktop-release/check-macos-release-secrets.mjs"], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    env,
+  });
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /missing required Developer ID direct-download secrets/);
+  assert.match(result.stderr, /not Mac App Store submission/);
+  assert.match(result.stderr, /APPLE_API_KEY_P8_BASE64 — App Store Connect API private key/);
+  assert.match(result.stderr, /refusing to publish an unsigned or unnotarized direct-download macOS release artifact/);
+});
+
+test("desktop release secret gate help explains each direct-download secret role", () => {
+  const result = spawnSync(process.execPath, ["scripts/desktop-release/check-macos-release-secrets.mjs", "--help"], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /not Mac App Store submission credentials/);
+  assert.match(result.stdout, /APPLE_CERTIFICATE_P12_BASE64 — Developer ID Application certificate exported as base64 PKCS#12/);
+  assert.match(result.stdout, /APPLE_CERTIFICATE_PASSWORD — password for that exported \.p12 file/);
+  assert.match(result.stdout, /APPLE_API_KEY_P8_BASE64 — App Store Connect API private key/);
+  assert.match(result.stdout, /APPLE_API_KEY_ID — App Store Connect API key ID for notarytool/);
+  assert.match(result.stdout, /APPLE_API_ISSUER_ID — App Store Connect API issuer UUID for notarization/);
+});
+
+test("desktop release secret gate rejects invalid certificate base64", () => {
+  const result = spawnSync(process.execPath, ["scripts/desktop-release/check-macos-release-secrets.mjs"], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      APPLE_CERTIFICATE_P12_BASE64: "not base64",
+      APPLE_CERTIFICATE_PASSWORD: "certificate-password",
+      APPLE_KEYCHAIN_PASSWORD: "keychain-password",
+      APPLE_SIGNING_IDENTITY: "Developer ID Application: Example",
+      APPLE_API_KEY_P8_BASE64: STRUCTURALLY_VALID_P8,
+      APPLE_API_KEY_ID: "KEYID12345",
+      APPLE_API_ISSUER_ID: "11111111-2222-3333-4444-555555555555",
+      TAURI_SIGNING_PRIVATE_KEY: "updater-private-key",
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: "updater-password",
+    },
+  });
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /APPLE_CERTIFICATE_P12_BASE64 must be a base64-encoded/);
+  assert.match(result.stderr, /cannot import its signing certificate/);
+});
+
+test("desktop release secret gate rejects base64 that is not a PKCS#12 DER certificate", () => {
+  const result = spawnSync(process.execPath, ["scripts/desktop-release/check-macos-release-secrets.mjs"], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      APPLE_CERTIFICATE_P12_BASE64: Buffer.from("not-a-pkcs12-certificate-but-long-enough").toString("base64"),
+      APPLE_CERTIFICATE_PASSWORD: "certificate-password",
+      APPLE_KEYCHAIN_PASSWORD: "keychain-password",
+      APPLE_SIGNING_IDENTITY: "Developer ID Application: Example",
+      APPLE_API_KEY_P8_BASE64: STRUCTURALLY_VALID_P8,
+      APPLE_API_KEY_ID: "KEYID12345",
+      APPLE_API_ISSUER_ID: "11111111-2222-3333-4444-555555555555",
+      TAURI_SIGNING_PRIVATE_KEY: "updater-private-key",
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: "updater-password",
+    },
+  });
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /APPLE_CERTIFICATE_P12_BASE64 must decode to a PKCS#12 DER sequence with a valid length envelope/);
+  assert.match(result.stderr, /cannot import its signing certificate/);
+});
+
+test("desktop release secret gate accepts structurally valid release secrets", () => {
+  const pkcs12DerLikeBytes = Buffer.from([
+    0x30, 0x1e, 0x02, 0x01, 0x03, 0x30, 0x19, 0x06,
+    0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01,
+    0x07, 0x01, 0xa0, 0x0c, 0x04, 0x0a, 0x30, 0x08,
+    0x02, 0x01, 0x00, 0x04, 0x03, 0x70, 0x31, 0x32,
+  ]);
+  const result = spawnSync(process.execPath, ["scripts/desktop-release/check-macos-release-secrets.mjs"], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      APPLE_CERTIFICATE_P12_BASE64: pkcs12DerLikeBytes.toString("base64"),
+      APPLE_CERTIFICATE_PASSWORD: "certificate-password",
+      APPLE_KEYCHAIN_PASSWORD: "keychain-password",
+      APPLE_SIGNING_IDENTITY: "Developer ID Application: Example",
+      APPLE_API_KEY_P8_BASE64: STRUCTURALLY_VALID_P8,
+      APPLE_API_KEY_ID: "KEYID12345",
+      APPLE_API_ISSUER_ID: "11111111-2222-3333-4444-555555555555",
+      TAURI_SIGNING_PRIVATE_KEY: "updater-private-key",
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: "updater-password",
+    },
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /structurally valid/);
+});
+
+test("desktop release tag gate requires the v-prefixed tag to match app versions", () => {
+  // Read the version rather than hardcoding it: this gate exists so a version
+  // bump cannot ship without the tag following, and a test frozen at one
+  // version would fail on the bump it is supposed to protect.
+  const { version } = JSON.parse(readFileSync("package.json", "utf8"));
+  const [major, minor, patch] = version.split(".");
+  const otherVersion = `${major}.${Number(minor) + 1}.${patch}`;
+
+  const run = (tag) =>
+    spawnSync(process.execPath, ["scripts/desktop-release/check-macos-release-tag.mjs", `--tag=${tag}`], {
+      cwd: process.cwd(),
+      encoding: "utf8",
+    });
+
+  const ok = run(`v${version}`);
+  const mismatch = run(`v${otherVersion}`);
+  const invalid = run(version);
+  const suffixed = run(`v${version}-rc.1`);
+  const partial = run(`v${major}.${minor}`);
+
+  assert.equal(ok.status, 0, ok.stderr);
+  assert.match(
+    ok.stdout,
+    /matches package, Tauri and Cargo versions, and \/download derives its own from package\.json/,
+  );
+
+  assert.equal(mismatch.status, 1);
+  assert.match(mismatch.stderr, /does not match macOS app versions/);
+  for (const field of ["package", "tauri", "cargo"]) {
+    assert.ok(
+      mismatch.stderr.includes(`${field}=${version}`),
+      `expected ${field}=${version} in ${mismatch.stderr}`,
+    );
+  }
+
+  assert.equal(invalid.status, 1);
+  assert.match(invalid.stderr, /must be v-prefixed/);
+  assert.equal(suffixed.status, 1);
+  assert.match(suffixed.stderr, /pre-release or build suffix/);
+  assert.ok(suffixed.stderr.includes(`tag v${version} instead`), suffixed.stderr);
+  assert.equal(partial.status, 1);
+  assert.match(partial.stderr, /must be vMAJOR\.MINOR\.PATCH/);
+});

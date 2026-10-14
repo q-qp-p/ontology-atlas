@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { followStep } from '@/widgets/acp-chat-panel/model/transcript-follow';
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * No scroller draws a bar: the document rule exists in both dialects (Safari and the macOS WebView

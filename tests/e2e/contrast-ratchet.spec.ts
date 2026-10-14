@@ -3,9 +3,9 @@ import { AUDITED_ROUTES } from './audited-routes';
 import { waitForPageSettled } from './settle';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- Playwright specs load as CJS (using `import.meta` stops the file loading at all).
-const { judgeText, judgeAdjacentMarks } = require('../../scripts/lib/contrast.mjs');
+const { judgeText, judgeAdjacentMarks } = require('../../scripts/lib/design/contrast.mjs');
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- Same reason.
-const { collectAdjacentMarks } = require('../../scripts/lib/contrast-collect.mjs');
+const { collectAdjacentMarks } = require('../../scripts/lib/design/contrast-collect.mjs');
 
 const ROUTES = AUDITED_ROUTES;
 

@@ -64,7 +64,7 @@ describe('the committed catalogue', () => {
 
   it('holds only what the in-app press can make work, and no hosted OAuth address', () => {
     /*
-     * The in-app session cannot open an OAuth sign-in window (`scripts/build-mcp-catalogue.mjs`
+     * The in-app session cannot open an OAuth sign-in window (`scripts/registry-snapshots/build-mcp-catalogue.mjs`
      * records it), so every row is a local program with a token or an address that asks nothing.
      * The generator refuses the other shape; this pins the committed file to the same rule.
      */

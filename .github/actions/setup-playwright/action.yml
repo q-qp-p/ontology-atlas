@@ -60,7 +60,7 @@ runs:
       shell: bash
       if: steps.playwright-cache.outputs.cache-hit != 'true'
       run: >-
-        node scripts/run-with-retry.mjs
+        node scripts/ci/run-with-retry.mjs
         --attempts=3 --timeout-ms=180000 --label="playwright install chromium"
         -- pnpm exec playwright install chromium
 
@@ -72,7 +72,7 @@ runs:
     - name: Install Playwright system deps (best effort)
       shell: bash
       run: >-
-        node scripts/run-with-retry.mjs
+        node scripts/ci/run-with-retry.mjs
         --attempts=2 --timeout-ms=90000 --best-effort
         --label="playwright install-deps chromium"
         -- pnpm exec playwright install-deps chromium

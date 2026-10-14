@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 
 import { domeFogAlpha, DOME_RIM_FOG_FLOOR } from "@/widgets/ontology-map/model/dome-view/ink";
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * Depth fog may darken a node's rim only to 3:1: the stroke token composited over the canvas ground

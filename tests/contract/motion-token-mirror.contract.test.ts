@@ -10,7 +10,7 @@ import {
   OVERLAY_SPRING_REDUCED,
   STAGGER,
 } from "../../src/shared/motion";
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * CSS and JS mirror for motion tokens: framer-motion cannot read CSS `var()` in numeric transition

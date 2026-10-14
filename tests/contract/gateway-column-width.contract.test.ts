@@ -2,8 +2,8 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
 import { describe, expect, it } from "vitest";
-import { collectTokens } from '../../scripts/design-tokens.mjs';
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { collectTokens } from '../../scripts/design/design-tokens.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * Gateway body column cap: at or below 1920 origin and column must equal the old `--page-max`

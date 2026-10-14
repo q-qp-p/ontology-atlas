@@ -5,7 +5,7 @@ export const rules = [
     order: 415,
     command: 'pnpm test:e2e:sleeps && pnpm e2e:sleeps:check',
     reason: 'an e2e spec or the fixed-sleep gate changed; a spec may not add a waitForTimeout without a measurement-window note',
-    matches: [/^tests\/e2e\/.+\.ts$/, /^scripts\/check-e2e-sleeps(?:\.test)?\.mjs$/],
+    matches: [/^tests\/e2e\/.+\.ts$/, /^scripts\/quality\/check-e2e-sleeps(?:\.test)?\.mjs$/],
   },
   {
     order: 420,
