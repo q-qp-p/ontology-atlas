@@ -13,11 +13,11 @@ import {
 import { looksLikeCodePath } from '@/shared/lib/concept-display/humanize-code-path-title';
 import { parseFrontmatter } from '@/shared/lib/vault-document/parse-frontmatter';
 
-import { buildCompactAgentBrief } from '../../../mcp/src/agent-brief-compact.mjs';
+import { buildCompactAgentBrief } from '../../../mcp/src/agent-brief/agent-brief-compact.mjs';
 import { compileOntology } from '../../../mcp/src/ontology-compiler.mjs';
 import { queryCompiledOntology } from '../../../mcp/src/ontology-engine.mjs';
-import { buildProjectSourceReceipt } from '../../../mcp/src/project-source-mint.mjs';
-import { deriveProjectSourceWitnessesFromDocs } from '../../../mcp/src/project-source-witnesses.mjs';
+import { buildProjectSourceReceipt } from '../../../mcp/src/project-source/project-source-mint.mjs';
+import { deriveProjectSourceWitnessesFromDocs } from '../../../mcp/src/project-source/project-source-witnesses.mjs';
 import { loadVaultDocs } from '../../../mcp/src/vault/documents.mjs';
 
 /**

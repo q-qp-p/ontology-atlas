@@ -5,9 +5,9 @@
  * slugs and uids. Nothing here imports a handler.
  */
 
-import { resolveAgentName } from '../activity-log.mjs';
-import { collectNodeRevisions } from '../git-tools.mjs';
-import { buildSlugNotFoundGrowthHint } from '../growth-hint.mjs';
+import { resolveAgentName } from '../vault/activity-log.mjs';
+import { collectNodeRevisions } from '../git/git-tools.mjs';
+import { buildSlugNotFoundGrowthHint } from '../ontology-engine/growth-hint.mjs';
 import {
   CREATED_BY_KEY,
   HUMAN_ONLY_REVIEW_KEYS,
@@ -39,7 +39,7 @@ import {
   describeStaleParent,
   findStaleParentSummaries,
   staleParentScore,
-} from '../stale-parent.mjs';
+} from '../git/stale-parent.mjs';
 import {
   GRAPH_ARRAY_KEYS,
   collectNeighborRefs,

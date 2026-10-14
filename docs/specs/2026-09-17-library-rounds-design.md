@@ -72,7 +72,7 @@ on screen.
 Checks that every wiki page still matches its sources. No agent turn.
 
 Work per pass: hash every cited source (`hash_vault_files`), compare with each page's
-`source_hash`, run the structural wiki report (`mcp/src/wiki-report.mjs` via
+`source_hash`, run the structural wiki report (`mcp/src/library/wiki-report.mjs` via
 `use-library-model`'s `structural`), and count broken citations. Outcome sentence:
 "14 pages checked · all held" or "14 checked · 2 went stale: Payments API, Release
 plan".

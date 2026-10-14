@@ -20,7 +20,7 @@ import { resolve, join } from "node:path";
 import { parseFrontmatter } from "../lib/parse-frontmatter.mjs";
 // R13 #58 logic now lives in the MCP package (shared with the agent-callable
 // validate_vault pathDrift surface) — single source of truth. Atlas Track A #2.
-import { detectVaultPathDrift } from "../../mcp/src/detect-drift.mjs";
+import { detectVaultPathDrift } from "../../mcp/src/drift/detect-drift.mjs";
 import { VAULT_SOURCES_DIR } from "../../mcp/src/schema.mjs";
 
 const COLORS = {

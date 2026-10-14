@@ -1199,7 +1199,7 @@ when the vault sits inside a known repository — `folder-only-evidence` and
 `dependency-unwitnessed` (`dependency-unjudged` when a cited file is over 2 MiB and was not read) — plus `starter-example-node`, which needs no
 repository at all. These are the same eight findings the write door
 returns from `add_concept` / `add_concepts` / `patch_concept`, produced by the
-same module (`src/meaning-findings.mjs`), and every one is a **warning**: the
+same module (`src/meaning/meaning-findings.mjs`), and every one is a **warning**: the
 document is valid Markdown the graph reads correctly, and what is missing is the
 half a reader needs and code cannot supply, so `ok` stays true and nothing
 blocks. They are here because an agent used to be the only reader who could see
@@ -1510,7 +1510,7 @@ different facts; repository completeness is never inferred. An oversized line
 has no false full-line citation or no-progress continuation. Input paths are
 limited to 1,024 Unicode characters and reject ambiguous delimiters and malformed
 Unicode. Source extensions and conventional package manifests are defined by
-`mcp/src/source-evidence.mjs`; arbitrary text/data formats are not implicitly
+`mcp/src/evidence-search/source-evidence.mjs`; arbitrary text/data formats are not implicitly
 admitted.
 
 A selector may instead ask for an outline: `{ "path": "command.go", "mode":
@@ -1529,7 +1529,7 @@ refuses with the same reasons. The row carries `status: "outlined"`, the
 file's `sha256` to replay with, `language`, `declarationCount`, and `truncated`
 when the 400-declaration ceiling or the 16 KiB outline budget cut the list
 short. Declarations are found by a deterministic line scanner
-(`mcp/src/source-outline.mjs`) for JavaScript/TypeScript, Python, Go, Rust,
+(`mcp/src/evidence-search/source-outline.mjs`) for JavaScript/TypeScript, Python, Go, Rust,
 Java/Kotlin/C#, Ruby and Markdown headings, in time linear in the file (a line over 1,000 characters, minified or generated code, is skipped and the row says `truncated`); a missing declaration is not
 evidence of absence, an unscanned language returns an empty list, and an outline
 mints no citation, so it supports no claim. Replay line ranges, not outlines,

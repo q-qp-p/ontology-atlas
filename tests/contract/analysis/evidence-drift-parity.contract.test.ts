@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolveEvidenceStates as resolveInApp } from "@/shared/lib/git/evidence-states";
-import { resolveEvidenceStates as resolveInServer } from "../../../mcp/src/evidence-drift.mjs";
+import { resolveEvidenceStates as resolveInServer } from "../../../mcp/src/drift/evidence-drift.mjs";
 
 /** The server's answer, as this test reads it; the module ships plain ESM without types. */
 type ServerStates = Record<

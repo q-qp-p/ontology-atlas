@@ -42,7 +42,7 @@ agents meets compact only through `agent-brief --compact`.
   The tool description says the structure "carries the typed facts once" (`graph.mjs:329`), and
   `mcp/README.md:85-88` calls compact "the versioned non-duplicating exception".
 - **The text points into the structure.** Its repair line names `meaningRepair.firstStep`
-  (`mcp/src/agent-brief-compact.mjs:719-724`), the ready branch ends `Full: detail=full` (`:777`),
+  (`mcp/src/agent-brief/agent-brief-compact.mjs:719-724`), the ready branch ends `Full: detail=full` (`:777`),
   and neither branch states the approval policy in `safety` (`:746-798`, `:991-996`). No guard
   value (`expectedGraphHash`, `expectedSourceFingerprint`, `reviewRevision`) appears in the text.
 - **One budget.** The whole serialized object, prompt included, may be at most 12,000 bytes (`:15`).
@@ -51,7 +51,7 @@ agents meets compact only through `agent-brief --compact`.
 - **Known task (probe).** 11,890 bytes: 9,338 of facts plus the 2,552-byte prompt field (text
   2,465). A host that shows both channels reads 14,355. The two-call wire is 21,086 characters, of
   which `connection_info` is 6,587; it carries the construction card (`mcp/src/tools/read.mjs:504`),
-  1,936 characters against its 1,940 cap (`mcp/src/construction-card.mjs:14`). It delivers **0 of
+  1,936 characters against its 1,940 cap (`mcp/src/construction/construction-card.mjs:14`). It delivers **0 of
   23 qualifier units and 0 of 10 uncertainty units**; unbounded, the same selection delivers 4 and 8.
 - **CLI.** It accepts compact only when the text equals `structuredContent.handoffPrompt`, otherwise
   parses the text as JSON (`cli/src/lib/mcp-bridge/mcp-call.mjs:332-344`), and spawns the sibling server unless
@@ -110,7 +110,7 @@ channel. The exception is the meaning question rows, which the owner's 2026-10-1
 | `handoffPrompt` | 2,552 | X | — | C read the facts twice | is `content[0].text` |
 | `focus.qualifiers.fullBodyRead` | 208 | MCP tests | qualifiers: copy | its `tool` and `arguments` equal `nextReads[0]`'s (`:911`) | `nextReads[0]` |
 | `purpose` | 512 | H PURPOSE; X `Purpose:` when not ready | no | no first decision for a coding task | project body, always the first slug of `nextReads[0]` (`:900-911`) |
-| `meaningRepair.writePolicy` | 94 | P | approval policy: copy | its three booleans repeat in `safety` (`mcp/src/meaning-repair.mjs:51-57`) | `safety`; the text's `Safety:` |
+| `meaningRepair.writePolicy` | 94 | P | approval policy: copy | its three booleans repeat in `safety` (`mcp/src/meaning/meaning-repair.mjs:51-57`) | `safety`; the text's `Safety:` |
 | `currentness.meaning.questions` | 359 | — | **yes**: currentness | five per-question status rows; the meaning status, top gap, next action and a new `questionCount` (18) stay | full detail, through the `Full:` call |
 | `focus.selectionPolicy` | 135 | — | no | a constant (`:954`) | `readerRules` `Capability: selection, not proof.`; the text's `(selection, not proof)` |
 | `verification.nextAction` | 132 | H VERIFY | no | one of three sentences chosen by paths and manifest (`:553-557`) | `readerRules` and the text's `Verify:` line |
@@ -279,7 +279,7 @@ No `messages/` entries: MCP text and CLI output are English protocol text.
    assertions at `:10785-10796` pass, with `:10786` expecting `meaningRepairCompact:v2`; the test
    prints both sizes and the units delivered. The PR's probe shows at least 1,000 bytes under the
    bound without optional units and 2 qualifier units.
-2. **Each channel stands alone** (`mcp/src/agent-brief-compact.test.mjs`). Given fixtures for
+2. **Each channel stands alone** (`mcp/src/agent-brief/agent-brief-compact.test.mjs`). Given fixtures for
    review required, not_needed, blocked, source changed during navigation and refusal: the text
    holds every line the CLI checks today plus `Safety:`; the repair line and `Repair step 1:` appear
    only when review is required, with JSON equal to `firstStep.calls[0].arguments`; the ready

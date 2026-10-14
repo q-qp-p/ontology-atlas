@@ -1,7 +1,7 @@
 import {
   evaluateConstructionQualification,
-} from '../../../../../mcp/src/construction-qualification.mjs';
-import { evaluateConstructionLifecycle } from '../../../../../mcp/src/construction-lifecycle.mjs';
+} from '../../../../../mcp/src/construction/construction-qualification.mjs';
+import { evaluateConstructionLifecycle } from '../../../../../mcp/src/construction/construction-lifecycle.mjs';
 import { CONTRACTS, EXIT } from './contracts.mjs';
 import {
   artifactDigest,

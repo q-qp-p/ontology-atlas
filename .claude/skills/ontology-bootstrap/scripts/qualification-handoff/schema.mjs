@@ -1,7 +1,7 @@
 import {
   CONSTRUCTION_QUALIFICATION_INPUT_SCHEMA,
   CONSTRUCTION_QUALITY_AXES,
-} from '../../../../../mcp/src/construction-qualification.mjs';
+} from '../../../../../mcp/src/construction/construction-qualification.mjs';
 import {
   COLD_START_REGRESSION_WITNESS_ID,
   CONTRACTS,
@@ -374,7 +374,7 @@ export const HANDOFF_SCHEMA = Object.freeze({
       derivedCompactInput: ['analysisPath', 'proposalPath', 'manifestPath', 'witnessesPath', 'builderId', 'quantifierClassifications'],
       candidate: 'Must carry the exact original proposal as candidate.proposal.',
       proposalCoverage: {
-        source: 'mcp/src/construction-lifecycle.mjs#proposalCoverageRefs',
+        source: 'mcp/src/construction/construction-lifecycle.mjs#proposalCoverageRefs',
         patterns: {
           concept: 'concept:<slug>',
           relation: 'relation:<type>:<from>-><to>',

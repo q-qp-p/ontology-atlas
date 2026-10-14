@@ -1,4 +1,4 @@
-import { constructionPlanDigest } from '../../../../../mcp/src/construction-lifecycle.mjs';
+import { constructionPlanDigest } from '../../../../../mcp/src/construction/construction-lifecycle.mjs';
 import { CONTRACTS } from './contracts.mjs';
 import { assert, isRecord, nonBlank, same, uniqueStrings, validDigest } from './primitives.mjs';
 import { validateCandidate } from './seal.mjs';

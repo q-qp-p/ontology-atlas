@@ -2,7 +2,7 @@ import {
   CONSTRUCTION_QUALIFICATION_CONTRACT,
   CONSTRUCTION_QUALITY_AXES,
   evaluateConstructionQualification,
-} from '../../../../../mcp/src/construction-qualification.mjs';
+} from '../../../../../mcp/src/construction/construction-qualification.mjs';
 import {
   COLD_START_REGRESSION_WITNESS_ID,
   CONTRACTS,

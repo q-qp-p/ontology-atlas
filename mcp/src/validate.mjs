@@ -15,7 +15,7 @@ export function isValidVaultTitle(value) {
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { bodyMeaningFindings } from './meaning-findings.mjs';
+import { bodyMeaningFindings } from './meaning/meaning-findings.mjs';
 import { parseFrontmatter } from './parser.mjs';
 import {
   VAULT_KINDS,
@@ -25,7 +25,7 @@ import {
   missingExpectedFields,
   nodeUidIssue,
 } from './schema.mjs';
-import { slugOutsideKindFolderMessage } from './construction-rules.mjs';
+import { slugOutsideKindFolderMessage } from './construction/construction-rules.mjs';
 
 export const VAULT_ISSUE_CODE_VALUES = Object.freeze([
   'unclosed-frontmatter',

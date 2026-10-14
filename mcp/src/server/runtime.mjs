@@ -8,8 +8,8 @@
  * attaches, which a client reads as a silent crash.
  */
 
-import { createCompiledOntologyCache } from '../compiled-cache.mjs';
-import { discoverGitRepositoryRoot } from '../git-tools.mjs';
+import { createCompiledOntologyCache } from './compiled-cache.mjs';
+import { discoverGitRepositoryRoot } from '../git/git-tools.mjs';
 import { compileOntology } from '../ontology-compiler.mjs';
 import { shareArtifact } from '../ontology-engine.mjs';
 import { ensureVaultRoot } from '../vault/slug-paths.mjs';

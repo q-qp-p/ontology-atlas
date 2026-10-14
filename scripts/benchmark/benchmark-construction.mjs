@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadVaultDocs } from '../../mcp/src/vault/documents.mjs';
 import { compileOntology } from '../../mcp/src/ontology-compiler.mjs';
-import { detectVaultPathDrift } from '../../mcp/src/detect-drift.mjs';
+import { detectVaultPathDrift } from '../../mcp/src/drift/detect-drift.mjs';
 import { validateVaultDocument } from '../../mcp/src/validate.mjs';
 import { READ_TOOL_NAMES } from '../../mcp/src/server/registry.mjs';
 

@@ -155,7 +155,7 @@ Atlas has several instruction channels, each with a different runtime boundary:
 | ACP coding agent | `src/features/acp-session/model/use-acp-session.ts` (`vaultHandoffPrompt`) | `acp-client.ts` supplies `_meta.systemPrompt.append` on the Claude adapter path. This augments that agent's own instructions; it does not replace them or establish universal ACP support. |
 | External MCP client | `mcp/src/server/instructions.mjs` | `server/instance.mjs` attaches the registry's instructions to the MCP initialization response. The receiving host controls their inclusion and placement in model context. |
 
-The shared meta-model block in `mcp/src/construction-rules.mjs` and the vault
+The shared meta-model block in `mcp/src/construction/construction-rules.mjs` and the vault
 conversation prompt is checked by `tests/contract/mcp/ontology-meta-model.contract.test.ts`.
 Prompt parity proves consistent guidance, not semantic correctness or obedience.
 Although `buildSystemPrompt` accepts optional owner instructions, the current
@@ -364,7 +364,7 @@ the other. Where such links work, treat it as a convenience, not a promise.
 ### In-app coding agents over ACP (2026-08-16)
 
 ACP turn observers capture start/completion identity before a later selection
-can change the context. The framework-free `mcp/src/analysis-record.mts` codec
+can change the context. The framework-free `mcp/src/analysis-history/analysis-record.mts` codec
 owns diagnostic Markdown and `entities/analysis-record` re-exports it for the app;
 `features/acp-session` captures actual full-body
 results and architecture measurements; `widgets/analysis-workbench` renders
@@ -439,7 +439,7 @@ graph. The separation is a property of the **walk**, not a filter applied later.
   fingerprint that counted a different file set would make the app rebuild constantly or
   miss a dropped document.
 - The wiki page contract is `docs/ONTOLOGY-ATLAS-SPEC.md` §11. Its machine half is
-  `mcp/src/wiki-schema.mjs` (executed by the CLI's `wiki-validate`), mirrored for the web
+  `mcp/src/library/wiki-schema.mjs` (executed by the CLI's `wiki-validate`), mirrored for the web
   bundle by `src/shared/lib/library/wiki-page-schema.ts` and held together by
   `tests/contract/library/wiki-page-schema.contract.test.ts`.
 - `tests/contract/library/library-never-enters-the-graph.contract.test.ts` runs one fixture

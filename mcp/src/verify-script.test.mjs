@@ -453,7 +453,7 @@ import { expectedResponseIds, missingResponseLabels } from '../scripts/json-rpc-
 import { GRAPH_ARRAY_KEYS } from './vault/relation-refs.mjs';
 import { NODE_UID_PATTERN } from './schema.mjs';
 import { assertPnpmScriptsExist } from '../../scripts/lib/pnpm-script-refs.mjs';
-import { buildAbsorptionPlan } from './absorb.mjs';
+import { buildAbsorptionPlan } from './vault/absorb.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MCP_PKG = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
@@ -509,17 +509,17 @@ describe('verify.mjs first-contact gates', () => {
   });
 
   it('packages project-meaning runtime modules and runs their source-checkout proofs', () => {
-    assert.ok(MCP_PKG.files.includes('src/project-source-inspection.mjs'));
-    assert.ok(MCP_PKG.files.includes('src/project-meaning-inventory.mjs'));
-    assert.ok(MCP_PKG.files.includes('src/meaning-repair.mjs'));
-    assert.ok(MCP_PKG.files.includes('src/project-meaning-receipt.mjs'));
-    assert.ok(MCP_PKG.files.includes('src/tool-inventory.mjs'));
+    assert.ok(MCP_PKG.files.includes('src/project-source/project-source-inspection.mjs'));
+    assert.ok(MCP_PKG.files.includes('src/project-meaning/project-meaning-inventory.mjs'));
+    assert.ok(MCP_PKG.files.includes('src/meaning/meaning-repair.mjs'));
+    assert.ok(MCP_PKG.files.includes('src/project-meaning/project-meaning-receipt.mjs'));
+    assert.ok(MCP_PKG.files.includes('src/server/tool-inventory.mjs'));
 
     const fullTestCommand = MCP_PKG.scripts['test:all'];
-    assert.match(fullTestCommand, /(?:^|\s)src\/project-meaning-inventory\.test\.mjs(?:\s|$)/);
-    assert.match(fullTestCommand, /(?:^|\s)src\/meaning-repair\.test\.mjs(?:\s|$)/);
-    assert.match(fullTestCommand, /(?:^|\s)src\/project-meaning-receipt\.test\.mjs(?:\s|$)/);
-    assert.match(fullTestCommand, /(?:^|\s)src\/project-meaning-restart\.test\.mjs(?:\s|$)/);
+    assert.match(fullTestCommand, /(?:^|\s)src\/project-meaning\/project-meaning-inventory\.test\.mjs(?:\s|$)/);
+    assert.match(fullTestCommand, /(?:^|\s)src\/meaning\/meaning-repair\.test\.mjs(?:\s|$)/);
+    assert.match(fullTestCommand, /(?:^|\s)src\/project-meaning\/project-meaning-receipt\.test\.mjs(?:\s|$)/);
+    assert.match(fullTestCommand, /(?:^|\s)src\/project-meaning\/project-meaning-restart\.test\.mjs(?:\s|$)/);
   });
 
   it('summarizes tools/list annotation coverage for verify output', () => {

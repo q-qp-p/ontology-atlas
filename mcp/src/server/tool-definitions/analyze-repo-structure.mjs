@@ -1,4 +1,4 @@
-import { CONSTRUCTION_QUALIFICATION_INPUT_SCHEMA } from '../../construction-qualification.mjs';
+import { CONSTRUCTION_QUALIFICATION_INPUT_SCHEMA } from '../../construction/construction-qualification.mjs';
 import { IGNORE_ARRAY_MAX_ITEMS } from '../tool-schemas/array-limits.mjs';
 import { NON_BLANK_STRING_SCHEMA } from '../tool-schemas/field-primitives.mjs';
 import {

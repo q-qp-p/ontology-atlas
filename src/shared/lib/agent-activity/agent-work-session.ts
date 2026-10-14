@@ -80,7 +80,7 @@ export interface AgentWorkSession {
   /**
    * The last agent to identify itself in this session (from the heartbeat or the
    * MCP handshake's clientInfo.name — `resolveAgentName` in
-   * `mcp/src/activity-log.mjs`). An anonymous line does not erase the previous
+   * `mcp/src/vault/activity-log.mjs`). An anonymous line does not erase the previous
    * name, for the same reason as `lastTarget`: one batch line must not cost the
    * screen something it could have said. Null if never heard.
    */

@@ -107,7 +107,7 @@ test('a widely imported source leaves related tests to the sharded affected run'
 });
 
 test('code outside app and src runs every suite and contract its importers reach', () => {
-  const unit = buildImpactPlan({ files: ['mcp/src/architecture-profile.mjs'] }).lanes.unit;
+  const unit = buildImpactPlan({ files: ['mcp/src/architecture/architecture-profile.mjs'] }).lanes.unit;
   assert.equal(unit.affected, true, 'a src suite imports this MCP module');
   assert.equal(unit.contract, 'focused');
   assert.ok(unit.contractFiles.includes('tests/contract/harness/architecture-profile.contract.test.ts'));
@@ -123,7 +123,7 @@ test('a message part runs the suites importing the composed catalogue on every s
 });
 
 test('a deleted file still imported somewhere runs the suites that import it by name', () => {
-  const unit = buildImpactPlan({ files: [], deletedFiles: ['mcp/src/architecture-profile.mjs'] }).lanes.unit;
+  const unit = buildImpactPlan({ files: [], deletedFiles: ['mcp/src/architecture/architecture-profile.mjs'] }).lanes.unit;
   const stale = 'src/views/architecture/model/analysis-architecture-record.test.ts';
   assert.ok(unit.extraCommands.some((command) => command.split(' ').includes(stale)));
   assert.ok(unit.contractFiles.includes('tests/contract/harness/architecture-profile.contract.test.ts'));
@@ -544,7 +544,7 @@ test('the perf lane starts only for code a measurement could import, and on ever
   assert.equal(mode({ files: ['src/shared/lib/search-match/node-name-match.ts'] }), 'affected');
   assert.equal(mode({ files: ['src/shared/lib/library/source-passage.perf.test.ts'] }), 'affected');
   // The import graph decides, wherever the imported code lives.
-  assert.equal(mode({ files: ['mcp/src/wiki-schema.mjs'] }), 'affected');
+  assert.equal(mode({ files: ['mcp/src/library/wiki-schema.mjs'] }), 'affected');
   assert.equal(mode({ files: ['app/[locale]/page.tsx'] }), 'skip');
   assert.equal(mode({ files: ['src/shared/lib/cn.test.ts'] }), 'skip');
   assert.equal(mode({ files: ['docs/DESIGN-SYSTEM.md'] }), 'skip');

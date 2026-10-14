@@ -7,7 +7,7 @@ display_en: Construction qualification gate
 display_ko: 구축 자격 게이트
 domain: domains/code-evidence
 elements: [elements/qualification-packet-evaluator]
-path: mcp/src/construction-lifecycle.mjs
+path: mcp/src/construction/construction-lifecycle.mjs
 created_by: "agent:claude-code"
 relation_notes: { elements/qualification-packet-evaluator: "You asked me to turn imports I actually witnessed into dependencies: the scan shows construction-lifecycle.mjs importing construction-qualification.mjs." }
 dependencies: [elements/qualification-packet-evaluator]

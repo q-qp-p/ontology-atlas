@@ -12,12 +12,12 @@ const CLI_SOURCE_ROOT = join(process.cwd(), 'cli', 'src');
 
 /**
  * Files under `cli/src` allowed to keep Hangul, by path. The set is empty: the Korean matcher data
- * lives in `mcp/src/absorb.mjs`, which the CLI re-exports.
+ * lives in `mcp/src/vault/absorb.mjs`, which the CLI re-exports.
  */
 const KOREAN_MATCHER_DATA = new Set<string>([]);
 
 /** Where the Korean matcher data lives now that the CLI re-exports it. */
-const KOREAN_MATCHER_MODULE = join(process.cwd(), 'mcp', 'src', 'absorb.mjs');
+const KOREAN_MATCHER_MODULE = join(process.cwd(), 'mcp', 'src', 'vault', 'absorb.mjs');
 
 /** Test names in this repository are Korean by convention; this gate is about printed output. */
 const isScannedSource = (name: string) => name.endsWith('.mjs') && !name.endsWith('.test.mjs');

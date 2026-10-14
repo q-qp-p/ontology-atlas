@@ -1,6 +1,6 @@
 /**
  * The pure part of the `.mcpb` build: a zip holding one MCP server plus a `manifest.json`. It
- * carries exactly `mcp/package.json`'s `files` list. `mcp/src/analysis-record.mts` is compiled to
+ * carries exactly `mcp/package.json`'s `files` list. `mcp/src/analysis-history/analysis-record.mts` is compiled to
  * `.mjs` because Node type stripping is unflagged only from Node 23.6.
  */
 
@@ -9,8 +9,8 @@ export const BUNDLE_SERVER_DIR = 'server';
 export const BUNDLE_ENTRY_POINT = `${BUNDLE_SERVER_DIR}/src/index.js`;
 
 /** The typed module the server imports directly, and the plain name it takes in a bundle. */
-export const TYPED_MODULE = 'src/analysis-record.mts';
-export const STRIPPED_MODULE = 'src/analysis-record.mjs';
+export const TYPED_MODULE = 'src/analysis-history/analysis-record.mts';
+export const STRIPPED_MODULE = 'src/analysis-history/analysis-record.mjs';
 
 /**
  * A test fixture is not a shipping surface. `mcp/package.json` lists it because

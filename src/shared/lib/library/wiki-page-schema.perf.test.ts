@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { WIKI_PAGE_CASES } from '../../../../tests/fixtures/wiki-page-cases.mjs';
-import { validateWikiFolder as validateFolderMcp } from '../../../../mcp/src/wiki-schema.mjs';
+import { validateWikiFolder as validateFolderMcp } from '../../../../mcp/src/library/wiki-schema.mjs';
 import { validateWikiFolder as validateFolderTs, validateWikiPage as validateTs } from './wiki-page-schema';
 
 describe('validation stays linear as a folder grows', () => {

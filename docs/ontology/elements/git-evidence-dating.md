@@ -6,7 +6,7 @@ title: Git evidence dating
 display_en: Git evidence dating
 display_ko: Git 근거 시점 확인
 domain: domains/code-evidence
-path: mcp/src/evidence-drift.mjs
+path: mcp/src/drift/evidence-drift.mjs
 created_by: "agent:claude-code"
 dependencies: [elements/evidence-verdict-rule]
 relation_notes: { elements/evidence-verdict-rule: "You asked me to turn imports I actually witnessed into dependencies: the scan shows evidence-drift.mjs importing evidence-verdict.mjs so the dates and the verdict cannot disagree." }
@@ -15,7 +15,7 @@ relation_notes: { elements/evidence-verdict-rule: "You asked me to turn imports 
 Dates cited source files and concept documents from their respective Git histories so a shared rule can compare evidence changes with recorded meaning.
 
 ## Includes
-- Bounded date reads with distinct vault-document and source-path maps. The native Analysis command resolves the existing project binding and performs a guarded walk for each authoritative repository (`src-tauri/src/git/evidence/bound.rs`); MCP dating remains in `mcp/src/evidence-drift.mjs`.
+- Bounded date reads with distinct vault-document and source-path maps. The native Analysis command resolves the existing project binding and performs a guarded walk for each authoritative repository (`src-tauri/src/git/evidence/bound.rs`); MCP dating remains in `mcp/src/drift/evidence-drift.mjs`.
 - Native checks for grants, binding and receipt identity, repository HEAD and root identity around the read. The renderer discards an obsolete binding or scope before using returned dates (`src/views/ontology-insights/lib/use-ontology-evidence.ts`).
 - Native binding reads use a Unix-only confined reader, with macOS as the verified app surface. Windows returns unreadable with empty date maps and leaves the comparison unknown.
 - Explicit unknowns for unavailable history, missing authority, ambiguous bindings, dirty files and omitted paths. A picker selection must match the existing bound folder before date comparison resumes.

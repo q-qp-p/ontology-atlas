@@ -6,7 +6,7 @@ title: Architecture record receipt
 display_en: Architecture record receipt
 display_ko: 아키텍처 기록 영수증
 domain: domains/code-evidence
-path: mcp/src/architecture-record.mjs
+path: mcp/src/architecture/architecture-record.mjs
 created_by: "agent:claude-code"
 ---
 

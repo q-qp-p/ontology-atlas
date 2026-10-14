@@ -8,7 +8,7 @@ import {
   AGENT_BRIEF_COMPACT_MAX_BYTES,
   buildCompactAgentBrief,
   compactChannelBytes,
-} from '../agent-brief-compact.mjs';
+} from './agent-brief-compact.mjs';
 import { ok } from '../server/rpc.mjs';
 
 const TASK = 'Encode an optional DER SET and keep present elements ordered.';

@@ -21,7 +21,7 @@ import {
   WIKI_SECTION_ORDER as SECTIONS_MCP,
   validateWikiFolder as validateFolderMcp,
   validateWikiPage as validateMcp,
-} from '../../../mcp/src/wiki-schema.mjs';
+} from '../../../mcp/src/library/wiki-schema.mjs';
 
 /**
  * One format however many things write a page: the TS and MCP validators must share the same codes
@@ -38,7 +38,7 @@ interface Validator {
 
 const VALIDATORS: Record<string, Validator> = {
   'src/shared/lib (TS)': validateTs as Validator,
-  'mcp/src/wiki-schema.mjs': validateMcp as Validator,
+  'mcp/src/library/wiki-schema.mjs': validateMcp as Validator,
 };
 
 describe('the wiki page contract — both implementations agree', () => {
@@ -128,7 +128,7 @@ describe('the wiki page contract — both implementations agree', () => {
 describe('the wiki folder contract — both implementations agree', () => {
   const FOLDER_VALIDATORS = {
     'src/shared/lib (TS)': validateFolderTs,
-    'mcp/src/wiki-schema.mjs': validateFolderMcp,
+    'mcp/src/library/wiki-schema.mjs': validateFolderMcp,
   } as const;
   for (const [name, validate] of Object.entries(FOLDER_VALIDATORS)) {
     describe(name, () => {

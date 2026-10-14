@@ -1,7 +1,7 @@
 import { inflateRaw } from './inflate-raw';
 
 /**
- * TypeScript twin of `mcp/src/source-text.mjs`; anchors and unit text must match byte for byte
+ * TypeScript twin of `mcp/src/library/source-text.mjs`; anchors and unit text must match byte for byte
  * (`source-passage-parity.contract.test.ts`). Not copied: `node:zlib`, and the answer window
  * (nothing leaves the machine here). Nothing is stored.
  */

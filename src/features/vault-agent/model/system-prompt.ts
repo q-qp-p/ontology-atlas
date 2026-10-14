@@ -1,6 +1,6 @@
 /**
  * Layer-1 system prompt: product discipline in code, readable from the panel, English only (the
- * model channel). The rule blocks are literal copies of `mcp/src/construction-rules.mjs`, held
+ * model channel). The rule blocks are literal copies of `mcp/src/construction/construction-rules.mjs`, held
  * byte-equal by tests/contract/mcp/ontology-meta-model.contract.test.ts and vault-schema.contract.test.ts.
  */
 
@@ -8,7 +8,7 @@ import { NEXT_STEP_MAX_CHARS } from './next-step';
 
 const AGENT_INSTRUCTIONS_FILE = '.ontology-atlas/agent-instructions.md';
 
-// Literal mirror of `mcp/src/construction-rules.mjs#META_MODEL_RULES_EN`.
+// Literal mirror of `mcp/src/construction/construction-rules.mjs#META_MODEL_RULES_EN`.
 // The packages cannot cross-import; the ontology meta-model contract test keeps
 // the two model-facing prompts byte-identical.
 export const META_MODEL_RULES_EN = `## Meta-model truth boundary

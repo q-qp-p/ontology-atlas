@@ -1,4 +1,4 @@
-import { readFileSync, lstatSync, existsSync } from '../confined-source-fs.mjs';
+import { readFileSync, lstatSync, existsSync } from './confined-source-fs.mjs';
 import { join, dirname, resolve, relative, isAbsolute, sep } from 'node:path';
 import { pathResolvesInsideRoot } from './path-confinement.mjs';
 import { RUST_SOURCE_EXTENSION, isIgnoredPath } from './source-files.mjs';

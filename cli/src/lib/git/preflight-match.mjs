@@ -1,6 +1,6 @@
 // Commit preflight matching: given changed files, find vault nodes whose `path:` or `elements:` name them
-// (mcp/src/detect-drift.mjs goes the other way). The CLI cannot import mcp/src here, so it mirrors
-// looksLikePath / isOntologySlug: change a value here and check mcp/src/detect-drift.mjs in the same pass.
+// (mcp/src/drift/detect-drift.mjs goes the other way). The CLI cannot import mcp/src here, so it mirrors
+// looksLikePath / isOntologySlug: change a value here and check mcp/src/drift/detect-drift.mjs in the same pass.
 
 const ONTOLOGY_SLUG_PREFIXES = ['capabilities/', 'domains/', 'elements/', 'documents/'];
 

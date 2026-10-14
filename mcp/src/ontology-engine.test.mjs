@@ -1,4 +1,3 @@
-import './ontology-engine/traversal-queries.test.mjs';
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';

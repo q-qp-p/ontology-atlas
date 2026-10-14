@@ -6,7 +6,7 @@ title: Source inspection probe
 display_en: Source inspection probe
 display_ko: 소스 점검 프로브
 domain: domains/code-evidence
-path: mcp/src/project-source-inspection.mjs
+path: mcp/src/project-source/project-source-inspection.mjs
 created_by: "agent:claude-code"
 ---
 

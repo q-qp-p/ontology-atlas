@@ -6,7 +6,7 @@ title: Project meaning receipt
 display_en: Project meaning receipt
 display_ko: 프로젝트 의미 검증 기록
 domain: domains/meaning-layer
-path: mcp/src/project-meaning-receipt.mjs
+path: mcp/src/project-meaning/project-meaning-receipt.mjs
 created_by: "agent:codex-mcp-client"
 ---
 
@@ -15,10 +15,10 @@ created_by: "agent:codex-mcp-client"
 Project meaning receipt keeps the assessment of a project's five competency answers bound to the exact project document, graph and source evidence that were explicitly finalized.
 
 ## Evidence
-- Primary implementation: `mcp/src/project-meaning-receipt.mjs#readProjectMeaningAssessment`
-- Supporting implementation: `mcp/src/meaning-assessment.mjs#deriveMeaningAssessment`
-- Focused test: `mcp/src/project-meaning-receipt.test.mjs#body digest binds the receipt to the entire current project Markdown`
-- Focused test: `mcp/src/project-meaning-restart.test.mjs#fresh MCP readers keep edited answers unconfirmed until explicit finalization`
+- Primary implementation: `mcp/src/project-meaning/project-meaning-receipt.mjs#readProjectMeaningAssessment`
+- Supporting implementation: `mcp/src/meaning/meaning-assessment.mjs#deriveMeaningAssessment`
+- Focused test: `mcp/src/project-meaning/project-meaning-receipt.test.mjs#body digest binds the receipt to the entire current project Markdown`
+- Focused test: `mcp/src/project-meaning/project-meaning-restart.test.mjs#fresh MCP readers keep edited answers unconfirmed until explicit finalization`
 - `mcp/src/tools/graph.mjs` reads the assessment for health, workspace and task briefs.
 - `mcp/src/tools/project-source.mjs` finalizes only after checking the current document timestamp, vault validation, complete project scope and the recorded witnesses.
 

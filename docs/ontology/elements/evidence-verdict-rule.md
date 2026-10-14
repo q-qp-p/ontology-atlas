@@ -6,7 +6,7 @@ title: Evidence verdict rule
 display_en: Evidence verdict rule
 display_ko: 근거 판정 규칙
 domain: domains/code-evidence
-path: mcp/src/evidence-verdict.mjs
+path: mcp/src/drift/evidence-verdict.mjs
 created_by: "agent:claude-code"
 ---
 

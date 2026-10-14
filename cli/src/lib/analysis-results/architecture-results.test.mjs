@@ -13,7 +13,7 @@ import { loadMcpModule } from '../mcp-bridge/mcp-module.mjs';
 const here = dirname(fileURLToPath(import.meta.url));
 const fixturePath = resolve(here, '../../../../tests/fixtures/architecture-profile-cases.mjs');
 const fixtures = existsSync(fixturePath) ? await import(pathToFileURL(fixturePath).href) : null;
-const { buildArchitectureBrief, parseArchitectureProfile } = await loadMcpModule('architecture-profile.mjs');
+const { buildArchitectureBrief, parseArchitectureProfile } = await loadMcpModule('architecture/architecture-profile.mjs');
 
 function validBrief() {
   return buildArchitectureBrief(parseArchitectureProfile(fixtures.FSD_PROFILE_FRONTMATTER), {

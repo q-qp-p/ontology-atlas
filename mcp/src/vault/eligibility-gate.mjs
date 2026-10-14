@@ -12,14 +12,14 @@ import {
   pathShapedReferenceMessage,
   pathShapedTitleMessage,
   slugOutsideKindFolderMessage,
-} from '../construction-rules.mjs';
-import { hasCapabilityImplementationEvidence } from '../capability-evidence.mjs';
+} from '../construction/construction-rules.mjs';
+import { hasCapabilityImplementationEvidence } from '../ontology-engine/capability-evidence.mjs';
 import {
   dependencyWitnessFinding,
   isStarterExampleNode,
   meaningFindings,
   starterExampleFinding,
-} from '../meaning-findings.mjs';
+} from '../meaning/meaning-findings.mjs';
 
 import { loadVaultDocs, readDoc } from './documents.mjs';
 import { GRAPH_ARRAY_KEYS, collectNeighborRefs } from './relation-refs.mjs';
