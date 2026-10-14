@@ -4,10 +4,10 @@ import type {
   NormalizedToolCall,
   ProviderAdapter,
   TurnAssembly,
-} from '../provider-adapter';
-import { PROVIDER_DEFAULT_MODELS, readVendorErrorMessage } from '../provider-adapter';
+} from './provider-adapter';
+import { PROVIDER_DEFAULT_MODELS, readVendorErrorMessage } from './provider-adapter';
 
-import { invalidProviderResponse, isResponseObject, readResponseObject } from '../provider-response';
+import { invalidProviderResponse, isResponseObject, readResponseObject } from './provider-response';
 
 /**
  * OpenAI adapter: string `arguments` are validated before execution, and no output token cap is

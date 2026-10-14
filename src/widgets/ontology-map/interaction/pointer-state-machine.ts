@@ -24,7 +24,7 @@
  * - Hover state is **not** part of this state machine — the prototype only
  *   computes `hoveredNode` in `pointermove` while `pointer.down` is false at
  *   all (i.e., phase `"idle"`), and only when `focusedNode` is null
- *   (`model/focus-state.ts` owns the suppression rule). This module only
+ *   (`model/visibility/focus-state.ts` owns the suppression rule). This module only
  *   answers "is the pointer idle/pressed/dragging", not "what is hovered".
  *
  */
@@ -74,7 +74,7 @@ export const INITIAL_POINTER_MACHINE_STATE: PointerMachineState = {
  * Pure transition function — one event in, one `{next, commitClick}` out.
  * The caller owns hit-testing (`hitNodeId` is provided by the caller on
  * `pointerdown`, not computed here) and owns feeding the result's
- * `commitClick` into `model/focus-state.ts`'s focus transitions.
+ * `commitClick` into `model/visibility/focus-state.ts`'s focus transitions.
  */
 export function transitionPointerState(
   current: PointerMachineState,

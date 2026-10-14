@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { connectorAcpServers } from '@/features/acp-session/model/connector-servers';
+import { connectorAcpServers } from '@/features/acp-session/model/runtime-wiring/connector-servers';
 import type { ConnectorRecord } from '@/shared/lib/connectors/connector-record';
 
 import { useVaultConnectors, type VaultConnectorsState } from './use-vault-connectors';

@@ -6,7 +6,7 @@ title: Vault source import
 display_en: Vault source import
 display_ko: 볼트 원본 가져오기
 domain: domains/human-workbench
-path: src/features/library/lib/add-sources.ts
+path: src/features/library/lib/sources/add-sources.ts
 created_by: "agent:claude-code"
 ---
 

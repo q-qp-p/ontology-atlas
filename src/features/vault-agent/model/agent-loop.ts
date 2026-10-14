@@ -2,15 +2,15 @@ import type { LlmChatScope, LlmChatEcho } from '@/shared/lib/llm-connection/taur
 
 import { extractCitations } from './citation';
 import { splitNextStep } from './next-step';
-import type { AgentToolDefinition } from './tool-catalog';
+import type { AgentToolDefinition } from './agent-tools/tool-catalog';
 import type {
   NormalizedToolCall,
   ProviderAdapter,
   ToolResultPayload,
   WireExchange,
-} from './provider-adapter';
+} from './providers/provider-adapter';
 import { formatScreenContextBlock } from './screen-context';
-import type { ToolExecution } from './tool-executor';
+import type { ToolExecution } from './agent-tools/tool-executor';
 import {
   AGENT_ROUND_CAP,
   AGENT_TURN_VAULT_CHAR_CAP,

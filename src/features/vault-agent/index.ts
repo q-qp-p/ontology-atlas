@@ -13,14 +13,14 @@ export type {
   FirstWordsNodeIntentKind,
 } from './model/first-words';
 export { buildSystemPrompt } from './model/system-prompt';
-export { AGENT_TOOLS } from './model/tool-catalog';
+export { AGENT_TOOLS } from './model/agent-tools/tool-catalog';
 /* Compile's public surface is deliberately small. */
-export { selectLocalCompileTargets, useLocalCompile } from './model/use-local-compile';
-export type { LocalCompileSession } from './model/use-local-compile';
-export type { CompileCardRow } from './model/compile-consent-card';
-export { PARSER_SOURCE_FORMATS } from './model/source-text';
-export { createToolExecutor } from './model/tool-executor';
-export type { VaultReadDoc, VaultReadPort } from './model/vault-read-port';
+export { selectLocalCompileTargets, useLocalCompile } from './model/compile/use-local-compile';
+export type { LocalCompileSession } from './model/compile/use-local-compile';
+export type { CompileCardRow } from './model/compile/compile-consent-card';
+export { PARSER_SOURCE_FORMATS } from './model/compile/source-text';
+export { createToolExecutor } from './model/agent-tools/tool-executor';
+export type { VaultReadDoc, VaultReadPort } from './model/agent-tools/vault-read-port';
 export { resolveProviderAdapter } from './model/providers';
 export { AGENT_ROUND_CAP } from './model/types';
 export type {
@@ -33,7 +33,7 @@ export type {
   ToolCallRecord,
 } from './model/types';
 export { buildBusinessFlowRequest } from "./model/business-flow-request";
-export { applyProposal, planProposalFiles, proposalLineDiff, proposalToClipboardPacket, summarizeChangeVolume } from './model/proposal-applier';
-export { buildProposal } from './model/proposal-builder';
+export { applyProposal, planProposalFiles, proposalLineDiff, proposalToClipboardPacket, summarizeChangeVolume } from './model/proposals/proposal-applier';
+export { buildProposal } from './model/proposals/proposal-builder';
 
-export { CONSTRUCTION_TOOLS, CONSTRUCTION_SYSTEM, constructionAdapter, createConstructionExecutor } from './model/construction-executor';
+export { CONSTRUCTION_TOOLS, CONSTRUCTION_SYSTEM, constructionAdapter, createConstructionExecutor } from './model/agent-tools/construction-executor';

@@ -14,7 +14,7 @@ import {
   type ClusterChip,
   type DensityGateParentGeometry,
   type DensityGateResult,
-} from "../../model/density-gate";
+} from "../../model/layout/density-gate";
 import type { TopologyWorld } from "./topology-world";
 
 export function computeTopologyClusterState(

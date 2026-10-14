@@ -6,7 +6,7 @@ title: Agent proposal applier
 display_en: Agent proposal applier
 display_ko: 에이전트 제안 적용기
 domain: domains/agent-access
-path: src/features/vault-agent/model/proposal-applier.ts
+path: src/features/vault-agent/model/proposals/proposal-applier.ts
 created_by: "agent:claude-code"
 ---
 
@@ -23,7 +23,7 @@ The shared applier writes the exact document diffs a person approved in the vaul
 - Certifying semantic correctness or promoting project competency qualification from a vault-only conversation.
 
 ## Evidence
-- `src/features/vault-agent/model/proposal-applier.ts` implements the shared write and recovery sequence; `use-vault-agent.ts` and `use-local-compile.ts` consume its outcomes.
+- `src/features/vault-agent/model/proposals/proposal-applier.ts` implements the shared write and recovery sequence; `use-vault-agent.ts` and `use-local-compile.ts` consume its outcomes.
 - Controlled failures cover a later writer failure, first writer failure, failed recovery reload, and a final reload failure after completed writes.
 
 ## Uncertainty

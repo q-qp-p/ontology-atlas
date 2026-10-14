@@ -6,7 +6,7 @@ title: ACP vault MCP wiring
 display_en: ACP vault MCP wiring
 display_ko: ACP 볼트 MCP 연결
 domain: domains/agent-access
-path: src/features/acp-session/model/vault-mcp-server.ts
+path: src/features/acp-session/model/runtime-wiring/vault-mcp-server.ts
 created_by: "agent:claude-code"
 ---
 

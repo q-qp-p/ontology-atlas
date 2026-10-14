@@ -6,8 +6,8 @@ import { AGENT_DOCK_INSET_SURFACE_CLASS, agentDockReflowStyle } from "../../src/
 
 const home = readFileSync("src/views/home/ui/HomePage.tsx", "utf8");
 const dock = readFileSync("src/views/home/ui/TopologyAgentDock.tsx", "utf8");
-const orchestration = readFileSync("src/views/home/model/use-topology-agent-orchestration.tsx", "utf8");
-const runtimeController = readFileSync("src/views/home/model/use-acp-runtime-controller.ts", "utf8");
+const orchestration = readFileSync("src/views/home/model/agent/use-topology-agent-orchestration.tsx", "utf8");
+const runtimeController = readFileSync("src/views/home/model/agent/use-acp-runtime-controller.ts", "utf8");
 const vaultAgent = readFileSync("src/widgets/vault-agent-panel/ui/VaultAgentPanel.tsx", "utf8");
 
 function insetDockOpenSources(source: string): string[][] {
@@ -64,7 +64,7 @@ describe("agent dock inset surface", () => {
       "src/views/home/ui/TopologyAgentDock.tsx",
       "src/views/project-detail/ui/parts/ProjectAgentDock.tsx",
       "src/views/architecture/ui/ArchitectureAgentDock.tsx",
-      "src/views/library/ui/parts/LibraryAgentDock.tsx",
+      "src/views/library/ui/parts/agent/LibraryAgentDock.tsx",
       "src/views/ontology-insights/ui/parts/InsightsAgentDock.tsx",
     ].map((path) => [path, readFileSync(path, "utf8")] as const);
     for (const [path, source] of docks) {

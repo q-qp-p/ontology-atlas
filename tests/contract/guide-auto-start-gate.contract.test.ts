@@ -13,7 +13,7 @@ const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
 
 /** Files that own an auto-start = files that must read the switch. This list is the reach. */
 const AUTO_START_SITES = [
-  "src/views/home/model/use-topology-keyboard-tour.tsx",
+  "src/views/home/model/keyboard/use-topology-keyboard-tour.tsx",
   "src/features/guided-tour/ui/DestinationGuide.tsx",
   "src/features/first-run-starter/model/vault-guide-auto-open.ts",
 ] as const;

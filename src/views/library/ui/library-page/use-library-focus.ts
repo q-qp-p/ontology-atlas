@@ -1,5 +1,5 @@
 import { useEffect, useRef, type RefObject, type Dispatch, type SetStateAction } from "react";
-import { useLibraryAgent } from "../../lib/use-library-agent";
+import { useLibraryAgent } from "../../lib/agent/use-library-agent";
 import { usePaneArrival } from "../../lib/use-pane-arrival";
 import {
   type LibrarySelection,

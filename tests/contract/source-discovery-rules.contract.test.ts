@@ -9,7 +9,7 @@ import {
   DISCOVERY_MAX_DEPTH,
   DISCOVERY_PRUNE_DIR_NAMES,
   discoveryAcceptsFile,
-} from '@/entities/docs-vault/lib/source-discovery';
+} from '@/entities/docs-vault/lib/library/source-discovery';
 
 /**
  * **Two walks, one rule.**

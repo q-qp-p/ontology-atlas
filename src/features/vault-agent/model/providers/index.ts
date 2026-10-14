@@ -1,4 +1,4 @@
-import type { ProviderAdapter } from '../provider-adapter';
+import type { ProviderAdapter } from './provider-adapter';
 import { anthropicAdapter } from './anthropic';
 import { geminiAdapter } from './gemini';
 import { localAdapter } from './local';

@@ -3,7 +3,7 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { useCopyFeedback } from '@/shared/lib/clipboard/use-copy-feedback';
 import type { ActionFeedbackState } from '@/shared/motion/action-feedback-glyph';
-import { summarizeAddSources, type AddSourcesOutcome } from '../lib/add-sources';
+import { summarizeAddSources, type AddSourcesOutcome } from '../lib/sources/add-sources';
 
 type ImportPhase = 'picking' | 'importing' | 'feedback' | 'idle';
 

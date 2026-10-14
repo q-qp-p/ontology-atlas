@@ -13,7 +13,7 @@ import {
   territoryClusterAvoid,
   type Box,
   type TerritoryLayout,
-} from "../model/territories-layout";
+} from "../model/layout/territories-layout";
 import {
   layoutTerritories,
   measureTerritoryText,
@@ -31,7 +31,7 @@ import {
 } from "../render/territories";
 
 /**
- * Territories: the flat map with nothing folded (rules in `model/territories-layout.ts`, paint in
+ * Territories: the flat map with nothing folded (rules in `model/layout/territories-layout.ts`, paint in
  * `render/territories.ts`). Owns the canvas, a pan-only camera, hit testing and a DOM list mirroring
  * every mark. A click calls `onSelect` with the node id; the view draws only the ego focus.
  */

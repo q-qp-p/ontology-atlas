@@ -3,11 +3,11 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 
 import type { DomeViewKind } from "../model/dome-view/types";
-import { TIER_NAME_ROW_PX, type TierNameAnchor } from "../model/tier-names";
+import { TIER_NAME_ROW_PX, type TierNameAnchor } from "../model/dome-view/tier-names";
 
 /**
  * Strata's tier names, each beside the plane it names. The frame decides where a name stands
- * (`model/tier-names.ts`); this draws them as DOM rows over the canvas and measures each in that
+ * (`model/dome-view/tier-names.ts`); this draws them as DOM rows over the canvas and measures each in that
  * type. Hidden from assistive technology: the bottom legend strip already names each kind.
  */
 

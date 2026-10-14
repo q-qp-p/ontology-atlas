@@ -5,10 +5,10 @@ export { MapLayoutMorphOverlay, installMapLayoutMorphProbe } from './morph/MapLa
 export type { MapLayoutMorphJob } from './morph/MapLayoutMorphOverlay';
 export { chooseLayoutSwitch, containmentParents } from './morph/layout-morph';
 export { conceptDegrees } from './morph/glide';
-export { extractRealmSubtree } from './model/realm';
+export { extractRealmSubtree } from './model/realm/realm';
 export { predictMapLayoutTarget } from './morph/map-marks';
 export type { HexBoardLabels } from './ui/OntologyHexBoardMap';
-export type { HexPlacementRecord } from './model/hex-board';
+export type { HexPlacementRecord } from './model/board/hex-board';
 export type { DialLabels, DialMemory } from './dial/types';
 export { capabilityTierRead } from './dial/placement';
 export type { FlatRingMemoryStore } from './ui/loop/topology-loop-contract';
@@ -27,11 +27,11 @@ export { buildV2Connections, buildV2ConnectionGroups, buildV2EvidenceRows, forma
  * trusting its mount-time cache (B3 "The Hub is the Map" — HomePage wiring).
  */
 export { refreshIndexDependentTokens } from './tokens/read-map-tokens';
-export { ambientSleepFactor, isAmbientAsleep } from './model/ambient-sleep';
-export { PLAIN_TIER_REVEAL } from './model/tier-visibility';
+export { ambientSleepFactor, isAmbientAsleep } from './model/ambient/ambient-sleep';
+export { PLAIN_TIER_REVEAL } from './model/visibility/tier-visibility';
 export { OntologyMapEdgePanel } from './ui/OntologyMapEdgePanel';
-export { layoutCone } from './model/cone-layout';
-export type { ConeInputNode, ConeKind } from './model/cone-layout';
+export { layoutCone } from './model/dome-view/cone-layout';
+export type { ConeInputNode, ConeKind } from './model/dome-view/cone-layout';
 /**
  * Where the last frame drew each node's name and disc, for chrome outside the map that must
  * leave what it explains in view (the guided tour's card).

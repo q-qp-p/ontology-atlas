@@ -1,4 +1,4 @@
-import type { NormalizedResponse, ProviderAdapter, TurnAssembly } from '../provider-adapter';
+import type { NormalizedResponse, ProviderAdapter, TurnAssembly } from './provider-adapter';
 import { openaiAdapter } from './openai';
 
 const LOCAL_TOOL_ROUND_CAP = 3;

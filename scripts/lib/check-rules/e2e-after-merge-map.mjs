@@ -21,8 +21,8 @@ export const rules = [
     command: 'pnpm exec playwright test tests/e2e/map-3d-strata-drawing.spec.ts',
     reason: "the Strata view's drawing changed",
     matches: [
-      /^src\/widgets\/ontology-map\/model\/strata-stage\.ts$/,
-      /^src\/widgets\/ontology-map\/render\/dome-rings\.ts$/,
+      /^src\/widgets\/ontology-map\/model\/dome-view\/strata-stage\.ts$/,
+      /^src\/widgets\/ontology-map\/render\/dome-view\/dome-rings\.ts$/,
     ],
   },
   {
@@ -30,8 +30,8 @@ export const rules = [
     command: 'pnpm exec playwright test tests/e2e/map-3d-strata-lod.spec.ts',
     reason: "Strata's level-of-detail draw budget and dust marks changed",
     matches: [
-      /^src\/widgets\/ontology-map\/model\/strata-lod\.ts$/,
-      /^src\/widgets\/ontology-map\/render\/strata-lod\.ts$/,
+      /^src\/widgets\/ontology-map\/model\/dome-view\/strata-lod\.ts$/,
+      /^src\/widgets\/ontology-map\/render\/dome-view\/strata-lod\.ts$/,
     ],
   },
   {
@@ -112,7 +112,7 @@ export const rules = [
     reason: "the hex board at rest changed",
     matches: [
       /^src\/widgets\/ontology-map\/ui\/OntologyHexBoardMap\.tsx$/,
-      /^src\/widgets\/ontology-map\/model\/hex-board\.ts$/,
+      /^src\/widgets\/ontology-map\/model\/board\/hex-board\.ts$/,
     ],
   },
   {
@@ -138,7 +138,7 @@ export const rules = [
     command: 'pnpm exec playwright test tests/e2e/map-hex-routes-free-area.spec.ts',
     reason: "hex board routes staying in the free map changed",
     matches: [
-      /^src\/widgets\/ontology-map\/model\/hex-router\.ts$/,
+      /^src\/widgets\/ontology-map\/model\/board\/hex-router\.ts$/,
       /^src\/widgets\/ontology-map\/interaction\/free-area\.ts$/,
     ],
   },
@@ -211,8 +211,8 @@ export const rules = [
     command: 'pnpm exec playwright test tests/e2e/map-path-lens-frame.spec.ts',
     reason: "the path lens framing changed",
     matches: [
-      /^src\/widgets\/ontology-map\/model\/path-lens\.ts$/,
-      /^src\/views\/home\/model\/use-topology-path-lens\.ts$/,
+      /^src\/widgets\/ontology-map\/model\/visibility\/path-lens\.ts$/,
+      /^src\/views\/home\/model\/map-canvas\/use-topology-path-lens\.ts$/,
     ],
   },
   {
@@ -256,7 +256,7 @@ export const rules = [
     reason: "name clearance around changed-node rings changed",
     matches: [
       /^src\/widgets\/ontology-map\/render\/label-layout\.ts$/,
-      /^src\/widgets\/ontology-map\/model\/spotlight-motion\.ts$/,
+      /^src\/widgets\/ontology-map\/model\/ambient\/spotlight-motion\.ts$/,
     ],
   },
   {
@@ -265,7 +265,7 @@ export const rules = [
     reason: "Strata tier name placement changed",
     matches: [
       /^src\/widgets\/ontology-map\/ui\/OntologyMapTierLegend\.tsx$/,
-      /^src\/widgets\/ontology-map\/model\/tier-names\.ts$/,
+      /^src\/widgets\/ontology-map\/model\/dome-view\/tier-names\.ts$/,
     ],
   },
   {
@@ -275,7 +275,7 @@ export const rules = [
     matches: [
       /^src\/widgets\/ontology-map\/ui\/OntologyTerritoriesMap\.tsx$/,
       /^src\/widgets\/ontology-map\/render\/territories\.ts$/,
-      /^src\/widgets\/ontology-map\/model\/territories-layout\.ts$/,
+      /^src\/widgets\/ontology-map\/model\/layout\/territories-layout\.ts$/,
     ],
   },
   {

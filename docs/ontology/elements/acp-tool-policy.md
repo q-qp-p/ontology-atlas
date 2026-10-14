@@ -6,7 +6,7 @@ title: ACP tool policy
 display_en: ACP tool policy
 display_ko: ACP 도구 정책
 domain: domains/agent-access
-path: src/features/acp-session/model/atlas-tool-policy.ts
+path: src/features/acp-session/model/permissions/atlas-tool-policy.ts
 created_by: "agent:claude-code"
 ---
 

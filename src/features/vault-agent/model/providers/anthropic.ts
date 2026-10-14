@@ -4,10 +4,10 @@ import type {
   NormalizedToolCall,
   ProviderAdapter,
   TurnAssembly,
-} from '../provider-adapter';
-import { PROVIDER_DEFAULT_MODELS, readVendorErrorMessage } from '../provider-adapter';
+} from './provider-adapter';
+import { PROVIDER_DEFAULT_MODELS, readVendorErrorMessage } from './provider-adapter';
 
-import { invalidProviderResponse, isResponseObject, readResponseObject } from '../provider-response';
+import { invalidProviderResponse, isResponseObject, readResponseObject } from './provider-response';
 
 /** Anthropic Messages adapter; the assistant `content` array goes back verbatim or thinking blocks are lost. */
 

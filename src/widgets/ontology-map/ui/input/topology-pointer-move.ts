@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent } from "react";
-import { EGO_NEIGHBOR_CHIP_ID, parseClusterMoreChipId, scheduleRipple } from "../../model/focus-state";
+import { EGO_NEIGHBOR_CHIP_ID, parseClusterMoreChipId, scheduleRipple } from "../../model/visibility/focus-state";
 import { computeDragTugSets } from "../../interaction/drag-tug";
 import { hitTestEdges } from "./topology-edge-hit";
 import { commitDomeEntrySweep } from "../../model/dome-view/frame";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { HITTABLE_MIN_TIER_ALPHA } from "../model/tier-visibility";
+import { HITTABLE_MIN_TIER_ALPHA } from "../model/visibility/tier-visibility";
 import {
   computeLabelAlpha,
   computeLensLabelAlpha,

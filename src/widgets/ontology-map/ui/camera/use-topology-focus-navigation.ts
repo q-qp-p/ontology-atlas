@@ -7,10 +7,10 @@ import {
 import type { CameraTarget } from "../../engine/camera";
 import { commitDomeEntrySweep } from "../../model/dome-view/frame";
 import type { DomeRuntime } from "../../model/dome-view/runtime";
-import { isPathTargetPick, type TopologyMapLensKind } from "../../model/path-lens";
+import { isPathTargetPick, type TopologyMapLensKind } from "../../model/visibility/path-lens";
 import {
   type RealmTransitionState
-} from "../../model/realm-transition";
+} from "../../model/realm/realm-transition";
 import { computeFocusCameraTarget, computeOverviewCameraTarget, focusLeashPx, type FocusLeashPx } from "./topology-camera-math";
 import {
   overviewBoundsFor

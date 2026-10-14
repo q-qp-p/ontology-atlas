@@ -1,4 +1,4 @@
-import { edgeTierAlpha } from "../../model/tier-visibility";
+import { edgeTierAlpha } from "../../model/visibility/tier-visibility";
 import type { RelationCaption } from "../../render/relation-captions";
 import { selectAmbientDependsComets, selectEgoContainsComets } from "../../render/edge-fireflies";
 import { isSpineNode, type TopologyWorld, type WorldEdge } from "../world/topology-world";

@@ -4,7 +4,7 @@ import {
   createStrataLodDust,
   drawStrataLodDust,
   resetStrataLodDust,
-} from "../../render/strata-lod";
+} from "../../render/dome-view/strata-lod";
 import type { ReservedBox } from "../../render/label-layout";
 import { isPreviewEndpointHidden } from "../../render/preview-edge";
 import { passState, domeNodeFrameReused, drawnScreenRadiusByIdReused, lodDustByState } from "./frame-state";

@@ -38,8 +38,8 @@ import {
   controlClass,
 } from "@/shared/ui";
 import { Input } from "@/shared/ui/fields/input";
-import { kindFolderAddress, reclassifyMoveTarget } from "../../lib/kind-folder-move";
-import { hasDocMtimeConflict, resolveDocLastEditSubject } from "../../lib/resolve-doc-edit-subject";
+import { kindFolderAddress, reclassifyMoveTarget } from "../../lib/doc-actions/kind-folder-move";
+import { hasDocMtimeConflict, resolveDocLastEditSubject } from "../../lib/doc-actions/resolve-doc-edit-subject";
 import { graphFieldKeys, DANGLING_CHECK_KEYS, REFERENCE_KEYS, toRefTokens, formatValue, isNodeReference } from "./doc-frontmatter/fields";
 import { fieldClass, fieldLabel } from '@/shared/ui/control-class';
 import { useReferrerListName, type DocFrontmatterPatch } from "../../model/use-doc-write-actions";

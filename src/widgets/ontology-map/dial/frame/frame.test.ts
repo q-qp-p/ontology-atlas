@@ -8,7 +8,7 @@ import {
   rollRelatesDomainPairs,
   type TreeInputEdge,
   type TreeInputNode } from "../../model/containment-tree";
-import { easeOutCubic } from "../../model/camera-easing";
+import { easeOutCubic } from "../../model/camera/camera-easing";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import { buildDialModel, resolveDialAttention } from "../dial-model";
 import {

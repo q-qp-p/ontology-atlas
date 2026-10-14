@@ -78,7 +78,7 @@ one 720 px viewport. Cast, held to the vault and disjoint from the conduction ca
 | Changed file (example commit) | Concept | Calm concepts |
 |---|---|---|
 | `src/views/library/ui/LibraryPage.tsx` (+18 −4) | Library workspace (capability) | Wiki pages |
-| `src/features/library/lib/judge-page-write.ts` (+9 −2) | Wiki page write judge (element of Library workspace) | Ontology insights, Agent work visibility |
+| `src/features/library/lib/wiki/judge-page-write.ts` (+9 −2) | Wiki page write judge (element of Library workspace) | Ontology insights, Agent work visibility |
 | `src/features/saved-constellations/model/use-saved-constellations.ts` (+6 −6) | Saved constellations (capability) | Graph block exchange |
 
 Rest frame (poster, one focal point: the brief line): commit card full ink; threads at rest alpha, no light; moved

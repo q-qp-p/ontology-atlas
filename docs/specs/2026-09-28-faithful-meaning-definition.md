@@ -17,7 +17,7 @@ Evidence: `/tmp/atlas-gray-area-audit/walker/report.md`, `04-retry-evidence.png`
 
 ## Today
 
-- At source base `0b644920b`, local Markdown becomes a generic flattened excerpt at `src/entities/docs-vault/lib/build-local-manifest.ts:351` and `:383`. `src/shared/lib/vault-document/parse-frontmatter.ts:448` strips headings and joins text, including list and table content.
+- At source base `0b644920b`, local Markdown becomes a generic flattened excerpt at `src/entities/docs-vault/lib/local-manifest/build-local-manifest.ts:351` and `:383`. `src/shared/lib/vault-document/parse-frontmatter.ts:448` strips headings and joins text, including list and table content.
 - `src/entities/docs-vault/lib/derive-ontology-from-vault.ts:170` selects `description ?? excerpt`; an empty description therefore blocks fallback. `src/widgets/analysis-workbench/ui/MeaningContext.tsx:44` presents that result as the definition and `:46` offers `analysisWorkbench.openDefinition`.
 - Generated documents have the same generic excerpt path at `scripts/build-docs-vault.mjs:370` and `:894`. MCP's distinct `extractSummaryExcerpt` at `mcp/src/vault.mjs:297` scans beyond headings and falls back to raw block content; it is a preview contract, not a safe definition selector.
 - Generic table previews are deliberate (`src/shared/lib/vault-document/parse-frontmatter.test.ts:113`). The manifest clones retained fields to release source text (`build-local-manifest.ts:404`); its retained-body regression is `build-local-manifest.perf.test.ts:133`.
@@ -100,7 +100,7 @@ Exact implementation verification commands (planned, not yet run):
 ```sh
 pnpm test:run src/shared/lib/vault-document/parse-frontmatter.test.ts src/entities/docs-vault/lib/derive-ontology-from-vault.test.ts src/widgets/analysis-workbench/ui/MeaningContext.test.tsx
 node --test scripts/build-docs-vault.test.mjs
-pnpm test:perf src/entities/docs-vault/lib/build-local-manifest.perf.test.ts -t 'does not keep whole file texts alive through the kept fields'
+pnpm test:perf src/entities/docs-vault/lib/local-manifest/build-local-manifest.perf.test.ts -t 'does not keep whole file texts alive through the kept fields'
 pnpm checks:changed -- --run
 ```
 

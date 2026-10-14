@@ -14,15 +14,15 @@ import {
   stopAcpSession,
 } from '@/shared/lib/agent-chat/tauri-acp';
 
-import { GATED_SESSION_MODE } from './runtime-gate';
-import { modeKeepsGate } from './mode-safety';
+import { GATED_SESSION_MODE } from './runtime-wiring/runtime-gate';
+import { modeKeepsGate } from './session-choices/mode-safety';
 import { investigationPermissionVerified, type InvestigationSendGuard } from './investigation/guard';
 import { readReportedPlan, type ReportedPlan } from './investigation/reported-plan';
-import { isDiagnosticStderr } from './acp-trouble';
-import { readSlashCommands, type AcpSlashCommand } from './slash-commands';
-import { hasVaultMcpServer, VAULT_MCP_SERVER_NAME, vaultWriteConsentOn } from './vault-mcp-server';
+import { isDiagnosticStderr } from './trouble/acp-trouble';
+import { readSlashCommands, type AcpSlashCommand } from './session-choices/slash-commands';
+import { hasVaultMcpServer, VAULT_MCP_SERVER_NAME, vaultWriteConsentOn } from './runtime-wiring/vault-mcp-server';
 import { latestSession, orderSessionsByRecency } from './session-recency';
-import { keepToolOutput, type ToolOutputEvidence } from './tool-output';
+import { keepToolOutput, type ToolOutputEvidence } from './tool-calls/tool-output';
 import {
   applyCurrentMode,
   createAcpClient,

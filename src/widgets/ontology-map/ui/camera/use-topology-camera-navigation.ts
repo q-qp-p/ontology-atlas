@@ -8,14 +8,14 @@ import {
 } from "react";
 import { useLatestRef } from "@/shared/lib/use-latest-ref";
 import type { CameraAxes, CameraTarget } from "../../engine/camera";
-import { type CameraTween } from "../../model/camera-easing";
+import { type CameraTween } from "../../model/camera/camera-easing";
 import type { DomeRuntime } from "../../model/dome-view/runtime";
 import type { DomeModel } from "../../model/dome-view/types";
-import { isPathTargetPick, type TopologyMapLensKind } from "../../model/path-lens";
+import { isPathTargetPick, type TopologyMapLensKind } from "../../model/visibility/path-lens";
 import {
   type RealmTransitionState
-} from "../../model/realm-transition";
-import { resolveViewportReframeMode } from "../../model/viewport-reframe";
+} from "../../model/realm/realm-transition";
+import { resolveViewportReframeMode } from "../../model/camera/viewport-reframe";
 import { landTierAssembly } from "../../morph/tier-assembly";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import { computeFocusCameraTarget, computeLensFitTarget, computeOverviewCameraTarget, computeOverviewFitScale } from "./topology-camera-math";

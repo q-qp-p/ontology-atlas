@@ -34,7 +34,7 @@ const HANDOFF_BLOBS_PENDING = [
   "src/entities/vault-session/model/agent-activity-status.ts",
   "src/features/docs-vault-local/ui/OntologyStarterCta.tsx",
   "src/entities/knowledge-graph/lib/ontology-tree/agent-readiness.ts",
-  "src/views/home/lib/footprint-trail.ts",
+  "src/views/home/lib/trail/footprint-trail.ts",
   "src/views/home/lib/topology-analysis.ts",
 ];
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { deriveOntologyFromVault, resolveStaticVaultSource } from "@/entities/docs-vault";
 import type { TreeInputEdge, TreeInputNode } from "../model/containment-tree";
-import { computeHexBoard, HEX_TYPE, type HexTextRole } from "../model/hex-board";
+import { computeHexBoard, HEX_TYPE, type HexTextRole } from "../model/board/hex-board";
 import type { HexBoardTokens } from "../tokens/read-hex-board-tokens";
 import { drawBoard } from "../board/board-paint";
 import { buildBoardScene } from "../board/board-scene";

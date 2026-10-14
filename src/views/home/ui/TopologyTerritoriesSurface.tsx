@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import type { KnowledgeGraphNode } from "@/entities/knowledge-graph";
 import type { MapNavigationSpeed } from "@/shared/lib/preferences/appearance-preferences";
 import { OntologyTerritoriesMap, type OntologyMapEdge, type OntologyMapNode } from "@/widgets/ontology-map";
-import { useMapEvidenceStates, type MapEvidenceAvailability } from "../model/use-map-evidence-states";
+import { useMapEvidenceStates, type MapEvidenceAvailability } from "../model/map-canvas/use-map-evidence-states";
 
 export function useTerritoryDomainStats() {
   const t = useTranslations("topology.territories");

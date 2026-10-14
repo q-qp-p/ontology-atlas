@@ -1,14 +1,14 @@
-import { projectDomeEdgeControl } from "../../model/dome-edge";
+import { projectDomeEdgeControl } from "../../model/dome-view/dome-edge";
 import { lastDrawnLabelBoxes, lastDrawnNodeAlphas } from "../frame-draw/topology-frame-draw";
 import { lastDialFrame } from "../../dial/frame/frame";
 import { pickDial } from "../../dial/pick";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import type { CameraAxes } from "../../engine/camera";
-import { computeZoomRatio, DEFAULT_TIER_REVEAL, isNodeHittable } from "../../model/tier-visibility";
+import { computeZoomRatio, DEFAULT_TIER_REVEAL, isNodeHittable } from "../../model/visibility/tier-visibility";
 import type { EdgeHitCandidate } from "./topology-edge-hit";
 import { clusterBadgeLabel, clusterBadgeRect, clusterBarLabel, clusterBarRect, clusterChipLabel, clusterChipRect, clusterChipScale, clusterControlForm } from "../../render/cluster-chips";
 import { DEFAULT_EXPAND } from "@/shared/lib/preferences/appearance-preferences";
-import { depthParallaxOffsetFor, ZERO_PARALLAX } from "../../model/realm-depth-parallax";
+import { depthParallaxOffsetFor, ZERO_PARALLAX } from "../../model/realm/realm-depth-parallax";
 import type { DomeNodeFrame } from "../../model/dome-view/runtime";
 import { HIT_TOUCH_SLACK_PX, hitTestWorld, worldToScreen } from "../camera/topology-camera-math";
 import { readOntologyMapTokensOrNull } from "../../tokens/topology-read-tokens";
@@ -161,7 +161,7 @@ export function createPointerHitTests(ctx: PointerContext) {
 
   /**
    * Tier-aware hit test — only nodes currently visible at this altitude
-   * (`model/tier-visibility.ts`) can be grabbed/hovered, so the pointer never
+   * (`model/visibility/tier-visibility.ts`) can be grabbed/hovered, so the pointer never
    * grabs an invisible semantic-zoom-gated capability/element.
    */
   const hitVisibleNode = (
@@ -174,7 +174,7 @@ export function createPointerHitTests(ctx: PointerContext) {
     const dialFrame = lastDialFrame();
     if (dialFrame) return pickDial(dialFrame.picks, dialFrame.rows, px, py, HIT_TOUCH_SLACK_PX);
     // Tier hittability rides the same zoom-ratio signal as the draw pass
-    // (`model/tier-visibility.ts`), NOT `farT` — so the pointer never grabs a
+    // (`model/visibility/tier-visibility.ts`), NOT `farT` — so the pointer never grabs a
     // semantic-zoom-hidden capability/element even at the circuit default entry.
     const overviewEntryScale = overviewScaleRef.current * tokens.overviewEntryRatio;
     const zoomRatio = computeZoomRatio(camera.scale.value, overviewEntryScale);

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { deriveOntologyFromVault, resolveStaticVaultSource } from "@/entities/docs-vault";
 import { resolveNodeAgentTarget } from "@/entities/knowledge-graph";
 import { derivationToInsight } from "@/features/vault-ontology/model/use-ontology-insight";
-import { buildOntologyMapGraph } from "@/views/home/lib/map-adapter";
+import { buildOntologyMapGraph } from "@/views/home/lib/map-canvas/map-adapter";
 import { buildDialModel, resolveDialAttention } from "@/widgets/ontology-map/dial/dial-model";
 import type { DialModel } from "@/widgets/ontology-map/dial/types";
 import {

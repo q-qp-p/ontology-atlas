@@ -9,7 +9,7 @@ import {
   type HexBoardLayout,
   type HexPlacementRecord,
   type HexTile,
-} from "../model/hex-board";
+} from "../model/board/hex-board";
 import { buildBoardScene, isSlabBand, reliefLiftPx } from "../board/board-scene";
 import { declaredDependents } from "../board/relief-metric";
 import { projectReliefPoint, RELIEF_PITCH_REST, type ReliefView } from "../board/relief-projection";

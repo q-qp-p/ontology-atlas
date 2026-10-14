@@ -12,7 +12,7 @@ describe("created_by UI boundary", () => {
     const stages: [string, string, RegExp][] = [
       ["파생이 프론트매터를 읽는다", "src/entities/docs-vault/lib/derive-ontology-from-vault.ts", /createdBy:\s*typeof fm\.created_by/],
       ["그래프 노드가 싣는다", "src/features/vault-ontology/model/use-ontology-insight.ts", /createdBy:\s*stub\.createdBy/],
-      ["지도 어댑터가 넘긴다", "src/views/home/lib/map-adapter.ts", /createdBy:\s*node\.createdBy/],
+      ["지도 어댑터가 넘긴다", "src/views/home/lib/map-canvas/map-adapter.ts", /createdBy:\s*node\.createdBy/],
       ["월드 노드가 받는다", "src/widgets/ontology-map/ui/world/topology-world.ts", /createdBy:\s*n\.createdBy/],
     ];
     const broken = stages.filter(([, file, pattern]) => !pattern.test(read(file)));

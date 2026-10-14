@@ -1,5 +1,5 @@
 import { MOTION } from "@/shared/motion/tokens";
-import { easeOutCubic } from "../../model/camera-easing";
+import { easeOutCubic } from "../../model/camera/camera-easing";
 import { dialConceptTotal, dialEvidenceView, resolveDialAttention } from "../dial-model";
 import { resolveDialDisclosure, smoothstep } from "./disclosure";
 import { createMeasureText } from "../fit";

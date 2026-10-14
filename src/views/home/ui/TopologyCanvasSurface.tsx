@@ -1,16 +1,16 @@
 import type { useRouter } from "@/i18n/navigation";
-import type { useAcpRuntimeController } from "../model/use-acp-runtime-controller";
-import type { useTopologyAgentOrchestration } from "../model/use-topology-agent-orchestration";
-import type { useTopologyAuthoring } from "../model/use-topology-authoring";
+import type { useAcpRuntimeController } from "../model/agent/use-acp-runtime-controller";
+import type { useTopologyAgentOrchestration } from "../model/agent/use-topology-agent-orchestration";
+import type { useTopologyAuthoring } from "../model/authoring/use-topology-authoring";
 import type { useTopologyCanvasFocus } from "../model/use-topology-canvas-focus";
-import type { useTopologyCreateIntent } from "../model/use-topology-create-intent";
-import type { useTopologyGraphProjection } from "../model/use-topology-graph-projection";
-import type { useTopologyIndexPresentation } from "../model/use-topology-index-presentation";
-import type { useTopologyInspectorState } from "../model/use-topology-inspector-state";
-import type { useTopologyKeyboardTour } from "../model/use-topology-keyboard-tour";
+import type { useTopologyCreateIntent } from "../model/authoring/use-topology-create-intent";
+import type { useTopologyGraphProjection } from "../model/map-canvas/use-topology-graph-projection";
+import type { useTopologyIndexPresentation } from "../model/index-panel/use-topology-index-presentation";
+import type { useTopologyInspectorState } from "../model/inspector/use-topology-inspector-state";
+import type { useTopologyKeyboardTour } from "../model/keyboard/use-topology-keyboard-tour";
 import type { useTopologyNavigationActions } from "../model/use-topology-navigation-actions";
 import type { useTopologyPreferences } from "../model/use-topology-preferences";
-import type { useTopologySceneControls } from "../model/use-topology-scene-controls";
+import type { useTopologySceneControls } from "../model/map-canvas/use-topology-scene-controls";
 import type { useTopologyVaultReadModel } from "../model/use-topology-vault-read-model";
 
 import { VaultOpenGuideSheet } from "@/features/docs-vault-local";
@@ -49,7 +49,7 @@ type TopologyCanvasSurfaceProps = TopologyMapRendererProps & {
   router: ReturnType<typeof useRouter>;
   setFitViewToken: React.Dispatch<React.SetStateAction<number>>;
   setShortcutsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  analysisMode: import("@/views/home/model/url-state").TopologyAnalysisMode;
+  analysisMode: import("@/views/home/model/route-state/url-state").TopologyAnalysisMode;
   growthReplaying: boolean;
   setGrowthReplayToken: React.Dispatch<React.SetStateAction<number>>;
   renderProjects: import("@/entities/project/model/types").Project[];
@@ -344,7 +344,7 @@ export function TopologyCanvasSurface(props: TopologyCanvasSurfaceProps) {
             </Tooltip>
           )}
           {/* Replays the ontology appearing in containment order
-             (`ontology-map/model/growth-replay.ts`); desktop only. */}
+             (`ontology-map/model/ambient/growth-replay.ts`); desktop only. */}
           {structure || createNodeOpen ||
             selectedEdgeOwnsRightRail ||
             topologyBlockingOverlayActive ||

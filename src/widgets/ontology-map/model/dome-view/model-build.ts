@@ -1,4 +1,4 @@
-import { layoutCone } from '../cone-layout';
+import { layoutCone } from './cone-layout';
 import { createCouplingCloudRelaxer } from './coupling-cloud';
 import { DOME_FIT_RADIUS } from './projection';
 import { buildStrataTargets } from './strata';

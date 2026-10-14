@@ -42,7 +42,7 @@ export const rules = [
       /^src\/entities\/docs-vault\/data\//,
       /^scripts\/build-docs-vault\.mjs$/,
       /^scripts\/check-desktop-performance\.(?:mjs|test\.mjs)$/,
-      /^src\/entities\/docs-vault\/lib\/static-(?:vault-source|headings)\.ts$/,
+      /^src\/entities\/docs-vault\/lib\/bundled-vault\/static-(?:vault-source|headings)\.ts$/,
     ],
   },
   {

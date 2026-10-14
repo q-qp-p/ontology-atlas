@@ -8,8 +8,8 @@ import { checkGrayAreaEvidence, type GrayAreaSnapshot } from '@/shared/lib/proje
 import type { InvestigationSendGuard } from '@/features/acp-session';
 import { useTranslations } from 'next-intl';
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { selectTopologyPathRouteState, type HomeRouteState } from '../url-state';
-import { applyMapView } from '../use-map-view-sync';
+import { selectTopologyPathRouteState, type HomeRouteState } from '../route-state/url-state';
+import { applyMapView } from '../route-state/use-map-view-sync';
 
 interface Options {
   docs: VaultDoc[];

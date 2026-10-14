@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { collectDomeAncestry, collectDomeSubtree } from "../../model/dome-ancestry";
+import { collectDomeAncestry, collectDomeSubtree } from "../../model/dome-view/dome-ancestry";
 import { domeFamily } from "./structure";
 import type { WorldNode } from "../world/topology-world";
 

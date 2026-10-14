@@ -8,13 +8,13 @@ import type { CameraAxes, CameraTarget } from "../../engine/camera";
 import {
   type SpringOffset,
 } from "../../expressive/release-offsets";
-import { createForceSimulation, type ForceSimulation } from "../../model/force-layout";
+import { createForceSimulation, type ForceSimulation } from "../../model/layout/force-layout";
 import {
   realmTransitionReducer,
   type RealmTransitionState
-} from "../../model/realm-transition";
-import type { WardingFitState } from "../../model/realm-warding-fit";
-import { initHomeSpring, type HomeSpringState } from "../../model/relayout-home";
+} from "../../model/realm/realm-transition";
+import type { WardingFitState } from "../../model/realm/realm-warding-fit";
+import { initHomeSpring, type HomeSpringState } from "../../model/layout/relayout-home";
 import { computeOverviewCameraTarget, computeOverviewFitScale } from "../camera/topology-camera-math";
 import {
   overviewBoundsFor

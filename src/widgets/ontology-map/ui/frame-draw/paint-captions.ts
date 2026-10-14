@@ -1,4 +1,4 @@
-import { isPathLensNode } from "../../model/path-lens";
+import { isPathLensNode } from "../../model/visibility/path-lens";
 import { measureLabelWidth, scaledLabelFontSize, scaledLabelFont } from "../../render/labels";
 import { placeRelationCaptions } from "../../render/relation-captions";
 import { isPreviewEndpoint } from "../../render/preview-edge";

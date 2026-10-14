@@ -6,7 +6,7 @@ title: Passage ask brief
 display_en: Passage ask brief
 display_ko: 구절 질문 지시문
 domain: domains/human-workbench
-path: src/features/library/lib/ask-brief.ts
+path: src/features/library/lib/questions/ask-brief.ts
 created_by: "agent:claude-code"
 ---
 

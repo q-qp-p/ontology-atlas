@@ -52,7 +52,7 @@ The independently inspected source explains these results:
   read therefore also requires safe key serialization on the next write.
 - The renderer patches retained lines in place, but matches a top-level key
   using its first colon and emits raw replacement/map keys
-  (`src/entities/docs-vault/lib/frontmatter-updates.ts:45`, `:59`, `:91`).
+  (`src/entities/docs-vault/lib/authoring/frontmatter-updates.ts:45`, `:59`, `:91`).
   Updating a decoded quoted key must replace the intended field, not append a
   second field while leaving the old quoted one in place.
 - CLI delegates to MCP (`cli/src/lib/parse-frontmatter.mjs:1`): four delivery

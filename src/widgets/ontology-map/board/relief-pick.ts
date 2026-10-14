@@ -1,5 +1,5 @@
-import { hexGutter, type HexTile } from "../model/hex-board";
-import { SQRT3 } from "../model/hex-grid";
+import { hexGutter, type HexTile } from "../model/board/hex-board";
+import { SQRT3 } from "../model/board/hex-grid";
 import { lowerBound, type BoardScene } from "./board-scene";
 import { groundInverseY, type ReliefView } from "./relief-projection";
 

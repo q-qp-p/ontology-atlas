@@ -8,12 +8,12 @@ import {
 import {
   ZERO_PARALLAX,
   type DepthParallaxOffset,
-} from "../../model/realm-depth-parallax";
+} from "../../model/realm/realm-depth-parallax";
 import {
   INITIAL_REALM_TRANSITION_STATE,
   type RealmTransitionState
-} from "../../model/realm-transition";
-import type { WardingFitState } from "../../model/realm-warding-fit";
+} from "../../model/realm/realm-transition";
+import type { WardingFitState } from "../../model/realm/realm-warding-fit";
 import type { ClusterBarLabels } from "../../render/cluster-chips";
 import { type RealmRuntimeData } from "./topology-realm-runtime";
 

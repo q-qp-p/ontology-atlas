@@ -10,7 +10,7 @@ import type { DomeRuntime } from "../../model/dome-view/runtime";
 import type { DomeModel } from "../../model/dome-view/types";
 import {
   type RealmTransitionState
-} from "../../model/realm-transition";
+} from "../../model/realm/realm-transition";
 import { landTierAssembly } from "../../morph/tier-assembly";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import { computeOverviewCameraTarget, computeOverviewFitScale } from "./topology-camera-math";

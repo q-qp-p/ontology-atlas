@@ -5,7 +5,7 @@ status: current
 area: library
 stores: wiki/answers/
 contract_version: 1
-enforced_by: [src/features/library/lib/answer-revision.ts]
+enforced_by: [src/features/library/lib/questions/answer-revision.ts]
 ---
 
 # Retained answers and explicit revisions
@@ -96,6 +96,6 @@ can then read the named Markdown files directly. `wiki-validate` checks the
 existing page/folder contract, not entailment or semantic superiority. A newest
 answer may still have an advisory orphan finding until another page links it.
 
-The implementation lives in `src/features/library/lib/answer-revision.ts`,
+The implementation lives in `src/features/library/lib/questions/answer-revision.ts`,
 `answer-revision-store.ts`, and the Library view. The ongoing qualification scope
 is recorded in [the Library quality program](../plans/LIBRARY-QUALITY-PROGRAM.md).

@@ -6,7 +6,7 @@ import {
   APP_BUNDLE_IDENTIFIER,
   CLAUDE_ISOLATED_CONFIG_SUBPATH,
   claudeLoginRepairCommand,
-} from "@/features/acp-session/model/claude-login-repair";
+} from "@/features/acp-session/model/trouble/claude-login-repair";
 
 import { readAcpRust } from "../helpers/read-acp-rust";
 

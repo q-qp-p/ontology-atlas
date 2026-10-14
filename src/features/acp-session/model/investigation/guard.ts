@@ -1,6 +1,6 @@
 import type { AcpSessionChoices } from '../acp-client';
-import { partitionModes } from '../mode-safety';
-import { GATED_SESSION_MODE, runtimeOwnsWriteGate } from '../runtime-gate';
+import { partitionModes } from '../session-choices/mode-safety';
+import { GATED_SESSION_MODE, runtimeOwnsWriteGate } from '../runtime-wiring/runtime-gate';
 
 export interface InvestigationSendGuard {
   runtimeId: string;

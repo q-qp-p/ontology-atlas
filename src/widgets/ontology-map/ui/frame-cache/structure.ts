@@ -1,5 +1,5 @@
-import { rankEgoNeighborsByDOI } from "../../model/focus-state";
-import { collectDomeAncestry, collectDomeSubtree } from "../../model/dome-ancestry";
+import { rankEgoNeighborsByDOI } from "../../model/visibility/focus-state";
+import { collectDomeAncestry, collectDomeSubtree } from "../../model/dome-view/dome-ancestry";
 import type { TopologyWorld, WorldEdge } from "../world/topology-world";
 
 type WorldStructure = Pick<TopologyWorld, "edges" | "nodeById" | "neighborMap" | "childrenByParent">;

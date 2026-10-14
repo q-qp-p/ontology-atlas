@@ -1,5 +1,5 @@
-import type { HexBand, HexBoardLayout, HexTile } from "../model/hex-board";
-import { hexKey, HEX_NEIGHBORS, SQRT3 } from "../model/hex-grid";
+import type { HexBand, HexBoardLayout, HexTile } from "../model/board/hex-board";
+import { hexKey, HEX_NEIGHBORS, SQRT3 } from "../model/board/hex-grid";
 import type { ReliefMetric } from "./relief-metric";
 import { reliefHeightPx, reliefRiseDelayMs } from "./relief-projection";
 

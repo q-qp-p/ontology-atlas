@@ -13,7 +13,7 @@ vi.mock("../morph/hex-marks", async (importOriginal) => ({
   hexRestCamera: vi.fn(() => ({ R: 20, ox: 300, oy: 300 })),
 }));
 
-import { computeHexBoard } from "../model/hex-board";
+import { computeHexBoard } from "../model/board/hex-board";
 import type { OntologyMapEdge, OntologyMapNode } from "./OntologyMap";
 import { OntologyHexBoardMap, type HexBoardLabels } from "./OntologyHexBoardMap";
 

@@ -5,8 +5,8 @@ import {
   relaxNewlyVisible,
   type LayoutGraphNode,
   type LayoutPoint,
-} from "@/widgets/ontology-map/model/layout";
-import { DENSITY_GATE_THRESHOLD } from "@/widgets/ontology-map/model/density-gate";
+} from "@/widgets/ontology-map/model/layout/layout";
+import { DENSITY_GATE_THRESHOLD } from "@/widgets/ontology-map/model/layout/density-gate";
 
 /**
  * Layout relaxation must run only on nodes that will be drawn, since it dominates cost and the density

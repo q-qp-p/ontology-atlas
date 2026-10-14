@@ -6,7 +6,7 @@ import type { PointerMachineState } from "../../interaction/pointer-state-machin
 import { DOME_ASSEMBLE_TOTAL_MS } from "../../model/dome-view/frame";
 import { buildDomeModel } from "../../model/dome-view/model-build";
 import type { DomeRuntime } from "../../model/dome-view/runtime";
-import type { RealmTransitionState } from "../../model/realm-transition";
+import type { RealmTransitionState } from "../../model/realm/realm-transition";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import type { OntologyMapEdge, OntologyMapNode } from "../OntologyMap";
 import { createDomeFrameStage, type DomeFrameStageSources } from "./topology-dome-frame-stage";

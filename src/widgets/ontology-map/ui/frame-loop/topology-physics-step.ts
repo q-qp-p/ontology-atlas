@@ -9,11 +9,11 @@
  */
 
 import { stepCamera, type CameraAxes, type CameraTarget } from "../../engine/camera";
-import { computeAltitudeBand, computeFarT } from "../../model/altitude";
-import { isNodeEmphasisActive, resolveEdgePulseSpeed, stepEmphasis, stepFocusRamp } from "../../model/focus-state";
+import { computeAltitudeBand, computeFarT } from "../../model/visibility/altitude";
+import { isNodeEmphasisActive, resolveEdgePulseSpeed, stepEmphasis, stepFocusRamp } from "../../model/visibility/focus-state";
 import { settleTierAssembly, tierAssemblyAppear } from "../../morph/tier-assembly";
 import { selectEgoContainsComets, updateParticles, type ParticleEdge } from "../../render/edge-fireflies";
-import { computeZoomRatio, DEFAULT_TIER_REVEAL, isSpineOnlyZoom, type TierRevealConfig } from "../../model/tier-visibility";
+import { computeZoomRatio, DEFAULT_TIER_REVEAL, isSpineOnlyZoom, type TierRevealConfig } from "../../model/visibility/tier-visibility";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import {
   computeEffectiveCameraScaleMax,
@@ -95,7 +95,7 @@ export interface PhysicsStepInput {
    */
   userDrivenCamera?: boolean;
   /**
-   * True while a camera tween or a zoom step (`model/camera-easing.ts`) drives
+   * True while a camera tween or a zoom step (`model/camera/camera-easing.ts`) drives
    * the camera: the spring step and pan-bounds clamp are skipped and `camera`
    * is used verbatim. Under reduced motion only a hand-driven camera
    * (`userDrivenCamera`) stays frozen; app-initiated travel still arrives.
@@ -172,7 +172,7 @@ export interface PhysicsStepResult {
   /**
    * Semantic-zoom axis — `cameraScale / overviewEntryScale`. `1.0` at the
    * overview entry, `>1` zoomed in, `<1` zoomed out. Drives tier visibility
-   * (`model/tier-visibility.ts`), NOT `farT`, so the default circuit entry can
+   * (`model/visibility/tier-visibility.ts`), NOT `farT`, so the default circuit entry can
    * still show only the project/domain/hub spine.
    */
   zoomRatio: number;
@@ -318,7 +318,7 @@ export function stepTopologyPhysics(input: PhysicsStepInput): PhysicsStepResult 
 
     // C1 A2 — ego tier-reveal ramp: while a node is focused, it + its 1-hop
     // neighbors ramp toward full reveal (consumed by
-    // `model/tier-visibility.ts#effectiveNodeAlpha` in the draw pass) even if
+    // `model/visibility/tier-visibility.ts#effectiveNodeAlpha` in the draw pass) even if
     // the semantic-zoom tier gate itself hasn't opened yet at this zoomRatio.
     const isEgoMember =
       focusedNodeId !== null && (node.id === focusedNodeId || neighborsOfFocused?.has(node.id) === true);

@@ -3,7 +3,7 @@ import { useTranslations } from "next-intl";
 import { buildWikiShapeFixBrief, isWikiFolderCode, type LibraryUiModel } from "@/features/library";
 import { revealTauriVaultFile } from "@/shared/lib/vault-folder/tauri-vault-fs";
 import { useToast } from "@/shared/ui";
-import { useLibraryAgent } from "../../lib/use-library-agent";
+import { useLibraryAgent } from "../../lib/agent/use-library-agent";
 import type { LibrarySelection } from "./library-page-state";
 import type { useLibraryReader } from "./use-library-reader";
 import type { useLibraryTurns } from "./use-library-turns";

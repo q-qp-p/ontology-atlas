@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { AGENT_TOOLS, findAgentTool } from '../tool-catalog';
-import type { TurnAssembly } from '../provider-adapter';
+import { AGENT_TOOLS, findAgentTool } from '../agent-tools/tool-catalog';
+import type { TurnAssembly } from './provider-adapter';
 import { PROVIDER_ADAPTERS } from './index';
 
 const FIXTURES = join(__dirname, '../../../../../tests/fixtures/llm-providers');

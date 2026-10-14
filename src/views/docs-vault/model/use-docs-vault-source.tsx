@@ -19,7 +19,7 @@ import {
   DOGFOOD_VAULT_PATH_CANDIDATES,
   hasDogfoodVaultPath,
   resolveDogfoodVaultPath,
-} from '../lib/dogfood-vault-path';
+} from '../lib/vault-source/dogfood-vault-path';
 import {
   isDocsVaultLocalSourceDisabled,
   readStoredSource,
@@ -32,8 +32,8 @@ import {
   storeSource,
   type DocsVaultSource as Source,
 } from '../lib/persistence';
-import { useDocsVaultPersistence } from '../lib/use-docs-vault-persistence';
-import { resolveVaultChipIdentity } from '../lib/vault-chip-identity';
+import { useDocsVaultPersistence } from '../lib/vault-source/use-docs-vault-persistence';
+import { resolveVaultChipIdentity } from '../lib/vault-source/vault-chip-identity';
 import type { useDocsVaultAddress } from './use-docs-vault-url';
 
 const subscribeDesktopRuntime = () => () => undefined;

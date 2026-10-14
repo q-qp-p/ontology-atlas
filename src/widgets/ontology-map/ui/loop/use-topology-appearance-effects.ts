@@ -11,7 +11,7 @@ import {
   useEffect,
   type RefObject
 } from "react";
-import { type TierRevealConfig } from "../../model/tier-visibility";
+import { type TierRevealConfig } from "../../model/visibility/tier-visibility";
 import { createAnimatedBackground, type AnimatedBackground } from "../../render/animated-background";
 import type { UseTopologyLoopArgs } from "./topology-loop-contract";
 import { requestOntologyMapFrame } from "../frame-loop/use-topology-frame-loop";

@@ -299,10 +299,10 @@ FSD placement:
   `model/service-round-brief.ts` (the brief), `model/consistency-pass.ts` (hashing +
   report → outcome), `model/use-rounds-runner.ts` (tick, due, catch-up, asleep,
   one-at-a-time), `model/use-library-agent-wiring.ts` (extracted from
-  `views/library/lib/use-library-agent.ts`: runtime id, mcpServers, availability —
+  `views/library/lib/agent/use-library-agent.ts`: runtime id, mcpServers, availability —
   no UI state), `ui/NewRoundSheet.tsx`, `index.ts`.
 - `src/views/library/ui/LibraryRounds.tsx` + `parts/RoundsIndex.tsx`,
-  `parts/SinceYouLeft.tsx`, `parts/RoundsLedger.tsx`, `parts/RoundsTimeAxis.tsx`.
+  `parts/rounds/SinceYouLeft.tsx`, `parts/rounds/RoundsLedger.tsx`, `parts/RoundsTimeAxis.tsx`.
 - `src/app/library-workspace/index.tsx` — the fifth tab.
 - `src/entities/vault-session/model/LocalVaultProvider.tsx` — mounts `RoundsRunner`
   (a thin component from the feature, exported for the provider; the entity layer

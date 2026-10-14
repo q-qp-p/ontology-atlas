@@ -956,7 +956,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Project source witness parity
 
-**Run**: `node --test mcp/src/project-meaning-evidence.test.mjs mcp/src/project-meaning-inventory.test.mjs mcp/src/project-source-connect.test.mjs && pnpm exec vitest run src/views/home/lib/project-source-witnesses.test.ts tests/contract/project-source-connect.contract.test.ts`
+**Run**: `node --test mcp/src/project-meaning-evidence.test.mjs mcp/src/project-meaning-inventory.test.mjs mcp/src/project-source-connect.test.mjs && pnpm exec vitest run src/views/home/lib/project-source/project-source-witnesses.test.ts tests/contract/project-source-connect.contract.test.ts`
 **Proves**: A literal repository-root path stays rejected beside valid sibling evidence, keeping unsafe source-witness paths red.
 **Escalate**: none
 

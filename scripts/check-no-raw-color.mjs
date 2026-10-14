@@ -84,7 +84,7 @@ export const ALLOWLIST = new Set([
   // `shared/config/indigo-tokens.ts` needs no entry: it holds rgb triples as bare strings and
   // composes `rgba(` through a template, so the scan never matches it. A row that exempts nothing
   // blurs what the list forgives.
-  "views/docs-vault/lib/popout-template.ts",
+  "views/docs-vault/lib/doc-actions/popout-template.ts",
   // The two below are canvas files: `ctx.fillStyle` and `CanvasGradient.addColorStop` take strings
   // only and do not resolve `var()`, and alpha is computed per frame. They are near-achromatic but
   // not r=g=b (stars 236,236,240; vignette 3,3,4), so the automatic exemption does not apply.

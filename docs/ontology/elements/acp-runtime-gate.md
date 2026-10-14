@@ -6,7 +6,7 @@ title: ACP runtime gate
 display_en: ACP runtime gate
 display_ko: ACP 런타임 게이트
 domain: domains/agent-access
-path: src/features/acp-session/model/runtime-gate.ts
+path: src/features/acp-session/model/runtime-wiring/runtime-gate.ts
 created_by: "agent:claude-code"
 ---
 

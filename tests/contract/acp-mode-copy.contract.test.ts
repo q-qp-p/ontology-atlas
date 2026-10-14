@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import en from "../../messages/en.json";
 import ko from "../../messages/ko.json";
-import { MEASURED_MODE_IDS, modeCopyKey } from "@/features/acp-session/model/mode-copy";
+import { MEASURED_MODE_IDS, modeCopyKey } from "@/features/acp-session/model/session-choices/mode-copy";
 
 /**
  * Every translated mode id exists in both languages; an unknown id gets no translation key, since an

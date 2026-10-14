@@ -54,7 +54,7 @@ describe("관문 FX — 감속 동등물", () => {
   });
 
   it("(c) the Library's two ambient canvases draw one still frame under reduced motion", () => {
-    const field = read("src/views/library/ui/parts/LibrarySynapseField.tsx");
+    const field = read("src/views/library/ui/parts/first-run/LibrarySynapseField.tsx");
     // The still frame is drawn, then the effect returns before any loop is registered.
     const guard = field.indexOf("if (reducedMotion || paused) return");
     expect(guard, "the reduced-motion branch is gone").toBeGreaterThan(-1);

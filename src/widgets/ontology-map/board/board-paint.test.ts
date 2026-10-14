@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { TreeInputEdge, TreeInputNode } from "../model/containment-tree";
-import { computeHexBoard, hexGutter, HEX_TYPE, type HexBoardLayout, type HexTextRole } from "../model/hex-board";
-import { SQRT3 } from "../model/hex-grid";
+import { computeHexBoard, hexGutter, HEX_TYPE, type HexBoardLayout, type HexTextRole } from "../model/board/hex-board";
+import { SQRT3 } from "../model/board/hex-grid";
 import type { HexDrawRoute, HexDrawState, HexEvidenceState } from "../render/hex-board";
 import type { HexBoardTokens } from "../tokens/read-hex-board-tokens";
 import { drawBoard } from "./board-paint";

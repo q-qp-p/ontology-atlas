@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 
-import { computeConcentricLayout } from "../../model/layout";
+import { computeConcentricLayout } from "../../model/layout/layout";
 import { resolveDialTokens } from "../../dial/tokens";
 import type { DialMemory, DialWorldInput } from "../../dial/types";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
@@ -23,8 +23,8 @@ import {
 import type { OntologyMapEdge, OntologyMapNode } from "../OntologyMap";
 import { computeTopologyClusterState } from "./topology-cluster-state";
 
-vi.mock("../../model/layout", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../model/layout")>();
+vi.mock("../../model/layout/layout", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../model/layout/layout")>();
   return { ...actual, computeConcentricLayout: vi.fn(actual.computeConcentricLayout) };
 });
 

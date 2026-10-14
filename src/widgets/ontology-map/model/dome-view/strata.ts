@@ -5,7 +5,7 @@ import {
   DOME_PLANE,
   domeHash01,
   TAU,
-} from '../cone-layout';
+} from './cone-layout';
 import type { DomeCircle, DomeCoord, DomeInputNode, DomeSector, DomeViewKind } from './types';
 
 /**

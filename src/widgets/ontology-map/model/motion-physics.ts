@@ -8,7 +8,7 @@
 
 import { MOTION } from "@/shared/motion/tokens";
 
-/** Bounds of the distance-proportional programmatic camera tween (`model/camera-easing.ts`). */
+/** Bounds of the distance-proportional programmatic camera tween (`model/camera/camera-easing.ts`). */
 export const CAMERA_TWEEN_MIN_MS = 200;
 export const CAMERA_TWEEN_MAX_MS = 420;
 

@@ -5,7 +5,7 @@ import {
   useRef
 } from "react";
 import type { CameraAxes, CameraTarget } from "../../engine/camera";
-import { type CameraTween, type ZoomEase } from "../../model/camera-easing";
+import { type CameraTween, type ZoomEase } from "../../model/camera/camera-easing";
 import {
   type ViewportReframeMotion
 } from "./use-topology-viewport-lifecycle";

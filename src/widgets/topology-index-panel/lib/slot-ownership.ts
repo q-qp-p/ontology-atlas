@@ -1,7 +1,7 @@
 import type { IndexPanelState } from "./index-panel-state";
 
 /**
- * Mirrors `TopologyAnalysisMode` (`src/views/home/model/url-state.ts`) by
+ * Mirrors `TopologyAnalysisMode` (`src/views/home/model/route-state/url-state.ts`) by
  * value, not by import — FSD forbids `widgets` importing from `views`
  * (`.claude/rules/architecture.md`).
  */

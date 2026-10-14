@@ -7,7 +7,7 @@
  * bow is precomputed once from real polar geometry, so it never re-routes —
  * only its rendered width/color/dash thins toward hairlines as `farT → 1`.
  * `depends` edges additionally carry a one-shot "signal pulse" on hover
- * (`model/focus-state.ts#scheduleRipple` triggers it) plus an ambient
+ * (`model/visibility/focus-state.ts#scheduleRipple` triggers it) plus an ambient
  * "comet tail" that drifts along the curve continuously
  * (`updateParticles()`'s `e.t += dt*0.075`).
  *
@@ -213,7 +213,7 @@ export interface TraceDrawState {
    */
   /**
    * Where the travelling light is **on this relation**, 0–1 — or `null` when the one light on
-   * the walk is somewhere else in its lap. See `model/footprint-steps.ts#buildTrailGlintLegs`.
+   * the walk is somewhere else in its lap. See `model/visibility/footprint-steps.ts#buildTrailGlintLegs`.
    */
   trailGlint?: number | null;
   reveal?: EdgeReveal | null;

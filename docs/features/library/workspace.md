@@ -588,7 +588,7 @@ sha256 it recorded and its own truncation record
 — and, when no page cites it, the Compile button in that row's place. `not checked` is its
 own word because hashing is lazy: reporting an unmeasured file as `behind` made this pane
 contradict its own state row, which reads `checking` in exactly that window. Both directions are derived in
-`buildLibraryPairing` (`src/entities/docs-vault/lib/vault-library.ts`) from the same
+`buildLibraryPairing` (`src/entities/docs-vault/lib/library/vault-library.ts`) from the same
 `sources:` and `source_hash:` frontmatter the state machine already reads, so no second
 store can drift from it.
 
@@ -759,7 +759,7 @@ Tour one-click doors: hree one-click doors, plus one that reaches outside this c
   brain because the runner's tool catalogue read and proposed ontology concepts only, and
   wrote its own reopening condition: *a local tool catalogue that reads a source and writes
   a page under one consent card reopens local Compile.* That catalogue is
-  `src/features/vault-agent/model/compile-tool-catalog.ts`. Its three Compile-only tools
+  `src/features/vault-agent/model/compile/compile-tool-catalog.ts`. Its three Compile-only tools
   stay outside the MCP-mirrored `AGENT_TOOLS`. `read_source_text` opens one
   file this folder's own walk found under `sources/` and this bundle can decode — Markdown,
   plain text, CSV, TSV, JSON and HTML with its tags stripped — and returns it with every

@@ -8,8 +8,8 @@ import {
   type HexMeasure,
   type HexTextLine,
   type HexTile,
-} from "../model/hex-board";
-import { SQRT3 } from "../model/hex-grid";
+} from "../model/board/hex-board";
+import { SQRT3 } from "../model/board/hex-grid";
 import { hexFonts, type HexDrawState, type HexTextBox } from "../render/hex-board";
 
 type TextState = Pick<HexDrawState, "domainMeta" | "projectMeta" | "staleOnly" | "staleFiles" | "evidence" | "selectedId" | "measure">;

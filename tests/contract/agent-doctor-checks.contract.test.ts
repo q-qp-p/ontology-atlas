@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { GATED_SESSION_MODE } from '@/features/acp-session/model/runtime-gate';
+import { GATED_SESSION_MODE } from '@/features/acp-session/model/runtime-wiring/runtime-gate';
 
 import en from '../../messages/en.json';
 import ko from '../../messages/ko.json';

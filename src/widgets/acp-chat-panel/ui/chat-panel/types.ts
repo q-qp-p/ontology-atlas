@@ -137,7 +137,7 @@ export interface AcpChatPanelProps {
   /** The exact active tool snapshot; callers must not derive a target from agent prose. */
   onTurnToolActivityChange?: (activity: AcpTurnToolActivity | null) => void;
   onTerminalToolObservation?: (event: Extract<AcpEvent, { kind: 'tool' }>) => void;
-  /** The map move named by the exact input of an Atlas read tool, never by agent prose (`acp-session/model/map-intent.ts`). */
+  /** The map move named by the exact input of an Atlas read tool, never by agent prose (`acp-session/model/map-presentation/map-intent.ts`). */
   onMapIntent?: (intent: AcpMapIntent) => void;
   /** One relation change proposal: dashed before approval, solid until its ACP tool finishes. */
   onOntologyRelationPreviewChange?: (preview: AcpOntologyRelationPreview | null) => void;

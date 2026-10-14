@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
-import { relaxNodeSeparation } from "../../model/separation";
+import { relaxNodeSeparation } from "../../model/layout/separation";
 import { collectActiveMotionIds, collectSeparationNodes, createWorldMotionFrameStage, type WorldMotionFrameStageSources } from "./topology-world-motion-frame-stage";
 import type { WorldNode } from "../world/topology-world";
-import { createForceSimulation } from "../../model/force-layout";
+import { createForceSimulation } from "../../model/layout/force-layout";
 import type { TopologyWorld } from "../world/topology-world";
 
 const frame = vi.hoisted(() => ({ alphas: new Map<string, number>() }));

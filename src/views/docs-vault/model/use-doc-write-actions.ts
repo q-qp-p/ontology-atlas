@@ -23,9 +23,9 @@ import {
   RECENT_DOCS_STORAGE_PREFIX,
   pushRecentDoc,
 } from '@/widgets/docs-vault';
-import { kindChangeReceipt } from '../lib/kind-change-receipt';
-import { reclassifyMoveTarget } from '../lib/kind-folder-move';
-import { buildDocsVaultPopoutHtml } from '../lib/popout-template';
+import { kindChangeReceipt } from '../lib/doc-actions/kind-change-receipt';
+import { reclassifyMoveTarget } from '../lib/doc-actions/kind-folder-move';
+import { buildDocsVaultPopoutHtml } from '../lib/doc-actions/popout-template';
 import type { useDocAccess } from './use-doc-access';
 import type { useDocsVaultAddress } from './use-docs-vault-url';
 import type { useDocsVaultSource } from './use-docs-vault-source';

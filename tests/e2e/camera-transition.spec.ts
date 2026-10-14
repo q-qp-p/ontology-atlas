@@ -307,7 +307,7 @@ test.describe("카메라 전환 규격", () => {
    * curve.
    *
    * **The curve already has a place where it is measured exactly** —
-   * `model/camera-easing.test.ts` locks symmetric midpoint, ease-in first half,
+   * `model/camera/camera-easing.test.ts` locks symmetric midpoint, ease-in first half,
    * monotonicity, distance-proportional duration, the clamp, and simultaneous warp on
    * all axes, as a pure function. A pure function has zero noise, so that is the
    * right instrument.

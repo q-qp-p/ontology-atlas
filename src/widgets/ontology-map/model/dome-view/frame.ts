@@ -1,4 +1,4 @@
-import { DOME_PLANE, TAU } from '../cone-layout';
+import { DOME_PLANE, TAU } from './cone-layout';
 import { easeOutCubic, TIER_ASSEMBLE_TOTAL_MS, tierProgress } from '../../morph/tier-assembly';
 import { DOME_NODE_PX, DOME_RING_SAMPLES } from './ink';
 import { clampDomePitch } from './orbit';
