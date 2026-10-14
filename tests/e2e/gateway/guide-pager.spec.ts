@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { seedFirstRunSeen } from "../first-run-seed";
 
-test.describe("가이드 장 끝 이전/다음", () => {
-  test("첫 장은 다음만 갖고, 누르면 실제로 다음 장에 착지한다", async ({ page }) => {
+test.describe("previous/next at the end of a guide chapter", () => {
+  test("the first chapter has only next, and pressing it really lands on the next chapter", async ({ page }) => {
     await seedFirstRunSeen(page);
     await page.goto("/ko/guide/?guides=off", { waitUntil: "domcontentloaded" });
     const pager = page.getByTestId("guide-pager");
@@ -25,7 +25,7 @@ test.describe("가이드 장 끝 이전/다음", () => {
     await expect(page.locator('main#main')).toBeFocused();
   });
 
-  test("마지막 장은 이전만 갖는다", async ({ page }) => {
+  test("the last chapter has only previous", async ({ page }) => {
     await seedFirstRunSeen(page);
     await page.goto("/ko/guide/trust/?guides=off", { waitUntil: "domcontentloaded" });
     await expect(page.getByTestId("guide-pager")).toBeVisible();

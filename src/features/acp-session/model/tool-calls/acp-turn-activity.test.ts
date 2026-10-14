@@ -6,7 +6,7 @@ import { deriveAcpTurnActivity, deriveAcpTurnToolActivity } from './acp-turn-act
 const known = new Set(['capabilities/reviewed-ontology-writing']);
 
 describe('deriveAcpTurnActivity', () => {
-  it('대기 중인 검증 도구에서 목표와 대상을 뽑는다', () => {
+  it('extracts the goal and target from a waiting verification tool', () => {
     const events: AcpEvent[] = [
       { kind: 'user', id: 'u1', text: '관계 편집 흐름을 확인해줘' },
       {
@@ -26,7 +26,7 @@ describe('deriveAcpTurnActivity', () => {
     });
   });
 
-  it('사람의 권한 확인을 기다리면 blocked 로 말한다', () => {
+  it('says blocked when waiting for permission from a person', () => {
     const pending = {
       request: {
         title: null,
@@ -50,11 +50,11 @@ describe('deriveAcpTurnActivity', () => {
     ).toMatchObject({ state: 'blocked', summary: '관계를 추가해줘' });
   });
 
-  it('차례가 아니면 활동을 만들지 않는다', () => {
+  it('creates no activity when nobody has the turn', () => {
     expect(deriveAcpTurnActivity('ready', [], null, known)).toBeNull();
   });
 
-  it('실제 대기 도구와 권한 대기만 구조화된 스냅샷으로 넘긴다', () => {
+  it('passes only real waiting tools and permission waits as a structured snapshot', () => {
     const pendingTool: AcpEvent[] = [{
       kind: 'tool',
       id: 'read-source',
@@ -73,7 +73,7 @@ describe('deriveAcpTurnActivity', () => {
     expect(deriveAcpTurnToolActivity('ready', pendingTool, null)).toBeNull();
   });
 
-  it('새 사람 차례 뒤에는 이전 차례의 취소된 도구를 되살리지 않는다', () => {
+  it('does not revive a cancelled tool of the previous turn after a new person turn', () => {
     const events: AcpEvent[] = [
       { kind: 'user', id: 'u1', text: '첫 번째 요청' },
       {

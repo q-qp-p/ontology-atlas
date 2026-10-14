@@ -12,11 +12,11 @@ function read(relative: string): string {
   return readFileSync(join(process.cwd(), relative), "utf8");
 }
 
-describe("폴더 감시 브리지", () => {
-  it("앱 쪽: Rust 워처가 디바운스와 함께 vault-changed 를 emit 한다", () => {
+describe("folder watch bridge", () => {
+  it("app side: the Rust watcher emits vault-changed with a debounce", () => {
     const rust = read("src-tauri/src/vault/watch.rs");
-    expect(rust, "start_vault_watch 커맨드가 사라졌다").toContain("start_vault_watch");
-    expect(rust, "vault-changed 이벤트 이름이 바뀌었다 — 프런트 리스너와 짝이 깨진다").toContain(
+    expect(rust, "the start_vault_watch command disappeared").toContain("start_vault_watch");
+    expect(rust, "the vault-changed event name changed — it breaks the pairing with the frontend listener").toContain(
       "vault-changed",
     );
     expect(
@@ -26,7 +26,7 @@ describe("폴더 감시 브리지", () => {
     ).toContain("new_debouncer");
   });
 
-  it("프런트 쪽: 그 이벤트를 실제로 듣는 다리가 있다", () => {
+  it("front-end side: there is a bridge that really listens for that event", () => {
     const bridge = read("src/entities/vault-session/model/TauriVaultWatchBridge.tsx");
     expect(bridge).toContain("start_vault_watch");
     expect(
@@ -36,7 +36,7 @@ describe("폴더 감시 브리지", () => {
     ).toContain("vault-changed");
   });
 
-  it("웹 쪽: 폴링 폴백이 살아 있다 — 웹이 '못 하는' 게 아니라 '늦는' 것이다", () => {
+  it("web side: the polling fallback is alive — the web is not 'unable' but 'late'", () => {
     const cadence = read("src/entities/vault-session/model/local-vault/poll-cadence.test.ts");
     expect(
       cadence,

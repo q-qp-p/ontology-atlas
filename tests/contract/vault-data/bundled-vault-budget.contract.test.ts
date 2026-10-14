@@ -27,8 +27,8 @@ const STATICALLY_BUNDLED = [
 
 const AGGREGATE_BUDGET_BYTES = 1.25 * 1024 * 1024;
 
-describe('번들 볼트 데이터 상시 예산', () => {
-  it('공통 청크에 실리는 데이터 JSON 합이 예산 안이다', () => {
+describe('standing budget of bundled vault data', () => {
+  it('the data JSON total carried in the common chunk is within budget', () => {
     const sizes = STATICALLY_BUNDLED.map((name) => ({
       name,
       bytes: statSync(path.join(DATA_DIR, name)).size,
@@ -48,7 +48,7 @@ describe('번들 볼트 데이터 상시 예산', () => {
     expect(total).toBeGreaterThan(500 * 1024);
   });
 
-  it('gateway-content 는 guide/* 만 담는다 — 전문 CHANGELOG 재유입 금지', () => {
+  it('gateway-content holds guide/* only, and the full CHANGELOG must not flow back in', () => {
     const gateway = JSON.parse(
       readFileSync(path.join(DATA_DIR, 'gateway-content.json'), 'utf8'),
     ) as Record<string, string>;
@@ -57,11 +57,11 @@ describe('번들 볼트 데이터 상시 예산', () => {
     const offenders = keys.filter((slug) => !slug.startsWith('guide/'));
     expect(
       offenders,
-      'guide/* 밖의 문서가 동기 번들에 들어왔다 — 커지는 문서는 contentPreviews(잘린 미리보기)나 public asset 으로 가야 한다.',
+      'a document outside guide/* entered the synchronous bundle; a growing document must go to contentPreviews (truncated previews) or a public asset.',
     ).toEqual([]);
   });
 
-  it('번들 매니페스트의 headings 는 비어 있다 — 별도 청크 분리 유지', () => {
+  it('headings of the bundle manifest are empty, keeping the separate chunk split', () => {
     for (const name of ['manifest.json', 'sample-storefront.manifest.json']) {
       const manifest = JSON.parse(
         readFileSync(path.join(DATA_DIR, name), 'utf8'),
@@ -70,7 +70,7 @@ describe('번들 볼트 데이터 상시 예산', () => {
       const inline = manifest.docs.filter((doc) => doc.headings.length > 0);
       expect(
         inline.map((doc) => doc.slug),
-        `${name} 에 headings 가 도로 인라인됐다 — 263KB 가 모든 라우트 공통 청크로 돌아간다. scripts/docs-vault/build-docs-vault.mjs 의 splitManifestHeadings 를 보라.`,
+        `headings were inlined again in ${name}, so 263KB goes back to the chunk common to every route. See splitManifestHeadings in scripts/docs-vault/build-docs-vault.mjs.`,
       ).toEqual([]);
     }
     // The extracted map really has content — both being empty is loss, not separation.
@@ -81,7 +81,7 @@ describe('번들 볼트 데이터 상시 예산', () => {
   });
 });
 
-describe('관문 CHANGELOG 미리보기 계약', () => {
+describe('gateway CHANGELOG preview contract', () => {
   /*
    * `docs/CHANGELOG.md` is frozen; the current changelog is composed by `readLedgerSource`, the same
    * composer the generator uses, so the drift check compares two implementations of the trim.
@@ -91,13 +91,13 @@ describe('관문 CHANGELOG 미리보기 계약', () => {
     readFileSync(path.join(DATA_DIR, 'gateway-changelog.json'), 'utf8'),
   ) as { body: string; omittedSections: number };
 
-  it('생성기의 절단과 화면의 절단이 같은 구현이다 (drift 방지)', () => {
+  it('the generator cut and the screen cut are the same implementation (drift prevention)', () => {
     const fromGenerator = generatorTrim(changelogRaw, GATEWAY_CHANGELOG_KEEP_SECTIONS);
     const fromView = trimToRecentSections(changelogRaw, GATEWAY_CHANGELOG_KEEP_SECTIONS);
     expect(fromGenerator).toEqual(fromView);
   });
 
-  it('커밋된 미리보기가 현재 CHANGELOG 의 앞부분 그대로다', () => {
+  it('the committed preview is the head of the current CHANGELOG as it is', () => {
     const expected = trimToRecentSections(changelogRaw, GATEWAY_CHANGELOG_KEEP_SECTIONS);
     expect(committed.body).toBe(expected.body);
     expect(committed.omittedSections).toBe(expected.omittedSections);
@@ -106,13 +106,13 @@ describe('관문 CHANGELOG 미리보기 계약', () => {
     expect(committed.omittedSections).toBeGreaterThan(0);
   });
 
-  it('화면 표시 상한이 번들 절 수를 넘지 않는다 — 넘으면 그만큼 안 보인다', () => {
+  it('the on-screen display cap does not exceed the bundled section count, otherwise that many are not shown', () => {
     const pageSource = readFileSync(
       path.join(process.cwd(), 'app', '[locale]', 'changelog', 'page.tsx'),
       'utf8',
     );
     const match = /const RECENT_SECTIONS = (\d+)/.exec(pageSource);
-    expect(match, 'changelog 페이지의 RECENT_SECTIONS 선언을 찾지 못했다').not.toBeNull();
+    expect(match, 'could not find the RECENT_SECTIONS declaration of the changelog page').not.toBeNull();
     expect(Number(match![1])).toBeLessThanOrEqual(GATEWAY_CHANGELOG_KEEP_SECTIONS);
   });
 });

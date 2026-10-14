@@ -859,7 +859,7 @@ describe("OntologyMapDetailPanel — full-detail A1 opt-in link", () => {
 });
 
 describe("OntologyMapDetailPanel — viewport clamp (P3-③)", () => {
-  it("+N 은 죽은 수가 아니다 — 누르면 그 자리에서 전부 펼쳐지고, 다시 누르면 접힌다", () => {
+  it("+N is not a dead count: pressing it expands everything in place, and pressing again collapses", () => {
     const many = Array.from({ length: 9 }, (_, i) => ({
       id: `capability:c${i}`,
       title: `Cap ${i}`,
@@ -903,7 +903,7 @@ describe("OntologyMapDetailPanel — viewport clamp (P3-③)", () => {
   });
 });
 
-describe("OntologyMapDetailPanel — 근거(evidence) group promotion (RATIO-SYSTEM §4)", () => {
+describe("OntologyMapDetailPanel: evidence group promotion (RATIO-SYSTEM section 4)", () => {
   it("renders an evidence group with its row's title when evidence rows exist", () => {
     renderPanel(undefined, {
       rows: [{ id: "capabilities/product-owner-operating-system", title: "product-owner-operating-system", path: "capabilities/" }],
@@ -946,7 +946,7 @@ describe("OntologyMapDetailPanel — 근거(evidence) group promotion (RATIO-SYS
   });
 });
 
-describe("OntologyMapDetailPanel — 근거 evidence count (group only)", () => {
+describe("OntologyMapDetailPanel: evidence count (group only)", () => {
   it("shows the evidence count as a number in the group header total (matches the mockup)", () => {
     renderPanel(undefined, {
       rows: [{ id: "capabilities/mcp-server", title: "mcp-server", path: "capabilities/" }],
@@ -957,7 +957,7 @@ describe("OntologyMapDetailPanel — 근거 evidence count (group only)", () => 
   });
 });
 
-describe("OntologyMapDetailPanel — 코드 위치 (code location) group", () => {
+describe("OntologyMapDetailPanel: code location group", () => {
   it("renders a code-location row for each path when codeLocations is non-empty", () => {
     renderPanel(undefined, undefined, {
       codeLocations: ["mcp/src/index.js", "mcp/src/verify.mjs"],
@@ -989,7 +989,7 @@ describe("OntologyMapDetailPanel — 코드 위치 (code location) group", () =>
   });
 });
 
-describe("OntologyMapDetailPanel — sticky 푸터 slug 평문화 (Toss C2)", () => {
+describe("OntologyMapDetailPanel: sticky footer slug in plain language", () => {
   it("shows only the slug's last segment in visible text, with the full slug as a hover title", () => {
     render(
       <OntologyMapDetailPanel
@@ -1037,21 +1037,21 @@ describe("OntologyMapDetailPanel — sticky 푸터 slug 평문화 (Toss C2)", ()
 // contract is to pass sourceTitle only when display differs from the original, so
 // the panel itself decides whether to render purely from sourceTitle's presence
 // and whether it equals the title.
-describe("OntologyMapDetailPanel — 원문 경로 서브라인 (슬라이스 B)", () => {
-  it("sourceTitle 이 title 과 다르면 모노 서브라인으로 원문을 보존해 렌더한다", () => {
+describe("OntologyMapDetailPanel: source path subline", () => {
+  it("renders the original in a mono subline when sourceTitle differs from title", () => {
     renderPanel(undefined, undefined, { sourceTitle: "src/foo/bar-baz.ts" });
     const subline = screen.getByTestId("map-detail-panel-source-path");
     expect(subline).toHaveTextContent("src/foo/bar-baz.ts");
   });
 
-  it("sourceTitle 이 없으면(null/undefined) 서브라인을 렌더하지 않는다", () => {
+  it("does not render the subline when sourceTitle is missing (null/undefined)", () => {
     renderPanel(undefined, undefined, {});
     expect(
       screen.queryByTestId("map-detail-panel-source-path"),
     ).not.toBeInTheDocument();
   });
 
-  it("sourceTitle 이 title 과 같으면(중복) 서브라인을 렌더하지 않는다", () => {
+  it("does not render the subline when sourceTitle equals title (duplicate)", () => {
     renderPanel(undefined, undefined, { sourceTitle: "Views" });
     expect(
       screen.queryByTestId("map-detail-panel-source-path"),
@@ -1062,25 +1062,25 @@ describe("OntologyMapDetailPanel — 원문 경로 서브라인 (슬라이스 B)
 // Slice C (the dev/non-dev mode toggle) — non-dev (plain) mode treats the
 // handoff-copy action and the raw path subline as developer chrome and hides them.
 // The default (omitted) is true for both, keeping the existing render (zero regression).
-describe("OntologyMapDetailPanel — showHandoff / showSourcePath (슬라이스 C)", () => {
-  it("showHandoff 생략 시 기본으로 인계 복사 타일을 렌더한다", () => {
+describe("OntologyMapDetailPanel: showHandoff and showSourcePath", () => {
+  it("renders the copy-handoff tile by default when showHandoff is omitted", () => {
     renderPanel();
     expect(screen.getByTestId("map-detail-panel-action-handoff")).toBeInTheDocument();
   });
 
-  it("showHandoff=false 면 인계 복사 타일을 렌더하지 않는다", () => {
+  it("does not render the copy-handoff tile when showHandoff=false", () => {
     renderPanel(undefined, undefined, { showHandoff: false });
     expect(
       screen.queryByTestId("map-detail-panel-action-handoff"),
     ).not.toBeInTheDocument();
   });
 
-  it("showSourcePath 생략 시 기본으로 원문 경로 서브라인을 렌더한다 (sourceTitle 이 있을 때)", () => {
+  it("renders the source path subline by default when showSourcePath is omitted (and sourceTitle exists)", () => {
     renderPanel(undefined, undefined, { sourceTitle: "src/foo/bar-baz.ts" });
     expect(screen.getByTestId("map-detail-panel-source-path")).toBeInTheDocument();
   });
 
-  it("showSourcePath=false 면 sourceTitle 이 있어도 원문 경로 서브라인을 렌더하지 않는다", () => {
+  it("does not render the source path subline when showSourcePath=false even if sourceTitle exists", () => {
     renderPanel(undefined, undefined, {
       sourceTitle: "src/foo/bar-baz.ts",
       showSourcePath: false,
@@ -1092,7 +1092,7 @@ describe("OntologyMapDetailPanel — showHandoff / showSourcePath (슬라이스 
 });
 
 describe("OntologyMapDetailPanel — M-2 typed containment split", () => {
-  it("renders a 담는 것(contains) group with the parent's children (not folded into 기대는 곳)", () => {
+  it("renders a holds (contains) group with the parent's children, not folded into the depends-on group", () => {
     render(
       <OntologyMapDetailPanel
         open
@@ -1140,7 +1140,7 @@ describe("OntologyMapDetailPanel — M-2 typed containment split", () => {
     expect(document.querySelector("[data-datasheet-group-total='contains']")!.textContent).toBe("2");
   });
 
-  it("omits the 담는 것 group for a leaf node (contains 0)", () => {
+  it("omits the holds group for a leaf node (contains 0)", () => {
     renderPanel();
     expect(document.querySelector("[data-datasheet-group='contains']")).toBeNull();
     expect(document.querySelector("[data-datasheet-group-total='contains']")).toBeNull();
@@ -1157,7 +1157,7 @@ describe("OntologyMapDetailPanel — group count chips", () => {
   });
 });
 
-describe("OntologyMapDetailPanel — 부모만 있는 노드의 이어진 곳", () => {
+describe("OntologyMapDetailPanel: connections of a node that has only a parent", () => {
   const parentRow = {
     id: "capability:frontmatter-to-ontology",
     title: "Frontmatter → Ontology Stub",
@@ -1195,7 +1195,7 @@ describe("OntologyMapDetailPanel — 부모만 있는 노드의 이어진 곳", 
     );
   }
 
-  it("draws the 속한 곳 group with the parent row, clickable like any other connection", () => {
+  it("draws the belongs-to group with the parent row, clickable like any other connection", () => {
     const onSelectConnection = vi.fn();
     renderParentOnly(onSelectConnection);
     const group = document.querySelector("[data-datasheet-group='belongsTo']");
@@ -1246,7 +1246,7 @@ describe("OntologyMapDetailPanel — 부모만 있는 노드의 이어진 곳", 
   });
 });
 
-describe("OntologyMapDetailPanel — P3-① 미기록 관계 empty-state (0 vs 미기록 disambiguation)", () => {
+describe("OntologyMapDetailPanel: empty state for unrecorded relations (0 vs unrecorded disambiguation)", () => {
   it("renders the honest 'no relations recorded yet' empty-state when a node has zero recorded relations", () => {
     // A node like global-search, widely used in the code but with no relation yet
     // declared in the vault frontmatter — the UI has to say honestly that
@@ -1283,8 +1283,8 @@ describe("OntologyMapDetailPanel — P3-① 미기록 관계 empty-state (0 vs �
   });
 });
 
-describe("OntologyMapDetailPanel — N6 소속 도메인 1급 사실", () => {
-  it("renders a 도메인 · <이름> fact in the header when the node has an owning domain", () => {
+describe("OntologyMapDetailPanel: the owning domain as a first-class fact", () => {
+  it("renders a domain fact with the name in the header when the node has an owning domain", () => {
     renderPanel(undefined, undefined, {
       domain: { id: "domains/ai-agent-partner", title: "AI Agent Partner" },
     });
@@ -1364,7 +1364,7 @@ describe("OntologyMapDetailPanel — W2-A action row", () => {
     expect(screen.getByTestId("map-detail-panel-edit-menu-trigger")).toBeInTheDocument();
   });
 
-  it("links the 문서 menu item to the document href when the node has a backing doc", () => {
+  it("links the document menu item to the document href when the node has a backing doc", () => {
     renderPanel(undefined, undefined, { documentHref: "/docs/domains/views" });
     fireEvent.click(screen.getByTestId("map-detail-panel-more-menu-trigger"));
     const link = screen.getByTestId("map-detail-panel-action-document");
@@ -1372,21 +1372,21 @@ describe("OntologyMapDetailPanel — W2-A action row", () => {
     expect(link).toHaveAttribute("href", expect.stringContaining("/docs/domains/views"));
   });
 
-  it("hides the 문서 tile when the node has no sourceSlug/document href (no dead affordance)", () => {
+  it("hides the document tile when the node has no sourceSlug or document href (no dead affordance)", () => {
     renderPanel(undefined, undefined, { documentHref: null });
     expect(
       screen.queryByTestId("map-detail-panel-action-document"),
     ).not.toBeInTheDocument();
   });
 
-  it("links the 관계 편집 menu item to the studio deep link", () => {
+  it("links the edit-relations menu item to the studio deep link", () => {
     renderPanel();
     fireEvent.click(screen.getByTestId("map-detail-panel-edit-menu-trigger"));
     const link = screen.getByTestId("map-detail-panel-action-edit");
     expect(link).toHaveAttribute("href", expect.stringContaining("/ontology/studio/"));
   });
 
-  it("keeps 관계 편집 in place when a contextual editor callback is available", () => {
+  it("keeps edit-relations in place when a contextual editor callback is available", () => {
     const onEditRelations = vi.fn();
     renderPanel(undefined, undefined, { onEditRelations });
     fireEvent.click(screen.getByTestId("map-detail-panel-edit-menu-trigger"));
@@ -1396,7 +1396,7 @@ describe("OntologyMapDetailPanel — W2-A action row", () => {
     expect(onEditRelations).toHaveBeenCalledTimes(1);
   });
 
-  it("copies the handoff text when the 인계 복사 tile is clicked", () => {
+  it("copies the handoff text when the copy-handoff tile is clicked", () => {
     const onCopyHandoff = vi.fn();
     renderPanel(undefined, undefined, { onCopyHandoff });
     fireEvent.click(screen.getByTestId("map-detail-panel-action-handoff"));
@@ -1411,7 +1411,7 @@ describe("OntologyMapDetailPanel — W2-A action row", () => {
   });
 
   // S2 part 3 — a long 「container」 defaults to the path-prefix summary, with 「View All」 for the list.
-  it("담는 것이 15개 초과면 경로 프리픽스 요약을 보여주고 '전체 보기'로 리스트를 편다", () => {
+  it("with more than 15 contained items it shows a path-prefix summary and expands the list from the show-all button", () => {
     const rows = Array.from({ length: 6 }, (_, i) => ({
       id: `element:cli/src/commands/c${i}`,
       title: `cmd ${i}`,
@@ -1470,7 +1470,7 @@ describe("OntologyMapDetailPanel — W2-A action row", () => {
     expect(screen.getByText("cmd 0")).toBeInTheDocument();
   });
 
-  it("담는 것이 15개 이하면 요약 없이 기존 리스트를 그대로 쓴다", () => {
+  it("with 15 or fewer contained items it uses the existing list without a summary", () => {
     const rows = Array.from({ length: 3 }, (_, i) => ({
       id: `capability:c${i}`,
       title: `cap ${i}`,
@@ -1512,7 +1512,7 @@ describe("OntologyMapDetailPanel — W2-A action row", () => {
   // B4 (H1) — when the summary collapses into one 「Other」 lump (usable=false), the
   // summary and toggle are hidden even past the threshold and the individual list
   // renders instead (avoiding zero information).
-  it("담는 것이 15개 초과라도 요약이 usable=false 면 리스트로 폴백한다", () => {
+  it("with more than 15 contained items it still falls back to the list when the summary has usable=false", () => {
     const rows = Array.from({ length: 6 }, (_, i) => ({
       id: `element:leaf${i}`,
       title: `leaf ${i}`,
@@ -1592,7 +1592,7 @@ describe("OntologyMapDetailPanel — last-edit provenance", () => {
   });
 });
 
-describe("OntologyMapDetailPanel — 시안 재설계 구조", () => {
+describe("OntologyMapDetailPanel: redesigned structure from the mockup", () => {
   it("renders the node name as the header hero (title2/650, truncatable)", () => {
     renderPanel();
     const name = screen.getByRole("heading", { level: 2 });
@@ -1720,7 +1720,7 @@ describe("OntologyMapDetailPanel — 시안 재설계 구조", () => {
     expect(chip.querySelector("svg")).toBeNull();
   });
 
-  it("닫아도 1프레임에 사라지지 않고, 퇴장이 끝나면 한 번 알린다", async () => {
+  it("closing does not vanish in one frame, and the exit is reported once when it finishes", async () => {
     const onExited = vi.fn();
     const panel = (open: boolean) => (
       <OntologyMapDetailPanel
@@ -1756,14 +1756,14 @@ describe("OntologyMapDetailPanel — 시안 재설계 구조", () => {
     rerender(panel(false));
     // It is *mid*-exit — still on screen, and unpressable for that frame.
     expect(screen.getByTestId("map-detail-panel")).toBeInTheDocument();
-    expect(onExited, "퇴장 중에 부르면 포지셔너가 애니 도중에 사라진다").not.toHaveBeenCalled();
+    expect(onExited, "calling during the exit makes the positioner disappear mid-animation").not.toHaveBeenCalled();
 
     await waitFor(() => expect(onExited).toHaveBeenCalledTimes(1));
     expect(screen.queryByTestId("map-detail-panel")).not.toBeInTheDocument();
   });
 });
 
-describe("OntologyMapDetailPanel — 줄 호버가 지도로 나가는 통로", () => {
+describe("OntologyMapDetailPanel: the channel from row hover out to the map", () => {
   const childRow = {
     id: "capability:cart",
     title: "장바구니",
@@ -1772,7 +1772,7 @@ describe("OntologyMapDetailPanel — 줄 호버가 지도로 나가는 통로", 
     direction: "outgoing" as const,
   };
 
-  it("관계 행은 **캔버스 노드 id** 를 내보내고, 커서가 나가면 null 로 접는다", () => {
+  it("a relation row emits the **canvas node id** and folds back to null when the cursor leaves", () => {
     const onHoverConnection = vi.fn();
     renderPanel(undefined, undefined, {
       onHoverConnection,
@@ -1792,7 +1792,7 @@ describe("OntologyMapDetailPanel — 줄 호버가 지도로 나가는 통로", 
     expect(onHoverConnection).toHaveBeenLastCalledWith(null);
   });
 
-  it("근거 문서 행은 **볼트 slug** 를 내보낸다 — 캔버스 id 와 다른 이름 공간이다", () => {
+  it("an evidence document row emits the **vault slug**, a different namespace from the canvas id", () => {
     const onHoverEvidence = vi.fn();
     const onHoverConnection = vi.fn();
     renderPanel(
@@ -1811,7 +1811,7 @@ describe("OntologyMapDetailPanel — 줄 호버가 지도로 나가는 통로", 
     expect(onHoverEvidence).toHaveBeenLastCalledWith(null);
   });
 
-  it("도메인 칩도 같은 통로다 — 같은 어포던스인데 여기만 반응이 없으면 안 된다", () => {
+  it("the domain chip uses the same channel, since the same affordance cannot be the only one that does not react", () => {
     const onHoverConnection = vi.fn();
     renderPanel(undefined, undefined, {
       onHoverConnection,
@@ -1825,7 +1825,7 @@ describe("OntologyMapDetailPanel — 줄 호버가 지도로 나가는 통로", 
     expect(onHoverConnection).toHaveBeenLastCalledWith(null);
   });
 
-  it("패널이 사라지면 강조도 걷힌다 — 행을 누르면 pointerleave 가 안 온다", () => {
+  it("the highlight clears when the panel disappears, because pressing a row never delivers pointerleave", () => {
     const onHoverConnection = vi.fn();
     const onHoverEvidence = vi.fn();
     const { unmount } = renderPanel(undefined, undefined, {

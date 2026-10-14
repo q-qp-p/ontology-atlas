@@ -27,35 +27,35 @@ function renderHandle(width = defaultChatWidth(window.innerWidth)) {
   return { handle: screen.getByTestId('acp-chat-resize'), onWidth, onCommit };
 }
 
-describe('대화 칸 너비 — 끌어서 정한다', () => {
-  it('왼쪽으로 끌면 넓어진다 — 패널이 오른쪽에 붙어 있으니 그 방향이 「더」다', () => {
+describe('chat column width: set by dragging', () => {
+  it('dragging left widens it, because the panel hugs the right edge and that direction means more', () => {
     const { handle, onWidth } = renderHandle(420);
     fireEvent.pointerDown(handle, { button: 0, clientX: 1000, pointerId: 1 });
     fireEvent.pointerMove(handle, { clientX: 940, pointerId: 1 });
     expect(onWidth).toHaveBeenLastCalledWith(480);
   });
 
-  it('오른쪽으로 끌면 좁아진다', () => {
+  it('dragging right narrows it', () => {
     const { handle, onWidth } = renderHandle(420);
     fireEvent.pointerDown(handle, { button: 0, clientX: 1000, pointerId: 1 });
     fireEvent.pointerMove(handle, { clientX: 1060, pointerId: 1 });
     expect(onWidth).toHaveBeenLastCalledWith(360);
   });
 
-  it('누르지 않은 채 지나가는 마우스는 아무 일도 안 한다', () => {
+  it('a mouse passing over without a press does nothing', () => {
     const { handle, onWidth } = renderHandle();
     fireEvent.pointerMove(handle, { clientX: 900, pointerId: 1 });
     expect(onWidth).not.toHaveBeenCalled();
   });
 
-  it('주 버튼이 아니면 끌기가 시작되지 않는다 — 오른쪽 버튼으로 창을 끌지 않는다', () => {
+  it('a non-primary button does not start a drag, so the right button never drags the panel', () => {
     const { handle, onWidth } = renderHandle();
     fireEvent.pointerDown(handle, { button: 2, clientX: 1000, pointerId: 1 });
     fireEvent.pointerMove(handle, { clientX: 900, pointerId: 1 });
     expect(onWidth).not.toHaveBeenCalled();
   });
 
-  it('손을 뗄 때 **한 번만** 저장한다 — 끄는 동안 매 프레임 쓰지 않는다', () => {
+  it('saves **once** on release, not on every frame while dragging', () => {
     const { handle, onCommit } = renderHandle(420);
     fireEvent.pointerDown(handle, { button: 0, clientX: 1000, pointerId: 1 });
     fireEvent.pointerMove(handle, { clientX: 980, pointerId: 1 });
@@ -65,7 +65,7 @@ describe('대화 칸 너비 — 끌어서 정한다', () => {
     expect(onCommit).toHaveBeenCalledTimes(1);
   });
 
-  it('끌다가 취소돼도 끝난 것으로 친다 — 붙잡힌 채 남지 않는다', () => {
+  it('a cancelled drag counts as finished, so it never stays captured', () => {
     const { handle, onCommit } = renderHandle();
     fireEvent.pointerDown(handle, { button: 0, clientX: 1000, pointerId: 1 });
     fireEvent.pointerCancel(handle, { pointerId: 1 });
@@ -73,8 +73,8 @@ describe('대화 칸 너비 — 끌어서 정한다', () => {
   });
 });
 
-describe('대화 칸 너비 — 키보드로도 된다', () => {
-  it('← 로 넓히고 → 로 좁힌다 — 끌기와 같은 방향이다', () => {
+describe('chat column width: the keyboard works too', () => {
+  it('left arrow widens and right arrow narrows, the same directions as dragging', () => {
     const { handle, onCommit } = renderHandle(420);
     fireEvent.keyDown(handle, { key: 'ArrowLeft' });
     expect(onCommit).toHaveBeenLastCalledWith(420 + CHAT_WIDTH_STEP);
@@ -82,7 +82,7 @@ describe('대화 칸 너비 — 키보드로도 된다', () => {
     expect(onCommit).toHaveBeenLastCalledWith(420 - CHAT_WIDTH_STEP);
   });
 
-  it('다른 키는 그대로 흘려보낸다', () => {
+  it('lets other keys pass through untouched', () => {
     const { handle, onCommit } = renderHandle();
     fireEvent.keyDown(handle, { key: 'a' });
     expect(onCommit).not.toHaveBeenCalled();
@@ -92,15 +92,15 @@ describe('대화 칸 너비 — 키보드로도 된다', () => {
    * The way back is **this window's** default, not the constant. On a narrow window the two
    * differ, and returning to a width the panel would never have opened at is not a return.
    */
-  it('두 번 누르면 기본 폭으로 되돌아간다 — 끌다 잃어버린 사람의 길', () => {
+  it('a double press restores the default width, a way back for someone who lost it while dragging', () => {
     const { handle, onCommit } = renderHandle(900);
     fireEvent.doubleClick(handle);
     expect(onCommit).toHaveBeenCalledWith(defaultChatWidth(window.innerWidth));
   });
 });
 
-describe('대화 칸 너비 — 보조기술에 무엇이라고 말하나', () => {
-  it('창 분할자로 읽히고 현재값·범위를 말한다', () => {
+describe('chat column width: what assistive technology is told', () => {
+  it('reads as a window splitter and announces its current value and range', () => {
     const { handle } = renderHandle(465);
     expect(handle.getAttribute('role')).toBe('separator');
     expect(handle.getAttribute('aria-orientation')).toBe('vertical');

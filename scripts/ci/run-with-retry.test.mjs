@@ -53,15 +53,15 @@ async function run(args) {
   }
 }
 
-test('성공하면 한 번만 돌고 0으로 끝난다', async () => {
+test('runs once and exits 0 on success', async () => {
   const fake = fakeCommand({ name: 'ok', succeedFromAttempt: 1 });
   const result = await run(['--attempts=3', '--backoff-ms=1', '--', ...fake.argv]);
 
   assert.equal(result.code, 0);
-  assert.equal(fake.attempts(), 1, '성공했는데 또 돌았다');
+  assert.equal(fake.attempts(), 1, 'ran again after a success');
 });
 
-test('두 번째에 성공하면 세 번째는 돌지 않는다', async () => {
+test('does not run a third time when the second attempt succeeds', async () => {
   const fake = fakeCommand({ name: 'flaky', succeedFromAttempt: 2 });
   const result = await run(['--attempts=3', '--backoff-ms=1', '--', ...fake.argv]);
 
@@ -70,16 +70,16 @@ test('두 번째에 성공하면 세 번째는 돌지 않는다', async () => {
   assert.match(result.stdout, /succeeded on attempt 2/);
 });
 
-test('계속 실패하면 정확히 attempts 만큼 돌고 1로 끝난다', async () => {
+test('runs exactly `attempts` times and exits 1 when every attempt fails', async () => {
   const fake = fakeCommand({ name: 'dead' });
   const result = await run(['--attempts=3', '--backoff-ms=1', '--', ...fake.argv]);
 
-  assert.equal(result.code, 1, '필수 단계가 실패했는데 0으로 끝났다');
+  assert.equal(result.code, 1, 'exited 0 although a required step failed');
   assert.equal(fake.attempts(), 3);
   assert.match(result.stderr, /all 3 attempts failed/);
 });
 
-test('--best-effort 면 다 실패해도 0으로 끝나되, 조용히 넘어가지 않는다', async () => {
+test('with --best-effort exits 0 after total failure but does not pass silently', async () => {
   const fake = fakeCommand({ name: 'best-effort' });
   const result = await run(['--attempts=2', '--backoff-ms=1', '--best-effort', '--', ...fake.argv]);
 
@@ -90,18 +90,18 @@ test('--best-effort 면 다 실패해도 0으로 끝나되, 조용히 넘어가�
   assert.match(result.stdout, /::warning title=/);
 });
 
-test('멈춘 명령은 타임아웃에 죽고, 그 자리가 재시도로 이어진다', async () => {
+test('kills a hung command on timeout and continues with a retry', async () => {
   // A command that wants to sleep 60 s per attempt. Without the timeout this test takes
   // over 60 s; the attempt count and the timeout message prove the kill without a clock.
   const fake = fakeCommand({ name: 'hang', hangMs: 60_000 });
   const result = await run(['--attempts=2', '--timeout-ms=700', '--backoff-ms=1', '--', ...fake.argv]);
 
   assert.equal(result.code, 1);
-  assert.equal(fake.attempts(), 2, '타임아웃 뒤에 재시도가 안 일어났다');
+  assert.equal(fake.attempts(), 2, 'no retry happened after the timeout');
   assert.match(result.stdout, /did not finish within 700ms/);
 });
 
-test('없는 명령은 spawn 단계에서 실패로 잡힌다', async () => {
+test('a missing command is caught as a failure at spawn', async () => {
   const result = await run([
     '--attempts=2',
     '--backoff-ms=1',
@@ -113,12 +113,12 @@ test('없는 명령은 spawn 단계에서 실패로 잡힌다', async () => {
   assert.match(result.stdout, /spawn-error/);
 });
 
-test('parseArgs — `--` 가 없거나 뒤가 비면 거절한다', () => {
+test('parseArgs rejects a missing `--` or an empty command after it', () => {
   assert.throws(() => parseArgs(['--attempts=2']), /command to run after `--`/);
   assert.throws(() => parseArgs(['--attempts=2', '--']), /nothing follows `--`/);
 });
 
-test('parseArgs — 옵션을 읽고, 이상한 값은 거절한다', () => {
+test('parseArgs reads the options and rejects malformed values', () => {
   const { options, command } = parseArgs([
     '--attempts=5',
     '--timeout-ms=1000',
@@ -140,7 +140,7 @@ test('parseArgs — 옵션을 읽고, 이상한 값은 거절한다', () => {
   assert.throws(() => parseArgs(['--unknown', '--', 'echo']), /unknown option/);
 });
 
-test('label 을 안 주면 명령 자체가 라벨이 된다', () => {
+test('without a label the command itself becomes the label', () => {
   const { options } = parseArgs(['--', 'pnpm', 'exec', 'playwright', 'install-deps']);
   assert.equal(options.label, 'pnpm exec playwright install-deps');
 });

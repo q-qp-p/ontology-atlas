@@ -123,8 +123,8 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe('useLocalVaultInternal — 데스크톱 최근 vault 재열기', () => {
-  it('최근 프로젝트 루트를 열어도 Markdown 이 있는 atlas 자식 하나만 빌드한다', async () => {
+describe('useLocalVaultInternal: reopening a recent vault on desktop', () => {
+  it('builds only the one atlas child with Markdown even when a recent project root is opened', async () => {
     tauri.listTauriDirectoryNames.mockImplementation(async (rootPath: string) =>
       rootPath.endsWith('/atlas') ? ['project.md'] : [],
     );
@@ -149,7 +149,7 @@ describe('useLocalVaultInternal — 데스크톱 최근 vault 재열기', () => 
     expect(hook.result.current.openedInsidePickedFolder).toBe('/Users/dana/work/project');
   });
 
-  it('앱 시작 복원도 예전 프로젝트 루트 기록을 atlas 자식으로 바로잡고 그것만 빌드한다', async () => {
+  it('corrects an older project-root record to its atlas child on app start restore and builds only that', async () => {
     store.getLocalFsHandle.mockResolvedValue(projectRootRecord());
     tauri.listTauriDirectoryNames.mockImplementation(async (rootPath: string) =>
       rootPath.endsWith('/atlas') ? ['project.md'] : [],
@@ -169,7 +169,7 @@ describe('useLocalVaultInternal — 데스크톱 최근 vault 재열기', () => 
     expect(hook.result.current.openedInsidePickedFolder).toBe('/Users/dana/work/project');
   });
 
-  it('기존 vault 권한 대기 중 폴더 선택을 취소하면 이전 상태를 그대로 복원한다', async () => {
+  it('restores the previous state when folder selection is cancelled while the existing vault awaits permission', async () => {
     store.getLocalFsHandle.mockResolvedValue(desktopRecord());
     store.verifyHandlePermission.mockResolvedValue('prompt');
     tauri.pickTauriVaultDirectory.mockResolvedValue(null);
@@ -185,7 +185,7 @@ describe('useLocalVaultInternal — 데스크톱 최근 vault 재열기', () => 
     expect(docsVault.buildLocalManifestWithEntries).not.toHaveBeenCalled();
   });
 
-  it('저장된 폴더가 사라졌으면 path-missing 으로 분류하고 매니페스트 빌드를 아예 시도하지 않는다', async () => {
+  it('classifies a vanished saved folder as path-missing and never attempts a manifest build', async () => {
     tauri.tauriVaultPathExists.mockResolvedValue(false);
     const hook = await mountHook();
 
@@ -215,7 +215,7 @@ describe('useLocalVaultInternal — 데스크톱 최근 vault 재열기', () => 
     expect(docsVault.buildLocalManifestWithEntries).not.toHaveBeenCalled();
   });
 
-  it('폴더는 있으나 빌드가 문자열로 reject(=Tauri Err(String))하면 그 원인을 errorMessage 로 살린다', async () => {
+  it('keeps the cause as errorMessage when the folder exists but the build rejects with a string (Tauri Err(String))', async () => {
     tauri.tauriVaultPathExists.mockResolvedValue(true);
     docsVault.buildLocalManifestWithEntries.mockRejectedValue(
       'No such file or directory (os error 2)',
@@ -234,7 +234,7 @@ describe('useLocalVaultInternal — 데스크톱 최근 vault 재열기', () => 
     expect(hook.result.current.errorCode).toBe('access-failed');
   });
 
-  it('복원 중 무엇이 터져도 첫 화면이 갇히지 않는다 — 있지만 못 읽는 폴더', async () => {
+  it('never traps the first screen whatever fails during restore: a folder that exists but cannot be read', async () => {
     store.getLocalFsHandle.mockResolvedValue(desktopRecord());
     store.verifyHandlePermission.mockRejectedValue(
       new Error('Operation not permitted (os error 1)'),
@@ -245,7 +245,7 @@ describe('useLocalVaultInternal — 데스크톱 최근 vault 재열기', () => 
     await waitFor(() =>
       expect(
         hook.result.current.restoreAttempted,
-        '복원이 실패했는데 첫 화면이 계속 기다리고 있다',
+        'restore failed yet the first screen keeps waiting',
       ).toBe(true),
     );
     expect(hook.result.current.status).toBe('error');
@@ -253,7 +253,7 @@ describe('useLocalVaultInternal — 데스크톱 최근 vault 재열기', () => 
     expect(hook.result.current.errorMessage).toBe('Operation not permitted (os error 1)');
   });
 
-  it('막힌 것이 아니라 사라진 폴더는 여전히 사라졌다고 말한다', async () => {
+  it('still says a folder that vanished rather than being blocked has vanished', async () => {
     // The narrowing must not swallow its neighbour: sending somebody to System Settings to fix a
     // folder that is simply gone is a wrong instruction, and they will follow it and find nothing.
     store.getLocalFsHandle.mockResolvedValue(desktopRecord());

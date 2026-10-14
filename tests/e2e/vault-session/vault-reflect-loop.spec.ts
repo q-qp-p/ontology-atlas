@@ -11,7 +11,7 @@ const SEED: Record<string, string> = {
  * Edit the disk and the map follows, in both add and delete directions. No time ceiling is pinned:
  * the web polls every 5 s when idle (`.claude/rules/surfaces.md`); it asserts only that it follows.
  */
-test("고치면 지도가 따라온다 — 더할 때와 지울 때 모두", async ({ page }) => {
+test("the map follows an edit, both on add and on delete", async ({ page }) => {
   test.setTimeout(300_000);
   await page.setViewportSize({ width: 1512, height: 900 });
   await seedFirstRunSeen(page);
@@ -22,7 +22,7 @@ test("고치면 지도가 따라온다 — 더할 때와 지울 때 모두", asy
   const index = page.getByTestId("topology-index-panel");
   await expect(index).toContainText("Reflect Shop", { timeout: 30_000 });
   await expect(index).toContainText("2 개념", { timeout: 20_000 });
-  console.log("OPENED · 2 개념");
+  console.log("OPENED · 2 concepts");
 
   // Write one more node to disk — the same as a user creating the file in an editor.
   const t0 = Date.now();
@@ -41,7 +41,7 @@ test("고치면 지도가 따라온다 — 더할 때와 지울 때 모두", asy
     await w.close();
   });
   await expect(index).toContainText("3 개념", { timeout: 30_000 });
-  console.log(`[reflect] 더하기 반영 ${Date.now() - t0}ms`);
+  console.log(`[reflect] add reflected ${Date.now() - t0}ms`);
 
   // It must follow on deletion too — a non-existent node left on screen is worse.
   const t1 = Date.now();
@@ -56,5 +56,5 @@ test("고치면 지도가 따라온다 — 더할 때와 지울 때 모두", asy
     await caps.removeEntry("ship.md");
   });
   await expect(index).toContainText("2 개념", { timeout: 30_000 });
-  console.log(`[reflect] 지우기 반영 ${Date.now() - t1}ms`);
+  console.log(`[reflect] delete reflected ${Date.now() - t1}ms`);
 });

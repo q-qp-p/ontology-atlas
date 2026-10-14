@@ -24,22 +24,22 @@ function sources(dir: string, acc: string[] = []): string[] {
   return acc;
 }
 
-describe("크롬 칩 축소 — 라벨을 접으면 상자도 접힌다", () => {
+describe("chrome chip compaction — folding the label folds the box", () => {
   const files = sources(join(ROOT, "src"));
 
-  it("탐지기가 공회전하지 않는다 — 반응형 라벨 접기가 실재한다", () => {
+  it("the detector does not idle — responsive label folding exists", () => {
     const hooks = files.flatMap((file) => [...readFileSync(file, "utf8").matchAll(LABEL_HOOK)]);
     // When this reaches zero every caller folds through `compact` and this contract can be retired.
-    expect(hooks.length, "반응형 라벨 접기를 하나도 못 찾았다 — 셀렉터가 깨졌다").toBeGreaterThan(0);
+    expect(hooks.length, "could not find a single responsive label fold — the selector broke").toBeGreaterThan(0);
   });
 
-  it("라벨을 접는 폭마다 같은 폭에서 상자도 타일 치수로 좁아진다", () => {
+  it("at every width where the label folds, the box also narrows to the tile size at the same width", () => {
     // The shared constant counts as the pair for the breakpoint its own value carries —
     // its literal lives in `chrome-chip.tsx` so Tailwind's scanner can see it, and the
     // third case below proves it is the same box the `compact` prop applies.
     const chip = readFileSync(join(ROOT, "src/shared/ui/controls/chrome-chip.tsx"), "utf8");
     const sharedBreakpoint = /export const CHROME_CHIP_COMPACT_BELOW_XL =\s*\n?\s*'(max-[a-z0-9]+):/.exec(chip)?.[1];
-    expect(sharedBreakpoint, "공유 상수의 브레이크포인트를 못 읽었다").toBeTruthy();
+    expect(sharedBreakpoint, "could not read the breakpoint of the shared constant").toBeTruthy();
 
     const offenders: string[] = [];
     for (const file of files) {
@@ -51,22 +51,22 @@ describe("크롬 칩 축소 — 라벨을 접으면 상자도 접힌다", () => 
             source.includes(`${breakpoint}:px-0`)) ||
           (breakpoint === sharedBreakpoint && source.includes("CHROME_CHIP_COMPACT_BELOW_XL"));
         if (!narrows) {
-          offenders.push(`${file.slice(ROOT.length + 1)} — ${breakpoint} 에서 라벨만 접고 상자는 그대로다`);
+          offenders.push(`${file.slice(ROOT.length + 1)} — at ${breakpoint} only the label folds and the box stays`);
         }
       }
     }
     expect(
       offenders,
-      "아이콘만 남은 칩은 타일과 같은 정사각형이어야 한다. `CHROME_CHIP_COMPACT_BELOW_XL` 을 함께 쓰거나 `compact` 프롭으로 접어라.",
+      "a chip left with only an icon must be as square as the tile. Use `CHROME_CHIP_COMPACT_BELOW_XL` with it or fold it with the `compact` prop.",
     ).toEqual([]);
   });
 
-  it("공유 상수가 프롭 쪽 상자와 같은 값을 쓴다 — 두 벌이 갈라지지 않는다", () => {
+  it("the shared constant uses the same value as the prop-side box — the two copies do not diverge", () => {
     const chip = readFileSync(join(ROOT, "src/shared/ui/controls/chrome-chip.tsx"), "utf8");
     const compactProp = /const COMPACT_CLASS =\s*'([^']+)'/.exec(chip)?.[1];
     const responsive = /export const CHROME_CHIP_COMPACT_BELOW_XL =\s*\n?\s*'([^']+)'/.exec(chip)?.[1];
-    expect(compactProp, "`COMPACT_CLASS` 를 못 읽었다").toBeTruthy();
-    expect(responsive, "`CHROME_CHIP_COMPACT_BELOW_XL` 을 못 읽었다").toBeTruthy();
+    expect(compactProp, "could not read `COMPACT_CLASS`").toBeTruthy();
+    expect(responsive, "could not read `CHROME_CHIP_COMPACT_BELOW_XL`").toBeTruthy();
     // Same declarations, one carrying a variant prefix. Comparing the stripped form
     // means a change to either side has to be a deliberate change to both.
     const strip = (value: string) =>
@@ -74,7 +74,7 @@ describe("크롬 칩 축소 — 라벨을 접으면 상자도 접힌다", () => 
         .split(/\s+/)
         .map((token) => token.replace(/^max-[a-z0-9]+:/, ""))
         .sort();
-    expect(strip(responsive!), "반응형 축소 상자가 프롭 축소 상자와 다르다").toEqual(
+    expect(strip(responsive!), "the responsive compact box differs from the prop compact box").toEqual(
       strip(compactProp!),
     );
   });

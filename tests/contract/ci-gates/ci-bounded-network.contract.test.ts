@@ -47,29 +47,29 @@ function jobBlock(source: string, id: string): string {
   return lines.slice(start, next < 0 ? undefined : next).join('\n');
 }
 
-describe('CI 준비 스텝은 무한정 기다리지 않는다', () => {
-  it('놀고 있지 않다 — 검사할 스텝을 실제로 찾았다', () => {
+describe('CI setup steps do not wait without bound', () => {
+  it('does not idle — it really found steps to check', () => {
     // If a step name or notation changes and the regex misses, this fails first.
-    expect(blocks.length, 'setup-playwright 에서 run 블록을 하나도 못 읽었다').toBeGreaterThan(3);
+    expect(blocks.length, 'could not read a single run block in setup-playwright').toBeGreaterThan(3);
     expect(
       playwrightInstalls.length,
-      'playwright install 스텝을 하나도 못 찾았다 — 이 검사가 아무것도 안 보고 있다',
+      'could not find a single playwright install step — this check is looking at nothing',
     ).toBeGreaterThanOrEqual(2);
   });
 
-  it.each(playwrightInstalls)('상한과 재시도를 거쳐 돈다: %s', (block) => {
-    expect(block, '`run-with-retry.mjs` 를 거치지 않는다').toContain('scripts/ci/run-with-retry.mjs');
-    expect(block, '`--timeout-ms=` 가 없다 — 상한 없는 대기가 돌아왔다').toMatch(/--timeout-ms=\d+/);
-    expect(block, '`--attempts=` 가 없다').toMatch(/--attempts=\d+/);
+  it.each(playwrightInstalls)('runs through a bound and a retry: %s', (block) => {
+    expect(block, 'does not go through `run-with-retry.mjs`').toContain('scripts/ci/run-with-retry.mjs');
+    expect(block, '`--timeout-ms=` is missing — the unbounded wait is back').toMatch(/--timeout-ms=\d+/);
+    expect(block, '`--attempts=` is missing').toMatch(/--attempts=\d+/);
   });
 
-  it('apt 자신에게도 대기 상한이 있다', () => {
+  it('apt itself also has a wait bound', () => {
     expect(action).toMatch(/Acquire::http::Timeout\s+"\d+"/);
     expect(action).toMatch(/Acquire::https::Timeout\s+"\d+"/);
     expect(action).toMatch(/Acquire::Retries\s+"\d+"/);
   });
 
-  it('준비가 최악으로 굴러도 테스트가 돌 시간이 남는다', () => {
+  it('even if setup goes worst-case, time is left for the tests to run', () => {
     // Worst case = the sum of (attempts × ceiling). If that eats the job timeout the
     // ceiling was pointless — it merely moved 20 minutes to 30.
     let worstMs = 0;
@@ -81,18 +81,18 @@ describe('CI 준비 스텝은 무한정 기다리지 않는다', () => {
 
     const jobTimeouts = PLAYWRIGHT_JOB_IDS.map((id) => {
       const job = jobBlock(workflow, id);
-      expect(job, `${id} Playwright job 을 못 읽었다`).not.toBe('');
-      expect(job, `${id} 가 setup-playwright 를 더는 호출하지 않는다`).toContain(
+      expect(job, `could not read the ${id} Playwright job`).not.toBe('');
+      expect(job, `${id} no longer calls setup-playwright`).toContain(
         './.github/actions/setup-playwright',
       );
       return Number(/^\s*timeout-minutes:\s*(\d+)\s*$/m.exec(job)?.[1] ?? 0);
     });
-    expect(jobTimeouts.length, 'Playwright job 인벤토리가 비었다').toBeGreaterThanOrEqual(3);
-    expect(Math.min(...jobTimeouts), 'Playwright job 타임아웃을 못 읽었다').toBeGreaterThan(0);
+    expect(jobTimeouts.length, 'the Playwright job inventory is empty').toBeGreaterThanOrEqual(3);
+    expect(Math.min(...jobTimeouts), 'could not read the Playwright job timeout').toBeGreaterThan(0);
 
     const tightestMs = Math.min(...jobTimeouts) * 60_000;
     // Half is the reference: even in the worst preparation, half the job remains for the tests.
-    expect(worstMs, `준비 최악 ${Math.round(worstMs / 60_000)}분이 잡 예산의 절반을 넘는다`).
+    expect(worstMs, `worst-case setup ${Math.round(worstMs / 60_000)} minutes exceeds half the job budget`).
       toBeLessThan(tightestMs / 2);
   });
 });

@@ -99,7 +99,7 @@ const AUDIT_258 = `(() => {
  * gate that is red from the day it is switched on is noise — and either fix what
  * remains or record it here with its measurement.
  */
-test.describe("최소 타깃 계약 (pointer: fine — WCAG 2.5.8 AA)", () => {
+test.describe("minimum target contract (pointer: fine, WCAG 2.5.8 AA)", () => {
   test.use({ hasTouch: false, isMobile: false, viewport: { width: 1280, height: 860 } });
 
   for (const route of [
@@ -111,7 +111,7 @@ test.describe("최소 타깃 계약 (pointer: fine — WCAG 2.5.8 AA)", () => {
     // the shape 2.5.8 catches first. Inventory taken before switching it on: zero.
     "/ko/ontology/insights/?tab=unmatched&guides=off",
   ]) {
-    test(`${route} 의 타깃이 24×24 미달이면 인라인 면제·간격 예외 중 하나를 증명해야 한다`, async ({ page }) => {
+    test(`a target on ${route} under 24×24 must prove either the inline exemption or the spacing exception`, async ({ page }) => {
       await page.goto(
         route === "/ko/docs/?guides=off"
           ? "/ko/library/?tab=ontology&guides=off"
@@ -128,12 +128,12 @@ test.describe("최소 타깃 계약 (pointer: fine — WCAG 2.5.8 AA)", () => {
       await page.waitForLoadState("networkidle");
       const { scanned, failures } = (await page.evaluate(AUDIT_258)) as Audit258Result;
       // Idling guard — catching no targets means the selector is dead, not that the screen is perfect.
-      expect(scanned, `${route} 에서 스캔된 타깃이 너무 적다(${scanned})`).toBeGreaterThan(5);
-      expect(failures, `2.5.8 미달: ${JSON.stringify(failures)}`).toEqual([]);
+      expect(scanned, `too few targets were scanned on ${route} (${scanned})`).toBeGreaterThan(5);
+      expect(failures, `2.5.8 shortfall: ${JSON.stringify(failures)}`).toEqual([]);
     });
   }
 
-  test("계기 프로브 — 24 미만 밀집 타깃을 실제로 잡고, 간격 확보 타깃은 지나보낸다", async ({ page }) => {
+  test("instrument probe: catches crowded targets under 24 and lets spaced targets pass", async ({ page }) => {
     await page.goto("/ko/download/?guides=off");
     await page.evaluate(() => {
       // Violation probe: two 16px targets 8px apart — their 24 circles overlap.
@@ -150,17 +150,17 @@ test.describe("최소 타깃 계약 (pointer: fine — WCAG 2.5.8 AA)", () => {
     });
     const { failures } = (await page.evaluate(AUDIT_258)) as Audit258Result;
     const ids = failures.map((f: { id: string }) => f.id);
-    expect(ids, "밀집 프로브를 못 잡았다 — 탐지기가 죽어 있다").toEqual(
+    expect(ids, "the crowded probe was not caught, so the detector is dead").toEqual(
       expect.arrayContaining(["probe-dense-a", "probe-dense-b"]),
     );
-    expect(ids, "간격 확보 프로브를 오탐했다 — spacing 예외가 죽어 있다").not.toContain("probe-spaced");
+    expect(ids, "the spaced probe was a false positive, so the spacing exception is dead").not.toContain("probe-spaced");
   });
 
   /**
    * Form-coverage probes: if the selector reverted to `button, a[href]`, zero violations would mean
    * nothing was looked at. Each probe proves one thing: input caught, bare checkbox sized, label wrap.
    */
-  test("폼 커버리지 프로브 — 인풋·체크박스를 실제로 재고, 라벨로 감싼 것은 라벨로 친다", async ({ page }) => {
+  test("form coverage probe: measures inputs and checkboxes for real and counts label-wrapped ones by their label", async ({ page }) => {
     await page.goto("/ko/download/?guides=off");
     await page.evaluate(() => {
       document.body.insertAdjacentHTML(
@@ -182,20 +182,20 @@ test.describe("최소 타깃 계약 (pointer: fine — WCAG 2.5.8 AA)", () => {
     });
     const { failures } = (await page.evaluate(AUDIT_258)) as Audit258Result;
     const ids = failures.map((f: { id: string }) => f.id);
-    expect(ids, "16px 인풋을 못 잡았다 — 셀렉터가 폼을 안 보고 있다").toContain("probe-input-small");
-    expect(ids, "라벨 없는 16px 체크박스를 못 잡았다").toContain("probe-check-bare");
+    expect(ids, "the 16px input was not caught, so the selector is not looking at forms").toContain("probe-input-small");
+    expect(ids, "the 16px checkbox without a label was not caught").toContain("probe-check-bare");
     /*
      * The neighbour button is positioned so its 24px circle overlaps the checkbox
      * inside the label. So **if label substitution dies**, the inner 16px checkbox
      * loses the spacing exception and is caught — which is why this assertion is not
      * idling.
      */
-    expect(ids, "이웃 프로브가 안 걸렸다 — 이 자리의 밀집 기하가 성립하지 않는다").toContain(
+    expect(ids, "the neighbor probe was not flagged, so the crowded geometry here does not hold").toContain(
       "probe-label-neighbour",
     );
     expect(
       ids,
-      "라벨로 감싼 체크박스를 오탐했다 — 라벨 치환이 죽었다(고쳐 놓은 자리를 위반으로 부르게 된다)",
+      "a label-wrapped checkbox was a false positive; label substitution is dead, so fixed spots would be called violations",
     ).not.toContain("probe-check-labelled");
   });
 });

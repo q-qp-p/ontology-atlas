@@ -24,19 +24,19 @@ const FORBIDDEN_DISPLAY_NAMES = [
   { pattern: /^claude code( agent)?$/i, source: 'Anthropic Claude Agent SDK · Branding guidelines' },
 ];
 
-describe('남의 제품 이름 — 그쪽이 허용한 형태로만', () => {
-  it('에이전트 목록의 표시 이름이 금지된 형태가 아니다', () => {
+describe('third-party product names — only in the form they allow', () => {
+  it('the display names in the agent list are not in a forbidden form', () => {
     for (const agent of REGISTRY.agents) {
       for (const rule of FORBIDDEN_DISPLAY_NAMES) {
         expect(
           rule.pattern.test(agent.name.trim()),
-          `${agent.id} 의 표시 이름 "${agent.name}" 은 허용되지 않는다 (${rule.source})`,
+          `the display name "${agent.name}" of ${agent.id} is not allowed (${rule.source})`,
         ).toBe(false);
       }
     }
   });
 
-  it('**우리 목록을 설명하는 문구**도 같은 규칙을 지킨다', () => {
+  it('**the copy describing our own list** follows the same rule', () => {
     /*
      * Only the copy describing our own runner list is checked, not all copy: more than 20 legitimate
      * places name someone else's product, and widening the rule would bury the real violation in noise.
@@ -72,14 +72,14 @@ describe('남의 제품 이름 — 그쪽이 허용한 형태로만', () => {
     }
   });
 
-  it('claude 어댑터는 레지스트리가 준 허용된 이름을 그대로 쓴다', () => {
+  it('the claude adapter uses the allowed name from the registry as it is', () => {
     const claude = REGISTRY.agents.find((a) => a.id === 'claude-acp');
-    expect(claude, 'claude-acp 가 목록에서 사라졌다면 이 계약을 다시 볼 때다').toBeDefined();
+    expect(claude, 'if claude-acp disappeared from the list it is time to revisit this contract').toBeDefined();
     // Allowed: "Claude Agent", and "Claude" when the list itself is named Agents.
     expect(claude!.name).toMatch(/^Claude( Agent)?$/);
   });
 
-  it('빌드 스크립트가 그 이름을 다시 덮어쓰지 않는다', () => {
+  it('the build script does not overwrite that name again', () => {
     /*
      * Blocks the **path**, not the value. `DISPLAY_NAME` is the only place a display
      * name can be changed, and a claude entry appearing there can break this again at
@@ -88,14 +88,14 @@ describe('남의 제품 이름 — 그쪽이 허용한 형태로만', () => {
      */
     const script = readFileSync(join(ROOT, 'scripts', 'registry-snapshots', 'build-acp-registry.mjs'), 'utf8');
     const block = /const DISPLAY_NAME = \{([\s\S]*?)\};/.exec(script);
-    expect(block, 'DISPLAY_NAME 이 사라졌다면 이 계약을 다시 볼 때다').not.toBeNull();
+    expect(block, 'if DISPLAY_NAME disappeared it is time to revisit this contract').not.toBeNull();
     expect(
       /claude/i.test(block![1]),
-      'DISPLAY_NAME 에 claude 항목이 생겼다 — 브랜드 가이드를 먼저 확인하라',
+      'DISPLAY_NAME gained a claude entry — check the brand guide first',
     ).toBe(false);
   });
 
-  it('근거가 문서에 남아 있다', () => {
+  it('the rationale remains in the documentation', () => {
     // A rule with no cited source gets reverted by the next person as needless inconvenience.
     const script = readFileSync(join(ROOT, 'scripts', 'registry-snapshots', 'build-acp-registry.mjs'), 'utf8');
     expect(script).toContain('code.claude.com/docs/en/agent-sdk/overview');

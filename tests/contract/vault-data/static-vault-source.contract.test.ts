@@ -58,8 +58,8 @@ function findViolations(source: string): string[] {
   return [...new Set(hits)];
 }
 
-describe('static 볼트 단일 진입점 계약', () => {
-  it('entities/docs-vault 바깥에서는 번들 볼트 원본을 직접 import 하지 않는다', () => {
+describe('static vault single entry point contract', () => {
+  it('nothing outside entities/docs-vault imports the bundled vault source directly', () => {
     const files = collectSourceFiles(SRC_DIR);
 
     // The guard proves itself alive — if the walk breaks and reads 0 files, violations

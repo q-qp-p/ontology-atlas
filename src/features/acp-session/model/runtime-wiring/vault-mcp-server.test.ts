@@ -13,32 +13,32 @@ const BINARY = '/Applications/Ontology Atlas.app/Contents/MacOS/ontology-atlas-m
 const launch = { kind: 'app-bundled' as const, command: BINARY, args: [] };
 const VAULT = '/Users/me/Documents/vault';
 
-describe('세션에 꽂는 MCP 서버', () => {
-  it('띄울 방법이나 볼트를 모르면 아무것도 안 꽂는다', () => {
+describe('MCP servers plugged into the session', () => {
+  it('plugs in nothing when the launch method or the vault is unknown', () => {
     expect(vaultMcpServers(null, VAULT)).toEqual([]);
     expect(vaultMcpServers(launch, null)).toEqual([]);
   });
 
-  it('볼트에 등록이 없으면 꽂는다 — 사용자가 설정 파일을 안 만져도 되게', () => {
+  it('plugs in when the vault has no registration, so the user need not touch a config file', () => {
     const [server] = vaultMcpServers(launch, VAULT);
     expect(server.name).toBe(VAULT_MCP_SERVER_NAME);
     expect(server.command).toBe(BINARY);
     expect(server.env).toContainEqual({ name: 'OATLAS_VAULT', value: VAULT });
   });
 
-  it('**중복 재현** — 볼트가 같은 명령을 이미 등록했으면 안 꽂는다', () => {
+  it('**duplicate reproduction**: does not plug in when the vault already registered the same command', () => {
     expect(
       vaultMcpServers(launch, VAULT, { command: BINARY, validForCurrentVault: true }),
     ).toEqual([]);
   });
 
-  it('명령이 같아도 현재 볼트용 설정이 아니면 앱이 다시 꽂는다', () => {
+  it('re-plugs from the app when the command matches but the config is not for the current vault', () => {
     expect(
       vaultMcpServers(launch, VAULT, { command: BINARY, validForCurrentVault: false }),
     ).toHaveLength(1);
   });
 
-  it('등록된 명령이 다르면 꽂는다 — 볼트 항목이 낡았을 수 있다', () => {
+  it('plugs in when the registered command differs, since the vault entry may be stale', () => {
     // Skipping here produces a session with **no tools at all** — far worse than a duplicate.
     expect(
       vaultMcpServers(launch, VAULT, {
@@ -48,7 +48,7 @@ describe('세션에 꽂는 MCP 서버', () => {
     ).toHaveLength(1);
   });
 
-  it('앞뒤 공백은 같은 것으로 본다 — TOML 파서마다 다듬는 정도가 다르다', () => {
+  it('treats leading and trailing whitespace as equal, since TOML parsers trim to different degrees', () => {
     expect(
       vaultAlreadyRegisters(launch, {
         command: `  ${BINARY}  `,
@@ -57,7 +57,7 @@ describe('세션에 꽂는 MCP 서버', () => {
     ).toBe(true);
   });
 
-  it('빈 등록은 등록이 아니다', () => {
+  it('an empty registration is not a registration', () => {
     expect(
       vaultAlreadyRegisters(launch, { command: '', validForCurrentVault: true }),
     ).toBe(false);
@@ -71,8 +71,8 @@ describe('세션에 꽂는 MCP 서버', () => {
   });
 });
 
-describe('어느 런타임이 볼트 설정을 스스로 읽나 — 실측한 것만', () => {
-  it('codex 는 `.codex/config.toml` 을 읽는다 (2026-08-17 실측)', () => {
+describe('which runtime reads the vault config itself: only what was measured', () => {
+  it('codex reads `.codex/config.toml` (measured 2026-08-17)', () => {
     expect(vaultSelfReadSlot('codex-acp')).toBe('codex-config');
   });
 
@@ -80,7 +80,7 @@ describe('어느 런타임이 볼트 설정을 스스로 읽나 — 실측한 �
    * ⚠️ Listing an unmeasured runtime can produce **a session with no tools at all**. This test is the
    * place that prevents it — adding one means measuring first and then editing this line.
    */
-  it('안 재 본 런타임은 종전대로 꽂는다', () => {
+  it('plugs in as before for a runtime not yet measured', () => {
     expect(vaultSelfReadSlot('claude-acp')).toBeNull();
     expect(vaultSelfReadSlot('gemini-acp')).toBeNull();
     expect(vaultSelfReadSlot(null)).toBeNull();
@@ -89,13 +89,13 @@ describe('어느 런타임이 볼트 설정을 스스로 읽나 — 실측한 �
 });
 
 
-describe('저장소 루트 — 지도가 프로젝트 안에 있으면 코드는 한 단계 위다', () => {
+describe('repository root: when the map is inside the project, the code is one level up', () => {
   const rootOf = (servers: ReturnType<typeof vaultMcpServers>) =>
     (servers[0]?.env as Array<{ name: string; value: string }> | undefined)?.find(
       (e) => e.name === 'OATLAS_REPO_ROOT',
     )?.value ?? null;
 
-  it('프로젝트 안의 금고면 부모를 코드 루트로 넘긴다', () => {
+  it('passes the parent as the code root for a vault inside a project', () => {
     expect(rootOf(vaultMcpServers(launch, '/Users/dana/my-product/atlas'))).toBe(
       '/Users/dana/my-product',
     );
@@ -106,17 +106,17 @@ describe('저장소 루트 — 지도가 프로젝트 안에 있으면 코드는
    * `~/notes` has no project above it; naming its parent as a code root would point the survey at
    * their home directory.
    */
-  it('우리가 만든 모양이 아니면 예전처럼 아무것도 넘기지 않는다', () => {
+  it('passes nothing, as before, for a shape we did not create', () => {
     expect(rootOf(vaultMcpServers(launch, '/Users/dana/notes'))).toBeNull();
     expect(rootOf(vaultMcpServers(launch, '/Users/dana/Documents/my-ontology'))).toBeNull();
   });
 
-  it('파일시스템 뿌리에 있는 atlas 는 프로젝트가 없다', () => {
+  it('an atlas at the filesystem root has no project', () => {
     expect(rootOf(vaultMcpServers(launch, '/atlas'))).toBeNull();
   });
 });
 
-describe('볼트 항목은 이름으로 찾는다 — 목록이 우리 것만은 아니게 되었으므로', () => {
+describe('vault entries are found by name, since the list is no longer only ours', () => {
   const vaultEntry = {
     name: VAULT_MCP_SERVER_NAME,
     command: '/app/ontology-atlas-mcp',
@@ -130,7 +130,7 @@ describe('볼트 항목은 이름으로 찾는다 — 목록이 우리 것만은
     env: [{ name: 'OATLAS_WRITE_CONSENT', value: 'on' }],
   };
 
-  it('외부 연결 도구만 실린 목록을 볼트 서버로 착각하지 않는다', () => {
+  it('does not mistake a list carrying only externally connected tools for the vault server', () => {
     // Before external connectors, "the list is not empty" and "we wired the vault" were the same
     // sentence. They stopped being the same the moment somebody else's server could be in it.
     expect(hasVaultMcpServer([connectorEntry])).toBe(false);
@@ -139,7 +139,7 @@ describe('볼트 항목은 이름으로 찾는다 — 목록이 우리 것만은
     expect(hasVaultMcpServer(null)).toBe(false);
   });
 
-  it('체크포인트 여부는 볼트 항목의 환경만 읽는다 — 남의 설정이 우리 문장을 참으로 만들 수 없다', () => {
+  it('reads only the environment of the vault entry for the checkpoint flag, so another config cannot make our sentence true', () => {
     // The screen says "changes through Atlas tools still stop at the server". A connector
     // carrying a variable of that name would have made that sentence true for a gate that is
     // not there.
@@ -148,7 +148,7 @@ describe('볼트 항목은 이름으로 찾는다 — 목록이 우리 것만은
     expect(vaultWriteConsentOn([connectorEntry, vaultEntry])).toBe(true);
   });
 
-  it('볼트 항목과 연결 도구를 한 배열에 섞어도 각자의 모양을 지킨다', () => {
+  it('keeps each shape even when vault entries and connected tools are mixed in one array', () => {
     const servers = [
       ...vaultMcpServers(launch, VAULT),
       { type: 'http' as const, name: 'linear', url: 'https://mcp.linear.app/mcp', headers: [] },

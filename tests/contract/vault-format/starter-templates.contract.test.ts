@@ -39,7 +39,7 @@ describe("starter templates — CLI ↔ web parity (#73)", () => {
     describe(`locale: ${locale}`, () => {
       const files = starterFilesForLocale(locale);
 
-      it("파일 세트가 CLI 템플릿과 같다", () => {
+      it("the file set equals the CLI templates", () => {
         expect(files.map((f) => f.relPath).sort()).toEqual([
           "README.md",
           "capabilities/example-capability.md",
@@ -50,7 +50,7 @@ describe("starter templates — CLI ↔ web parity (#73)", () => {
       });
 
       for (const file of files) {
-        it(`${file.relPath} 본문이 CLI 템플릿과 바이트 동일하다`, () => {
+        it(`the body of ${file.relPath} is byte-identical to the CLI template`, () => {
           const onDisk = readFileSync(join(CLI_TEMPLATE_ROOTS[locale], file.relPath), "utf8");
           expect(file.content).toBe(onDisk);
         });
@@ -58,7 +58,7 @@ describe("starter templates — CLI ↔ web parity (#73)", () => {
     });
   }
 
-  it("로케일이 달라도 frontmatter 는 같다 — 같은 그래프가 나와야 한다", () => {
+  it("frontmatter is the same across locales, since the same graph must come out", () => {
     const en = starterFilesForLocale("en");
     const ko = starterFilesForLocale("ko");
     const frontmatterOf = (content: string) => content.split("---")[1] ?? "";
@@ -73,7 +73,7 @@ describe("starter templates — CLI ↔ web parity (#73)", () => {
     }
   });
 
-  it("본문(산문)은 로케일마다 다르다 — 번역이 실제로 들어있다", () => {
+  it("the body (prose) differs per locale, since a translation is really in it", () => {
     const en = starterFilesForLocale("en");
     const ko = starterFilesForLocale("ko");
     for (const enFile of en) {
@@ -82,7 +82,7 @@ describe("starter templates — CLI ↔ web parity (#73)", () => {
     }
   });
 
-  it("모르는 로케일은 영어로 떨어진다", () => {
+  it("an unknown locale falls back to English", () => {
     expect(starterFilesForLocale("fr")).toBe(starterFilesForLocale("en"));
     expect(starterFilesForLocale("")).toBe(starterFilesForLocale("en"));
   });
@@ -92,9 +92,9 @@ describe("starter templates — CLI ↔ web parity (#73)", () => {
  * A freshly created vault must pass the product own maintenance planner, which is called instead of
  * reimplementing its rules.
  */
-describe("starter templates — 제품 자신의 품질 기준", () => {
+describe("starter templates: the product's own quality bar", () => {
   for (const locale of ["en", "ko"] as const) {
-    it(`${locale}: 갓 만든 볼트에 빠진 관계가 없다`, () => {
+    it(`${locale}: a freshly created vault has no missing relation`, () => {
       const dir = mkdtempSync(join(tmpdir(), `starter-health-${locale}-`));
       try {
         for (const file of materializeStarterFiles(locale)) {
@@ -111,7 +111,7 @@ describe("starter templates — 제품 자신의 품질 기준", () => {
         expect(byId.get("vault_present")?.count).toBe(5);
         expect(byId.get("compile_issues")?.status).toBe("pass");
         // This line is the point of the check.
-        expect(byId.get("relation_recommendations")?.status, "우리가 쓴 파일이 손볼 거리를 남긴다").toBe(
+        expect(byId.get("relation_recommendations")?.status, "the files we wrote leave something to fix").toBe(
           "pass",
         );
         expect(byId.get("components")?.status).toBe("pass");
@@ -130,7 +130,7 @@ describe("starter templates — 제품 자신의 품질 기준", () => {
  * arrived, each with **two copies** — the CLI template and the TS constant — and no
  * check at all. With two copies and no gate, the diverging one is the default.
  */
-describe("starter templates — 개념이 아닌 파일도 CLI ↔ web 바이트 동일", () => {
+describe("starter templates: files that are not concepts are also CLI to web byte-identical", () => {
   for (const locale of ["en", "ko"] as const) {
     const extras = [
       vaultAgentGuideForLocale(locale),
@@ -138,7 +138,7 @@ describe("starter templates — 개념이 아닌 파일도 CLI ↔ web 바이트
       ...vaultSkillFilesForLocale(locale),
     ];
 
-    it(`${locale}: 파일 세트가 CLI 템플릿과 같다`, () => {
+    it(`${locale}: the file set equals the CLI templates`, () => {
       expect(extras.map((f) => f.relPath).sort()).toEqual([
         ".claude/skills/atlas-absorb/SKILL.md",
         ".claude/skills/atlas-grow/SKILL.md",
@@ -149,7 +149,7 @@ describe("starter templates — 개념이 아닌 파일도 CLI ↔ web 바이트
     });
 
     for (const file of extras) {
-      it(`${locale}: ${file.relPath} 본문이 CLI 템플릿과 바이트 동일하다`, () => {
+      it(`${locale}: the body of ${file.relPath} is byte-identical to the CLI template`, () => {
         const onDisk = readFileSync(join(CLI_TEMPLATE_ROOTS[locale], file.relPath), "utf8");
         expect(file.content).toBe(onDisk);
       });
@@ -167,12 +167,12 @@ describe("starter templates — 개념이 아닌 파일도 CLI ↔ web 바이트
  * on-screen documents, but `em-dash-ratchet`'s reach is `docs/**` and it skips
  * dot-prefixed folders, leaving these files outside its field of view.
  */
-describe("starter templates — 볼트 스킬 frontmatter", () => {
+describe("starter templates: vault skill frontmatter", () => {
   for (const locale of ["en", "ko"] as const) {
     const skills = vaultSkillFilesForLocale(locale);
 
-    it(`${locale}: 세 개를 실제로 읽었다`, () => {
-      expect(skills.length, "스킬을 못 읽었다. 이 시험이 헛돈다").toBe(VAULT_SKILL_NAMES.length);
+    it(`${locale}: really read all three`, () => {
+      expect(skills.length, "could not read the skills, so this test spins idle").toBe(VAULT_SKILL_NAMES.length);
     });
 
     for (const skill of skills) {
@@ -181,20 +181,20 @@ describe("starter templates — 볼트 스킬 frontmatter", () => {
       const name = /^name:\s*(.+)$/m.exec(frontmatter)?.[1]?.trim() ?? "";
       const description = /^description:\s*(.+)$/m.exec(frontmatter)?.[1]?.trim() ?? "";
 
-      it(`${locale}: ${folder} 의 name 이 폴더 이름과 같다`, () => {
+      it(`${locale}: the name of ${folder} equals the folder name`, () => {
         expect(name).toBe(folder);
       });
 
-      it(`${locale}: ${folder} 의 설명이 화면에 낼 수 있는 모양이다`, () => {
-        expect(description.length, "설명이 비면 `/` 메뉴에 이름만 뜬다").toBeGreaterThan(20);
-        expect(description, "화면에 그려지는 문구다. 작대기 대신 마침표나 괄호를 쓴다").not.toContain(
+      it(`${locale}: the description of ${folder} has a shape that can be shown on screen`, () => {
+        expect(description.length, "if the description is empty, only the name shows in the `/` menu").toBeGreaterThan(20);
+        expect(description, "this wording is drawn on screen; use a period or parentheses instead of a dash").not.toContain(
           "—",
         );
       });
     }
   }
 
-  it("스킬 자리는 Claude Code 가 읽는 그 자리다", () => {
+  it("the skill location is the one Claude Code reads", () => {
     expect(vaultSkillPath("atlas-review")).toBe(".claude/skills/atlas-review/SKILL.md");
   });
 });

@@ -34,8 +34,8 @@ const FORBIDDEN_IMPORTS = [
   '@tauri-apps/api',
 ];
 
-describe('첫 마디 생성기 — 모델 호출 0', () => {
-  it('전송 경로를 import 하지 않는다', () => {
+describe('first-words generator — zero model calls', () => {
+  it('does not import the transport path', () => {
     const imports = [...FIRST_WORDS_SOURCE.matchAll(/from\s+'([^']+)'/g)].map(
       (match) => match[1],
     );
@@ -44,13 +44,13 @@ describe('첫 마디 생성기 — 모델 호출 0', () => {
     }
   });
 
-  it('네트워크·브리지 심볼이 소스에 없다', () => {
+  it('there are no network or bridge symbols in the source', () => {
     for (const symbol of ['fetch(', 'invoke(', 'llmChat', 'XMLHttpRequest']) {
       expect(FIRST_WORDS_SOURCE.includes(symbol)).toBe(false);
     }
   });
 
-  it('어떤 폴더 상태로 칩을 만들어도 fetch 가 0회다', async () => {
+  it('makes zero fetch calls whatever folder state the chips are built from', async () => {
     const fetchSpy = vi.fn();
     vi.stubGlobal('fetch', fetchSpy);
     try {

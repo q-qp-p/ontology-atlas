@@ -57,8 +57,8 @@ function receipt(overrides: Partial<AcpWorkReceipt> & { id: string }): AcpWorkRe
   };
 }
 
-describe('deriveBellInbox — 할 일', () => {
-  it('승인을 기다리는 턴은 할 일이 된다 — 사람이 놓치면 값을 치르는 유일한 줄', () => {
+describe('deriveBellInbox: to do', () => {
+  it('makes a turn waiting for approval a to-do, the only line that costs something if a person misses it', () => {
     const inbox = deriveBellInbox({
       sessions: [],
       notifications: [],
@@ -83,7 +83,7 @@ describe('deriveBellInbox — 할 일', () => {
     });
   });
 
-  it('일하는 중인 턴은 할 일이 아니다 — 사람을 기다리는 게 아니다', () => {
+  it('does not make a turn that is working a to-do, since it is not waiting for a person', () => {
     const inbox = deriveBellInbox({
       sessions: [],
       notifications: [],
@@ -95,7 +95,7 @@ describe('deriveBellInbox — 할 일', () => {
     expect(inbox.todos).toEqual([]);
   });
 
-  it('폴더 문제는 하루가 지나면 할 일에서 기록으로 내려간다', () => {
+  it('moves a folder problem from to-do to history once a day has passed', () => {
     const fresh: AgentNotification = {
       id: 'task:1:problem',
       kind: 'vault-problem',
@@ -120,8 +120,8 @@ describe('deriveBellInbox — 할 일', () => {
   });
 });
 
-describe('deriveBellInbox — 결과', () => {
-  it('시작과 끝을 한 줄로 접고 걸린 시간을 함께 말한다', () => {
+describe('deriveBellInbox: results', () => {
+  it('folds start and end into one line and states the time taken with it', () => {
     const inbox = deriveBellInbox({
       sessions: [session({ id: 'task:1', startAt: NOW - 5 * MINUTE, endAt: NOW - 2 * MINUTE })],
       notifications: [
@@ -149,7 +149,7 @@ describe('deriveBellInbox — 결과', () => {
     expect(row.unread).toBe(true);
   });
 
-  it('이어진 같은 제목은 한 줄로 접히고 몇 번인지 남는다', () => {
+  it('folds consecutive identical titles into one line and keeps how many times', () => {
     const notifications: AgentNotification[] = [];
     const sessions: AgentWorkSession[] = [];
     for (const index of [1, 2]) {
@@ -176,7 +176,7 @@ describe('deriveBellInbox — 결과', () => {
     expect(inbox.results[0].repeat).toBe(2);
   });
 
-  it('허용·거절 수는 그 작업 창 안의 사람 결정에서만 온다', () => {
+  it('takes allow and reject counts only from human decisions inside that work window', () => {
     const endAt = NOW - 2 * MINUTE;
     const inbox = deriveBellInbox({
       sessions: [session({ id: 'task:1', startAt: endAt - 3 * MINUTE, endAt })],
@@ -219,7 +219,7 @@ describe('deriveBellInbox — 결과', () => {
    * "You allowed it ×2" over a rejection that really happened. Receipts never reach the
    * timeline, so this row is the only rendering that decision gets.
    */
-  it('반대되는 판정은 접히지 않는다 — 거절한 기록이 허용으로 덮이지 않는다', () => {
+  it('does not fold opposite verdicts, so a rejected record is not covered by an allow', () => {
     const inbox = deriveBellInbox({
       sessions: [],
       notifications: [],
@@ -249,7 +249,7 @@ describe('deriveBellInbox — 결과', () => {
     ]);
   });
 
-  it('같은 대상이라도 한 일이 다르면 접히지 않는다', () => {
+  it('does not fold the same target when the work done differs', () => {
     const sessions: AgentWorkSession[] = [];
     const notifications: AgentNotification[] = [];
     const node = { slug: 'domains/orders', name: '주문', kind: 'domain' };
@@ -280,7 +280,7 @@ describe('deriveBellInbox — 결과', () => {
     expect(inbox.results.every((row) => row.repeat === 1)).toBe(true);
   });
 
-  it('다른 에이전트의 작업에는 내 판정을 붙이지 않는다', () => {
+  it('does not attach my verdict to the work of a different agent', () => {
     const mine = NOW - 20 * MINUTE;
     const theirs = NOW - 18 * MINUTE;
     const inbox = deriveBellInbox({
@@ -305,7 +305,7 @@ describe('deriveBellInbox — 결과', () => {
     expect(byId.get('task:theirs')).toBe(0);
   });
 
-  it('읽은 시점보다 오래된 줄은 안 읽음으로 세지 않는다', () => {
+  it('does not count a line older than the read time as unread', () => {
     const endAt = NOW - 10 * MINUTE;
     const inbox = deriveBellInbox({
       sessions: [session({ id: 'task:1', startAt: endAt - MINUTE, endAt })],
@@ -327,8 +327,8 @@ describe('deriveBellInbox — 결과', () => {
   });
 });
 
-describe('deriveBellInbox — 기록', () => {
-  it('하루를 제목으로 올리고 작업은 한 줄로 접는다', () => {
+describe('deriveBellInbox: history', () => {
+  it('raises a day to a heading and folds work into one line', () => {
     const today = NOW - 2 * MINUTE;
     const yesterday = NOW - 26 * 60 * MINUTE;
     const inbox = deriveBellInbox({
@@ -360,7 +360,7 @@ describe('deriveBellInbox — 기록', () => {
     expect(inbox.history[0].rows[0].durationMs).toBe(MINUTE);
   });
 
-  it('끝나지 않은 작업은 아직 하는 중으로 남는다', () => {
+  it('leaves unfinished work as still in progress', () => {
     const inbox = deriveBellInbox({
       sessions: [session({ id: 'task:1', done: false })],
       notifications: [{ id: 'task:1:start', kind: 'task-start', at: NOW - MINUTE, node: null }],
@@ -378,7 +378,7 @@ describe('deriveBellInbox — 기록', () => {
  * waiting on the person, 4 finished turns (two of them the same title in a row), and 6
  * timeline events across two days.
  */
-describe('deriveBellInbox — 12건 씨앗', () => {
+describe('deriveBellInbox: twelve-item seed', () => {
   const ask: AgentWorkProjection = {
     ...IDLE,
     mode: 'live',
@@ -458,21 +458,21 @@ describe('deriveBellInbox — 12건 씨앗', () => {
     nowMs: NOW,
   });
 
-  it('할 일은 기다리는 요청과 어제 생긴 문제 둘뿐이다', () => {
+  it('has only two to-dos: the waiting request and the problem from yesterday', () => {
     expect(inbox.todos.map((todo) => todo.kind)).toEqual(['permission-ask', 'folder-problem']);
   });
 
-  it('결과는 접힌 뒤 네 줄이고 이어진 같은 제목은 ×2 로 남는다', () => {
+  it('has four result lines after folding, and consecutive identical titles remain as ×2', () => {
     expect(inbox.results).toHaveLength(4);
     expect(inbox.results.filter((row) => row.repeat > 1)).toHaveLength(1);
     expect(inbox.results.filter((row) => row.kind === 'decision')).toHaveLength(1);
   });
 
-  it('읽은 시점 뒤의 결과만 안 읽음이다', () => {
+  it('counts only results after the read time as unread', () => {
     expect(inbox.unreadResults).toBe(4);
   });
 
-  it('기록은 작업별로 접히고 오늘과 어제로 나뉜다', () => {
+  it('folds history by work and splits it into today and yesterday', () => {
     expect(inbox.history.map((group) => group.label)).toEqual(['today', 'yesterday']);
     // 4 folded tasks + a problem + a domain + a bridge + the rejection that wrote nothing.
     expect(inbox.history.flatMap((group) => group.rows)).toHaveLength(9);

@@ -31,7 +31,7 @@ function box(container: HTMLElement): HTMLElement {
   return el as HTMLElement;
 }
 
-describe("useRowDisclosure — 마운트는 재지 않는다", () => {
+describe("useRowDisclosure does not measure on mount", () => {
   const withStubbedHeight = (fn: () => void) => {
     const original = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetHeight");
     Object.defineProperty(HTMLElement.prototype, "offsetHeight", {
@@ -52,14 +52,14 @@ describe("useRowDisclosure — 마운트는 재지 않는다", () => {
    * This is the reflow fix itself: with `auto` on mount there is no reason to
    * read `offsetHeight`. A px value means layout was read at that moment.
    */
-  it("이미 열린 채 마운트하면 높이를 재지 않고 auto 로 둔다", () => {
+  it("mounting already open leaves the height at auto without measuring", () => {
     withStubbedHeight(() => {
       const { container } = render(<Harness open />);
       expect(box(container).style.height).toBe("auto");
     });
   });
 
-  it("닫힌 채 마운트하면 아무것도 그리지 않는다", () => {
+  it("mounting closed renders nothing", () => {
     withStubbedHeight(() => {
       const { container } = render(<Harness open={false} />);
       expect(container.querySelector('[data-testid="box"]')).toBeNull();
@@ -69,7 +69,7 @@ describe("useRowDisclosure — 마운트는 재지 않는다", () => {
   // Not measuring on mount means **a transition must measure** — without it
   // there is nothing to interpolate between `auto` and `0`, and the toggle just
   // snaps out of existence (which is why this hook exists).
-  it("열림 → 닫힘 전이는 실측 px 에서 출발해 0 으로 간다", () => {
+  it("an open to closed transition starts from the measured px and goes to 0", () => {
     withStubbedHeight(() => {
       const { container, rerender } = render(<Harness open />);
       expect(box(container).style.height).toBe("auto");
@@ -81,7 +81,7 @@ describe("useRowDisclosure — 마운트는 재지 않는다", () => {
     });
   });
 
-  it("닫힘 → 열림 전이는 실측 px 로 보간한다", () => {
+  it("a closed to open transition interpolates to the measured px", () => {
     withStubbedHeight(() => {
       const { container, rerender } = render(<Harness open={false} />);
       act(() => rerender(<Harness open />));

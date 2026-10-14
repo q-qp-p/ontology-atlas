@@ -28,20 +28,20 @@ const asList = (value: unknown): string[] =>
     (item): item is string => typeof item === "string" && item.trim() !== "",
   );
 
-describe("예시 볼트 무결성", () => {
-  it("문서를 실제로 읽고 있다 — 빈 매니페스트로 통과하지 않는다", () => {
-    expect(DOCS.length, "예시 볼트 문서를 하나도 못 읽었다 — 이 시험이 헛돈다").toBeGreaterThan(
+describe("sample vault integrity", () => {
+  it("really reads the documents, so it does not pass on an empty manifest", () => {
+    expect(DOCS.length, "could not read a single sample vault document, so this test spins idle").toBeGreaterThan(
       100,
     );
   });
 
-  it("모든 참조가 실재하는 슬러그를 가리킨다", () => {
+  it("every reference points at a slug that exists", () => {
     const slugs = new Set(
       DOCS.map((doc) => doc.frontmatter?.slug).filter(
         (slug): slug is string => typeof slug === "string",
       ),
     );
-    expect(slugs.size, "슬러그를 하나도 못 모았다").toBeGreaterThan(100);
+    expect(slugs.size, "could not collect a single slug").toBeGreaterThan(100);
 
     const broken: string[] = [];
     for (const doc of DOCS) {
@@ -52,24 +52,24 @@ describe("예시 볼트 무결성", () => {
         }
       }
     }
-    expect(broken, `예시 볼트가 없는 슬러그를 가리킨다:\n${broken.join("\n")}`).toEqual([]);
+    expect(broken, `the sample vault points at slugs that do not exist:\n${broken.join("\n")}`).toEqual([]);
   });
 
-  it("uid 가 겹치지 않는다 — 겹치면 두 노드가 한 노드가 된다", () => {
+  it("uids do not collide, since colliding turns two nodes into one", () => {
     const uids = DOCS.map((doc) => doc.frontmatter?.uid).filter(
       (uid): uid is string => typeof uid === "string",
     );
-    expect(uids.length, "uid 를 하나도 못 모았다").toBeGreaterThan(100);
+    expect(uids.length, "could not collect a single uid").toBeGreaterThan(100);
     const seen = new Set<string>();
     const duplicates = uids.filter((uid) => (seen.has(uid) ? true : (seen.add(uid), false)));
-    expect(duplicates, `uid 중복: ${duplicates.join(" · ")}`).toEqual([]);
+    expect(duplicates, `duplicate uids: ${duplicates.join(" · ")}`).toEqual([]);
   });
 
   /**
    * Measures the spread of domain composition ratios rather than pinning a value: an evenly built
    * sample leaves nothing to point out in the demo.
    */
-  it("도메인 구성비가 퍼져 있다 — 평평한 예시는 제품을 약하게 보이게 한다", () => {
+  it("the domain composition is spread out, since a flat sample makes the product look weak", () => {
     const byDomain = new Map<string, { capability: number; element: number }>();
     for (const doc of DOCS) {
       const frontmatter = doc.frontmatter ?? {};
@@ -81,7 +81,7 @@ describe("예시 볼트 무결성", () => {
         byDomain.set(domain, bucket);
       }
     }
-    expect(byDomain.size, "도메인을 하나도 못 모았다").toBeGreaterThan(4);
+    expect(byDomain.size, "could not collect a single domain").toBeGreaterThan(4);
 
     const ratios = [...byDomain.values()]
       .filter((b) => b.capability + b.element > 0)

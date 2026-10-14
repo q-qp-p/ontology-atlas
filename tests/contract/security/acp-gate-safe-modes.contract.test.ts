@@ -44,8 +44,8 @@ describe('current adapter mode transcription', () => {
   });
 });
 
-describe('작업 방식 목록 — 관문을 없애는 것은 안 내놓는다', () => {
-  it('실측에서 실제로 온 claude 모드 목록을 그대로 넣어 본다', () => {
+describe('work mode list: nothing that removes the gate is offered', () => {
+  it('feeds in the claude mode list exactly as it really came from measurement', () => {
     // The 0.69-era list, kept because a person resuming an older adapter still meets it.
     const measured = [
       choice('auto', 'Auto'),
@@ -64,7 +64,7 @@ describe('작업 방식 목록 — 관문을 없애는 것은 안 내놓는다',
     expect(kept).toEqual(['default', 'plan', 'dontAsk']);
   });
 
-  it('claude-agent-acp 0.77.0 이 실제로 짓는 목록을 그대로 넣어 본다', () => {
+  it('feeds in the list that claude-agent-acp 0.77.0 really builds, as it is', () => {
     /*
      * From `dist/session-mode.js` `buildAvailableModes(allowBypass)`: `bypassPermissions` is appended
      * only when allowed, and `dontAsk` is absent from the built list.
@@ -79,7 +79,7 @@ describe('작업 방식 목록 — 관문을 없애는 것은 안 내놓는다',
     expect(kept).toEqual(['default', 'plan']);
   });
 
-  it('실측에서 실제로 온 codex 모드 목록을 그대로 넣어 본다', () => {
+  it('feeds in the codex mode list exactly as it really came from measurement', () => {
     const kept = keepGateSafeModes([
       choice('read-only', 'Read Only'),
       choice('agent', 'Agent'),
@@ -93,7 +93,7 @@ describe('작업 방식 목록 — 관문을 없애는 것은 안 내놓는다',
     expect(kept).toEqual(['read-only']);
   });
 
-  it('세션 응답을 읽는 경로가 **반드시** 이 필터를 지난다', () => {
+  it('the path that reads the session response **always** passes through this filter', () => {
     /*
      * Testing the filter function alone leaves a silent hole the day a consumer stops
      * calling it, so a real response shape is fed in and the result inspected.
@@ -119,14 +119,14 @@ describe('작업 방식 목록 — 관문을 없애는 것은 안 내놓는다',
     expect(choices.currentModelId).toBe('gpt-5.6-sol[xhigh]');
   });
 
-  it('안 내놓는 어댑터는 빈 목록이다 — 없는 것을 있는 척하지 않는다', () => {
+  it('an adapter that offers nothing gets an empty list, never pretending there is something', () => {
     // claude advertises no models at all (measured: `session/set_model` is not a method it has).
     const choices = readSessionChoices({ modes: { currentModeId: 'default', availableModes: [] } });
     expect(choices.models).toEqual([]);
     expect(choices.currentModelId).toBeNull();
   });
 
-  it('`_meta` 가 필터까지 실제로 도착한다 — 종류가 이름을 이긴다', () => {
+  it('`_meta` really reaches the filter, and the kind beats the name', () => {
     /*
      * A session response with a safe-list id and a contradicting kind pins that `_meta` reaches the
      * filter.
@@ -146,7 +146,7 @@ describe('작업 방식 목록 — 관문을 없애는 것은 안 내놓는다',
     expect(choices.modes[0]?.meta).toEqual({ kind: 'plan' });
   });
 
-  it('모양이 깨진 줄은 버린다', () => {
+  it('a malformed line is dropped', () => {
     const choices = readSessionChoices({
       models: { availableModels: [{ name: '이름만 있고 id 가 없다' }, 'not-an-object', null] },
     });

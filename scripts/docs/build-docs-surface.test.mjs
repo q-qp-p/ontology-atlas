@@ -132,7 +132,7 @@ describe('committed surface artifact', () => {
    * "exactly one" is enforced at runtime. This check guards the schema: both tools exist, both
    * selectors are exposed, neither is required. Runtime enforcement: `mcp/src/integration.test.mjs`.
    */
-  it('두 선택자 도구가 살아 있고, 선택자가 여전히 공개된다', () => {
+  it('both selector tools are alive and the selector is still published', () => {
     const exactReaders = surface.mcp.tools.filter((tool) =>
       ['get_concept', 'get_concepts'].includes(tool.name),
     );
@@ -146,13 +146,13 @@ describe('committed surface artifact', () => {
       for (const selector of selectors) {
         assert.ok(
           tool.arguments.includes(selector),
-          `${name} 이 ${selector} 선택자를 더 이상 공개하지 않는다`,
+          `${name} no longer publishes the ${selector} selector`,
         );
       }
       assert.deepEqual(
         tool.required,
         [],
-        `${name} 의 선택자는 스키마에서 선택이어야 한다 — 필수로 만들면 Claude Code 가 도구를 버린다`,
+        `the selector of ${name} must be optional in the schema; making it required makes Claude Code discard the tool`,
       );
     }
   });

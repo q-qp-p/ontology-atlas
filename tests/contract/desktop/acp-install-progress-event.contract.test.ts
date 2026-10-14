@@ -22,7 +22,7 @@ const read = (relative: string) => readFileSync(path.join(repoRoot, relative), '
 function rustEventName(): string {
   const source = read('src-tauri/src/acp_runtime/mod.rs');
   const match = /const ACP_INSTALL_PROGRESS_EVENT: &str = "([^"]+)"/.exec(source);
-  if (!match) throw new Error('Rust 쪽 이벤트 이름 상수를 못 찾았다 — 이름이 바뀌었나?');
+  if (!match) throw new Error('could not find the Rust event name constant — was the name changed?');
   return match[1];
 }
 
@@ -30,16 +30,16 @@ function rustEventName(): string {
 function screenEventName(): string {
   const source = read('src/features/acp-doctor/model/acp-doctor.ts');
   const match = /listen<AcpInstallProgress>\(\s*'([^']+)'/.exec(source);
-  if (!match) throw new Error('화면 쪽 listen 호출을 못 찾았다 — 배선이 바뀌었나?');
+  if (!match) throw new Error('could not find the screen-side listen call — was the wiring changed?');
   return match[1];
 }
 
-describe('설치 진행 이벤트 — 이름 계약', () => {
-  it('Rust 가 내는 이름과 화면이 듣는 이름이 같다', () => {
+describe('install progress event — name contract', () => {
+  it('the name Rust emits equals the name the screen listens for', () => {
     expect(screenEventName()).toBe(rustEventName());
   });
 
-  it('검사기가 헛돌고 있지 않다 — 양쪽에서 실제로 값을 읽어 왔다', () => {
+  it('the checker does not idle — it really read values from both sides', () => {
     // If both extractors return `null`, the test above passes as "equal" and this
     // contract becomes a check that guards nothing.
     const name = rustEventName();

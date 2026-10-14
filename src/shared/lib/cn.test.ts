@@ -41,15 +41,15 @@ describe('cn', () => {
  * A custom ramp step classified as a colour conflicts with `text-[color:...]` and the size is
  * dropped silently.
  */
-describe('cn — 타입 램프와 색상 유틸 공존', () => {
-  it('**등록 목록이 램프와 일치한다** — 누락은 조용한 크기 드롭이 된다', () => {
+describe('cn: type ramp coexists with color utilities', () => {
+  it('**the registered list matches the ramp**, since a missing entry becomes a silent size drop', () => {
     // Add a step to `globals.css` without registering it here and
     // tailwind-merge misclassifies it as a colour, dropping the size against a
     // following `text-[color:…]`. The class string still looks correct.
     expect([...TYPE_RAMP_STEPS].sort()).toEqual(rampStepsFromCss('text'));
   });
 
-  it('램프를 실제로 읽는다 — 스캔이 비면 통과가 아니라 결함이다', () => {
+  it('actually reads the ramp, because an empty scan is a defect rather than a pass', () => {
     // If the path or the regex drifts, the comparison above passes as
     // `[] === []`. An empty scan is a failure, not a pass.
     expect(rampStepsFromCss('text').length).toBeGreaterThanOrEqual(8);
@@ -57,7 +57,7 @@ describe('cn — 타입 램프와 색상 유틸 공존', () => {
   });
 
   it.each([...TYPE_RAMP_STEPS])(
-    'text-%s 가 text-[color:...] 뒤에서도 살아남는다',
+    'text-%s survives after text-[color:...] too',
     (step) => {
       const out = cn(`text-${step}`, 'text-[color:var(--color-text-tertiary)]');
       expect(out).toContain(`text-${step}`);
@@ -65,11 +65,11 @@ describe('cn — 타입 램프와 색상 유틸 공존', () => {
     },
   );
 
-  it('같은 램프 스텝끼리는 여전히 나중 값이 이긴다', () => {
+  it('later values still win between steps of the same ramp', () => {
     expect(cn('text-label', 'text-body')).toBe('text-body');
   });
 
-  it('색상끼리도 나중 값이 이긴다 (기존 동작 보존)', () => {
+  it('later values win between colors too (existing behavior preserved)', () => {
     expect(cn('text-[color:red]', 'text-[color:blue]')).toBe('text-[color:blue]');
   });
 });
@@ -80,8 +80,8 @@ describe('cn — 타입 램프와 색상 유틸 공존', () => {
  * override losing non-deterministically. Quieter than a dropped size, and not
  * diagnosable by looking at the screen.
  */
-describe('cn — 행간 램프 충돌 병합', () => {
-  it('**등록 목록이 램프와 일치한다** — 누락은 충돌 병합 실패가 된다', () => {
+describe('cn: line-height ramp conflict merging', () => {
+  it('**the registered list matches the ramp**, since a missing entry becomes a merge failure', () => {
     expect([...LEADING_RAMP_STEPS].sort()).toEqual(rampStepsFromCss('leading'));
   });
 
@@ -90,11 +90,11 @@ describe('cn — 행간 램프 충돌 병합', () => {
     ['leading-caption', 'leading-label'],
     ['leading-display', 'leading-display-tight'],
     ['leading-title', 'leading-body-lg'],
-  ])('%s 뒤에 %s 가 오면 뒤가 이긴다', (first, second) => {
+  ])('when %s is followed by %s the later one wins', (first, second) => {
     expect(cn(first, second)).toBe(second);
   });
 
-  it('램프 스텝과 arbitrary 행간이 겹쳐도 나중 값이 이긴다', () => {
+  it('the later value wins even when a ramp step overlaps an arbitrary line height', () => {
     expect(cn('leading-body', 'leading-[1.9]')).toBe('leading-[1.9]');
     expect(cn('leading-[1.9]', 'leading-prose')).toBe('leading-prose');
   });
@@ -104,22 +104,22 @@ describe('cn — 행간 램프 충돌 병합', () => {
    * arrives from third-party code or an old string. Test files are exempt from that lint rule
    * (`codexTestIgnores`).
    */
-  it('기존 named 행간 유틸리티와의 병합도 유지된다', () => {
+  it('merging with existing named line-height utilities still holds', () => {
     expect(cn('leading-4', 'leading-label')).toBe('leading-label');
     expect(cn('leading-prose', 'leading-relaxed')).toBe('leading-relaxed');
   });
 
-  it('크기와 행간은 서로를 밀어내지 않는다 (다른 그룹)', () => {
+  it('size and line height do not displace each other (different groups)', () => {
     expect(cn('text-body', 'leading-body')).toBe('text-body leading-body');
   });
 });
 
-describe('cn — 반경 램프 충돌 병합', () => {
-  it('**등록 목록이 램프와 일치한다** — 누락은 충돌 병합 실패가 된다', () => {
+describe('cn: radius ramp conflict merging', () => {
+  it('**the registered list matches the ramp**, since a missing entry becomes a merge failure', () => {
     expect([...RADIUS_RAMP_STEPS].sort()).toEqual(rampStepsFromCss('radius'));
   });
 
-  it('램프를 실제로 읽는다 — 스캔이 비면 통과가 아니라 결함이다', () => {
+  it('actually reads the ramp, because an empty scan is a defect rather than a pass', () => {
     expect(rampStepsFromCss('radius').length).toBeGreaterThanOrEqual(4);
   });
 
@@ -127,11 +127,11 @@ describe('cn — 반경 램프 충돌 병합', () => {
     ['rounded-chip', 'rounded-micro'],
     ['rounded-micro', 'rounded-chip'],
     ['rounded-card', 'rounded-panel'],
-  ])('%s 뒤에 %s 가 오면 뒤가 이긴다', (first, second) => {
+  ])('when %s is followed by %s the later one wins', (first, second) => {
     expect(cn(first, second)).toBe(second);
   });
 
-  it('기본 스케일 유틸리티와도 한 그룹으로 병합된다', () => {
+  it('also merges into one group with the default scale utilities', () => {
     // The idiomatic override — a consumer forcing a pill with `rounded-full` —
     // has to actually win.
     expect(cn('rounded-chip', 'rounded-full')).toBe('rounded-full');
@@ -147,13 +147,13 @@ describe('cn — 반경 램프 충돌 병합', () => {
  * utility that erases carries its own pair, making the assumption true. Reverting
  * the companions breaks here first.
  */
-describe('cn — 크기 뒤에 오면 행간을 흡수한다 (companion 결합 전제)', () => {
-  it('뒤따르는 램프 크기가 앞선 램프 행간을 흡수한다', () => {
+describe('cn: a size that comes later absorbs the line height (the companion pairing premise)', () => {
+  it('a trailing ramp size absorbs the preceding ramp line height', () => {
     expect(cn('leading-body', 'text-body')).toBe('text-body');
     expect(cn('leading-prose', 'text-title')).toBe('text-title');
   });
 
-  it('순서를 지키면 명시 행간이 살아남는다 (권장 표기)', () => {
+  it('keeping the order lets an explicit line height survive (recommended notation)', () => {
     expect(cn('text-title', 'leading-prose')).toBe('text-title leading-prose');
   });
 });

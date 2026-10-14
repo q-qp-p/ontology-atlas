@@ -37,7 +37,7 @@ async function focusShortcutSurface(page: import("@playwright/test").Page) {
   await expect(main).toBeFocused();
 }
 
-test.describe("목적지 이동 단축키", () => {
+test.describe("destination shortcuts", () => {
   // Width is pinned so the desktop rail and expanded INDEX keep one stable shape.
   // INDEX now includes a search input at this width; `focusShortcutSurface` moves
   // focus to the content root before testing keys that intentionally pause while typing.
@@ -46,7 +46,7 @@ test.describe("목적지 이동 단축키", () => {
     await seedFirstRunSeen(page);
   });
 
-  test("G + 글자로 목적지를 전부 간다", async ({ page }) => {
+  test("G plus a letter reaches every destination", async ({ page }) => {
     await page.goto("/ko/topology/?guides=off");
     await page.waitForLoadState("domcontentloaded");
 
@@ -75,7 +75,7 @@ test.describe("목적지 이동 단축키", () => {
           if (attempt === 1) throw error;
         }
       }
-      await expect(page, `G ${key.toUpperCase()} 가 ${path} 로 가지 않았다`).toHaveURL(expected);
+      await expect(page, `G ${key.toUpperCase()} did not go to ${path}`).toHaveURL(expected);
 
       /* Assert the selected tab as well as the URL: a broken query parse would leave the URL right. */
       if (key === "c") {
@@ -88,13 +88,13 @@ test.describe("목적지 이동 단축키", () => {
     }
   });
 
-  test("G A 는 살아 있고, 은퇴한 G K · G S 는 어디에도 가지 않는다", async ({ page }) => {
+  test("G A works, and the retired G K and G S go nowhere", async ({ page }) => {
     await page.goto("/ko/topology/?guides=off");
     await page.waitForLoadState("domcontentloaded");
     await dismissBlockingSurface(page);
 
     await go(page, "a");
-    await expect(page, "살아 있는 단축키가 먼저 성공해야 G K 무동작 판정이 유효하다").toHaveURL(
+    await expect(page, "the live shortcut must succeed first for the G K no-op verdict to be valid").toHaveURL(
       /\/ko\/agents\/?($|\?)/,
       { timeout: 5_000 },
     );
@@ -109,7 +109,7 @@ test.describe("목적지 이동 단축키", () => {
        * loaded machine spends longer over the same thirty, where 600 ms shrank.
        */
       await waitFrames(page, 30);
-      expect(page.url(), `은퇴한 G ${retired.toUpperCase()} 가 다른 화면으로 이동했다`).toBe(before);
+      expect(page.url(), `the retired G ${retired.toUpperCase()} navigated to another screen`).toBe(before);
     }
   });
 
@@ -133,28 +133,28 @@ test.describe("목적지 이동 단축키", () => {
    * depending on width — and since this spec's whole point is "keyboard alone
    * works", producing the state with a mouse would not fit.
    */
-  test("막는 표면이 열려 있으면 이동하지 않는다", async ({ page }) => {
+  test("does not navigate while a blocking surface is open", async ({ page }) => {
     await page.goto("/ko/topology/?guides=off");
     await dismissBlockingSurface(page);
     await focusShortcutSurface(page);
     await page.keyboard.press("?");
     const modal = page.locator('[aria-modal="true"]:visible').first();
-    await expect(modal, "단축키 시트가 안 열렸다").toBeVisible({ timeout: 5_000 });
+    await expect(modal, "the shortcuts sheet did not open").toBeVisible({ timeout: 5_000 });
 
     const before = page.url();
     await go(page, "p");
     // An absence again: thirty drawn frames of opportunity, counted in frames.
     await waitFrames(page, 30);
-    expect(page.url(), "모달이 떠 있는데 뒤 화면이 바뀌었다").toBe(before);
+    expect(page.url(), "the screen behind changed while a modal was open").toBe(before);
   });
 
-  test("리더를 누른 지 오래되면 글자만으로는 이동하지 않는다", async ({ page }) => {
+  test("a letter alone does not navigate once the leader key was pressed long ago", async ({ page }) => {
     /* Navigate for real first: the address also stays unchanged when the shortcuts are not attached. */
     await page.goto("/ko/topology/?guides=off");
     await page.waitForLoadState("domcontentloaded");
     await dismissBlockingSurface(page);
     await go(page, "p");
-    await expect(page, "단축키 자체가 안 먹는다 — 아래 판정이 무의미해진다").toHaveURL(
+    await expect(page, "the shortcut itself does not work, which makes the verdict below meaningless").toHaveURL(
       /\/ko\/projects\/?($|\?)/,
       { timeout: 5_000 },
     );
@@ -170,10 +170,10 @@ test.describe("목적지 이동 단축키", () => {
     await page.waitForTimeout(2_000);
     await page.keyboard.press("p");
     await waitFrames(page, 30);
-    expect(page.url(), "시간 제한이 안 걸렸다").toBe(before);
+    expect(page.url(), "the time limit did not apply").toBe(before);
   });
 
-  test("단축키 시트가 목적지를 전부 안내한다", async ({ page }) => {
+  test("the shortcuts sheet lists every destination", async ({ page }) => {
     await page.goto("/ko/topology/?guides=off");
     await dismissBlockingSurface(page);
     // `?` is wired by the map (HomePage) through `useTypingShortcuts`. It does not
@@ -186,7 +186,7 @@ test.describe("목적지 이동 단축키", () => {
     for (const { key } of DESTINATIONS) {
       expect(
         text.toUpperCase(),
-        `시트에 G ${key.toUpperCase()} 안내가 없다 — 발견할 수 없는 단축키는 기능이 아니다`,
+        `the sheet has no entry for G ${key.toUpperCase()}; a shortcut that cannot be discovered is not a feature`,
       ).toContain(key.toUpperCase());
     }
   });

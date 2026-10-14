@@ -56,28 +56,28 @@ type Scope = "global" | "vault-scoped";
  */
 const URL_KEY_REGISTRY: Record<string, { scope: Scope; note: string;
 }> = {
-  p: { scope: "vault-scoped", note: "선택 노드/프로젝트 슬러그" },
-  c: { scope: "vault-scoped", note: "프로젝트 카테고리 값" },
-  hub: { scope: "vault-scoped", note: "허브 노드 슬러그 (오늘 소비처 0 — 잠복)" },
-  pathFrom: { scope: "vault-scoped", note: "경로 출발 슬러그" },
-  pathTo: { scope: "vault-scoped", note: "경로 도착 슬러그" },
-  from: { scope: "vault-scoped", note: "pathFrom 의 옛 별칭" },
-  to: { scope: "vault-scoped", note: "pathTo 의 옛 별칭" },
-  open: { scope: "vault-scoped", note: "펼친 부모 슬러그 목록" },
-  realm: { scope: "vault-scoped", note: "영역 루트 슬러그" },
-  constellation: { scope: "vault-scoped", note: "저장한 별자리 폴더 UUID 또는 새 별자리 의도" },
+  p: { scope: "vault-scoped", note: "selected node/project slug" },
+  c: { scope: "vault-scoped", note: "project category value" },
+  hub: { scope: "vault-scoped", note: "hub node slug (zero consumers today, so dormant)" },
+  pathFrom: { scope: "vault-scoped", note: "path start slug" },
+  pathTo: { scope: "vault-scoped", note: "path end slug" },
+  from: { scope: "vault-scoped", note: "old alias of pathFrom" },
+  to: { scope: "vault-scoped", note: "old alias of pathTo" },
+  open: { scope: "vault-scoped", note: "list of expanded parent slugs" },
+  realm: { scope: "vault-scoped", note: "realm root slug" },
+  constellation: { scope: "vault-scoped", note: "saved constellation folder UUID, or the intent of a new constellation" },
   impact: { scope: "global", note: "none|upstream|downstream|network" },
   pulse: { scope: "global", note: "all|7d|30d" },
   mode: { scope: "global", note: "overview|focus|path|health" },
-  create: { scope: "global", note: "concept 하나뿐인 의도 플래그" },
-  workbench: { scope: "global", note: "edit|create 작업대 의도" },
-  edit: { scope: "vault-scoped", note: "관계 타입과 대상 노드 슬러그" },
+  create: { scope: "global", note: "intent flag with the concept as its only value" },
+  workbench: { scope: "global", note: "edit|create workbench intent" },
+  edit: { scope: "vault-scoped", note: "relation type and target node slug" },
   index: { scope: "global", note: "expanded|collapsed" },
   recent: { scope: "global", note: "auto|1|7|30" },
-  via: { scope: "global", note: "인사이트 복귀 마커 — 탭 이름(볼트 무관)" },
-  review: { scope: "global", note: "인사이트 큐 행 id — 큐가 매번 파생되므로 볼트 이름이 아니다" },
-  ask: { scope: "global", note: "의도 종류 열거" },
-  view: { scope: "global", note: "territories 하나뿐인 지도 보기 열거" },
+  via: { scope: "global", note: "insights return marker: a tab name (independent of the vault)" },
+  review: { scope: "global", note: "insights queue row id; the queue is derived each time, so it is not a vault name" },
+  ask: { scope: "global", note: "enumeration of intent kinds" },
+  view: { scope: "global", note: "map view enumeration whose only value is territories" },
 };
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -106,33 +106,33 @@ interface StorageEntry {
 
 const STORAGE_KEY_REGISTRY: StorageEntry[] = [
   // ── State about the app itself (vault-independent) ───────────────────────
-  { key: "app-update:dismissed-version", kind: "storage", scope: "global", note: "무시한 업데이트 버전" },
-  { key: "app-update:last-check", kind: "storage", scope: "global", note: "업데이트 확인 시각" },
+  { key: "app-update:dismissed-version", kind: "storage", scope: "global", note: "dismissed update version" },
+  { key: "app-update:last-check", kind: "storage", scope: "global", note: "time of the last update check" },
   { key: "app-update:auto-check", kind: "storage", scope: "global", file: "src/features/app-update/model/update-state.ts", note: "Automatic update check on this computer: on (default) or off" },
   { key: "atlas.appearance.text-size", kind: "storage", scope: "global", file: "src/shared/lib/preferences/text-size.ts", note: "Text size: default, large or larger" },
   { key: "library.wikiWriteMode", kind: "storage", scope: "global", file: "src/shared/lib/preferences/appearance-preferences.ts", note: "How an agent's wiki page lands on this computer: auto or ask" },
-  { key: "atlas.appearance.frameMeter", kind: "storage", scope: "global", note: "프레임 미터 표시 선호" },
-  { key: "atlas.appearance.view3d", kind: "storage", scope: "global", note: "3D 보기(지도 돔 뷰) 선호 — 기본 꺼짐(2D)" },
+  { key: "atlas.appearance.frameMeter", kind: "storage", scope: "global", note: "frame meter display preference" },
+  { key: "atlas.appearance.view3d", kind: "storage", scope: "global", note: "3D view (map dome view) preference, off (2D) by default" },
   { key: "atlas.appearance.structure", kind: "storage", scope: "global", note: "Domain structure preference" },
     { key: "atlas.appearance.galaxy", kind: "storage", scope: "global", note: "Retired view preference, read only for migration" },
-  { key: "atlas.appearance.territories", kind: "storage", scope: "global", note: "영역 보기(모든 역량을 도메인별로 펼친 평면 지도) 선호 — 기본 꺼짐" },
+  { key: "atlas.appearance.territories", kind: "storage", scope: "global", note: "territories view (a flat map spreading every capability by domain) preference, off by default" },
   { key: "atlas.appearance.hex-board", kind: "storage", scope: "global", note: "Hex board view preference (one tile per capability) — off by default" },
   { key: "atlas.appearance.hex-relief", kind: "storage", scope: "global", note: "Hex board relief pose preference — off by default" },
-  { key: "atlas.appearance.map-arrangement", kind: "storage", scope: "global", note: "3D 배치 기준: 소유(돔, 기본)/결합(힘 구름)" },
+  { key: "atlas.appearance.map-arrangement", kind: "storage", scope: "global", note: "3D arrangement basis: ownership (dome, default) / coupling (force cloud)" },
   { key: "atlas.appearance.map-drag-speed", kind: "storage", scope: "global", note: "Map drag speed (0.5x-2x, default 1x), a hand preference of this machine" },
   { key: "atlas.appearance.map-zoom-speed", kind: "storage", scope: "global", note: "Map zoom speed (0.5x-2x, default 1x), a hand preference of this machine" },
-  { key: "atlas.agentActivity.status", kind: "storage", scope: "global", note: "상태 칩 on/off 선호" },
-  { key: "atlas.agentActivity.notifications", kind: "storage", scope: "global", note: "알림함 on/off 선호" },
-  { key: "atlas.agentActivity.kinds", kind: "storage", scope: "global", note: "음소거한 알림 종류" },
+  { key: "atlas.agentActivity.status", kind: "storage", scope: "global", note: "status chip on/off preference" },
+  { key: "atlas.agentActivity.notifications", kind: "storage", scope: "global", note: "notification inbox on/off preference" },
+  { key: "atlas.agentActivity.kinds", kind: "storage", scope: "global", note: "muted notification kinds" },
   { key: "atlas.agentActivity.tab", kind: "storage", scope: "global", note: "The bell panel's last tab — a reading preference of this machine, not a fact about any folder" },
-  { key: "ontology-atlas:canvas-background:v1", kind: "storage", scope: "global", note: "캔버스 배경 선호" },
-  { key: "ontology-atlas:glyph-set:v1", kind: "storage", scope: "global", note: "글리프 세트 선호" },
-  { key: "ontology-atlas:footprint:v1", kind: "storage", scope: "global", note: "발자국 트레일 선호" },
+  { key: "ontology-atlas:canvas-background:v1", kind: "storage", scope: "global", note: "canvas background preference" },
+  { key: "ontology-atlas:glyph-set:v1", kind: "storage", scope: "global", note: "glyph set preference" },
+  { key: "ontology-atlas:footprint:v1", kind: "storage", scope: "global", note: "footprint trail preference" },
   // Expansion affordance, structure, and three numbers. Screen preferences like the
   // footprint and the background, so vault-independent — changing folder must not
   // change my preference for how things expand.
-  { key: "ontology-atlas:expand:v1", kind: "storage", scope: "global", note: "확장 어포던스·구조·개수 선호" },
-  { key: "atlas.acp-chat.width", kind: "storage", scope: "global", note: "대화 칸 폭 — 이 컴퓨터의 화면 취향이라 볼트를 바꿔도 그대로다" },
+  { key: "ontology-atlas:expand:v1", kind: "storage", scope: "global", note: "expand affordance, structure and count preference" },
+  { key: "atlas.acp-chat.width", kind: "storage", scope: "global", note: "chat column width; a display taste of this computer, so it stays when the vault changes" },
   // The Library index: which of its two lists is drawn, and whether the column is folded
   // to its rail. Both are this screen's shape on this machine, like the chat width above —
   // changing folder must not change how the column stands.
@@ -153,40 +153,40 @@ const STORAGE_KEY_REGISTRY: StorageEntry[] = [
     scope: "global",
     note: "An allowance changed; the panels and the rounds clock re-read (shared/lib/connectors/machine-approvals.ts)",
   },
-  { key: "ontology-atlas:locale", kind: "storage", scope: "global", note: "화면 언어" },
-  { key: "ontology-atlas:local-endpoint", kind: "storage", scope: "global", note: "LLM 로컬 엔드포인트" },
+  { key: "ontology-atlas:locale", kind: "storage", scope: "global", note: "display language" },
+  { key: "ontology-atlas:local-endpoint", kind: "storage", scope: "global", note: "local LLM endpoint" },
   // Which brain Compile runs on when this computer offers both. A machine preference
   // like the chat width, not a fact about the folder: the same choice should hold when
   // the person opens another folder on the same computer.
-  { key: "ontology-atlas:compile-brain", kind: "storage", scope: "global", note: "컴파일을 어느 쪽으로 돌릴지" },
-  { key: "ontology-atlas:guide-auto-start:v1", kind: "storage", scope: "global", note: "투어 자동 시작 선호" },
-  { key: "demo:audience-plain:v1", kind: "storage", scope: "global", note: "평문 레지스터 선호" },
-  { key: "demo:left-panel-collapsed:v2", kind: "storage", scope: "global", note: "좌측 패널 접힘 선호" },
-  { key: "demo:index-panel-collapsed:v1", kind: "storage", scope: "global", note: "INDEX 접힘 선호" },
-  { key: "demo:sigma-hub-rail-open:v1", kind: "storage", scope: "global", note: "허브 레일 열림 선호" },
-  { key: "demo:docs-vault:list-collapsed", kind: "storage", scope: "global", note: "문서 목록 접힘 선호" },
-  { key: "dev:desktop-shell", kind: "storage", scope: "global", note: "데스크톱 셸 개발 오버라이드" },
-  { key: "demo:gesture-hint:dismissed:v1", kind: "storage", scope: "global", note: "제스처 힌트 1회성" },
-  { key: "demo:first-run-starter-dismissed:v1", kind: "storage", scope: "global", note: "첫 실행 카드 1회성(세션)" },
-  { key: "demo:vault-start-steps-dismissed:v1", kind: "storage", scope: "global", note: "첫 걸음 카드 1회성(세션) — 마지막 걸음을 지나면 거둔다" },
-  { key: "vault-open-guide:auto:v1", kind: "storage", scope: "global", note: "폴더 열기 안내 1회성" },
-  { key: "guided-tour:v1", kind: "storage", scope: "global", note: "투어 완료 표시" },
-  { key: "guided-tour:${destination}:v1", kind: "storage", scope: "global", note: "목적지별 투어 완료 표시" },
-  { key: "ontology-atlas:last-route", kind: "storage", scope: "global", note: "**아무도 안 읽는다** — 라우트 복원이 2026-07-30 에 폐기됐다(`locale-redirect.tsx`). 결함이 아니라 죽은 키라 이 등록부는 사실만 적고 삭제는 별건으로 남긴다" },
+  { key: "ontology-atlas:compile-brain", kind: "storage", scope: "global", note: "which side to run compilation on" },
+  { key: "ontology-atlas:guide-auto-start:v1", kind: "storage", scope: "global", note: "tour auto-start preference" },
+  { key: "demo:audience-plain:v1", kind: "storage", scope: "global", note: "plain-language register preference" },
+  { key: "demo:left-panel-collapsed:v2", kind: "storage", scope: "global", note: "left panel collapsed preference" },
+  { key: "demo:index-panel-collapsed:v1", kind: "storage", scope: "global", note: "INDEX collapsed preference" },
+  { key: "demo:sigma-hub-rail-open:v1", kind: "storage", scope: "global", note: "hub rail open preference" },
+  { key: "demo:docs-vault:list-collapsed", kind: "storage", scope: "global", note: "document list collapsed preference" },
+  { key: "dev:desktop-shell", kind: "storage", scope: "global", note: "desktop shell development override" },
+  { key: "demo:gesture-hint:dismissed:v1", kind: "storage", scope: "global", note: "gesture hint, one time only" },
+  { key: "demo:first-run-starter-dismissed:v1", kind: "storage", scope: "global", note: "first-run card, one time only (session)" },
+  { key: "demo:vault-start-steps-dismissed:v1", kind: "storage", scope: "global", note: "first-steps card, one time only (session); withdrawn once the last step is passed" },
+  { key: "vault-open-guide:auto:v1", kind: "storage", scope: "global", note: "open-folder guide, one time only" },
+  { key: "guided-tour:v1", kind: "storage", scope: "global", note: "tour completion mark" },
+  { key: "guided-tour:${destination}:v1", kind: "storage", scope: "global", note: "per-destination tour completion mark" },
+  { key: "ontology-atlas:last-route", kind: "storage", scope: "global", note: "**Nobody reads it**: route restoration was retired on 2026-07-30 (`locale-redirect.tsx`). It is a dead key rather than a defect, so this registry records only the fact and leaves deletion as a separate matter" },
 
   // ── Things that *define* the scope (they are the answer to "which vault") ──
-  { key: "demo:sample-source:v1", kind: "storage", scope: "global", note: "어느 내장 샘플인가 — 범위의 입력이지 범위 안의 상태가 아니다" },
-  { key: "demo:docs-vault:source", kind: "storage", scope: "global", note: "local|server 중 무엇을 보는가" },
-  { key: "docs-vault:current-handle", kind: "storage", scope: "global", note: "IndexedDB — 현재 볼트 핸들" },
-  { key: "docs-vault:fs-handle:", kind: "storage", scope: "global", note: "IndexedDB store 접두사 — 볼트 핸들 보관" },
-  { key: "docs-vault:fs-handle:recent", kind: "storage", scope: "global", note: "IndexedDB — 최근 볼트 핸들" },
+  { key: "demo:sample-source:v1", kind: "storage", scope: "global", note: "which built-in sample this is; an input to the scope, not state inside the scope" },
+  { key: "demo:docs-vault:source", kind: "storage", scope: "global", note: "which of local|server is being viewed" },
+  { key: "docs-vault:current-handle", kind: "storage", scope: "global", note: "IndexedDB: current vault handle" },
+  { key: "docs-vault:fs-handle:", kind: "storage", scope: "global", note: "IndexedDB store prefix: vault handle storage" },
+  { key: "docs-vault:fs-handle:recent", kind: "storage", scope: "global", note: "IndexedDB: recent vault handles" },
 
   // ── One-shot intent handed from one screen to the next (session) ─────────
-  { key: "demo:open-search", kind: "storage", scope: "global", note: "세션 — 검색 팔레트 열기 의도" },
-  { key: "demo:open-shortcuts", kind: "storage", scope: "global", note: "세션 — 단축키 시트 열기 의도" },
-  { key: "ontology-atlas:route-focus-intent", kind: "storage", scope: "global", note: "세션 — 라우트 이동 후 포커스 대상" },
-  { key: "ontology-atlas:settings-locale-focus", kind: "storage", scope: "global", note: "세션 — 설정 시트 언어 칸 포커스" },
-  { key: "ontology-atlas:agent-chat-intent:pending", kind: "storage", scope: "global", note: "세션 — 에이전트 목적지에서 지도 대화 도크로 넘기는 실행기 id" },
+  { key: "demo:open-search", kind: "storage", scope: "global", note: "session: intent to open the search palette" },
+  { key: "demo:open-shortcuts", kind: "storage", scope: "global", note: "session: intent to open the shortcut sheet" },
+  { key: "ontology-atlas:route-focus-intent", kind: "storage", scope: "global", note: "session: focus target after a route change" },
+  { key: "ontology-atlas:settings-locale-focus", kind: "storage", scope: "global", note: "session: focus on the language field of the settings sheet" },
+  { key: "ontology-atlas:agent-chat-intent:pending", kind: "storage", scope: "global", note: "session: runner id handed from the agent destination to the map chat dock" },
 
   // ── Per-vault content — protected by an exact scope ──────────────────────
   {
@@ -218,7 +218,7 @@ const STORAGE_KEY_REGISTRY: StorageEntry[] = [
     scopedBy: "useVaultIdentityScope",
     file: "src/features/library/lib/sources/declined-candidates.ts",
     provenBy: "src/features/library/lib/sources/declined-candidates.test.ts",
-    note: "문서 찾기에서 넘긴 후보 — 이 컴퓨터에만 남는 편의",
+    note: "candidate handed over from document search; a convenience that stays on this computer only",
   },
   {
     // When this reader last looked at the brief. A reader fact, never the folder's, and per
@@ -229,13 +229,13 @@ const STORAGE_KEY_REGISTRY: StorageEntry[] = [
     scopedBy: "useVaultIdentityScope",
     file: "src/views/ontology-insights/lib/brief/brief-anchor.ts",
     provenBy: "src/views/ontology-insights/lib/brief/brief-anchor.test.ts",
-    note: "브리핑을 마지막으로 본 시각 — 「그 뒤로」를 재는 기준, 폴더별",
+    note: "last time the briefing was seen; the baseline for measuring \"since then\", per folder",
   },
   {
     key: "ontology-atlas:insights-brief-seen-change",
     kind: "event",
     scope: "global",
-    note: "같은 탭 안에서 기준 시각 변경을 알리는 이벤트 — 저장 키가 아니다",
+    note: "event that announces a baseline time change within the same tab; not a storage key",
   },
   {
     key: "atlas.map.hex-board.v1:",
@@ -262,7 +262,7 @@ const STORAGE_KEY_REGISTRY: StorageEntry[] = [
     scopedBy: "useVaultIdentityScope",
     file: "src/features/agent-activity/model/read-at-storage.ts",
     provenBy: "src/features/agent-activity/model/read-at-storage.test.ts",
-    note: "알림 「여기까지 봤다」 — 피드가 볼트별이라 임계값도 볼트별",
+    note: "notification \"seen up to here\"; the feed is per vault, so the threshold is per vault too",
   },
 
   // ── Per-vault content — protected only by the coarse scope (`vaultScopeKey`) ──
@@ -275,7 +275,7 @@ const STORAGE_KEY_REGISTRY: StorageEntry[] = [
     scopedBy: "vaultScopeKey",
     file: "src/entities/docs-vault/lib/vault-scope-key.ts",
     provenBy: "src/entities/docs-vault/lib/vault-scope-key.test.ts",
-    note: "고정 문서 — 샘플 둘은 같은 자리를 쓴다(알려진 거친 범위)",
+    note: "pinned documents; the two samples share one spot (a known coarse scope)",
   },
   {
     key: "demo:docs-vault:recent:v2:",
@@ -284,7 +284,7 @@ const STORAGE_KEY_REGISTRY: StorageEntry[] = [
     scopedBy: "vaultScopeKey",
     file: "src/entities/docs-vault/lib/vault-scope-key.ts",
     provenBy: "src/entities/docs-vault/lib/vault-scope-key.test.ts",
-    note: "최근 문서 — 위와 같음",
+    note: "recent documents; same as above",
   },
   {
     key: "docsVault:openTabs:",
@@ -293,7 +293,7 @@ const STORAGE_KEY_REGISTRY: StorageEntry[] = [
     scopedBy: "vaultScopeKey",
     file: "src/views/docs-vault/lib/doc-tabs/doc-tabs.ts",
     provenBy: "src/views/docs-vault/lib/doc-tabs/doc-tabs.test.ts",
-    note: "열린 탭 — 호출부가 `sourceKey` 이름으로 recentKey(=vaultScopeKey)를 넘긴다",
+    note: "open tabs; the caller passes recentKey (=vaultScopeKey) under the name `sourceKey`",
   },
   {
     key: "docsVault:activeTab:",
@@ -302,7 +302,7 @@ const STORAGE_KEY_REGISTRY: StorageEntry[] = [
     scopedBy: "vaultScopeKey",
     file: "src/views/docs-vault/lib/doc-tabs/doc-tabs.ts",
     provenBy: "src/views/docs-vault/lib/doc-tabs/doc-tabs.test.ts",
-    note: "활성 탭 — 위와 같음",
+    note: "active tab; same as above",
   },
 
   // ── Per-vault content that is **not protected** (see KNOWN_UNPROTECTED below) ──
@@ -311,37 +311,37 @@ const STORAGE_KEY_REGISTRY: StorageEntry[] = [
     kind: "storage",
     scope: "vault-scoped",
     file: "src/widgets/docs-vault/ui/DocsVaultEditor.tsx",
-    note: "에디터 초안 — 데이터 손실 경로. PR #827 이 고치는 중",
+    note: "editor draft; a data-loss path, being fixed by PR #827",
   },
   {
     key: "demo:recent-search-slugs:v1",
     kind: "storage",
     scope: "vault-scoped",
     file: "src/widgets/search-palette/ui/SearchPalette.tsx",
-    note: "최근 검색 슬러그 — 소비처가 현재 노드와 교집합으로 걸러 피해가 작다",
+    note: "recent search slugs; the consumer filters by intersection with the current node, so the damage is small",
   },
 
   {
     key: "demo:change-baseline:v1",
     kind: "legacy",
     scope: "global",
-    note: "볼트를 모르던 시절의 전역 baseline. 어느 볼트 것인지 알 수 없어 되읽지 않고 한 번 치운다",
+    note: "global baseline from the era that did not know the vault; it cannot tell which vault it belongs to, so it is cleared once rather than read back",
   },
   {
     key: "atlas.agentActivity.readAt",
     kind: "legacy",
     scope: "global",
-    note: "볼트를 모르던 시절의 전역 읽음 시각. 위와 같음",
+    note: "global read time from the era that did not know the vault; same as above",
   },
   {
     key: "demo:docs-vault:recent:v1",
     kind: "legacy",
     scope: "global",
-    note: "최근 문서 v1 — v2 로 마이그레이션 후 읽고 치우기만 한다",
+    note: "recent documents v1; after migrating to v2 it is only read and cleared",
   },
 
   // ── Event names (not storage — registered here because they share the namespace) ──
-  { key: "ontology-atlas:agent-activity-read", kind: "event", scope: "global", note: "읽음 표시 브로드캐스트" },
+  { key: "ontology-atlas:agent-activity-read", kind: "event", scope: "global", note: "read-mark broadcast" },
   { key: "ontology-atlas:appearance-preference-change", kind: "event", scope: "global", note: "" },
   { key: "ontology-atlas:audience-preference-change", kind: "event", scope: "global", note: "" },
   { key: "ontology-atlas:guide-auto-start-change", kind: "event", scope: "global", note: "" },
@@ -353,18 +353,18 @@ const STORAGE_KEY_REGISTRY: StorageEntry[] = [
     key: "ontology-atlas:navigation-intent",
     kind: "event",
     scope: "global",
-    note: "이동 시작 — 상시 rAF 루프가 프레임 예산을 비켜 준다 (shared/lib/navigation/navigation-intent.ts)",
+    note: "navigation start; the always-on rAF loop steps aside for the frame budget (shared/lib/navigation/navigation-intent.ts)",
   },
   { key: "ontology-atlas:secret-change", kind: "event", scope: "global", note: "" },
   {
     key: "ontology-atlas:connector-secret-change",
     kind: "event",
     scope: "global",
-    note: "외부 MCP 연결 도구 토큰 보유 상태 변경 — 다른 화면의 패널이 다시 읽는다 (shared/lib/connectors/tauri-connector-secrets.ts)",
+    note: "change in whether an external MCP connection tool token is held; panels on other screens read it again (shared/lib/connectors/tauri-connector-secrets.ts)",
   },
-  { key: "ontology-atlas:agent-chat-intent", kind: "event", scope: "global", note: "에이전트 → 대화 열기 요청" },
-  { key: "ontology-atlas:verify-edge-selected", kind: "event", scope: "global", note: "e2e 검증 훅" },
-  { key: "ontology-atlas:verify-select-edge", kind: "event", scope: "global", note: "e2e 검증 훅" }
+  { key: "ontology-atlas:agent-chat-intent", kind: "event", scope: "global", note: "agent to chat open request" },
+  { key: "ontology-atlas:verify-edge-selected", kind: "event", scope: "global", note: "e2e verification hook" },
+  { key: "ontology-atlas:verify-select-edge", kind: "event", scope: "global", note: "e2e verification hook" }
 ];
 
 /**
@@ -377,9 +377,9 @@ const STORAGE_KEY_REGISTRY: StorageEntry[] = [
  */
 const KNOWN_UNPROTECTED: Record<string, string> = {
   "ontology-atlas:docs-vault-editor-draft:":
-    "PR #827 이 볼트 범위를 넣는 중 — 이 브랜치의 base(origin/main)에는 아직 없다",
+    "PR #827 is adding the vault scope; it is not yet in the base of this branch (origin/main)",
   "demo:recent-search-slugs:v1":
-    "소비처가 현재 노드와 교집합으로 걸러 화면에 거짓이 안 뜬다 — 수리 우선순위 낮음",
+    "the consumer filters by intersection with the current node, so nothing false shows on screen; low repair priority",
 };
 const MAX_KNOWN_UNPROTECTED = 2;
 
@@ -452,22 +452,22 @@ const REGISTERED = new Map(STORAGE_KEY_REGISTRY.map((entry) => [entry.key, entry
 // Checks
 // ────────────────────────────────────────────────────────────────────────────
 
-describe("범위 등록부 — URL 쿼리 키", () => {
-  it("지도의 모든 쿼리 키가 등록돼 있다", () => {
+describe("scope registry: URL query keys", () => {
+  it("every query key of the map is registered", () => {
     const declared = new Set(Object.values(HOME_QUERY_KEYS));
     const registered = new Set(Object.keys(URL_KEY_REGISTRY));
-    expect(declared.size, "HOME_QUERY_KEYS 수집이 비어 있으면 범위 게이트도 무효다").toBeGreaterThan(0);
+    expect(declared.size, "if the HOME_QUERY_KEYS collection is empty the scope gate is void too").toBeGreaterThan(0);
 
     const unregistered = [...declared].filter((key) => !registered.has(key));
     expect(
       unregistered,
-      "새 쿼리 키를 만들었으면 URL_KEY_REGISTRY 에 global/vault-scoped 를 적어라").toEqual([]);
+      "if you made a new query key, write global/vault-scoped in URL_KEY_REGISTRY").toEqual([]);
   });
 
-  it("등록부에 죽은 줄이 없다", () => {
+  it("the registry has no dead line", () => {
     const declared = new Set<string>(Object.values(HOME_QUERY_KEYS));
     const dead = Object.keys(URL_KEY_REGISTRY).filter((key) => !declared.has(key));
-    expect(dead, "HOME_QUERY_KEYS 에서 사라진 키는 등록부에서도 지운다").toEqual([]);
+    expect(dead, "a key that disappeared from HOME_QUERY_KEYS is removed from the registry too").toEqual([]);
   });
 
   /**
@@ -475,7 +475,7 @@ describe("범위 등록부 — URL 쿼리 키", () => {
    * "protected" while the code clears nothing — precisely where a gate certifies a
    * defect.
    */
-  it("vault-scoped 로 태그된 키가 곧 정리 목록이다", () => {
+  it("the keys tagged vault-scoped are the cleanup list", () => {
     const tagged = Object.entries(URL_KEY_REGISTRY)
       .filter(([, meta]) => meta.scope === "vault-scoped")
       .map(([key]) => key)
@@ -488,7 +488,7 @@ describe("범위 등록부 — URL 쿼리 키", () => {
    * green while the screen is unchanged. So the source is checked for consumers really
    * calling it (precedent: `rules-path-scope.contract.test.ts`).
    */
-  it("판정 함수들이 지도에 실제로 배선돼 있다", () => {
+  it("the decision functions are really wired into the map", () => {
     const homePage = readFileSync(
       join(REPO_ROOT, "src/views/home/ui/HomePage.tsx"),
       "utf8");
@@ -515,25 +515,25 @@ describe("범위 등록부 — URL 쿼리 키", () => {
         expect(pathLens).toMatch(/\bcanCopyTopologyPathPacket\(chipState\)/);
     });
 });
-describe("범위 등록부 — 영속 저장 키", () => {
-    it("등록부에 없는 키 리터럴이 코드에 없다", () => {
+describe("scope registry: persisted storage keys", () => {
+    it("no key literal in code is missing from the registry", () => {
         const unregistered = [...SCANNED.entries()]
             .filter(([key]) => !REGISTERED.has(key))
             .map(([key, paths]) => `${key}  (${paths.join(", ")})`);
-        expect(unregistered, "새 저장 키/이벤트를 만들었으면 STORAGE_KEY_REGISTRY 에 한 줄 적어라").toEqual([]);
+        expect(unregistered, "if you made a new storage key/event, add one line to STORAGE_KEY_REGISTRY").toEqual([]);
     });
-    it("등록부에 죽은 줄이 없다", () => {
+    it("the registry has no dead line", () => {
         const dead = STORAGE_KEY_REGISTRY.filter((entry) => !SCANNED.has(entry.key)).map((entry) => entry.key);
-        expect(dead, "코드에서 사라진 키는 등록부에서도 지운다").toEqual([]);
+        expect(dead, "a key that disappeared from code is removed from the registry too").toEqual([]);
     });
-    it("등록부가 선언한 파일에 그 키가 실제로 있다", () => {
+    it("the key really exists in the file the registry declares", () => {
         const misplaced: string[] = [];
         for (const entry of STORAGE_KEY_REGISTRY) {
             if (!entry.file)
                 continue;
             const paths = SCANNED.get(entry.key) ?? [];
             if (!paths.includes(entry.file)) {
-                misplaced.push(`${entry.key} → ${entry.file} (실제: ${paths.join(", ")})`);
+                misplaced.push(`${entry.key} → ${entry.file} (actual: ${paths.join(", ")})`);
             }
         }
         expect(misplaced).toEqual([]);
@@ -543,11 +543,11 @@ describe("범위 등록부 — 영속 저장 키", () => {
      * a key that collapses the two samples as "protected" — the gate approving the defect
      * it exists to block.
      */
-    it("거친 범위(vaultScopeKey)는 얼어 있는 네 자리에서만 허용된다", () => {
+    it("the coarse scope (vaultScopeKey) is allowed only in the four frozen places", () => {
         const offenders = STORAGE_KEY_REGISTRY.filter((entry) => entry.scopedBy === "vaultScopeKey" && !FROZEN_COARSE_SCOPE_KEYS.has(entry.key)).map((entry) => entry.key);
-        expect(offenders, "vaultScopeKey 는 샘플 둘을 'server' 로 뭉뚱그린다 — 새 키는 vaultIdentityScope 를 써라").toEqual([]);
+        expect(offenders, "vaultScopeKey lumps the two samples together as 'server'; new keys use vaultIdentityScope").toEqual([]);
     });
-    it("얼어 있는 네 자리 목록이 늘지 않았다", () => {
+    it("the list of four frozen places has not grown", () => {
         expect([...FROZEN_COARSE_SCOPE_KEYS].sort()).toEqual([
             "demo:docs-vault:pinned:v1:",
             "demo:docs-vault:recent:v2:",
@@ -563,7 +563,7 @@ describe("범위 등록부 — 영속 저장 키", () => {
      * file exists and really handles that key — what turns red on a revert is **that
      * test**, not this one.
      */
-    it("vault-scoped 저장 키는 행동으로 잠긴 시험을 지목한다", () => {
+    it("a vault-scoped storage key names a test that locks it by behavior", () => {
         const unprotected: string[] = [];
         for (const entry of STORAGE_KEY_REGISTRY) {
             if (entry.kind !== "storage" || entry.scope !== "vault-scoped")
@@ -571,12 +571,12 @@ describe("범위 등록부 — 영속 저장 키", () => {
             if (entry.key in KNOWN_UNPROTECTED)
                 continue;
             if (!entry.scopedBy || !entry.provenBy) {
-                unprotected.push(`${entry.key} — scopedBy/provenBy 미선언`);
+                unprotected.push(`${entry.key}: scopedBy/provenBy not declared`);
                 continue;
             }
             // It must be a prefix — with no room for a scope suffix it cannot receive one.
             if (!entry.key.endsWith(":")) {
-                unprotected.push(`${entry.key} — 접두사가 아니라 붙일 자리가 없다`);
+                unprotected.push(`${entry.key}: not a prefix, and there is no place to attach it`);
                 continue;
             }
             let proof: string;
@@ -584,16 +584,16 @@ describe("범위 등록부 — 영속 저장 키", () => {
                 proof = readFileSync(join(REPO_ROOT, entry.provenBy), "utf8");
             }
             catch {
-                unprotected.push(`${entry.key} — 시험 파일 ${entry.provenBy} 가 없다`);
+                unprotected.push(`${entry.key}: test file ${entry.provenBy} does not exist`);
                 continue;
             }
             if (!proof.includes(entry.key)) {
-                unprotected.push(`${entry.key} — ${entry.provenBy} 이 이 키를 다루지 않는다`);
+                unprotected.push(`${entry.key}: ${entry.provenBy} does not exercise this key`);
             }
         }
         expect(unprotected).toEqual([]);
     });
-    it("보호되는 vault-scoped 키는 정확한 범위 제공자를 쓴다 (거친 네 자리 제외)", () => {
+    it("a protected vault-scoped key uses the exact scope provider (excluding the four coarse places)", () => {
         const wrong = STORAGE_KEY_REGISTRY.filter((entry) => {
             if (entry.kind !== "storage" || entry.scope !== "vault-scoped")
                 return false;
@@ -605,15 +605,15 @@ describe("범위 등록부 — 영속 저장 키", () => {
         }).map((entry) => `${entry.key} (scopedBy=${entry.scopedBy})`);
         expect(wrong).toEqual([]);
     });
-    it("알면서 안 고친 목록은 늘지 않는다 (래칫)", () => {
+    it("the list of known but unfixed cases does not grow (ratchet)", () => {
         const listed = Object.keys(KNOWN_UNPROTECTED);
         expect(listed.length).toBeLessThanOrEqual(MAX_KNOWN_UNPROTECTED);
         for (const key of listed) {
-            expect(REGISTERED.get(key)?.scope, `${key} 는 등록부에 vault-scoped 로 있어야 한다`).toBe("vault-scoped");
-            expect(KNOWN_UNPROTECTED[key].length, `${key} 에 이유가 없다`).toBeGreaterThan(10);
+            expect(REGISTERED.get(key)?.scope, `${key} must be in the registry as vault-scoped`).toBe("vault-scoped");
+            expect(KNOWN_UNPROTECTED[key].length, `${key} has no reason`).toBeGreaterThan(10);
         }
     });
-    it("옛 키는 되읽히지 않는다 — 제거만 한다", () => {
+    it("old keys are not read back, only removed", () => {
         for (const entry of STORAGE_KEY_REGISTRY) {
             if (entry.kind !== "legacy")
                 continue;
@@ -623,7 +623,7 @@ describe("범위 등록부 — 영속 저장 키", () => {
                 if (entry.key === "demo:docs-vault:recent:v1")
                     continue;
                 const readsIt = new RegExp(`getItem\\(\\s*["'\`]${entry.key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`).test(source);
-                expect(readsIt, `${entry.key} 를 ${file} 이 되읽는다`).toBe(false);
+                expect(readsIt, `${file} reads back ${entry.key}`).toBe(false);
             }
         }
     });

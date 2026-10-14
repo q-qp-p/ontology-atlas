@@ -38,7 +38,7 @@ async function auditGuidanceSurface(page: import('@playwright/test').Page, testI
  * copies differ, a hook script the config names and the disk does not have, and a Codex hook config
  * that repeats one script across three matchers. Each assertion below is about one of those.
  */
-test.describe("하네스 탭", () => {
+test.describe("harness tab", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1512, height: 949 });
     await installHarnessRuntime(page);
@@ -190,7 +190,7 @@ test.describe("하네스 탭", () => {
     await expect(trigger).toBeFocused();
   });
 
-  test("목적지 이름과 한 줄 설명이 하네스를 말한다", async ({ page }) => {
+  test("the destination name and one-line description speak of the harness", async ({ page }) => {
     await mountHarnessVault(page);
     await page.goto("/ko/architecture/");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("하네스");
@@ -271,7 +271,7 @@ test.describe("하네스 탭", () => {
     console.info('GUIDANCE_BRIEF_SCROLL_RESTORE', JSON.stringify({ briefBefore, briefAfter }));
   });
 
-  test("기본 보기는 하네스 구조이고, 세그먼트가 보기를 주소에 적는다", async ({ page }) => {
+  test("the default view is the harness structure, and the segment writes the view into the address", async ({ page }) => {
     await mountHarnessVault(page);
     await page.goto("/ko/architecture/");
     await expect(page.getByTestId("harness-anatomy")).toBeVisible({ timeout: 30_000 });
@@ -310,7 +310,7 @@ test.describe("하네스 탭", () => {
     expect(motion.transform).toBe('none');
   });
 
-  test("은퇴한 sensors 주소는 그 질문에 답하는 보기로 간다", async ({ page }) => {
+  test("the retired sensors address goes to the view that answers that question", async ({ page }) => {
     /*
      * `?focus=main` names no view, so it opens the destination's own arrival screen:
      * the harness structure.
@@ -329,7 +329,7 @@ test.describe("하네스 탭", () => {
     await expect(page.getByTestId("architecture-flow-panel")).toBeVisible({ timeout: 30_000 });
   });
 
-  test("설명 말풍선은 그 아래 본문에 덮이지 않는다", async ({ page }) => {
+  test("the explanation bubble is not covered by the body below it", async ({ page }) => {
     /*
      * Measures what the eye lands on with `elementFromPoint` over the panel's text: a panel inside the
      * window can still be occluded by the next sibling.
@@ -366,10 +366,10 @@ test.describe("하네스 탭", () => {
       el.style.pointerEvents = previous;
       return hits;
     }, panelId);
-    expect(covered, `설명 말풍선이 아래 본문에 덮였다: ${covered.join(" | ")}`).toEqual([]);
+    expect(covered, `the explanation bubble was covered by the body below: ${covered.join(" | ")}`).toEqual([]);
   });
 
-  test("구조 보기가 저장소가 알려주는 것·막는 것·지켜보는 것을 부속별로 세고, 도구가 가진 자리는 숫자로 세지 않는다", async ({ page }) => {
+  test("the structure view counts what the repository informs, blocks and watches per component, and does not count tool-owned slots as numbers", async ({ page }) => {
     /*
      * The console is part of the assertion: an `InfoHint` inside a `<p>` is a hydration error
      * that the rendered screen does not show.
@@ -470,7 +470,7 @@ test.describe("하네스 탭", () => {
     await expect(page).toHaveURL(/\?view=architecture$/);
   });
 
-  test("커버리지 표가 영역마다 말해둔 것·막는 것·지켜보는 것을 말하고, 빈 칸은 문장으로 말한다", async ({ page }) => {
+  test("the coverage table states what is informed, blocked and watched per area, and speaks empty cells as sentences", async ({ page }) => {
     await mountHarnessVault(page);
     await page.goto("/ko/architecture/?view=coverage");
     const matrix = page.getByTestId("harness-coverage");
@@ -539,7 +539,7 @@ test.describe("하네스 탭", () => {
     expect(await matrix.textContent()).not.toMatch(/%|점수|등급|성숙도/);
   });
 
-  test("문서가 지침인지, 지침이 이름을 댄 것인지, 아무도 안 부르는 것인지 셋으로 나뉜다", async ({ page }) => {
+  test("documents split three ways: instruction, named by an instruction, or called by no one", async ({ page }) => {
     /*
      * The harness's most common silent failure: a document that exists and no guide points at. The
      * fixture source tree carries one of each under its own `docs/` folder — one that the fixture's
@@ -563,7 +563,7 @@ test.describe("하네스 탭", () => {
     await expect(page.getByTestId("harness-reach-breakdown")).toContainText("docs");
   });
 
-  test("세는 방법은 문장이 아니라 접힌 자리에 있다", async ({ page }) => {
+  test("the counting method lives in a collapsed spot, not in a sentence", async ({ page }) => {
     await mountHarnessVault(page);
     await page.goto("/ko/architecture/?view=coverage");
     await expect(page.getByTestId("harness-coverage")).toBeVisible({ timeout: 30_000 });
@@ -573,7 +573,7 @@ test.describe("하네스 탭", () => {
     await expect(rule).toBeVisible();
   });
 
-  test("지침 표가 도구별로 어느 파일을 읽는지 보여준다", async ({ page }) => {
+  test("the instruction table shows which file each tool reads", async ({ page }) => {
     await mountHarnessVault(page);
     await page.goto("/ko/architecture/?view=guides");
     const table = page.getByTestId("harness-guides");
@@ -593,7 +593,7 @@ test.describe("하네스 탭", () => {
     await expect(page.getByText(`읽은 곳 ${HARNESS_SOURCE_ROOT}`)).toBeVisible();
   });
 
-  test("어긋난 짝을 세고, 차이 보기가 두 파일을 나란히 연다", async ({ page }) => {
+  test("counts mismatched pairs, and the diff view opens both files side by side", async ({ page }) => {
     await mountHarnessVault(page);
     await page.goto("/ko/architecture/?view=guides");
     const drift = page.getByTestId("harness-drift");
@@ -609,7 +609,7 @@ test.describe("하네스 탭", () => {
     await expect(diff).toContainText("Diverged line.");
   });
 
-  test("훅은 연결됨과 없음을 구별하고, Codex 는 초록 대신 승인 필요를 단다", async ({ page }) => {
+  test("hooks distinguish connected from absent, and Codex gets needs-approval instead of green", async ({ page }) => {
     await mountHarnessVault(page);
     await page.goto("/ko/architecture/?view=guides");
     await expect(page.getByTestId("harness-guides")).toBeVisible({ timeout: 30_000 });
@@ -624,7 +624,7 @@ test.describe("하네스 탭", () => {
     );
   });
 
-  test("문장은 잰 숫자 둘만 말한다", async ({ page }) => {
+  test("the sentence states only the two measured numbers", async ({ page }) => {
     await mountHarnessVault(page);
     await page.goto("/ko/architecture/?view=guides");
     const sentence = page.getByTestId("harness-sentence");
@@ -642,7 +642,7 @@ test.describe("하네스 탭", () => {
     await expect(sentence.locator("p").first()).not.toContainText("영역");
   });
 
-  test("다른 보기로 가는 길은 어떤 화면에서도 사라지지 않는다", async ({ page }) => {
+  test("the way to other views never disappears on any screen", async ({ page }) => {
     /* The tab set must not be a property of the panel it switches; the empty blueprint returns early. */
     await page.setViewportSize({ width: 1512, height: 949 });
     await installProfilelessHarnessRuntime(page);
@@ -686,7 +686,7 @@ test.describe("하네스 탭", () => {
     await expect(preview.getByTestId("architecture-draft-preview-violation")).toBeVisible();
   });
 
-  test("키보드로 보기를 옮겨도 초점이 탭에 남는다", async ({ page }) => {
+  test("focus stays on the tab when the view is moved by keyboard", async ({ page }) => {
     /*
      * One `TabBar` instance, not one per branch: the two-instance build unmounted the focused tab
      * on activation and the browser reset focus to `<body>`, from where no key did anything.

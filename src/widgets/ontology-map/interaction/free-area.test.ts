@@ -10,11 +10,11 @@ const CANVAS: Rect = { x: 64, y: 0, width: 1448, height: 982 };
 const RIGHT_POPOVER: Rect = { x: 1128, y: 32, width: 352, height: 813 };
 
 describe("computeFreeArea", () => {
-  it("덮는 것이 없으면 캔버스 그대로다", () => {
+  it("the canvas is unchanged when nothing covers it", () => {
     expect(computeFreeArea(CANVAS, [])).toEqual(CANVAS);
   });
 
-  it("오른쪽 팝오버를 뺀다 — 실측 기하", () => {
+  it("subtracts the right popover (measured geometry)", () => {
     const free = computeFreeArea(CANVAS, [RIGHT_POPOVER]);
     expect(free.x).toBe(64);
     expect(free.width).toBe(1128 - 64);
@@ -22,7 +22,7 @@ describe("computeFreeArea", () => {
     expect(free.height).toBe(982);
   });
 
-  it("60%보다 짧아도 명시한 데스크톱 인스펙터는 자유 영역에서 뺀다", () => {
+  it("subtracts an explicit desktop inspector from the free area even when shorter than 60%", () => {
     const shortInspector: Rect = {
       x: 1128,
       y: 32,
@@ -39,7 +39,7 @@ describe("computeFreeArea", () => {
     });
   });
 
-  it("명시한 모바일 전폭 시트는 자유 영역의 좌우 패널로 빼지 않는다", () => {
+  it("does not subtract an explicit full-width mobile sheet as a left or right panel", () => {
     const mobileSheet: Rect = {
       x: 76,
       y: 72,
@@ -55,7 +55,7 @@ describe("computeFreeArea", () => {
     expect(free.width).toBe(CANVAS.width);
   });
 
-  it("전폭 시트는 명시가 있어도 붙어 있는 가장자리 쪽으로 뺀다", () => {
+  it("subtracts a full-width sheet toward the edge it is attached to, even when explicit", () => {
     const bottomSheet: Rect = {
       x: 76,
       y: 526,
@@ -70,21 +70,21 @@ describe("computeFreeArea", () => {
     expect(free.width).toBe(CANVAS.width);
   });
 
-  it("왼쪽 패널은 왼쪽에서 뺀다", () => {
+  it("subtracts the left panel from the left", () => {
     const left: Rect = { x: 64, y: 0, width: 320, height: 900 };
     const free = computeFreeArea(CANVAS, [left]);
     expect(free.x).toBe(384);
     expect(free.width).toBe(1512 - 384);
   });
 
-  it("양쪽 패널을 둘 다 뺀다", () => {
+  it("subtracts both side panels", () => {
     const left: Rect = { x: 64, y: 0, width: 320, height: 900 };
     const free = computeFreeArea(CANVAS, [left, RIGHT_POPOVER]);
     expect(free.x).toBe(384);
     expect(free.width).toBe(1128 - 384);
   });
 
-  it("상단 바는 위에서 뺀다", () => {
+  it("subtracts the top bar from the top", () => {
     const bar: Rect = { x: 64, y: 0, width: 1448, height: 96 };
     const free = computeFreeArea(CANVAS, [bar]);
     expect(free.y).toBe(96);
@@ -97,17 +97,17 @@ describe("computeFreeArea", () => {
    * Subtracting one leaves no area at all, and then «the centre» is undefined — and
    * with a sheet up it is not a moment to be moving the camera anyway.
    */
-  it("전체를 덮는 막은 빼지 않는다", () => {
+  it("does not subtract a scrim that covers everything", () => {
     const scrim: Rect = { x: 64, y: 0, width: 1448, height: 982 };
     expect(computeFreeArea(CANVAS, [scrim])).toEqual(CANVAS);
   });
 
-  it("작은 섬(칩·툴팁)은 빼지 않는다", () => {
+  it("does not subtract small islands (chips, tooltips)", () => {
     const chip: Rect = { x: 600, y: 400, width: 120, height: 40 };
     expect(computeFreeArea(CANVAS, [chip])).toEqual(CANVAS);
   });
 
-  it("캔버스와 안 겹치는 것은 세지 않는다", () => {
+  it("ignores what does not overlap the canvas", () => {
     const elsewhere: Rect = { x: 2000, y: 0, width: 300, height: 900 };
     expect(computeFreeArea(CANVAS, [elsewhere])).toEqual(CANVAS);
   });
@@ -120,13 +120,13 @@ describe("computeFreeArea", () => {
    * at all** (the module's rule). This case was first written with w900 (= 0.62) and
    * tripped that rule: the case was wrong, not the code.
    */
-  it("두 세로 패널이 겹쳐 영역이 뒤집히면 캔버스로 물러난다", () => {
+  it("falls back to the canvas when two vertical panels overlap and invert the area", () => {
     const left: Rect = { x: 64, y: 0, width: 700, height: 900 };
     const rightPanel: Rect = { x: 600, y: 0, width: 500, height: 900 };
     expect(computeFreeArea(CANVAS, [left, rightPanel])).toEqual(CANVAS);
   });
 
-  it("세로 패널 판정 비율이 실측 두 무리를 가른다", () => {
+  it("the vertical-panel ratio separates the two measured groups", () => {
     // popover 813/982 = 0.83 → a side panel · top toolbar ~96/982 = 0.10 → not one
     expect(RIGHT_POPOVER.height / CANVAS.height).toBeGreaterThan(SIDE_PANEL_HEIGHT_RATIO);
     expect(96 / CANVAS.height).toBeLessThan(SIDE_PANEL_HEIGHT_RATIO);
@@ -169,14 +169,14 @@ describe("measureCanvasInsets", () => {
     return canvas;
   };
 
-  it("오른쪽 팝오버를 오른쪽 인셋으로 잰다 — 실측 기하", () => {
+  it("measures the right popover as a right inset (measured geometry)", () => {
     const canvas = fakeCanvas([RIGHT_POPOVER]);
     const insets = measureCanvasInsets(canvas, CANVAS);
     // canvas right edge (1512) − popover left (1128) = 384 (matching the measurement)
     expect(insets).toEqual({ left: 0, right: 384 });
   });
 
-  it("명시한 짧은 인스펙터도 오른쪽 카메라 장애물로 잰다", () => {
+  it("measures an explicit short inspector as a right camera obstacle too", () => {
     const canvas = fakeCanvas([
       {
         x: 1128,
@@ -190,7 +190,7 @@ describe("measureCanvasInsets", () => {
     expect(measureCanvasInsets(canvas, CANVAS)).toEqual({ left: 0, right: 384 });
   });
 
-  it("명시했어도 화면을 가로지르는 모바일 시트는 좌우 패널로 오인하지 않는다", () => {
+  it("does not mistake an explicit mobile sheet spanning the screen for a side panel", () => {
     const canvas = fakeCanvas([
       {
         x: 76,
@@ -204,27 +204,27 @@ describe("measureCanvasInsets", () => {
     expect(measureCanvasInsets(canvas, CANVAS)).toEqual({ left: 0, right: 0 });
   });
 
-  it("왼쪽 패널을 왼쪽 인셋으로 잰다", () => {
+  it("measures the left panel as a left inset", () => {
     const canvas = fakeCanvas([{ x: 64, y: 0, width: 324, height: 900 }]);
     expect(measureCanvasInsets(canvas, CANVAS)).toEqual({ left: 324, right: 0 });
   });
 
-  it("모달 시트는 좌우 인셋으로 세지 않는다 — 검색 팔레트가 사라지는 프레임", () => {
+  it("does not count a modal sheet as a side inset, the frame where the search palette disappears", () => {
     const canvas = fakeCanvas([{ x: 400, y: 64, width: 576, height: 640, modal: true }, RIGHT_POPOVER]);
     expect(measureCanvasInsets(canvas, CANVAS)).toEqual({ left: 0, right: 384 });
   });
 
-  it("장애물 아님을 명시한 일시 표면도 세지 않는다", () => {
+  it("does not count a transient surface that declares itself a non-obstacle", () => {
     const canvas = fakeCanvas([{ x: 64, y: 0, width: 324, height: 900, cameraObstacle: "none" }]);
     expect(measureCanvasInsets(canvas, CANVAS)).toEqual({ left: 0, right: 0 });
   });
 
-  it("숨은 패널은 세지 않는다", () => {
+  it("does not count a hidden panel", () => {
     const canvas = fakeCanvas([{ ...RIGHT_POPOVER, hidden: true }]);
     expect(measureCanvasInsets(canvas, CANVAS)).toEqual({ left: 0, right: 0 });
   });
 
-  it("위·아래 바는 좌·우 인셋에 섞이지 않는다", () => {
+  it("top and bottom bars do not leak into the left and right insets", () => {
     const canvas = fakeCanvas([{ x: 64, y: 0, width: 1448, height: 96 }]);
     expect(measureCanvasInsets(canvas, CANVAS)).toEqual({ left: 0, right: 0 });
   });

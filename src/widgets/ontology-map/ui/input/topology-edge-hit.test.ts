@@ -22,16 +22,16 @@ const straight = (id: string, y: number): EdgeHitCandidate => ({
 });
 
 describe("hitTestEdges", () => {
-  it("임계 안의 가장 가까운 엣지를 고른다", () => {
+  it("picks the nearest edge within the threshold", () => {
     const hit = hitTestEdges([straight("far", 100), straight("near", 200)], 300, 204, 8);
     expect(hit?.sourceId).toBe("near-a");
   });
 
-  it("임계 밖이면 null — 빈 공간 클릭이 엣지를 잡으면 안 된다", () => {
+  it("null outside the threshold, because a click on empty space must not grab an edge", () => {
     expect(hitTestEdges([straight("e", 100)], 300, 130, 8)).toBeNull();
   });
 
-  it("곡선(제어점 오프셋) 위의 점도 잡는다 — 직선 근사가 아니라 베지어 샘플링", () => {
+  it("also hits a point on a curve (control-point offset), sampling the Bezier rather than approximating a line", () => {
     const bowed: EdgeHitCandidate = {
       edge: edge("bow"),
       a: { x: 100, y: 300 },
@@ -44,7 +44,7 @@ describe("hitTestEdges", () => {
     expect(hitTestEdges([bowed], 300, 296, 6)).toBeNull();
   });
 
-  it("AABB 밖 후보는 스킵돼도 결과가 같다 (프리패스 무손실)", () => {
+  it("skipping candidates outside the AABB gives the same result (lossless pre-pass)", () => {
     const many = Array.from({ length: 400 }, (_, i) => straight(`e${i}`, 1000 + i * 10));
     many.push(straight("target", 200));
     expect(hitTestEdges(many, 300, 203, 8)?.sourceId).toBe("target-a");
@@ -54,7 +54,7 @@ describe("hitTestEdges", () => {
   // centres, so a click inside (or beside) a node's body radius must belong to the
   // node. The edge passes through the node's centre, so without radius information a
   // click dead centre on a node, or near it, leaks to the edge.
-  describe("노드 바디 > 엣지 우선순위 (aRadius/bRadius)", () => {
+  describe("node body beats edge priority (aRadius/bRadius)", () => {
     const withRadii = (id: string, y: number, r: number): EdgeHitCandidate => ({
       edge: edge(id),
       a: { x: 100, y },
@@ -64,7 +64,7 @@ describe("hitTestEdges", () => {
       bRadius: r,
     });
 
-    it("끝 노드 몸통 안(정중앙 포함) 클릭은 엣지 히트에서 제외된다", () => {
+    it("a click inside an end node's body (dead centre included) is excluded from the edge hit", () => {
       // 4px from node a's centre (100,200) — inside radius 14, so node territory. The
       // edge passes through this point (distance 0) but the node owns it, so this must be null.
       expect(hitTestEdges([withRadii("e", 200, 14)], 104, 200, 8)).toBeNull();
@@ -72,14 +72,14 @@ describe("hitTestEdges", () => {
       expect(hitTestEdges([withRadii("e", 200, 14)], 100, 200, 8)).toBeNull();
     });
 
-    it("반경 정보가 없으면(구 동작) 같은 지점이 엣지로 잡힌다 — 회귀 대조군", () => {
+    it("without radius info (old behaviour) the same point hits the edge, the regression control", () => {
       // aRadius/bRadius omitted = backwards compatible. With no notion of a node, a
       // point on the edge line hits as before — this control proves the exclusion
       // above is due to the radius.
       expect(hitTestEdges([straight("e", 200)], 104, 200, 8)?.sourceId).toBe("e-a");
     });
 
-    it("엣지 중앙(양 끝 노드에서 먼 곳)은 반경이 있어도 그대로 잡힌다", () => {
+    it("the middle of an edge (far from both end nodes) still hits even with radii", () => {
       // (300,204) — 200px from both node centres, outside radius 14, and 4px from the edge line (y=200).
       expect(hitTestEdges([withRadii("e", 200, 14)], 300, 204, 8)?.sourceId).toBe("e-a");
     });

@@ -7,8 +7,8 @@ type SurfaceTool = { name: string; mode: 'read' | 'write' };
 
 const tools = ((surface as { mcp?: { tools?: SurfaceTool[] } }).mcp?.tools ?? []);
 
-describe('ACP Atlas tool policy — generated MCP surface가 정본이다', () => {
-  it('등록된 모든 도구를 tools/list의 read/write annotation과 똑같이 분류한다', () => {
+describe('ACP Atlas tool policy: the generated MCP surface is canonical', () => {
+  it('classifies every registered tool exactly as the tools/list read/write annotation does', () => {
     expect(tools.length).toBeGreaterThan(30);
     for (const tool of tools) {
       expect(
@@ -18,12 +18,12 @@ describe('ACP Atlas tool policy — generated MCP surface가 정본이다', () =
     }
   });
 
-  it('우리 서버의 새 도구를 모르면 write로 닫고, 남의 서버는 분류하지 않는다', () => {
+  it('closes to write on an unknown new tool of our server and classifies no other server tool', () => {
     expect(atlasToolMode('mcp__atlas-vault__future_tool', 'atlas-vault')).toBe('write');
     expect(atlasToolMode('mcp__other__list_concepts', 'atlas-vault')).toBeNull();
   });
 
-  it('외부 연결 도구의 호출은 우리 읽기/쓰기 어휘로 옮기지 않는다', () => {
+  it('does not translate a call to an externally connected tool into our read/write vocabulary', () => {
     // A connector's tools are somebody else's, and this table describes the vault server only.
     // Classifying `mcp__notion__create_page` as a "write" would put an Atlas word on a Notion
     // action and imply the vault's write checkpoint applies to it. Returning null is what makes

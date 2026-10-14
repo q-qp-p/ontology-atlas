@@ -95,7 +95,7 @@ async function walkUntilDeadEnd(page: import("@playwright/test").Page, direction
   return false;
 }
 
-test.describe("지도에 초점을 주는 길", () => {
+test.describe("ways to focus the map", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await seedFirstRunSeen(page);
@@ -113,7 +113,7 @@ test.describe("지도에 초점을 주는 길", () => {
    * raises it, and a test failing each time makes the next person fix the test. The
    * property to lock is **"there is a path reachable in one key"**.
    */
-  test("다른 화면에서 G M 을 누르면 지도 캔버스가 초점을 받는다", async ({ page }) => {
+  test("pressing G M from another screen focuses the map canvas", async ({ page }) => {
     await page.goto("/ko/projects/?guides=off&e2e=1");
     await page.locator("main").first().click({ position: { x: 5, y: 5 } });
     await page.keyboard.press("g");
@@ -131,7 +131,7 @@ test.describe("지도에 초점을 주는 길", () => {
   });
 
   /** Can you walk immediately after grabbing — is the entrance really wired to the feature. */
-  test("G M 으로 잡은 다음 방향키로 걸을 수 있다", async ({ page }) => {
+  test("after G M, the arrow keys can walk the map", async ({ page }) => {
     await seedFirstRunSeen(page);
     await page.addInitScript((key) => {
       window.sessionStorage.setItem(key, "1");
@@ -167,14 +167,14 @@ test.describe("지도에 초점을 주는 길", () => {
   });
 });
 
-test.describe("지도 키보드 걷기", () => {
+test.describe("map keyboard walk", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await seedFirstRunSeen(page);
     await page.goto("/ko/topology/?guides=off&e2e=1");
   });
 
-  test("걸어간 곳은 실제로 이웃이다 — 아무 노드로나 뛰지 않는다", async ({ page }) => {
+  test("the walk lands on a real neighbor and never jumps to an arbitrary node", async ({ page }) => {
     await focusCanvas(page);
     await page.keyboard.press("ArrowRight");
     await expect.poll(() => selectedId(page), { timeout: 5_000 }).not.toBeNull();
@@ -182,7 +182,7 @@ test.describe("지도 키보드 걷기", () => {
 
     const to = await walkOneStep(page, from);
     /* Failing to walk here is a regression, not a vault property, so assert rather than skip. */
-    expect(to, `첫 노드(${from})에서 네 방향 어디로도 못 걸었다`).not.toBeNull();
+    expect(to, `could not walk in any of four directions from the first node (${from})`).not.toBeNull();
 
     // Are the two really joined by an edge — ask the graph, not the screen.
     const connected = await page.evaluate(
@@ -197,11 +197,11 @@ test.describe("지도 키보드 걷기", () => {
       },
       [from, to],
     );
-    expect(connected?.aVisible, "출발 노드가 화면에 없다").toBe(true);
-    expect(connected?.bVisible, "걸어간 노드가 화면에 없다").toBe(true);
+    expect(connected?.aVisible, "the origin node is not on screen").toBe(true);
+    expect(connected?.bVisible, "the node walked to is not on screen").toBe(true);
   });
 
-  test("이동한 노드가 화면 안에 남는다 — 카메라가 따라온다", async ({ page }) => {
+  test("the node walked to stays on screen because the camera follows", async ({ page }) => {
     await focusCanvas(page);
     await page.keyboard.press("ArrowRight");
     await expect.poll(() => selectedId(page), { timeout: 5_000 }).not.toBeNull();
@@ -228,10 +228,10 @@ test.describe("지도 키보드 걷기", () => {
         height: camera.height,
       };
     });
-    expect(onScreen, "선택을 못 읽었다").not.toBeNull();
+    expect(onScreen, "could not read the selection").not.toBeNull();
     expect(
       onScreen?.inside,
-      `고른 노드가 화면 밖이다 (${onScreen?.x},${onScreen?.y} / ${onScreen?.width}×${onScreen?.height})`,
+      `the selected node is off screen (${onScreen?.x},${onScreen?.y} / ${onScreen?.width}×${onScreen?.height})`,
     ).toBe(true);
   });
 
@@ -239,7 +239,7 @@ test.describe("지도 키보드 걷기", () => {
    * Sidestepping between siblings works: domains around the project have no edges between
    * them, so siblings (same parent) are candidates.
    */
-  test("한 부모 아래 형제끼리 방향키로 오갈 수 있다", async ({ page }) => {
+  test("siblings under one parent can be visited with the arrow keys", async ({ page }) => {
     await focusCanvas(page);
     await page.keyboard.press("ArrowRight");
     await expect.poll(() => selectedId(page), { timeout: 5_000 }).not.toBeNull();
@@ -256,23 +256,23 @@ test.describe("지도 키보드 걷기", () => {
      * A small vault has fewer places to go, so no specific node name is pinned. The
      * property locked is **visiting three or more places**.
      */
-    expect(seen.size, `방향키로 돌아다닌 노드가 ${seen.size}곳뿐이다`).toBeGreaterThanOrEqual(3);
+    expect(seen.size, `the arrow keys visited only ${seen.size} nodes`).toBeGreaterThanOrEqual(3);
   });
 
   /**
    * When there is nowhere to go, say so beside the node walked from. The notice must dismiss
    * itself and must not take focus, or arrow keys never reach the canvas.
    */
-  test("막다른 길에서 안내가 노드 옆에 뜨고, 초점을 빼앗지 않으며, 스스로 사라진다", async ({ page }) => {
+  test("at a dead end the notice appears beside the node, does not take focus and disappears by itself", async ({ page }) => {
     await focusCanvas(page);
     await page.keyboard.press("ArrowRight");
     await expect.poll(() => selectedId(page), { timeout: 5_000 }).not.toBeNull();
-    expect(await walkUntilDeadEnd(page), "막다른 길에 닿지 못했다 — 이 시험이 아무것도 안 재고 있다").toBe(true);
+    expect(await walkUntilDeadEnd(page), "never reached a dead end, so this test measures nothing").toBe(true);
 
     // It says so, rather than staying silent.
     await expect(
       page.getByText(ko.topologyWidgets.keyboardWalk.deadEnd).first(),
-      "막다른 길인데 아무 말도 없다",
+      "a dead end but nothing is said",
     ).toBeVisible({ timeout: 4_000 });
 
     // Beside the node being walked from — "beside" can only be measured as a distance. The
@@ -292,15 +292,15 @@ test.describe("지도 키보드 걷기", () => {
         dy: Math.abs(nbox.y + nbox.height / 2 - (cbox.y + node.y)),
       };
     });
-    expect(geom, "안내가 DOM 에 없다 — `data-walk-notice` 로 찾을 수 없다").not.toBeNull();
-    expect(geom!.dx, "안내가 노드에서 가로로 너무 멀다").toBeLessThan(280);
-    expect(geom!.dy, "안내가 노드에서 세로로 너무 멀다").toBeLessThan(200);
+    expect(geom, "the notice is not in the DOM and cannot be found by `data-walk-notice`").not.toBeNull();
+    expect(geom!.dx, "the notice is too far horizontally from the node").toBeLessThan(280);
+    expect(geom!.dy, "the notice is too far vertically from the node").toBeLessThan(200);
 
     // It does not take the focus, so the arrow keys still reach the canvas.
     const stillOnCanvas = await page.evaluate(
       () => document.activeElement?.getAttribute("data-surface-role") === "map-canvas",
     );
-    expect(stillOnCanvas, "안내가 초점을 가져갔다 — 그러면 방향키가 지도에 도착하지 않는다").toBe(true);
+    expect(stillOnCanvas, "the notice took focus, so the arrow keys no longer reach the map").toBe(true);
 
     // It goes away without being pressed.
     await expect(page.locator("[data-walk-notice]")).toHaveCount(0, { timeout: 6_000 });
@@ -318,7 +318,7 @@ test.describe("지도 키보드 걷기", () => {
    * excluding the panel. Asserts "not covered", not "exactly centred", since the camera
    * follows only when needed.
    */
-  test("고른 노드가 패널에 가리지 않는다", async ({ page }) => {
+  test("the selected node is not covered by a panel", async ({ page }) => {
     await focusCanvas(page);
     await page.keyboard.press("ArrowRight");
     await expect.poll(() => selectedId(page), { timeout: 5_000 }).not.toBeNull();
@@ -348,14 +348,14 @@ test.describe("지도 키보드 걷기", () => {
           if (cs.visibility === "hidden" || cs.display === "none") continue;
           if (Number(cs.opacity) < 0.05) continue;
           if (px >= r.left && px <= r.right && py >= r.top && py <= r.bottom) {
-            return `${id} 가 ${(el as HTMLElement).dataset.testid || el.tagName} 뒤에 있다`;
+            return `${id} is behind ${(el as HTMLElement).dataset.testid || el.tagName}`;
           }
         }
         return null;
       });
       if (hit) covered.push(hit);
     }
-    expect(covered, "고른 노드가 패널에 가려졌다").toEqual([]);
+    expect(covered, "the selected node is covered by a panel").toEqual([]);
   });
 
   /**
@@ -370,7 +370,7 @@ test.describe("지도 키보드 걷기", () => {
    * occurs, is the node at the free area's centre? Reverting to the viewport centre
    * diverges by the measured 192px and turns red immediately.
    */
-  test("카메라가 데려간 뒤 노드가 자유 영역 가운데에 있다", async ({ page }) => {
+  test("after the camera moves, the node sits at the center of the free area", async ({ page }) => {
     await focusCanvas(page);
     await page.keyboard.press("ArrowRight");
     await expect.poll(() => selectedId(page), { timeout: 5_000 }).not.toBeNull();
@@ -453,7 +453,7 @@ test.describe("지도 키보드 걷기", () => {
         break;
       }
     }
-    expect(landed, "카메라 전환을 한 번도 일으키지 못했다").not.toBeNull();
+    expect(landed, "never triggered a camera transition").not.toBeNull();
     const toFree = Math.abs(landed!.nodeDocX - landed!.freeCenterX);
     const toCanvas = Math.abs(landed!.nodeDocX - landed!.canvasCenterX);
     /*
@@ -476,7 +476,7 @@ test.describe("지도 키보드 걷기", () => {
   });
 
   /** The shortcut sheet is the only place that teaches the keyboard, so it must list arrow-key walking. */
-  test("단축키 시트가 방향키 걷기를 안내한다", async ({ page }) => {
+  test("the shortcuts sheet explains arrow-key walking", async ({ page }) => {
     await focusCanvas(page);
     await page.locator("main").first().click({ position: { x: 5, y: 5 } });
     await page.keyboard.press("?");
@@ -493,20 +493,20 @@ test.describe("지도 키보드 걷기", () => {
       const next = rest.findIndex((l, i) => i > 0 && /^(검색 팔레트|허브|문서함)/.test(l));
       return rest.slice(0, next > 0 ? next : 24);
     });
-    expect(section, "시트에서 「지도」 절을 못 찾았다 — 이 시험이 공회전한다").not.toBeNull();
+    expect(section, "found no Map section in the sheet, so this test spins idle").not.toBeNull();
     expect(
       section!.some((line) => /↑|↓|←|→|방향키/.test(line)),
-      `지도 절이 방향키를 안내하지 않는다: ${section!.join(" · ")}`,
+      `the map section does not mention arrow keys: ${section!.join(" · ")}`,
     ).toBe(true);
   });
 
   /** The canvas label must say what works on the canvas, not send people to the INDEX panel. */
-  test("캔버스 라벨이 여기서 되는 일을 먼저 말한다", async ({ page }) => {
+  test("the canvas label first says what works here", async ({ page }) => {
     const canvas = page.getByTestId("ontology-map-canvas");
     await canvas.waitFor({ state: "visible", timeout: 20_000 });
     const label = await canvas.getAttribute("aria-label");
-    expect(label, "캔버스에 접근 이름이 없다").toBeTruthy();
-    expect(label!, `라벨이 방향키를 말하지 않는다: ${label}`).toMatch(/방향키/);
+    expect(label, "the canvas has no accessible name").toBeTruthy();
+    expect(label!, `the label does not mention arrow keys: ${label}`).toMatch(/방향키/);
   });
 
   /**
@@ -518,7 +518,7 @@ test.describe("지도 키보드 걷기", () => {
    * `overflow-hidden` so the document never scrolls anyway. So the property changed:
    * not scrolling, but **whether we declared the key handled**.
    */
-  test("방향키를 지도가 가져간다 (preventDefault)", async ({ page }) => {
+  test("the map takes the arrow keys (preventDefault)", async ({ page }) => {
     await focusCanvas(page);
     await page.evaluate(() => {
       (window as unknown as { __keyPrevented?: boolean[] }).__keyPrevented = [];
@@ -539,13 +539,13 @@ test.describe("지도 키보드 걷기", () => {
     const recorded = () =>
       page.evaluate(() => (window as unknown as { __keyPrevented: boolean[] }).__keyPrevented.length);
     await expect
-      .poll(recorded, { timeout: 15_000, message: "방향키 사건이 하나도 안 잡혔다 — 이 시험이 공회전한다" })
+      .poll(recorded, { timeout: 15_000, message: "no arrow-key event was captured, so this test spins idle" })
       .toBe(4);
     const flags = await page.evaluate(
       () => (window as unknown as { __keyPrevented: boolean[] }).__keyPrevented,
     );
-    expect(flags.length, "방향키 사건이 하나도 안 잡혔다 — 이 시험이 공회전한다").toBe(4);
-    expect(flags, "지도가 방향키를 가져가지 않았다 — 브라우저 기본 동작이 남는다").toEqual([
+    expect(flags.length, "no arrow-key event was captured, so this test spins idle").toBe(4);
+    expect(flags, "the map did not take the arrow keys, so the browser default remains").toEqual([
       true,
       true,
       true,
@@ -557,7 +557,7 @@ test.describe("지도 키보드 걷기", () => {
    * Without focus on the canvas the keys are not ours — the map reacting to arrow
    * keys pressed elsewhere is stealing someone else's input.
    */
-  test("캔버스에 초점이 없으면 방향키가 지도를 움직이지 않는다", async ({ page }) => {
+  test("without focus on the canvas, the arrow keys do not move the map", async ({ page }) => {
     await focusCanvas(page);
     await page.keyboard.press("ArrowRight");
     await expect.poll(() => selectedId(page), { timeout: 5_000 }).not.toBeNull();
@@ -570,6 +570,6 @@ test.describe("지도 키보드 걷기", () => {
     // An **absence**: nothing positive marks "these presses did nothing", so the wait is
     // an opportunity for a move to happen, counted in drawn frames.
     await waitFrames(page, 30);
-    expect(await selectedId(page), "초점이 없는데 지도가 움직였다").toBe(pinned);
+    expect(await selectedId(page), "the map moved without focus").toBe(pinned);
   });
 });

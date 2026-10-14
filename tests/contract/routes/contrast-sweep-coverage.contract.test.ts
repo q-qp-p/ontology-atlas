@@ -14,25 +14,25 @@ const HARNESS = join(process.cwd(), "scripts/design/measure-contrast.mjs");
 function harnessRoutes(): string[] {
   const source = readFileSync(HARNESS, "utf8");
   const block = /export const DEFAULT_ROUTES = \[([\s\S]*?)\];/.exec(source);
-  if (!block) throw new Error("measure-contrast.mjs 에서 DEFAULT_ROUTES 를 못 찾았다");
+  if (!block) throw new Error("could not find DEFAULT_ROUTES in measure-contrast.mjs");
   return [...block[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
 }
 
 const normalize = (route: string) => (route.endsWith("/") ? route : `${route}/`);
 
-describe("대비 스윕 커버리지", () => {
-  it("감사 대상 라우트를 하나도 빠뜨리지 않는다", () => {
+describe("contrast sweep coverage", () => {
+  it("misses no route that is in the audit", () => {
     const swept = new Set(harnessRoutes().map(normalize));
     const missing = AUDITED_ROUTES.map(normalize).filter((route) => !swept.has(route));
-    expect(missing, `대비를 안 재는 라우트: ${missing.join(", ")}`).toEqual([]);
+    expect(missing, `routes whose contrast is not measured: ${missing.join(", ")}`).toEqual([]);
   });
 
-  it("제외한 라우트는 스윕에도 없다 — 제외 사유가 두 곳에서 어긋나지 않게", () => {
+  it("an excluded route is not in the sweep either, so the exclusion reason cannot disagree between two places", () => {
     const swept = new Set(harnessRoutes().map(normalize));
     const leaked = Object.keys(EXCLUDED_ROUTES)
       .map(normalize)
       .filter((route) => swept.has(route));
-    expect(leaked, `제외 라우트인데 스윕에 있다: ${leaked.join(", ")}`).toEqual([]);
+    expect(leaked, `excluded routes that are in the sweep: ${leaked.join(", ")}`).toEqual([]);
   });
 
   /**
@@ -40,7 +40,7 @@ describe("대비 스윕 커버리지", () => {
    * regex silently matches nothing, both assertions above go green with "nothing is
    * missing".
    */
-  it("하네스에서 라우트를 실제로 읽어 온다", () => {
+  it("actually reads the routes from the harness", () => {
     expect(harnessRoutes().length).toBeGreaterThanOrEqual(AUDITED_ROUTES.length);
   });
 });

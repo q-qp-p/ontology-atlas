@@ -6,7 +6,7 @@ import { waitForMapStill } from "../../settle";
  * Three steps accumulate by moving through popover rows; re-clicking the same node opens the
  * document and exits to the docs view, so it is not used.
  */
-test("걸어온 길 — 쌓이고, 목록이 맞고, 뒤로 점프하고, 지워진다", async ({ page }) => {
+test("the trail accumulates, lists correctly, jumps back and clears", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 900 });
   await seedFirstRunSeen(page);
@@ -26,25 +26,25 @@ test("걸어온 길 — 쌓이고, 목록이 맞고, 뒤로 점프하고, 지워
     const n = m?.nodes().find((n) => !n.hidden && n.label === "주문");
     return n && box ? { px: box.left + n.x, py: box.top + n.y } : null;
   });
-  expect(t, "주문 도메인을 못 찾았다 — 공회전").not.toBeNull();
+  expect(t, "the order domain was not found, so the spec spins idle").not.toBeNull();
   await page.mouse.click(t!.px, t!.py);
   await expect
-    .poll(selection, { timeout: 15_000, message: "domain:order 로 안 걸어갔다" })
+    .poll(selection, { timeout: 15_000, message: "did not walk to domain:order" })
     .toBe("domain:order");
 
   // Steps 2 and 3 — move via popover rows
   await page.getByText("장바구니", { exact: true }).first().click();
   await expect
-    .poll(selection, { timeout: 15_000, message: "capability:cart 로 안 걸어갔다" })
+    .poll(selection, { timeout: 15_000, message: "did not walk to capability:cart" })
     .toBe("capability:cart");
   await page.getByText("주문서 작성", { exact: true }).first().click();
   await expect
-    .poll(selection, { timeout: 15_000, message: "capability:checkout 로 안 걸어갔다" })
+    .poll(selection, { timeout: 15_000, message: "did not walk to capability:checkout" })
     .toBe("capability:checkout");
 
   // The chip counts three steps
   const chip = page.getByText(/걸어온 길 · 3/);
-  await expect(chip, "자취 칩이 걸음 수를 안 센다").toBeVisible();
+  await expect(chip, "the trail chip does not count steps").toBeVisible();
   await chip.click();
   // The rows below are `toBeVisible` assertions, which retry on their own — the
   // popover's reveal needs no sleep in front of them.
@@ -57,7 +57,7 @@ test("걸어온 길 — 쌓이고, 목록이 맞고, 뒤로 점프하고, 지워
   // Jump back — pressing the two-steps-back (orders) row returns the selection
   await page.getByText("주문", { exact: true }).last().click();
   await expect
-    .poll(selection, { timeout: 15_000, message: "자취 행이 그 노드로 데려가지 않았다" })
+    .poll(selection, { timeout: 15_000, message: "the trail row did not take us to that node" })
     .toBe("domain:order");
 
   /*

@@ -21,7 +21,7 @@ const node = (id: string, kind: HittableNodeInput["kind"] = "element"): Hittable
 const OVERVIEW_ZOOM = 1;
 
 describe("draw/hit lockstep contract", () => {
-  it("드로우가 관통시킨 노드는 **채널이 무엇이든** 잡힌다", () => {
+  it("a node the draw lets through is hit whatever the channel is", () => {
     // Not enumerating channel names is the point — a value in the map is enough. A
     // sixth or seventh channel needs no edit here, and that is the evidence for
     // "cannot drift structurally".
@@ -34,7 +34,7 @@ describe("draw/hit lockstep contract", () => {
     }
   });
 
-  it("드로우가 칠한 알파면 어느 값이든 잡힌다 — 그려진 것은 잡힌다", () => {
+  it("any alpha the draw paints is hittable, so what is drawn can be hit", () => {
     // A node is not painted at these alphas unless something deliberately revealed it, and a deliberate
     // reveal must answer the pointer, so every value in this band is hittable.
     for (const alpha of [0.03, 0.2, 0.49]) {
@@ -46,7 +46,7 @@ describe("draw/hit lockstep contract", () => {
     }
   });
 
-  it("바닥은 드로우가 아무것도 칠하지 않는 값과 같다 — 두 숫자가 아니라 하나다", () => {
+  it("the floor equals the value at which the draw paints nothing, one number rather than two", () => {
     // The draw pass skips at `alpha <= HITTABLE_MIN_TIER_ALPHA`, so the first
     // alpha that paints is the first alpha that answers the pointer. A future
     // edit that raises this floor without narrowing the reveal bands re-opens the
@@ -62,7 +62,7 @@ describe("draw/hit lockstep contract", () => {
     ).toBe(false);
   });
 
-  it("접힌 노드는 알파와 무관하게 안 잡힌다 — 안 그려지는 것은 안 잡힌다", () => {
+  it("a collapsed node is not hit whatever its alpha, so what is not drawn cannot be hit", () => {
     const drawn = new Map([["n", 1]]);
     expect(
       isNodeHittable(
@@ -78,7 +78,7 @@ describe("draw/hit lockstep contract", () => {
     ).toBe(false);
   });
 
-  it("맵이 비면 종전 계산으로 떨어진다 — 첫 프레임 방어", () => {
+  it("an empty map falls back to the previous calculation, guarding the first frame", () => {
     // Before the first paint the map is empty. That one frame must behave as it does
     // today — a defence, not a regression (a user cannot click before paint).
     const empty = new Map<string, number>();
@@ -92,7 +92,7 @@ describe("draw/hit lockstep contract", () => {
     ).toBe(true);
   });
 
-  it("맵을 아예 안 넘기면 종전 시그니처와 동작이 같다 — 호출부 회귀 0", () => {
+  it("omitting the map entirely keeps the previous signature and behavior, so callers see no regression", () => {
     expect(isNodeHittable(node("n"), OVERVIEW_ZOOM, "n", undefined)).toBe(true);
     expect(isNodeHittable(node("n"), OVERVIEW_ZOOM, null, undefined)).toBe(false);
     // The spine tier is always open.

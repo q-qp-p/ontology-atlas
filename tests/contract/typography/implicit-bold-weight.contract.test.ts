@@ -76,14 +76,14 @@ function scanRepo(): BoldScan {
   return acc;
 }
 
-describe('<b>/<strong> 은 무게를 명시한다', () => {
+describe('<b>/<strong> state their weight', () => {
   const scan = scanRepo();
 
-  it('스캔이 비어 있지 않다 — 공집합 위의 게이트는 게이트가 아니다', () => {
+  it('the scan is not empty, since a gate over an empty set is no gate', () => {
     expect(scan.total).toBeGreaterThan(10);
   });
 
-  it('무게 선언이 없는 <b>/<strong> 이 0 이다 — 브라우저 기본 700 은 램프 밖이다', () => {
+  it('<b>/<strong> without a weight declaration are 0, since the browser default 700 is outside the ramp', () => {
     expect(
       scan.implicit,
       'A `<b>`/`<strong>` without a weight renders at the browser default 700; the ramp is 510/560/650.\n' +
@@ -92,7 +92,7 @@ describe('<b>/<strong> 은 무게를 명시한다', () => {
     ).toEqual([]);
   });
 
-  it('프로브 — 탐지기가 실제로 먹는다 (주석·상수 참조·명시 선언)', () => {
+  it('probe: the detector really catches (comment, constant reference, explicit declaration)', () => {
     const probe = (body: string): BoldScan => {
       const acc: BoldScan = { total: 0, implicit: [] };
       scanSource('probe.tsx', body, acc);
@@ -111,7 +111,7 @@ describe('<b>/<strong> 은 무게를 명시한다', () => {
     const viaConst = probe(
       'const numeralClass = "font-mono font-[var(--font-weight-strong)] text-x";\n<b className={numeralClass}>1</b>',
     );
-    expect(viaConst.implicit, '상수 참조를 못 펴면 진짜 위반과 구별되지 않는다').toEqual([]);
+    expect(viaConst.implicit, 'if a constant reference cannot be expanded it cannot be told from a real violation').toEqual([]);
     // …and if that constant carries no weight it is still caught
     expect(probe('const c = "font-mono text-x";\n<b className={c}>1</b>').implicit).toEqual(['probe.tsx:2']);
 

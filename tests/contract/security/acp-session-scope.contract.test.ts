@@ -16,8 +16,8 @@ function row(cwd: string, id = cwd): AcpSessionSummary {
 
 const VAULT = '/Users/jinan/vault';
 
-describe('지난 대화 목록 — 이 폴더 밖은 나가지 않는다', () => {
-  it('다른 폴더의 대화는 버린다', () => {
+describe('past conversation list: nothing outside this folder leaves', () => {
+  it('drops conversations of other folders', () => {
     const kept = keepSessionsInFolder(
       [
         row(VAULT, 'here'),
@@ -29,7 +29,7 @@ describe('지난 대화 목록 — 이 폴더 밖은 나가지 않는다', () =>
     expect(kept.map((s) => s.sessionId)).toEqual(['here']);
   });
 
-  it('상위 폴더도 하위 폴더도 이 폴더가 아니다', () => {
+  it('neither a parent folder nor a subfolder is this folder', () => {
     /*
      * A prefix comparison lets `/Users/jinan/vault` admit `/Users/jinan/vault-2`. And a
      * conversation in a subfolder was **opened in that subfolder**, not in this vault —
@@ -42,24 +42,24 @@ describe('지난 대화 목록 — 이 폴더 밖은 나가지 않는다', () =>
     expect(kept.map((s) => s.sessionId)).toEqual(['here']);
   });
 
-  it('끝의 슬래시는 같은 폴더다', () => {
+  it('a trailing slash is the same folder', () => {
     expect(keepSessionsInFolder([row(`${VAULT}/`, 'a')], VAULT)).toHaveLength(1);
     expect(keepSessionsInFolder([row(VAULT, 'a')], `${VAULT}/`)).toHaveLength(1);
   });
 
-  it('기준 폴더가 없으면 **아무것도** 안 보여 준다', () => {
+  it('shows **nothing** when there is no base folder', () => {
     // "When in doubt, show everything" is exactly the shape of this accident. When in
     // doubt, show nothing.
     expect(keepSessionsInFolder([row(VAULT, 'a')], '')).toEqual([]);
     expect(keepSessionsInFolder([row(VAULT, 'a')], '   ')).toEqual([]);
   });
 
-  it('폴더를 모르는 줄은 버린다', () => {
+  it('drops a line whose folder is unknown', () => {
     const bad = { sessionId: 'x', cwd: undefined, title: null, updatedAt: null };
     expect(keepSessionsInFolder([bad as unknown as AcpSessionSummary], VAULT)).toEqual([]);
   });
 
-  it('실측에서 실제로 돌아온 목록을 그대로 넣어 본다', () => {
+  it('feeds in the list exactly as it really came back from measurement', () => {
     /*
      * Rows are the exact ones the real probe received; invented input cannot show the gate blocks the
      * real case.

@@ -25,11 +25,11 @@ import {
  * themselves are verified on a real screen.
  */
 describe("fireflySeed", () => {
-  it("결정론 — 같은 엣지는 항상 같은 시드", () => {
+  it("deterministic: the same edge always gets the same seed", () => {
     expect(fireflySeed("a", "b")).toBe(fireflySeed("a", "b"));
   });
 
-  it("[0,1) 범위", () => {
+  it("within [0,1)", () => {
     for (const [s, t] of [["a", "b"], ["capability:x", "element:y"], ["z", "z"]]) {
       const seed = fireflySeed(s, t);
       expect(seed).toBeGreaterThanOrEqual(0);
@@ -37,17 +37,17 @@ describe("fireflySeed", () => {
     }
   });
 
-  it("방향성 — source↔target 순서가 다르면 다른 시드(대체로)", () => {
+  it("directional: swapping source and target gives a different seed (in general)", () => {
     expect(fireflySeed("a", "b")).not.toBe(fireflySeed("b", "a"));
   });
 });
 
 describe("advanceParticlePhase", () => {
-  it("결정론 — 같은 입력은 같은 결과", () => {
+  it("deterministic: the same input gives the same result", () => {
     expect(advanceParticlePhase(0.2, 0.016, 0.075)).toBe(advanceParticlePhase(0.2, 0.016, 0.075));
   });
 
-  it("항상 [0,1) 범위 — 큰 dt 로 여러 바퀴 돌아도 랩", () => {
+  it("always within [0,1), wrapping even after many laps with a large dt", () => {
     for (const dt of [0.016, 0.05, 1, 100]) {
       const t = advanceParticlePhase(0.9, dt, 0.075);
       expect(t).toBeGreaterThanOrEqual(0);
@@ -55,17 +55,17 @@ describe("advanceParticlePhase", () => {
     }
   });
 
-  it("정방향 전진(랩 전까지 단조 증가)", () => {
+  it("advances forward (monotonically increasing until it wraps)", () => {
     const t0 = advanceParticlePhase(0.1, 0.016, 0.075);
     expect(t0).toBeGreaterThan(0.1);
   });
 
-  it("1 을 넘으면 랩 어라운드", () => {
+  it("wraps around past 1", () => {
     const t = advanceParticlePhase(0.98, 0.5, 0.075); // 0.98 + 0.0375 = 1.0175 → 0.0175
     expect(t).toBeCloseTo(0.0175, 6);
   });
 
-  it("음수 speed 방어 — [0,1) 유지", () => {
+  it("guards against negative speed and stays within [0,1)", () => {
     const t = advanceParticlePhase(0.02, 0.5, -0.075); // 0.02 - 0.0375 = -0.0175 → 0.9825
     expect(t).toBeGreaterThanOrEqual(0);
     expect(t).toBeLessThan(1);
@@ -80,28 +80,28 @@ describe("updateParticles", () => {
     { kind: "depends", t: 0.9, sourceId: "b", targetId: "c" },
   ];
 
-  it("depends 엣지만 전진, contains 는 불변", () => {
+  it("only depends edges advance, contains stays fixed", () => {
     const edges = makeEdges();
     updateParticles(edges, 0.016, false, () => 0.075);
     expect(edges[0].t).toBeGreaterThan(0.1); // depends advances
     expect(edges[1].t).toBe(0.1); // contains does not
   });
 
-  it("reduced-motion 이면 아무 것도 전진하지 않는다(정지)", () => {
+  it("under reduced-motion nothing advances (stopped)", () => {
     const edges = makeEdges();
     updateParticles(edges, 0.016, true, () => 0.075);
     expect(edges[0].t).toBe(0.1);
     expect(edges[2].t).toBe(0.9);
   });
 
-  it("speedOf 로 엣지별 속도 — 0 이면 그 엣지는 정지", () => {
+  it("speed is per edge via speedOf, and an edge at 0 stands still", () => {
     const edges = makeEdges();
     updateParticles(edges, 0.016, false, (e) => (e.sourceId === "a" ? 0 : 0.2));
     expect(edges[0].t).toBe(0.1); // speed 0 → stationary
     expect(edges[2].t).not.toBe(0.9); // speed 0.2 → advances
   });
 
-  it("처방 E — isEgoContainsEligible 이 true 인 contains 엣지는 depends 처럼 전진한다", () => {
+  it("a contains edge for which isEgoContainsEligible is true advances like depends", () => {
     const edges = makeEdges();
     updateParticles(
       edges,
@@ -113,13 +113,13 @@ describe("updateParticles", () => {
     expect(edges[1].t).toBeGreaterThan(0.1); // an eligible contains edge now advances too
   });
 
-  it("처방 E — isEgoContainsEligible 이 false 인 contains 는 여전히 불변", () => {
+  it("a contains edge for which isEgoContainsEligible is false stays fixed", () => {
     const edges = makeEdges();
     updateParticles(edges, 0.016, false, () => 0.075, () => false);
     expect(edges[1].t).toBe(0.1);
   });
 
-  it("처방 E — 인자 생략 시 기존 계약(contains 항상 불변) 유지", () => {
+  it("omitting the argument keeps the existing contract (contains always fixed)", () => {
     const edges = makeEdges();
     updateParticles(edges, 0.016, false, () => 0.075);
     expect(edges[1].t).toBe(0.1);
@@ -127,7 +127,7 @@ describe("updateParticles", () => {
 });
 
 describe("edgePairKey", () => {
-  it("source target 순서로 조인한다", () => {
+  it("joins in source-target order", () => {
     expect(edgePairKey("a", "b")).toBe("a b");
   });
 });
@@ -258,23 +258,23 @@ describe("spawnHoverPulses", () => {
     { sourceId: "p", targetId: "q" }, // does not touch the hub
   ];
 
-  it("호버 노드에 닿는 엣지마다 펄스 하나", () => {
+  it("one pulse per edge touching the hovered node", () => {
     const pulses = spawnHoverPulses("hub", edges, 1000, false);
     expect(pulses).toHaveLength(2);
   });
 
-  it("방향 — 호버 노드가 source 면 +1, target 이면 -1(바깥 방향)", () => {
+  it("direction: +1 when the hovered node is the source, -1 when it is the target (outward)", () => {
     const pulses = spawnHoverPulses("hub", edges, 1000, false);
     expect(pulses.find((p) => p.targetId === "x")?.dir).toBe(1); // hub=source
     expect(pulses.find((p) => p.sourceId === "y")?.dir).toBe(-1); // hub=target
   });
 
-  it("t0 = 발사 시각", () => {
+  it("t0 is the launch time", () => {
     const pulses = spawnHoverPulses("hub", edges, 4242, false);
     expect(pulses.every((p) => p.t0 === 4242)).toBe(true);
   });
 
-  it("reduced-motion 이면 발사 0", () => {
+  it("launches 0 under reduced-motion", () => {
     expect(spawnHoverPulses("hub", edges, 1000, true)).toHaveLength(0);
   });
 });
@@ -285,28 +285,28 @@ describe("updatePulses", () => {
     { sourceId: "c", targetId: "d", dir: -1, t0: 500 },
   ];
 
-  it("수명 지난 펄스 제거", () => {
+  it("removes pulses past their lifetime", () => {
     // now=600 → the first has run 600 > 420 (expired), the second 100 < 420 (alive)
     const alive = updatePulses(pulses, 600);
     expect(alive).toHaveLength(1);
     expect(alive[0].t0).toBe(500);
   });
 
-  it("전부 살아있으면 입력 배열 그대로(할당 회피)", () => {
+  it("returns the input array itself when all are alive (avoids allocation)", () => {
     const alive = updatePulses(pulses, 100);
     expect(alive).toBe(pulses);
   });
 
-  it("전부 만료되면 빈 배열", () => {
+  it("an empty array when everything has expired", () => {
     expect(updatePulses(pulses, 10000)).toHaveLength(0);
   });
 
-  it("빈 입력은 그대로", () => {
+  it("empty input is returned as is", () => {
     const empty: Pulse[] = [];
     expect(updatePulses(empty, 1000)).toBe(empty);
   });
 
-  it("수명 = PULSE_DURATION_MS 경계", () => {
+  it("lifetime boundary at PULSE_DURATION_MS", () => {
     const at: Pulse[] = [{ sourceId: "a", targetId: "b", dir: 1, t0: 0 }];
     expect(updatePulses(at, PULSE_DURATION_MS - 1)).toHaveLength(1);
     expect(updatePulses(at, PULSE_DURATION_MS)).toHaveLength(0);
@@ -314,25 +314,25 @@ describe("updatePulses", () => {
 });
 
 describe("pulseScale / pulseHeadTrail", () => {
-  it("크기는 raw 증가에 따라 축소, 하한 0.35", () => {
+  it("size shrinks as raw grows, with a floor of 0.35", () => {
     expect(pulseScale(0)).toBe(1);
     expect(pulseScale(0.5)).toBeCloseTo(0.5, 6);
     expect(pulseScale(1)).toBe(0.35); // max(0.35, 0)
   });
 
-  it("순방향(dir=1): head=raw, trail=head-lag", () => {
+  it("forward (dir=1): head=raw, trail=head-lag", () => {
     const { head, trail } = pulseHeadTrail(1, 0.5);
     expect(head).toBe(0.5);
     expect(trail).toBeCloseTo(0.5 - PULSE_TRAIL_LAG, 6);
   });
 
-  it("역방향(dir=-1): head=1-raw, trail=head+lag", () => {
+  it("backward (dir=-1): head=1-raw, trail=head+lag", () => {
     const { head, trail } = pulseHeadTrail(-1, 0.2);
     expect(head).toBeCloseTo(0.8, 6);
     expect(trail).toBeCloseTo(0.8 + PULSE_TRAIL_LAG, 6);
   });
 
-  it("트레일이 [0,1] 밖이면 null(순방향 시작 직후)", () => {
+  it("null when the trail falls outside [0,1] (just after a forward start)", () => {
     const { trail } = pulseHeadTrail(1, 0); // head 0, trail -0.05
     expect(trail).toBeNull();
   });

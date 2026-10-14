@@ -60,7 +60,7 @@ const REGISTERED: ReadonlyArray<readonly [file: string, count: number, why: stri
   [
     "src/views/home/ui/TopologyBlockingOverlays.tsx",
     3,
-    "지도 컴포저 — --z-map-scrim(25) 층·지도 좌표계 내부에 산다. body 포털(--z-dialog 60)로 올리면 지도 위 다른 크롬과의 층 계약이 깨진다.",
+    "map composer — lives inside the --z-map-scrim(25) layer and the map coordinate system. Lifting it to a body portal (--z-dialog 60) breaks the layer contract with the other chrome on the map.",
   ],
   [
     "src/features/vault-switch/ui/VaultSwitchRailTile.tsx",
@@ -117,14 +117,14 @@ const DEBT: ReadonlyArray<readonly [file: string, count: number]> = [
   ["src/widgets/project-drawer/ui/ProjectDrawer.tsx", 1],
 ];
 
-describe("Dialog 채택 래칫", () => {
+describe("Dialog adoption ratchet", () => {
   const scan = scanProduction();
   const ledger = new Map<string, number>([
     ...REGISTERED.map(([file, count]) => [file, count] as const),
     ...DEBT,
   ]);
 
-  it("탐지기가 공회전하지 않는다 — 프리미티브 자신이 마크업을 갖고, 장부 파일이 실재한다", () => {
+  it("the detector does not idle — the primitive itself carries markup, and the ledger files exist", () => {
     // If the source of truth disappears (a rename, say), this whole ratchet loses its target.
     const primitive = readFileSync(path.join(ROOT, PRIMITIVE), "utf8");
     /*
@@ -134,28 +134,28 @@ describe("Dialog 채택 래칫", () => {
      */
     expect(
       primitive.includes('role = "dialog"'),
-      "프리미티브가 role 기본값을 dialog 로 두지 않는다",
+      "the primitive does not default role to dialog",
     ).toBe(true);
     expect(
       primitive.includes('role?: "dialog" | "alertdialog"'),
-      "프리미티브의 role 선택지가 dialog | alertdialog 가 아니다",
+      "the role options of the primitive are not dialog | alertdialog",
     ).toBe(true);
     expect(
       primitive.includes("role={role}"),
-      "프리미티브가 role 을 요소에 붙이지 않는다",
+      "the primitive does not attach role to the element",
     ).toBe(true);
     // A debt ledger holding non-existent files lets a "decrease" be achieved by a move or rename.
     for (const [file] of [...REGISTERED, ...DEBT]) {
-      expect(statSync(path.join(ROOT, file)).isFile(), `${file} 이 실재하지 않는다`).toBe(true);
+      expect(statSync(path.join(ROOT, file)).isFile(), `${file} does not exist`).toBe(true);
     }
-    expect(scan.size, "스캔이 아무 파일도 못 찾았다 — 워커가 빈 집합 위에서 돈다").toBeGreaterThan(0);
+    expect(scan.size, "the scan found no file — the worker runs on an empty set").toBeGreaterThan(0);
   });
 
-  it("프리미티브 밖의 role=dialog 마크업은 장부를 넘지 못한다 — 새 파일은 첫날부터 0", () => {
+  it("role=dialog markup outside the primitive cannot exceed the ledger — a new file starts at 0 on day one", () => {
     const over: string[] = [];
     for (const [file, count] of scan) {
       const allowed = ledger.get(file) ?? 0;
-      if (count > allowed) over.push(`${file}: ${count} > 장부 ${allowed}`);
+      if (count > allowed) over.push(`${file}: ${count} > ledger ${allowed}`);
     }
     expect(
       over,
@@ -164,11 +164,11 @@ describe("Dialog 채택 래칫", () => {
     ).toEqual([]);
   });
 
-  it("장부의 0 회수분은 줄을 지운다 — 장부가 실측보다 후하면 래칫이 헐겁다", () => {
+  it("reclaimed ledger entries at 0 have their line deleted — a ledger more generous than the measurement loosens the ratchet", () => {
     const stale: string[] = [];
     for (const [file, allowed] of DEBT) {
       const actual = scan.get(file) ?? 0;
-      if (actual < allowed) stale.push(`${file}: 장부 ${allowed} > 실측 ${actual} — 장부를 내려라`);
+      if (actual < allowed) stale.push(`${file}: ledger ${allowed} > measured ${actual} — lower the ledger`);
     }
     expect(stale).toEqual([]);
   });
@@ -176,7 +176,7 @@ describe("Dialog 채택 래칫", () => {
   /*
    * ── Resident probe — is the detector itself alive (/gate-probe: passing is not evidence).
    */
-  it("프로브: 마크업은 잡히고, 셀렉터 문자열과 주석은 잡히지 않는다", () => {
+  it("probe: markup is caught, selector strings and comments are not", () => {
     expect(countDialogMarkup('<div role="dialog" aria-modal="true" />')).toBe(1);
     expect(countDialogMarkup("document.querySelector('[role=\"dialog\"]')")).toBe(0);
     expect(countDialogMarkup('// role="dialog" 를 설명하는 주석\nconst a = 1;')).toBe(0);

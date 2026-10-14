@@ -15,7 +15,7 @@ describe("useCopyFeedback", () => {
     vi.useRealTimers();
   });
 
-  it("성공 시 copied → resetMs 후 idle", async () => {
+  it("on success goes copied, then idle after resetMs", async () => {
     copyMock.mockResolvedValue(true);
     const { result } = renderHook(() => useCopyFeedback(1500));
     expect(result.current.state).toBe("idle");
@@ -34,7 +34,7 @@ describe("useCopyFeedback", () => {
     expect(result.current.state).toBe("idle");
   });
 
-  it("실패(copyText false) 시 failed 로", async () => {
+  it("on failure (copyText false) goes to failed", async () => {
     copyMock.mockResolvedValue(false);
     const { result } = renderHook(() => useCopyFeedback());
     let returned: boolean | undefined;
@@ -45,7 +45,7 @@ describe("useCopyFeedback", () => {
     expect(result.current.state).toBe("failed");
   });
 
-  it("연속 copy 는 이전 reset 타이머를 취소(상태가 조기 idle 로 안 떨어짐)", async () => {
+  it("a consecutive copy cancels the previous reset timer, so the state does not fall to idle early", async () => {
     copyMock.mockResolvedValue(true);
     const { result } = renderHook(() => useCopyFeedback(1500));
     await act(async () => {

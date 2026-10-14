@@ -21,9 +21,9 @@ const AUTO_START_SITES = [
 /** Where the switch is **defined**. Not a consumer, so it is not in the list above. */
 const SWITCH_DEFINITION = "src/shared/lib/preferences/guide-auto-start.ts";
 
-describe("화면 안내 자동 표시 — 스위치가 모든 발화 지점을 덮는다", () => {
-  it.each(AUTO_START_SITES)("%s 가 스위치를 읽는다", (path) => {
-    expect(read(path), `${path} 의 자동 시작이 스위치를 안 본다 — 스위치가 반만 듣는다`).toContain(
+describe("on-screen guide auto display: the switch covers every firing point", () => {
+  it.each(AUTO_START_SITES)("%s reads the switch", (path) => {
+    expect(read(path), `the auto start of ${path} does not look at the switch, so the switch is only half heard`).toContain(
       "readGuideAutoStart()",
     );
   });
@@ -32,7 +32,7 @@ describe("화면 안내 자동 표시 — 스위치가 모든 발화 지점을 �
    * The tree is walked directly to find every file reading the switch and compared with the list,
    * so an unregistered auto-start site is discovered.
    */
-  it("등록되지 않은 자동 시작 지점이 없다", () => {
+  it("there is no unregistered auto start point", () => {
     const found: string[] = [];
     const walk = (rel: string) => {
       for (const entry of readdirSync(join(ROOT, rel), { withFileTypes: true })) {
@@ -49,7 +49,7 @@ describe("화면 안내 자동 표시 — 스위치가 모든 발화 지점을 �
     walk("src");
 
     // Idling guard — the scanner must not find 0 files and pass as "nothing diverged".
-    expect(found.length, "스위치를 읽는 파일을 하나도 못 찾았다 — 스캔이 깨졌다").toBeGreaterThan(1);
+    expect(found.length, "found no file that reads the switch, so the scan is broken").toBeGreaterThan(1);
 
     const registered = new Set<string>(AUTO_START_SITES);
     const unregistered = found.filter((p) => !registered.has(p));
@@ -68,7 +68,7 @@ describe("화면 안내 자동 표시 — 스위치가 모든 발화 지점을 �
   });
 
   /** Turning the switch off is not deletion: the ways to summon a guide must stay alive regardless. */
-  it("부르는 길은 스위치 뒤에 숨지 않는다", () => {
+  it("the calling path does not hide behind the switch", () => {
     const settings = read("src/widgets/app-settings-menu/ui/AppSettingsMenu.tsx");
     const replayRow = settings.slice(settings.indexOf("app-settings-replay-guide"));
     expect(replayRow.slice(0, 900)).not.toContain("guideAutoStart");

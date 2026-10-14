@@ -104,16 +104,16 @@ describe("readPinchWheel", () => {
   });
 });
 
-describe("shouldIgnoreWheelGlide — 트랙패드 글라이드 가드", () => {
-  it("미세 델타(|d|<4)는 무시한다", () => {
+describe("shouldIgnoreWheelGlide: trackpad glide guard", () => {
+  it("ignores a tiny delta (|d|<4)", () => {
     expect(shouldIgnoreWheelGlide(1, false)).toBe(true);
     expect(shouldIgnoreWheelGlide(-3.9, false)).toBe(true);
   });
-  it("의도적 델타(|d|>=4)는 통과한다", () => {
+  it("lets a deliberate delta (|d|>=4) through", () => {
     expect(shouldIgnoreWheelGlide(4, false)).toBe(false);
     expect(shouldIgnoreWheelGlide(-120, false)).toBe(false);
   });
-  it("핀치(ctrlKey)는 델타 크기와 무관하게 항상 통과한다", () => {
+  it("a pinch (ctrlKey) always passes regardless of delta size", () => {
     expect(shouldIgnoreWheelGlide(0.5, true)).toBe(false);
     expect(shouldIgnoreWheelGlide(-1, true)).toBe(false);
   });

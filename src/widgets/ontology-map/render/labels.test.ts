@@ -114,10 +114,10 @@ describe("computeLensLabelAlpha", () => {
   });
 });
 
-describe("resolveLabelBaselineY — 라벨이 자기 도형선에 닿지 않는다 (진입 검수 E-4)", () => {
+describe("resolveLabelBaselineY: a label never touches its own shape outline", () => {
   const KINDS = ["project", "domain", "capability", "element"] as const;
 
-  it.each(KINDS)("%s — 글리프 top 이 외곽선 아래로 최소 여유를 지킨다", (kind) => {
+  it.each(KINDS)("%s: the glyph top keeps a minimum clearance below the outline", (kind) => {
     for (const fontScale of [1, 1.3, 1.9]) {
       const baseline = resolveLabelBaselineY(kind, 200, 40, fontScale);
       const glyphTop = baseline - scaledLabelFontSize(kind, fontScale);
@@ -127,7 +127,7 @@ describe("resolveLabelBaselineY — 라벨이 자기 도형선에 닿지 않는�
     }
   });
 
-  it("종전 오프셋 식은 선택 링을 관통했다 — 이 함수가 그 자리를 고른 이유", () => {
+  it("the old offset formula pierced the selection ring, which is why this function picks that spot", () => {
     // Regression evidence: at the capability label's old baseline (y + r + 13) the
     // glyph top sat 2.5px below the disc — above the selection ring at +6.
     const legacyBaseline = 200 + 40 + 13;
@@ -136,13 +136,13 @@ describe("resolveLabelBaselineY — 라벨이 자기 도형선에 닿지 않는�
     expect(resolveLabelBaselineY("capability", 200, 40, 1)).toBeGreaterThan(legacyBaseline);
   });
 
-  it("큰 노드일수록 라벨도 함께 내려간다 (반지름 선형)", () => {
+  it("the label moves down with a larger node (linear in radius)", () => {
     const small = resolveLabelBaselineY("capability", 0, 10, 1);
     const large = resolveLabelBaselineY("capability", 0, 40, 1);
     expect(large - small).toBe(30);
   });
 
-  it("뒤집힌 자리는 노드 위쪽 외곽선 밖에 앉는다", () => {
+  it("the flipped position sits outside the node's top outline", () => {
     const flipped = resolveFlippedLabelBaselineY(200, 40);
     expect(flipped).toBe(200 - 40 - LABEL_NODE_OUTLINE_ALLOWANCE - LABEL_NODE_CLEARANCE);
     // Strictly above the lower slot, proving the flip actually moves it.
@@ -163,28 +163,28 @@ describe("resolveLabelBaselineY — 라벨이 자기 도형선에 닿지 않는�
  * that it **falls back to the old approximation** when it is not — so jsdom and
  * stub contexts never produce a zero-height box that lets every label overlap.
  */
-describe("measureLabelVerticalMetrics — 세로 범위 실측", () => {
+describe("measureLabelVerticalMetrics: measured vertical extent", () => {
   const ctxWith = (metrics: Partial<TextMetrics> | null): CanvasRenderingContext2D =>
     ({
       font: "",
       measureText: () => (metrics ?? {}) as TextMetrics,
     }) as unknown as CanvasRenderingContext2D;
 
-  it("`fontBoundingBox*` 가 있으면 그 값을 쓴다", () => {
+  it("uses `fontBoundingBox*` when the browser reports it", () => {
     const ctx = ctxWith({ fontBoundingBoxAscent: 11, fontBoundingBoxDescent: 4 } as TextMetrics);
     // Results are cached per (kind, scale), so this test uses its own combination.
     const m = measureLabelVerticalMetrics(ctx, "element", 1.37);
     expect(m).toEqual({ ascent: 11, descent: 4 });
   });
 
-  it("**descent 가 상수 2 가 아니다** — 이 결함의 핵심", () => {
+  it("**descent is not the constant 2**, the heart of this defect", () => {
     const ctx = ctxWith({ fontBoundingBoxAscent: 12, fontBoundingBoxDescent: 5 } as TextMetrics);
     const m = measureLabelVerticalMetrics(ctx, "capability", 1.41);
     expect(m.descent).toBe(5);
     expect(m.descent).not.toBe(2);
   });
 
-  it("실측값이 없으면 종전 근사로 떨어진다 — 회귀 0", () => {
+  it("without a measured value it falls back to the old approximation, with zero regression", () => {
     // jsdom returns no fontBoundingBox*. Taking 0 there gives a zero-height box,
     // which makes every label "not overlapping" — the approximation blocks that.
     const ctx = ctxWith({} as TextMetrics);
@@ -193,19 +193,19 @@ describe("measureLabelVerticalMetrics — 세로 범위 실측", () => {
     expect(m.descent).toBe(2);
   });
 
-  it("0 이나 음수는 실측으로 인정하지 않는다", () => {
+  it("zero or negative is not accepted as a measurement", () => {
     const ctx = ctxWith({ fontBoundingBoxAscent: 0, fontBoundingBoxDescent: 0 } as TextMetrics);
     const m = measureLabelVerticalMetrics(ctx, "project", 1.47);
     expect(m.ascent).toBe(scaledLabelFontSize("project", 1.47));
   });
 
-  it("measureText 가 없는 스텁도 죽지 않는다", () => {
+  it("a stub without measureText does not crash", () => {
     const ctx = { font: "" } as unknown as CanvasRenderingContext2D;
     const m = measureLabelVerticalMetrics(ctx, "element", 1.51);
     expect(m.descent).toBe(2);
   });
 
-  it("폰트당 1회만 측정한다 — 프레임마다 재는 비용을 지지 않는다", () => {
+  it("measures once per font, so the per-frame measuring cost is not paid", () => {
     let calls = 0;
     const ctx = {
       font: "",

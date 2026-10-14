@@ -79,7 +79,7 @@ const COLLECT = `(() => {
   return out;
 })()`;
 
-test('대비 래칫 — WCAG 1.4.3 미달 조합이 늘지 않는다', async ({ page }) => {
+test('contrast ratchet: combinations below WCAG 1.4.3 do not grow', async ({ page }) => {
   // Routes went 5 → 17. At 2.5s of settle time per route this exceeds the default 60s.
   test.setTimeout(240_000);
   await page.setViewportSize({ width: 1512, height: 900 });
@@ -148,7 +148,7 @@ test('대비 래칫 — WCAG 1.4.3 미달 조합이 늘지 않는다', async ({ 
       }
     }
     if (routeMeasured < MIN_COMBINATIONS_PER_ROUTE) {
-      thinRuns.push(`  ${route}: 잰 조합 ${routeMeasured}`);
+      thinRuns.push(`  ${route}: combinations measured: ${routeMeasured}`);
     }
   }
 
@@ -158,7 +158,7 @@ test('대비 래칫 — WCAG 1.4.3 미달 조합이 늘지 않는다', async ({ 
     `Fewer than ${MIN_COMBINATIONS_PER_ROUTE} combinations were measured on a route. That is not the absence of failures: ` +
       `the screen did not render or collection broke.\n${thinRuns.join('\n')}`,
   ).toEqual([]);
-  expect(measured, '조합을 한 개도 못 쟀다면 채집이 깨진 것이다').toBeGreaterThan(50);
+  expect(measured, 'if no combination was measured, collection is broken').toBeGreaterThan(50);
 
   expect(
     failures.length,
@@ -184,7 +184,7 @@ test('대비 래칫 — WCAG 1.4.3 미달 조합이 늘지 않는다', async ({ 
    */
   expect(
     adjacentTouching + adjacentSeparated,
-    '인접 데이터 마크 구조를 하나도 못 찾았다 — 미달이 없는 게 아니라 채집기가 깨졌다',
+    'no adjacent data mark structure was found; the collector is broken, not free of shortfalls',
   ).toBeGreaterThan(0);
 
   expect(

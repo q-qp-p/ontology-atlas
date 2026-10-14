@@ -32,17 +32,17 @@ const EXEMPT_FILES = new Set([
  * what stops adoption being quietly rolled back.
  */
 const REGISTERED: ReadonlyArray<readonly [file: string, why: string]> = [
-  ["src/widgets/app-settings-menu/ui/AppearancePickers.tsx", "격자 미리보기 타일 — shape:'tile' + 부모/자식으로 갈린 활성 잉크"],
-  ["src/widgets/topology-index-panel/ui/TopologyIndexPanel.tsx", "패널 스코프 잉크 + 크롬 반경 + 소유자가 두 번 고쳐 확정한 48px 균일폭"],
-  ["src/widgets/project-drawer/ui/ProjectDrawer.tsx", "shape:'pill' + 대문자 mono caption — 값 층 칩 램프의 조합이 아니다"],
-  ["src/widgets/atlas-git-panel/ui/CommitDetail.tsx", "tone:'secondary' + 「눌린 칩의 인디고를 덮지 마라」 조건부 보더"],
-  ["src/views/docs-vault/ui/parts/DocsSidebarBody.tsx", "bg-canvas 우물 · Chip 아이템 · Tooltip 래퍼 · 켜진 칩만 라벨"],
+  ["src/widgets/app-settings-menu/ui/AppearancePickers.tsx", "grid preview tile — shape:'tile' + active ink split by parent/child"],
+  ["src/widgets/topology-index-panel/ui/TopologyIndexPanel.tsx", "panel-scoped ink + chrome radius + a 48px uniform width the owner fixed after two corrections"],
+  ["src/widgets/project-drawer/ui/ProjectDrawer.tsx", "shape:'pill' + upper-case mono caption — not a combination of the value-layer chip ramp"],
+  ["src/widgets/atlas-git-panel/ui/CommitDetail.tsx", "tone:'secondary' + a conditional border that must not cover the pressed chip's indigo"],
+  ["src/views/docs-vault/ui/parts/DocsSidebarBody.tsx", "bg-canvas well · Chip items · Tooltip wrapper · label only on the lit chip"],
   /*
    * Hover ink is hand-written per place, not an axis in the value layer, so migrating these would
    * remove hover feedback on inactive items.
    */
-  ["src/features/ontology-blocks/ui/BlockImportModule.tsx", "p-1/gap-1 인셋 + 비활성 세그먼트 hover"],
-  ["src/features/first-run-starter/ui/FirstRunStarterModule.tsx", "패널 스코프 hover 잉크"],
+  ["src/features/ontology-blocks/ui/BlockImportModule.tsx", "p-1/gap-1 inset + hover on the inactive segment"],
+  ["src/features/first-run-starter/ui/FirstRunStarterModule.tsx", "panel-scoped hover ink"],
 ];
 
 /**
@@ -135,15 +135,15 @@ function scan() {
   return { found, hookFiles, hookCallSites, scanned, doubleQuoted, singleQuoted };
 }
 
-describe("radiogroup 행동 래칫 — role 이 약속한 키보드가 실재하는가", () => {
+describe("radiogroup behaviour ratchet — does the keyboard that the role promises exist", () => {
   const census = scan();
   const debt = new Map(DEBT);
   const registered = new Map(REGISTERED);
 
-  it("탐지기가 공회전하지 않는다 — 훑은 파일이 충분하고 장부가 실재한다", () => {
-    expect(census.scanned, "훑은 파일이 너무 적다 — 워커가 죽었다").toBeGreaterThan(300);
+  it("the detector does not idle — enough files scanned and the ledger exists", () => {
+    expect(census.scanned, "too few files scanned — the worker died").toBeGreaterThan(300);
     for (const [file] of [...DEBT, ...REGISTERED]) {
-      expect(statSync(path.join(ROOT, file)).isFile(), `${file} 이 실재하지 않는다`).toBe(true);
+      expect(statSync(path.join(ROOT, file)).isFile(), `${file} does not exist`).toBe(true);
     }
     /*
      * Checks that **the premise of the two exemptions is still true**. The exemption
@@ -157,27 +157,27 @@ describe("radiogroup 행동 래칫 — role 이 약속한 키보드가 실재하
     const hook = stripComments(
       readFileSync(path.join(ROOT, "src/shared/lib/keyboard/use-roving-radio-group.ts"), "utf8"),
     );
-    expect(hook, "훅이 radiogroup role 을 잃었다 — 면제의 전제가 사라졌다").toContain("radiogroup");
-    expect(hook, "훅이 roving tabindex 를 잃었다").toContain("tabIndex");
-    expect(hook, "훅이 화살표 이동을 잃었다").toContain("ArrowRight");
+    expect(hook, "the hook lost the radiogroup role — the premise of the exemption is gone").toContain("radiogroup");
+    expect(hook, "the hook lost roving tabindex").toContain("tabIndex");
+    expect(hook, "the hook lost arrow-key movement").toContain("ArrowRight");
 
     const primitive = stripComments(
       readFileSync(path.join(ROOT, "src/shared/ui/fields/segmented-control.tsx"), "utf8"),
     );
     expect(
       HOOK_CALL_RE.test(primitive),
-      "프리미티브가 훅을 안 쓴다 — 행동이 두 구현이 됐다",
+      "the primitive does not use the hook — the behaviour became two implementations",
     ).toBe(true);
-    expect(primitive, "프리미티브가 훅의 groupProps 를 안 편다 — role 이 안 실린다").toContain(
+    expect(primitive, "the primitive does not spread the hook's groupProps — the role is not carried").toContain(
       "groupProps",
     );
   });
 
-  it("손으로 건 radiogroup 이 늘지 않는다 — 새 파일은 첫날부터 0", () => {
+  it("hand-attached radiogroups do not grow — a new file starts at 0 on day one", () => {
     const over: string[] = [];
     for (const [file, count] of census.found) {
       const allowed = registered.has(file) ? count : (debt.get(file) ?? 0);
-      if (count > allowed) over.push(`${file}: ${count} > 허용 ${allowed}`);
+      if (count > allowed) over.push(`${file}: ${count} > allowed ${allowed}`);
     }
     expect(
       over,
@@ -187,15 +187,15 @@ describe("radiogroup 행동 래칫 — role 이 약속한 키보드가 실재하
     ).toEqual([]);
   });
 
-  it("등재는 면제가 아니다 — 등재된 파일은 훅 호출이 실재해야 한다", () => {
+  it("registration is not an exemption — a registered file must really call the hook", () => {
     const fake: string[] = [];
     for (const [file] of REGISTERED) {
-      if (!census.hookFiles.has(file)) fake.push(`${file}: 등재돼 있는데 ${HOOK} 호출이 없다`);
+      if (!census.hookFiles.has(file)) fake.push(`${file}: registered but there is no ${HOOK} call`);
     }
-    expect(fake, "이름만 적어 둔 등재는 세탁이다").toEqual([]);
+    expect(fake, "a registration that only writes the name is laundering").toEqual([]);
   });
 
-  it("행동 층 채택이 뒷걸음치지 않는다 — 훅 호출 자리 수의 바닥", () => {
+  it("behaviour-layer adoption does not go backwards — the floor of hook call sites", () => {
     /*
      * A place wearing the hook loses its `role` literal and leaves the scan above's
      * view, which removes any eye on "adoption being quietly rolled back" — this floor
@@ -204,20 +204,20 @@ describe("radiogroup 행동 래칫 — role 이 약속한 키보드가 실재하
      */
     expect(
       census.hookCallSites,
-      `${HOOK} 을 부르는 «자리» 가 줄었다 — 행동 층을 걷어낸 그룹이 있는지 보라.`,
+      `the "sites" calling ${HOOK} shrank — check whether a group had the behaviour layer stripped out.`,
     ).toBeGreaterThanOrEqual(HOOK_ADOPTION_FLOOR);
   });
 
-  it("장부의 회수분은 내린다 — 실측보다 후한 장부는 래칫이 아니다", () => {
+  it("reclaimed ledger entries come down — a ledger more generous than the measurement is not a ratchet", () => {
     const stale: string[] = [];
     for (const [file, allowed] of DEBT) {
       const actual = census.found.get(file) ?? 0;
-      if (actual < allowed) stale.push(`${file}: 장부 ${allowed} > 실측 ${actual} — 내려라`);
+      if (actual < allowed) stale.push(`${file}: ledger ${allowed} > measured ${actual} — lower it`);
     }
     expect(stale).toEqual([]);
   });
 
-  it("표기 커버리지 — 따옴표 한 종류만 보고 있지 않다", () => {
+  it("notation coverage — it does not watch only one kind of quote", () => {
     /*
      * Proves synthetically that the regex matches every notation even if only one exists today, since
      * a non-empty set is not the same as seeing the whole set.

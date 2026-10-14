@@ -47,15 +47,15 @@ const readCode = (path: string) =>
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/^\s*\/\/.*$/gm, "");
 
-describe("목적지 이동 단축키 — 표가 정본이다", () => {
-  it("목적지마다 글자가 하나씩 있고 서로 겹치지 않는다", () => {
+describe("destination shortcuts: the table is canonical", () => {
+  it("each destination has one letter and no two collide", () => {
     const keys = DESTINATION_IDS.map((id) => DESTINATION_KEY[id]);
-    expect(keys.length, "목적지가 비었다 — 표가 사라졌으면 이 시험 전체가 공회전한다").toBeGreaterThan(
+    expect(keys.length, "there are no destinations; if the table is gone this whole test spins idle").toBeGreaterThan(
       3,
     );
-    expect(new Set(keys).size, `글자가 겹친다: ${keys.join(" ")}`).toBe(keys.length);
+    expect(new Set(keys).size, `letters collide: ${keys.join(" ")}`).toBe(keys.length);
     for (const key of keys) {
-      expect(key, `${key} 는 한 글자여야 한다`).toMatch(/^[a-z]$/);
+      expect(key, `${key} must be a single letter`).toMatch(/^[a-z]$/);
     }
     // The reverse table matches the forward one plus two compatibility aliases: `d` (Docs has no tile;
     // its published shortcut opens Library's Ontology tab) and `c` (MCP; its published `g c` still
@@ -69,13 +69,13 @@ describe("목적지 이동 단축키 — 표가 정본이다", () => {
     expect(DESTINATION_HREF.docs).toBe('/docs/');
   });
 
-  it("목적지마다 주소가 있고 라우트 모양이다", () => {
+  it("each destination has an address that has the shape of a route", () => {
     for (const id of DESTINATION_IDS) {
       const href = DESTINATION_HREF[id];
-      expect(href, `${id} 의 주소가 없다`).toBeTruthy();
+      expect(href, `${id} has no address`).toBeTruthy();
       // `@/i18n/navigation` adds the locale prefix — baking it into the table doubles it.
-      expect(href, `${id}: 로케일을 표에 박지 않는다`).not.toMatch(/^\/(en|ko)\//);
-      expect(href, `${id}: 슬래시로 시작하고 끝나야 한다(정적 export 규약)`).toMatch(/^\/.*\/$/);
+      expect(href, `${id}: do not hard-code the locale in the table`).not.toMatch(/^\/(en|ko)\//);
+      expect(href, `${id}: must start and end with a slash (static export convention)`).toMatch(/^\/.*\/$/);
     }
   });
 
@@ -84,14 +84,14 @@ describe("목적지 이동 단축키 — 표가 정본이다", () => {
    * letter pressed with no modifier, and the hook must filter modifier presses
    * **first**.
    */
-  it("조합키가 눌린 입력은 우리 것이 아니다", () => {
+  it("input with a modifier key held is not ours", () => {
     const hook = read("src/shared/lib/keyboard/use-destination-shortcuts.ts");
-    expect(hook, "메타/컨트롤/알트가 눌린 사건을 안 걸러낸다").toMatch(
+    expect(hook, "events with meta/control/alt held are not filtered out").toMatch(
       /if\s*\(event\.metaKey\s*\|\|\s*event\.ctrlKey\s*\|\|\s*event\.altKey\)\s*return/,
     );
   });
 
-  it("입력 중에는 이동하지 않는다", () => {
+  it("does not navigate while typing", () => {
     const hook = read("src/shared/lib/keyboard/use-destination-shortcuts.ts");
     expect(hook).toContain("INPUT");
     expect(hook).toContain("TEXTAREA");
@@ -104,49 +104,49 @@ describe("목적지 이동 단축키 — 표가 정본이다", () => {
    * (the same family as #65, where per-page registration of the rail utility slot was
    * missed by one surface).
    */
-  it("막는 표면이 열려 있으면 이동하지 않는다", () => {
+  it("does not navigate while a blocking surface is open", () => {
     const hook = read("src/shared/lib/keyboard/use-destination-shortcuts.ts");
-    expect(hook, "aria-modal 로 막는 표면을 판정하지 않는다").toContain('[aria-modal="true"]');
+    expect(hook, "does not judge blocking surfaces by aria-modal").toContain('[aria-modal="true"]');
   });
 
   /**
    * Count only rendered modals: a single `querySelector` returns the first match, and a surface still
    * in the DOM during its exit animation would stop every shortcut. Scan all and count rendered ones.
    */
-  it("숨은 모달을 막는 표면으로 세지 않는다", () => {
+  it("a hidden modal does not count as a blocking surface", () => {
     const hook = read("src/shared/lib/keyboard/use-destination-shortcuts.ts");
-    expect(hook, "첫 일치만 보면 숨은 모달에 걸린다").toContain("querySelectorAll");
-    expect(hook, "화면에 그려졌는지 재지 않는다").toContain("getClientRects");
-    expect(hook, "aria-hidden 조상을 건너뛰지 않는다").toContain('aria-hidden="true"');
-    expect(readCode("src/shared/lib/keyboard/use-destination-shortcuts.ts"), "querySelector 한 번으로 판정하는 코드가 남았다").not.toMatch(
+    expect(hook, "looking only at the first match gets caught on a hidden modal").toContain("querySelectorAll");
+    expect(hook, "does not measure whether it was drawn on screen").toContain("getClientRects");
+    expect(hook, "does not skip aria-hidden ancestors").toContain('aria-hidden="true"');
+    expect(readCode("src/shared/lib/keyboard/use-destination-shortcuts.ts"), "code that decides with a single querySelector is left").not.toMatch(
       /querySelector\(\s*'\[aria-modal/,
     );
   });
 
-  it("리더를 누른 뒤 기다리는 시간이 있다", () => {
+  it("there is a wait time after the leader key is pressed", () => {
     expect(NAV_LEADER_WINDOW_MS).toBeGreaterThan(300);
     expect(NAV_LEADER_WINDOW_MS).toBeLessThanOrEqual(3000);
     expect(read("src/shared/lib/keyboard/use-destination-shortcuts.ts")).toContain("NAV_LEADER_WINDOW_MS");
   });
 });
 
-describe("레일 · 시트 · 셸이 같은 표를 본다", () => {
-  it("MCP 는 에이전트의 둘째 탭이다 — 레일에 일부러 없다", () => {
+describe("the rail, the sheet and the shell read the same table", () => {
+  it("MCP is the second tab of Agents and is deliberately absent from the rail", () => {
     expect(DESTINATION_IDS).not.toContain("mcp");
     expect(DESTINATION_HREF.mcp).toBe("/agents/?tab=mcp");
   });
 
-  it("자료실이 문서함을 이어받고 낡은 문을 남기지 않는다", () => {
+  it("the library inherits the docs drawer and leaves no stale door", () => {
     expect(DESTINATION_IDS).toContain("library");
     const sidebar = read("src/views/docs-vault/ui/parts/DocsSidebarBody.tsx");
-    expect(sidebar, "합쳐진 화면 안에 예전 자료실 이동 줄이 남았다").not.toContain(
+    expect(sidebar, "the old library navigation row is left inside the merged screen").not.toContain(
       'data-testid="docs-sidebar-library-link"',
     );
   });
 
-  it("레일이 주소를 손으로 다시 적지 않는다", () => {
+  it("the rail does not retype addresses by hand", () => {
     const rail = read("src/widgets/app-nav-rail/ui/AppNavRail.tsx");
-    expect(rail, "레일이 표를 import 하지 않는다").toContain("DESTINATION_HREF");
+    expect(rail, "the rail does not import the table").toContain("DESTINATION_HREF");
     /*
      * A literal address left inside the rail's destination array means two copies. Only
      * the array block is sliced — banning addresses elsewhere in the file (gateway links
@@ -156,33 +156,33 @@ describe("레일 · 시트 · 셸이 같은 표를 본다", () => {
       rail.indexOf("const destinations"),
       rail.indexOf("];", rail.indexOf("const destinations")),
     );
-    expect(block.length, "목적지 배열을 못 찾았다 — 이 단언이 공회전한다").toBeGreaterThan(120);
+    expect(block.length, "could not find the destination array, so this assertion spins idle").toBeGreaterThan(120);
     const literals = block.match(/href:\s*["'][^"']+["']/g) ?? [];
-    expect(literals, `레일에 리터럴 주소가 남았다: ${literals.join(", ")}`).toEqual([]);
+    expect(literals, `literal addresses are left in the rail: ${literals.join(", ")}`).toEqual([]);
   });
 
-  it("셸이 훅을 배선한다", () => {
+  it("the shell wires the hook", () => {
     const shell = read("src/app/providers/AppShell.tsx");
-    expect(shell, "셸이 이동 단축키를 마운트하지 않는다").toContain("useDestinationShortcuts");
+    expect(shell, "the shell does not mount the navigation shortcuts").toContain("useDestinationShortcuts");
   });
 
-  it("시트가 표에서 줄을 만든다 — 손으로 적지 않는다", () => {
+  it("the sheet builds its rows from the table, not by hand", () => {
     const sheet = read("src/widgets/shortcut-sheet/ui/ShortcutSheet.tsx");
-    expect(sheet, "시트가 표를 import 하지 않는다").toContain("DESTINATION_IDS");
-    expect(sheet, "시트가 표에서 줄을 파생시키지 않는다").toMatch(
+    expect(sheet, "the sheet does not import the table").toContain("DESTINATION_IDS");
+    expect(sheet, "the sheet does not derive its rows from the table").toMatch(
       /DESTINATION_IDS\.map\(/,
     );
     // Are the derived rows actually plugged into the navigation section?
     expect(sheet).toMatch(/rows:\s*\[\s*\.\.\.DESTINATION_ROWS/);
   });
 
-  it("두 로케일 모두 목적지마다 문구가 있다", () => {
+  it("both locales have wording for every destination", () => {
     for (const locale of ["ko", "en"] as const) {
       const messages = JSON.parse(read(`messages/${locale}.json`));
       const rows = messages.searchWidgets?.shortcuts?.rows ?? {};
       for (const id of DESTINATION_IDS) {
         const key = `goTo_${id}`;
-        expect(rows[key], `${locale}: ${key} 문구가 없다`).toBeTruthy();
+        expect(rows[key], `${locale}: wording for ${key} is missing`).toBeTruthy();
       }
     }
   });
@@ -192,11 +192,11 @@ describe("레일 · 시트 · 셸이 같은 표를 본다", () => {
    * collisions impossible in principle (`G` then `D` ≠ `D`), but if **the leader
    * itself** is bound as a bare letter, that feature cannot fire.
    */
-  it("리더 글자가 다른 단독 단축키와 겹치지 않는다", () => {
+  it("the leader letter does not collide with any other solo shortcut", () => {
     const SINGLE_KEY_SHORTCUTS = ["d", "f", "?", "/"];
     expect(
       SINGLE_KEY_SHORTCUTS,
-      `리더(${NAV_LEADER_KEY})가 이미 단독으로 쓰이는 글자다`,
+      `the leader (${NAV_LEADER_KEY}) is already a letter used on its own`,
     ).not.toContain(NAV_LEADER_KEY);
   });
 
@@ -205,7 +205,7 @@ describe("레일 · 시트 · 셸이 같은 표를 본다", () => {
    * `minHeight: 720`, 616px pane) with nothing scrolling. A tenth needs its own decision; the pane
    * still scrolls for zoom and longer translations.
    */
-  it("목적지는 아홉을 넘지 않는다 — 열째는 별도 결정을 요구한다", () => {
+  it("destinations do not exceed nine, and a tenth requires a separate decision", () => {
     expect(
       DESTINATION_IDS.length,
       `The rail has ${DESTINATION_IDS.length} destinations. ` +
@@ -213,14 +213,14 @@ describe("레일 · 시트 · 셸이 같은 표를 본다", () => {
     ).toBeLessThanOrEqual(9);
   });
 
-  it("현재 목록은 여덟이다 — 자동화는 관리 허브로, 문서함과 MCP 통합은 유지된다", () => {
+  it("the current list has eight: automations go to the management hub, and the docs drawer and MCP merges stay", () => {
     /*
      * A ceiling far above the current count turns slack into a free pass, so the exact inventory is
      * pinned: a change to the list needs a decision.
      */
     expect(
       DESTINATION_IDS.length,
-      "목적지 목록이 바뀌었다 — Automations 추가 또는 Library/Docs·Agents/MCP 통합 결정을 검토하라",
+      "the destination list changed; review the decision to add Automations or to merge Library/Docs and Agents/MCP",
     ).toBe(8);
   });
 
@@ -230,15 +230,15 @@ describe("레일 · 시트 · 셸이 같은 표를 본다", () => {
    * It was introduced when nine tiles had to fit. Merging two destinations does not
    * silently restyle every remaining tile; that would be a separate visual change.
    */
-  it("측정된 타일 여백이 그대로다", () => {
+  it("the measured tile padding is unchanged", () => {
     const rail = read("src/widgets/app-nav-rail/ui/AppNavRail.tsx");
     const block = rail.slice(rail.indexOf('shape: "card", className: "group relative w-full'));
-    expect(block.slice(0, 200), "목적지 타일 버튼의 세로 여백이 py-1 이 아니다").toContain(
+    expect(block.slice(0, 200), "the vertical padding of the destination tile button is not py-1").toContain(
       "px-0 py-1 ",
     );
   });
 
-  it("레일이 넘칠 때 스크롤할 수 있다 — 상한만으로는 배율을 못 막는다", () => {
+  it("the rail can scroll when it overflows, since a cap alone cannot stop scaling", () => {
     /*
      * The ceiling of seven only protects the nominal height of the default minimum
      * window; it guarantees nothing under zoom, longer translations, or a smaller
@@ -247,10 +247,10 @@ describe("레일 · 시트 · 셸이 같은 표를 본다", () => {
      * seat measured as "the gear is lost at 200% zoom".
      */
     const rail = read("src/widgets/app-nav-rail/ui/AppNavRail.tsx");
-    expect(rail, "목적지 nav 가 스크롤을 소유하지 않는다").toMatch(
+    expect(rail, "the destination nav does not own scrolling").toMatch(
       /<nav[\s\S]*?className="[^"]*min-h-0[^"]*overflow-y-auto[^"]*overscroll-contain[^"]*"/,
     );
-    expect(rail, "유틸리티 층이 줄어들 수 있다 — 자기 className 에 shrink-0 이 필요하다").toMatch(
+    expect(rail, "the utility layer may shrink, so it needs shrink-0 on its own className").toMatch(
       /data-testid="app-nav-rail-utility-tier"[\s\S]{0,240}className="[^"]*shrink-0[^"]*"/,
     );
   });

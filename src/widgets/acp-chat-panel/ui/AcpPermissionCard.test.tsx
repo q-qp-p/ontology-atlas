@@ -51,8 +51,8 @@ const alwaysWith = (targets: unknown[]) => [
   },
 ];
 
-describe('권한 카드 — 어디만이 아니라 무엇을 하려는지도 말한다', () => {
-  it('고치려는 것과 읽으려는 것이 화면에서 다르다', () => {
+describe('permission card: says what is about to happen, not only where', () => {
+  it('an edit and a read look different on screen', () => {
     const { unmount } = render(card('edit'));
     const edit = screen.getByTestId('acp-permission-intent');
     expect(edit.getAttribute('data-intent')).toBe('edit');
@@ -68,29 +68,29 @@ describe('권한 카드 — 어디만이 아니라 무엇을 하려는지도 말
     ).not.toBe(editText);
   });
 
-  it('지우려는 것을 그 말로 말한다 — 되돌리기가 가장 비싸다', () => {
+  it('names a deletion as a deletion, because undoing it costs the most', () => {
     render(card('delete'));
     expect(screen.getByTestId('acp-permission-intent').getAttribute('data-intent')).toBe('delete');
   });
 
-  it('모르면 **모른다고** 한다 — 읽기로 짐작하면 가장 위험한 쪽으로 틀린다', () => {
+  it('says **unknown** when it does not know, because guessing a read fails toward the most dangerous side', () => {
     render(card('something-the-adapter-invented'));
     expect(screen.getByTestId('acp-permission-intent').getAttribute('data-intent')).toBe('unknown');
   });
 
-  it('경로는 그대로 남는다 — 무엇을 더한 것이지 무엇을 뺀 것이 아니다', () => {
+  it('keeps the path, so the action wording adds to it rather than replacing it', () => {
     render(card('edit'));
     expect(screen.getByTestId('acp-permission-path').textContent).toBe('/etc/hosts');
   });
 
-  it('경로를 모를 때도 무엇을 하려는지는 말한다', () => {
+  it('still says what is about to happen when the path is unknown', () => {
     render(card('execute', null));
     expect(screen.getByTestId('acp-permission-intent').getAttribute('data-intent')).toBe('execute');
   });
 });
 
-describe('계속 허용 — 어댑터가 말한 범위만 적는다', () => {
-  it('도구 단위 허용이면 그 도구 이름을 화면에 적는다 (실측 모양)', () => {
+describe('always allow: states only the scope the adapter reported', () => {
+  it('a tool-level allow shows the tool name on screen (measured shape)', () => {
     render(
       card('edit', '/etc/hosts', alwaysWith([
         { type: 'tool', toolName: 'mcp__atlas-vault__add_concept' },
@@ -101,7 +101,7 @@ describe('계속 허용 — 어댑터가 말한 범위만 적는다', () => {
     expect(scope.textContent).toContain('mcp__atlas-vault__add_concept');
   });
 
-  it('범위를 안 알려 주면 **폴더라고 단정하지 않는다**', () => {
+  it('when no scope is reported it does **not assume a folder**', () => {
 
     render(card('edit', '/etc/hosts', alwaysWith([])));
     const scope = screen.getByTestId('acp-permission-scope');
@@ -109,14 +109,14 @@ describe('계속 허용 — 어댑터가 말한 범위만 적는다', () => {
     expect(scope.textContent).not.toContain('폴더 전체');
   });
 
-  it('계속 허용 선택지가 없으면 범위 줄도 없다 — 없는 결정을 설명하지 않는다', () => {
+  it('with no always-allow option there is no scope line either, so a missing decision is not explained', () => {
     render(card('edit'));
     expect(screen.queryByTestId('acp-permission-scope')).toBeNull();
   });
 });
 
-describe('온톨로지 쓰기 검토 — 한 번의 정확한 결정만 제공한다', () => {
-  it('typed change를 보여 주고 계속 허용은 숨긴다', () => {
+describe('ontology write review: offers only one exact decision', () => {
+  it('shows the typed change and hides always-allow', () => {
     render(
       <NextIntlClientProvider locale="ko" messages={koMessages}>
         <AcpPermissionCard
@@ -156,7 +156,7 @@ describe('온톨로지 쓰기 검토 — 한 번의 정확한 결정만 제공�
   });
 });
 
-describe('작업에 묶인 의미 검토 — 실행 권한과 의미 판단을 섞지 않는다', () => {
+describe('task-bound meaning review: execution permission and meaning judgment are not mixed', () => {
   function taskCard(
     resolve = vi.fn(),
     taskReview?: TaskMeaningReviewController,
@@ -215,7 +215,7 @@ describe('작업에 묶인 의미 검토 — 실행 권한과 의미 판단을 �
     };
   }
 
-  it('작업과 정확한 제안 범위를 먼저 보이고 의미 검토가 미완료라고 말한다', () => {
+  it('shows the task and the exact proposal scope first and says the meaning review is incomplete', () => {
     const { view } = taskCard();
     render(view);
     expect(screen.getByTestId('task-review-outcome-compact')).toHaveTextContent('환불 자격 조건을 바꿔줘');
@@ -248,7 +248,7 @@ describe('작업에 묶인 의미 검토 — 실행 권한과 의미 판단을 �
     }
   });
 
-  it('비교할 이전 값이 없다는 말은 한 번만 하고, 제안값 사이에 끼어들지 않는다', () => {
+  it('says once that there is no previous value to compare, without interrupting the proposed values', () => {
     const { view } = taskCard();
     render(view);
     fireEvent.click(screen.getByTestId('task-review-depth-compare'));
@@ -262,7 +262,7 @@ describe('작업에 묶인 의미 검토 — 실행 권한과 의미 판단을 �
     expect(compare.textContent!.split(taskReview.after).length - 1).toBeGreaterThan(1);
   });
 
-  it('서 있는 문장은 원인을 대지 않는다 — 원인은 아는 쪽이 말한다', () => {
+  it('a standing sentence does not guess a cause, because the side that knows says it', () => {
 
     for (const locale of [koMessages, enMessages]) {
       const sentence = locale.acpChat.permission.taskReview.beforeUnavailable;
@@ -272,7 +272,7 @@ describe('작업에 묶인 의미 검토 — 실행 권한과 의미 판단을 �
     }
   });
 
-  it('상세에서 전체 요청과 쓰기 조건·숫자 요청 id를 보존한다', () => {
+  it('keeps the full request, the write conditions and the numeric request id in the details', () => {
     const { view } = taskCard();
     render(view);
     fireEvent.click(screen.getByTestId('task-review-depth-details'));
@@ -284,7 +284,7 @@ describe('작업에 묶인 의미 검토 — 실행 권한과 의미 판단을 �
     expect(details).toHaveTextContent('expected_mtime');
   });
 
-  it('쓰기 조건의 시각은 사람이 읽을 수 있게 나오고, 정확한 값은 그대로 남는다', () => {
+  it('shows the write condition time in a human-readable form and keeps the exact value', () => {
     const { view } = taskCard();
     render(view);
     fireEvent.click(screen.getByTestId('task-review-depth-details'));
@@ -300,7 +300,7 @@ describe('작업에 묶인 의미 검토 — 실행 권한과 의미 판단을 �
     expect(row.getAttribute('title')).toBe('100');
   });
 
-  it('상태가 움직이는 줄만 그리고, 나머지 셋은 문장이 계속 이름을 부른다', () => {
+  it('draws only the line whose state is moving, and the sentence keeps naming the other three', () => {
     const { view, resolve } = taskCard();
     render(view);
     for (const authority of ['meaning', 'code', 'merge', 'deployment']) {
@@ -321,7 +321,7 @@ describe('작업에 묶인 의미 검토 — 실행 권한과 의미 판단을 �
     expect(screen.queryByText(/승인됨|검증됨|배포됨/)).not.toBeInTheDocument();
   });
 
-  it('신뢰 비교를 보여 주고 의미 승인 중에도 거절은 남기며 쓰기 권한을 실행하지 않는다', async () => {
+  it('shows the trust comparison, keeps reject available during meaning approval, and does not run the write permission', async () => {
     let finish!: (value: boolean) => void;
     const markMeaningAccepted = vi.fn(() => new Promise<boolean>((resolve) => { finish = resolve; }));
     const controller: TaskMeaningReviewController = {
@@ -363,7 +363,7 @@ describe('작업에 묶인 의미 검토 — 실행 권한과 의미 판단을 �
     await waitFor(() => expect(screen.getByTestId('acp-permission-allow')).not.toBeDisabled());
   });
 
-  it('근거를 불러오는 동안 허용은 막고 거절은 계속 제공한다', () => {
+  it('blocks allow while evidence loads and keeps reject available', () => {
     const loading: TaskMeaningReviewController = {
       status: 'loading', requestKey: 'opaque-loading', reasons: [], items: [],
       coverage: { total: 0, inspected: 0, omitted: 0, complete: false },
@@ -377,7 +377,7 @@ describe('작업에 묶인 의미 검토 — 실행 권한과 의미 판단을 �
     expect(screen.queryByTestId('task-review-authority-meaning')).toBeNull();
   });
 
-  it('관찰된 연결 루트가 다를 때만 쓰기와 의미 승인을 막고 정확한 두 루트를 말한다', () => {
+  it('blocks write and meaning approval only when the observed connected roots differ, and names both roots', () => {
     const mismatch: TaskMeaningReviewController = {
       status: 'unavailable', requestKey: 'opaque-mismatch', reasons: ['connection_root_mismatch'], items: [],
       coverage: { total: 0, inspected: 0, omitted: 0, complete: false },
@@ -395,7 +395,7 @@ describe('작업에 묶인 의미 검토 — 실행 권한과 의미 판단을 �
     expect(screen.queryByTestId('task-review-accept-meaning')).not.toBeInTheDocument();
   });
 
-  it('수정과 대기는 쓰기 권한을 해결하지 않고 각 부모 동작만 요청한다', () => {
+  it('edit and wait do not resolve the write permission and only request their own parent action', () => {
     const onRequestCorrection = vi.fn();
     const onDefer = vi.fn();
     const { view, resolve } = taskCard(vi.fn(), undefined, { onRequestCorrection, onDefer });
@@ -414,7 +414,7 @@ describe('작업에 묶인 의미 검토 — 실행 권한과 의미 판단을 �
   });
 });
 
-describe('금고 서버가 스스로 물을 때 — 카드가 그 문장을 그대로 보여준다', () => {
+describe('when the vault server asks for itself, the card shows its sentence as is', () => {
 
   const ASK = 'Create concept wire-probe. Apply this change to the vault?';
 
@@ -443,7 +443,7 @@ describe('금고 서버가 스스로 물을 때 — 카드가 그 문장을 그�
     );
   }
 
-  it('묻는 문장을 읽을 크기로 세우고, 모른다는 말을 두 번 하지 않는다', () => {
+  it('sets the question in a readable size and does not say unknown twice', () => {
     render(consentCard());
     expect(screen.getByTestId('acp-permission-ask').textContent).toBe(ASK);
     expect(
@@ -455,24 +455,24 @@ describe('금고 서버가 스스로 물을 때 — 카드가 그 문장을 그�
     expect(text).not.toContain(KO.intent.unknown);
   });
 
-  it('폴더 밖을 건드린다고 말하지 않는다 — 이건 고른 폴더 안의 변경이다', () => {
+  it('does not claim to touch anything outside the folder, because this is a change inside the chosen folder', () => {
     render(consentCard());
     const text = screen.getByTestId('acp-permission-card').textContent ?? '';
     expect(text).toContain(KO.consentTitle);
     expect(text).not.toContain(KO.title);
   });
 
-  it('평범한 도구 호출은 예전 그대로 무엇을 하려는지 말한다', () => {
+  it('an ordinary tool call still says what it is about to do, as before', () => {
     render(card('delete'));
     expect(screen.getByTestId('acp-permission-intent').dataset.intent).toBe('delete');
     expect(screen.queryByTestId('acp-permission-ask')).toBeNull();
   });
 });
 
-describe('권한 카드 — 내 프로젝트 안과 전혀 다른 곳을 다르게 말한다', () => {
+describe('permission card: speaks differently inside my project and somewhere entirely different', () => {
   const VAULT = '/Users/dana/my-product/atlas';
 
-  it('내 프로젝트 안이면 그렇게 말한다', () => {
+  it('says so when it is inside my project', () => {
     render(card('read', '/Users/dana/my-product/src/orders.ts', [], VAULT));
     expect(screen.getByText(koMessages.acpChat.permission.insideProjectTitle)).toBeInTheDocument();
   });
@@ -485,17 +485,17 @@ describe('권한 카드 — 내 프로젝트 안과 전혀 다른 곳을 다르�
     expect(screen.getByTestId('acp-permission-card').className).not.toContain('amber');
   });
 
-  it('정말 다른 곳은 예전 경고 그대로다 — 주의가 필요한 쪽', () => {
+  it('somewhere truly different keeps the old warning, the side that needs attention', () => {
     render(card('read', '/Users/dana/.ssh/id_rsa', [], VAULT));
     expect(screen.getByText(koMessages.acpChat.permission.title)).toBeInTheDocument();
   });
 });
 
-describe('권한 카드 색 — 경보는 벌어들인 자리에만 쓴다', () => {
+describe('permission card colour: the alarm is used only where it is earned', () => {
   const VAULT = '/Users/dana/my-product/atlas';
   const panel = () => screen.getByTestId('acp-permission-card');
 
-  it('내 프로젝트 안이면 경고색을 쓰지 않는다', () => {
+  it('inside my project it does not use the warning colour', () => {
     render(card('read', '/Users/dana/my-product/src/orders.ts', [], VAULT));
     expect(
       panel().className,
@@ -503,13 +503,13 @@ describe('권한 카드 색 — 경보는 벌어들인 자리에만 쓴다', () 
     ).not.toContain('amber');
   });
 
-  it('정말 다른 곳이면 경고색을 쓴다 — 주의가 필요한 쪽', () => {
+  it('somewhere truly different uses the warning colour, the side that needs attention', () => {
     render(card('read', '/Users/dana/.ssh/id_rsa', [], VAULT));
     expect(panel().className).toContain('amber');
   });
 });
 
-describe('권한 카드 — 세 버튼이 각자의 답을 돌려준다', () => {
+describe('permission card: each of the three buttons returns its own answer', () => {
   const options = [
     { optionId: 'reject', kind: 'reject_once', name: '거절' },
     { optionId: 'allow', kind: 'allow_once', name: '허용' },
@@ -540,26 +540,26 @@ describe('권한 카드 — 세 버튼이 각자의 답을 돌려준다', () => 
     return resolve;
   }
 
-  it('「이번 대화 내내 허용」은 allow_always 의 id 를 돌려준다', () => {
+  it('the always-allow-for-this-conversation button returns the id of allow_always', () => {
     const resolve = withResolve();
     fireEvent.click(screen.getByTestId('acp-permission-allow-always'));
     expect(resolve).toHaveBeenCalledWith('always');
   });
 
-  it('「이번만 허용」은 allow_once 의 id 를 돌려준다', () => {
+  it('the allow-once button returns the id of allow_once', () => {
     const resolve = withResolve();
     fireEvent.click(screen.getByTestId('acp-permission-allow'));
     expect(resolve).toHaveBeenCalledWith('allow');
   });
 
-  it('「안 할래요」는 거절을 돌려준다 — 남의 id 를 흘리지 않는다', () => {
+  it('the decline button returns a rejection and never leaks another option id', () => {
     const resolve = withResolve();
     fireEvent.click(screen.getByTestId('acp-permission-reject'));
     expect(resolve).toHaveBeenCalledWith('reject');
   });
 });
 
-describe('온톨로지 쓰기 — 여덟 문장을 사람이 읽는 카드', () => {
+describe('ontology write: a card a person reads in eight sentences', () => {
   const TARGETS = [
     'domains/graph-modeling',
     'domains/agent-collaboration',
@@ -602,7 +602,7 @@ describe('온톨로지 쓰기 — 여덟 문장을 사람이 읽는 카드', () 
     );
   }
 
-  it('제목이 어느 문서에 무엇을 몇 개 적는지 그 말로 말한다', () => {
+  it('the title says which document gets how many of what', () => {
     render(writeCard());
     expect(
       document.getElementById('acp-permission-title')?.textContent,
@@ -610,7 +610,7 @@ describe('온톨로지 쓰기 — 여덟 문장을 사람이 읽는 카드', () 
     ).toBe('ontology-atlas 문서에 연결 이유 8개를 적어요');
   });
 
-  it('문장 여덟 개는 줄 여덟 개로 읽힌다 — JSON 을 읽으라고 하지 않는다', () => {
+  it('eight sentences read as eight lines, without asking the reader to parse JSON', () => {
     render(writeCard());
     const rows = screen.getAllByTestId('ontology-change-review-entry-row');
     expect(rows).toHaveLength(8);
@@ -618,12 +618,12 @@ describe('온톨로지 쓰기 — 여덟 문장을 사람이 읽는 카드', () 
     expect(rows[7]).toHaveTextContent('elements/vault-session 와 이어지는 이유 8.');
 
     const text = screen.getByTestId('acp-permission-card').textContent ?? '';
-    expect(text, '괄호와 따옴표를 사람이 풀어 읽게 하면 결정이 아니라 해독이 된다').not.toContain('{"');
+    expect(text, 'decoding braces and quotes by eye turns a decision into deciphering').not.toContain('{"');
 
     expect(screen.getByText('projects/ontology-atlas')).toBeInTheDocument();
   });
 
-  it('변경이 길어도 답할 두 버튼은 스크롤 바깥에 남는다', () => {
+  it('the two answer buttons stay outside the scroll area even for a long change', () => {
     render(writeCard());
     const card = screen.getByTestId('acp-permission-card');
     const scroller = screen.getByTestId('acp-permission-body-scroll');
@@ -632,7 +632,7 @@ describe('온톨로지 쓰기 — 여덟 문장을 사람이 읽는 카드', () 
 
     expect(scroller.className).toContain('overflow-y-auto');
     expect(scroller.contains(screen.getAllByTestId('ontology-change-review-entry-row')[0])).toBe(true);
-    expect(scroller.contains(reject), '답이 스크롤 안에 있으면 긴 변경은 벽이 된다').toBe(false);
+    expect(scroller.contains(reject), 'an answer inside the scroll area turns a long change into a wall').toBe(false);
     expect(scroller.contains(allow)).toBe(false);
     expect(card.contains(reject)).toBe(true);
     expect(card.contains(allow)).toBe(true);
@@ -641,13 +641,13 @@ describe('온톨로지 쓰기 — 여덟 문장을 사람이 읽는 카드', () 
     expect(screen.queryByTestId('acp-permission-allow-always')).toBeNull();
   });
 
-  it('여는 순간 초점은 거절 쪽이다 — 아무 키나 눌러 허용에 닿지 않는다', () => {
+  it('focus lands on reject when it opens, so no stray key press reaches allow', () => {
     render(writeCard());
     expect(document.activeElement).toBe(screen.getByTestId('acp-permission-reject'));
   });
 });
 
-describe('권한 카드 — 쓰기 전에 문서 판정을 보여준다', () => {
+describe('permission card: shows the document verdict before writing', () => {
   function cardWithVerdict(
     verdict: {
       ok: boolean;

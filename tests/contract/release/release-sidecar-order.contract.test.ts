@@ -40,7 +40,7 @@ describe("release workflow — the sidecar is built before the first cargo call"
     scripts?: Record<string, string>;
   };
 
-  it("tauri.conf.json 이 여전히 externalBin 으로 사이드카를 선언한다", () => {
+  it("tauri.conf.json still declares the sidecar through externalBin", () => {
     const conf = JSON.parse(readFileSync(TAURI_CONF_PATH, "utf8")) as {
       bundle?: { externalBin?: string[] };
     };
@@ -49,7 +49,7 @@ describe("release workflow — the sidecar is built before the first cargo call"
     expect(conf.bundle?.externalBin ?? []).toContain("binaries/ontology-atlas-mcp");
   });
 
-  it("사이드카 빌드 단계가 존재한다", () => {
+  it("the sidecar build step exists", () => {
     expect(workflow).toContain(SIDECAR_STEP);
   });
 
@@ -60,9 +60,9 @@ describe("release workflow — the sidecar is built before the first cargo call"
    * Locking the order alone cannot catch "called first, but the tool to call is
    * missing".
    */
-  it("bun 설치가 사이드카 빌드보다 앞선다", () => {
+  it("the bun install comes before the sidecar build", () => {
     const bunAt = workflow.indexOf("oven-sh/setup-bun");
-    expect(bunAt, "사이드카를 굽는 bun 설치 단계가 없다").toBeGreaterThan(-1);
+    expect(bunAt, "there is no bun install step that bakes the sidecar").toBeGreaterThan(-1);
     expect(bunAt).toBeLessThan(workflow.indexOf(SIDECAR_STEP));
   });
 
@@ -76,13 +76,13 @@ describe("release workflow — the sidecar is built before the first cargo call"
    * for the compilation target** stops it at the same place. All three conditions
    * must be locked for this step to actually pass.
    */
-  it("bundled MCP 의존 설치가 사이드카 빌드보다 앞선다", () => {
+  it("the bundled MCP dependency install comes before the sidecar build", () => {
     const depsAt = workflow.indexOf("pnpm --dir mcp install");
-    expect(depsAt, "번들 MCP 서버 의존 설치 단계가 없다").toBeGreaterThan(-1);
+    expect(depsAt, "there is no install step for the bundled MCP server dependencies").toBeGreaterThan(-1);
     expect(depsAt).toBeLessThan(workflow.indexOf(SIDECAR_STEP));
   });
 
-  it("사이드카 빌드가 cargo 를 돌리는 모든 단계보다 앞선다", () => {
+  it("the sidecar build comes before every step that runs cargo", () => {
     const sidecarAt = workflow.indexOf(SIDECAR_STEP);
     expect(sidecarAt).toBeGreaterThan(-1);
 
@@ -98,29 +98,29 @@ describe("release workflow — the sidecar is built before the first cargo call"
     }
   });
 
-  it("로컬 release preflight도 bridge cargo 호출 전에 사이드카를 굽는다", () => {
+  it("the local release preflight also bakes the sidecar before the bridge cargo call", () => {
     const commands = pkg.scripts?.["desktop:release-preflight"]?.split(" && ") ?? [];
     const sidecarAt = commands.indexOf("pnpm mcp:build-binary");
     const bridgeAt = commands.indexOf("pnpm test:desktop:bridge");
 
-    expect(commands.length, "desktop:release-preflight가 비어 있다").toBeGreaterThan(0);
-    expect(bridgeAt, "desktop:release-preflight가 native bridge tests를 실행하지 않는다").toBeGreaterThan(-1);
+    expect(commands.length, "desktop:release-preflight is empty").toBeGreaterThan(0);
+    expect(bridgeAt, "desktop:release-preflight does not run the native bridge tests").toBeGreaterThan(-1);
     expect(
       sidecarAt,
-      "desktop:release-preflight가 externalBin sidecar를 만들지 않는다 — 깨끗한 체크아웃에서 cargo가 resource path 오류로 죽는다",
+      "desktop:release-preflight does not build the externalBin sidecar, so cargo dies with a resource path error on a clean checkout",
     ).toBeGreaterThan(-1);
     expect(
       sidecarAt,
-      "desktop:release-preflight가 bridge cargo 호출 뒤에 sidecar를 만든다",
+      "desktop:release-preflight builds the sidecar after the bridge cargo call",
     ).toBeLessThan(bridgeAt);
   });
 
-  it("desktop preflight는 출하 불변식만 막고 source dogfood는 별도 gate로 둔다", () => {
+  it("the desktop preflight blocks only shipping invariants and leaves source dogfood to a separate gate", () => {
     const desktopCommands = pkg.scripts?.["desktop:release-preflight"]?.split(" && ") ?? [];
     const dogfoodCommands = pkg.scripts?.["dogfood:release-gate"]?.split(" && ") ?? [];
 
-    expect(desktopCommands.length, "desktop:release-preflight가 비어 있다").toBeGreaterThan(0);
-    expect(dogfoodCommands.length, "dogfood:release-gate가 비어 있다").toBeGreaterThan(0);
+    expect(desktopCommands.length, "desktop:release-preflight is empty").toBeGreaterThan(0);
+    expect(dogfoodCommands.length, "dogfood:release-gate is empty").toBeGreaterThan(0);
     expect(desktopCommands).toContain("pnpm vault:validate");
     expect(desktopCommands).not.toContain("pnpm cli:mcp-verify docs/ontology --timeout-ms 90000");
     expect(desktopCommands.some((command) => command.startsWith("pnpm dogfood:"))).toBe(false);

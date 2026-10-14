@@ -167,7 +167,7 @@ describe("resolveLabelPriority", () => {
   });
 });
 
-describe("isSafeRectProtectedLabel — 인셋 밖으로 나간 이름을 버리나 당기나", () => {
+describe("isSafeRectProtectedLabel: whether a name pushed outside the inset is dropped or pulled back", () => {
   const plain = {
     egoState: "normal" as const,
     isHovered: false,
@@ -176,7 +176,7 @@ describe("isSafeRectProtectedLabel — 인셋 밖으로 나간 이름을 버리�
     isHub: false,
   };
 
-  it("허브와 프로젝트는 아무 상호작용 없이도 살아남는다 (원장 2026-08-08 (3) ②)", () => {
+  it("hubs and projects survive without any interaction", () => {
     // Reproduces the measurement: opening a vault mid-session pushed the outermost
     // hub (radius 395) above the top inset (148), leaving an amber ring that was
     // **drawn but nameless** — the asymmetry of culling nodes against the whole
@@ -188,7 +188,7 @@ describe("isSafeRectProtectedLabel — 인셋 밖으로 나간 이름을 버리�
     expect(isSafeRectProtectedLabel({ ...plain, kind: "domain", isHub: true })).toBe(true);
   });
 
-  it("사용자가 지금 보고 있는 것은 종전대로 살아남는다", () => {
+  it("what the user is looking at right now survives, as before", () => {
     for (const state of ["center", "neighbor"] as const) {
       expect(isSafeRectProtectedLabel({ ...plain, egoState: state })).toBe(true);
     }
@@ -196,7 +196,7 @@ describe("isSafeRectProtectedLabel — 인셋 밖으로 나간 이름을 버리�
     expect(isSafeRectProtectedLabel({ ...plain, trailKept: true })).toBe(true);
   });
 
-  it("평범한 구경꾼은 여전히 떨어진다 — 안 그러면 인셋 가장자리에 전부 쌓인다", () => {
+  it("an ordinary bystander is still dropped, otherwise everything piles up at the inset edge", () => {
     expect(isSafeRectProtectedLabel(plain)).toBe(false);
     expect(isSafeRectProtectedLabel({ ...plain, kind: "domain" })).toBe(false);
     expect(isSafeRectProtectedLabel({ ...plain, kind: "element" })).toBe(false);
@@ -225,7 +225,7 @@ describe("clampAnchorIntoSafeRect (Guardian follow-up A)", () => {
   });
 });
 
-describe("greedyPlaceLabels — 예약 점유(S11 클러스터 칩 겹침)", () => {
+describe("greedyPlaceLabels: reserved occupancy (cluster chip overlap)", () => {
   const box = (minX: number, maxX: number): { minX: number; minY: number; maxX: number; maxY: number } => ({
     minX,
     maxX,
@@ -240,31 +240,31 @@ describe("greedyPlaceLabels — 예약 점유(S11 클러스터 칩 겹침)", () 
   });
   const chip = { bbox: box(100, 160), priority: CLUSTER_CHIP_LABEL_PRIORITY };
 
-  it("칩과 겹치는 수동적 라벨(요소·역량·도메인)은 떨어진다", () => {
+  it("a passive label (element, capability, domain) that overlaps a chip is dropped", () => {
     for (const priority of [3, 4, 5]) {
       const placed = greedyPlaceLabels([candidate(priority, 120, 200, "overlaps")], undefined, [chip]);
       expect(placed.map((c) => c.payload)).toEqual([]);
     }
   });
 
-  it("선택(0)·호버(1) 라벨은 칩보다 상위라 살아남는다 — 보고 있는 이름을 칩이 침묵시키지 않는다", () => {
+  it("selected (0) and hovered (1) labels outrank the chip and survive, so a chip never silences the name being looked at", () => {
     for (const priority of [0, 1]) {
       const placed = greedyPlaceLabels([candidate(priority, 120, 200, "attended")], undefined, [chip]);
       expect(placed.map((c) => c.payload)).toEqual(["attended"]);
     }
   });
 
-  it("같은 우선순위(2)면 칩에 밀리지 않는다 — 엄격히 더 낮을 때만 양보", () => {
+  it("at equal priority (2) it does not yield to a chip, only to a strictly lower one", () => {
     const placed = greedyPlaceLabels([candidate(2, 120, 200, "tie")], undefined, [chip]);
     expect(placed.map((c) => c.payload)).toEqual(["tie"]);
   });
 
-  it("칩과 겹치지 않는 라벨은 그대로 배치된다 — 유령 예약 없음", () => {
+  it("a label that does not overlap a chip is placed as is, with no ghost reservation", () => {
     const placed = greedyPlaceLabels([candidate(5, 200, 260, "clear")], undefined, [chip]);
     expect(placed.map((c) => c.payload)).toEqual(["clear"]);
   });
 
-  it("reserved 미지정이면 종전과 동일하다(회귀 0)", () => {
+  it("without reserved it behaves as before (zero regression)", () => {
     const cands = [candidate(5, 120, 200, "a"), candidate(4, 130, 210, "b")];
     expect(greedyPlaceLabels(cands).map((c) => c.payload)).toEqual(
       greedyPlaceLabels(cands, undefined, []).map((c) => c.payload),
@@ -272,34 +272,34 @@ describe("greedyPlaceLabels — 예약 점유(S11 클러스터 칩 겹침)", () 
   });
 });
 
-describe("노드 도형 예약 — 라벨이 노드 위에 글자를 얹지 않는다 (진입 검수 E-4)", () => {
+describe("node shape reservation: a label never overlays text on a node", () => {
   const box = (minX: number, maxX: number, minY = 0, maxY = 20) => ({ minX, maxX, minY, maxY });
   const disc = { bbox: box(100, 160, 0, 60), priority: NODE_DISC_LABEL_PRIORITY, ownerId: "n1" };
 
-  it("자기 노드의 예약에는 굴복하지 않는다 — 안 그러면 모든 라벨이 사라진다", () => {
+  it("does not yield to its own node's reservation, otherwise every label would vanish", () => {
     // A label always sits directly below (or above) its own node, so it always
     // overlaps its own reservation.
     expect(overlapsForeignReserved(box(110, 150), "n1", 5, [disc])).toBe(false);
   });
 
-  it("남의 노드 도형과 겹치는 수동적 라벨은 비켜선다", () => {
+  it("a passive label that overlaps another node's shape steps aside", () => {
     for (const priority of [2, 3, 4, 5]) {
       expect(overlapsForeignReserved(box(110, 150), "other", priority, [disc])).toBe(true);
     }
   });
 
-  it("선택(0)·호버(1) 라벨은 남의 도형에도 굴복하지 않는다 — 보고 있는 이름이 우선", () => {
+  it("selected (0) and hovered (1) labels do not yield even to another node's shape, since the name being looked at comes first", () => {
     for (const priority of [0, 1]) {
       expect(overlapsForeignReserved(box(110, 150), "other", priority, [disc])).toBe(false);
     }
   });
 
-  it("주인 없는 예약(클러스터 칩)은 주인 없는 후보도 억제한다", () => {
+  it("an ownerless reservation (cluster chip) suppresses an ownerless candidate too", () => {
     const chipOnly = { bbox: box(100, 160), priority: CLUSTER_CHIP_LABEL_PRIORITY };
     expect(overlapsForeignReserved(box(120, 200), undefined, 4, [chipOnly])).toBe(true);
   });
 
-  it("겹치지 않으면 통과", () => {
+  it("passes when nothing overlaps", () => {
     expect(overlapsForeignReserved(box(200, 260), "other", 5, [disc])).toBe(false);
   });
 });

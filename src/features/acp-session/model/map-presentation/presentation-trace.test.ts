@@ -83,8 +83,8 @@ function buildTrace(
   });
 }
 
-describe('ACP 온톨로지 DNA 발표 trace', () => {
-  it('완료된 source-hidden turn을 인용과 실제 read tool id가 묶인 장면으로 만든다', () => {
+describe('ACP ontology DNA presentation trace', () => {
+  it('turns a completed source-hidden turn into scenes where citations and real read tool ids are bound', () => {
     const result = buildTrace();
 
     expect(result.status).toBe('ready');
@@ -105,7 +105,7 @@ describe('ACP 온톨로지 DNA 발표 trace', () => {
     });
   });
 
-  it('Codex ACP의 검증된 dotted MCP envelope도 source-hidden read로 판독한다', () => {
+  it('reads a verified dotted MCP envelope from Codex ACP as a source-hidden read too', () => {
     const result = buildTrace({
       events: [
         { kind: 'user', id: 'u-1', text: presentationRequest },
@@ -124,7 +124,7 @@ describe('ACP 온톨로지 DNA 발표 trace', () => {
     expect(result.scenes.every((scene) => scene.focus.toolCallId === 'codex-batch')).toBe(true);
   });
 
-  it('dotted title과 raw envelope의 server/tool이 다르면 실행 행을 신뢰하지 않는다', () => {
+  it('does not trust the execution row when the dotted title and the raw envelope server/tool differ', () => {
     const mismatched = codexRead('codex-batch', [...knownSlugs]);
     mismatched.rawInput = {
       server: 'other',
@@ -144,7 +144,7 @@ describe('ACP 온톨로지 DNA 발표 trace', () => {
     });
   });
 
-  it('일반 파일 도구가 한 번이라도 섞이면 source-hidden 발표로 승격하지 않는다', () => {
+  it('does not promote to a source-hidden presentation if an ordinary file tool mixes in even once', () => {
     const events = sourceHiddenTurn(citedAnswer);
     events.splice(2, 0, {
       kind: 'tool',
@@ -161,7 +161,7 @@ describe('ACP 온톨로지 DNA 발표 trace', () => {
     });
   });
 
-  it('MCP 도구를 찾는 ToolSearch는 허용하지만 장면 인용 근거로 세지 않는다', () => {
+  it('allows ToolSearch that looks for MCP tools but does not count it as scene citation evidence', () => {
     const events = sourceHiddenTurn(citedAnswer);
     events.splice(1, 0, {
       kind: 'tool',
@@ -185,7 +185,7 @@ describe('ACP 온톨로지 DNA 발표 trace', () => {
     });
   });
 
-  it('실패한 Atlas read는 source-hidden을 깨지 않지만 그 결과를 인용 근거로 쓰지 않는다', () => {
+  it('keeps source-hidden through a failed Atlas read but does not use its result as citation evidence', () => {
     const events = sourceHiddenTurn(citedAnswer);
     events.splice(1, 0, read('failed-batch', 'ontology-atlas', { status: 'failed' }));
 
@@ -197,7 +197,7 @@ describe('ACP 온톨로지 DNA 발표 trace', () => {
     expect(result.scenes[0].focus.toolCallId).toBe('read-project');
   });
 
-  it('본문 전체 읽기가 12개를 넘으면 집중된 발표가 아니므로 차단한다', () => {
+  it('blocks it as not a focused presentation when full-body reads exceed 12', () => {
     const manySlugs = new Set(Array.from({ length: 13 }, (_, index) => `capabilities/c${index + 1}`));
     const events: AcpEvent[] = [
       { kind: 'user', id: 'u-1', text: '발표해줘' },
@@ -232,7 +232,7 @@ describe('ACP 온톨로지 DNA 발표 trace', () => {
     });
   });
 
-  it('현재 turn에서 본문 전체를 읽지 않은 slug를 인용하면 막는다', () => {
+  it('blocks citing a slug whose full body was not read in the current turn', () => {
     const events = sourceHiddenTurn(citedAnswer).filter((event) => event.id !== 'read-domain');
 
     expect(buildTrace({ events })).toMatchObject({
@@ -242,7 +242,7 @@ describe('ACP 온톨로지 DNA 발표 trace', () => {
     });
   });
 
-  it('full-body anchor와 함께 언급된 이웃은 읽은 근거 chip으로 승격하지 않는다', () => {
+  it('does not promote a neighbor mentioned beside a full-body anchor to a read-evidence chip', () => {
     const extraKnown = new Set([...knownSlugs, 'capabilities/unread-neighbor']);
     const answer = citedAnswer.replace(
       'ontology-atlas 는 코드베이스의 제품 의미를 사람이 판단하도록 돕습니다.',
@@ -258,7 +258,7 @@ describe('ACP 온톨로지 DNA 발표 trace', () => {
     expect(result.scenes[0].citations).toEqual(['ontology-atlas']);
   });
 
-  it('인용 없는 장면을 조용히 버리지 않고 전체 발표를 막는다', () => {
+  it('blocks the whole presentation instead of silently dropping a scene without citations', () => {
     const answer = citedAnswer.replace(
       'domains/agent-integration 이 에이전트 연결 경계를 책임집니다.',
       '에이전트 연결 경계를 책임지는 영역이 있습니다.',
@@ -270,7 +270,7 @@ describe('ACP 온톨로지 DNA 발표 trace', () => {
     });
   });
 
-  it('첫 ### 앞의 채팅용 머리말은 장면으로 승격하지 않고 명시된 장면만 검증한다', () => {
+  it('does not promote the chat preamble before the first ### to a scene and validates only the explicit scenes', () => {
     const result = buildTrace({
       events: sourceHiddenTurn(`온톨로지만 읽고 정리했습니다.\n\n${citedAnswer}`),
     });
@@ -281,7 +281,7 @@ describe('ACP 온톨로지 DNA 발표 trace', () => {
     expect(result.scenes[0].title).toBe('왜 존재하나요?');
   });
 
-  it('실재하지 않는 typed relation을 문장에 넣으면 장면으로 만들지 않는다', () => {
+  it('does not make a scene when a nonexistent typed relation is put in the sentence', () => {
     const relationClaim = citedAnswer.replace(
       'capabilities/mcp-server 가 그 능력을 제공합니다. 영향의 완전성은 아직 unknown 입니다.',
       'domains/agent-integration --depends_on--> capabilities/mcp-server 로 이어집니다.',
@@ -305,7 +305,7 @@ describe('ACP 온톨로지 DNA 발표 trace', () => {
     expect(allowed.status).toBe('ready');
   });
 
-  it('화면 그래프의 contains는 대상 kind가 증명하는 authoring relation만 복원한다', () => {
+  it('restores only the authoring relation the target kind proves from contains in the screen graph', () => {
     expect(presentationRelationKeysForGraphEdge({
       from: 'domains/agent-integration',
       to: 'capabilities/mcp-server',
@@ -333,7 +333,7 @@ describe('ACP 온톨로지 DNA 발표 trace', () => {
     ]);
   });
 
-  it('kind로 복원한 capabilities authoring relation은 실제 장면 검증을 통과한다', () => {
+  it('passes real scene validation for a capabilities authoring relation restored by kind', () => {
     const relationClaim = citedAnswer.replace(
       'capabilities/mcp-server 가 그 능력을 제공합니다. 영향의 완전성은 아직 unknown 입니다.',
       'domains/agent-integration --capabilities--> capabilities/mcp-server 로 이어집니다. 영향의 완전성은 아직 unknown 입니다.',
@@ -351,7 +351,7 @@ describe('ACP 온톨로지 DNA 발표 trace', () => {
     }).status).toBe('ready');
   });
 
-  it('turn이 끝나지 않았거나 발표 intent가 아니면 만들지 않는다', () => {
+  it('makes nothing when the turn has not ended or the intent is not a presentation', () => {
     expect(buildTrace({ sessionStatus: 'thinking' })).toMatchObject({
       status: 'blocked',
       reason: 'turn_incomplete',
@@ -363,7 +363,7 @@ describe('ACP 온톨로지 DNA 발표 trace', () => {
     });
   });
 
-  it('같은 URL에서 이어진 다른 사용자 turn은 발표 intent를 상속하지 않는다', () => {
+  it('does not inherit the presentation intent in another user turn continued from the same URL', () => {
     expect(buildTrace({
       events: [
         ...sourceHiddenTurn(citedAnswer),

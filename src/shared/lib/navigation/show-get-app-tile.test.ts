@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { shouldShowGetAppTile } from "./show-get-app-tile";
 
-describe("앱 받기 타일 — 웹에서만, 마운트 뒤에만", () => {
-  it("웹에서 마운트되면 보인다", () => {
+describe("get-app tile shows only on the web and only after mount", () => {
+  it("shows once mounted on the web", () => {
     expect(shouldShowGetAppTile({ mounted: true, isDesktopApp: false })).toBe(true);
   });
 
   // Offering "get the app" to someone who installed it is misinformation in itself.
-  it("설치된 앱에서는 안 보인다", () => {
+  it("does not show in the installed app", () => {
     expect(shouldShowGetAppTile({ mounted: true, isDesktopApp: true })).toBe(false);
   });
 
@@ -17,7 +17,7 @@ describe("앱 받기 타일 — 웹에서만, 마운트 뒤에만", () => {
    * flicker** — appearing one frame late is better than showing a wrong state and
    * correcting it.
    */
-  it("마운트 전에는 어느 쪽도 그리지 않는다", () => {
+  it("renders neither before mount", () => {
     expect(shouldShowGetAppTile({ mounted: false, isDesktopApp: false })).toBe(false);
     expect(shouldShowGetAppTile({ mounted: false, isDesktopApp: true })).toBe(false);
   });

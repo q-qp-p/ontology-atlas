@@ -35,25 +35,25 @@ function readManifest(name: string): GeneratedManifest {
   ) as GeneratedManifest;
 }
 
-describe.each(MANIFESTS)('%s — 커밋된 생성물에 벽시계가 없다', (name) => {
+describe.each(MANIFESTS)('%s: the committed output has no wall clock', (name) => {
   const manifest = readManifest(name);
 
-  it('문서가 실제로 들어 있다 (파서가 죽으면 이 가드가 먼저 터진다)', () => {
+  it('documents are really in it (if the parser dies this guard blows first)', () => {
     expect(manifest.docs.length).toBeGreaterThan(10);
   });
 
-  it('generatedAt 은 날짜(YYYY-MM-DD)뿐이다', () => {
+  it('generatedAt is a date only (YYYY-MM-DD)', () => {
     expect(manifest.generatedAt).toMatch(DAY_ONLY);
   });
 
-  it('모든 문서의 updatedAt 이 날짜(YYYY-MM-DD)뿐이다', () => {
+  it('updatedAt of every document is a date only (YYYY-MM-DD)', () => {
     const withTime = manifest.docs
       .filter((doc) => !DAY_ONLY.test(doc.updatedAt))
       .map((doc) => `${doc.slug}=${doc.updatedAt}`);
     expect(withTime).toEqual([]);
   });
 
-  it('generatedAt 은 문서 날짜의 최대값이다 (빌드 시각이 아니다)', () => {
+  it('generatedAt is the maximum of the document dates, not the build time', () => {
     const newest = manifest.docs
       .map((doc) => doc.updatedAt)
       .reduce((a, b) => (a >= b ? a : b));
@@ -61,13 +61,13 @@ describe.each(MANIFESTS)('%s — 커밋된 생성물에 벽시계가 없다', (n
   });
 });
 
-describe('build-docs-vault.mjs — 생성기가 벽시계를 읽지 않는다', () => {
+describe('build-docs-vault.mjs: the generator does not read the wall clock', () => {
   const source = readFileSync(
     path.join(process.cwd(), 'scripts', 'docs-vault', 'build-docs-vault.mjs'),
     'utf8',
   );
 
-  it('현재 시각을 읽는 호출이 없다', () => {
+  it('no call reads the current time', () => {
     // The moment the generator reads "now", its output depends on when it ran and the
     // committed baseline shifts on every regeneration.
     const wallClockCalls = ['Date.now(', 'new Date()', 'toISOString('].filter(
@@ -76,14 +76,14 @@ describe('build-docs-vault.mjs — 생성기가 벽시계를 읽지 않는다', 
     expect(wallClockCalls).toEqual([]);
   });
 
-  it('git 날짜를 시각 정밀도로 읽지 않는다', () => {
+  it('does not read git dates at time precision', () => {
     // `%cI`/`%aI` include the time — exactly the part squash-merge restamps. Use
     // `%cs`, which gives the date only.
     expect(source).not.toMatch(/%[ca]I/);
     expect(source).toContain('%cs');
   });
 
-  it('직전 생성물을 입력으로 되먹이지 않는다', () => {
+  it('does not feed the previous output back in as input', () => {
     // If output depends on the previous output, "same input → same bytes" does not
     // hold (losing the baseline changes the values).
     expect(source).not.toContain('previousManifest');
@@ -97,7 +97,7 @@ describe('build-docs-vault.mjs — 생성기가 벽시계를 읽지 않는다', 
  * measured, 247 document paths all shared **one identical date**. Deployed in that
  * state, every document on the site looks like it changed today.
  */
-describe('워크플로 — 매니페스트를 만지는 잡은 전체 히스토리를 받는다', () => {
+describe('workflows: a job that touches the manifest gets the full history', () => {
   const WORKFLOW_DIR = path.join(process.cwd(), '.github', 'workflows');
 
   /** Workflows that run the generator directly (or via `pnpm build`). */
@@ -144,7 +144,7 @@ describe('워크플로 — 매니페스트를 만지는 잡은 전체 히스토�
     expect(generatorJobs.map((job) => job.name).length).toBeGreaterThan(0);
 
     for (const job of generatorJobs) {
-      expect(job.body, `${name} · ${job.name} 잡의 checkout`).toMatch(
+      expect(job.body, `checkout of the ${name} / ${job.name} job`).toMatch(
         /uses: actions\/checkout@[^\n]*\n\s+with:\n\s+fetch-depth: 0/,
       );
     }

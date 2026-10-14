@@ -52,14 +52,14 @@ async function openJson(page: import("@playwright/test").Page, value: unknown) {
   });
 }
 
-test.describe("프로젝트 온톨로지 구축 검수", () => {
+test.describe("project ontology construction review", () => {
   test.beforeEach(async ({ page }) => {
     await seedFirstRunSeen(page);
     await page.goto("/ko/project/storefront/?guides=off");
     await expect(page.getByTestId("construction-review-ingress")).toBeAttached();
   });
 
-  test("정상 묶음은 hero 아래에서 현재 결정과 exact plan을 보여준다", async ({ page }) => {
+  test("a valid bundle shows the current decision and exact plan under the hero", async ({ page }) => {
     await openJson(page, envelope());
 
     const summary = page.getByTestId("construction-review-summary");
@@ -71,7 +71,7 @@ test.describe("프로젝트 온톨로지 구축 검수", () => {
     await expect(summary).toHaveAttribute("data-plan-equality", "equal");
   });
 
-  test("전문가 검토용 초안은 CQ·계획을 바꾸되 원본 판정과 digest를 보존한다", async ({ page }) => {
+  test("an expert-review draft changes the CQs and plan but preserves the original verdict and digest", async ({ page }) => {
     const localKeysBefore = await page.evaluate(() =>
       Object.keys(localStorage).filter((key) => key !== "ontology-atlas:last-route").sort(),
     );
@@ -90,7 +90,7 @@ test.describe("프로젝트 온톨로지 구축 검수", () => {
       .toEqual(localKeysBefore);
   });
 
-  test("1040·1512에서 요약과 근거 disclosure가 넘치거나 가려지지 않는다", async ({ page }) => {
+  test("at 1040 and 1512 the summary and evidence disclosure neither overflow nor get covered", async ({ page }) => {
     await openJson(page, envelope());
     for (const width of [1040, 1512]) {
       await page.setViewportSize({ width, height: 720 });
@@ -123,7 +123,7 @@ test.describe("프로젝트 온톨로지 구축 검수", () => {
   });
 
   for (const reducedMotion of ["no-preference", "reduce"] as const) {
-    test(`${reducedMotion} 모션에서도 근거 표면은 이동 없이 공용 crossfade만 쓴다`, async ({ page }) => {
+    test(`with ${reducedMotion} motion the evidence surface uses only the shared crossfade, without movement`, async ({ page }) => {
       await page.emulateMedia({ reducedMotion });
       await openJson(page, envelope());
       await page.getByTestId("construction-review-evidence-toggle").click();
@@ -149,7 +149,7 @@ test.describe("프로젝트 온톨로지 구축 검수", () => {
   for (const [state, value] of [
     ["plan_mismatch", envelope({ writePlan: { concepts: [], relations: [], competencyAnswers: {} } })],
   ] as const) {
-    test(`${state} 결과는 fail-closed 한다`, async ({ page }) => {
+    test(`a ${state} result fails closed`, async ({ page }) => {
       await openJson(page, value);
       await expect(page.getByTestId("construction-review-error")).toHaveAttribute(
         "data-envelope-state",

@@ -23,13 +23,13 @@ afterEach(() => {
   mocks.isTauri.mockReturnValue(false);
 });
 
-describe('tauri ACP 권한 판정 브리지', () => {
-  it('웹에서는 판정할 수 없는 경로를 자동 허용하지 않는다', async () => {
+describe('tauri ACP permission decision bridge', () => {
+  it('on the web it does not auto-allow paths it cannot decide', async () => {
     expect(await acpPermissionVerdict('acp-session', '/vault/notes.md')).toBe('ask');
     expect(mocks.invoke).not.toHaveBeenCalled();
   });
 
-  it('화면이 고른 루트가 아니라 네이티브 세션 ID만 Rust에 넘긴다', async () => {
+  it('hands Rust only the native session ID, not the root the screen picked', async () => {
     mocks.isTauri.mockReturnValue(true);
     mocks.invoke.mockResolvedValue('allow-inside-vault');
 

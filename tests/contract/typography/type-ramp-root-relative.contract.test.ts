@@ -78,15 +78,15 @@ const NOT_ROOT_RELATIVE = new Map<string, string>([
   ['--leading-monument', 'a ratio — it already follows the size it is applied to'],
 ]);
 
-describe('타입 램프는 루트 글꼴 크기를 따른다', () => {
-  it('탐지기가 램프를 실제로 읽는다 — 빈 스캔은 통과가 아니라 결함이다', () => {
+describe('the type ramp follows the root font size', () => {
+  it('the detector really reads the ramp, so an empty scan is a defect rather than a pass', () => {
     // If the path or the pattern drifts, every assertion below goes green over an empty set.
     expect(declarations('text').length).toBeGreaterThanOrEqual(9);
     expect(declarations('leading').length).toBeGreaterThanOrEqual(11);
   });
 
   it.each(['text', 'leading'] as const)(
-    '--%s-* 의 모든 단은 rem 이다 — px 는 브라우저 글자 확대가 닿지 않는다',
+    'every step of --%s-* is rem, since browser text zoom does not reach px',
     (prefix) => {
       const offenders = declarations(prefix)
         .filter((entry) => !NOT_ROOT_RELATIVE.has(entry.name))
@@ -109,16 +109,16 @@ describe('타입 램프는 루트 글꼴 크기를 따른다', () => {
     },
   );
 
-  it('예외 목록이 실재하는 토큰만 담는다 — 죽은 예외는 사양이 아니라 오정보다', () => {
+  it('the exception list holds only tokens that exist, since a dead exception is misinformation rather than a spec', () => {
     const names = new Set([
       ...declarations('text').map((entry) => entry.name),
       ...declarations('leading').map((entry) => entry.name),
     ]);
     const dead = [...NOT_ROOT_RELATIVE.keys()].filter((name) => !names.has(name));
-    expect(dead, '예외 목록에 이제 존재하지 않는 토큰이 남아 있다').toEqual([]);
+    expect(dead, 'the exception list still holds a token that no longer exists').toEqual([]);
   });
 
-  it('예외는 rem 으로 슬그머니 바뀌지 않는다 — 바뀌면 예외가 아니라 단이다', () => {
+  it('an exception does not quietly turn into rem, and if it changes it is a step rather than an exception', () => {
     // The other direction: if a documented exception becomes a plain `rem` value, its reason no longer
     // describes it and the entry must leave this list.
     const all = [...declarations('text'), ...declarations('leading')];
@@ -126,10 +126,10 @@ describe('타입 램프는 루트 글꼴 크기를 따른다', () => {
       .filter((entry) => NOT_ROOT_RELATIVE.has(entry.name))
       .filter((entry) => /^[0-9.]+rem$/.test(entry.value))
       .map((entry) => `  ${entry.name}: ${entry.value}`);
-    expect(stale, '예외로 등록된 단이 평범한 rem 이 됐다 — 목록에서 내린다').toEqual([]);
+    expect(stale, 'a step registered as an exception became plain rem; take it off the list').toEqual([]);
   });
 
-  it('한 줄 스코프 오버라이드도 잡는다 — 중괄호 뒤의 선언은 선언이다', () => {
+  it('a one-line scope override is caught too, since a declaration after a brace is a declaration', () => {
     // The anchor's own probe: the same declaration, written after a brace on one line. An
     // earlier version of this detector reported it as absent, which is the quietest way for a
     // ramp step to come back to `px`.
@@ -139,11 +139,11 @@ describe('타입 램프는 루트 글꼴 크기를 따른다', () => {
     expect(found).toEqual(['--text-body: 12px']);
   });
 
-  it('접두사 밖의 타입 크기 토큰도 루트를 따른다 — 접두사가 사양이 되면 안 된다', () => {
+  it('type size tokens outside the prefix follow the root too, since the prefix must not become the spec', () => {
     // `--text-*` is a naming convention, not the quantity: a size token under any other name consumed
     // through `text-[length:var(...)]` is still type. The detector reads consumers, not names.
     const sources = sourceFiles();
-    expect(sources.length, '스캔이 비었다 — src/app 에서 소비자를 못 찾았다').toBeGreaterThan(50);
+    expect(sources.length, 'the scan is empty; found no consumer in src/app').toBeGreaterThan(50);
     const consumed = new Set<string>();
     for (const file of sources) {
       const body = readFileSync(file, 'utf8');
@@ -151,7 +151,7 @@ describe('타입 램프는 루트 글꼴 크기를 따른다', () => {
         consumed.add(match[1]);
       }
     }
-    expect(consumed.size, '소비자 스캔이 0 이다 — 정규식이 드리프트했다').toBeGreaterThan(0);
+    expect(consumed.size, 'consumer scan is 0, so the regex has drifted').toBeGreaterThan(0);
 
     const offenders: string[] = [];
     for (const name of [...consumed].sort()) {
@@ -175,7 +175,7 @@ describe('타입 램프는 루트 글꼴 크기를 따른다', () => {
     ).toEqual([]);
   });
 
-  it('읽는 값은 주석이 아니라 선언이다 — 산문에 적힌 px 에 속지 않는다', () => {
+  it('the value read is a declaration rather than a comment, so px written in prose does not fool it', () => {
     // Self-probe for the comment blanking: the file is full of prose citing `9.5px` and `14px`,
     // and a detector that read those would report offenders that do not exist (or, worse, find
     // a "declaration" in a history note and pass on it).

@@ -34,13 +34,13 @@ function contrastRatio(a: readonly number[], b: readonly number[]): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-describe("걸어온 길 잉크 — 고를 수 있는 세 톤은 모두 읽힌다", () => {
+describe("walked-path ink: all three selectable tones stay legible", () => {
   /**
    * The footprint must be readable in every combination the user can choose: each tone at the lowest
    * intensity clears 3:1 against the canvas (WCAG 1.4.11 non-text contrast). A selectable invisible
    * trail is a defect, not a setting.
    */
-  it("세 톤 모두 최저 진하기에서 3:1 을 넘는다", () => {
+  it("all three tones exceed 3:1 at the lowest density", () => {
     const css = readGlobalCss();
     const bg = hexRgb(/--map-canvas-bg-near:\s*(#[0-9a-fA-F]{6})/.exec(css)![1]);
     const tones = {
@@ -52,7 +52,7 @@ describe("걸어온 길 잉크 — 고를 수 있는 세 톤은 모두 읽힌다
     for (const [name, hexValue] of Object.entries(tones)) {
       const over = hexRgb(hexValue).map((c, i) => c * FOOTPRINT_RANGES.opacity.min + bg[i] * (1 - FOOTPRINT_RANGES.opacity.min));
       const contrast = contrastRatio(over as [number, number, number], bg);
-      expect(contrast, `${name} 톤이 최저 진하기에서 ${contrast.toFixed(2)}:1 — 안 보이는 발자국을 고를 수 있다`).toBeGreaterThanOrEqual(3);
+      expect(contrast, `tone ${name} is ${contrast.toFixed(2)}:1 at the lowest density, so an invisible footprint can be chosen`).toBeGreaterThanOrEqual(3);
     }
   });
 
@@ -61,7 +61,7 @@ describe("걸어온 길 잉크 — 고를 수 있는 세 톤은 모두 읽힌다
    * is the centre" and "you walked here" would be one colour and the distinction the
    * colour carried would disappear.
    */
-  it("발자국 노랑은 허브 앰버와 다른 값이다", () => {
+  it("the footprint yellow differs from the hub amber", () => {
     const css = readGlobalCss();
     const hub = /--map-amber-hub:\s*(#[0-9a-fA-F]{6})/.exec(css)?.[1]?.toLowerCase();
     const trail = /--color-footprint-trail:\s*(#[0-9a-fA-F]{6})/.exec(css)?.[1]?.toLowerCase();
@@ -75,23 +75,23 @@ describe("걸어온 길 잉크 — 고를 수 있는 세 톤은 모두 읽힌다
  * The path-walked lens tints nodes and relation lines with the trail ink: the same ink (no new hue),
  * lens-scoped (ramp 0 gives ink 0, so never permanent amber), and a contrast change, not bloom.
  */
-describe("걸어온 길 렌즈 — 노드와 선의 트레일 잉크", () => {
-  it("렌즈가 꺼져 있으면(램프 0) 아무 노드도 트레일 잉크를 안 받는다", () => {
+describe("walked-path lens: trail ink on nodes and lines", () => {
+  it("with the lens off (ramp 0) no node receives trail ink", () => {
     expect(trailNodeInkStrength({ kept: true, ramp: 0, colorEgoState: "normal" })).toBe(0);
   });
 
-  it("방문한 노드만 받는다", () => {
+  it("only visited nodes receive it", () => {
     expect(trailNodeInkStrength({ kept: true, ramp: 1, colorEgoState: "normal" })).toBe(1);
     expect(trailNodeInkStrength({ kept: false, ramp: 1, colorEgoState: "dim" })).toBe(0);
   });
 
   /** Selection ring (indigo) > footprint — "here now" and "been here" must not be one colour. */
-  it("고른 노드는 트레일 잉크를 받지 않는다", () => {
+  it("the picked node does not receive trail ink", () => {
     expect(trailNodeInkStrength({ kept: true, ramp: 1, colorEgoState: "center" })).toBe(0);
   });
 
   /** Mid-ramp values pass through — this fades out, it does not hard-cut. */
-  it("램프 중간값이 그대로 세기가 된다", () => {
+  it("a mid ramp value becomes the strength as it is", () => {
     expect(trailNodeInkStrength({ kept: true, ramp: 0.4, colorEgoState: "normal" })).toBeCloseTo(0.4, 6);
     expect(trailNodeInkStrength({ kept: true, ramp: 3, colorEgoState: "normal" })).toBe(1);
     expect(trailNodeInkStrength({ kept: true, ramp: Number.NaN, colorEgoState: "normal" })).toBe(0);
@@ -101,7 +101,7 @@ describe("걸어온 길 렌즈 — 노드와 선의 트레일 잉크", () => {
    * A walked relation line is not background ink while the lens is on: the lens dims every edge, so the
    * colour actually painted is recorded and measured.
    */
-  it("밟은 선은 dim 이 아니라 트레일 색으로 칠해진다", () => {
+  it("a walked line is painted in the trail color rather than dim", () => {
     const tokens = {
       edgeContains: "#3a3a44",
       edgeDepends: "#4a4a58",
@@ -135,7 +135,7 @@ describe("걸어온 길 렌즈 — 노드와 선의 트레일 잉크", () => {
     // Lens off — dim, as before.
     expect(strokeOf({ trailWalked: 0 })).toBe(tokens.edgeDim);
     // Lens on — trail ink.
-    expect(strokeOf({ trailWalked: 1 }), "밟은 선이 여전히 배경 잉크다").toBe("rgb(232, 196, 122)");
+    expect(strokeOf({ trailWalked: 1 }), "the walked line is still the background ink").toBe("rgb(232, 196, 122)");
     // Mid-ramp — somewhere between dim and trail (not a hard cut).
     const mid = strokeOf({ trailWalked: 0.5 });
     expect(mid).not.toBe(tokens.edgeDim);
@@ -146,7 +146,7 @@ describe("걸어온 길 렌즈 — 노드와 선의 트레일 잉크", () => {
    * Unwalked lines recede as before: the lens exists to clear the field around the trail, and
    * keeping them lit would make it do nothing.
    */
-  it("렌즈가 켜져도 안 밟은 선은 dim 그대로다", () => {
+  it("with the lens on, an unwalked line stays dim", () => {
     const source = readFileSync(
       join(repoRoot, "src/widgets/ontology-map/ui/frame-draw/paint-edges.ts"),
       "utf8",
@@ -156,7 +156,7 @@ describe("걸어온 길 렌즈 — 노드와 선의 트레일 잉크", () => {
   });
 });
 
-describe("별빛 톤은 지도가 이미 쓰는 별 잉크와 같은 값이다", () => {
+describe("the starlight tone equals the star ink the map already uses", () => {
   /*
    * ⚠️ The point of the star tone is that it is **not a new hue**. `render/starfield.ts`
    * paints the far-field dust and the diffraction spikes at this value already, under a
@@ -169,7 +169,7 @@ describe("별빛 톤은 지도가 이미 쓰는 별 잉크와 같은 값이다",
    * its own literal in a comment, which would satisfy a whole-file search. A length floor catches
    * deleted literals.
    */
-  it("starfield 이 칠하는 모든 값과 어긋나지 않는다", () => {
+  it("does not drift from any value the starfield paints", () => {
     const css = readGlobalCss();
     const trail = /--color-footprint-trail-star:\s*(#[0-9a-fA-F]{6})/.exec(css)![1].toLowerCase();
     const rgb = hexRgb(trail);
@@ -177,11 +177,11 @@ describe("별빛 톤은 지도가 이미 쓰는 별 잉크와 같은 값이다",
       .replace(/\/\*[\s\S]*?\*\//g, "")
       .replace(/(^|[^:])\/\/.*$/gm, "$1");
     const painted = [...code.matchAll(/rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,/g)];
-    expect(painted.length, "starfield 이 아무 색도 칠하지 않는다 — 게이트가 죽었다").toBeGreaterThan(0);
+    expect(painted.length, "the starfield paints no color at all, so the gate is dead").toBeGreaterThan(0);
     for (const m of painted) {
       expect(
         [Number(m[1]), Number(m[2]), Number(m[3])],
-        `별빛 톤 ${trail} 이 starfield 가 칠하는 rgba(${m[1]},${m[2]},${m[3]}) 와 다르다 — 흰색이 두 개가 된다`,
+        `starlight tone ${trail} differs from rgba(${m[1]},${m[2]},${m[3]}) painted by the starfield, which makes two whites`,
       ).toEqual(rgb);
     }
   });

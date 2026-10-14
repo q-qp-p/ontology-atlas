@@ -59,7 +59,7 @@ const WATCH = `(() => {
   requestAnimationFrame(tick);
 })()`;
 
-test("레일에서 자료실로 건너오면 도착한 문이 한 크로스페이드 안에 누름을 받는다", async ({ page }) => {
+test("after crossing from the rail to the library, the arriving door accepts a press within one crossfade", async ({ page }) => {
   await seedFirstRunSeen(page);
 
   // Every press is logged with its own timestamp, so the assertion reads the element the
@@ -89,7 +89,7 @@ test("레일에서 자료실로 건너오면 도착한 문이 한 크로스페�
   const door = page.getByTestId("library-open-vault");
   await expect(door).toBeVisible({ timeout: 25_000 });
   const box = await door.boundingBox();
-  expect(box, "자료실의 폴더 문을 찾지 못했다").not.toBeNull();
+  expect(box, "the library folder door was not found").not.toBeNull();
   const aim = { x: Math.round(box!.x + box!.width / 2), y: Math.round(box!.y + box!.height / 2) };
 
   // Leave the Library and come back, pressing without waiting for anything to be actionable.
@@ -117,7 +117,7 @@ test("레일에서 자료실로 건너오면 도착한 문이 한 크로스페�
     const milliseconds = /^([\d.]+)ms$/.exec(raw);
     return milliseconds ? Number(milliseconds[1]) : Number.NaN;
   });
-  expect(budget, "--motion-base 를 읽지 못했다").toBeGreaterThan(0);
+  expect(budget, "could not read --motion-base").toBeGreaterThan(0);
 
   const waitFor = Math.round(budget + AFTER_LAYOUT_SLACK_FRAMES * FRAME);
   // The wait reads the door's layout time **in the page**, so the budget is counted from
@@ -164,7 +164,7 @@ test("레일에서 자료실로 건너오면 도착한 문이 한 크로스페�
 
   // The rail tile's own click is the first entry; the two aimed presses are the last two.
   const aimed = presses.slice(-2);
-  expect(aimed, "겨눈 누름 두 번이 기록되지 않았다").toHaveLength(2);
+  expect(aimed, "the two aimed presses were not recorded").toHaveLength(2);
   for (const [index, press] of aimed.entries()) {
     expect(
       press.on,
@@ -202,7 +202,7 @@ test("레일에서 자료실로 건너오면 도착한 문이 한 크로스페�
  * nothing to jitter, and exactly the thing that changed. The hold's measured length is
  * logged beside it as a figure to read, and nothing asserts on it.
  */
-test("전환이 도는 애니메이션 중 선언한 크로스페이드보다 긴 것이 없다", async ({ page }) => {
+test("none of the animations running in the transition is longer than the declared crossfade", async ({ page }) => {
   await seedFirstRunSeen(page);
   await page.addInitScript(() => {
     const seen: {
@@ -277,7 +277,7 @@ test("전환이 도는 애니메이션 중 선언한 크로스페이드보다 �
     const milliseconds = /^([\d.]+)ms$/.exec(raw);
     return milliseconds ? Number(milliseconds[1]) : Number.NaN;
   });
-  expect(declared, "--motion-base 를 읽지 못했다").toBeGreaterThan(0);
+  expect(declared, "could not read --motion-base").toBeGreaterThan(0);
 
   // A figure to read, not a gate: it says what the hold cost on this machine, so a future
   // failure here can be told apart from a runner that got slower.
@@ -288,16 +288,16 @@ test("전환이 도는 애니메이션 중 선언한 크로스페이드보다 �
 
   expect(
     seen.animations,
-    "전환 애니메이션 목록을 잡지 못했다 — ready 가 거부됐거나 브라우저에 전환이 없다",
+    "could not capture the transition animation list; ready was rejected or the browser has no transition",
   ).not.toBeNull();
   /*
    * Idling guard: the four fade and blend animations on the captured pane's `old`/`new` pair are
    * the crossfade itself, so a run that captured fewer captured the wrong moment.
    */
-  expect(seen.animations!.length, `잡은 애니메이션: ${JSON.stringify(seen.animations)}`).toBeGreaterThanOrEqual(4);
+  expect(seen.animations!.length, `captured animations: ${JSON.stringify(seen.animations)}`).toBeGreaterThanOrEqual(4);
   const overrunning = seen.animations!.filter((animation) => !(animation.duration <= declared));
   expect(
     overrunning,
-    `선언한 ${declared}ms 보다 긴 애니메이션이 전환을 붙잡는다: ${JSON.stringify(overrunning)}`,
+    `an animation longer than the declared ${declared}ms holds the transition: ${JSON.stringify(overrunning)}`,
   ).toEqual([]);
 });

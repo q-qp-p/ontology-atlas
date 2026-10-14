@@ -6,8 +6,8 @@ import { isDiagnosticStderr, readAcpTrouble } from './acp-trouble';
  * Tested against measured strings only — tuned to an invented error, it would fail to recognize a
  * real one.
  */
-describe('오류 옮기기 — 아는 것만 옮기고 모르면 원문을 접어 둔다', () => {
-  it('로그인이 풀린 것을 알아본다 (2026-08-16 실측 그대로)', () => {
+describe('translating errors: translates only what is known and folds the original when not', () => {
+  it('recognizes a lapsed login (exactly as measured 2026-08-16)', () => {
     const raw =
       '{"code":-32603,"message":"Internal error: Failed to authenticate: OAuth session expired and could not be refreshed","data":{"errorKind":"authentication_failed"}}';
     expect(readAcpTrouble(raw).kind).toBe('auth');
@@ -15,21 +15,21 @@ describe('오류 옮기기 — 아는 것만 옮기고 모르면 원문을 접�
     expect(readAcpTrouble(raw).detail).toContain('authentication_failed');
   });
 
-  it('다른 도구의 다른 문장도 같은 갈래로 읽는다', () => {
+  it('reads a different sentence from another tool into the same branch', () => {
     expect(readAcpTrouble('Authentication required').kind).toBe('auth');
     expect(readAcpTrouble('Error: unauthorized (401)').kind).toBe('auth');
   });
 
-  it('우리가 건 상한에 걸린 것', () => {
+  it('a limit we set was hit', () => {
     expect(readAcpTrouble('acp-timeout: initialize').kind).toBe('timeout');
   });
 
-  it('띄우지도 못한 것', () => {
+  it('could not even be launched', () => {
     expect(readAcpTrouble('spawn npx ENOENT').kind).toBe('launch');
     expect(readAcpTrouble('cli-missing:claude').kind).toBe('launch');
   });
 
-  it('반쯤 남은 npx 캐시 — 오류 문자열이 아무 말도 안 하면 stderr 가 말한다 (2026-08-19 실기계)', () => {
+  it('a half-left npx cache: when the error string says nothing, stderr speaks (real machine 2026-08-19)', () => {
     const raw = 'acp session closed';
     // and every clue was on stderr.
     const stderr = [
@@ -46,7 +46,7 @@ describe('오류 옮기기 — 아는 것만 옮기고 모르면 원문을 접�
     expect(readAcpTrouble(raw).kind).toBe('unknown');
   });
 
-  it('install 은 launch 보다 앞이다 — 같은 ENOENT 라도 할 일이 다르다', () => {
+  it('install comes before launch, since the same ENOENT calls for different work', () => {
     expect(
       readAcpTrouble(
         "npm error enoent Could not read package.json: ENOENT '/Users/me/.npm/_npx/8757e2301903ae53/package.json'",
@@ -54,28 +54,28 @@ describe('오류 옮기기 — 아는 것만 옮기고 모르면 원문을 접�
     ).toBe('install');
   });
 
-  it('stderr 는 install 판정에만 참여한다 — 지나가는 낱말로 다른 갈래를 만들지 않는다', () => {
+  it('stderr takes part only in the install verdict, so a passing word never makes another branch', () => {
     expect(readAcpTrouble('acp session closed', ['npm warn network is slow today']).kind).toBe(
       'unknown',
     );
   });
 
-  it('밖으로 못 나간 것', () => {
+  it('could not get out', () => {
     expect(readAcpTrouble('FetchError: getaddrinfo ENOTFOUND api.example').kind).toBe('network');
   });
 
-  it('못 알아본 것은 **지어내지 않는다**', () => {
+  it('**invents nothing** for what it could not recognize', () => {
     const raw = 'Error: something we have never seen';
     expect(readAcpTrouble(raw)).toEqual({ kind: 'unknown', detail: raw });
   });
 
-  it('인증 문제에 다른 낱말이 섞여 와도 인증으로 읽는다 — 할 일이 그쪽이다', () => {
+  it('reads it as auth even when other words mix into an auth problem, since that is the work to do', () => {
     expect(readAcpTrouble('network error: oauth token refresh failed').kind).toBe('auth');
   });
 });
 
-describe('진단 줄 고르기 — 늘 나오는 것은 진단이 아니다', () => {
-  it('npm 경고는 담지 않는다 (소유자가 화면에서 처음 본 그것)', () => {
+describe('choosing diagnostic lines: what always appears is not a diagnosis', () => {
+  it('does not include npm warnings (the one the owner first saw on screen)', () => {
     expect(
       isDiagnosticStderr(
         'npm warn Unknown env config "_jsr-registry". This will stop working in the next major version of npm.',
@@ -84,13 +84,13 @@ describe('진단 줄 고르기 — 늘 나오는 것은 진단이 아니다', ()
     expect(isDiagnosticStderr('npm notice New minor version available')).toBe(false);
   });
 
-  it('설치 진행률·빈 줄도 담지 않는다', () => {
+  it('does not include install progress or blank lines either', () => {
     expect(isDiagnosticStderr('')).toBe(false);
     expect(isDiagnosticStderr('   ')).toBe(false);
     expect(isDiagnosticStderr('... 42%')).toBe(false);
   });
 
-  it('진짜 단서는 담는다', () => {
+  it('includes a real clue', () => {
     expect(isDiagnosticStderr('Authentication required')).toBe(true);
     expect(isDiagnosticStderr('Error: Cannot find module @agentclientprotocol/x')).toBe(true);
   });

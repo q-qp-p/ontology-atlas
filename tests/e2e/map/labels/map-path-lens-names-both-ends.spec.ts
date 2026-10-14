@@ -13,7 +13,7 @@ type Probe = {
 const FROM = "capability:exchange-request";
 const TO = "capability:stock-reservation";
 
-test("경로는 두 끝의 이름을 모두 보여준다", async ({ page }) => {
+test("a path shows the names of both ends", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 806 });
   await seedFirstRunSeen(page);
@@ -39,19 +39,19 @@ test("경로는 두 끝의 이름을 모두 보여준다", async ({ page }) => {
     );
 
   // The lens found the path: both ends are on the map at full ink.
-  await expect.poll(async () => (await read()).to?.drawn, { timeout: 15_000, message: "경로의 끝이 지도에 없다" }).toBe(true);
+  await expect.poll(async () => (await read()).to?.drawn, { timeout: 15_000, message: "the end of the path is not on the map" }).toBe(true);
   // The lens ramps its ends up on its own clock; poll until both have arrived at full ink.
   await expect
     .poll(async () => {
       const state = await read();
       return Math.min(state.from?.alpha ?? 0, state.to?.alpha ?? 0);
-    }, { timeout: 15_000, message: "경로의 끝이 온전한 잉크로 그려지지 않았다" })
+    }, { timeout: 15_000, message: "the end of the path was not drawn with full ink" })
     .toBeGreaterThan(0.8);
 
   await expect
     .poll(async () => [(await read()).from?.named, (await read()).to?.named], {
       timeout: 15_000,
-      message: "경로의 양 끝 중 이름이 없는 쪽이 있다",
+      message: "one of the two ends of the path has no name",
     })
     .toEqual([true, true]);
 });

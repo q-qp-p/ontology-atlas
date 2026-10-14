@@ -37,7 +37,7 @@ async function openConnectorsWithVault(
   await expect(page.getByTestId("connectors-panel")).toBeVisible();
 }
 
-test("연결 도구 딥링크는 그 칸에 내려선다 — 짧은 창에서도", async ({ page }) => {
+test("the connector deep link lands on its slot, even in a short window", async ({ page }) => {
   test.setTimeout(300_000);
   /* The app's window floor is 720 tall, so the short window is read there. */
   await page.setViewportSize({ width: 1440, height: 720 });
@@ -77,7 +77,7 @@ test("연결 도구 딥링크는 그 칸에 내려선다 — 짧은 창에서도
   ).toBeLessThan(landing!.viewport);
 });
 
-test("빈 상태는 한 문장·한 줄 공개·문 하나다", async ({ page }) => {
+test("the empty state is one sentence, one line of disclosure and one door", async ({ page }) => {
   test.setTimeout(300_000);
   await page.setViewportSize({ width: 1512, height: 982 });
   await openConnectorsWithVault(page);
@@ -103,7 +103,7 @@ test("빈 상태는 한 문장·한 줄 공개·문 하나다", async ({ page })
   await expect(page.getByTestId("connectors-on-of-total")).toHaveCount(0);
 });
 
-test("추가 대화상자는 검색 하나 아래 한 목록이고, 직접 적기는 맨 아래 접힌 줄이다", async ({ page }) => {
+test("the add dialog is one list under one search, with manual entry as a collapsed line at the bottom", async ({ page }) => {
   test.setTimeout(300_000);
   await page.setViewportSize({ width: 1512, height: 982 });
   await openConnectorsWithVault(page);
@@ -144,7 +144,7 @@ test("추가 대화상자는 검색 하나 아래 한 목록이고, 직접 적�
   await expect(dialog).toHaveCount(0);
 });
 
-test("묻는 게 없는 줄은 한 번 눌러 붙고, 실행될 주소를 그 전에 보여 주며, 꺼진 채로 들어간다", async ({ page }) => {
+test("a row that asks nothing connects with one press, shows the address to be run beforehand, and starts switched off", async ({ page }) => {
   test.setTimeout(300_000);
   await page.setViewportSize({ width: 1512, height: 982 });
   await openConnectorsWithVault(page);
@@ -177,7 +177,7 @@ test("묻는 게 없는 줄은 한 번 눌러 붙고, 실행될 주소를 그 �
   ).toHaveAttribute("data-catalogue-attached", "true");
 });
 
-test("토큰이 필요한 줄은 그 자리에서 묻고, 키체인이 없는 웹에서는 칸 대신 이유를 말한다", async ({ page }) => {
+test("a row that needs a token asks in place, and on the web without a keychain states the reason instead of a field", async ({ page }) => {
   test.setTimeout(300_000);
   await page.setViewportSize({ width: 1512, height: 982 });
   await openConnectorsWithVault(page);
@@ -206,7 +206,7 @@ test("토큰이 필요한 줄은 그 자리에서 묻고, 키체인이 없는 �
   await expect(page.getByTestId("connectors-item")).toHaveCount(0);
 });
 
-test("설치 링크는 대화상자를 채워 열 뿐, 아무것도 붙이지 않는다", async ({ page }) => {
+test("an install link only opens the dialog prefilled and connects nothing", async ({ page }) => {
   test.setTimeout(300_000);
   await page.setViewportSize({ width: 1512, height: 982 });
   await stubDirectoryPicker(page, { ...FIXTURE_VAULT });

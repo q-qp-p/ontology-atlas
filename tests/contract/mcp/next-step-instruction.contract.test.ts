@@ -20,13 +20,13 @@ const INSTRUCTION = PRODUCT_DISCIPLINE.split('\n').find((line) =>
  */
 const INTERNAL_WORDS = ['canonical', 'evidence gap', 'containment', 'handoff', 'receipt'] as const;
 
-describe('NEXT: 지시문 — 사람이 그대로 보낼 수 있는 한 문장을 요구한다', () => {
-  it('검사가 헛돌지 않는다 — 프롬프트에서 그 문단을 실제로 찾았다', () => {
+describe('NEXT: instruction requires one sentence a person can send as it is', () => {
+  it('the check does not spin idle, since it actually found that paragraph in the prompt', () => {
     expect(PRODUCT_DISCIPLINE.length).toBeGreaterThan(2_000);
-    expect(INSTRUCTION, 'PRODUCT_DISCIPLINE 에 NEXT: 문단이 없다').toBeDefined();
+    expect(INSTRUCTION, 'PRODUCT_DISCIPLINE has no NEXT: paragraph').toBeDefined();
   });
 
-  it('길이 상한을 코드에서 읽어 온다 — 두 군데에 적어 두고 어긋나지 않게', () => {
+  it('reads the length cap from code, so two places cannot drift apart', () => {
     expect(INSTRUCTION).toContain(`${NEXT_STEP_MAX_CHARS} characters or fewer`);
   });
 
@@ -35,17 +35,17 @@ describe('NEXT: 지시문 — 사람이 그대로 보낼 수 있는 한 문장�
    * real pipeline: the splitter has to recognise it, and the result has to obey
    * every rule the same paragraph states.
    */
-  it('지시문이 든 예시가 자기 규칙을 스스로 통과한다', () => {
+  it('the example inside the instruction passes its own rule', () => {
     const example = /`(NEXT: [^`]+)`/.exec(INSTRUCTION ?? '')?.[1];
-    expect(example, '지시문에 NEXT: 예시가 없다').toBeDefined();
+    expect(example, 'the instruction has no NEXT: example').toBeDefined();
 
     const { nextStep } = splitNextStep(`Some answer.\n\n${example}`);
-    expect(nextStep, '예시가 splitNextStep 에 잡히지 않는다').toBeTruthy();
+    expect(nextStep, 'splitNextStep does not pick up the example').toBeTruthy();
     expect(nextStep!.length).toBeLessThanOrEqual(NEXT_STEP_MAX_CHARS);
-    expect(nextStep, '예시가 잘려서 말줄임표가 붙었다').not.toContain('…');
+    expect(nextStep, 'the example was truncated and got an ellipsis').not.toContain('…');
     expect(nextStep).not.toContain('[[');
     for (const word of INTERNAL_WORDS) {
-      expect(nextStep!.toLowerCase(), `예시가 내부 용어 「${word}」를 쓴다`).not.toContain(word);
+      expect(nextStep!.toLowerCase(), `the example uses the internal term "${word}"`).not.toContain(word);
     }
     // One sentence: exactly one terminator, and it ends the line.
     expect(nextStep!.replace(/[.?!]$/, '')).not.toMatch(/[.?!]/);

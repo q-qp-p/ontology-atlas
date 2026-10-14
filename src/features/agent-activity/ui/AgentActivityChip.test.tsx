@@ -96,7 +96,7 @@ function finishedTask(id: string, endAt: number, counts = { added: 1, edited: 0,
 describe("AgentActivityChip", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('앱 안 승인은 결과 탭에서 사람의 말과 판정으로 한 줄이 된다', () => {
+  it('turns an in-app approval into one line on the results tab with the words of the person and the verdict', () => {
     renderChip({
       showStatus: false,
       workReceipts: [{
@@ -133,7 +133,7 @@ describe("AgentActivityChip", () => {
     expect(row).not.toHaveTextContent('완료');
   });
 
-  it("fresh heartbeat만 현재 단계와 대상으로 말한다", () => {
+  it("speaks of the current step and target only from a fresh heartbeat", () => {
     renderChip({
       writing: true,
       agentName: 'Codex',
@@ -155,7 +155,7 @@ describe("AgentActivityChip", () => {
     expect(screen.getByTestId("agent-activity-target")).toHaveTextContent("주문서 작성");
   });
 
-  it("로그만 최근이면 작업 중이라고 단정하지 않는다", () => {
+  it("does not assert work in progress when only the log is recent", () => {
     renderChip({
       writing: false,
       agentName: 'Codex',
@@ -165,13 +165,13 @@ describe("AgentActivityChip", () => {
     expect(screen.getByTestId("agent-activity-status")).not.toHaveTextContent('작업 중');
   });
 
-  it("조용해진 뒤에도 정규화한 이름은 남는다 — 「Codex · 마지막 작업 N분 전」", () => {
+  it("keeps the normalized name after going quiet: 'Codex · last work N minutes ago'", () => {
     renderChip({ writing: false, agentName: "Codex", work: { ...feed().work, agentName: 'Codex' } });
     const status = screen.getByTestId("agent-activity-status");
     expect(status.textContent).toMatch(/^Codex · 마지막 작업/);
   });
 
-  it("이름을 모르면 이름 없이 상태만 — 지어내지 않는다", () => {
+  it("shows only the state without a name when the name is unknown, inventing nothing", () => {
     renderChip({
       writing: true,
       agentName: null,
@@ -180,14 +180,14 @@ describe("AgentActivityChip", () => {
     expect(screen.getByTestId("agent-activity-status")).toHaveTextContent(/^편집 중$/);
   });
 
-  it("조용하면 마지막 작업 시각을 말한다 — 「연결됨」이라고 쓰지 않는다", () => {
+  it("says the last work time when quiet, and never writes 'connected'", () => {
     renderChip({ writing: false });
     const status = screen.getByTestId("agent-activity-status");
     expect(status.textContent).toMatch(/마지막 작업/);
     expect(status.textContent).not.toMatch(/연결/);
   });
 
-  it("대상이 지도에 없으면 링크를 만들지 않는다 — 대상 없이 상태만", () => {
+  it("makes no link when the target is not on the map, showing only the state without a target", () => {
     renderChip({ lastNode: null, lastTargetUnnamed: true });
     expect(screen.getByTestId("agent-activity-status")).toBeInTheDocument();
     fireEvent.click(screen.getByTestId("agent-activity-status-trigger"));
@@ -195,7 +195,7 @@ describe("AgentActivityChip", () => {
     expect(screen.queryByTestId("agent-activity-target")).toBeNull();
   });
 
-  it("대상 링크는 지도 노드 딥링크다", () => {
+  it("makes the target link a map node deep link", () => {
     renderChip();
     fireEvent.click(screen.getByTestId("agent-activity-status-trigger"));
     expect(screen.getByTestId("agent-activity-target")).toHaveAttribute(
@@ -204,7 +204,7 @@ describe("AgentActivityChip", () => {
     );
   });
 
-  it('이미 지도 위에서는 route 링크 대신 같은 화면의 노드 선택을 호출한다', () => {
+  it('calls same-screen node selection instead of a route link when already on the map', () => {
     const onOpenNode = vi.fn();
     mocks.feed = feed();
     render(
@@ -220,7 +220,7 @@ describe("AgentActivityChip", () => {
     expect(onOpenNode).toHaveBeenCalledWith('capabilities/checkout');
   });
 
-  it('상태 줄을 누르면 현재 작업 목표·단계·다음 행동을 한곳에서 보여준다', () => {
+  it('shows the current work goal, step and next action in one place when the status line is pressed', () => {
     renderChip({
       writing: true,
       agentName: 'Codex',
@@ -243,7 +243,7 @@ describe("AgentActivityChip", () => {
     expect(current).toHaveTextContent('validate_vault');
   });
 
-  it("상태는 종과 한 몸인 도구줄 조각이다 — 줄 아래로 떠 있지 않다", () => {
+  it("makes the status a toolbar piece one with the bell, not floating below the row", () => {
     renderBell({ writing: true, agentName: "Codex", work: { ...feed().work, mode: "live", agentName: "Codex", phase: "planning" } });
     const dock = screen.getByTestId("agent-activity-dock");
     const status = screen.getByTestId("agent-activity-status-trigger");
@@ -262,7 +262,7 @@ describe("AgentActivityChip", () => {
    * An in-app turn's status already streams in the open conversation panel, so the toolbar does not
    * repeat it.
    */
-  it("대화 패널이 열려 있으면 앱 안 턴의 상태를 도구줄에서 다시 말하지 않는다", () => {
+  it("does not repeat the state of an in-app turn in the toolbar while the conversation panel is open", () => {
     mocks.feed = feed({ writing: true, agentName: "Codex", work: { ...feed().work, mode: "live", agentName: "Codex", phase: "planning", startedAt: NOW - 6_000 } });
     const liveWork = { rawAgentName: "codex-acp", phase: "planning" as const, summary: null, targetSlug: null, lastTool: null, updatedAt: NOW, startedAt: NOW - 6_000 };
     const { rerender } = render(
@@ -280,7 +280,7 @@ describe("AgentActivityChip", () => {
     expect(screen.getByTestId("agent-activity-elapsed")).toHaveTextContent("6초");
   });
 
-  it("대화 패널이 열려 있어도 패널이 보여주지 않는 다른 에이전트의 작업은 말한다", () => {
+  it("speaks of another agent's work the open conversation panel does not show", () => {
     mocks.feed = feed({ writing: true, agentName: "Claude Code", work: { ...feed().work, mode: "live", agentName: "Claude Code", phase: "editing" } });
     render(
       <NextIntlClientProvider locale="ko" messages={koMessages}>
@@ -290,7 +290,7 @@ describe("AgentActivityChip", () => {
     expect(screen.getByTestId("agent-activity-status")).toHaveTextContent("Claude Code · 편집 중");
   });
 
-  it("도구줄이 좁은 상태면 상태는 점과 경과 시간으로 접히고 문장은 보조 기술에 남는다", () => {
+  it("folds the status into a dot and elapsed time when the toolbar is narrow, leaving the sentence for assistive technology", () => {
     mocks.feed = feed({ writing: true, agentName: "Codex", work: { ...feed().work, mode: "live", agentName: "Codex", phase: "planning", startedAt: NOW - 6_000 } });
     render(
       <NextIntlClientProvider locale="ko" messages={koMessages}>
@@ -303,7 +303,7 @@ describe("AgentActivityChip", () => {
     expect(screen.getByTestId("agent-activity-elapsed")).toHaveTextContent("6초");
   });
 
-  it("안 읽은 결과 수를 벨에 단다", () => {
+  it("attaches the unread result count to the bell", () => {
     const first = finishedTask("a", NOW - 1000, { added: 34, edited: 2, removed: 4 });
     const second = finishedTask("b", NOW - 2000);
     renderBell({
@@ -318,14 +318,14 @@ describe("AgentActivityChip", () => {
 
   // A badge alone does not survive a glance; the glyph itself changes (filled) so the signal is shape
   // and weight.
-  it("안 읽은 결과가 있으면 종 글리프 자체가 채워진다", () => {
+  it("fills the bell glyph itself when there are unread results", () => {
     const task = finishedTask("a", NOW - 1000);
     renderBell({ sessions: [task.session], notifications: [task.notification] });
     const svg = screen.getByTestId("agent-activity-bell").querySelector("svg");
     expect(svg?.getAttribute("fill")).toBe("currentColor");
   });
 
-  it("안 읽은 결과가 없으면 종은 비어 있다", () => {
+  it("leaves the bell empty when there are no unread results", () => {
     const task = finishedTask("a", NOW - 1000);
     renderBell({
       readAt: NOW,
@@ -336,7 +336,7 @@ describe("AgentActivityChip", () => {
     expect(svg?.getAttribute("fill")).toBe("none");
   });
 
-  it('작업 상태와 알림을 서로 다른 트리거와 표면으로 연다', () => {
+  it('opens work status and notifications with different triggers and surfaces', () => {
     renderBell({
       writing: true,
       agentName: 'Codex',
@@ -365,7 +365,7 @@ describe("AgentActivityChip", () => {
     expect(screen.queryByTestId('agent-activity-current-work')).toBeNull();
   });
 
-  it("벨을 누르면 알림함이 열리고 요약이 보인다", () => {
+  it("opens the inbox and shows the summary when the bell is pressed", () => {
     renderBell({
       notifications: [
         { id: "a", kind: "task-end", at: NOW - 1000, node: null, counts: { added: 34, edited: 2, removed: 4 } },
@@ -383,7 +383,7 @@ describe("AgentActivityChip", () => {
    * Opening the bell must not mark everything read; the boundary moves only through the header door or
    * opening a row.
    */
-  it("벨을 여는 것만으로는 읽음이 되지 않는다 — 「모두 읽음」이 그 문이다", () => {
+  it("does not mark anything read just by opening the bell; 'mark all read' is that door", () => {
     const markAllRead = vi.fn();
     const task = finishedTask("a", NOW - 1000);
     renderBell({ markAllRead, sessions: [task.session], notifications: [task.notification] });
@@ -393,7 +393,7 @@ describe("AgentActivityChip", () => {
     expect(markAllRead).toHaveBeenCalledOnce();
   });
 
-  it("작업 알림도 내부 client id를 제품 이름으로 바꿔 말한다", () => {
+  it("speaks work notifications too with the internal client id turned into the product name", () => {
     renderBell({
       notifications: [
         { id: "a", kind: "task-end", at: NOW - 1000, node: null, agent: "codex-mcp-client", counts: { added: 2, edited: 0, removed: 0 } },
@@ -408,18 +408,18 @@ describe("AgentActivityChip", () => {
     expect(rows[1].textContent).not.toContain("Codex");
   });
 
-  it("설정에서 알림을 끄면 벨 자체가 없다", () => {
+  it("has no bell at all when notifications are turned off in settings", () => {
     renderChip({ notificationsEnabled: false });
     expect(screen.queryByTestId("agent-activity-bell")).toBeNull();
     expect(screen.getByTestId("agent-activity-status")).toBeInTheDocument();
   });
 
-  it("표시도 끄고 알릴 것도 없으면 자리를 차지하지 않는다", () => {
+  it("takes no space when display is off and there is nothing to notify", () => {
     const { container } = renderChip({ showStatus: false, notifications: [] });
     expect(container).toBeEmptyDOMElement();
   });
 
-  it("표시는 껐지만 알림이 있으면 벨만 남는다", () => {
+  it("keeps only the bell when display is off but a notification exists", () => {
     renderBell({
       showStatus: false,
       unreadCount: 1,
@@ -429,7 +429,7 @@ describe("AgentActivityChip", () => {
     expect(screen.getByTestId("agent-activity-bell")).toBeInTheDocument();
   });
 
-  it("방금 생긴 폴더 문제는 할 일이 되고 신호 톤을 쓴다", () => {
+  it("makes a just-arisen folder problem a to-do and uses the signal tone", () => {
     renderBell({
       notifications: [
         { id: "p", kind: "vault-problem", at: NOW - 1000, node: null, problems: { unresolvedEdges: 3, dependencyCycles: 1 } },
@@ -473,7 +473,7 @@ describe("AgentActivityChip", () => {
  * timeline behind them. It is seeded through this file's own feed stub, so the tabs, the
  * counts and the badge are measured against the same numbers the screenshots show.
  */
-describe('알림함 — 세 탭', () => {
+describe('inbox: three tabs', () => {
   // The panel remembers the tab; a remembered value from the previous case would decide
   // the next one's first frame.
   beforeEach(() => window.localStorage.clear());
@@ -532,7 +532,7 @@ describe('알림함 — 세 탭', () => {
     fireEvent.click(screen.getByTestId('agent-activity-bell'));
   };
 
-  it('기다리는 일이 있으면 그 탭으로 열리고 벨은 그 수를 말한다', () => {
+  it('opens on the waiting tab when something is waiting, and the bell says that count', () => {
     openBell();
     expect(screen.getByTestId('agent-inbox-panel-todo')).toBeInTheDocument();
     const rows = screen.getAllByTestId('agent-inbox-todo-row');
@@ -543,7 +543,7 @@ describe('알림함 — 세 탭', () => {
     expect(screen.getByTestId('agent-activity-unread')).toHaveTextContent('2');
   });
 
-  it('기다리는 요청의 문은 결정할 수 있는 자리로 보낸다 — 알림함에서 답하지 않는다', () => {
+  it('sends the door of a waiting request to where it can be decided, not answered in the inbox', () => {
     const onOpenConversation = vi.fn();
     mocks.feed = { ...feed(), ...seeded() } as AgentActivityFeed;
     render(
@@ -556,7 +556,7 @@ describe('알림함 — 세 탭', () => {
     expect(onOpenConversation).toHaveBeenCalledOnce();
   });
 
-  it('결과는 한 작업 한 줄이고 이어진 같은 제목은 ×2 로 접힌다', () => {
+  it('shows a result as one line per work and folds consecutive identical titles into ×2', () => {
     openBell();
     fireEvent.click(screen.getByRole('tab', { name: /결과/ }));
     const rows = screen.getAllByTestId('agent-inbox-result-row');
@@ -569,7 +569,7 @@ describe('알림함 — 세 탭', () => {
     expect(rows[2]).toHaveTextContent('2분');
   });
 
-  it('한 줄을 열면 그 줄까지만 읽음이 된다', () => {
+  it('marks read only up to a line once it is opened', () => {
     const markReadUpTo = vi.fn();
     openBell({ markReadUpTo });
     fireEvent.click(screen.getByRole('tab', { name: /결과/ }));
@@ -577,7 +577,7 @@ describe('알림함 — 세 탭', () => {
     expect(markReadUpTo).toHaveBeenCalledWith(NOW - 28 * MINUTE);
   });
 
-  it('기록은 하루를 제목으로 올리고 같은 작업의 시작과 끝을 한 줄로 접는다', () => {
+  it('raises a day to a heading in history and folds the start and end of the same work into one line', () => {
     openBell();
     fireEvent.click(screen.getByRole('tab', { name: /기록/ }));
     expect(screen.getAllByTestId('agent-inbox-history-day')).toHaveLength(1);
@@ -589,7 +589,7 @@ describe('알림함 — 세 탭', () => {
     expect(rows.some((row) => row.dataset.kind === 'human-decision')).toBe(true);
   });
 
-  it('탭은 하나의 탭 스톱이고 화살표로 옮긴다 — APG 라디오 문법', () => {
+  it('treats the tabs as one tab stop moved by arrows, the APG radio grammar', () => {
     openBell();
     const tabs = screen.getAllByRole('tab');
     expect(tabs).toHaveLength(3);
@@ -603,7 +603,7 @@ describe('알림함 — 세 탭', () => {
    * Memory governs the quiet grade only: with something waiting, the tab that opens is the
    * one the bell's badge is pointing at, whatever was remembered.
    */
-  it('마지막으로 본 탭을 기억한다 — 기다리는 일이 없으면 그 탭으로 다시 열린다', () => {
+  it('remembers the last tab seen and reopens on it when nothing is waiting', () => {
     openBell({
       work: feed().work,
       notifications: seeded().notifications?.filter((item) => item.kind !== 'vault-problem'),
@@ -615,7 +615,7 @@ describe('알림함 — 세 탭', () => {
     expect(screen.getByTestId('agent-inbox-panel-history')).toBeInTheDocument();
   });
 
-  it('빈 탭은 무엇이 없는지 말한다', () => {
+  it('says what is missing in an empty tab', () => {
     openBell({ work: feed().work, notifications: [], sessions: [], workReceipts: [{
       v: 1, id: 'r', at: new Date(NOW - MINUTE).toISOString(), updatedAt: new Date(NOW - MINUTE).toISOString(),
       agent: 'claude-code', request: '관계를 정리해줘', tool: 'add_relations', decision: 'allowed', result: 'completed', items: [],
@@ -638,15 +638,15 @@ describe('알림함 — 세 탭', () => {
  * The target node link must not float above neighbouring text; the cause is in
  * `tests/contract/layout/agent-bar-link-alignment.contract.test.ts`.
  */
-describe('하단 바 — 대상 링크 정렬', () => {
-  it('모양의 flex 를 지킨다 — truncate 축을 쓰면 깨진다', () => {
+describe('bottom bar: target link alignment', () => {
+  it('keeps the flex of the shape, which breaks if the truncate axis is used', () => {
     const source = readFileSync(
       join(process.cwd(), 'src/features/agent-activity/ui/AgentActivityChip.tsx'),
       'utf8',
     );
     const linkCall = source.slice(source.indexOf("shape: 'link'"));
     const call = linkCall.slice(0, linkCall.indexOf('})'));
-    expect(call, 'truncate 축은 block 을 넣어 inline-flex 를 밀어낸다').not.toContain('truncate: true');
-    expect(source, '자르기는 안쪽 글자가 맡는다').toContain('min-w-0 truncate');
+    expect(call, 'the truncate axis pushes out inline-flex by putting in block').not.toContain('truncate: true');
+    expect(source, 'truncation is left to the inner text').toContain('min-w-0 truncate');
   });
 });

@@ -168,7 +168,7 @@ describe("stepCamera", () => {
     });
 
 
-    it("복귀가 주사율이 아니라 시간을 따른다 — 60Hz 와 120Hz 가 같은 곳에 도착한다", () => {
+    it("the return follows time rather than refresh rate, so 60Hz and 120Hz arrive at the same place", () => {
       const elapsedSeconds = 0.2;
       const run = (frameSeconds: number) => {
         let camera: CameraAxes = { ...restCamera, x: { value: 500, velocity: 40 } };

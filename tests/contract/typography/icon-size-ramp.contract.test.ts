@@ -17,7 +17,7 @@ const CSS = readGlobalCss();
 /** Returns a ramp token's length in pixels at a 16px root; both `px` and `rem` are read. */
 function cssPx(name: string): number {
   const m = CSS.match(new RegExp(`^\\s*${name}\\s*:\\s*([0-9.]+)(px|rem);`, 'm'));
-  if (!m) throw new Error(`${name} 이 app/globals.css 에 없다`);
+  if (!m) throw new Error(`${name} is missing from app/globals.css`);
   return m[2] === 'rem' ? Number(m[1]) * 16 : Number(m[1]);
 }
 
@@ -136,20 +136,20 @@ const OFF_RAMP_DEBT: ReadonlyArray<readonly [string, number]> = [
  */
 const UNSIZED_DEBT: ReadonlyArray<readonly [string, number]> = [];
 
-describe('콘텐츠 아이콘 크기 램프', () => {
+describe('content icon size ramp', () => {
   const ramp = new Set<number>(Object.values(ICON_SIZE));
 
-  it('CSS 램프(--icon-*)와 JS 거울(ICON_SIZE)이 같은 값이다', () => {
+  it('the CSS ramp (--icon-*) and the JS mirror (ICON_SIZE) are the same value', () => {
     expect(cssPx('--icon-sm')).toBe(ICON_SIZE.sm);
     expect(cssPx('--icon-md')).toBe(ICON_SIZE.md);
     expect(cssPx('--icon-lg')).toBe(ICON_SIZE.lg);
   });
 
-  it('거울의 이름 집합이 3단(sm/md/lg)을 벗어나지 않는다 — 단을 늘리려면 원장부터', () => {
+  it('the mirror name set stays within 3 steps (sm/md/lg), and adding a step starts with the ledger', () => {
     expect(Object.keys(ICON_SIZE).sort()).toEqual(['lg', 'md', 'sm']);
   });
 
-  it('램프 단이 타입 램프의 짝 위에 서 있다 — sm≈label·body, md=body-lg, lg=title', () => {
+  it('ramp steps stand on their partner of the type ramp: sm is about label/body, md=body-lg, lg=title', () => {
     // If the pairing is redefined (a type ramp revision), this assertion forces a re-decision.
     expect(ICON_SIZE.md).toBe(cssPx('--text-body-lg'));
     expect(ICON_SIZE.lg).toBe(cssPx('--text-title'));
@@ -159,42 +159,42 @@ describe('콘텐츠 아이콘 크기 램프', () => {
 
   const scan = scanProduction(ramp);
 
-  it('탐지기가 공회전하지 않는다 — 제품을 실제로 먹는다', () => {
+  it('the detector does not spin idle, since it really consumes the product', () => {
     // Floor so that a vanished scan target cannot read as zero violations.
     expect(scan.total).toBeGreaterThanOrEqual(120);
   });
 
-  it('램프 밖 크기 리터럴은 장부를 넘지 못한다 — 새 파일은 첫날부터 0', () => {
+  it('size literals outside the ramp cannot exceed the ledger, and a new file is 0 from day one', () => {
     const ledger = new Map(OFF_RAMP_DEBT);
     const over: string[] = [];
     for (const [file, count] of scan.offRamp) {
       const allowed = ledger.get(file) ?? 0;
-      if (count > allowed) over.push(`${file}: ${count} > 장부 ${allowed}`);
+      if (count > allowed) over.push(`${file}: ${count} > ledger ${allowed}`);
     }
-    expect(over, '램프 밖 아이콘 크기가 늘었다 — ICON_SIZE(12/14/16)를 쓰거나, 새 단이 필요하면 「체계」 소집 + 원장').toEqual([]);
+    expect(over, 'icon sizes outside the ramp increased; use ICON_SIZE (12/14/16), or convene the type system group and add to the ledger if a new step is needed').toEqual([]);
   });
 
-  it('장부의 0 회수분은 줄을 지운다 — 장부가 실측보다 후하면 래칫이 헐겁다', () => {
+  it('a line whose count is back to 0 is deleted, since a ledger more generous than the measurement loosens the ratchet', () => {
     const stale: string[] = [];
     for (const [file, allowed] of OFF_RAMP_DEBT) {
       const actual = scan.offRamp.get(file) ?? 0;
-      if (actual < allowed) stale.push(`${file}: 장부 ${allowed} > 실측 ${actual} — 장부를 ${actual}로 내려라`);
+      if (actual < allowed) stale.push(`${file}: ledger ${allowed} > measured ${actual}; lower the ledger to ${actual}`);
     }
     expect(stale).toEqual([]);
   });
 
-  it('무지정(기본 24px) lucide 는 장부를 넘지 못한다', () => {
+  it('unsized lucide (default 24px) cannot exceed the ledger', () => {
     const ledger = new Map(UNSIZED_DEBT);
     const over: string[] = [];
     for (const [file, count] of scan.unsized) {
       const allowed = ledger.get(file) ?? 0;
-      if (count > allowed) over.push(`${file}: ${count} > 장부 ${allowed}`);
+      if (count > allowed) over.push(`${file}: ${count} > ledger ${allowed}`);
     }
-    expect(over, '크기 무지정 lucide 가 늘었다 — 기본 24 는 선택이 아니라 누락이다').toEqual([]);
+    expect(over, 'unsized lucide increased; the default 24 is an omission rather than a choice').toEqual([]);
     const stale: string[] = [];
     for (const [file, allowed] of UNSIZED_DEBT) {
       const actual = scan.unsized.get(file) ?? 0;
-      if (actual < allowed) stale.push(`${file}: 장부 ${allowed} > 실측 ${actual}`);
+      if (actual < allowed) stale.push(`${file}: ledger ${allowed} > measured ${actual}`);
     }
     expect(stale).toEqual([]);
   });
@@ -206,7 +206,7 @@ describe('콘텐츠 아이콘 크기 램프', () => {
    * fall back to 24px with nothing turning red. So the name set and the real CSS are
    * tied together here.
    */
-  it('슬롯 소유자는 자기 슬롯의 svg 크기를 실제로 소유한다 ([&>svg]:size-*)', () => {
+  it('a slot owner really owns the svg size of its slot ([&>svg]:size-*)', () => {
     const OWNER_FILES: Record<string, string> = {
       ChromeChip: 'src/shared/ui/controls/chrome-chip.tsx',
       ChromeTile: 'src/shared/ui/controls/chrome-tile.tsx',
@@ -217,7 +217,7 @@ describe('콘텐츠 아이콘 크기 램프', () => {
       const src = readFileSync(path.join(ROOT, rel), 'utf8');
       expect(
         src.includes('[&>svg]:size-'),
-        `${owner}(${rel}) 가 슬롯 svg 크기를 잃었다 — 슬롯 면제(SIZED_SLOT_OWNERS)의 전제가 무너진다`,
+        `${owner}(${rel}) lost the slot svg size, which breaks the premise of the slot exemption (SIZED_SLOT_OWNERS)`,
       ).toBe(true);
     }
   });
@@ -227,7 +227,7 @@ describe('콘텐츠 아이콘 크기 램프', () => {
    * the same function. (The gate-probe discipline: prove the detector consumes real
    * defects, not merely that violations exist.)
    */
-  it('프로브: 램프 밖 prop·class 는 잡히고, 램프 값·문자열 size·비-lucide 는 통과한다', () => {
+  it('probe: props and classes outside the ramp are caught, while ramp values, string sizes and non-lucide pass', () => {
     const probe = (body: string): IconScan => {
       const acc: IconScan = { total: 0, offRamp: new Map(), unsized: new Map() };
       scanSource(
@@ -254,7 +254,7 @@ describe('콘텐츠 아이콘 크기 램프', () => {
     // Unspecified in a slot — not unspecified when the slot belongs to a size-owning primitive
     const owned = probe('<ChromeChip icon={<Check aria-hidden />} />');
     expect(owned.unsized.size).toBe(0);
-    expect(owned.total, '슬롯 면제가 분모까지 지우면 공회전 단언이 헐거워진다').toBe(1);
+    expect(owned.total, 'if the slot exemption also erases the denominator, the idle assertion loosens').toBe(1);
     // A slot on an **unknown consumer** still counts as unspecified (the exemption errs toward over-reporting)
     expect(probe('<Mystery icon={<Check aria-hidden />} />').unsized.get('probe.tsx')).toBe(1);
     // Off-ramp literals are still caught inside a slot
@@ -271,7 +271,7 @@ describe('콘텐츠 아이콘 크기 램프', () => {
    * Probe with double-quoted imports: probes written with single quotes only would share the
    * scanner's blind spot and prove nothing.
    */
-  it('프로브: 큰따옴표 lucide import 도 본다 (73% 를 못 보던 실명의 재현)', () => {
+  it('probe: also sees a double-quoted lucide import (reproducing the blindness that missed 73%)', () => {
     const acc: IconScan = { total: 0, offRamp: new Map(), unsized: new Map() };
     scanSource(
       'double.tsx',
@@ -279,7 +279,7 @@ describe('콘텐츠 아이콘 크기 램프', () => {
       ramp,
       acc,
     );
-    expect(acc.total, '큰따옴표 import 를 못 보면 이 래칫은 저장소의 73% 에 대해 존재하지 않는다').toBe(1);
+    expect(acc.total, 'without seeing double-quoted imports this ratchet does not exist for 73% of the repository').toBe(1);
     expect(acc.offRamp.get('double.tsx')).toBe(1);
   });
 
@@ -291,7 +291,7 @@ describe('콘텐츠 아이콘 크기 램프', () => {
    * skipped 73% of the files. This assertion checks that icons are actually being
    * counted in **both notations that exist in the repository**.
    */
-  it('실물 커버리지: 두 따옴표 표기 파일 모두에서 아이콘을 센다', () => {
+  it('real coverage: counts icons in files of both quote styles', () => {
     const seen = { single: 0, double: 0 };
     const walkAll = (dir: string): void => {
       for (const name of readdirSync(dir)) {
@@ -312,11 +312,11 @@ describe('콘텐츠 아이콘 크기 램프', () => {
     };
     for (const root of ['src', 'app']) walkAll(path.join(ROOT, root));
 
-    expect(seen.single, "작은따옴표 파일에서 센 아이콘이 0 — 스캐너가 한쪽 표기를 잃었다").toBeGreaterThan(50);
-    expect(seen.double, "큰따옴표 파일에서 센 아이콘이 0 — 2026-08-05 의 실명이 되돌아왔다").toBeGreaterThan(50);
+    expect(seen.single, "0 icons counted in single-quoted files, so the scanner lost one notation").toBeGreaterThan(50);
+    expect(seen.double, "0 icons counted in double-quoted files, so the old blindness came back").toBeGreaterThan(50);
   });
 
-  it('프로브: 스캔 루트가 공집합이면 실패한다', () => {
+  it('probe: fails when the scan root is an empty set', () => {
     const acc: IconScan = { total: 0, offRamp: new Map(), unsized: new Map() };
     scanSource('empty.tsx', '', ramp, acc);
     expect(acc.total).toBe(0); // Empty source is 0 — the denominator assertion (≥120) above blocks empty-set idling

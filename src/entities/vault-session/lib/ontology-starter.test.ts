@@ -17,7 +17,7 @@ const ROOT = path.resolve(__dirname, "../../../..");
 const ONTOLOGY_STARTER_FILES = starterFilesForLocale("en");
 
 describe("ONTOLOGY_STARTER_FILES", () => {
-  it("5 시드 파일 제공 — README + project + 3 example (domain/capability/element)", () => {
+  it("ships 5 seed files: README, project, and 3 examples (domain/capability/element)", () => {
     expect(ONTOLOGY_STARTER_FILES).toHaveLength(5);
     const paths = ONTOLOGY_STARTER_FILES.map((f) => f.relPath);
     expect(paths).toContain("README.md");
@@ -27,14 +27,14 @@ describe("ONTOLOGY_STARTER_FILES", () => {
     expect(paths).toContain("elements/example-element.md");
   });
 
-  it("모든 파일이 frontmatter 시작 (---) + kind 키 포함", () => {
+  it("starts every file with frontmatter (---) and includes a kind key", () => {
     for (const f of ONTOLOGY_STARTER_FILES) {
       expect(f.content.startsWith("---\n")).toBe(true);
       expect(f.content).toMatch(/^kind:\s/m);
     }
   });
 
-  it("정적 템플릿에는 UID를 고정하지 않고 scaffold마다 모든 노드에 새 UID를 발급", () => {
+  it("leaves UID unpinned in the static template and mints a new UID for every node on each scaffold", () => {
     const firstUids = [
       "00000000-0000-4000-8000-000000000001",
       "00000000-0000-4000-8000-000000000002",
@@ -82,14 +82,14 @@ describe("ONTOLOGY_STARTER_FILES", () => {
     }
   });
 
-  it("3 example 파일은 정확히 1 줄로 example slug 가짐 (도메인/역량/요소 컨벤션)", () => {
+  it("gives each of the 3 example files exactly one line with the example slug (domain/capability/element convention)", () => {
     const example = ONTOLOGY_STARTER_FILES.find(
       (f) => f.relPath === "domains/example-domain.md",
     );
     expect(example?.content).toMatch(/^slug:\s+domains\/example-domain/m);
   });
 
-  it("app starter 와 CLI template 은 같은 vault README/setup 안내를 제공", () => {
+  it("gives the app starter and the CLI template the same vault README and setup guidance", () => {
     for (const starterFile of ONTOLOGY_STARTER_FILES) {
       const template = readFileSync(
         path.join(ROOT, "cli/templates/vault", starterFile.relPath),
@@ -99,7 +99,7 @@ describe("ONTOLOGY_STARTER_FILES", () => {
     }
   });
 
-  it("starter README 는 두 채널(설치 앱 · 소스 체크아웃)만 안내한다", () => {
+  it("has the starter README cover only two channels (installed app, source checkout)", () => {
     const readme = ONTOLOGY_STARTER_FILES.find(
       (f) => f.relPath === "README.md",
     )?.content;
@@ -117,7 +117,7 @@ describe("ONTOLOGY_STARTER_FILES", () => {
     expect(readme).toContain("OATLAS_VAULT");
   });
 
-  it("starter README 에 실행 불가능한 명령이 없다", () => {
+  it("keeps unrunnable commands out of the starter README", () => {
     for (const locale of ["en", "ko"] as const) {
       const readme = starterFilesForLocale(locale).find(
         (f) => f.relPath === "README.md",
@@ -131,7 +131,7 @@ describe("ONTOLOGY_STARTER_FILES", () => {
     }
   });
 
-  it("starter README 는 live MCP inventory 와 read-first 시작점을 안내", () => {
+  it("has the starter README show the live MCP inventory and a read-first starting point", () => {
     for (const locale of ["en", "ko"] as const) {
       const readme = starterFilesForLocale(locale).find(
         (f) => f.relPath === "README.md",
@@ -148,7 +148,7 @@ describe("ONTOLOGY_STARTER_FILES", () => {
     }
   });
 
-  it("starter README 는 첫 agent 연결 검증 루프를 안내", () => {
+  it("has the starter README show a first agent connection verification loop", () => {
     const readme = ONTOLOGY_STARTER_FILES.find(
       (f) => f.relPath === "README.md",
     )?.content;
@@ -176,7 +176,7 @@ describe("ONTOLOGY_STARTER_FILES", () => {
 });
 
 describe("buildMcpConfigJson", () => {
-  it("MCP server 'ontology-atlas' 항목과 OATLAS_VAULT env placeholder 포함", () => {
+  it("includes the MCP server 'ontology-atlas' entry and the OATLAS_VAULT env placeholder", () => {
     const json = buildMcpConfigJson("my-vault");
     const parsed = JSON.parse(json);
     expect(parsed).toEqual({
@@ -192,12 +192,12 @@ describe("buildMcpConfigJson", () => {
     });
   });
 
-  it("vaultName 이 문자 그대로 placeholder 안에 박힘", () => {
+  it("embeds vaultName verbatim in the placeholder", () => {
     expect(buildMcpConfigJson("foo")).toContain("your foo folder");
     expect(buildMcpConfigJson("한글-vault")).toContain("your 한글-vault folder");
   });
 
-  it("설치 앱이 알고 있는 vault 절대경로를 OATLAS_VAULT 에 바로 넣을 수 있다", () => {
+  it("lets the installed app put the vault absolute path it knows straight into OATLAS_VAULT", () => {
     const parsed = JSON.parse(
       buildMcpConfigJson("team-vault", "/Users/dana/Team Vault/docs/ontology"),
     );
@@ -207,11 +207,11 @@ describe("buildMcpConfigJson", () => {
     );
   });
 
-  it("출력 끝에 newline 추가 (편집기 친화)", () => {
+  it("appends a newline at the end of the output (editor friendly)", () => {
     expect(buildMcpConfigJson("v")).toMatch(/\n$/);
   });
 
-  it("2-space 들여쓰기로 pretty-print", () => {
+  it("pretty-prints with 2-space indentation", () => {
     const json = buildMcpConfigJson("v");
     expect(json).toContain("  \"mcpServers\":");
     expect(json).toContain("    \"ontology-atlas\":");
@@ -219,7 +219,7 @@ describe("buildMcpConfigJson", () => {
 });
 
 describe("buildVaultMcpConfigJson", () => {
-  it("vault 폴더 자체를 agent에서 열 때 바로 쓰는 OATLAS_VAULT=. config 제공", () => {
+  it("provides the OATLAS_VAULT=. config for opening the vault folder itself in an agent", () => {
     const parsed = JSON.parse(buildVaultMcpConfigJson());
     expect(parsed.mcpServers["ontology-atlas"].command).toBe("node");
     expect(parsed.mcpServers["ontology-atlas"].args).toEqual([
@@ -230,7 +230,7 @@ describe("buildVaultMcpConfigJson", () => {
 });
 
 describe("buildCodexConfigToml", () => {
-  it("Codex repo-local MCP config 를 vault-relative 로 제공", () => {
+  it("provides the Codex repo-local MCP config as vault-relative", () => {
     const toml = buildCodexConfigToml();
     expect(toml).toContain("[mcp_servers.ontology-atlas]");
     expect(toml).toContain('command = "node"');
@@ -242,7 +242,7 @@ describe("buildCodexConfigToml", () => {
     expect(toml).toMatch(/\n$/);
   });
 
-  it("Codex codebase-root MCP config template 은 절대경로 placeholder 를 제공", () => {
+  it("provides an absolute-path placeholder in the Codex codebase-root MCP config template", () => {
     const toml = buildCodexConfigTomlTemplate("team-vault");
     expect(toml).toContain("[mcp_servers.ontology-atlas]");
     expect(toml).toContain('command = "node"');
@@ -255,7 +255,7 @@ describe("buildCodexConfigToml", () => {
     expect(toml).toMatch(/\n$/);
   });
 
-  it("Codex codebase-root MCP config template 은 알려진 vault 절대경로를 바로 넣을 수 있다", () => {
+  it("lets the Codex codebase-root MCP config template take the known vault absolute path directly", () => {
     const toml = buildCodexConfigTomlTemplate(
       "team-vault",
       "/Users/dana/Team Vault/docs/ontology",
@@ -267,14 +267,14 @@ describe("buildCodexConfigToml", () => {
     expect(toml).not.toContain("<absolute path to your team-vault folder>");
   });
 
-  it("Codex MCP config 는 OATLAS_VAULT 값을 TOML string 으로 escape 한다", () => {
+  it("escapes the OATLAS_VAULT value in the Codex MCP config as a TOML string", () => {
     const toml = buildCodexConfigToml('/tmp/vault "quoted"');
     expect(toml).toContain('OATLAS_VAULT = "/tmp/vault \\"quoted\\""');
   });
 });
 
 describe("buildCodexMcpAddCommandTemplate", () => {
-  it("Codex CLI one-line MCP 등록 명령을 절대경로 placeholder 로 제공", () => {
+  it("provides the Codex CLI one-line MCP registration command with an absolute-path placeholder", () => {
     const command = buildCodexMcpAddCommandTemplate("team-vault");
 
     expect(command).toContain("codex mcp add ontology-atlas");
@@ -286,7 +286,7 @@ describe("buildCodexMcpAddCommandTemplate", () => {
     );
   });
 
-  it("Codex CLI one-line MCP 등록 명령은 알려진 vault 절대경로를 shell-safe 하게 넣는다", () => {
+  it("puts the known vault absolute path into the Codex CLI one-line MCP registration command shell-safely", () => {
     const command = buildCodexMcpAddCommandTemplate(
       "team-vault",
       "/Users/dana/Team Vault/docs/ontology",
@@ -298,7 +298,7 @@ describe("buildCodexMcpAddCommandTemplate", () => {
     expect(command).not.toContain("<absolute path to your team-vault folder>");
   });
 
-  it("vault 이름의 작은따옴표를 shell-safe 하게 escape 한다", () => {
+  it("escapes a single quote in the vault name shell-safely", () => {
     const command = buildCodexMcpAddCommandTemplate("team's vault");
 
     expect(command).toContain(
@@ -308,7 +308,7 @@ describe("buildCodexMcpAddCommandTemplate", () => {
 });
 
 describe("buildAgentSetupCliCommandTemplate", () => {
-  it("기존 vault 를 codebase-root 에 연결하는 안전한 CLI repair 명령을 제공", () => {
+  it("provides a safe CLI repair command that attaches an existing vault to the codebase root", () => {
     const command = buildAgentSetupCliCommandTemplate("team-vault");
 
     expect(command).toBe(
@@ -316,7 +316,7 @@ describe("buildAgentSetupCliCommandTemplate", () => {
     );
   });
 
-  it("vault 이름의 작은따옴표를 shell-safe 하게 escape 한다", () => {
+  it("escapes a single quote in the vault name shell-safely", () => {
     const command = buildAgentSetupCliCommandTemplate("team's vault");
 
     expect(command).toContain(
@@ -326,7 +326,7 @@ describe("buildAgentSetupCliCommandTemplate", () => {
 });
 
 describe("buildAgentSetupCheckCliCommandTemplate", () => {
-  it("기존 vault 의 codebase-root 설정 상태를 JSON dry-run 으로 점검하는 명령을 제공", () => {
+  it("provides a command that checks an existing vault's codebase-root setup state as a JSON dry-run", () => {
     const command = buildAgentSetupCheckCliCommandTemplate("team-vault");
 
     expect(command).toBe(
@@ -334,7 +334,7 @@ describe("buildAgentSetupCheckCliCommandTemplate", () => {
     );
   });
 
-  it("vault 이름의 작은따옴표를 shell-safe 하게 escape 한다", () => {
+  it("escapes a single quote in the vault name shell-safely", () => {
     const command = buildAgentSetupCheckCliCommandTemplate("team's vault");
 
     expect(command).toContain(

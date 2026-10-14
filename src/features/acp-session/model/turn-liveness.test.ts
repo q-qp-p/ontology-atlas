@@ -7,8 +7,8 @@ import { TURN_SILENCE_LIMIT_MS, turnLiveness } from './turn-liveness';
  * person could not make in the installed rc.11 build, where a finished turn looked exactly like a
  * running one and locked the composer for thirteen minutes.
  */
-describe('turn-liveness — 아직 일하는 중인지, 대답을 멈춘 것인지', () => {
-  it('턴이 열려 있지 않으면 판정하지 않는다', () => {
+describe('turn-liveness: still working, or stopped answering', () => {
+  it('does not judge when no turn is open', () => {
     for (const status of ['ready', 'idle', 'starting', 'error', 'exited']) {
       expect(turnLiveness(status, 0, Number.MAX_SAFE_INTEGER)).toBe('idle');
     }
@@ -19,11 +19,11 @@ describe('turn-liveness — 아직 일하는 중인지, 대답을 멈춘 것인�
    * epoch" would flag every turn on its first frame, which is the opposite failure: the screen would
    * cry stall while the agent is starting normally.
    */
-  it('막 시작해 아직 소식이 없는 턴은 멈춘 것이 아니다', () => {
+  it('a turn that just started with no news yet is not stalled', () => {
     expect(turnLiveness('thinking', null, 1_000_000)).toBe('working');
   });
 
-  it('갱신이 계속 오는 동안은 아무리 길어도 살아 있다', () => {
+  it('stays alive however long while updates keep coming', () => {
     const start = 1_000_000;
     // A sweep that has run twenty minutes but spoke one second ago is working, not stalled. The
     // no-timeout rule for `prompt` exists for exactly this turn.
@@ -32,7 +32,7 @@ describe('turn-liveness — 아직 일하는 중인지, 대답을 멈춘 것인�
     );
   });
 
-  it('한계만큼 조용하면 멈춘 것으로 본다', () => {
+  it('counts it stalled when quiet for the limit', () => {
     const t = 1_000_000;
     expect(turnLiveness('thinking', t, t + TURN_SILENCE_LIMIT_MS - 1)).toBe('working');
     expect(turnLiveness('thinking', t, t + TURN_SILENCE_LIMIT_MS)).toBe('silent');
@@ -45,14 +45,14 @@ describe('turn-liveness — 아직 일하는 중인지, 대답을 멈춘 것인�
    * stop while an answer is awaited — but the person *is* the thing that has stopped, and the card
    * already explains the wait.
    */
-  it('사람의 승인을 기다리는 중이면 침묵이라고 하지 않는다', () => {
+  it('does not call it silence while waiting for human approval', () => {
     const t = 1_000_000;
     expect(turnLiveness('thinking', t, t + 13 * 60_000, true)).toBe('awaiting-answer');
     // Same clock, no card on screen: still a stall.
     expect(turnLiveness('thinking', t, t + 13 * 60_000, false)).toBe('silent');
   });
 
-  it('한계는 호출자가 정할 수 있다 — 시험이 실시간을 기다리지 않도록', () => {
+  it('lets the caller set the limit, so tests need not wait in real time', () => {
     expect(turnLiveness('thinking', 0, 50, false, 100)).toBe('working');
     expect(turnLiveness('thinking', 0, 100, false, 100)).toBe('silent');
   });
@@ -61,7 +61,7 @@ describe('turn-liveness — 아직 일하는 중인지, 대답을 멈춘 것인�
    * ⚠️ The limit guards a person's patience, not a machine's. Set it below the real gap between
    * steps and the screen calls a healthy sweep stalled, which teaches people to ignore the warning.
    */
-  it('한계는 실제 단계 간격보다 충분히 크다', () => {
+  it('keeps the limit well above the real step interval', () => {
     expect(TURN_SILENCE_LIMIT_MS).toBeGreaterThanOrEqual(60_000);
   });
 });

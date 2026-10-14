@@ -21,7 +21,7 @@ async function settleCamera(page: Page) {
   await waitForMapStill(page, { what: "camera" });
 }
 
-test("짧은 선택 인스펙터도 실제 자유 영역으로 카메라를 민다", async ({ page }) => {
+test("even a short selection inspector pushes the camera into the real free area", async ({ page }) => {
   test.setTimeout(90_000);
   await page.setViewportSize({ width: 1512, height: 900 });
   await seedFirstRunSeen(page);
@@ -65,10 +65,10 @@ test("짧은 선택 인스펙터도 실제 자유 영역으로 카메라를 민�
     };
   });
 
-  expect(measured, "짧은 선택 인스펙터 기하를 측정하지 못했다").not.toBeNull();
+  expect(measured, "could not measure the short selection inspector geometry").not.toBeNull();
   expect(
     measured!.panelHeightRatio,
-    "이 fixture가 60% 휴리스틱 아래의 짧은 인스펙터를 만들지 않았다",
+    "this fixture did not produce a short inspector below the 60% heuristic",
   ).toBeLessThan(0.6);
   expect(measured!.marker).toBe("side-panel");
   expect(measured!.panelWidth).toBeGreaterThan(300);
@@ -84,7 +84,7 @@ test("짧은 선택 인스펙터도 실제 자유 영역으로 카메라를 민�
  *
  * `main#main` is the product structure where the map flex area and the right dock are siblings. Attaching a temporary sibling of the same width here makes the map ResizeObserver, canvas backing, and camera follow the same path as in the actual app. This method is more important than a simple viewport resize because the reported defect condition is that **only the map area** shrinks while the window size remains the same.
  */
-test("우측 도크로 지도 폭이 줄면 현재 overview를 새 가용영역에 다시 맞춘다", async ({ page }) => {
+test("refits the current overview to the new available area when the right dock narrows the map", async ({ page }) => {
   test.setTimeout(90_000);
   /*
    * A narrower map moves the camera only when the frame is width-bound; a height-bound overview
@@ -99,7 +99,7 @@ test("우측 도크로 지도 폭이 줄면 현재 overview를 새 가용영역�
   await expect
     .poll(() => page.evaluate(() => window.__atlasMap?.nodes().length ?? 0), {
       timeout: 20_000,
-      message: "지도 검사 창구가 열리지 않았다",
+      message: "the map inspection hook did not open",
     })
     .toBeGreaterThan(20);
 
@@ -242,7 +242,7 @@ test("우측 도크로 지도 폭이 줄면 현재 overview를 새 가용영역�
     Math.abs(automatic!.scale - atResizeSettle!.scale) * 100;
   expect(
     motionRemainingAfterResizeSettle / totalMotion,
-    '도크가 정착한 뒤 unrelated work가 카메라 잔여 이동을 다시 깨웠다',
+    'after the dock settled, unrelated work woke the residual camera movement again',
   ).toBeLessThan(0.02);
   const maxPostResizeDrift = Math.max(
     ...postResizeSamples.map(
@@ -254,7 +254,7 @@ test("우측 도크로 지도 폭이 줄면 현재 overview를 새 가용영역�
   );
   expect(
     maxPostResizeDrift / totalMotion,
-    '도크 정착 뒤 underdamped camera가 되튕겨 두 번째 움직임을 만들었다',
+    'after the dock settled, the underdamped camera bounced back and made a second movement',
   ).toBeLessThan(0.0001);
 
   // The correct answer for auto-reframe is the same as the user-triggered "Fit to Map".
@@ -267,7 +267,7 @@ test("우측 도크로 지도 폭이 줄면 현재 overview를 새 가용영역�
   expect(automatic!.scale).toBeCloseTo(explicit!.scale, 3);
 });
 
-test("노드 인스펙터를 닫으면 퇴장 중 패널 폭을 남기지 않고 overview로 돌아간다", async ({
+test("closing the node inspector returns to the overview without keeping the exiting panel width", async ({
   page,
 }) => {
   test.setTimeout(90_000);
@@ -300,7 +300,7 @@ test("노드 인스펙터를 닫으면 퇴장 중 패널 폭을 남기지 않고
     const box = canvas.getBoundingClientRect();
     return { x: box.left + node.x, y: box.top + node.y };
   });
-  expect(target, "클릭할 도메인 노드를 지도에서 찾지 못했다").not.toBeNull();
+  expect(target, "found no domain node to click on the map").not.toBeNull();
   await page.mouse.click(target!.x, target!.y);
   await expect(page.getByTestId("map-detail-panel")).toBeVisible();
   await settleCamera(page);

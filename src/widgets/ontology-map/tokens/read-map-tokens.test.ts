@@ -269,13 +269,13 @@ describe("resolveOntologyMapTokens", () => {
   });
 });
 
-describe("refreshIndexDependentTokens — 표적 갱신", () => {
-  it("캐시가 없으면 아무것도 하지 않는다 (다음 읽기가 최신을 가져간다)", () => {
+describe("refreshIndexDependentTokens: targeted refresh", () => {
+  it("does nothing when there is no cache (the next read fetches the latest)", () => {
     clearOntologyMapTokensCache();
     expect(() => refreshIndexDependentTokens(document.documentElement)).not.toThrow();
   });
 
-  it("갱신 대상 토큰만 다시 읽고 나머지 캐시는 보존한다", () => {
+  it("re-reads only the tokens being refreshed and keeps the rest of the cache", () => {
     clearOntologyMapTokensCache();
     const root = document.documentElement;
     for (const [name, value] of Object.entries(FIXTURE_VALUES)) {

@@ -85,12 +85,12 @@ const chipInput = (over: Partial<Parameters<typeof clusterChipOccupancyRect>[0]>
   ...over,
 });
 
-describe("확장 설정 — 기본값", () => {
+describe("expand settings: defaults", () => {
   /**
    * The default affordance is the overhead bar. It is the one default that deliberately changes the
    * screen, so it is pinned (`docs/DECISIONS.md`).
    */
-  it("설정을 안 건드린 사람은 「머리 위 막대」를 받는다", () => {
+  it("someone who never touched the settings gets the \"bar above the head\"", () => {
     expect(DEFAULT_EXPAND.affordance).toBe("bar");
     expect(resolveExpand(null).affordance).toBe("bar");
     expect(resolveExpand({}).affordance).toBe("bar");
@@ -102,7 +102,7 @@ describe("확장 설정 — 기본값", () => {
    * Two defaults change the screen: the affordance (bar) and the layout (fan). The three numbers stay
    * at their existing constants, else the cause of a screen change cannot be told.
    */
-  it("화면을 바꾸는 기본값은 어포던스와 배치 둘뿐이다", () => {
+  it("only two defaults change the screen: affordance and arrangement", () => {
     expect(DEFAULT_EXPAND.affordance).toBe("bar");
     expect(DEFAULT_EXPAND.structure).toBe<ExpandStructure>("fan");
     expect(DEFAULT_EXPAND.batchSize).toBe(EGO_NEIGHBOR_LIMIT);
@@ -114,7 +114,7 @@ describe("확장 설정 — 기본값", () => {
    * `disc` stays selectable because it is the way back to the previous layout; removing it turns that
    * reversal into a code change (`docs/DECISIONS.md`).
    */
-  it("종전 배치(나선 원반)는 선택지로 남아 있다", () => {
+  it("the previous arrangement (spiral disc) remains as a choice", () => {
     expect(EXPAND_STRUCTURES).toContain<ExpandStructure>("disc");
   });
 
@@ -123,7 +123,7 @@ describe("확장 설정 — 기본값", () => {
    * three defaults must sit **inside** those ranges — outside, opening settings
    * clamps the value and changes a screen the user never touched.
    */
-  it("범위는 시안 값이고 기본값은 그 안에 있다", () => {
+  it("the range is the mockup value and the default is inside it", () => {
     expect(EXPAND_RANGES.batchSize).toMatchObject({ min: 4, max: 24 });
     expect(EXPAND_RANGES.labelAttempts).toMatchObject({ min: 3, max: 40 });
     expect(EXPAND_RANGES.maxOpenParents).toMatchObject({ min: 1, max: 6 });
@@ -133,7 +133,7 @@ describe("확장 설정 — 기본값", () => {
     }
   });
 
-  it("범위 밖 저장값은 잘라 넣는다(렌더러에 NaN 이 새지 않게)", () => {
+  it("a stored value outside the range is clamped in, so NaN does not leak into the renderer", () => {
     expect(resolveExpand({ batchSize: 999 }).batchSize).toBe(24);
     expect(resolveExpand({ batchSize: -5 }).batchSize).toBe(4);
     expect(resolveExpand({ maxOpenParents: Number.NaN }).maxOpenParents).toBe(
@@ -142,17 +142,17 @@ describe("확장 설정 — 기본값", () => {
   });
 });
 
-describe("펼치기 표시 — 셋이 실제로 갈아끼워진다", () => {
+describe("expand display: the three really swap", () => {
   /**
    * A stored value with an unchanged screen is decoration, not a setting. Start by
    * locking that the three produce **different forms**.
    */
-  it("접힌 부모: 알약 · 막대(고른 노드) · 배지가 서로 다른 형태다", () => {
+  it("collapsed parent: pill, bar (picked node) and badge are different forms", () => {
     const forms = EXPAND_AFFORDANCES.map((affordance) =>
       clusterControlForm({ affordance, expanded: false, focused: true }),
     );
     expect(forms).toEqual(["pill", "bar", "badge"]);
-    expect(new Set(forms).size, "셋이 같은 형태로 붕괴했다").toBe(3);
+    expect(new Set(forms).size, "the three collapsed into the same form").toBe(3);
   });
 
   /**
@@ -160,7 +160,7 @@ describe("펼치기 표시 — 셋이 실제로 갈아끼워진다", () => {
    * bar floats permanently like the pill, erasing the difference between the
    * three.
    */
-  it("막대는 고른 노드에만 존재한다", () => {
+  it("the bar exists only on the picked node", () => {
     expect(clusterControlForm({ affordance: "bar", expanded: false, focused: false })).toBe("none");
     expect(clusterControlForm({ affordance: "bar", expanded: false, focused: true })).toBe("bar");
     // Judged absent means **it reserves no space either** — a phantom reservation
@@ -171,20 +171,20 @@ describe("펼치기 표시 — 셋이 실제로 갈아끼워진다", () => {
   });
 
   /** The three rectangles must sit in **different places** to differ on screen — measured in px. */
-  it("셋의 사각형이 서로 다른 자리에 앉는다", () => {
+  it("the three rectangles sit in different places", () => {
     const rects = EXPAND_AFFORDANCES.map((affordance) => {
       const rect = clusterChipOccupancyRect(chipInput({ affordance, focused: true }));
-      expect(rect, `${affordance} 가 사각형을 안 낸다`).not.toBeNull();
+      expect(rect, `${affordance} produces no rectangle`).not.toBeNull();
       return rect as NonNullable<typeof rect>;
     });
     const centers = rects.map((r) => `${Math.round(r.x + r.w / 2)},${Math.round(r.y + r.h / 2)}`);
-    expect(new Set(centers).size, `셋이 같은 자리다: ${centers.join(" / ")}`).toBe(3);
+    expect(new Set(centers).size, `the three are in the same place: ${centers.join(" / ")}`).toBe(3);
 
     const [pill, bar, badge] = rects;
     // The bar draws nothing in the pill's leading glyph zone. Assert the plate width is exactly text width
     // plus horizontal padding, not 'narrower than the pill', which would measure the language.
     const barLabel = clusterBarLabel({ expanded: false, count: 31, batchSize: 24, labels: KO_BAR_LABELS });
-    expect(bar.w, "막대에 그리는 것 없는 폭이 생겼다").toBeCloseTo(
+    expect(bar.w, "the bar got a width with nothing drawn on it").toBeCloseTo(
       estimateCanvasTextWidth(barLabel, 12) + 20,
       6,
     );
@@ -203,7 +203,7 @@ describe("펼치기 표시 — 셋이 실제로 갈아끼워진다", () => {
    * identical to before: collapsed = pill (anchor), expanded = shoulder badge, the
    * same pairing as before.
    */
-  it("「뜬 알약」은 종전 지오메트리와 같다", () => {
+  it("the \"floating pill\" equals the previous geometry", () => {
     const collapsed = clusterChipOccupancyRect(chipInput({ affordance: "pill", focused: true }));
     expect(collapsed).toEqual(clusterChipRect(ANCHOR.x, ANCHOR.y, "+31", 1));
     const expanded = clusterChipOccupancyRect(
@@ -215,7 +215,7 @@ describe("펼치기 표시 — 셋이 실제로 갈아끼워진다", () => {
   });
 
   /** The overhead bar is a bar both collapsed and expanded; the **copy** is what changes. */
-  it("「머리 위 막대」의 예약 사각형이 막대 지오메트리와 같다", () => {
+  it("the reserved rectangle of the \"bar above the head\" equals the bar geometry", () => {
     const collapsed = clusterChipOccupancyRect(chipInput({ affordance: "bar", focused: true }));
     expect(collapsed).toEqual(
       // Only 24 of the 31 open this time — that 24 is a **different number** from the node's engraved 31.
@@ -228,7 +228,7 @@ describe("펼치기 표시 — 셋이 실제로 갈아끼워진다", () => {
   });
 
   /** The shoulder badge is a badge **both** collapsed and expanded; only the sign changes. */
-  it("「어깨 배지」는 접혀도 배지고 부호만 `+`↔`−` 다", () => {
+  it("the \"shoulder badge\" stays a badge when collapsed and only the sign differs, `+` versus `−`", () => {
     const collapsed = clusterChipOccupancyRect(chipInput({ affordance: "badge", focused: true }));
     expect(collapsed).toEqual(clusterBadgeRect(PARENT.x, PARENT.y, PARENT.radius, "+31", 1));
     const expanded = clusterChipOccupancyRect(
@@ -247,7 +247,7 @@ describe("펼치기 표시 — 셋이 실제로 갈아끼워진다", () => {
    * What cannot dock stays in an undocked form: the `+N more` chip has a synthetic parent id with no
    * node in the graph, so docking would leave it neither drawn nor clickable.
    */
-  it("부모 좌표를 모르면 도킹 형태 대신 알약으로 남는다 — 사라지지 않는다", () => {
+  it("without the parent coordinates it stays a pill instead of the docked form, and does not disappear", () => {
     for (const affordance of ["bar", "badge"] as const) {
       const undocked = {
         screenX: ANCHOR.x,
@@ -269,7 +269,7 @@ describe("펼치기 표시 — 셋이 실제로 갈아끼워진다", () => {
       // And it really is painted (idling guard).
       const rec = recordingCtx();
       drawClusterChip(rec.ctx, undocked, COLORS);
-      expect(rec.ops, `${affordance}: 못 붙는 칩이 통째로 사라졌다`).toContain("fill");
+      expect(rec.ops, `${affordance}: a chip that cannot attach vanished entirely`).toContain("fill");
     }
   });
 
@@ -278,7 +278,7 @@ describe("펼치기 표시 — 셋이 실제로 갈아끼워진다", () => {
    * zero-regression contract) — as before, no parent coordinates means nothing is
    * drawn.
    */
-  it("「뜬 알약」의 펼침 배지는 종전대로 부모 없이는 없다", () => {
+  it("the expand badge of the \"floating pill\" still does not exist without a parent, as before", () => {
     expect(
       clusterChipOccupancyRect({
         screenX: ANCHOR.x,
@@ -293,10 +293,10 @@ describe("펼치기 표시 — 셋이 실제로 갈아끼워진다", () => {
   });
 });
 
-describe("한 번에 여는 개수 — 그려지는 자식 수가 바뀐다", () => {
+describe("count opened at once: the number of drawn children changes", () => {
   const ranked = Array.from({ length: 60 }, (_, i) => `n${i}`);
 
-  it("값을 내리면 보이는 자식이 실제로 줄어든다", () => {
+  it("lowering the value really reduces the visible children", () => {
     const wide = selectiveEgoNeighbors(ranked, 1, 24);
     const narrow = selectiveEgoNeighbors(ranked, 1, 4);
     expect(wide.visibleNeighbors.size).toBe(24);
@@ -307,41 +307,41 @@ describe("한 번에 여는 개수 — 그려지는 자식 수가 바뀐다", ()
     expect(second.visibleNeighbors.size).toBe(8);
   });
 
-  it("범위 양 끝이 서로 다른 화면을 만든다", () => {
+  it("the two ends of the range produce different screens", () => {
     const min = selectiveEgoNeighbors(ranked, 1, EXPAND_RANGES.batchSize.min);
     const max = selectiveEgoNeighbors(ranked, 1, EXPAND_RANGES.batchSize.max);
     expect(min.visibleNeighbors.size).toBeLessThan(max.visibleNeighbors.size);
   });
 });
 
-describe("이름을 시도할 개수 — 붙는 이름이 바뀐다", () => {
+describe("count of names to try: the attached names change", () => {
   const disc = [Array.from({ length: 40 }, (_, i) => `c${i}`)];
 
-  it("값이 곧 「몇 개까지 시도하나」다", () => {
+  it("the value is exactly \"how many to try\"", () => {
     expect(selectDiscLabelEligible(disc, 3).size).toBe(3);
     expect(selectDiscLabelEligible(disc, 8).size).toBe(8);
     expect(selectDiscLabelEligible(disc, 40).size).toBe(40);
   });
 
-  it("기본값에서는 오늘과 같은 예산이다", () => {
+  it("the default is the same budget as today", () => {
     expect(selectDiscLabelEligible(disc, DEFAULT_EXPAND.labelAttempts).size).toBe(DISC_LABEL_TOP_K);
   });
 });
 
-describe("동시에 펼쳐 둘 부모 — 상한이 실제로 움직인다", () => {
-  it("상한을 낮추면 더 일찍 가장 오래된 것이 닫힌다", () => {
+describe("parents kept expanded at once: the cap really moves", () => {
+  it("lowering the cap closes the oldest one earlier", () => {
     let open: string[] = [];
     for (const id of ["a", "b", "c", "d"]) open = toggleExpandedParent(open, id, 2);
     expect(open).toEqual(["c", "d"]);
   });
 
-  it("상한을 올리면 더 많이 열린 채로 남는다", () => {
+  it("raising the cap leaves more of them open", () => {
     let open: string[] = [];
     for (const id of ["a", "b", "c", "d", "e", "f", "g"]) open = toggleExpandedParent(open, id, 6);
     expect(open).toEqual(["b", "c", "d", "e", "f", "g"]);
   });
 
-  it("접기는 상한과 무관하게 언제나 된다", () => {
+  it("collapsing always works regardless of the cap", () => {
     expect(toggleExpandedParent(["a", "b"], "a", 1)).toEqual(["b"]);
   });
 
@@ -349,19 +349,19 @@ describe("동시에 펼쳐 둘 부모 — 상한이 실제로 움직인다", () 
    * **Deep links take the same cap** — otherwise one link bypasses it and the
    * recipient sees a worse screen than the sender.
    */
-  it("`?open=` 딥링크도 사용자 상한에 잘린다", () => {
+  it("the `?open=` deep link is also cut by the user cap", () => {
     expect(parseExpandedParentsParam("a,b,c,d,e", 2)).toEqual(["d", "e"]);
     expect(parseExpandedParentsParam("a,b,c,d,e", 5)).toEqual(["a", "b", "c", "d", "e"]);
   });
 
-  it("기본값은 오늘 상한 그대로다", () => {
+  it("the default is today's cap as it is", () => {
     let open: string[] = [];
     for (const id of ["a", "b", "c", "d"]) open = toggleExpandedParent(open, id);
     expect(open.length).toBe(MAX_EXPANDED_PARENTS);
   });
 });
 
-describe("확장 구조 — 자식 좌표가 실제로 바뀐다", () => {
+describe("expand structure: child coordinates really change", () => {
   const rings: LayoutRings = { domain: 300, capability: 120, element: 70 };
   /** More children than the threshold (12) — exactly the parent the expand structure applies to. */
   const nodes: LayoutGraphNode[] = [
@@ -381,7 +381,7 @@ describe("확장 구조 — 자식 좌표가 실제로 바뀐다", () => {
       ]),
     );
 
-  it("넷이 서로 다른 배치를 낸다", () => {
+  it("the four produce different arrangements", () => {
     const signatures = EXPAND_STRUCTURES.map((structure) => {
       const points = place(structure);
       return EXPAND_STRUCTURES.length > 0
@@ -391,7 +391,7 @@ describe("확장 구조 — 자식 좌표가 실제로 바뀐다", () => {
           }).join("|")
         : "";
     });
-    expect(new Set(signatures).size, "구조를 바꿔도 좌표가 같다 — 설정이 장식이다").toBe(
+    expect(new Set(signatures).size, "the coordinates are the same even after changing the structure, so the setting is decoration").toBe(
       EXPAND_STRUCTURES.length,
     );
   });
@@ -400,7 +400,7 @@ describe("확장 구조 — 자식 좌표가 실제로 바뀐다", () => {
    * A call passing no option must equal the default (fan), else call sites unaware of the setting draw
    * a different map.
    */
-  it("옵션을 안 넘기면 기본값 배치가 나온다", () => {
+  it("without options the default arrangement comes out", () => {
     const withOption = computeConcentricLayout(nodes, rings, {
       expandStructure: DEFAULT_EXPAND.structure,
       relaxIterations: 0,
@@ -414,7 +414,7 @@ describe("확장 구조 — 자식 좌표가 실제로 바뀐다", () => {
    * coordinates. Since the default moved to fan, that is precisely why `disc`
    * exists.
    */
-  it("나선 원반을 고르면 부챗살과 다른 좌표가 나온다", () => {
+  it("choosing the spiral disc gives coordinates different from the fan", () => {
     const disc = computeConcentricLayout(nodes, rings, { expandStructure: "disc", relaxIterations: 0 });
     const fan = computeConcentricLayout(nodes, rings, { expandStructure: "fan", relaxIterations: 0 });
     const sig = (pts: ReturnType<typeof computeConcentricLayout>) =>
@@ -427,7 +427,7 @@ describe("확장 구조 — 자식 좌표가 실제로 바뀐다", () => {
    * only the name differs and the picture is the same, there is no reason to
    * choose.
    */
-  it("고리는 부모를 감싼다(사방을 쓴다)", () => {
+  it("the ring wraps the parent (uses all four sides)", () => {
     const points = place("ring");
     const parent = points.get("d") as { x: number; y: number };
     const angles = Array.from({ length: 30 }, (_, i) => {
@@ -436,10 +436,10 @@ describe("확장 구조 — 자식 좌표가 실제로 바뀐다", () => {
     });
     // The fan stays inside one wedge; the ring uses all four quadrants.
     const quadrants = new Set(angles.map((a) => Math.floor(((a + Math.PI * 2) % (Math.PI * 2)) / (Math.PI / 2))));
-    expect(quadrants.size, "고리가 사방을 안 쓴다").toBe(4);
+    expect(quadrants.size, "the ring does not use all four sides").toBe(4);
   });
 
-  it("기둥은 줄이 여럿이고 열마다 바깥으로 나아간다", () => {
+  it("the column has several lines and each column goes further outward", () => {
     const points = place("column");
     const parent = points.get("d") as { x: number; y: number };
     const dists = Array.from({ length: 30 }, (_, i) => {
@@ -450,7 +450,7 @@ describe("확장 구조 — 자식 좌표가 실제로 바뀐다", () => {
     expect(Math.max(...dists)).toBeGreaterThan(Math.min(...dists));
   });
 
-  it("부챗살은 한쪽 쐐기 안에 머문다", () => {
+  it("the fan stays inside one wedge", () => {
     const points = place("fan");
     const parent = points.get("d") as { x: number; y: number };
     const angles = Array.from({ length: 30 }, (_, i) => {
@@ -458,17 +458,17 @@ describe("확장 구조 — 자식 좌표가 실제로 바뀐다", () => {
       return Math.atan2(p.y - parent.y, p.x - parent.x);
     });
     const quadrants = new Set(angles.map((a) => Math.floor(((a + Math.PI * 2) % (Math.PI * 2)) / (Math.PI / 2))));
-    expect(quadrants.size, "부챗살이 사방으로 퍼졌다 — 고리와 구별이 없다").toBeLessThan(4);
+    expect(quadrants.size, "the fan spread to all four sides, so it cannot be told from the ring").toBeLessThan(4);
   });
 });
 
-describe("시안의 것 중 옮기지 않은 것", () => {
+describe("things in the mockup that were not carried over", () => {
   /**
    * The prototype's "vault scale" (small/real/large) is a **test load** — a knob
    * built to measure itself, not a product setting. Porting it would show users a
    * control that appears to *choose* the size of their own data.
    */
-  it("「볼트 규모」는 설정 타입에 없다", () => {
+  it("\"vault scale\" is not in the settings type", () => {
     const keys = Object.keys(DEFAULT_EXPAND);
     expect(keys).toEqual([
       "affordance",
@@ -538,7 +538,7 @@ function recordingCtx() {
   return { ctx: ctx as unknown as CanvasRenderingContext2D, bbox, ops, points };
 }
 
-describe("그려진 것 — 기본값에서 지도에 서는 것은 「머리 위 막대」다", () => {
+describe("what is drawn: by default the thing on the map is the \"bar above the head\"", () => {
   const drawWith = (affordance: (typeof EXPAND_AFFORDANCES)[number], focused = true) => {
     const rec = recordingCtx();
     drawClusterChip(
@@ -554,10 +554,10 @@ describe("그려진 것 — 기본값에서 지도에 서는 것은 「머리 �
    * the defaults** must be the bar above the parent — if the value is merely stored
    * and the screen is unchanged, this test catches it.
    */
-  it("기본 어포던스로 그리면 부모 머리 위에 막대가 칠해진다", () => {
+  it("drawing with the default affordance paints a bar above the parent", () => {
     const rec = drawWith(DEFAULT_EXPAND.affordance);
     const box = rec.bbox();
-    expect(rec.ops, "아무것도 안 칠해졌다").toContain("fill");
+    expect(rec.ops, "nothing was painted").toContain("fill");
     // The plate's bottom edge is **above** the node.
     expect(box.maxY).toBeLessThan(PARENT.y - PARENT.radius);
     // Horizontally centred on the parent — it does not go looking for space.
@@ -568,13 +568,13 @@ describe("그려진 것 — 기본값에서 지도에 서는 것은 「머리 �
     expect(rec.ops).not.toContain("arc");
   });
 
-  it("안 고른 부모에는 기본값에서 아무것도 안 칠해진다", () => {
+  it("an unpicked parent gets nothing painted by default", () => {
     const rec = drawWith("bar", false);
     expect(rec.ops).toEqual([]);
   });
 
   /** Swapping the three really changes **the painted height and position**. */
-  it("어포던스를 바꾸면 칠해지는 것이 바뀐다", () => {
+  it("changing the affordance changes what is painted", () => {
     const heights = EXPAND_AFFORDANCES.map((affordance) => {
       const box = drawWith(affordance).bbox();
       return Math.round(box.maxY - box.y);
@@ -583,7 +583,7 @@ describe("그려진 것 — 기본값에서 지도에 서는 것은 「머리 �
     expect(heights[0]).toBe(CLUSTER_CHIP_HEIGHT);
     expect(heights[1]).toBe(CLUSTER_BAR_HEIGHT);
     expect(heights[2]).toBe(CLUSTER_BADGE_HEIGHT);
-    expect(new Set(heights).size, "셋이 같은 것을 그린다").toBe(3);
+    expect(new Set(heights).size, "the three draw the same thing").toBe(3);
   });
 });
 
@@ -591,7 +591,7 @@ describe("그려진 것 — 기본값에서 지도에 서는 것은 「머리 �
  * Controls on one node use different compass points so they cannot overlap at any radius or zoom,
  * rather than separating one value on today's screen.
  */
-describe("노드 컨트롤 방위 — 막대·배지·궤도 버튼이 자리를 안 다툰다", () => {
+describe("node control bearings: the bar, badge and orbit button do not fight for space", () => {
   const overlapArea = (
     a: { x: number; y: number; w: number; h: number },
     b: { x: number; y: number; w: number; h: number },
@@ -601,7 +601,7 @@ describe("노드 컨트롤 방위 — 막대·배지·궤도 버튼이 자리를
     return w > 0 && h > 0 ? w * h : 0;
   };
 
-  it("어떤 노드 크기·줌에서도 겹침이 0 이다", () => {
+  it("overlap is 0 at any node size and zoom", () => {
     let checked = 0;
     // The radius ladder (element 7 → project 30) multiplied by magnitudeScale (max 1.4) and zoom.
     for (const radius of [7, 11, 17, 24, 30, 42]) {
@@ -612,11 +612,11 @@ describe("노드 컨트롤 방위 — 막대·배지·궤도 버튼이 자리를
           const badge = clusterBadgeRect(PARENT.x, PARENT.y, radius, `+${count}`, scale);
           expect(
             overlapArea(bar, orbit),
-            `막대×궤도 겹침 (r=${radius} scale=${scale} count=${count})`,
+            `bar x orbit overlap (r=${radius} scale=${scale} count=${count})`,
           ).toBe(0);
           expect(
             overlapArea(badge, orbit),
-            `배지×궤도 겹침 (r=${radius} scale=${scale} count=${count})`,
+            `badge x orbit overlap (r=${radius} scale=${scale} count=${count})`,
           ).toBe(0);
           checked += 1;
         }
@@ -631,13 +631,13 @@ describe("노드 컨트롤 방위 — 막대·배지·궤도 버튼이 자리를
    * loop re-inlines the 45° expression, the test above stays green while the screen
    * overlaps again — so this also checks that the consumer calls the function.
    */
-  it("궤도 버튼 DOM 배치가 같은 함수를 쓴다", () => {
+  it("the orbit button DOM placement uses the same function", () => {
     const source = readFileSync("src/widgets/ontology-map/ui/frame-loop/topology-realm-frame-stage.ts", "utf8");
     const scheduler = readFileSync("src/widgets/ontology-map/ui/frame-loop/use-topology-frame-loop.ts", "utf8");
     expect(scheduler).toContain("createRealmFrameStage(configuration.realmFrameStage)");
     expect(scheduler).toContain("runRealmFrameStage(");
     expect(source).toContain("orbitButtonRect(");
-    expect(source, "45° 인라인 계산이 되살아났다").not.toContain("Math.cos(-Math.PI / 4)");
+    expect(source, "the 45 degree inline calculation came back").not.toContain("Math.cos(-Math.PI / 4)");
   });
 });
 
@@ -645,8 +645,8 @@ describe("노드 컨트롤 방위 — 막대·배지·궤도 버튼이 자리를
  * Deep links take the user's cap too: `?open=` parsing is a pure function unaware of settings, so it
  * must receive the cap or one link expands more parents than allowed.
  */
-describe("동시에 펼쳐 둘 부모 — 딥링크도 상한을 받는다", () => {
-  it("상한을 넘긴 목록은 뒤쪽만 남는다", () => {
+describe("parents kept expanded at once: a deep link also gets the cap", () => {
+  it("a list over the cap keeps only the tail", () => {
     expect(limitExpandedParents(["a", "b", "c", "d"], 1)).toEqual(["d"]);
     expect(limitExpandedParents(["a", "b", "c", "d"], 3)).toEqual(["b", "c", "d"]);
     expect(limitExpandedParents(["a"], 6)).toEqual(["a"]);
@@ -654,7 +654,7 @@ describe("동시에 펼쳐 둘 부모 — 딥링크도 상한을 받는다", () 
     expect(limitExpandedParents(["a", "b"], 0)).toEqual(["b"]);
   });
 
-  it("지도 화면이 그 상한을 실제로 건다", () => {
+  it("the map screen really applies that cap", () => {
     const source = readFileSync("src/views/home/model/route-state/use-topology-route-controls.tsx", "utf8");
     const composition = readFileSync("src/views/home/ui/HomePage.tsx", "utf8");
     expect(composition).toContain("useTopologyRouteControls({");
@@ -668,8 +668,8 @@ describe("동시에 펼쳐 둘 부모 — 딥링크도 상한을 받는다", () 
  * than position. The bar sits directly above the selected node with a verb and a number saying how
  * many will open.
  */
-describe("머리 위 막대 — 동사가 든 글자 버튼", () => {
-  it("접히면 동사를 말하고, 펼쳐지면 되돌리는 동사를 말한다", () => {
+describe("bar above the head: a text button carrying a verb", () => {
+  it("says the verb when collapsed, and the reverse verb when expanded", () => {
     expect(clusterBarLabel({ expanded: false, count: 17, batchSize: 24, labels: KO_BAR_LABELS }))
       .toBe("펼치기");
     expect(clusterBarLabel({ expanded: true, count: 17, batchSize: 24, labels: KO_BAR_LABELS }))
@@ -683,12 +683,12 @@ describe("머리 위 막대 — 동사가 든 글자 버튼", () => {
    * when everything opens at once, "N" when it is batched, and that N differs from
    * the engraved count.
    */
-  it("한 번에 다 열리는 경우에는 숫자를 말하지 않는다", () => {
+  it("says no number when everything opens at once", () => {
     const label = clusterBarLabel({ expanded: false, count: 17, batchSize: 24, labels: KO_BAR_LABELS });
-    expect(label, "막대가 노드 각인과 같은 수를 되풀이한다").not.toContain("17");
+    expect(label, "the bar repeats the same number as the node engraving").not.toContain("17");
   });
 
-  it("나뉘어 열릴 때는 이번에 열릴 개수를 말한다 — 각인과 다른 수", () => {
+  it("when opening in parts it says the count opening this time, a number different from the engraving", () => {
     const label = clusterBarLabel({ expanded: false, count: 17, batchSize: 4, labels: KO_BAR_LABELS });
     expect(label).toBe("4개 펼치기");
     expect(label).not.toContain("17");
@@ -704,10 +704,10 @@ describe("머리 위 막대 — 동사가 든 글자 버튼", () => {
    * `length × constant` under-estimates Hangul width by nearly 40% (measured at
    * 600 12px: a Hangul syllable is 10.38px).
    */
-  it("폭 추정기가 한글을 라틴보다 넓게 잰다", () => {
+  it("the width estimator measures Hangul wider than Latin", () => {
     const hangul = estimateCanvasTextWidth("가나다", 12);
     const latin = estimateCanvasTextWidth("abc", 12);
-    expect(hangul, "한글이 라틴과 같은 폭으로 계산됐다 — 2셀 폭이 빠졌다").toBeGreaterThan(latin * 1.4);
+    expect(hangul, "Hangul was computed at the same width as Latin, so the 2-cell width is missing").toBeGreaterThan(latin * 1.4);
   });
 
   /**
@@ -716,7 +716,7 @@ describe("머리 위 막대 — 동사가 든 글자 버튼", () => {
    * measurements below come from headless Chromium at `600 12px -apple-system`
    * (`.qa-scratch/map-affordance/measure.mjs`).
    */
-  it("추정 폭이 실측 폭보다 좁아지지 않는다", () => {
+  it("the estimated width never falls narrower than the measured width", () => {
     const measured: [string, number][] = [
       ["모두 펼치기", 55.23],
       ["접기", 20.76],
@@ -731,7 +731,7 @@ describe("머리 위 막대 — 동사가 든 글자 버튼", () => {
   });
 
   /** Draw and reservation use **the same string** — diverge and the rectangles diverge. */
-  it("예약 사각형이 그려질 문구의 폭과 같다", () => {
+  it("the reserved rectangle equals the width of the wording to be drawn", () => {
     for (const [expanded, label] of [[false, "펼치기"], [true, "접기"]] as const) {
       const rect = clusterChipOccupancyRect(
         chipInput({ affordance: "bar", focused: true, expanded, count: 17 }),
@@ -745,7 +745,7 @@ describe("머리 위 막대 — 동사가 든 글자 버튼", () => {
    * selected parent opens that parent's children and says the bare verb. The count appears only when
    * the batch is smaller than the fold.
    */
-  it("칩 바는 펼칠 개수를 말한다 — 「전체 펼치기」는 도구 막대 하나뿐", () => {
+  it("the chip bar says the count to expand, and \"expand all\" is only one toolbar item", () => {
     // One press opens everything left: the bare verb, no number (the node engraves it).
     expect(clusterBarLabel({ expanded: false, count: 15, batchSize: 24, labels: KO_BAR_LABELS })).toBe("펼치기");
     // A batch smaller than the fold: unchanged.
@@ -754,7 +754,7 @@ describe("머리 위 막대 — 동사가 든 글자 버튼", () => {
     expect(clusterBarLabel({ expanded: true, count: 15, batchSize: 24, labels: KO_BAR_LABELS })).toBe("접기");
   });
 
-  it("두 펼치기 컨트롤의 이름이 로케일마다 서로 다르다", () => {
+  it("the names of the two expand controls differ per locale", () => {
     for (const locale of ["ko", "en"] as const) {
       const messages = JSON.parse(readFileSync(`messages/${locale}.json`, "utf8")) as {
         searchWidgets: { hint: Record<string, string> };
@@ -779,7 +779,7 @@ describe("머리 위 막대 — 동사가 든 글자 버튼", () => {
    * (`wardingRing.caption`) already uses — if that wiring breaks, the English
    * fallback appears on screen.
    */
-  it("지도 화면이 세 문구를 번역해 캔버스로 넘긴다", () => {
+  it("the map screen translates the three wordings and hands them to the canvas", () => {
     const source = readFileSync("src/views/home/model/map-canvas/use-topology-scene-controls.tsx", "utf8");
     const composition = readFileSync("src/views/home/ui/HomePage.tsx", "utf8");
     const renderer = readFileSync("src/views/home/ui/TopologyMapRenderer.tsx", "utf8");
@@ -808,7 +808,7 @@ describe("머리 위 막대 — 동사가 든 글자 버튼", () => {
    * regardless of width: the plate's bottom edge is above the node and above the
    * orbit button's (east) top edge.
    */
-  it("문구가 길어져도 궤도 버튼과 겹치지 않는다", () => {
+  it("does not overlap the orbit button even when the wording gets longer", () => {
     const overlap = (a: ClusterChipRect, b: ClusterChipRect): number => {
       const w = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
       const h = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);

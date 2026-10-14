@@ -153,8 +153,8 @@ describe('vault-health contract — src lib mirrors the MCP engine health verdic
  * tool layer adds frontmatter validation and a meaning assessment that can flip the status. The extra
  * ids are read from the server source, not a second list.
  */
-describe('vault health — 안 돌리는 검사는 이름으로 남는다', () => {
-  it('브라우저가 도는 검사 + 안 돈다고 밝힌 검사 = 명령이 보고하는 검사', () => {
+describe('vault health — checks not run are kept by name', () => {
+  it('checks the browser runs + checks declared not run = checks the command reports', () => {
     // The tool layer is the `tools/` modules, so both files are read; this gate cannot go green on a file
     // that no longer carries the ids.
     const serverSource = ['maintenance.mjs', 'graph.mjs']
@@ -173,7 +173,7 @@ describe('vault health — 안 돌리는 검사는 이름으로 남는다', () =
     expect(declared).toEqual([...attachedByToolLayer].sort());
   });
 
-  it('안 돈다고 밝힌 검사는 어디서 돌리는지도 말한다 — 진단만 남기지 않는다', () => {
+  it('a check declared not run also says where it runs — it does not leave only the diagnosis', () => {
     for (const check of UNAVAILABLE_CHECKS) {
       expect(check.reason.trim().length, `${check.id} needs a reason`).toBeGreaterThan(0);
       expect(check.where.trim().length, `${check.id} needs somewhere to run it`).toBeGreaterThan(0);

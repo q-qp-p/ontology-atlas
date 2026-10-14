@@ -373,7 +373,7 @@ describe("computeFocusCameraTarget — fit-to-ego dive (dive-framing fix)", () =
   // ego bbox during realm expansion, shrinking the camera back to overview (nothing
   // on screen). With restrictIds holding only realm members it dives normally on a
   // near-neighbour fit.
-  it("restrictIds(영역 멤버)면 결계 밖 fling 이웃을 무시하고 근접 fit 으로 다이브한다", () => {
+  it("with restrictIds (area members) it ignores fling neighbours outside the realm and dives with a close fit", () => {
     const world = egoWorld(
       {
         f: { x: 0, y: 0, kind: "domain" },
@@ -452,10 +452,10 @@ describe("computeFocusCameraTarget — fit-to-ego dive (dive-framing fix)", () =
   });
 });
 
-describe("computeUnfocusedPanBounds — 팬 목줄", () => {
+describe("computeUnfocusedPanBounds: pan leash", () => {
   const bounds = { minX: -400, minY: -300, maxX: 400, maxY: 300 };
 
-  it("목줄이 꺼져 있으면 종전 봉투 그대로 (월드 bbox ± 320)", () => {
+  it("with the leash off the old envelope stays (world bbox +/- 320)", () => {
     // The workbench default is 0 — this pins the claim that this change does not
     // touch `/topology` by a single pixel.
     const off = computeUnfocusedPanBounds(bounds, 1, { cameraPanLeash: 0, safeInsetLeft: 350 });
@@ -464,7 +464,7 @@ describe("computeUnfocusedPanBounds — 팬 목줄", () => {
     expect(computeUnfocusedPanBounds(bounds, 1, {})).toEqual(off);
   });
 
-  it("목줄이 켜지면 봉투가 **핏 기준점** ± 목줄로 좁아진다", () => {
+  it("with the leash on the envelope narrows to the **fit anchor** +/- the leash", () => {
     // The reference point uses the same formula as the overview fit:
     // centre − (left − right) / (2 · scale). Anchoring on the fit rather than the
     // bbox is what makes the envelope's size independent of vault size.
@@ -482,7 +482,7 @@ describe("computeUnfocusedPanBounds — 팬 목줄", () => {
     });
   });
 
-  it("볼트가 세 배로 커져도 봉투는 그대로다 — 종전 봉투는 같이 커졌다", () => {
+  it("the envelope stays put when the vault triples in size, whereas the old envelope grew with it", () => {
     const tokens = { cameraPanLeash: 220, safeInsetLeft: 544 };
     const small = computeUnfocusedPanBounds(bounds, 1, tokens);
     const huge = computeUnfocusedPanBounds(
@@ -497,7 +497,7 @@ describe("computeUnfocusedPanBounds — 팬 목줄", () => {
   });
 });
 
-describe("computeFocusCameraTarget — 안전 인셋", () => {
+describe("computeFocusCameraTarget: safe inset", () => {
   const base = {
     cameraScaleMax: 2.6,
     cameraMaxZoomRatio: 3.2,
@@ -542,7 +542,7 @@ describe("computeFocusCameraTarget — 안전 인셋", () => {
 
   const focus = (tokens: OntologyMapTokens) => computeFocusCameraTarget(world(), tokens, 1448, 982, "f", 1);
 
-  it("인셋이 없으면 ego bbox 가운데 그대로 — 종전 동작 불변", () => {
+  it("with no inset it stays at the centre of the ego bbox, behaviour unchanged", () => {
     const t = focus(base);
     expect(t).not.toBeNull();
     expect(t!.tx).toBeCloseTo(CENTER.x, 6);
@@ -556,7 +556,7 @@ describe("computeFocusCameraTarget — 안전 인셋", () => {
    * right moves the content left. Flipping the sign pushes the node **further into**
    * the panel, so this directional assertion is the heart of the test.
    */
-  it("오른쪽 팝오버가 열리면 노드가 그 왼쪽 자유 영역 가운데로 온다", () => {
+  it("when the right popover opens the node moves to the centre of the free area on its left", () => {
     const t = focus({ ...base, safeInsetRight: 384 } as OntologyMapTokens)!;
     expect(t.tx).toBeCloseTo(CENTER.x + 384 / (2 * t.tscale), 6);
     const screenX = (CENTER.x - t.tx) * t.tscale + 1448 / 2;
@@ -564,25 +564,25 @@ describe("computeFocusCameraTarget — 안전 인셋", () => {
     expect(screenX).toBeLessThan(1448 - 384); // left of the popover's left edge
   });
 
-  it("왼쪽 패널이 열리면 반대로 밀린다", () => {
+  it("when the left panel opens it is pushed the other way", () => {
     const t = focus({ ...base, safeInsetLeft: 324 } as OntologyMapTokens)!;
     const screenX = (CENTER.x - t.tx) * t.tscale + 1448 / 2;
     expect(screenX).toBeCloseTo((324 + 1448) / 2, 6);
   });
 
-  it("좌우가 같으면 상쇄된다 — 보정이 공짜로 생기지 않는다", () => {
+  it("equal left and right cancel out, so the correction does not appear for free", () => {
     const t = focus({ ...base, safeInsetLeft: 200, safeInsetRight: 200 } as OntologyMapTokens)!;
     expect(t.tx).toBeCloseTo(CENTER.x, 6);
   });
 
-  it("인셋이 크면 배율이 줄어든다 — 보이는 영역에 맞춘다", () => {
+  it("a large inset shrinks the scale to fit the visible area", () => {
     const plain = focus(base)!;
     const tight = focus({ ...base, safeInsetRight: 900 } as OntologyMapTokens)!;
     expect(tight.tscale).toBeLessThan(plain.tscale);
   });
 });
 
-describe("hitTestWorld — 3D 깊이 우선 (겹친 디스크는 가까운 노드가 이긴다)", () => {
+describe("hitTestWorld: 3D depth first (of overlapping discs the nearer node wins)", () => {
   const camera = {
     x: { value: 0, velocity: 0 },
     y: { value: 0, velocity: 0 },
@@ -600,18 +600,18 @@ describe("hitTestWorld — 3D 깊이 우선 (겹친 디스크는 가까운 노�
   } as unknown as Parameters<typeof hitTestWorld>[0];
   // The viewport 800×600's centre (400,300) is world (0,0).
 
-  it("depthForNode 없이는 종전 그대로 — 중심까지 거리가 이긴다", () => {
+  it("without depthForNode it is as before, and distance to the centre wins", () => {
     expect(hitTestWorld(world, camera as never, 800, 600, tokens, 400, 300)).toBe("far");
   });
 
-  it("depthForNode 가 있으면 가까운(u 작은) 노드가 이긴다 — 화가 순서와 같은 규칙", () => {
+  it("with depthForNode the nearer node (smaller u) wins, the same rule as painter order", () => {
     const depth = (n: { id: string;
         }) => (n.id === "far" ? 0.9 : 0.1);
     expect(
       hitTestWorld(world, camera as never, 800, 600, tokens, 400, 300, undefined, undefined, undefined, depth as never)).toBe("near");
   });
 
-  it("커서가 가까운 노드 디스크 밖이면 먼 노드가 잡힌다 — 깊이는 디스크 안에서만 겨룬다", () => {
+  it("when the cursor is outside the nearer node's disc the farther node is hit, since depth competes only inside the disc", () => {
     const depth = (n: { id: string;
         }) => (n.id === "far" ? 0.9 : 0.1);
     // Both discs have radius 17+5=22, so a point covering only far has to sit on
@@ -622,7 +622,7 @@ describe("hitTestWorld — 3D 깊이 우선 (겹친 디스크는 가까운 노�
   });
 });
 
-describe("hitTestWorld — 그려진 잉크가 여유 링을 이긴다 (3D 원판 한가운데 클릭 회귀)", () => {
+describe("hitTestWorld: drawn ink beats the margin ring (regression for clicking the middle of a 3D disc)", () => {
   const camera = {
     x: { value: 0, velocity: 0 },
     y: { value: 0, velocity: 0 },
@@ -644,28 +644,28 @@ describe("hitTestWorld — 그려진 잉크가 여유 링을 이긴다 (3D 원�
     }) => (n.id === "element" ? 0.5 : 0.6);
   // Viewport 800×600 puts world (0,0) at (400,300).
 
-  it("먼 노드의 그려진 원판 한가운데는 가까운 노드의 여유 링에 빼앗기지 않는다", () => {
+  it("the middle of a far node's drawn disc is not stolen by a nearer node's margin ring", () => {
     // domain: centre 20 px away, drawn radius 10.2, slack radius 15.2 — the cursor
     // is inside its slack ring but on no domain pixel.
     expect(
       hitTestWorld(world, camera as never, 800, 600, tokens, 400, 300, undefined, undefined, radiusScale as never, depth as never)).toBe("element");
   });
 
-  it("두 원판이 정말 겹치면 여전히 가까운(u 작은) 쪽이 이긴다", () => {
+  it("when two discs truly overlap the nearer one (smaller u) still wins", () => {
     // x=409 is 9 px from the element's centre — outside its 3.5 px disc — and 11 px
     // from the domain's, inside its 10.2 px disc. Real occlusion, near node wins.
     expect(
       hitTestWorld(world, camera as never, 800, 600, tokens, 409, 300, undefined, undefined, radiusScale as never, depth as never)).toBe("domain");
   });
 
-  it("어느 잉크에도 닿지 않으면 여유 링 안에서 깊이가 결정한다 — 종전 규칙", () => {
+  it("when no ink is touched depth decides inside the margin ring, as before", () => {
     // x=406 is 6 px from the element (slack only, 3.5+5=8.5) and 14 px from the
     // domain (slack only, 10.2+5=15.2). Neither is painted here, so depth decides.
     expect(
       hitTestWorld(world, camera as never, 800, 600, tokens, 406, 300, undefined, undefined, radiusScale as never, depth as never)).toBe("domain");
   });
 
-  it("히트 디스크는 계기가 보고하는 화면 좌표와 같은 투영을 쓴다 — 하나의 투영", () => {
+  it("the hit disc uses the same projection as the screen coordinates the instrument reports, one projection", () => {
     /*
      * `__atlasMap.nodes()` reports `(n.x + dome.dx − cam) × scale + viewport/2`
      * and multiplies the radius by `dome.s`. The hit test must land on that same

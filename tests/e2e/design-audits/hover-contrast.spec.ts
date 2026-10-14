@@ -104,7 +104,7 @@ async function parkPointer(page: Page): Promise<void> {
       return;
     }
   }
-  throw new Error("포인터를 치울 빈 지점을 못 찾았다 — 쉬는 상태가 호버된 채로 읽힐 수 있다");
+  throw new Error("no empty spot to move the pointer to, so the resting state may be read while hovered");
 }
 
 /**
@@ -158,10 +158,10 @@ async function auditRoute(page: Page) {
     const R = judgeText(rest);
     const H = judgeText({ ...hover, fontSizePx: rest.fontSizePx, fontWeight: rest.fontWeight });
     // A parse failure is not a pass but a non-measurement — never skipped silently.
-    expect(R?.ratio, `쉬는 상태를 못 쟀다: ${rest.tag}«${rest.label}»`).toBeDefined();
-    expect(H?.ratio, `호버 상태를 못 쟀다: ${rest.tag}«${rest.label}»`).toBeDefined();
+    expect(R?.ratio, `could not measure the resting state: ${rest.tag}«${rest.label}»`).toBeDefined();
+    expect(H?.ratio, `could not measure the hover state: ${rest.tag}«${rest.label}»`).toBeDefined();
     if (R!.passes && !H!.passes)
-      offenders.push(`${rest.tag}«${rest.label}» ${R!.ratio} → ${H!.ratio} (필요 ${H!.required})`);
+      offenders.push(`${rest.tag}«${rest.label}» ${R!.ratio} → ${H!.ratio} (required ${H!.required})`);
   }
   return { offenders, compared, colorChanged, mainCompared };
 }
@@ -169,7 +169,7 @@ async function auditRoute(page: Page) {
 const HOVER_ROUTES = AUDITED_ROUTES;
 
 for (const route of HOVER_ROUTES) {
-  test(`호버 대비 — ${route}`, async ({ page }) => {
+  test(`hover contrast: ${route}`, async ({ page }) => {
     await seedFirstRunSeen(page);
     await page.setViewportSize(VIEWPORT);
     const destination = route === "/ko/docs/" ? "/ko/library/?tab=ontology" : route;
@@ -198,7 +198,7 @@ for (const route of HOVER_ROUTES) {
       await expect(page.getByTestId("project-selector-card").first()).toBeVisible();
       await expect(page.getByTestId("project-selector-new-cta")).toBeVisible();
     }
-    expect(offenders, "쉴 때는 통과하는데 호버에서 AA 를 깬다").toEqual([]);
+    expect(offenders, "passes at rest but breaks AA on hover").toEqual([]);
   });
 }
 
@@ -210,7 +210,7 @@ for (const route of HOVER_ROUTES) {
  * really distinguishes a failure — the earlier stylesheet-inference instrument
  * failed silently exactly here.
  */
-test("계기가 헛돌지 않는다 — 비교 대상이 있고, 심어 둔 미달을 잡는다", async ({ page }) => {
+test("the instrument does not spin idle: it has something to compare and catches a planted shortfall", async ({ page }) => {
   await seedFirstRunSeen(page);
   await page.setViewportSize(VIEWPORT);
   await page.goto("/ko/?guides=off", { waitUntil: "domcontentloaded" });
@@ -218,7 +218,7 @@ test("계기가 헛돌지 않는다 — 비교 대상이 있고, 심어 둔 미�
   await waitForDocumentPaint(page);
 
   const { colorChanged } = await auditRoute(page);
-  expect(colorChanged, "호버로 색이 바뀌는 컨트롤이 하나도 없다 — 게이트가 헛돈다").toBeGreaterThan(5);
+  expect(colorChanged, "no control changes color on hover, so the gate spins idle").toBeGreaterThan(5);
 
   // Plants a known failing pair (#5e6ad2 → #828fff with white ink) to confirm the predicate catches it.
   await page.addStyleTag({
@@ -234,7 +234,7 @@ test("계기가 헛돌지 않는다 — 비교 대상이 있고, 심어 둔 미�
   const after = await auditRoute(page);
   expect(
     after.offenders.some((o) => o.includes("probe")),
-    "심어 둔 호버 미달을 못 잡는다 — 이 게이트의 0건은 증거가 아니다",
+    "the planted hover shortfall is not caught, so this gate's zero findings are not evidence",
   ).toBe(true);
 });
 

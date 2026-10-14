@@ -30,8 +30,8 @@ function collectStrings(node: unknown, path: string, out: Array<[string, string]
   }
 }
 
-describe("라벨 장식 — 화살표는 정보를 나를 때만", () => {
-  it("i18n 문자열 끝에 장식 화살표가 없다", () => {
+describe("label decoration — an arrow only when it carries information", () => {
+  it("no i18n string ends with a decorative arrow", () => {
     const offences: Offence[] = [];
     let scanned = 0;
 
@@ -63,7 +63,7 @@ describe("라벨 장식 — 화살표는 정보를 나를 때만", () => {
     ).toEqual([]);
   });
 
-  it("게이트가 실제로 위반을 잡는다", () => {
+  it("the gate really catches violations", () => {
     // If this regex is neutered the test above passes forever, so the predicate itself
     // is pinned.
     expect(TRAILING_ARROW.test("지도에서 열기 →")).toBe(true);
@@ -103,7 +103,7 @@ describe("라벨 장식 — 화살표는 정보를 나를 때만", () => {
     }
   }
 
-  it("JSX 마크업에도 선언 없는 장식 화살표가 없다", () => {
+  it("JSX markup also has no undeclared decorative arrow", () => {
     const files: string[] = [];
     for (const root of ["src", "app"]) collectSourceFiles(join(process.cwd(), root), files);
 
@@ -130,7 +130,7 @@ describe("라벨 장식 — 화살표는 정보를 나를 때만", () => {
     ).toEqual([]);
   });
 
-  it("라벨 끝에 붙은 화살표 요소가 없다 (중위 데이터 화살표는 통과)", () => {
+  it("no arrow element is attached to the end of a label (a mid-text data arrow passes)", () => {
     const files: string[] = [];
     for (const root of ["src", "app"]) collectSourceFiles(join(process.cwd(), root), files);
     expect(files.length).toBeGreaterThan(100);
@@ -162,7 +162,7 @@ describe("라벨 장식 — 화살표는 정보를 나를 때만", () => {
     return source.includes('target="_blank"');
   }
 
-  it("선언된 외부 링크 표식은 실제로 앱을 떠나는 링크 위에만 있다", () => {
+  it("a declared external-link marker sits only on links that really leave the app", () => {
     const files: string[] = [];
     for (const root of ["src", "app"]) collectSourceFiles(join(process.cwd(), root), files);
     // The idling guard is applied to the **scanned set** — zero users of the exception
@@ -172,11 +172,11 @@ describe("라벨 장식 — 화살표는 정보를 나를 때만", () => {
     const offences = files.filter((file) => !externalMarkerSitsOnExternalLink(readFileSync(file, "utf8")));
     expect(
       offences.map((f) => f.replace(process.cwd() + "/", "")),
-      `외부 링크 표식(${EXTERNAL_MARKER})은 target="_blank" 링크에만 붙는다.`,
+      `the external-link marker (${EXTERNAL_MARKER}) is attached only to target="_blank" links.`,
     ).toEqual([]);
   });
 
-  it("표식 범위 게이트가 실제로 위반을 잡는다 — 소비처가 0이어도 탐지기는 살아 있다", () => {
+  it("the marker-scope gate really catches violations — the detector is alive even with zero consumers", () => {
     // Violation — attaching the marker to an in-app link to sneak a decorative arrow
     // through.
     expect(
@@ -190,7 +190,7 @@ describe("라벨 장식 — 화살표는 정보를 나를 때만", () => {
     expect(externalMarkerSitsOnExternalLink('<Link href="/topology">{label}</Link>')).toBe(true);
   });
 
-  it("JSX 게이트가 실제로 위반을 잡는다", () => {
+  it("the JSX gate really catches violations", () => {
     const probe = [
       '<span aria-hidden="true" className="text-label">',
       "  ↗",
@@ -211,7 +211,7 @@ describe("라벨 장식 — 화살표는 정보를 나를 때만", () => {
    * one clean line. Only when this passes does the scan's 0 above mean "no
    * violations".
    */
-  it("끝자리 게이트가 실제로 위반을 잡고 중위는 놓아 준다", () => {
+  it("the trailing-position gate really catches violations and lets mid-text go", () => {
     // Violation — the studio save button really had this shape.
     const violation = [
       "<button>",

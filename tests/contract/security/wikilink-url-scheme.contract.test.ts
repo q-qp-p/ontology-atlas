@@ -8,17 +8,17 @@ import { decodeWikilinkSlug, rewriteWikilinks, WIKILINK_SENTINEL } from '@/share
  * sanitiser, so a library bump that changes its allowlist breaks here first.
  */
 
-describe('위키링크 URL 은 마크다운 렌더러의 살균을 통과한다', () => {
+describe('a wikilink URL passes the sanitizing of the markdown renderer', () => {
   const sentinel = WIKILINK_SENTINEL;
   // Exercise the shared rewrite consumed by both readers instead of scanning its old file.
   const destination = (slug: string) => rewriteWikilinks(`[[${slug}]]`).match(/\]\(([^)]+)\)$/)?.[1];
 
-  it('뷰어가 센티넬 접두사를 갖고 있다 — 못 찾으면 이 시험이 공회전한다', () => {
+  it('the viewer has the sentinel prefix, and if it is not found this test spins idle', () => {
     expect(sentinel).toBeTruthy();
     expect(destination('capabilities/example')).toContain(sentinel);
   });
 
-  it('그 센티넬이 붙은 URL 이 살균 뒤에도 남는다', () => {
+  it('a URL with that sentinel survives sanitizing', () => {
     const url = destination('capabilities/example')!;
     expect(
       defaultUrlTransform(url),
@@ -28,7 +28,7 @@ describe('위키링크 URL 은 마크다운 렌더러의 살균을 통과한다'
     ).not.toBe('');
   });
 
-  it('한글 슬러그도 살아남는다 — 볼트 슬러그는 한글일 수 있다', () => {
+  it('a Hangul slug survives too, since a vault slug may be Hangul', () => {
     const url = destination('capabilities/스윕-검증-절차')!;
     expect(defaultUrlTransform(url)).not.toBe('');
   });
@@ -37,7 +37,7 @@ describe('위키링크 URL 은 마크다운 렌더러의 살균을 통과한다'
    * The idling guard in reverse — is this check passing *anything*? Feed it a value
    * that really gets stripped, confirming the sanitiser is alive in the first place.
    */
-  it('계기가 살아 있다 — 정말 잘리는 스킴은 빈 값이 된다', () => {
+  it('the instrument is alive: a scheme that really gets cut becomes an empty value', () => {
     expect(defaultUrlTransform('javascript:alert(1)')).toBe('');
     expect(defaultUrlTransform('WIKILINK:capabilities/x')).toBe('');
   });
@@ -56,17 +56,17 @@ describe('위키링크 URL 은 마크다운 렌더러의 살균을 통과한다'
  * visible only in vaults using Korean (or space-containing, or non-ASCII) slugs — our
  * samples are ASCII, so nobody saw it. This gate guards that blind spot.
  */
-describe('위키링크 해소는 퍼센트 인코딩과 정규화를 견딘다', () => {
-  it('뷰어가 슬러그를 디코드한다', () => {
+describe('wikilink resolution withstands percent encoding and normalization', () => {
+  it('the viewer decodes the slug', () => {
     expect(decodeWikilinkSlug(encodeURIComponent('capabilities/스윕-검증-절차'))).toBe('capabilities/스윕-검증-절차');
   });
 
-  it('뷰어가 NFC 로 맞춘다 — 글자는 같은데 문자열이 다른 상태를 없앤다', () => {
+  it('the viewer aligns to NFC, removing the state where the characters are the same but the strings differ', () => {
     const slug = 'sources/원문.md';
     expect(decodeWikilinkSlug(encodeURIComponent(slug.normalize('NFD')))).toBe(slug.normalize('NFC'));
   });
 
-  it('디코드 실패가 문서를 죽이지 않는다 — 잘린 퍼센트 시퀀스는 원문으로 둔다', () => {
+  it('a decode failure does not kill the document; a truncated percent sequence is left as the original', () => {
     expect(decodeWikilinkSlug('sources/100%.md')).toBe('sources/100%.md');
   });
 });

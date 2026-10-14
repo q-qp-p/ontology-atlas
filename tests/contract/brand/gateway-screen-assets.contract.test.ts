@@ -18,48 +18,48 @@ import {
 const DIR = join(process.cwd(), 'public', 'gateway');
 
 function pngSize(buffer: Buffer): { width: number; height: number } {
-  expect(buffer.subarray(1, 4).toString('latin1'), 'PNG 서명이 아니다').toBe('PNG');
-  expect(buffer.subarray(12, 16).toString('latin1'), 'IHDR 이 첫 청크가 아니다').toBe('IHDR');
+  expect(buffer.subarray(1, 4).toString('latin1'), 'not a PNG signature').toBe('PNG');
+  expect(buffer.subarray(12, 16).toString('latin1'), 'IHDR is not the first chunk').toBe('IHDR');
   return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
 }
 
 const read = (file: string, locale: string) =>
   readFileSync(join(process.cwd(), 'public', gatewayScreenSrc(file as never, locale)));
 
-describe('관문 화면 캡처 — 로케일마다 한 벌', () => {
-  it('등재된 화면이 있다 — 빈손으로 통과하지 않는다', () => {
+describe('gateway screen captures — one set per locale', () => {
+  it('there are registered screens — it does not pass empty-handed', () => {
     expect(GATEWAY_SCREEN_FILES.length).toBe(6);
     expect([...GATEWAY_SCREEN_LOCALES].sort()).toEqual(['en', 'ko']);
   });
 
   for (const file of GATEWAY_SCREEN_FILES) {
     for (const locale of GATEWAY_SCREEN_LOCALES) {
-      it(`${file}.${locale}.png — 있고, 10KB 넘고, 캡처 크기다`, () => {
+      it(`${file}.${locale}.png — exists, is over 10KB, and has the capture size`, () => {
         const buffer = read(file, locale);
-        expect(buffer.length, `${file}.${locale}.png 가 너무 작다`).toBeGreaterThan(10_000);
+        expect(buffer.length, `${file}.${locale}.png is too small`).toBeGreaterThan(10_000);
         expect(pngSize(buffer)).toEqual(GATEWAY_SCREEN_PIXELS);
       });
     }
 
-    it(`${file}: 두 로케일이 같은 파일이 아니다`, () => {
+    it(`${file}: the two locales are not the same file`, () => {
       expect(
         read(file, 'ko').equals(read(file, 'en')),
-        `${file}.ko.png 와 ${file}.en.png 이 같은 파일이다 — 한국어 방문자가 영어 화면을 본다`,
+        `${file}.ko.png and ${file}.en.png are the same file — a Korean visitor sees the English screen`,
       ).toBe(false);
     });
   }
 
-  it('로케일 없는 옛 캡처나 등재되지 않은 캡처가 남아 있지 않다', () => {
+  it('no old capture without a locale and no unregistered capture remains', () => {
     const expected = new Set(
       GATEWAY_SCREEN_FILES.flatMap((file) =>
         GATEWAY_SCREEN_LOCALES.map((locale) => `${file}.${locale}.png`),
       ),
     );
     const strays = readdirSync(DIR).filter((name) => !expected.has(name));
-    expect(strays, '아무도 읽지 않는 캡처는 배포 크기만 늘린다').toEqual([]);
+    expect(strays, 'a capture nobody reads only adds to the shipped size').toEqual([]);
   });
 
-  it('캡처 세트가 없는 로케일은 영어 캡처를 읽는다', () => {
+  it('a locale without a capture set reads the English captures', () => {
     expect(gatewayScreenSrc('git', 'ja')).toBe('/gateway/git.en.png');
     expect(gatewayScreenSrc('git', 'ko')).toBe('/gateway/git.ko.png');
   });

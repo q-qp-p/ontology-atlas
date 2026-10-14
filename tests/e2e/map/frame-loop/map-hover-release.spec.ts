@@ -9,7 +9,7 @@ import { waitForMapSettled } from "../../settle";
  * must stop advancing. `hover()` reports the drawn hover, so it cannot see a stale
  * `hoveredNodeIdRef`; a coarse rAF-time comparison backs this up.
  */
-test("커서가 캔버스를 벗어나면 지도가 프레임을 그만 그린다", async ({ page }) => {
+test("the map stops drawing frames once the cursor leaves the canvas", async ({ page }) => {
   await seedFirstRunSeen(page);
   // Accumulates the time rAF callbacks spent **synchronously** — frame intervals are
   // contaminated by refresh rate, but callback time belongs to the app (the same
@@ -104,7 +104,7 @@ test("커서가 캔버스를 벗어나면 지도가 프레임을 그만 그린�
 
     await page.mouse.move(railBox!.x + railBox!.width / 2, railBox!.y + railBox!.height / 2);
     // Cause side, no timing noise: the highlight must be released.
-    await expect.poll(hovered, { message: "레일로 나갔는데 호버가 안 풀렸다" }).toBeNull();
+    await expect.poll(hovered, { message: "the cursor left to the rail but the hover was not released" }).toBeNull();
 
     /*
      * The proof: poll until two reads a poll interval apart agree, then require no awake
@@ -119,13 +119,13 @@ test("커서가 캔버스를 벗어나면 지도가 프레임을 그만 그린�
           previous = now;
           return still;
         },
-        { message: "커서가 나간 뒤에도 유휴 게이트가 깨어 있는 프레임을 기록한다", timeout: 15_000 },
+        { message: "the idle gate keeps recording awake frames after the cursor left", timeout: 15_000 },
       )
       .toBe(true);
     const quietFrom = await lastActiveStamp();
     // measurement window: 1 s in which a sleeping gate must record no awake frame.
     await page.waitForTimeout(1_000);
-    expect(await lastActiveStamp(), "잠든 지도가 1초 안에 다시 깨어났다").toBe(quietFrom);
+    expect(await lastActiveStamp(), "the sleeping map woke again within one second").toBe(quietFrom);
 
     /*
      * The rail's script-driven rAF loop keeps working about three seconds after the pointer leaves

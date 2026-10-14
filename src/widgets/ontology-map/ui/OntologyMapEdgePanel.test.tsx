@@ -79,13 +79,13 @@ describe("OntologyMapEdgePanel — the two end nodes wear their kind", () => {
     renderPanel();
     const rows = [screen.getByRole("button", { name: /^A$/ }), screen.getByRole("button", { name: /^B$/ })];
     for (const row of rows) {
-      expect(row.querySelector("svg"), `${row.textContent} 행에 종류 글리프가 없다`).not.toBeNull();
+      expect(row.querySelector("svg"), `the row ${row.textContent} has no kind glyph`).not.toBeNull();
       expect(row.querySelector("svg")!.compareDocumentPosition(row.querySelector("span")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     }
   });
 });
 
-describe("OntologyMapEdgePanel — 공방 편집 딥링크 (Slice 6)", () => {
+describe("OntologyMapEdgePanel: workshop edit deep link", () => {
   it("renders the '고치기' action pointing at the deep-link when editable", () => {
     renderPanel("/ontology/studio/?node=capability%3Aa&edit=dependsOn:capability%3Ab");
     const edit = screen.getByTestId("map-edge-edit");
@@ -136,7 +136,7 @@ describe("OntologyMapEdgePanel — the source document link", () => {
     const link = screen.getByTestId("map-edge-declared-by");
 
     expect(link.textContent).toBe("storefront.md");
-    expect(link.textContent, "장식 화살표가 라벨에 남아 있다").not.toMatch(/[→↗➜⟶»]/);
+    expect(link.textContent, "a decorative arrow is left in the label").not.toMatch(/[→↗➜⟶»]/);
     expect(link.getAttribute("aria-label")).toContain(labels.openDoc);
     expect(link.getAttribute("aria-label")).toContain("storefront.md");
     expect(link.getAttribute("href")).toBe("/ko/docs/storefront");

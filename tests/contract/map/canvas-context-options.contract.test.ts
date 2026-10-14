@@ -38,32 +38,32 @@ function read(rel: string): string {
   return readFileSync(join(process.cwd(), rel), "utf8");
 }
 
-describe("canvas 2d 컨텍스트 옵션 계약", () => {
-  it("소스를 실제로 읽는다 — 빈 스캔은 통과가 아니라 결함이다", () => {
+describe("canvas 2d context options contract", () => {
+  it("reads the source for real, so an empty scan is a defect rather than a pass", () => {
     expect(read(MAIN_CANVAS).length).toBeGreaterThan(1000);
     expect(read(COMPOSITION)).toMatch(/useTopologyFrameLoop\(\{\s*canvasRef,/);
     for (const rel of OFFSCREEN) expect(read(rel).length).toBeGreaterThan(200);
   });
 
-  it("주 캔버스는 `alpha: false` 로 만든다", () => {
+  it("the main canvas is created with `alpha: false`", () => {
     const src = read(MAIN_CANVAS);
     expect(
       /getContext\(\s*["']2d["']\s*,\s*\{[^}]*alpha:\s*false/.test(src),
-      "주 캔버스가 불투명 옵션 없이 만들어진다 — 컴포지터가 매 프레임 뒤 콘텐츠와 블렌딩한다",
+      "the main canvas is created without the opaque option, so the compositor blends it with the content behind it every frame",
     ).toBe(true);
   });
 
-  it("오프스크린 버퍼에는 `alpha: false` 를 퍼뜨리지 않는다", () => {
+  it("offscreen buffers do not inherit `alpha: false`", () => {
     for (const rel of OFFSCREEN) {
       const src = read(rel);
       expect(
         /getContext\(\s*["']2d["']\s*,\s*\{[^}]*alpha:\s*false/.test(src),
-        `${rel} 이 불투명으로 만들어진다 — 이 버퍼는 주 캔버스 위에 합성되므로 알파가 필요하다`,
+        `${rel} is created opaque, but this buffer is composited over the main canvas and needs alpha`,
       ).toBe(false);
     }
   });
 
-  it("`willReadFrequently` 를 켜지 않는다 — 우리는 readback 을 안 한다", () => {
+  it("does not turn on `willReadFrequently`, since we never read back", () => {
     // Per spec this hint steers toward CPU (software) raster to make readback fast.
     // A renderer that never calls `getImageData` and turns it on is discarding GPU
     // acceleration for nothing.
@@ -71,13 +71,13 @@ describe("canvas 2d 컨텍스트 옵션 계약", () => {
     expect(all.includes("willReadFrequently")).toBe(false);
   });
 
-  it("컨텍스트 로스트를 잡는다 — 안 잡으면 브라우저가 복구를 시도하지 않는다", () => {
+  it("handles context loss, because otherwise the browser does not try to recover", () => {
     // Without preventDefault on `contextlost` there is no recovery and no
     // `contextrestored`. The rAF loop keeps running while the screen stays blank and
     // nothing throws.
     const src = read(MAIN_CANVAS);
-    expect(src.includes('addEventListener("contextlost"'), "contextlost 미처리").toBe(true);
-    expect(src.includes('addEventListener("contextrestored"'), "contextrestored 미처리").toBe(true);
-    expect(src.includes("removeEventListener(\"contextlost\""), "리스너 정리 누락").toBe(true);
+    expect(src.includes('addEventListener("contextlost"'), "contextlost is not handled").toBe(true);
+    expect(src.includes('addEventListener("contextrestored"'), "contextrestored is not handled").toBe(true);
+    expect(src.includes("removeEventListener(\"contextlost\""), "listener cleanup is missing").toBe(true);
   });
 });

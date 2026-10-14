@@ -53,24 +53,24 @@ const MAP_ROSTER = [
   "topology-index-segment-recent",
 ] as const;
 
-test("지도 INDEX 컨트롤 높이가 전부 사다리 위 단계다", async ({ page }) => {
+test("every map INDEX control height is a step on the ladder", async ({ page }) => {
   test.setTimeout(90_000);
   await openMap(page, 1440, 900);
   const steps = await ladder(page);
-  expect(steps, "사다리를 토큰에서 파생하지 못했다").toEqual([24, 28, 32, 36, 40, 44]);
+  expect(steps, "could not derive the ladder from tokens").toEqual([24, 28, 32, 36, 40, 44]);
 
   const measured = await heights(page, MAP_ROSTER);
   // An idling roster is the same as no gate: every name must actually render.
   for (const id of MAP_ROSTER) {
-    expect(measured[id], `${id} 가 렌더되지 않았다 — 명단이 헛돌고 있다`).not.toBeNull();
+    expect(measured[id], `${id} was not rendered, so the list spins idle`).not.toBeNull();
   }
   const offenders = Object.entries(measured)
     .filter(([, h]) => h !== null && !steps.includes(h))
     .map(([id, h]) => `${id}=${h}px`);
-  expect(offenders, "사다리 밖 높이. 축을 늘리지 말고 가장 가까운 단계로 보내라.").toEqual([]);
+  expect(offenders, "Height off the ladder. Do not add an axis; move it to the nearest step.").toEqual([]);
 });
 
-test("검색 팔레트 결과 행이 사다리 위 단계다", async ({ page }) => {
+test("search palette result rows sit on a ladder step", async ({ page }) => {
   test.setTimeout(90_000);
   await openMap(page, 1440, 900);
   const steps = await ladder(page);
@@ -84,6 +84,6 @@ test("검색 팔레트 결과 행이 사다리 위 단계다", async ({ page }) 
       .map((el) => Math.round(el.getBoundingClientRect().height * 10) / 10)
       .filter((h) => h > 0),
   );
-  expect(measured.length, "결과 행을 하나도 못 쟀다").toBeGreaterThan(3);
-  expect([...new Set(measured)].filter((h) => !steps.includes(h)), "결과 행 높이").toEqual([]);
+  expect(measured.length, "no result row could be measured").toBeGreaterThan(3);
+  expect([...new Set(measured)].filter((h) => !steps.includes(h)), "result row heights").toEqual([]);
 });

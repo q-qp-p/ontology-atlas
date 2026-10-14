@@ -52,12 +52,12 @@ function flat(text: string): string {
 const NAMING_FINGERPRINT = "an element names a CONCEPT a capability uses";
 const BATCH_FINGERPRINT = "Rows whose `title` is a bare file path";
 
-describe("구축 규격 텍스트 — LLM 이 읽는 자리에 도달한다", () => {
-  it("SERVER_INSTRUCTIONS 가 규격 전문을 interpolate 한다", () => {
+describe("construction spec text reaches the place the LLM reads", () => {
+  it("SERVER_INSTRUCTIONS interpolates the full spec", () => {
     expect(SERVER_SOURCE).toContain("${CONSTRUCTION_RULES_EN}");
   });
 
-  it("add_concept · add_concepts description 이 명명 규칙을 붙인다", () => {
+  it("add_concept and add_concepts descriptions attach the naming rule", () => {
     // A tool description is the only text an LLM reads **immediately before calling**,
     // so the rule easiest to break at that moment (creating nodes from filenames) must
     // be carried here.
@@ -65,14 +65,14 @@ describe("구축 규격 텍스트 — LLM 이 읽는 자리에 도달한다", ()
     expect(SERVER_SOURCE).toContain("ELEMENT_NAMING_RULE_BATCH_EN");
   });
 
-  it("세 상수를 정말 import 한다", () => {
+  it("really imports the three constants", () => {
     expect(SERVER_SOURCE).toMatch(
       /import \{[\s\S]*?CONSTRUCTION_RULES_EN[\s\S]*?\} from '\.\.\/construction\/construction-rules\.mjs';/,
     );
   });
 });
 
-describe("정본 단일성 — 파생이지 사본이 아니다", () => {
+describe("a single canonical source: derived, not copied", () => {
   // It is the same `mcp/` package, so a real import is possible. Copying when import
   // is available is an accident, not a convention — two copies always diverge, and
   // the diverged one becomes the default.
@@ -80,19 +80,19 @@ describe("정본 단일성 — 파생이지 사본이 아니다", () => {
     ["CONSTRUCTION_RULES_EN", RULES_FINGERPRINT],
     ["ELEMENT_NAMING_RULE_EN", NAMING_FINGERPRINT],
     ["ELEMENT_NAMING_RULE_BATCH_EN", BATCH_FINGERPRINT],
-  ])("%s 의 문장이 서버 소스에 리터럴로 복제돼 있지 않다", (_name, fingerprint) => {
+  ])("the sentence of %s is not duplicated as a literal in the server source", (_name, fingerprint) => {
     expect(SERVER_SOURCE).not.toContain(fingerprint);
   });
 
-  it("지문 문장은 정본 쪽에는 실재한다 — 지문이 썩으면 위 검사가 조용히 통과한다", () => {
+  it("the fingerprint sentence exists on the canonical side, otherwise the check above passes silently once the fingerprint rots", () => {
     expect(flat(CONSTRUCTION_RULES_EN)).toContain(RULES_FINGERPRINT);
     expect(ELEMENT_NAMING_RULE_EN).toContain(NAMING_FINGERPRINT);
     expect(ELEMENT_NAMING_RULE_BATCH_EN).toContain(BATCH_FINGERPRINT);
   });
 });
 
-describe("값 정본 — 숫자는 schema.mjs 에서 온다", () => {
-  it("부트스트랩 트리거가 하드코딩이 아니라 interpolate 된다", () => {
+describe("value source: numbers come from schema.mjs", () => {
+  it("the bootstrap trigger is interpolated rather than hard-coded", () => {
     const { domain_to_capability: d2c, capability_to_element: c2e } =
       NODE_ELIGIBILITY_GATE.BOOTSTRAP_FANOUT_TRIGGER;
     expect(CONSTRUCTION_RULES_EN).toContain(`about ${d2c} capabilities`);
@@ -113,8 +113,8 @@ describe("값 정본 — 숫자는 schema.mjs 에서 온다", () => {
   });
 });
 
-describe("Goodhart 방지 문장이 살아 있다", () => {
-  it("capability 근거는 path, graph 자식은 element slug 로 분리한다", () => {
+describe("the Goodhart-prevention sentence is alive", () => {
+  it("capability evidence is split into path, and graph children into element slug", () => {
     const rules = flat(CONSTRUCTION_RULES_EN);
     expect(rules.length).toBeGreaterThan(0);
     expect(rules).toContain("one canonical implementation entry point in `path:`");
@@ -125,20 +125,20 @@ describe("Goodhart 방지 문장이 살아 있다", () => {
 
   // A number here is a verification threshold, not a target; without these sentences it reads as
   // 'keep it under N', which a model satisfies with empty buckets.
-  it("상한이 아니라 트리거라고 명시한다", () => {
+  it("states it is a trigger rather than a cap", () => {
     expect(CONSTRUCTION_RULES_EN).toContain("NOT a limit");
     expect(CONSTRUCTION_RULES_EN).toContain("There is no maximum number of children");
   });
 
-  it("「그냥 두라」 갈래가 있다", () => {
+  it("has a \"leave it alone\" branch", () => {
     expect(flat(CONSTRUCTION_RULES_EN)).toContain("create NOTHING");
   });
 
-  it("쓰기를 막지 않는다고 못박는다", () => {
+  it("states plainly that it does not block writes", () => {
     expect(CONSTRUCTION_RULES_EN).toContain("does not block writes");
   });
 
-  it("「N 미만으로 유지」 형태의 문구가 없다", () => {
+  it("has no \"keep below N\" style phrase", () => {
     for (const text of [
       CONSTRUCTION_RULES_EN,
       ELEMENT_NAMING_RULE_EN,
@@ -150,7 +150,7 @@ describe("Goodhart 방지 문장이 살아 있다", () => {
     }
   });
 
-  it("접두사를 조건이 아니라 힌트로 말한다", () => {
+  it("presents the prefix as a hint rather than a condition", () => {
     // Measurement shows this signal is wrong in both directions —
     // `topology-kind-color-*` ×4 were legitimate siblings, and the 92 that were
     // actually broken shared no prefix at all.
@@ -159,13 +159,13 @@ describe("Goodhart 방지 문장이 살아 있다", () => {
   });
 });
 
-describe("언어 경계 — 모델이 읽는 문자열은 영어 단일", () => {
+describe("language boundary: strings the model reads are English only", () => {
   it.each([
     ["CONSTRUCTION_RULES_EN", CONSTRUCTION_RULES_EN],
     ["ELEMENT_NAMING_RULE_EN", ELEMENT_NAMING_RULE_EN],
     ["ELEMENT_NAMING_RULE_BATCH_EN", ELEMENT_NAMING_RULE_BATCH_EN],
     ["CHAT_RULES_DELTA_EN", CHAT_RULES_DELTA_EN],
-  ])("%s 에 한글이 없다", (_name, text) => {
+  ])("%s contains no Hangul", (_name, text) => {
     expect(text).not.toMatch(/[가-힣]/);
   });
 });
@@ -174,12 +174,12 @@ describe("언어 경계 — 모델이 읽는 문자열은 영어 단일", () => 
  * Bridge nodes: the name must travel with the four qualifying conditions; recommending a bridge
  * without qualification approves an empty bucket.
  */
-describe("브릿지 노드 — 이름과 자격 조건은 함께 간다", () => {
-  it("이름이 있다", () => {
+describe("bridge node: the name and its qualifying conditions go together", () => {
+  it("has a name", () => {
     expect(flat(CONSTRUCTION_RULES_EN)).toContain("BRIDGE NODE");
   });
 
-  it("자격 조건 넷이 전부 있다", () => {
+  it("all four qualifying conditions are present", () => {
     const rules = flat(CONSTRUCTION_RULES_EN);
     // ① Name the shared behaviour — merely sharing a location is not a bridge
     expect(rules).toContain("names a shared BEHAVIOR");
@@ -194,7 +194,7 @@ describe("브릿지 노드 — 이름과 자격 조건은 함께 간다", () => 
     expect(rules).toContain("reported for retirement");
   });
 
-  it("넷을 못 채우면 아무것도 만들지 않는다는 출구가 붙어 있다", () => {
+  it("carries an exit saying nothing is created unless all four are met", () => {
     // Without this sentence only "create a bridge" remains, which is an instruction to
     // manufacture empty buckets.
     expect(flat(CONSTRUCTION_RULES_EN)).toContain(
@@ -202,7 +202,7 @@ describe("브릿지 노드 — 이름과 자격 조건은 함께 간다", () => 
     );
   });
 
-  it("밀집 경고가 브릿지를 지목하되 자격 조건을 다시 읊지 않는다", () => {
+  it("the density warning points at the bridge without restating the qualifying conditions", () => {
     const message = flat(
       denseParentActionMessage({
         parentSlug: "capabilities/x",

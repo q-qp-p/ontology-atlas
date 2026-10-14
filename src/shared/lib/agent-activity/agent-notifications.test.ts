@@ -27,43 +27,43 @@ function session(overrides: Partial<AgentWorkSession> = {}): AgentWorkSession {
 }
 
 describe("deriveTaskNotifications", () => {
-  it("작업 하나 = 시작 + 끝, 딱 둘", () => {
+  it("one task yields a start and an end, exactly two", () => {
     const out = deriveTaskNotifications([session()]);
     expect(out.map((n) => n.kind)).toEqual(["task-start", "task-end"]);
     expect(out[1].counts).toEqual({ added: 3, edited: 0, removed: 1 });
     expect(out[1].node?.slug).toBe("capabilities/checkout");
   });
 
-  it("작업이 이름을 알면 시작·끝 알림 둘 다 그 이름을 나른다", () => {
+  it("when the task knows the name, both start and end notifications carry it", () => {
     const out = deriveTaskNotifications([session({ agent: "claude-code" })]);
     expect(out[0].agent).toBe("claude-code");
     expect(out[1].agent).toBe("claude-code");
   });
 
-  it("이름 모르는 작업의 알림에는 agent 칸이 없다 — 지어내지 않는다", () => {
+  it("a task with no known name has no agent field, so none is invented", () => {
     const out = deriveTaskNotifications([session({ agent: null })]);
     expect(out[0].agent).toBeUndefined();
     expect(out[1].agent).toBeUndefined();
   });
 
-  it("아직 안 끝난 작업엔 끝 알림이 없다", () => {
+  it("a task that has not finished has no end notification", () => {
     const out = deriveTaskNotifications([session({ done: false })]);
     expect(out.map((n) => n.kind)).toEqual(["task-start"]);
   });
 
-  it("아무것도 안 센 작업은 끝 요약을 내지 않는다", () => {
+  it("a task that counted nothing emits no end summary", () => {
     const out = deriveTaskNotifications([
       session({ counts: { added: 0, edited: 0, removed: 0 } }),
     ]);
     expect(out.map((n) => n.kind)).toEqual(["task-start"]);
   });
 
-  it("대상이 슬러그가 아니면 링크 없이 상태만", () => {
+  it("when the target is not a slug, the status shows without a link", () => {
     const out = deriveTaskNotifications([session({ lastTarget: null })]);
     expect(out[1].node).toBeNull();
   });
 
-  it("53줄짜리 로그가 작업 2개면 알림은 4개다 (줄 단위면 53개였다)", () => {
+  it("a 53-line log with two tasks yields four notifications (53 if counted per line)", () => {
     const out = deriveTaskNotifications([
       session({ id: "task:1", startAt: 1, endAt: 2 }),
       session({ id: "task:2", startAt: 3, endAt: 4 }),
@@ -80,19 +80,19 @@ describe("mergeNotifications", () => {
     node: null,
   });
 
-  it("최신이 먼저, id 중복은 하나", () => {
+  it("newest first, duplicate ids collapse to one", () => {
     const merged = mergeNotifications([make("a", 1), make("b", 3)], [make("b", 3), make("c", 2)]);
     expect(merged.map((n) => n.id)).toEqual(["b", "c", "a"]);
   });
 
-  it("상한을 넘지 않는다 — 알림함은 감사 로그의 대체물이 아니다", () => {
+  it("never exceeds the cap, because the inbox is not a substitute for the audit log", () => {
     const many = Array.from({ length: AGENT_NOTIFICATION_LIMIT + 20 }, (_, i) => make(`n${i}`, i));
     expect(mergeNotifications(many)).toHaveLength(AGENT_NOTIFICATION_LIMIT);
   });
 });
 
 describe("filterNotifications", () => {
-  it("끈 갈래는 사라진다", () => {
+  it("a branch that is switched off disappears", () => {
     const items: AgentNotification[] = [
       { id: "a", kind: "task-start", at: 1, node: null },
       { id: "b", kind: "vault-problem", at: 2, node: null },
@@ -102,7 +102,7 @@ describe("filterNotifications", () => {
 });
 
 describe("countUnread", () => {
-  it("읽은 시각 뒤의 것만 센다", () => {
+  it("counts only what came after the read time", () => {
     const items: AgentNotification[] = [
       { id: "a", kind: "task-start", at: 10, node: null },
       { id: "b", kind: "task-end", at: 30, node: null },
@@ -113,7 +113,7 @@ describe("countUnread", () => {
 });
 
 describe("AGENT_NOTIFICATION_KINDS", () => {
-  it("소유자와 합의한 다섯 갈래(끝/시작 분리로 여섯)만 있다 — 도구 호출은 없다", () => {
+  it("has only the five branches agreed with the owner (six with end and start split), and no tool calls", () => {
     expect([...AGENT_NOTIFICATION_KINDS]).toEqual([
       "task-start",
       "task-end",

@@ -32,8 +32,8 @@ function stylesheetDefinesProse(): boolean {
   return /^\s*\.prose(?![\w-])[^{]*\{/m.test(css);
 }
 
-describe("타이포그래피 클래스 — 값이 없는 이름은 화면에 아무 일도 하지 않는다", () => {
-  it("플러그인도 규칙도 없으면 제품 코드가 prose 계열 클래스를 부르지 않는다", () => {
+describe("typography classes: a name with no value does nothing on screen", () => {
+  it("without the plugin or a rule, product code calls no prose family class", () => {
     if (typographyPluginInstalled() || stylesheetDefinesProse()) {
       // The name resolves to real CSS now; this test has nothing to protect.
       return;
@@ -43,7 +43,7 @@ describe("타이포그래피 클래스 — 값이 없는 이름은 화면에 아
       cwd: REPO_ROOT,
       exclude: (name) => /\.(test|spec)\.tsx?$/.test(name),
     });
-    expect(files.length, "검사 대상이 0개면 통과가 아니라 측정 실패다").toBeGreaterThan(100);
+    expect(files.length, "zero scan targets is a measurement failure rather than a pass").toBeGreaterThan(100);
 
     const offenders: string[] = [];
     for (const file of files) {

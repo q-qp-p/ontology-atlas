@@ -30,8 +30,8 @@ beforeEach(() => {
   window.localStorage.clear();
 });
 
-describe('설치된 모델 목록', () => {
-  it('OpenAI 호환 목록에서 이름만 꺼낸다', () => {
+describe('installed model list', () => {
+  it('takes only the names from an OpenAI-compatible list', () => {
     const body = JSON.stringify({
       object: 'list',
       data: [
@@ -42,7 +42,7 @@ describe('설치된 모델 목록', () => {
     expect(parseOpenAiModelList(body)).toEqual(['gemma4:12b', 'qwen3:8b']);
   });
 
-  it('임베딩 전용 모델을 이름으로 추측해 지우지 않는다', () => {
+  it('does not guess embedding-only models by name and drop them', () => {
     // The OpenAI-compatible list does not carry that fact. Dropping them would make
     // the screen deny something the user's runner actually has; if an unusable model
     // is picked, relaying the runner's own error is the honest answer.
@@ -52,7 +52,7 @@ describe('설치된 모델 목록', () => {
     expect(parseOpenAiModelList(body)).toContain('nomic-embed-text:latest');
   });
 
-  it('임베딩 전용 모델은 1번이 되지 못한다 (알파벳 → 쓸모)', () => {
+  it('an embedding-only model cannot become number 1 (alphabetical order loses to usefulness)', () => {
     // Alphabetical order would select an embedding-only model first and save it as connected.
     const body = JSON.stringify({
       data: [
@@ -77,7 +77,7 @@ describe('설치된 모델 목록', () => {
     ]);
   });
 
-  it('깨진 본문·빈 본문은 빈 목록이지 예외가 아니다', () => {
+  it('a broken or empty body is an empty list, not an exception', () => {
     expect(parseOpenAiModelList('')).toEqual([]);
     expect(parseOpenAiModelList('not json')).toEqual([]);
     expect(parseOpenAiModelList('{"data":"nope"}')).toEqual([]);
@@ -85,8 +85,8 @@ describe('설치된 모델 목록', () => {
   });
 });
 
-describe('임베딩 전용 판정', () => {
-  it('이름에 embed 가 들어가면 임베딩으로 본다', () => {
+describe('embedding-only detection', () => {
+  it('treats a name containing embed as an embedding model', () => {
     for (const name of [
       'embeddinggemma:latest',
       'nomic-embed-text:latest',
@@ -100,7 +100,7 @@ describe('임베딩 전용 판정', () => {
     }
   });
 
-  it('embed 라는 낱말이 없는 알려진 계열도 판정한다', () => {
+  it('also detects known families that lack the word embed', () => {
     for (const name of [
       'bge-m3:latest',
       'gte-large',
@@ -112,7 +112,7 @@ describe('임베딩 전용 판정', () => {
     }
   });
 
-  it('대화 모델을 임베딩으로 오판하지 않는다', () => {
+  it('does not mistake a chat model for an embedding model', () => {
     for (const name of [
       'qwen3:8b',
       'gemma3:12b',
@@ -126,7 +126,7 @@ describe('임베딩 전용 판정', () => {
     }
   });
 
-  it('대화 가능한 개수는 임베딩으로 확신되는 것만 뺀 수다', () => {
+  it('the chat-capable count excludes only models confirmed as embedding', () => {
     expect(
       countChatCapableModels([
         'qwen3:8b',
@@ -138,8 +138,8 @@ describe('임베딩 전용 판정', () => {
   });
 });
 
-describe('실패 이유는 서로 구별된다', () => {
-  it('상태 코드가 없으면 러너가 꺼져 있거나 포트가 다른 것이다', () => {
+describe('failure reasons are told apart', () => {
+  it('with no status code the runner is off or the port differs', () => {
     // Collapsing this into "we couldn't check" leaves the user unable to tell
     // whether to start the runner or fix the address.
     const verdict = readLocalVerdict(
@@ -148,12 +148,12 @@ describe('실패 이유는 서로 구별된다', () => {
     expect(verdict.reason).toBe('unreachable');
   });
 
-  it('404 는 연결은 됐으나 OpenAI 호환 주소가 아닌 것이다', () => {
+  it('a 404 means connected but not an OpenAI-compatible address', () => {
     const verdict = readLocalVerdict(verifyResult({ httpStatus: 404 }));
     expect(verdict.reason).toBe('not-compatible');
   });
 
-  it('200 인데 목록이 비면 설치된 모델이 없는 것이다', () => {
+  it('a 200 with an empty list means no model is installed', () => {
     const verdict = readLocalVerdict(
       verifyResult({ ok: true, httpStatus: 200, body: '{"data":[]}' }),
     );
@@ -161,7 +161,7 @@ describe('실패 이유는 서로 구별된다', () => {
     expect(verdict.models).toEqual([]);
   });
 
-  it('200 + 목록이면 통과이고 고를 것이 함께 온다', () => {
+  it('a 200 with a list passes, and the choices come along', () => {
     const verdict = readLocalVerdict(
       verifyResult({ ok: true, httpStatus: 200, body: '{"data":[{"id":"qwen3:8b"}]}' }),
     );
@@ -170,8 +170,8 @@ describe('실패 이유는 서로 구별된다', () => {
   });
 });
 
-describe('설정 보관', () => {
-  it('주소만 있고 모델이 없으면 아직 쓸 수 있는 상태가 아니다', () => {
+describe('settings storage', () => {
+  it('an address without a model is not yet usable', () => {
     // Sent as is, the first round trip dies with "model is required" and the user
     // has no idea what they left out.
     expect(isLocalEndpointReady({ baseUrl: 'http://localhost:11434', model: '' })).toBe(false);
@@ -181,7 +181,7 @@ describe('설정 보관', () => {
     );
   });
 
-  it('쓰고 읽고 지우는 한 바퀴', () => {
+  it('a full round of write, read and clear', () => {
     writeLocalEndpoint({ baseUrl: 'http://localhost:1234/v1 ', model: ' qwen3:8b ' });
     expect(readLocalEndpoint()).toEqual({
       baseUrl: 'http://localhost:1234/v1',
@@ -191,15 +191,15 @@ describe('설정 보관', () => {
     expect(readLocalEndpoint().model).toBe('');
   });
 
-  it('깨진 값은 없는 값과 같은 화면이면 충분하다', () => {
+  it('a broken value only needs to look the same as a missing one', () => {
     window.localStorage.setItem('ontology-atlas:local-endpoint', '{{{');
     expect(readLocalEndpoint().model).toBe('');
     expect(readLocalEndpoint().baseUrl).toBe('http://localhost:11434');
   });
 });
 
-describe('목적지 호스트', () => {
-  it('포트까지가 사실이다 — 감사 줄에 남는 값과 같은 문법', () => {
+describe('destination host', () => {
+  it('the port is part of the fact, in the same syntax as the value kept in the audit line', () => {
     expect(hostOfBaseUrl('http://localhost:11434')).toBe('localhost:11434');
     expect(hostOfBaseUrl('http://localhost:1234/v1')).toBe('localhost:1234');
     expect(hostOfBaseUrl('https://box.example.com:8080/v1')).toBe('box.example.com:8080');

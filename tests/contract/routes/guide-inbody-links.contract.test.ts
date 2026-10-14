@@ -60,19 +60,19 @@ function toRoutePath(href: string): string {
   return path.length > 1 ? path.replace(/\/$/, '') : path;
 }
 
-describe('가이드 본문 링크 — 실재하는 라우트만 가리킨다', () => {
+describe('guide body links point only at routes that exist', () => {
   const links = inBodyInternalLinks();
   const segments = new Set(GUIDE_PAGES.map((p) => p.segment));
   const routes = appRoutes();
 
-  it('링크와 목적지 집합을 실제로 뽑아낸다 (공회전 차단)', () => {
+  it('actually extracts the links and the destination set (blocks idling)', () => {
     // Extracting 0 links and passing as "nothing mismatched" is this contract's only failure mode.
-    expect(links.length, '가이드 본문에서 내부 링크를 하나도 못 찾았다 — 스캔이 깨졌다').toBeGreaterThan(10);
-    expect(segments.size, '가이드 세그먼트를 못 읽었다').toBeGreaterThan(5);
-    expect(routes.has('/guide'), 'app/[locale] 라우트 스캔이 깨졌다').toBe(true);
+    expect(links.length, 'found no internal link in the guide body, so the scan is broken').toBeGreaterThan(10);
+    expect(segments.size, 'could not read the guide segments').toBeGreaterThan(5);
+    expect(routes.has('/guide'), 'the app/[locale] route scan is broken').toBe(true);
   });
 
-  it('내부 링크는 실재하는 가이드 장만 가리킨다', () => {
+  it('internal links point only at guide chapters that exist', () => {
     /**
      * **Internal links in the guide body point only at guide chapters.**
      *
@@ -121,7 +121,7 @@ describe('가이드 본문 링크 — 실재하는 라우트만 가리킨다', (
    * the source markdown.**
    */
 
-  it('상대 경로 링크를 두지 않는다 — 내부는 절대 경로, 저장소 문서는 GitHub 로', () => {
+  it('has no relative links: internal ones are absolute paths and repository docs go to GitHub', () => {
     /**
      * The full story is in `inBodyAllLinks`'s comment. In short: the router resolves a
      * relative `.md` link to `/guide/<filename>`, that segment does not exist, and the
@@ -131,7 +131,7 @@ describe('가이드 본문 링크 — 실재하는 라우트만 가리킨다', (
     const all = inBodyAllLinks();
     // Idling guard: this scanner must actually be seeing absolute and external links,
     // otherwise "no relative links" is a pass over an empty set.
-    expect(all.length, '전체 링크 스캔이 깨졌다').toBeGreaterThan(links.length);
+    expect(all.length, 'the scan of all links is broken').toBeGreaterThan(links.length);
     const relative = all.filter(({ href }) => !/^(\/|https?:\/\/)/.test(href));
     expect(
       relative.map((d) => `${d.file} → ${d.href}`),
@@ -141,7 +141,7 @@ describe('가이드 본문 링크 — 실재하는 라우트만 가리킨다', (
     ).toEqual([]);
   });
 
-  it('마크다운 원본에 로케일을 박지 않는다', () => {
+  it('does not hard-code the locale in the markdown source', () => {
     /**
      * "Fixing" this by writing `/ko/guide/…` is the repair that brings the defect
      * back — the same copy also serves `/en`, so English readers would be dragged into
@@ -150,7 +150,7 @@ describe('가이드 본문 링크 — 실재하는 라우트만 가리킨다', (
     const hardcoded = links.filter(({ href }) => /^\/(ko|en)\//.test(href));
     expect(
       hardcoded.map((d) => `${d.file} → ${d.href}`),
-      '본문에 로케일이 박혔다 — 로케일은 렌더러가 붙인다',
+      'the locale is hard-coded in the body; the renderer attaches the locale',
     ).toEqual([]);
   });
 });

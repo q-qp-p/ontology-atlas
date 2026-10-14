@@ -67,7 +67,7 @@ describe("projectFlickLanding", () => {
 const WINDOW_MS = 80; // --map-camera-release-velocity-window-ms
 const MIN_SPEED = 0.05; // --map-camera-flick-min-speed (px/ms)
 
-describe("sampleReleaseVelocity — 정지 릴리스 게이트 (iOS scroll rule)", () => {
+describe("sampleReleaseVelocity: stationary release gate (iOS scroll rule)", () => {
   it("registers a flick when the pointer was moving right up to release", () => {
     // 5 samples ~16ms apart, moving +8px/frame → ~0.5px/ms, released at t=64.
     const history = [

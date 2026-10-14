@@ -193,8 +193,8 @@ describe('useLocalVaultInternal — forgetRecent', () => {
   });
 });
 
-describe('useLocalVaultInternal — mount 시 핸들 복원', () => {
-  it('저장된 핸들이 없으면 idle 로 남고 vault 를 빌드하지 않는다', async () => {
+describe('useLocalVaultInternal: restoring the handle on mount', () => {
+  it('stays idle and does not build the vault when there is no saved handle', async () => {
     fsHandleMocks.getLocalFsHandle.mockResolvedValue(null);
     const { result } = renderHook(() => useLocalVaultInternal());
 
@@ -204,7 +204,7 @@ describe('useLocalVaultInternal — mount 시 핸들 복원', () => {
     expect(entitiesMocks.buildLocalManifestWithEntries).not.toHaveBeenCalled();
   });
 
-  it('권한이 granted 로 복원되면 자동으로 vault 를 로드한다', async () => {
+  it('loads the vault automatically when permission is restored as granted', async () => {
     const root = fakeRootHandle('my-vault');
     fsHandleMocks.getLocalFsHandle.mockResolvedValue(makeRecord(root));
     fsHandleMocks.verifyHandlePermission.mockResolvedValue('granted');
@@ -216,7 +216,7 @@ describe('useLocalVaultInternal — mount 시 핸들 복원', () => {
     expect(entitiesMocks.buildLocalManifestWithEntries).toHaveBeenCalledTimes(1);
   });
 
-  it('권한이 없으면(prompt/denied) 자동으로 재빌드하지 않고 permission-needed 로 대기한다', async () => {
+  it('waits in permission-needed without rebuilding when permission is missing (prompt/denied)', async () => {
     const root = fakeRootHandle('my-vault');
     fsHandleMocks.getLocalFsHandle.mockResolvedValue(makeRecord(root));
     fsHandleMocks.verifyHandlePermission.mockResolvedValue('prompt');
@@ -230,8 +230,8 @@ describe('useLocalVaultInternal — mount 시 핸들 복원', () => {
   });
 });
 
-describe('useLocalVaultInternal — requestPermission 복구', () => {
-  it('재승인이 성공하면 vault 를 로드해 정상 복귀한다', async () => {
+describe('useLocalVaultInternal: recovery through requestPermission', () => {
+  it('returns to normal by loading the vault when re-approval succeeds', async () => {
     const root = fakeRootHandle('my-vault');
     fsHandleMocks.getLocalFsHandle.mockResolvedValue(makeRecord(root));
     fsHandleMocks.verifyHandlePermission.mockResolvedValueOnce('prompt');
@@ -248,7 +248,7 @@ describe('useLocalVaultInternal — requestPermission 복구', () => {
     expect(result.current.status).toBe('loaded');
   });
 
-  it('재승인이 거부되면 permission-needed 를 유지하고 조용히 진행하지 않는다', async () => {
+  it('keeps permission-needed when re-approval is refused and does not proceed quietly', async () => {
     const root = fakeRootHandle('my-vault');
     fsHandleMocks.getLocalFsHandle.mockResolvedValue(makeRecord(root));
     fsHandleMocks.verifyHandlePermission.mockResolvedValue('prompt');
@@ -265,7 +265,7 @@ describe('useLocalVaultInternal — requestPermission 복구', () => {
   });
 });
 
-describe('useLocalVaultInternal — saveDoc conflict 계약 (silent-overwrite 회귀 가드)', () => {
+describe('useLocalVaultInternal: saveDoc conflict contract (regression guard against silent overwrite)', () => {
   async function loadedHookWithDoc(fh: ReturnType<typeof fakeFileHandle>) {
     const root = fakeRootHandle('my-vault');
     fsHandleMocks.getLocalFsHandle.mockResolvedValue(makeRecord(root));
@@ -289,7 +289,7 @@ describe('useLocalVaultInternal — saveDoc conflict 계약 (silent-overwrite �
     return result;
   }
 
-  it('saveDoc도 기존 uid와 merged_uids를 바꾼 전체 문서를 거부한다', async () => {
+  it('rejects a whole-document saveDoc that changes the existing uid and merged_uids', async () => {
     const uid = '01890f3e-7b5d-4c0a-8f14-123456789abc';
     const mergedUid = '11890f3e-7b5d-4c0a-8f14-123456789abc';
     const raw = `---\nuid: ${uid}\nmerged_uids: [${mergedUid}]\nkind: project\ntitle: A\n---\n\nbody`;
@@ -314,7 +314,7 @@ describe('useLocalVaultInternal — saveDoc conflict 계약 (silent-overwrite �
     expect(fh.state.text).toBe(raw);
   });
 
-  it('expectedMtime 이 디스크 mtime 과 일치하면 정상 저장 후 재스캔한다', async () => {
+  it('saves normally and rescans when expectedMtime matches the disk mtime', async () => {
     const fh = fakeFileHandle({ text: 'old', lastModified: 1000 });
     const result = await loadedHookWithDoc(fh);
 
@@ -326,7 +326,7 @@ describe('useLocalVaultInternal — saveDoc conflict 계약 (silent-overwrite �
     expect(entitiesMocks.rebuildLocalManifestIncremental).toHaveBeenCalledTimes(1);
   });
 
-  it('expectedMtime 이 디스크 mtime 과 다르면 VaultConflictError 를 던지고 파일을 쓰지 않으며 재스캔도 하지 않는다', async () => {
+  it('throws VaultConflictError, writes no file and does not rescan when expectedMtime differs from the disk mtime', async () => {
     // A real bug once: swallowing this conflict leaves the editor buffer phantom-clean, and the next
     // poll's re-fetch silently overwrites the user's unsaved edits (see the comment in
     // src/views/docs-vault/lib/persistence.ts). At this hook's level, the minimum contract is that
@@ -347,7 +347,7 @@ describe('useLocalVaultInternal — saveDoc conflict 계약 (silent-overwrite �
     expect(entitiesMocks.buildLocalManifestWithEntries).toHaveBeenCalledTimes(1); // the initial mount load only
   });
 
-  it('핸들이 없는 slug 저장 시도는 에러를 던지고 아무것도 쓰지 않는다', async () => {
+  it('throws and writes nothing when saving a slug that has no handle', async () => {
     const fh = fakeFileHandle({ text: 'x', lastModified: 1000 });
     const result = await loadedHookWithDoc(fh);
 
@@ -361,8 +361,8 @@ describe('useLocalVaultInternal — saveDoc conflict 계약 (silent-overwrite �
   });
 });
 
-describe('useLocalVaultInternal — updateFrontmatter conflict 계약', () => {
-  it('UID 없는 legacy 문서는 kind 승격과 함께 한 번만 UID를 초기화할 수 있다', async () => {
+describe('useLocalVaultInternal: updateFrontmatter conflict contract', () => {
+  it('lets a legacy document without a UID initialize its UID once together with a kind promotion', async () => {
     const uid = '01890f3e-7b5d-4c0a-8f14-123456789abc';
     const fh = fakeFileHandle({ text: '# Legacy document\n', lastModified: 1000 });
     const root = fakeRootHandle('my-vault');
@@ -387,7 +387,7 @@ describe('useLocalVaultInternal — updateFrontmatter conflict 계약', () => {
     expect(fh.state.text).toContain('kind: element');
   });
 
-  it('이미 발급된 uid와 merge history는 generic frontmatter patch로 바꾸지 못한다', async () => {
+  it('cannot change an already issued uid and merge history with a generic frontmatter patch', async () => {
     const uid = '01890f3e-7b5d-4c0a-8f14-123456789abc';
     const fh = fakeFileHandle({
       text: `---\nuid: ${uid}\nkind: project\ntitle: A\n---\n\nbody`,
@@ -425,7 +425,7 @@ describe('useLocalVaultInternal — updateFrontmatter conflict 계약', () => {
     expect(fh.state.text).toContain(`uid: ${uid}`);
   });
 
-  it('expectedMtime 충돌 시 VaultConflictError 를 던지고 파일을 쓰지 않는다', async () => {
+  it('throws VaultConflictError and writes no file on an expectedMtime conflict', async () => {
     const fh = fakeFileHandle({
       text: '---\ntitle: A\n---\n\nbody',
       lastModified: 5000,
@@ -455,8 +455,8 @@ describe('useLocalVaultInternal — updateFrontmatter conflict 계약', () => {
   });
 });
 
-describe('useLocalVaultInternal — refresh() / poll 병합', () => {
-  it('fingerprint 가 동일하면 전체 재빌드를 skip 한다 (변경 없음 → 무료 비교만)', async () => {
+describe('useLocalVaultInternal: refresh() and poll merging', () => {
+  it('skips the full rebuild when the fingerprint is unchanged (no change, only a free comparison)', async () => {
     const root = fakeRootHandle('my-vault');
     fsHandleMocks.getLocalFsHandle.mockResolvedValue(makeRecord(root));
     fsHandleMocks.verifyHandlePermission.mockResolvedValue('granted');
@@ -478,7 +478,7 @@ describe('useLocalVaultInternal — refresh() / poll 병합', () => {
     expect(entitiesMocks.rebuildLocalManifestIncremental).not.toHaveBeenCalled();
   });
 
-  it('fingerprint 가 바뀌면 refresh 가 전체 재빌드(load)를 수행해 디스크 변경을 병합한다', async () => {
+  it('has refresh run a full rebuild (load) and merge disk changes when the fingerprint changes', async () => {
     const root = fakeRootHandle('my-vault');
     fsHandleMocks.getLocalFsHandle.mockResolvedValue(makeRecord(root));
     fsHandleMocks.verifyHandlePermission.mockResolvedValue('granted');
@@ -500,7 +500,7 @@ describe('useLocalVaultInternal — refresh() / poll 병합', () => {
     expect(entitiesMocks.rebuildLocalManifestIncremental).toHaveBeenCalledTimes(1);
   });
 
-  it('fingerprint 계산이 실패하면 안전하게 전체 재빌드로 폴백한다', async () => {
+  it('falls back safely to a full rebuild when the fingerprint calculation fails', async () => {
     const root = fakeRootHandle('my-vault');
     fsHandleMocks.getLocalFsHandle.mockResolvedValue(makeRecord(root));
     fsHandleMocks.verifyHandlePermission.mockResolvedValue('granted');
@@ -519,8 +519,8 @@ describe('useLocalVaultInternal — refresh() / poll 병합', () => {
   });
 });
 
-describe('useLocalVaultInternal — 탭 focus 복귀 auto-refresh (poll → 병합 경로)', () => {
-  it('focus 복귀 시 fingerprint 변경이 감지되면 자동으로 재로드한다', async () => {
+describe('useLocalVaultInternal: auto-refresh on returning to the tab (poll to merge path)', () => {
+  it('reloads automatically when a fingerprint change is detected on focus return', async () => {
     const root = fakeRootHandle('my-vault');
     fsHandleMocks.getLocalFsHandle.mockResolvedValue(makeRecord(root));
     fsHandleMocks.verifyHandlePermission.mockResolvedValue('granted');
@@ -551,8 +551,8 @@ describe('useLocalVaultInternal — 탭 focus 복귀 auto-refresh (poll → 병�
   });
 });
 
-describe('useLocalVaultInternal — 기존 파일 보호 (createDoc / renameDoc)', () => {
-  it('createDoc: kind 노드는 유효한 uid 없이 디스크에 쓰지 않는다', async () => {
+describe('useLocalVaultInternal: protecting existing files (createDoc / renameDoc)', () => {
+  it('createDoc: does not write a kind node to disk without a valid uid', async () => {
     const created = fakeFileHandle({ text: '', lastModified: 0 });
     const getFileHandle = vi.fn(async (_name: string, options?: { create?: boolean }) => {
       if (options?.create) return created.handle;
@@ -579,7 +579,7 @@ describe('useLocalVaultInternal — 기존 파일 보호 (createDoc / renameDoc)
     expect(created.write).not.toHaveBeenCalled();
   });
 
-  it('createDoc: 기존 primary/merged UID와 충돌하는 새 노드를 쓰지 않는다', async () => {
+  it('createDoc: does not write a new node that collides with an existing primary or merged UID', async () => {
     const uid = '01890f3e-7b5d-4c0a-8f14-123456789abc';
     const mergedUid = '11890f3e-7b5d-4c0a-8f14-123456789abc';
     const created = fakeFileHandle({ text: '', lastModified: 0 });
@@ -629,7 +629,7 @@ describe('useLocalVaultInternal — 기존 파일 보호 (createDoc / renameDoc)
     expect(created.write).not.toHaveBeenCalled();
   });
 
-  it('createDoc: 로드 뒤 외부에서 생긴 동일 slug도 다시 확인해 덮어쓰지 않는다', async () => {
+  it('createDoc: rechecks the same slug that appeared externally after load and does not overwrite it', async () => {
     const external = fakeFileHandle({
       text: '---\nuid: 01890f3e-7b5d-4c0a-8f14-123456789abc\nkind: project\ntitle: External\n---\n',
       lastModified: 2000,
@@ -663,7 +663,7 @@ describe('useLocalVaultInternal — 기존 파일 보호 (createDoc / renameDoc)
     expect(external.state.text).toContain('title: External');
   });
 
-  it('createDoc: 이미 존재하는 slug 면 기존 파일을 덮어쓰지 않고 에러를 던진다', async () => {
+  it('createDoc: throws and does not overwrite the existing file when the slug already exists', async () => {
     const fh = fakeFileHandle({ text: 'existing', lastModified: 1000 });
     const root = fakeRootHandle('my-vault');
     fsHandleMocks.getLocalFsHandle.mockResolvedValue(makeRecord(root));
@@ -685,7 +685,7 @@ describe('useLocalVaultInternal — 기존 파일 보호 (createDoc / renameDoc)
     expect(fh.state.text).toBe('existing');
   });
 
-  it('renameDoc: 새 slug 가 이미 존재하면 덮어쓰지 않고 에러를 던진다', async () => {
+  it('renameDoc: throws and does not overwrite when the new slug already exists', async () => {
     const target = fakeFileHandle({ text: 'target content', lastModified: 1000 });
     const source = fakeFileHandle({ text: 'source content', lastModified: 1000 });
     const root = fakeRootHandle('my-vault');
@@ -958,7 +958,7 @@ describe('useLocalVaultInternal — 기존 파일 보호 (createDoc / renameDoc)
     expect(result.current.consumeReportedConflicts(new Map([['note', 2000]]))).toEqual(new Set());
   });
 
-  it('자체 쓰기 예약은 관찰된 slug에서만 소비되고 실패하면 되돌릴 수 있다', async () => {
+  it('consumes a self-write reservation only on an observed slug and can roll it back on failure', async () => {
     const root = fakeRootHandle('my-vault');
     fsHandleMocks.getLocalFsHandle.mockResolvedValue(makeRecord(root));
     fsHandleMocks.verifyHandlePermission.mockResolvedValue('granted');
@@ -986,8 +986,8 @@ describe('useLocalVaultInternal — 기존 파일 보호 (createDoc / renameDoc)
   });
 });
 
-describe('structurallyEqualStatus — 폴링 가드가 실제로 작동한다', () => {
-  it('파싱마다 새로 만들어진 동일 내용의 nested status 를 같다고 판정한다', async () => {
+describe('structurallyEqualStatus: the polling guard actually works', () => {
+  it('judges nested status with identical content as equal even when rebuilt on every parse', async () => {
     const { structurallyEqualStatus } = await import('./vault-sidecars');
     const { emptyAgentActivityStatus } = await import('../agent-activity-status');
     expect(
@@ -995,7 +995,7 @@ describe('structurallyEqualStatus — 폴링 가드가 실제로 작동한다', 
     ).toBe(true);
   });
 
-  it('nested 필드 하나가 다르면 다르다고 판정한다', async () => {
+  it('judges it different when a single nested field differs', async () => {
     const { structurallyEqualStatus } = await import('./vault-sidecars');
     const { emptyAgentActivityStatus } = await import('../agent-activity-status');
     const changed = emptyAgentActivityStatus();
@@ -1004,7 +1004,7 @@ describe('structurallyEqualStatus — 폴링 가드가 실제로 작동한다', 
   });
 
   /* Age fields embed `Date.now()` at parse time, so they stay out of the compare; `stale` stays in. */
-  it('ageMs 만 다른 두 heartbeat status 는 같다고 판정한다', async () => {
+  it('judges two heartbeat statuses differing only in ageMs as equal', async () => {
     const { comparableAgentActivityStatus, structurallyEqualStatus } = await import('./vault-sidecars');
     const { emptyAgentActivityStatus } = await import('../agent-activity-status');
     const a = { ...emptyAgentActivityStatus(), ageMs: 1_000 };
@@ -1015,7 +1015,7 @@ describe('structurallyEqualStatus — 폴링 가드가 실제로 작동한다', 
     ).toBe(true);
   });
 
-  it('stale 전이는 여전히 변경으로 판정한다', async () => {
+  it('treats a stale transition as a change still', async () => {
     const { comparableAgentActivityStatus, structurallyEqualStatus } = await import('./vault-sidecars');
     const { emptyAgentActivityStatus } = await import('../agent-activity-status');
     const fresh = { ...emptyAgentActivityStatus(), ageMs: 1_000, stale: false };

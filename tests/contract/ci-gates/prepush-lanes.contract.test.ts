@@ -36,22 +36,22 @@ const executable = hook
   .filter((line) => !/^\s*#/.test(line))
   .join("\n");
 
-describe("pre-push 훅 — 빠른 CI 거울", () => {
-  it("훅이 있고 실행 가능하다", () => {
+describe("pre-push hook — a fast mirror of CI", () => {
+  it("the hook exists and is executable", () => {
     expect(statSync(path.join(ROOT, HOOK_PATH)).mode & 0o111).toBeGreaterThan(0);
   });
 
 
 
-  it("레인은 병렬로 돈다 — 직렬이면 이 훅은 다시 12시간이 된다", () => {
+  it("lanes run in parallel — if serial this hook becomes 12 hours again", () => {
     // A lane is backgrounded and then joined; both halves have to be present.
-    expect(executable, "레인을 백그라운드로 띄우지 않는다").toMatch(/\)\s*&\s*$/m);
-    expect(executable, "레인을 join 하지 않는다 — 결과를 못 본다").toMatch(/^\s*wait\s*$/m);
+    expect(executable, "lanes are not launched in the background").toMatch(/\)\s*&\s*$/m);
+    expect(executable, "lanes are not joined — results cannot be seen").toMatch(/^\s*wait\s*$/m);
   });
 
-  it("범위는 3점 diff 다 — main 을 머지해도 남의 변경이 레인을 켜지 않는다", () => {
+  it("the scope is a three-dot diff — merging main does not turn on lanes for others' changes", () => {
     expect(executable).toMatch(/\$BASE_REF\.\.\.HEAD/);
-    expect(executable, "기준선이 origin/main 이 아니다").toMatch(/BASE_REF="origin\/main"/);
+    expect(executable, "the base is not origin/main").toMatch(/BASE_REF="origin\/main"/);
   });
 
   /**
@@ -59,8 +59,8 @@ describe("pre-push 훅 — 빠른 CI 거울", () => {
    * CI shards Playwright three ways; here it would be serial, and that is exactly
    * the shape that got the last hook deleted.
    */
-  it("e2e 는 훅에 없다 — CI 가 3갈래로 나눠 본다", () => {
-    expect(executable, "훅이 playwright 를 돌린다 — 그 순간 다시 느려진다").not.toMatch(
+  it("e2e is not in the hook — CI runs it in three branches", () => {
+    expect(executable, "the hook runs playwright — it becomes slow again at that moment").not.toMatch(
       /playwright/i,
     );
   });
@@ -75,16 +75,16 @@ describe("pre-push 훅 — 빠른 CI 거울", () => {
    * The exclusion is scoped to this lane. Removing it re-introduces a flake that
    * looks like a real failure, which is worse than no gate — people learn to retry.
    */
-  it("성능 시험은 훅에서 뺀다 — 바쁜 기계에서 잰 비율은 뜻이 없다", () => {
+  it("the performance test is taken out of the hook — a ratio measured on a busy machine means nothing", () => {
     const unitLane = executable.split("\n").find((line) => /lane unit /.test(line)) ?? "";
-    expect(unitLane, "unit 레인을 못 찾았다 — 이 시험이 헛돈다").not.toBe("");
+    expect(unitLane, "could not find the unit lane — this test idles").not.toBe("");
     // The planner's emitted command excludes `*.perf.test.*`; `scripts/ci/prepush.test.mjs`
     // proves that on its output, so only the hook's use of the planner is pinned here.
     expect(executable).toContain('node scripts/ci/prepush-unit-plan.mjs');
 
     // CI must still run them; the exclusion is local-only.
     const ci = readFileSync(path.join(ROOT, ".github/workflows/checks.yml"), "utf8");
-    expect(ci, "CI 가 성능 시험을 제외한다 — 그러면 아무도 안 재는 것이 된다").not.toContain(
+    expect(ci, "CI excludes the performance test — then nobody measures it").not.toContain(
       "perf.test",
     );
   });
@@ -93,17 +93,17 @@ describe("pre-push 훅 — 빠른 CI 거울", () => {
    * No lane may buy quiet with the clock: a worker cap or stretched per-test timeout in this hook
    * marks a test that reads the clock, and the fix belongs in that test (`.claude/rules/testing.md`).
    */
-  it("정확성 레인은 시계로 조용함을 사지 않는다 — worker 상한도 늘린 timeout도 없다", () => {
+  it("correctness lanes do not buy quiet with a clock — no worker cap and no raised timeout", () => {
     const laneLine = (name: string) =>
       executable.split("\n").find((line) => new RegExp(`lane ${name} `).test(line)) ?? "";
 
     for (const name of ["unit"]) {
       const lane = laneLine(name);
-      expect(lane, `${name} 레인을 못 찾았다 — 이 시험이 헛돈다`).not.toBe("");
-      expect(lane, "worker 상한은 시계에 기댄 시험을 가리는 값이다 — 그 시험을 고쳐라").not.toContain(
+      expect(lane, `could not find the ${name} lane — this test idles`).not.toBe("");
+      expect(lane, "a worker cap is a value that hides clock-dependent tests — fix those tests").not.toContain(
         "--maxWorkers",
       );
-      expect(lane, "늘린 per-test timeout 도 같은 가림막이다").not.toContain("--testTimeout");
+      expect(lane, "a raised per-test timeout is the same screen").not.toContain("--testTimeout");
     }
 
     // The unit lane is selected by Vitest's module graph from the same three-dot
@@ -112,7 +112,7 @@ describe("pre-push 훅 — 빠른 CI 거울", () => {
     // `--changed=<merge base>` in the emitted command is proved by `scripts/ci/prepush.test.mjs`.
     const planner = readFileSync(path.join(ROOT, 'scripts/ci/prepush-unit-plan.mjs'), 'utf8');
     expect(planner).not.toMatch(/--maxWorkers|--testTimeout/);
-    expect(executable, "unit 레인의 기준이 3점 병합 기점이 아니다").toMatch(
+    expect(executable, "the unit lane's base is not the three-dot merge base").toMatch(
       /merge-base "\$BASE_REF" HEAD/,
     );
 
@@ -126,7 +126,7 @@ describe("pre-push 훅 — 빠른 CI 거울", () => {
    * The repo-wide ESLint pass is CI's: the hook lints only changed files, which
    * is safe only while CI's exhaustive gates still run the whole tree.
    */
-  it("전사 lint 는 CI 의 exhaustive gates 에 남아 있다", () => {
+  it("whole-repository lint stays in CI's exhaustive gates", () => {
     expect(FULL_LANE_COMMANDS.gates).toContain("pnpm lint");
   });
 
@@ -134,14 +134,14 @@ describe("pre-push 훅 — 빠른 CI 거울", () => {
    * The budget is reported, never enforced: refusing a green push because the machine was busy is
    * forbidden by `.claude/rules/testing.md`, so the budget line must not change the push's fate.
    */
-  it("예산은 보고만 한다 — 예산으로 푸시를 막지 않는다", () => {
-    expect(executable, "예산과 견주는 줄이 없다").toMatch(/\$total.*-gt.*\$BUDGET_SECONDS/);
+  it("the budget only reports — it does not block a push by budget", () => {
+    expect(executable, "no line compares against the budget").toMatch(/\$total.*-gt.*\$BUDGET_SECONDS/);
 
     // The budget comparison must not reach an exit. Only the lane verdicts may.
     const budgetBlock = executable.slice(executable.indexOf("BUDGET_SECONDS"));
     const budgetCompare = budgetBlock.slice(budgetBlock.indexOf('"$total" -gt'));
     const guard = budgetCompare.slice(0, budgetCompare.indexOf("\nfi"));
-    expect(guard, "예산 초과가 푸시를 막는다 — 시계를 게이트로 쓴 것이다").not.toMatch(/exit\s+1/);
+    expect(guard, "exceeding the budget blocks the push — the clock was used as a gate").not.toMatch(/exit\s+1/);
   });
 
   /**
@@ -149,7 +149,7 @@ describe("pre-push 훅 — 빠른 CI 거울", () => {
    * fails at push time on someone else's machine, which is the worst place to find
    * it.
    */
-  it("레인이 부르는 pnpm 스크립트가 전부 실재한다", () => {
+  it("every pnpm script the lanes call exists", () => {
     const scripts = Object.keys(
       (JSON.parse(readFileSync(path.join(ROOT, "package.json"), "utf8")) as {
         scripts?: Record<string, string>;
@@ -160,7 +160,7 @@ describe("pre-push 훅 — 빠른 CI 거울", () => {
     const named = [...executable.matchAll(/pnpm\s+([A-Za-z][A-Za-z0-9:_-]*)/g)]
       .map((m) => m[1])
       .filter((name) => name !== "exec");
-    expect(named.length, "레인에서 pnpm 스크립트를 하나도 못 찾았다 — 이 시험이 헛돈다").toBeGreaterThan(3);
+    expect(named.length, "could not find a single pnpm script in the lanes — this test idles").toBeGreaterThan(3);
     expect(named.filter((n) => !scripts.includes(n))).toEqual([]);
   });
 
@@ -169,7 +169,7 @@ describe("pre-push 훅 — 빠른 CI 거울", () => {
    * run the hook's own patterns so a mis-anchored regex is caught here rather than
    * by a lane silently never firing.
    */
-  it("경로 글롭이 의도한 것만 켠다", () => {
+  it("path globs turn on only what is intended", () => {
     const patterns = {
       ts: /\.tsx?$|\.mjs$|tsconfig.*\.json$|next\.config\.ts$/,
       app: /^src\/|^app\//,
@@ -184,7 +184,7 @@ describe("pre-push 훅 — 빠른 CI 거울", () => {
      */
     for (const source of Object.values(patterns)) {
       const asShell = source.source.replace(/\\\//g, "/");
-      expect(executable, `훅에 없는 글롭을 시험하고 있다: ${asShell}`).toContain(asShell);
+      expect(executable, `testing a glob that is not in the hook: ${asShell}`).toContain(asShell);
     }
 
     expect(patterns.app.test("src/views/home/ui/HomePage.tsx")).toBe(true);
@@ -206,7 +206,7 @@ describe("pre-push 훅 — 빠른 CI 거울", () => {
    * The hook is a shell script and a syntax error in it blocks every push in the
    * repository. `sh -n` parses without executing.
    */
-  it("셸 문법이 유효하다 — 여기가 깨지면 아무도 푸시를 못 한다", () => {
+  it("the shell syntax is valid — if this breaks nobody can push", () => {
     expect(() =>
       execFileSync("sh", ["-n", path.join(ROOT, HOOK_PATH)], { stdio: "pipe" }),
     ).not.toThrow();

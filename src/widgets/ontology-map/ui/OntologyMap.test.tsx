@@ -162,13 +162,13 @@ describe("OntologyMap", () => {
     realmEnterTooltip: "이 노드 안쪽만 봐요",
   };
 
-  it("2D 에서는 궤도 버튼에 마이크로 툴팁이 붙는다", () => {
+  it("in 2D the orbit button carries a micro tooltip", () => {
     render(<OntologyMap {...realmProps} />);
 
     expect(screen.getByRole("tooltip", { hidden: true })).toHaveTextContent("이 노드 안쪽만 봐요");
   });
 
-  it("3D 에서는 같은 버튼이 툴팁 없이 그려진다 — 버튼과 접근성 이름은 남는다", () => {
+  it("in 3D the same button renders without a tooltip, keeping the button and its accessible name", () => {
     render(<OntologyMap {...realmProps} view3d />);
 
     expect(screen.queryByRole("tooltip", { hidden: true })).toBeNull();

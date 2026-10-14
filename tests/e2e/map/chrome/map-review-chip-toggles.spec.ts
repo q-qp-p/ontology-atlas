@@ -6,7 +6,7 @@ import { waitForMapStill } from "../../settle";
  * A control may wear the active tone and `aria-pressed` only while the thing it names is on,
  * so pressing the review chip again must close the panel.
  */
-test("의미 검토 칩은 자기 상태를 말하고, 다시 누르면 닫힌다", async ({ page }) => {
+test("the meaning-review chip states its own state and closes when pressed again", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 900 });
   await seedFirstRunSeen(page);
@@ -20,7 +20,7 @@ test("의미 검토 칩은 자기 상태를 말하고, 다시 누르면 닫힌�
 
   await chip.click();
   await expect(panel).toBeVisible();
-  await expect(chip, "패널이 열렸는데 칩이 눌린 상태를 말하지 않는다").toHaveAttribute("aria-pressed", "true");
+  await expect(chip, "the panel is open but the chip does not report a pressed state").toHaveAttribute("aria-pressed", "true");
 
   // The same press closes it: a lit control that ignores a press is not a control.
   await chip.click();

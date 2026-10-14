@@ -33,11 +33,11 @@ const SRC_DIR = join(process.cwd(), "scripts/lib");
  */
 const judged = (input: Parameters<typeof judgeText>[0]) => {
   const r = judgeText(input);
-  expect(r, `색을 못 읽었다: ${input.fg} on ${input.bg}`).not.toBeNull();
+  expect(r, `could not read the colour: ${input.fg} on ${input.bg}`).not.toBeNull();
   return r!;
 };
 
-describe("색 파싱", () => {
+describe("colour parsing", () => {
   it.each([
     ["#fff", [255, 255, 255, 1]],
     ["#000000", [0, 0, 0, 1]],
@@ -48,29 +48,29 @@ describe("색 파싱", () => {
     expect(parseColor(input)).toEqual(expected);
   });
 
-  it("모르는 형식은 null 이다 — 0 으로 때우면 검정으로 오판한다", () => {
+  it("an unknown format is null — padding it with 0 would misjudge it as black", () => {
     // Folding a parse failure into black (luminance 0) makes contrast look **better** than it is.
     expect(parseColor("color(display-p3 1 0 0)")).toBeNull();
     expect(parseColor("")).toBeNull();
   });
 });
 
-describe("WCAG 규격값", () => {
-  it("흰↔검은 21:1 이다 — 이 상한이 안 나오면 휘도 식이 틀렸다", () => {
+describe("WCAG reference values", () => {
+  it("white against black is 21:1 — if this ceiling does not appear the luminance formula is wrong", () => {
     expect(contrastRatio([255, 255, 255], [0, 0, 0])).toBeCloseTo(21, 5);
   });
 
-  it("같은 색끼리는 1:1 이다", () => {
+  it("the same colour against itself is 1:1", () => {
     expect(contrastRatio([94, 106, 210], [94, 106, 210])).toBeCloseTo(1, 5);
   });
 
-  it("순서가 결과를 바꾸지 않는다 — 비율은 밝은 쪽이 분자다", () => {
+  it("order does not change the result — the lighter side is the numerator", () => {
     const a = [94, 106, 210];
     const b = [8, 9, 10];
     expect(contrastRatio(a, b)).toBeCloseTo(contrastRatio(b, a), 10);
   });
 
-  it("상대 휘도가 규격 극단값과 맞는다", () => {
+  it("relative luminance matches the spec extremes", () => {
     expect(relativeLuminance([255, 255, 255])).toBeCloseTo(1, 10);
     expect(relativeLuminance([0, 0, 0])).toBeCloseTo(0, 10);
     // Below the linearisation breakpoint, small values take the division path — using the exponent path there diverges.
@@ -78,16 +78,16 @@ describe("WCAG 규격값", () => {
   });
 });
 
-describe("알파 합성 — 이게 빠지면 계기가 낙관한다", () => {
-  it("50% 흰색을 검정 위에 올리면 회색 127.5 다", () => {
+describe("alpha compositing — without it the instrument is optimistic", () => {
+  it("50% white over black is grey 127.5", () => {
     expect(composite([255, 255, 255, 0.5], [0, 0, 0, 1])).toEqual([127.5, 127.5, 127.5, 1]);
   });
 
-  it("불투명 전경은 배경을 무시한다", () => {
+  it("an opaque foreground ignores the background", () => {
     expect(composite([94, 106, 210, 1], [255, 255, 255, 1])).toEqual([94, 106, 210, 1]);
   });
 
-  it("반투명 텍스트는 합성 전보다 대비가 **낮게** 나온다 — 그게 실제 화면이다", () => {
+  it("semi-transparent text measures **lower** contrast than before compositing — that is the real screen", () => {
     const bg = "rgb(8, 9, 10)"; // --color-canvas
     const solid = judged({ fg: "rgb(255,255,255)", bg, fontSizePx: 14, fontWeight: 400 });
     const faded = judged({ fg: "rgba(255,255,255,0.45)", bg, fontSizePx: 14, fontWeight: 400 });
@@ -98,8 +98,8 @@ describe("알파 합성 — 이게 빠지면 계기가 낙관한다", () => {
   });
 });
 
-describe("문턱 판정", () => {
-  it("본문은 4.5:1, 큰 글자는 3:1 을 요구한다", () => {
+describe("threshold judgement", () => {
+  it("body text requires 4.5:1 and large text 3:1", () => {
     const bg = "rgb(8, 9, 10)";
     const fg = "rgb(110, 110, 110)"; // A grey that falls between 4.5 and 3
     const body = judged({ fg, bg, fontSizePx: 14, fontWeight: 400 });
@@ -111,7 +111,7 @@ describe("문턱 판정", () => {
     expect(large.passes).toBe(true);
   });
 
-  it("큰 글자 정의가 WCAG 경계와 같다 — 18.66px+bold 또는 24px", () => {
+  it("the large-text definition equals the WCAG boundary — 18.66px+bold or 24px", () => {
     expect(isLargeText(24, 400)).toBe(true);
     expect(isLargeText(23, 400)).toBe(false);
     expect(isLargeText(18.66, 700)).toBe(true);
@@ -120,15 +120,15 @@ describe("문턱 판정", () => {
   });
 });
 
-describe("인접 마크 — hue 로만 갈리는 설계를 잡는다", () => {
+describe("adjacent marks — catches designs separated only by hue", () => {
   /** A readable colour **never falls through to unmeasured** — that is itself the contract. */
   const measured = (input: { a: string; b: string; over: string }) => {
     const r = judgeAdjacentMarks(input);
-    if (!r) throw new Error(`읽을 수 있는 색인데 미측정으로 돌아왔다: ${JSON.stringify(input)}`);
+    if (!r) throw new Error(`a readable colour came back unmeasured: ${JSON.stringify(input)}`);
     return r;
   };
 
-  it("2026-07-26 의 그 쌍을 다시 재면 3:1 에 한참 못 미친다", () => {
+  it("measuring the pair of 2026-07-26 again falls far short of 3:1", () => {
     // Amber and eucalyptus differ clearly in hue but were nearly identical in
     // luminance. That hue axis is the one red-green colour blindness separates worst,
     // so the premise that colour carries identity was wrong.
@@ -138,7 +138,7 @@ describe("인접 마크 — hue 로만 갈리는 설계를 잡는다", () => {
     expect(r.ratio).toBeLessThan(2); // Completely different colours to the eye
   });
 
-  it("휘도로 갈린 쌍은 통과한다 — 아무거나 반려하지 않는다", () => {
+  it("a pair separated by luminance passes — it does not reject everything", () => {
     expect(measured({ a: "#ffffff", b: "#3a3a3a", over: "rgb(8,9,10)" }).passes).toBe(true);
   });
 
@@ -146,7 +146,7 @@ describe("인접 마크 — hue 로만 갈리는 설계를 잡는다", () => {
    * An unreadable colour is unmeasured, not a pass: `parseColor` cannot read wide colour spaces or
    * `color-mix()` output such as `color(srgb ...)` and `oklch(...)`.
    */
-  it("못 읽는 색은 던지지 않고 null 로 돌아온다", () => {
+  it("a colour it cannot read returns null instead of throwing", () => {
     for (const bad of ["oklch(0.7 0.1 250)", "color(srgb 0.2 0.3 0.4)", "wat"]) {
       expect(judgeAdjacentMarks({ a: bad, b: "#ffffff", over: "rgb(8,9,10)" })).toBeNull();
       expect(judgeAdjacentMarks({ a: "#ffffff", b: bad, over: "rgb(8,9,10)" })).toBeNull();
@@ -154,10 +154,10 @@ describe("인접 마크 — hue 로만 갈리는 설계를 잡는다", () => {
   });
 });
 
-describe("계기가 스스로를 설명한다", () => {
+describe("the instrument explains itself", () => {
   const SOURCE = readFileSync(join(SRC_DIR, "design", "contrast.mjs"), "utf8");
 
-  it("알파 합성이 계산에서 빠지지 않는다", () => {
+  it("alpha compositing is not dropped from the calculation", () => {
     /*
      * What stops the next person "simplifying" compositing away is **the code**, not
      * a sentence about it. `composite` must be exported, and the ratio computation
@@ -166,10 +166,10 @@ describe("계기가 스스로를 설명한다", () => {
      */
     expect(SOURCE).toMatch(/export function composite\b/);
     const callsInRatio = [...SOURCE.matchAll(/composite\s*\(/g)].length;
-    expect(callsInRatio, "합성 함수가 정의만 되고 쓰이지 않는다").toBeGreaterThan(1);
+    expect(callsInRatio, "the compositing function is defined but unused").toBeGreaterThan(1);
   });
 
-  it("근거를 WCAG 조항으로 댄다 — 취향이 아니라 규격이다", () => {
+  it("the basis is cited as a WCAG clause — it is a standard, not taste", () => {
     expect(SOURCE).toContain("1.4.3");
     expect(SOURCE).toContain("1.4.11");
   });

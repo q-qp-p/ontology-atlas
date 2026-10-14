@@ -87,8 +87,8 @@ function listSourceFiles(dir: string): string[] {
   return out;
 }
 
-describe("순수 갱신 함수 계약", () => {
-  it("setX 갱신 함수 본문에 직접 부수효과 호출이 없다 (이연 콜백은 허용)", () => {
+describe("pure updater function contract", () => {
+  it("the body of a setX updater has no direct side-effect call (deferred callbacks are allowed)", () => {
     const violations: string[] = [];
     let updaters = 0;
     for (const file of listSourceFiles("src")) {
@@ -105,15 +105,15 @@ describe("순수 갱신 함수 계약", () => {
       }
     }
     // Idling guard — finding no updater at all means this check looked at nothing.
-    expect(updaters, "스캐너가 갱신 함수를 하나도 못 찾았다 — 패턴이 죽었다").toBeGreaterThan(15);
+    expect(updaters, "the scanner found not a single updater — the pattern is dead").toBeGreaterThan(15);
     expect(
       violations,
-      "갱신 함수는 렌더 중에 실행될 수 있다 — 부수효과는 queueMicrotask 로 이연하라 (스튜디오 임시저장 사고, 2026-08-13)",
+      "an updater can run during render — defer side effects with queueMicrotask (studio draft-save incident, 2026-08-13)",
     ).toEqual([]);
   });
 
   // The detector's self-test — does it catch what it must and let deferrals through?
-  it("프로브: 직접 호출은 잡히고 이연 콜백은 통과한다", () => {
+  it("probe: direct calls are caught and deferred callbacks pass", () => {
     const direct = stripNestedFunctions(`
       const next = compute(prev);
       saveStudioDraft(id, label, next);

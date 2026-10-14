@@ -64,14 +64,14 @@ const STROKES: Record<string, [number, number, number]> = {
   element: rgb(token("--map-ink-depth-leaf")),
 };
 
-describe("dome-rim-contrast — 안개는 테두리를 3:1 아래로 내리지 못한다", () => {
-  it("평면 지도의 획 토큰 자체는 3:1 을 크게 넘는다 — 문제는 색이 아니라 알파였다", () => {
+describe("dome-rim-contrast: fog cannot push the rim below 3:1", () => {
+  it("the flat map's stroke token itself is well above 3:1, so the problem was alpha, not color", () => {
     for (const [kind, ink] of Object.entries(STROKES)) {
       expect(contrast(ink, GROUND), `${kind} at full alpha`).toBeGreaterThan(4.5);
     }
   });
 
-  it("어느 깊이에서도 테두리 합성 대비가 3:1 이상이다", () => {
+  it("the composited rim contrast is at least 3:1 at every depth", () => {
     for (let u = 0; u <= 1.0001; u += 0.01) {
       const alpha = rimAlphaAt(u);
       for (const [kind, ink] of Object.entries(STROKES)) {
@@ -81,7 +81,7 @@ describe("dome-rim-contrast — 안개는 테두리를 3:1 아래로 내리지 �
     }
   });
 
-  it("바닥값은 3:1 을 넘기는 가장 낮은 단계다 — 필요 이상으로 안개를 걷지 않는다", () => {
+  it("the floor is the lowest step that clears 3:1, so the fog is not lifted more than needed", () => {
     // One 0.05 step lower must break the weakest stroke. Without this the floor
     // could be raised to 1.0 and the gate would still be green while depth fog
     // had quietly been switched off.
@@ -90,7 +90,7 @@ describe("dome-rim-contrast — 안개는 테두리를 3:1 아래로 내리지 �
     expect(contrast(composite(weakest, GROUND, lower), GROUND)).toBeLessThan(3);
   });
 
-  it("안개 자체는 그대로다 — 채움은 여전히 0.09 까지 가라앉는다", () => {
+  it("the fog itself is unchanged, and the fill still sinks to 0.09", () => {
     expect(domeFogAlpha(1)).toBeCloseTo(0.09, 6);
     expect(domeFogAlpha(0)).toBeCloseTo(1, 6);
   });

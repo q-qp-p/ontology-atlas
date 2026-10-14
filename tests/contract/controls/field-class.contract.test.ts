@@ -45,20 +45,20 @@ const all = FRAMES.flatMap((frame) =>
   ),
 );
 
-describe('fieldClass — 전수 16조합', () => {
-  it('16조합을 실제로 만들고 있다 — 축이 줄면 여기가 먼저 빨개진다', () => {
+describe('fieldClass — all 16 combinations', () => {
+  it('really builds the 16 combinations — if an axis shrinks this goes red first', () => {
     expect(all.length).toBe(16);
   });
 
   it.each(all.map((c) => [`${c.frame}/${c.size}/multiline=${c.multiline}`, c] as const))(
-    '%s — 램프 밖 임의값(대괄호 px)을 내지 않는다',
+    '%s — emits no arbitrary value outside the ramp (bracketed px)',
     (_name, c) => {
       expect(c.cls).not.toMatch(/-\[\s*\d+(\.\d+)?px\s*\]/);
     },
   );
 
   it.each(all.map((c) => [`${c.frame}/${c.size}`, c] as const))(
-    '%s — 색을 직접 적지 않는다(토큰만)',
+    '%s — does not write colours directly (tokens only)',
     (_name, c) => {
       expect(c.cls).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
       expect(c.cls).not.toMatch(/rgba?\(/);
@@ -70,20 +70,20 @@ describe('fieldClass — 전수 16조합', () => {
  * **Step ↔ token 1:1.** This file's central assertion — it prevents the `h-9`
  * accident described in the preamble.
  */
-describe('높이 단이 `--control-h-*` 와 1:1 이다', () => {
+describe('height steps map 1:1 to `--control-h-*`', () => {
   const MAP: Array<[FieldSize, string]> = [
     ['sm', '--control-h-sm'],
     ['md', '--control-h-md'],
     ['lg', '--control-h-lg'],
   ];
 
-  it('램프 토큰을 CSS 에서 실제로 읽었다 — 못 읽으면 아래 단언이 헛돈다', () => {
+  it('the ramp tokens were really read from CSS — if unreadable the assertions below idle', () => {
     for (const [, token] of MAP) {
-      expect(tokenPx(token), `${token} 을 globals.css 에서 못 읽었다`).toBeGreaterThan(0);
+      expect(tokenPx(token), `could not read ${token} from globals.css`).toBeGreaterThan(0);
     }
   });
 
-  it.each(MAP)('boxed/%s 의 높이가 `%s` 와 같다', (size, token) => {
+  it.each(MAP)('the height of boxed/%s equals `%s`', (size, token) => {
     const expected = tokenPx(token);
     for (const multiline of MULTILINE) {
       const cls = fieldClass({ frame: 'boxed', size, multiline });
@@ -97,7 +97,7 @@ describe('높이 단이 `--control-h-*` 와 1:1 이다', () => {
    * Without this assertion, somebody could attach a fourth height to `xs` and nobody
    * would know.
    */
-  it('xs 는 sm 과 같은 높이이고 반경만 한 층 낮다', () => {
+  it('xs has the same height as sm and only the radius is one layer lower', () => {
     const xs = fieldClass({ frame: 'boxed', size: 'xs' });
     const sm = fieldClass({ frame: 'boxed', size: 'sm' });
     expect(heightPx(xs)).toBe(heightPx(sm));
@@ -105,7 +105,7 @@ describe('높이 단이 `--control-h-*` 와 1:1 이다', () => {
     expect(sm).toContain('rounded-chip');
   });
 
-  it('한 줄은 하드 높이, 여러 줄은 min-height — 자라야 하는 것이 잘리지 않는다', () => {
+  it('one line gets a hard height, several lines get min-height — what must grow is not clipped', () => {
     for (const size of SIZES) {
       expect(fieldClass({ frame: 'boxed', size, multiline: false })).toMatch(/(?:^|\s)h-\d/);
       expect(fieldClass({ frame: 'boxed', size, multiline: true })).toMatch(/(?:^|\s)min-h-\d/);
@@ -113,8 +113,8 @@ describe('높이 단이 `--control-h-*` 와 1:1 이다', () => {
   });
 });
 
-describe('frame — 누가 상자를 내는가', () => {
-  it('boxed 는 보더·바탕·반경·초점을 정확히 한 벌씩 낸다', () => {
+describe('frame — who emits the box', () => {
+  it('boxed emits exactly one set of border, background, radius and focus', () => {
     for (const size of SIZES) {
       const cls = fieldClass({ frame: 'boxed', size });
       expect(cls).toContain('border-[color:var(--color-border-soft)]');
@@ -129,13 +129,13 @@ describe('frame — 누가 상자를 내는가', () => {
    * lookup places the result must win attention over the input.
    */
   it.each(SIZES.flatMap((s) => MULTILINE.map((m) => [`${s}/multiline=${m}`, s, m] as const)))(
-    'bare/%s 는 치수·보더·반경을 하나도 내지 않는다',
+    'bare/%s emits no dimension, border or radius at all',
     (_n, size, multiline) => {
       const cls = fieldClass({ frame: 'bare', size, multiline });
-      expect(cls, '높이를 냈다').not.toMatch(/(?:^|\s)(?:min-)?h-\d/);
-      expect(cls, '보더를 냈다').not.toMatch(/(?:^|\s)border(?:\s|-)/);
-      expect(cls, '반경을 냈다').not.toMatch(/rounded-/);
-      expect(cls, '좌우 인셋을 냈다').not.toMatch(/(?:^|\s)px-/);
+      expect(cls, 'emitted a height').not.toMatch(/(?:^|\s)(?:min-)?h-\d/);
+      expect(cls, 'emitted a border').not.toMatch(/(?:^|\s)border(?:\s|-)/);
+      expect(cls, 'emitted a radius').not.toMatch(/rounded-/);
+      expect(cls, 'emitted a horizontal inset').not.toMatch(/(?:^|\s)px-/);
       expect(cls).toContain('bg-transparent');
     },
   );
@@ -151,7 +151,7 @@ describe('frame — 누가 상자를 내는가', () => {
   });
 });
 
-describe('base — 모든 필드가 공유하는 것', () => {
+describe('base — what every field shares', () => {
   /**
    * ⚠️ **Do not write this as `toContain('text-body')`** — `text-body-lg` contains
    * it as a substring, so it **passes falsely** even after the rule changes. That
@@ -173,21 +173,21 @@ describe('base — 모든 필드가 공유하는 것', () => {
     },
   );
 
-  it('타입 스텝이 정확히 하나다 — 둘이면 CSS 순서가 이기는 쪽을 정하게 된다', () => {
+  it('there is exactly one type step — with two, CSS order decides the winner', () => {
     for (const c of all) {
       const hits = [...c.cls.matchAll(/(?:^|\s)text-body(?:-lg)?(?:\s|$)/g)];
       expect(hits.length, `${c.frame}/${c.size}: ${c.cls}`).toBe(1);
     }
   });
 
-  it('플레이스홀더 잉크가 본문 잉크와 다르다 — 같으면 입력값과 안내문이 구별되지 않는다', () => {
+  it('placeholder ink differs from body ink — if equal, the input value and the hint are indistinguishable', () => {
     for (const c of all) {
       expect(c.cls).toContain('text-[color:var(--color-text-primary)]');
       expect(c.cls).toContain('placeholder:text-[color:var(--color-text-quaternary)]');
     }
   });
 
-  it('비활성 어포던스를 base 가 낸다 — 컴포넌트마다 챙기면 하나는 빠진다', () => {
+  it('base emits the disabled affordance — if each component remembers it, one gets missed', () => {
     for (const c of all) expect(c.cls).toContain('disabled:cursor-not-allowed');
   });
 
@@ -195,9 +195,9 @@ describe('base — 모든 필드가 공유하는 것', () => {
    * Width is not the value layer's share: consumers get width from `w-full` or a parent grid, and an
    * emitted width would stop migration being 0px.
    */
-  it('폭을 내지 않는다', () => {
+  it('emits no width', () => {
     for (const c of all) {
-      expect(c.cls, `폭을 냈다: ${c.cls}`).not.toMatch(/(?:^|\s)w-(full|\d)/);
+      expect(c.cls, `emitted a width: ${c.cls}`).not.toMatch(/(?:^|\s)w-(full|\d)/);
       expect(c.cls).not.toMatch(/(?:^|\s)flex-1/);
     }
   });

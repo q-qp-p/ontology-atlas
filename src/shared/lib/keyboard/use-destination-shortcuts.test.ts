@@ -31,7 +31,7 @@ describe("useDestinationShortcuts", () => {
     document.body.innerHTML = "";
   });
 
-  it("리더 다음 글자를 누르면 그 목적지로 데려간다", () => {
+  it("the key after the leader takes you to that destination", () => {
     renderHook(() => useDestinationShortcuts({ navigate }));
     press("g");
     press("p");
@@ -40,21 +40,21 @@ describe("useDestinationShortcuts", () => {
     expect(navigate.mock.calls[0]?.[1]).toBe("projects");
   });
 
-  it("한글 입력기가 켜져 있어도 이동한다 — 물리 키로 판정한다", () => {
+  it("navigates even with a Korean input method on, judged by the physical key", () => {
     renderHook(() => useDestinationShortcuts({ navigate }));
     pressHangul("ㅎ", "KeyG"); // leader
     pressHangul("ㅔ", "KeyP"); // projects
-    expect(navigate, "한글 입력 상태에서 안 먹는다").toHaveBeenCalledWith("/projects/", "projects");
+    expect(navigate, "does not work while the Korean input method is active").toHaveBeenCalledWith("/projects/", "projects");
   });
 
-  it("한글 입력기에서 G R(architecture)도 성립한다", () => {
+  it("G R (architecture) also works under a Korean input method", () => {
     renderHook(() => useDestinationShortcuts({ navigate }));
     pressHangul("ㅎ", "KeyG");
     pressHangul("ㄱ", "KeyR");
     expect(navigate).toHaveBeenCalledWith("/architecture/", "architecture");
   });
 
-  it("자판이 QWERTY 가 아니어도 찍힌 글자로 맞는다", () => {
+  it("matches by the typed character even when the layout is not QWERTY", () => {
     renderHook(() => useDestinationShortcuts({ navigate }));
     // On AZERTY, pressing the key printed `G` can report a different `code`.
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "g", code: "KeyZ", bubbles: true }));
@@ -62,36 +62,36 @@ describe("useDestinationShortcuts", () => {
     expect(navigate).toHaveBeenCalledWith("/projects/", "projects");
   });
 
-  it("리더 없이 글자만 누르면 아무 일도 없다", () => {
+  it("pressing a letter without the leader does nothing", () => {
     renderHook(() => useDestinationShortcuts({ navigate }));
     press("p");
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it("리더 다음 r을 누르면 architecture로 간다", () => {
+  it("the leader then r goes to architecture", () => {
     renderHook(() => useDestinationShortcuts({ navigate }));
     press("g");
     press("r");
     expect(navigate).toHaveBeenCalledWith("/architecture/", "architecture");
   });
 
-  it("리더 G를 두 번 누르면 preserved Git destination으로 간다", () => {
+  it("the leader then G twice goes to the preserved Git destination", () => {
     renderHook(() => useDestinationShortcuts({ navigate }));
     press("g");
     press("g");
     expect(navigate).toHaveBeenCalledWith("/git/", "git");
   });
 
-  it("입력칸에 초점이 있으면 이동하지 않는다", () => {
+  it("does not navigate while an input has focus", () => {
     renderHook(() => useDestinationShortcuts({ navigate }));
     const input = document.createElement("input");
     document.body.append(input);
     press("g", input);
     press("p", input);
-    expect(navigate, "입력 중에 화면을 바꿨다").not.toHaveBeenCalled();
+    expect(navigate, "changed the screen while typing").not.toHaveBeenCalled();
   });
 
-  it("textarea 도 같다", () => {
+  it("the same holds for a textarea", () => {
     renderHook(() => useDestinationShortcuts({ navigate }));
     const area = document.createElement("textarea");
     document.body.append(area);
@@ -105,7 +105,7 @@ describe("useDestinationShortcuts", () => {
    * stays `false` even after `contentEditable = "true"` (confirmed by measurement).
    * Without the fake this spec measures jsdom rather than the hook.
    */
-  it("contentEditable 도 같다", () => {
+  it("the same holds for contentEditable", () => {
     renderHook(() => useDestinationShortcuts({ navigate }));
     const editable = document.createElement("div");
     editable.contentEditable = "true";
@@ -116,14 +116,14 @@ describe("useDestinationShortcuts", () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it("조합키가 눌린 입력은 우리 것이 아니다", () => {
+  it("input with a modifier key held is not ours", () => {
     renderHook(() => useDestinationShortcuts({ navigate }));
     press("g", undefined, { metaKey: true });
     press("p");
-    expect(navigate, "⌘G 를 리더로 먹었다").not.toHaveBeenCalled();
+    expect(navigate, "took ⌘G as the leader").not.toHaveBeenCalled();
   });
 
-  it("보이는 막는 표면이 있으면 이동하지 않는다", () => {
+  it("does not navigate while a visible blocking surface is open", () => {
     renderHook(() => useDestinationShortcuts({ navigate }));
     const modal = document.createElement("div");
     modal.setAttribute("aria-modal", "true");
@@ -134,10 +134,10 @@ describe("useDestinationShortcuts", () => {
     document.body.append(modal);
     press("g");
     press("p");
-    expect(navigate, "모달이 떠 있는데 뒤 화면을 바꿨다").not.toHaveBeenCalled();
+    expect(navigate, "changed the screen behind an open modal").not.toHaveBeenCalled();
   });
 
-  it("막는 표면이 있으면 이동하지 않고 알린다", () => {
+  it("does not navigate and says so when a blocking surface is open", () => {
     const onBlockedByOverlay = vi.fn();
     renderHook(() => useDestinationShortcuts({ navigate, onBlockedByOverlay }));
     const modal = document.createElement("div");
@@ -146,11 +146,11 @@ describe("useDestinationShortcuts", () => {
     document.body.append(modal);
     press("g");
     press("p");
-    expect(navigate, "모달이 떠 있는데 이동했다").not.toHaveBeenCalled();
-    expect(onBlockedByOverlay, "막혔는데 아무 말도 안 했다").toHaveBeenCalledTimes(1);
+    expect(navigate, "navigated while a modal was open").not.toHaveBeenCalled();
+    expect(onBlockedByOverlay, "was blocked but said nothing").toHaveBeenCalledTimes(1);
   });
 
-  it("갈 곳을 지목하지 않은 키에는 아무 말도 하지 않는다", () => {
+  it("says nothing for a key that does not name a destination", () => {
     const onBlockedByOverlay = vi.fn();
     renderHook(() => useDestinationShortcuts({ navigate, onBlockedByOverlay }));
     const modal = document.createElement("div");
@@ -159,7 +159,7 @@ describe("useDestinationShortcuts", () => {
     document.body.append(modal);
     // Plain typing inside a modal — a hint for every keystroke would be noise.
     for (const key of ["a", "b", "c", "z"]) press(key);
-    expect(onBlockedByOverlay, "지목도 안 했는데 말했다").not.toHaveBeenCalled();
+    expect(onBlockedByOverlay, "spoke although no destination was named").not.toHaveBeenCalled();
   });
 
   /**
@@ -168,7 +168,7 @@ describe("useDestinationShortcuts", () => {
    * navigation shortcut — a defect this repo actually shipped (see the hook's own
    * comment).
    */
-  it("숨은 막는 표면은 이동을 막지 않는다", () => {
+  it("a hidden blocking surface does not block navigation", () => {
     renderHook(() => useDestinationShortcuts({ navigate }));
     const hidden = document.createElement("div");
     hidden.setAttribute("aria-modal", "true");
@@ -176,10 +176,10 @@ describe("useDestinationShortcuts", () => {
     document.body.append(hidden);
     press("g");
     press("p");
-    expect(navigate, "숨은 모달이 이동을 막았다").toHaveBeenCalledTimes(1);
+    expect(navigate, "a hidden modal blocked navigation").toHaveBeenCalledTimes(1);
   });
 
-  it("aria-hidden 조상 안의 모달도 세지 않는다", () => {
+  it("a modal inside an aria-hidden ancestor is not counted either", () => {
     renderHook(() => useDestinationShortcuts({ navigate }));
     const wrapper = document.createElement("div");
     wrapper.setAttribute("aria-hidden", "true");
@@ -194,17 +194,17 @@ describe("useDestinationShortcuts", () => {
   });
 
   /** Pinned at `timeStamp` 0: some runtimes (WKWebView) report 0, so 0 must not mean "not pressed". */
-  it("event.timeStamp 가 0 이어도 이동한다 — 시계를 사건에서 읽지 않는다", () => {
+  it("navigates even when event.timeStamp is 0, since the clock is not read from the event", () => {
     renderHook(() => useDestinationShortcuts({ navigate }));
     for (const key of ["g", "p"]) {
       const event = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true });
       Object.defineProperty(event, "timeStamp", { value: 0 });
       window.dispatchEvent(event);
     }
-    expect(navigate, "사건의 timeStamp 에 기대고 있다").toHaveBeenCalledWith("/projects/", "projects");
+    expect(navigate, "is relying on the event timeStamp").toHaveBeenCalledWith("/projects/", "projects");
   });
 
-  it("리더를 누른 지 오래되면 글자만으로는 이동하지 않는다", () => {
+  it("a letter alone does not navigate once the leader was pressed long ago", () => {
     // The clock is `performance.now()` — fake only that.
     vi.useFakeTimers();
     try {
@@ -212,13 +212,13 @@ describe("useDestinationShortcuts", () => {
       press("g");
       vi.advanceTimersByTime(NAV_LEADER_WINDOW_MS + 50);
       press("p");
-      expect(navigate, "시간 제한이 안 걸렸다").not.toHaveBeenCalled();
+      expect(navigate, "the time limit did not apply").not.toHaveBeenCalled();
     } finally {
       vi.useRealTimers();
     }
   });
 
-  it("시간 제한 안이면 이동한다 — 위 시험이 늘 통과하는 게 아니라는 증거", () => {
+  it("navigates within the time limit, proof that the test above does not always pass", () => {
     vi.useFakeTimers();
     try {
       renderHook(() => useDestinationShortcuts({ navigate }));
@@ -231,14 +231,14 @@ describe("useDestinationShortcuts", () => {
     }
   });
 
-  it("disabled 면 아무것도 하지 않는다", () => {
+  it("does nothing when disabled", () => {
     renderHook(() => useDestinationShortcuts({ navigate, disabled: true }));
     press("g");
     press("p");
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it("문맥 주소가 있으면 그것으로 간다", () => {
+  it("goes to the context address when there is one", () => {
     renderHook(() =>
       useDestinationShortcuts({ navigate, hrefOverrides: { docs: "/project/atlas/docs/" } }),
     );
@@ -248,7 +248,7 @@ describe("useDestinationShortcuts", () => {
   });
 
   /** An alias shortcut is a door exactly while the tile that hosts it is drawn. */
-  it("자리 잡은 타일이 보이면 별칭 단축키도 문이다 — g c 는 에이전트 타일을 통해, g d 는 자료실 타일을 통해", () => {
+  it("when a placed tile is visible its alias shortcut is a door too: g c through the agent tile, g d through the library tile", () => {
     renderHook(() =>
       useDestinationShortcuts({ navigate, visible: new Set(["map", "agents", "library"]) }),
     );
@@ -260,14 +260,14 @@ describe("useDestinationShortcuts", () => {
     expect(navigate).toHaveBeenLastCalledWith("/docs/", "docs");
   });
 
-  it("자리 잡은 타일이 숨으면 별칭 단축키도 닫힌다", () => {
+  it("when a placed tile hides, its alias shortcut closes too", () => {
     renderHook(() => useDestinationShortcuts({ navigate, visible: new Set(["map", "library"]) }));
     press("g");
     press("c");
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it("화면이 다시 그려져도 전역 keydown 리스너를 갈아 끼우지 않고 최신 목적지를 쓴다", () => {
+  it("keeps the global keydown listener across re-renders and uses the latest destination", () => {
     const removeListener = vi.spyOn(window, "removeEventListener");
     const firstNavigate = vi.fn();
     const secondNavigate = vi.fn();
@@ -293,7 +293,7 @@ describe("useDestinationShortcuts", () => {
 
     expect(
       removeListener.mock.calls.filter(([type]) => type === "keydown"),
-      "AppShell 재렌더 사이에 단축키 리스너가 사라졌다",
+      "the shortcut listener disappeared between AppShell re-renders",
     ).toHaveLength(0);
     press("g");
     press("d");

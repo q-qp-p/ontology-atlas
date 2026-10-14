@@ -34,7 +34,7 @@ async function measure(page: Page) {
 }
 
 for (const route of AUDITED_ROUTES) {
-  test(`커서 어포던스 — ${route} 의 활성 컨트롤은 전부 pointer`, async ({ page }) => {
+  test(`cursor affordance: every active control on ${route} is pointer`, async ({ page }) => {
     await seedFirstRunSeen(page);
     await page.setViewportSize(VIEWPORT);
     const destination = route === "/ko/docs/" ? "/ko/library/?tab=ontology" : route;
@@ -55,12 +55,12 @@ for (const route of AUDITED_ROUTES) {
     const controls = await measure(page);
 
     // The detector must not run on an empty set — with 0 controls this assertion is a free pass.
-    expect(controls.length, "이 화면에서 잰 컨트롤이 0개다 — 게이트가 헛돈다").toBeGreaterThan(0);
+    expect(controls.length, "zero controls were measured on this screen, so the gate spins idle").toBeGreaterThan(0);
 
     const offenders = controls.filter((c) => c.cursor !== "pointer");
     expect(
       offenders.map((c) => `${c.tag}«${c.label}» → ${c.cursor}`),
-      "활성 컨트롤인데 pointer 가 아니다 — app/globals.css 의 base 커서 규칙을 확인",
+      "an active control is not pointer; check the base cursor rule in app/globals.css",
     ).toEqual([]);
   });
 }
@@ -73,14 +73,14 @@ for (const route of AUDITED_ROUTES) {
  * lives. So **a deliberately non-pointer button** is planted on the same page and
  * the probe confirms it is caught.
  */
-test("판정 방식이 pointer 아닌 버튼을 실제로 잡는다 — 헛도는 검사가 아님", async ({ page }) => {
+test("the verdict method really catches a non-pointer button, so the check does not spin idle", async ({ page }) => {
   await seedFirstRunSeen(page);
   await page.setViewportSize(VIEWPORT);
   await page.goto("/ko/?guides=off", { waitUntil: "domcontentloaded" });
   await page.waitForSelector("main", { timeout: 20_000 });
 
   const before = (await measure(page)).filter((c) => c.cursor !== "pointer");
-  expect(before, "심기 전부터 위반이 있으면 프로브가 무의미하다").toEqual([]);
+  expect(before, "if a violation exists before planting, the probe is meaningless").toEqual([]);
 
   await page.evaluate(() => {
     const b = document.createElement("button");
@@ -92,5 +92,5 @@ test("판정 방식이 pointer 아닌 버튼을 실제로 잡는다 — 헛도�
   });
 
   const after = (await measure(page)).filter((c) => c.cursor !== "pointer");
-  expect(after.length, "심어 둔 위반을 못 잡는다 — 필터가 과하게 걸러내고 있다").toBe(1);
+  expect(after.length, "the planted violation is not caught, so the filter is excluding too much").toBe(1);
 });

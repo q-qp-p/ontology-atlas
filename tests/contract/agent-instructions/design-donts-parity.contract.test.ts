@@ -61,30 +61,30 @@ function slugsIn(rel: string): string[] {
 function canonSection(): string {
   const src = readFileSync(path.join(ROOT, CANON), 'utf8');
   const start = src.indexOf("## Absolute rules (Don'ts)");
-  expect(start, `${CANON} 에 "Absolute rules (Don'ts)" 절이 없다 — 정본이 사라졌거나 제목이 바뀌었다`).toBeGreaterThan(-1);
+  expect(start, `${CANON} has no "Absolute rules (Don'ts)" section — the canon vanished or the heading changed`).toBeGreaterThan(-1);
   const next = src.indexOf('\n## ', start + 10);
   return src.slice(start, next === -1 ? undefined : next);
 }
 
-describe('디자인 금지 목록 — 정본 하나 + 부분집합 사본', () => {
+describe('design prohibition list — one canon + subset copies', () => {
   const canonList = [...canonSection().matchAll(SLUG)].map((m) => m[1]);
   const canon = new Set(canonList);
 
   // Floor of 8: the structural rows. The resident copy carries three of them.
-  it('정본이 비어 있지 않다 — 공집합 위의 게이트는 게이트가 아니다', () => {
+  it('the canon is not empty — a gate on an empty set is not a gate', () => {
     expect(canonList.length).toBeGreaterThanOrEqual(8);
-    expect(canon.size, '정본 안에 같은 슬러그가 두 번 있다').toBe(canonList.length);
+    expect(canon.size, 'the same slug appears twice in the canon').toBe(canonList.length);
   });
 
-  it('정본의 슬러그가 그 절 밖으로 새지 않는다', () => {
+  it('slugs of the canon do not leak outside that section', () => {
     const whole = slugsIn(CANON);
     expect(
       whole.length,
-      `${CANON} 의 "Absolute rules" 절 밖에서 dont 슬러그가 쓰였다 — 정본이 둘이 된다`,
+      `a dont slug was used outside the "Absolute rules" section of ${CANON} — the canon becomes two`,
     ).toBe(canonList.length);
   });
 
-  it.each([RESIDENT, CONDITIONAL])('%s 의 슬러그는 전부 정본에 있다 (부분집합)', (rel) => {
+  it.each([RESIDENT, CONDITIONAL])('every slug of %s is in the canon (subset)', (rel) => {
     const mine = slugsIn(rel);
     const orphans = mine.filter((s) => !canon.has(s));
     expect(
@@ -92,17 +92,17 @@ describe('디자인 금지 목록 — 정본 하나 + 부분집합 사본', () =
       `A copy carries a ban the canonical list (${CANON}) does not have. Add it to the canonical list first.\n` +
         `Orphan slugs: ${orphans.join(', ')}`,
     ).toEqual([]);
-    expect(new Set(mine).size, `${rel} 안에 같은 슬러그가 두 번 있다`).toBe(mine.length);
+    expect(new Set(mine).size, `the same slug appears twice in ${rel}`).toBe(mine.length);
   });
 
-  it('상주 사본은 실제로 무언가를 싣는다 — 포인터만 남으면 「파일 열기 전」 보호가 사라진다', () => {
+  it('the resident copy really carries something — if only a pointer remains the "before opening a file" protection disappears', () => {
     expect(slugsIn(RESIDENT).length).toBeGreaterThanOrEqual(3);
   });
 
-  it('조건부 사본은 목록을 갖지 않고 가리킨다', () => {
+  it('the conditional copy has no list and only points', () => {
     expect(
       slugsIn(CONDITIONAL),
-      `${CONDITIONAL} 는 금지 목록을 베끼지 않는다 — 정본을 가리키기만 한다(「노드 규격」 절과 같은 방식).`,
+      `${CONDITIONAL} does not copy the prohibition list — it only points at the canon (the same way as the "node spec" section).`,
     ).toEqual([]);
   });
 
@@ -111,7 +111,7 @@ describe('디자인 금지 목록 — 정본 하나 + 부분집합 사본', () =
    * are not looking (`/gate-probe`: a 0 from a check that misses a planted violation
    * is not evidence).
    */
-  it('프로브 — 고아 슬러그와 빈 정본을 실제로 잡는다', () => {
+  it('probe — really catches orphan slugs and an empty canon', () => {
     const parse = (s: string) => [...s.matchAll(SLUG)].map((m) => m[1]);
 
     expect(parse('- a <!--dont:known-->\n- b <!--dont:rogue-->')).toEqual(['known', 'rogue']);
@@ -121,6 +121,6 @@ describe('디자인 금지 목록 — 정본 하나 + 부분집합 사본', () =
 
     const fakeCanon = new Set(['known']);
     const orphans = parse('- b <!--dont:rogue-->').filter((s) => !fakeCanon.has(s));
-    expect(orphans, '고아 판정이 죽어 있으면 이 파일 전체가 무의미하다').toEqual(['rogue']);
+    expect(orphans, 'if the orphan judgement is dead this whole file is meaningless').toEqual(['rogue']);
   });
 });

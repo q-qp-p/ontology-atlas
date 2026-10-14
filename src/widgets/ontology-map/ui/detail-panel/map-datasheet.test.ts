@@ -133,7 +133,7 @@ describe("buildV2Connections", () => {
 });
 
 describe("buildV2ConnectionGroups — M-2 ROLE axis, single source for metric + header parity", () => {
-  it("splits containment into its OWN 담는 것/속한 곳 groups instead of folding by direction (the domain-popover bug)", () => {
+  it("splits containment into its OWN holds and belongs-to groups instead of folding by direction (the domain-popover bug)", () => {
     // The exact UX-round case: a domain node with 18 `contains` children + a
     // few depends/used edges. Direction-only grouping put the 18 children in
     // "DependsOn"; role grouping keeps them in `contains`.
@@ -207,13 +207,13 @@ describe("formatV2MetricLine — M-2 typed segments", () => {
     evidence: "근거",
   };
 
-  it("prepends 담는 것 for a container node (contains > 0) — the typed split", () => {
+  it("prepends the holds segment for a container node (contains > 0), the typed split", () => {
     expect(
       formatV2MetricLine({ contains: 18, usedBy: 4, dependsOn: 2, belongsTo: 0, evidence: 1 }, labels),
     ).toBe("담는 것 18 · 쓰는 곳 4 · 기대는 곳 2 · 근거 1");
   });
 
-  it("hides the 담는 것 segment for a leaf (contains === 0) so it isn't a noisy '담는 것 0'", () => {
+  it("hides the holds segment for a leaf (contains === 0) so it is not a noisy zero", () => {
     expect(
       formatV2MetricLine({ contains: 0, usedBy: 3, dependsOn: 5, belongsTo: 0, evidence: 2 }, labels),
     ).toBe("쓰는 곳 3 · 기대는 곳 5 · 근거 2");
@@ -334,7 +334,7 @@ describe("formatV2HandoffText — M-2 contains split", () => {
   });
 });
 
-describe("buildV2EvidenceRows — 근거(evidence) group promotion (RATIO-SYSTEM §4)", () => {
+describe("buildV2EvidenceRows: evidence group promotion (RATIO-SYSTEM section 4)", () => {
   it("splits a folder/slug evidenceId into a readable title + path, mirroring the mockup's doc-link row", () => {
     expect(buildV2EvidenceRows(["capabilities/product-owner-operating-system"])).toEqual([
       {
@@ -368,7 +368,7 @@ describe("buildV2EvidenceRows — 근거(evidence) group promotion (RATIO-SYSTEM
   });
 });
 
-describe("slugDisplaySegment — sticky 푸터 slug 평문화 (Toss C2)", () => {
+describe("slugDisplaySegment: sticky footer slug in plain language", () => {
   it("returns the last path segment of a folder-shaped slug", () => {
     expect(slugDisplaySegment("ontology/capabilities/mcp-server")).toBe("mcp-server");
   });
@@ -382,11 +382,11 @@ describe("slugDisplaySegment — sticky 푸터 slug 평문화 (Toss C2)", () => 
   });
 });
 
-describe("summarizeContainsByPathPrefix (S2 파트 3)", () => {
+describe("summarizeContainsByPathPrefix (part 3)", () => {
   const el = (idPath: string): V2DatasheetConnection =>
     conn({ id: `element:${idPath}`, relationType: "contains", direction: "outgoing" });
 
-  it("경로 프리픽스별 집계 + count 내림차순, 동률 key 사전순, 나머지는 기타", () => {
+  it("aggregates by path prefix sorted by count descending, ties by key alphabetically, the rest as other", () => {
     const rows: V2DatasheetConnection[] = [
       ...Array.from({ length: 4 }, (_, i) => el(`cli/src/commands/c${i}`)),
       ...Array.from({ length: 2 }, (_, i) => el(`.claude/skills/s${i}`)),
@@ -404,12 +404,12 @@ describe("summarizeContainsByPathPrefix (S2 파트 3)", () => {
     expect(summary.otherCount).toBe(2);
   });
 
-  it("결정론 — 같은 입력 두 번 → 같은 결과", () => {
+  it("deterministic: the same input twice gives the same result", () => {
     const rows = [el("a/b/x"), el("a/b/y"), el("c/d/z")];
     expect(summarizeContainsByPathPrefix(rows)).toEqual(summarizeContainsByPathPrefix(rows));
   });
 
-  it("buildV2ConnectionGroups 는 contains 에 summary 를 싣는다", () => {
+  it("buildV2ConnectionGroups carries the summary on contains", () => {
     const rows = Array.from({ length: 3 }, (_, i) => el(`p/q/e${i}`));
     const groups = buildV2ConnectionGroups(rows);
     expect(groups.contains.summary).toBeDefined();
@@ -419,7 +419,7 @@ describe("summarizeContainsByPathPrefix (S2 파트 3)", () => {
   });
 
   // B4 (H1) — rescue a summary collapsing into one 「Other」 lump by re-splitting, then by falling back to the list.
-  it('깊은 프리픽스가 전부 흩어져 "기타"가 과반이면 1단계 프리픽스로 재분할', () => {
+  it('when deep prefixes scatter and the other bucket exceeds half, it re-splits by first-level prefix', () => {
     const rows: V2DatasheetConnection[] = [
       ...["a", "b", "c", "d", "e", "f"].map((s) => el(`cli/${s}/x`)),
       ...["g", "h", "i", "j"].map((s) => el(`src/${s}/y`)),
@@ -436,7 +436,7 @@ describe("summarizeContainsByPathPrefix (S2 파트 3)", () => {
     expect(summary.otherCount).toBe(0);
   });
 
-  it("슬래시가 없어 나눌 수 없으면 usable=false (패널은 리스트로 폴백)", () => {
+  it("usable=false when there are no slashes to split on (the panel falls back to the list)", () => {
     const rows = [el("add"), el("list"), el("find")];
     const summary = summarizeContainsByPathPrefix(rows, 4);
     expect(summary.usable).toBe(false);

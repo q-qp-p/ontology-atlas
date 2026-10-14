@@ -18,36 +18,36 @@ const UI_DIR = path.join(ROOT, "src/shared/ui");
  * carries Atlas domain vocabulary.**
  */
 const ATLAS_BOUND: ReadonlyArray<readonly [file: string, why: string]> = [
-  ["controls/chrome-tile.tsx", "지도 크롬 36px 타일 계약 + i18n Link — 스케일 고정 계약이 이 앱의 것이다"],
-  ["controls/chrome-chip.tsx", "같은 크롬 계약(--chrome-tile-size)"],
-  ["fallbacks/gateway-entry-fallback.tsx", "관문(/download) 전용 화면"],
-  ["fallbacks/map-entry-fallback.tsx", "지도 전용 화면"],
-  ["routing/route-focus-manager.tsx", "Next.js 라우팅 + i18n 내비게이션"],
-  ["fallbacks/route-loading-fallback.tsx", "Next.js 라우팅 로딩 표면"],
-  ["routing/route-memory.tsx", "Next.js 라우팅 기억"],
-  ["routing/locale-redirect.tsx", "로케일 라우팅 폴백"],
-  ["hints/term-hint.tsx", "이 앱의 용어집 메시지(termHints)를 읽는다"],
-  ["document/locale-html-lang.tsx", "로케일 html lang 동기화"],
-  ["marks/brand-mark.tsx", "Atlas 브랜드 자산"],
-  ["marks/github-mark.tsx", "외부 서비스 마크 — 이 앱의 링크 자산"],
-  ["marks/x-mark.tsx", "외부 서비스 마크 — 이 앱의 링크 자산"],
-  ["ontology-node/map-kind-glyph.tsx", "온톨로지 kind 데이터 마크"],
-  ["ontology-node/last-edit-subject-row.tsx", "agent | human 타입 유니온 — 제품 정체성 명제"],
-  ["ontology-node/mtime-conflict-badge.tsx", "patch_concept 의 expected_mtime 동시성 계약"],
-  ["ontology-node/node-explanation-edit.tsx", "노드 본문 = 노드의 설명"],
-  ["ontology-node/similar-node-warning.tsx", "중복 노드 경고 — 볼트 어휘"],
-  ["status/frame-meter.tsx", "지도 프레임 계측 — 앱 전용 계기"],
+  ["controls/chrome-tile.tsx", "map chrome 36px tile contract + i18n Link — the locked-scale contract belongs to this app"],
+  ["controls/chrome-chip.tsx", "same chrome contract (--chrome-tile-size)"],
+  ["fallbacks/gateway-entry-fallback.tsx", "screen dedicated to the gateway (/download)"],
+  ["fallbacks/map-entry-fallback.tsx", "screen dedicated to the map"],
+  ["routing/route-focus-manager.tsx", "Next.js routing + i18n navigation"],
+  ["fallbacks/route-loading-fallback.tsx", "Next.js routing loading surface"],
+  ["routing/route-memory.tsx", "Next.js routing memory"],
+  ["routing/locale-redirect.tsx", "locale routing fallback"],
+  ["hints/term-hint.tsx", "reads this app's glossary messages (termHints)"],
+  ["document/locale-html-lang.tsx", "locale html lang synchronisation"],
+  ["marks/brand-mark.tsx", "Atlas brand asset"],
+  ["marks/github-mark.tsx", "external service mark — this app's link asset"],
+  ["marks/x-mark.tsx", "external service mark — this app's link asset"],
+  ["ontology-node/map-kind-glyph.tsx", "ontology kind data mark"],
+  ["ontology-node/last-edit-subject-row.tsx", "agent | human type union — a proposition of product identity"],
+  ["ontology-node/mtime-conflict-badge.tsx", "expected_mtime concurrency contract of patch_concept"],
+  ["ontology-node/node-explanation-edit.tsx", "node body = the node's explanation"],
+  ["ontology-node/similar-node-warning.tsx", "duplicate node warning — vault vocabulary"],
+  ["status/frame-meter.tsx", "map frame measurement — an app-only instrument"],
 ];
 
 /** What a core part must not have — this app's routing, translations, or upper layers. */
 const APP_COUPLING = [
-  { pattern: "next-intl", why: "번역을 스스로 읽으면 이 앱의 메시지 네임스페이스에 묶인다" },
-  { pattern: "@/i18n", why: "이 앱의 로케일 라우팅에 묶인다" },
-  { pattern: "next/navigation", why: "Next.js 라우터에 묶인다" },
-  { pattern: "@/entities", why: "FSD 상위 레이어 — 도메인 지식이 부품에 새어 든다" },
-  { pattern: "@/features", why: "FSD 상위 레이어" },
-  { pattern: "@/views", why: "FSD 상위 레이어" },
-  { pattern: "@/widgets", why: "FSD 상위 레이어" },
+  { pattern: "next-intl", why: "reading translations itself ties it to this app's message namespaces" },
+  { pattern: "@/i18n", why: "ties it to this app's locale routing" },
+  { pattern: "next/navigation", why: "ties it to the Next.js router" },
+  { pattern: "@/entities", why: "upper FSD layer — domain knowledge leaks into the part" },
+  { pattern: "@/features", why: "upper FSD layer" },
+  { pattern: "@/views", why: "upper FSD layer" },
+  { pattern: "@/widgets", why: "upper FSD layer" },
 ] as const;
 
 export function importSources(source: string): string[] {
@@ -70,17 +70,17 @@ function coreFiles(): string[] {
     .sort();
 }
 
-describe("디자인 시스템 추출 경계", () => {
+describe("design system extraction boundary", () => {
   const core = coreFiles();
 
-  it("탐지기가 공회전하지 않는다 — 코어가 실재하고 주요 부품을 담는다", () => {
-    expect(core.length, "코어 부품을 하나도 못 찾았다").toBeGreaterThan(15);
+  it("the detector does not idle — the core exists and holds the main parts", () => {
+    expect(core.length, "could not find a single core part").toBeGreaterThan(15);
     for (const known of ["controls/button.tsx", "fields/input.tsx", "fields/checkbox.tsx", "surfaces/dialog.tsx", "fields/segmented-control.tsx", "control-class.ts", "toast/toast.tsx"]) {
-      expect(core, `${known} 이 코어에서 빠졌다`).toContain(known);
+      expect(core, `${known} dropped out of the core`).toContain(known);
     }
   });
 
-  it("코어 부품은 앱 결박을 import 하지 않는다", () => {
+  it("core parts do not import app bindings", () => {
     const offenders: string[] = [];
     for (const file of core) {
       const sources = importSources(readFileSync(path.join(UI_DIR, file), "utf8"));
@@ -98,18 +98,18 @@ describe("디자인 시스템 추출 경계", () => {
     ).toEqual([]);
   });
 
-  it("ATLAS_BOUND 는 알리바이가 아니다 — 등재 파일은 실재하고 근거를 진다", () => {
+  it("ATLAS_BOUND is not an alibi — registered files exist and carry a reason", () => {
     const existing = new Set(uiFiles());
     const problems: string[] = [];
     for (const [file, why] of ATLAS_BOUND) {
-      if (!existing.has(file)) problems.push(`${file}: 실재하지 않는다`);
-      if (why.trim().length < 8) problems.push(`${file}: 근거가 비었다`);
+      if (!existing.has(file)) problems.push(`${file}: does not exist`);
+      if (why.trim().length < 8) problems.push(`${file}: the reason is empty`);
     }
     expect(problems).toEqual([]);
   });
 
   /* ── Standing probes (/gate-probe) ── */
-  it("프로브: import 출처를 정확히 뽑는다", () => {
+  it("probe: extracts the import source exactly", () => {
     const sample = [
       "import { useTranslations } from 'next-intl';",
       "import { Link } from \"@/i18n/navigation\";",

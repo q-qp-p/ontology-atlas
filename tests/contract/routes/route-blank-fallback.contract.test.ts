@@ -44,7 +44,7 @@ function collectTsxFiles(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-describe("라우트 진입 빈 화면 게이트", () => {
+describe("blank-screen gate on route entry", () => {
   const files = collectTsxFiles(SCAN_DIRS[0]).concat(
     collectTsxFiles(SCAN_DIRS[1]),
   );
@@ -53,18 +53,18 @@ describe("라우트 진입 빈 화면 게이트", () => {
   );
   const rel = (p: string) => p.replace(process.cwd() + "/", "");
 
-  it("스캔 대상 Suspense 경계를 찾는다", () => {
+  it("finds the Suspense boundaries to scan", () => {
     expect(suspenseFiles.length).toBeGreaterThan(5);
   });
 
-  it("어떤 Suspense 도 fallback 을 null 로 두지 않는다", () => {
+  it("no Suspense leaves its fallback as null", () => {
     const offenders = suspenseFiles.filter((p) =>
       /fallback=\{\s*null\s*\}/.test(readFileSync(p, "utf-8")),
     );
     expect(offenders.map(rel)).toEqual([]);
   });
 
-  it("Suspense 를 쓰는 파일은 승인된 공용 fallback 만 쓴다", () => {
+  it("a file that uses Suspense uses only the approved shared fallback", () => {
     const offenders = suspenseFiles.filter((p) => {
       const source = readFileSync(p, "utf-8");
       return !APPROVED_FALLBACKS.some((name) => source.includes(name));
@@ -80,7 +80,7 @@ describe("라우트 진입 빈 화면 게이트", () => {
     expect(shell).toContain('data-route-loading="true"');
   });
 
-  it("자리표시자 문구가 ko · en 양쪽에 있다", () => {
+  it("the placeholder wording exists in both ko and en", () => {
     for (const messages of [koMessages, enMessages]) {
       const value = (messages as { nav: Record<string, unknown> }).nav
         .surfaceLoading;
@@ -89,17 +89,17 @@ describe("라우트 진입 빈 화면 게이트", () => {
     }
   });
 
-  it("내용이 곧 fallback 인 라우트는 각자 자기 자리의 fallback 을 쓴다", () => {
+  it("a route whose content is its own fallback uses the fallback for its own spot", () => {
     for (const [route, expected] of CONTENT_FALLBACK_ROUTES) {
       const source = readFileSync(route, "utf-8");
-      expect(source, `${route} 가 ${expected} 를 안 쓴다`).toContain(expected);
+      expect(source, `${route} does not use ${expected}`).toContain(expected);
       // Using the other one makes that address describe a different screen.
       const other = expected === "MapEntryFallback" ? "GatewayEntryFallback" : "MapEntryFallback";
-      expect(source, `${route} 가 ${other} 를 쓴다 — 그 주소의 화면이 아니다`).not.toContain(other);
+      expect(source, `${route} uses ${other}, which is not the screen of that address`).not.toContain(other);
     }
   });
 
-  it("관문 fallback 도 로딩 자막이 아니라 제품 문장을 싣는다", () => {
+  it("the gateway fallback also carries a product sentence rather than a loading caption", () => {
     const source = readFileSync(
       join(process.cwd(), "src/shared/ui/fallbacks/gateway-entry-fallback.tsx"),
       "utf-8",
@@ -112,7 +112,7 @@ describe("라우트 진입 빈 화면 게이트", () => {
     expect(source).toContain("topology/");
   });
 
-  it("그 fallback 은 로딩 자막이 아니라 제품 문장을 싣는다", () => {
+  it("that fallback carries a product sentence rather than a loading caption", () => {
     const source = readFileSync(
       join(process.cwd(), "src/shared/ui/fallbacks/map-entry-fallback.tsx"),
       "utf-8",

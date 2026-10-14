@@ -18,8 +18,8 @@ const LINES = [
   '{"v":1,"at":"2026-07-21T10:02:00.000Z","tool":"patch_concept","target":"c","summary":"patch c","agent":null,"why":null}',
 ];
 
-describe("agent-activity-log 파서 계약 (mcp ↔ web)", () => {
-  it("같은 줄 집합 → 같은 항목 (깨진 줄·미래 v 건너뛰기 포함)", () => {
+describe("agent-activity-log parser contract (mcp ↔ web)", () => {
+  it("same set of lines → same entries (including skipping broken lines and future v)", () => {
     const raw = `${LINES.join("\n")}\n`;
 
     const webEntries = parseAgentActivityLog(raw);

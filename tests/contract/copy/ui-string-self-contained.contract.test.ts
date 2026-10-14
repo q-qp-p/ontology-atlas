@@ -45,15 +45,15 @@ export function danglingShellVars(messages: Json): string[] {
   return dangling.sort();
 }
 
-describe('화면 문구는 스스로 완결한다 — 막다른 셸 변수 금지', () => {
+describe('on-screen copy is self-contained — no dead-end shell variables', () => {
   it.each([
     ['ko', ko],
     ['en', en],
-  ])('%s: 셸 변수를 쓰면 같은 칸이 그 변수를 정의한다', (_locale, messages) => {
+  ])('%s: if it uses a shell variable the same cell defines that variable', (_locale, messages) => {
     expect(danglingShellVars(messages as unknown as Json)).toEqual([]);
   });
 
-  it('검사가 헛돌고 있지 않다 — 실제로 걸릴 것을 세고 있는가', () => {
+  it('the check does not idle — does it count what would really be caught?', () => {
     // The planted defect is caught,
     expect(
       danglingShellVars({ card: { hint: 'run node $ATLAS/cli/src/index.mjs' } }),
@@ -68,7 +68,7 @@ describe('화면 문구는 스스로 완결한다 — 막다른 셸 변수 금�
     ).toEqual([]);
   });
 
-  it('두 로케일이 같은 규칙을 받는다 — 한쪽만 고치는 것이 기본값이 되지 않게', () => {
+  it('both locales receive the same rule — so fixing only one side does not become the default', () => {
     const nsCount = (m: Json) => {
       const out = new Map<string, string[]>();
       collectStrings(m, [], out);

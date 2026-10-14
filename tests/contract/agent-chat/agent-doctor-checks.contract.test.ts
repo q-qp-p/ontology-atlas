@@ -27,7 +27,7 @@ const DOCTOR_RS = readFileSync(join(process.cwd(), 'src-tauri', 'src', 'acp_doct
 /** Pulls just the strings out of `pub(crate) const <NAME>: &[&str] = &[ "a", "b" ];`. */
 function constList(name: string): string[] {
   const block = new RegExp(`const ${name}: &\\[&str\\] = &\\[([^\\]]*)\\]`).exec(DOCTOR_RS);
-  if (!block) throw new Error(`${name} 를 acp_doctor.rs 에서 못 찾았다`);
+  if (!block) throw new Error(`could not find ${name} in acp_doctor.rs`);
   return [...block[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
 }
 
@@ -43,17 +43,17 @@ const RUST_SESSION_MODE_GATE = [
 
 const locales = { ko, en } as const;
 
-describe('연동 점검 — 검사와 문구', () => {
-  it('놀고 있지 않다 — 검사 목록을 실제로 읽었다', () => {
+describe('integration check — checks and copy', () => {
+  it('does not idle — it really read the check list', () => {
     // If the regex misses, every check below passes on an empty array.
-    expect(CHECK_IDS.length, 'CHECK_IDS 를 하나도 못 읽었다').toBeGreaterThanOrEqual(5);
+    expect(CHECK_IDS.length, 'could not read a single CHECK_ID').toBeGreaterThanOrEqual(5);
     expect(REPAIRABLE_IDS.length).toBeGreaterThanOrEqual(1);
     expect(CHECK_IDS).toContain('login');
   });
 
-  it('고칠 수 있다고 등재한 것은 전부 검사 목록 안에 있다', () => {
+  it('everything registered as fixable is in the check list', () => {
     for (const id of REPAIRABLE_IDS) {
-      expect(CHECK_IDS, `고칠 수 있다는데 검사 목록에 없다: ${id}`).toContain(id);
+      expect(CHECK_IDS, `registered as fixable but not in the check list: ${id}`).toContain(id);
     }
   });
 
@@ -64,7 +64,7 @@ describe('연동 점검 — 검사와 문구', () => {
    * they disagree, the doctor reports "no gate" while the screen opens a
    * conversation, or the reverse. Both are lies the user cannot detect.
    */
-  it('세션 모드 관문 표가 화면과 Rust 에서 같다', () => {
+  it('the session-mode gate table is the same on screen and in Rust', () => {
     expect(DOCTOR_RS).toMatch(/const SESSION_MODE_GATE: &\[\(&str, &str\)\] = &\[[^\]]*\];/);
     expect(Object.fromEntries(RUST_SESSION_MODE_GATE)).toEqual(GATED_SESSION_MODE);
     expect(RUST_SESSION_MODE_GATE).toEqual([['codex-acp', 'read-only']]);
@@ -74,25 +74,25 @@ describe('연동 점검 — 검사와 문구', () => {
     const doctor = (messages as { acpChat: { doctor: Record<string, unknown> } }).acpChat.doctor;
     const checkCopy = doctor.check as Record<string, string>;
 
-    it(`${tag}: 검사마다 문구가 있다`, () => {
+    it(`${tag}: every check has copy`, () => {
       for (const id of CHECK_IDS) {
-        expect(checkCopy[id], `${id} 의 문구가 없다 — 화면에 빈 줄이 생긴다`).toBeTruthy();
+        expect(checkCopy[id], `no copy for ${id} — the screen gets a blank line`).toBeTruthy();
       }
     });
 
-    it(`${tag}: 죽은 문구가 남아 있지 않다`, () => {
+    it(`${tag}: no dead copy remains`, () => {
       for (const id of Object.keys(checkCopy)) {
-        expect(CHECK_IDS, `${id} 문구가 가리키는 검사가 없다`).toContain(id);
+        expect(CHECK_IDS, `the check that the copy of ${id} points at does not exist`).toContain(id);
       }
     });
 
-    it(`${tag}: 상태 셋을 모두 말할 수 있다`, () => {
+    it(`${tag}: can speak all three states`, () => {
       const state = doctor.state as Record<string, string>;
       // Without `unknown` the screen has no wording for "we don't know" and collapses
       // it into either green or red. That is the defect this repository already fixed
       // once on the launcher badge.
       for (const key of ['ok', 'problem', 'unknown']) {
-        expect(state[key], `state.${key} 가 없다`).toBeTruthy();
+        expect(state[key], `state.${key} is missing`).toBeTruthy();
       }
     });
 
@@ -102,23 +102,23 @@ describe('연동 점검 — 검사와 문구', () => {
      * The same discipline this repository set for degradation cards: saying only why
      * something does not work, without saying where to go, is a dead end.
      */
-    it(`${tag}: 앱이 못 고치는 검사에는 다음 할 일이 있다`, () => {
+    it(`${tag}: checks the app cannot fix have a next step`, () => {
       const next = doctor.next as Record<string, string>;
       for (const id of CHECK_IDS) {
         if (REPAIRABLE_IDS.includes(id)) continue;
-        expect(next[id], `${id} 는 앱이 못 고치는데 할 일이 안 적혀 있다`).toBeTruthy();
+        expect(next[id], `${id} cannot be fixed by the app yet no next step is written`).toBeTruthy();
       }
     });
 
-    it(`${tag}: 죽은 「할 일」 문구가 없다`, () => {
+    it(`${tag}: no dead "next step" copy`, () => {
       for (const id of Object.keys(doctor.next as Record<string, string>)) {
-        expect(CHECK_IDS, `${id} 의 할 일이 가리키는 검사가 없다`).toContain(id);
+        expect(CHECK_IDS, `the check that the next step of ${id} points at does not exist`).toContain(id);
       }
     });
 
-    it(`${tag}: 버튼 문구가 있다`, () => {
+    it(`${tag}: has button copy`, () => {
       for (const key of ['scan', 'scanning', 'fix', 'fixing', 'reset', 'resetting', 'failed']) {
-        expect(doctor[key], `${key} 가 없다`).toBeTruthy();
+        expect(doctor[key], `${key} is missing`).toBeTruthy();
       }
     });
   }

@@ -94,8 +94,8 @@ function loadMcpOntologyDocs() {
   }>).filter((doc) => typeof doc.frontmatter.kind === 'string');
 }
 
-describe('에이전트 읽기 실행기 ↔ MCP 볼트 읽기 (dogfood 볼트 실물)', () => {
-  it('종류별 개수와 "이름만 불린 개념" 수가 통째로 같다', async () => {
+describe('agent read executor ↔ MCP vault reads (the real dogfood vault)', () => {
+  it('the count per kind and the number of "concepts only named" are wholly equal', async () => {
     // Even the field names match — the in-screen agent and the terminal agent must state
     // the inventory in the same words for a user to compare the two numbers.
     const mcpKinds = mcpGraphQueries.listKinds(VAULT_DIR) as {
@@ -108,7 +108,7 @@ describe('에이전트 읽기 실행기 ↔ MCP 볼트 읽기 (dogfood 볼트 �
     expect(ours).toEqual(mcpKinds);
   });
 
-  it('kind 별 문서 slug 집합이 같다', async () => {
+  it('the set of document slugs per kind is the same', async () => {
     // Fetching everything at once hits the round-trip character limit and truncates
     // rows — that is the contract, not a defect (it protects the user's cost). So the
     // comparison narrows by kind and follows bounded pages, the same way real usage does.
@@ -140,7 +140,7 @@ describe('에이전트 읽기 실행기 ↔ MCP 볼트 읽기 (dogfood 볼트 �
     }
   });
 
-  it('같은 노드를 물으면 같은 kind 를 답한다', async () => {
+  it('asking about the same node answers the same kind', async () => {
     const mcpDocs = loadMcpOntologyDocs();
     // The first few only — a sample suffices for the contract, and an exhaustive run is merely slow.
     for (const doc of mcpDocs.slice(0, 12)) {
@@ -152,7 +152,7 @@ describe('에이전트 읽기 실행기 ↔ MCP 볼트 읽기 (dogfood 볼트 �
     }
   });
 
-  it('백링크 대상 집합이 같다', async () => {
+  it('the set of backlink targets is the same', async () => {
     const mcpDocs = loadMcpOntologyDocs();
     // The contract means something only on a node that really has backlinks.
     const withBacklinks = mcpDocs
@@ -184,7 +184,7 @@ describe('에이전트 읽기 실행기 ↔ MCP 볼트 읽기 (dogfood 볼트 �
     }
   });
 
-  it('제목 검색이 같은 문서를 찾는다', async () => {
+  it('title search finds the same documents', async () => {
     const mcpDocs = loadMcpOntologyDocs();
     const sample = mcpDocs.find(
       (doc) => typeof doc.frontmatter.title === 'string' && doc.frontmatter.title.trim(),
@@ -196,14 +196,14 @@ describe('에이전트 읽기 실행기 ↔ MCP 볼트 읽기 (dogfood 볼트 �
     expect(ours.matches.some((match) => match.slug === sample?.slug)).toBe(true);
   });
 
-  it('볼트 본문은 신뢰할 수 없는 데이터로 감싸여 나간다', async () => {
+  it('the vault body goes out wrapped as untrusted data', async () => {
     const mcpDocs = loadMcpOntologyDocs();
     const documented = mcpDocs.find((doc) => doc.slug !== 'README') as { slug: string };
     const result = await execute(call('get_concept', { slug: documented.slug }));
     expect(result.content).toContain('<untrusted_vault_content>');
   });
 
-  it('관계가 적히는 frontmatter 키 목록이 MCP 와 같다', () => {
+  it('the list of frontmatter keys where relations are written equals the MCP one', () => {
     // Backlinks are counted from this key list, not from map edges. Growing one side
     // creates relations the in-screen agent cannot see.
     expect([...GRAPH_FRONTMATTER_KEYS].sort()).toEqual(
@@ -211,7 +211,7 @@ describe('에이전트 읽기 실행기 ↔ MCP 볼트 읽기 (dogfood 볼트 �
     );
   });
 
-  it('번들 매니페스트가 실제 볼트와 어긋나 있지 않다 (계약의 전제)', () => {
+  it('the bundled manifest does not diverge from the real vault (the premise of the contract)', () => {
     // Without this test the comparisons above can pass silently while comparing a stale
     // manifest against the real vault. `docs-vault:check` keeps the committed manifest
     // current; this holds that premise once more.

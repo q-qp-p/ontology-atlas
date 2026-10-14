@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { isPickerAbort } from './picker-abort';
 
 describe('isPickerAbort', () => {
-  it('취소한 DOMException 을 취소로 읽는다', () => {
+  it('reads a cancelled DOMException as a cancel', () => {
     expect(isPickerAbort(new DOMException('The user aborted a request.', 'AbortError'))).toBe(
       true,
     );
   });
 
-  it('DOMException 이 아닌 취소도 취소로 읽는다 — 진입 검수 E-1b', () => {
+  it('reads a cancel that is not a DOMException as a cancel too', () => {
     // Polyfill or another realm — the name survives, only the constructor differs.
     const named = new Error('nope');
     named.name = 'AbortError';
@@ -18,7 +18,7 @@ describe('isPickerAbort', () => {
     expect(isPickerAbort('user aborted')).toBe(true);
   });
 
-  it('진짜 실패는 취소로 삼키지 않는다', () => {
+  it('does not swallow a real failure as a cancel', () => {
     expect(isPickerAbort(new TypeError('window.showDirectoryPicker is not a function'))).toBe(
       false,
     );

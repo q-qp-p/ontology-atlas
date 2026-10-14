@@ -90,8 +90,8 @@ describe('i18n message catalog', () => {
       ['en', en.download.primaryCtaPublished],
       ['ko', ko.download.primaryCtaPublished],
     ]) {
-      assert.doesNotMatch(value, /\{size\}/, `${locale}: 크기는 스팬이 그린다`);
-      assert.doesNotMatch(value, /\bMB\b|\bGB\b/, `${locale}: 크기 리터럴 금지`);
+      assert.doesNotMatch(value, /\{size\}/, `${locale}: the size is drawn by the span`);
+      assert.doesNotMatch(value, /\bMB\b|\bGB\b/, `${locale}: size literals are forbidden`);
     }
     assert.match(en.download.factShaLink, /\{file\}/);
 
@@ -139,20 +139,20 @@ describe('i18n message catalog', () => {
     ];
     for (const label of railLabels) {
       assert.equal(typeof label, 'string');
-      assert.ok(label.trim().length > 0, '레일 라벨이 비었다');
+      assert.ok(label.trim().length > 0, 'the rail label is empty');
       // The rail is narrow — a long label wraps or truncates (the 36px tile contract).
-      assert.ok(label.length <= 5, `레일 라벨이 너무 길다: ${label}`);
+      assert.ok(label.length <= 5, `the rail label is too long: ${label}`);
     }
     assert.doesNotMatch(
       railLabels.join('\n'),
       /지형도|토폴로지|운영|Operations/,
-      '레일에 전문용어가 들어왔다',
+      'jargon entered the rail',
     );
     /* Ban hard-to-understand loanwords; "Builder" is a retired name and stays blocked. */
     assert.doesNotMatch(
       railLabels.join('\n'),
       /인사이트|빌더|온톨로지/,
-      '레일에 알아듣기 어려운 외래어가 들어왔다',
+      'hard-to-understand loanwords entered the rail',
     );
     /*
      * One destination, one name: the rail label and the screen title must match. The test locks that
@@ -162,7 +162,7 @@ describe('i18n message catalog', () => {
     assert.equal(
       ko.navRail.git,
       ko.atlasGit.title,
-      '레일의 기록 라벨이 그 화면 제목과 다르다 — 한 목적지가 이름 둘을 갖는다',
+      'the history label on the rail differs from the title of that screen, so one destination has two names',
     );
     assert.equal(
       en.navRail.git,
@@ -171,15 +171,15 @@ describe('i18n message catalog', () => {
     );
     assert.ok(
       ko.settingsFolder.documentsTitle.includes(ko.navRail.docs),
-      '설정 카드가 여는 온톨로지 섹션을 이름으로 말해야 한다',
+      'the settings card must name the ontology section it opens',
     );
     assert.ok(
       ko.settingsFolder.documentsBodyLocal.includes(ko.navRail.docs),
-      '설정 카드 설명이 여는 온톨로지 섹션을 말해야 한다',
+      'the settings card description must name the ontology section it opens',
     );
     assert.ok(
       !ko.settingsFolder.documentsTitle.includes(ko.navRail.library),
-      '온톨로지 섹션 카드가 자료실 목적지 전체를 연다고 말하면 안 된다',
+      'the ontology section card must not claim to open the whole library destination',
     );
     assert.equal(ko.topology.documentTitle, '지도');
     // Only `fitViewTooltip` is checked: a `ChromeTile` in label mode takes its accessible name from
@@ -235,7 +235,7 @@ describe('i18n message catalog', () => {
     assert.doesNotMatch(visibleCopy, /\bAgent\b|\bFallback\b|\bclient\b|\bnamespace\b|\breload\b|\brestart\b|graph DB gate/);
   });
 
-  it('keeps the topology path chip copy readable (분석 패널 완전 소멸 2단계 §b — replaces the retired path panel copy)', async () => {
+  it('keeps the topology path chip copy readable (replaces the retired path panel copy)', async () => {
     const en = await readJson(path.join(MESSAGES_DIR, 'en.json'));
     const ko = await readJson(path.join(MESSAGES_DIR, 'ko.json'));
     const enCopy = en.topology.analysis;
@@ -282,7 +282,7 @@ describe('i18n message catalog', () => {
       for (const kept of ['controls', 'hubRail']) {
         assert.ok(
           Object.keys(messages.topologyWidgets).includes(kept),
-          `${locale}: topologyWidgets.${kept} 가 사라졌다 (소비처가 남아 있다)`,
+          `${locale}: topologyWidgets.${kept} disappeared (consumers remain)`,
         );
       }
     }
@@ -494,7 +494,7 @@ describe('i18n message catalog', () => {
     );
   });
 
-  it('keeps the INDEX footer agent-sync status plain (chore/copy-plainlang W5 — "에이전트 동기화"/"Agent sync" told users a mode name, not what keeps the vault fresh)', async () => {
+  it('keeps the INDEX footer agent-sync status plain (a mode name like "Agent sync" told users nothing about what keeps the vault fresh)', async () => {
     const en = await readJson(path.join(MESSAGES_DIR, 'en.json'));
     const ko = await readJson(path.join(MESSAGES_DIR, 'ko.json'));
 
@@ -572,7 +572,7 @@ function isPlainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
-it('모든 메시지가 ICU 로 컴파일된다 — 꺾쇠 태그 오파싱이 raw 키 폴백을 만들지 않게 (리텐션 P2/P4 회귀)', async () => {
+it('compiles every message as ICU so angle-bracket tags are not misparsed into raw-key fallbacks', async () => {
   // next-intl parses `<tag>` as a rich-text tag. A literal `<...>` inside a message
   // consumed through plain t() is a runtime error, and the user sees the raw key.
   // This compiles every message in tag-enabled mode to catch broken syntax (unclosed
@@ -602,5 +602,5 @@ it('모든 메시지가 ICU 로 컴파일된다 — 꺾쇠 태그 오파싱이 r
     };
     walk(messages, '');
   }
-  assert.deepEqual(failures, [], `ICU 컴파일 실패:\n${failures.join('\n')}`);
+  assert.deepEqual(failures, [], `ICU compile failures:\n${failures.join('\n')}`);
 });

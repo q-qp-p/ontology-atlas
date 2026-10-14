@@ -17,7 +17,7 @@ interface FixtureCase {
 
 const CASES = FIXTURE_CASES as unknown as FixtureCase[];
 
-describe('스킬 사본 — 화면의 접기가 CLI 집계와 같은 사실을 말한다', () => {
+describe('skill copy — the on-screen fold states the same fact as the CLI tally', () => {
   it.each(CASES.map((c) => [c.name, c] as const))('%s', (_name, testCase) => {
     const web = analyzeWeb(testCase.input);
     // The CLI is a plain JS package with no type declarations, so its signature is inferred narrowly.

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { josa } from "./ko-josa";
 
-describe("josa — 받침이 있는 이름", () => {
+describe("josa for names ending in a final consonant", () => {
   it.each([
     ["주문", "object", "을"],
     ["주문", "subject", "이"],
@@ -13,7 +13,7 @@ describe("josa — 받침이 있는 이름", () => {
   });
 });
 
-describe("josa — 받침이 없는 이름", () => {
+describe("josa for names without a final consonant", () => {
   it.each([
     ["결제 취소", "object", "를"],
     ["결제 취소", "subject", "가"],
@@ -30,16 +30,16 @@ describe("josa — 받침이 없는 이름", () => {
  * a rieul final consonant takes the no-final-consonant form. That exception is
  * why this pair is kept separate.
  */
-describe("josa — ㄹ 받침 예외", () => {
-  it("서울 + direction → 로", () => {
+describe("josa exception for a final rieul", () => {
+  it("Seoul with direction takes the rieul form", () => {
     expect(josa("서울", "direction")).toBe("로");
   });
-  it("서울 + object 는 예외가 아니다 → 을", () => {
+  it("Seoul with object is not an exception and takes the plain object form", () => {
     expect(josa("서울", "object")).toBe("을");
   });
 });
 
-describe("josa — 숫자로 끝나는 이름은 읽는 소리를 따른다", () => {
+describe("josa for names ending in a digit follows the spoken sound", () => {
   it.each([
     ["v1", "을"],
     ["v2", "를"],
@@ -52,7 +52,7 @@ describe("josa — 숫자로 끝나는 이름은 읽는 소리를 따른다", ()
     expect(josa(word, "object")).toBe(expected);
   });
 
-  it("1 은 ㄹ 받침이라 direction 예외를 받는다", () => {
+  it("1 ends in a rieul sound, so it gets the direction exception", () => {
     expect(josa("v1", "direction")).toBe("로");
     expect(josa("v3", "direction")).toBe("으로");
   });
@@ -64,7 +64,7 @@ describe("josa — 숫자로 끝나는 이름은 읽는 소리를 따른다", ()
  * the time. This fallback is what makes the module honest rather than merely
  * tidy-looking.
  */
-describe("josa — 판별 불가는 병기로 남는다", () => {
+describe("josa falls back to a paired form when it cannot be decided", () => {
   it.each([
     ["order-create", "을(를)"],
     ["MCP", "을(를)"],
@@ -74,13 +74,13 @@ describe("josa — 판별 불가는 병기로 남는다", () => {
     expect(josa(word, "object")).toBe(expected);
   });
 
-  it("병기는 조사 쌍마다 자기 짝을 쓴다", () => {
+  it("the paired form uses its own pair for each particle", () => {
     expect(josa("MCP", "subject")).toBe("이(가)");
     expect(josa("MCP", "topic")).toBe("은(는)");
     expect(josa("MCP", "direction")).toBe("으로(로)");
   });
 
-  it("앞뒤 공백은 판별에 끼어들지 않는다", () => {
+  it("surrounding whitespace does not affect the decision", () => {
     expect(josa("  결제 취소  ", "object")).toBe("를");
   });
 });
