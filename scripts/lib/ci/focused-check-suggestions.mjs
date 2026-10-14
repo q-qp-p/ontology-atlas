@@ -1,0 +1,452 @@
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { posix } from 'node:path';
+
+import { isSupportedSourcePath } from '../../quality/source-language/source-paths.mjs';
+import { loadTestReach } from '../import-graph/test-reach.mjs';
+
+/**
+ * The changed-path focused-check advisor: which checks a set of changed paths
+ * should run first.
+ *
+ * **To add a check, add a rule file under `scripts/lib/check-rules/<area>.mjs`**
+ * (or append to the area file that already owns the subject). Nothing else
+ * needs an edit: this module reads that directory at load time, so a new file
+ * is picked up without touching an index.
+ *
+ * A rule file exports any of:
+ *
+ * - `rules`: `{ order?, command, reason, matches: RegExp[], additive? }[]`, the
+ *   first checks. An `additive` rule never counts as a path's browser coverage.
+ * - `escalations`: the same shape, printed as "escalate when needed".
+ * - `directTests`: `{ mcp?, cli?, script?, focusedCheck?: [source, test][] }`,
+ *   sibling tests run directly when their source or the test itself changes.
+ *
+ * `order` decides the printed order across every file, and, when two rules
+ * name the same command, which rule's reason and paths are shown (the lower
+ * one). Ties, and rules without an `order`, which sort after every ordered
+ * rule, fall back to file name and then position in the file. The existing
+ * rules carry their former position in the one table times ten, so a new rule
+ * can sit between two of them without renumbering anything.
+ */
+export const CHECK_RULES_DIRECTORY = new URL('../check-rules/', import.meta.url);
+
+export { BROWSER_EXECUTION_SURFACE_PATTERNS, CI_PLANNER_SURFACE_PATTERNS } from '../check-rules/ci.mjs';
+
+const DIRECT_TEST_KINDS = ['mcp', 'cli', 'script', 'focusedCheck'];
+
+/** Lists the rule files of `directory`, sorted by name; helpers and tests are not rule files. */
+function listCheckRuleFiles(directory = CHECK_RULES_DIRECTORY) {
+  return readdirSync(directory, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && /^[^_.][^/]*\.mjs$/.test(entry.name) && !entry.name.endsWith('.test.mjs'))
+    .map((entry) => entry.name)
+    .sort();
+}
+
+/** Imports every rule file of `directory` and merges it into one registry. */
+export async function loadCheckRules(directory = CHECK_RULES_DIRECTORY) {
+  const modules = [];
+  for (const name of listCheckRuleFiles(directory)) {
+    modules.push({ name, module: await import(new URL(name, directory).href) });
+  }
+  return composeCheckRules(modules);
+}
+
+/**
+ * Merges `{ name, module }` pairs into sorted rule and escalation lists plus one
+ * source-to-test map per direct-test kind. Throws on a malformed rule or on two
+ * files mapping one source to different tests, so a bad file fails loudly here
+ * rather than silently recommending nothing.
+ */
+export function composeCheckRules(modules) {
+  const collect = (key) => {
+    const entries = [];
+    for (const { name, module } of modules) {
+      const list = module[key] ?? [];
+      if (!Array.isArray(list)) throw new Error(`check-rules/${name}: \`${key}\` must be an array`);
+      list.forEach((rule, index) => {
+        if (
+          typeof rule?.command !== 'string' ||
+          typeof rule.reason !== 'string' ||
+          !Array.isArray(rule.matches) ||
+          rule.matches.length === 0 ||
+          !rule.matches.every((pattern) => pattern instanceof RegExp) ||
+          (rule.order !== undefined && !Number.isFinite(rule.order)) ||
+          (rule.additive !== undefined && typeof rule.additive !== 'boolean')
+        ) {
+          throw new Error(`check-rules/${name}: ${key}[${index}] needs command, reason, RegExp matches, and a finite order if any`);
+        }
+        entries.push({ rule, name, index });
+      });
+    }
+    return entries
+      .sort(
+        (a, b) =>
+          (a.rule.order ?? Infinity) - (b.rule.order ?? Infinity) ||
+          (a.name < b.name ? -1 : a.name > b.name ? 1 : 0) ||
+          a.index - b.index,
+      )
+      .map(({ rule }) => rule);
+  };
+  const directTests = Object.fromEntries(DIRECT_TEST_KINDS.map((kind) => [kind, new Map()]));
+  for (const { name, module } of modules) {
+    for (const [kind, pairs] of Object.entries(module.directTests ?? {})) {
+      const map = directTests[kind];
+      if (!map) throw new Error(`check-rules/${name}: unknown directTests kind "${kind}"`);
+      for (const [source, test] of pairs) {
+        if (map.has(source) && map.get(source) !== test) {
+          throw new Error(`check-rules/${name}: ${source} already maps to ${map.get(source)}`);
+        }
+        map.set(source, test);
+      }
+    }
+  }
+  return {
+    rules: collect('rules'),
+    escalations: collect('escalations'),
+    directTests: Object.fromEntries(
+      Object.entries(directTests).map(([kind, map]) => [kind, { bySource: map, testFiles: new Set(map.values()) }]),
+    ),
+  };
+}
+
+const { rules: RULES, escalations: ESCALATIONS, directTests: DIRECT_TESTS } = await loadCheckRules();
+
+export function normalizeChangedPath(path) {
+  const normalized = String(path || '').trim().replace(/\\/g, '/').replace(/^\.\//, '');
+  return normalized.startsWith('-') ? `./${normalized}` : normalized;
+}
+
+export function suggestFocusedChecks(paths = [], { deletedPaths = [], commentOnlyPaths = [] } = {}) {
+  const normalizedPaths = [...new Set(paths.map(normalizeChangedPath).filter(Boolean))];
+  // Deleted paths take part in RULE matching only: the per-file suggestions embed paths into
+  // file-reading commands, which a deleted path would break, while a rule command is global.
+  const normalizedDeleted = [...new Set(deletedPaths.map(normalizeChangedPath).filter(Boolean))]
+    .filter((path) => !normalizedPaths.includes(path));
+  const rulePaths = [...normalizedPaths, ...normalizedDeleted];
+  const commentOnly = new Set(commentOnlyPaths.map(normalizeChangedPath));
+  const behaviorPaths = normalizedPaths.filter((path) => !commentOnly.has(path));
+  const staticCommands = rulesToSuggestions(RULES, rulePaths, commentOnly);
+  const withSourceLanguage = prependSuggestions(
+    staticCommands,
+    directSourceLanguageSuggestions(normalizedPaths),
+  );
+  const withVitestDirect = prependSuggestions(
+    withSourceLanguage,
+    directVitestTestSuggestions(behaviorPaths, normalizedDeleted, {
+      allContractsRun: staticCommands.some((item) => item.command === 'pnpm test:contracts'),
+    }),
+  );
+  const withPlaywrightDirect = prependSuggestions(
+    withVitestDirect,
+    directPlaywrightTestSuggestions(behaviorPaths),
+  );
+  const withLintDirect = prependSuggestions(
+    withPlaywrightDirect,
+    [...directLintSuggestions(normalizedPaths), ...directScriptLintSuggestions(normalizedPaths)],
+  );
+  const withMcpDirect = insertBeforeCommand(
+    withLintDirect,
+    directMcpUnitTestSuggestions(behaviorPaths),
+    'pnpm test:mcp:unit',
+  );
+  const commands = insertBeforeCommand(
+    withMcpDirect,
+    directMappedTestSuggestions(behaviorPaths, 'cli', 'direct CLI lib unit test for changed helper'),
+    'pnpm test:cli:lib',
+  );
+  const withScriptDirect = insertBeforeCommand(
+    commands,
+    directMappedTestSuggestions(behaviorPaths, 'script', 'direct script helper unit test for changed helper'),
+    'pnpm test:dogfood:script-refs',
+  );
+  const withFocusedCheckDirect = insertBeforeCommand(
+    withScriptDirect,
+    directMappedTestSuggestions(behaviorPaths, 'focusedCheck', 'direct focused-check advisor test for changed helper'),
+    'pnpm test:checks:changed',
+  );
+  const escalations = rulesToSuggestions(ESCALATIONS, rulePaths);
+  return {
+    paths: normalizedPaths,
+    deletedPaths: normalizedDeleted,
+    commands: uniqueCommands(withFocusedCheckDirect),
+    escalations,
+  };
+}
+
+function directSourceLanguageSuggestions(paths) {
+  const sourcePaths = paths.filter(isSupportedSourcePath);
+  const citingPaths = paths.filter((path) => isSupportedSourcePath(path) || path.endsWith('.md'));
+  const untestedSourcePaths = sourcePaths.filter((path) => !/\.(?:test|spec)\.[cm]?[jt]sx?$/.test(path));
+  return [
+    ...(sourcePaths.length ? [{
+      command: 'pnpm source:language',
+      reason: 'source comments are English-only across current code, tests, and prototypes',
+      paths: sourcePaths,
+    }] : []),
+    ...(untestedSourcePaths.length ? [{
+      command: 'pnpm exec vitest run tests/contract/source-comment-bytes.contract.test.ts',
+      reason: 'comment bytes may only fall in each source area this change touches',
+      paths: untestedSourcePaths,
+    }] : []),
+    ...(citingPaths.length ? [{
+      command: 'pnpm docs:comment-refs',
+      reason: 'a code comment can cite a Markdown path that this change moved or never existed',
+      paths: citingPaths,
+    }] : []),
+  ];
+}
+
+/**
+ * A changed test runs itself, and a changed file runs every suite whose imports reach it
+ * (`import-graph/test-reach.mjs`). Contracts run by exact name, unit suites through `vitest
+ * related`; a deleted file's importers run by name.
+ */
+function directVitestTestSuggestions(paths, deletedPaths, { allContractsRun }) {
+  const reach = loadTestReach();
+  const rows = [];
+  const sources = [];
+  for (const path of paths) {
+    if (isVitestUnitTest(path)) {
+      rows.push({ command: `pnpm exec vitest run ${path}`, reason: 'changed Vitest test file', paths: [path] });
+    } else if (/^(?:src|app)\/.+\.tsx?$/.test(path) || reach.testsReaching([path]).unit.length > 0) {
+      sources.push(path);
+    }
+  }
+  if (sources.length > 0) {
+    rows.push({
+      command: `pnpm exec vitest related --run --passWithNoTests --exclude='tests/contract/**' ${sources.join(' ')}`,
+      reason: 'every Vitest suite that imports a changed file (module graph), not only its sibling',
+      paths: sources,
+      importGraph: true,
+    });
+  }
+  const stale = reach.testsReaching(deletedPaths);
+  const staleUnits = stale.unit.filter((test) => !deletedPaths.includes(test));
+  if (staleUnits.length > 0) {
+    rows.push({
+      command: `pnpm exec vitest run ${staleUnits.join(' ')}`,
+      reason: 'these suites still import a deleted file, which Vitest no longer sees',
+      paths: deletedPaths,
+      importGraph: true,
+    });
+  }
+  const contracts = new Set();
+  const contractInputs = [];
+  for (const path of [...paths, ...deletedPaths]) {
+    const reached = reach.testsReaching([path]).contract.filter((test) => !deletedPaths.includes(test));
+    if (reached.length === 0) continue;
+    contractInputs.push(path);
+    for (const test of reached) contracts.add(test);
+  }
+  if (contracts.size > 0 && !allContractsRun) {
+    rows.push({
+      command: `pnpm exec vitest run ${[...contracts].sort().join(' ')}`,
+      reason: 'every contract that imports, spawns or names a changed file',
+      paths: contractInputs,
+      importGraph: true,
+    });
+  }
+  return rows;
+}
+
+/**
+ * Runs ESLint directly on changed `src/**` and `app/**` sources: the design-system ramps and FSD
+ * boundaries are enforced by `no-restricted-syntax`. Changed files only; the full `pnpm lint` is
+ * an escalation.
+ */
+function directLintSuggestions(paths) {
+  const lintable = paths.filter((path) => /^(?:src|app)\/.+\.(?:ts|tsx)$/.test(path));
+  if (lintable.length === 0) return [];
+  return [
+    {
+      // --max-warnings 0 matches the full `pnpm lint` lane: the warning ratchet lives at zero, and a
+      // bare eslint run exits 0 on a new warning.
+      command: `pnpm exec eslint --max-warnings 0 ${lintable.join(' ')}`,
+      reason: 'design-system ramps and FSD boundaries are lint-enforced on changed source',
+      paths: lintable,
+    },
+  ];
+}
+
+/**
+ * Lints every other changed JavaScript or TypeScript file the full `pnpm lint` covers, so a
+ * scripts-only change does not plan no lint. `--no-warn-ignored` keeps a config-ignored file from
+ * counting as a warning.
+ */
+function directScriptLintSuggestions(paths) {
+  const lintable = paths.filter(
+    (path) => /\.(?:ts|tsx|js|jsx|mjs|cjs)$/.test(path) && !/^(?:src|app)\//.test(path),
+  );
+  if (lintable.length === 0) return [];
+  return [
+    {
+      command: `pnpm exec eslint --max-warnings 0 --no-warn-ignored ${lintable.join(' ')}`,
+      reason: 'the full lint lane covers scripts, tests and packages too; lint the changed ones now',
+      paths: lintable,
+    },
+  ];
+}
+
+function directPlaywrightTestSuggestions(paths) {
+  return paths
+    .filter((path) => /^tests\/e2e\/.+\.spec\.ts$/.test(path))
+    .map((path) => ({
+      command: `pnpm exec playwright test ${path}`,
+      reason: 'direct Playwright spec for changed e2e test',
+      paths: [path],
+    }));
+}
+
+function isVitestUnitTest(path) {
+  return /^(?:src|app)\/.+\.(?:test|spec)\.tsx?$/.test(path);
+}
+
+function resolveMcpUnitTestFile(path, pathSet) {
+  const { bySource, testFiles } = DIRECT_TESTS.mcp;
+  const mapped = bySource.get(path);
+  if (mapped) return mapped;
+  if (testFiles.has(path)) return path;
+  if (/^mcp\/src\/(?!integration\.test\.mjs$)[^/]+\.test\.mjs$/.test(path)) return path;
+  if (!/^mcp\/src\/[^/]+\.(?:mjs|js)$/.test(path)) return null;
+  const testFile = path.replace(/\.(?:mjs|js)$/, '.test.mjs');
+  return pathSet.has(testFile) || existsSync(testFile) ? testFile : null;
+}
+
+function directMcpUnitTestSuggestions(paths) {
+  const pathSet = new Set(paths);
+  return groupByTestFile(
+    paths,
+    (path) => resolveMcpUnitTestFile(path, pathSet),
+    'direct MCP unit test for changed source or test',
+  );
+}
+
+/** A source maps to its declared test; a declared test maps to itself. */
+let scriptTestImports = null;
+
+function scriptTestFiles(dir = 'scripts') {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = `${dir}/${entry.name}`;
+    if (entry.isDirectory()) return entry.name === 'node_modules' ? [] : scriptTestFiles(path);
+    return entry.name.endsWith('.test.mjs') ? [path] : [];
+  });
+}
+
+function importedModules(testFile) {
+  const dir = posix.dirname(testFile);
+  const text = readFileSync(testFile, 'utf8');
+  return [...text.matchAll(/(?:\bfrom\s*|\bimport\s*\(\s*)['"](\.{1,2}\/[^'"]+)['"]/g)].map((match) => posix.normalize(posix.join(dir, match[1])));
+}
+
+function scriptTestsFor(path) {
+  if (!/^scripts\/.+\.mjs$/.test(path)) return [];
+  if (path.endsWith('.test.mjs')) return existsSync(path) ? [path] : [];
+  scriptTestImports ??= scriptTestFiles().map((file) => [file, new Set(importedModules(file))]);
+  return scriptTestImports.filter(([, modules]) => modules.has(path)).map(([file]) => file);
+}
+
+function directMappedTestSuggestions(paths, kind, reason) {
+  const { bySource, testFiles } = DIRECT_TESTS[kind];
+  return groupByTestFile(paths, (path) => {
+    const mapped = bySource.get(path) ?? (testFiles.has(path) ? path : null);
+    if (mapped) return [mapped];
+    return kind === 'script' ? scriptTestsFor(path) : [];
+  }, reason);
+}
+
+function uniqueCommands(suggestions) {
+  const seen = new Set();
+  return suggestions.filter((item) => !seen.has(item.command) && seen.add(item.command));
+}
+
+function groupByTestFile(paths, resolve, reason) {
+  const byTestFile = new Map();
+  for (const path of paths) {
+    const resolved = resolve(path);
+    for (const testFile of Array.isArray(resolved) ? resolved : resolved ? [resolved] : []) {
+      const row = byTestFile.get(testFile) ?? { command: `pnpm exec node --test ${testFile}`, reason, paths: [] };
+      row.paths.push(path);
+      byTestFile.set(testFile, row);
+    }
+  }
+  return [...byTestFile.values()];
+}
+
+function prependSuggestions(suggestions, additions) {
+  if (additions.length === 0) return suggestions;
+  const additionByCommand = new Map(additions.map((item) => [item.command, item]));
+  const withDirectOverAdditive = suggestions.map((item) => {
+    const direct = item.additive ? additionByCommand.get(item.command) : undefined;
+    return direct ? { ...direct, paths: [...new Set([...direct.paths, ...item.paths])] } : item;
+  });
+  const existing = new Set(suggestions.map((item) => item.command));
+  const uniqueAdditions = additions.filter((item) => !existing.has(item.command));
+  return [...uniqueAdditions, ...withDirectOverAdditive];
+}
+
+function insertBeforeCommand(suggestions, additions, command) {
+  if (additions.length === 0) return suggestions;
+  const seen = new Set();
+  const uniqueAdditions = additions.filter((item) => {
+    if (seen.has(item.command)) return false;
+    seen.add(item.command);
+    return true;
+  });
+  const index = suggestions.findIndex((item) => item.command === command);
+  if (index === -1) return [...uniqueAdditions, ...suggestions];
+  return [
+    ...suggestions.slice(0, index),
+    ...uniqueAdditions,
+    ...suggestions.slice(index),
+  ];
+}
+
+const BEHAVIOUR_COMMAND = /\bplaywright test\b|^pnpm (?:-s )?(?:lint|typecheck)\b/;
+
+function rulesToSuggestions(rules, paths, commentOnly = new Set()) {
+  const seen = new Set();
+  const suggestions = [];
+  for (const rule of rules) {
+    const candidates = BEHAVIOUR_COMMAND.test(rule.command) ? paths.filter((path) => !commentOnly.has(path)) : paths;
+    const matchedPaths = candidates.filter((path) => rule.matches.some((pattern) => pattern.test(path)));
+    if (matchedPaths.length === 0 || seen.has(rule.command)) continue;
+    seen.add(rule.command);
+    suggestions.push({
+      command: rule.command,
+      reason: rule.reason,
+      paths: matchedPaths,
+      ...(rule.additive ? { additive: true } : {}),
+    });
+  }
+  return suggestions;
+}
+
+export function formatFocusedCheckSuggestions({ paths = [], commands = [], escalations = [] } = {}) {
+  if (paths.length === 0) {
+    return [
+      '[focused-checks] no changed paths against HEAD or untracked files',
+      'Use `pnpm checks:changed -- <path...>` to inspect a planned file set.',
+    ].join('\n');
+  }
+  const lines = [
+    `[focused-checks] ${paths.length} changed path${paths.length === 1 ? '' : 's'}`,
+  ];
+  if (commands.length === 0) {
+    lines.push('First checks: no focused mapping; do not jump to the full suite by default.');
+    lines.push('Choose the nearest area from docs/DEVELOPMENT-CHECKS.md, then escalate only for concrete uncovered risk.');
+  } else {
+    lines.push('First checks:');
+    for (const suggestion of commands) {
+      lines.push(`  ${suggestion.command}  # ${suggestion.reason}`);
+    }
+    lines.push('Run these before broad lint/build/test; escalate only when the change risk requires it.');
+  }
+  if (escalations.length > 0) {
+    lines.push('Escalate when needed:');
+    for (const suggestion of escalations) {
+      lines.push(`  ${suggestion.command}  # ${suggestion.reason}`);
+    }
+  }
+  return lines.join('\n');
+}

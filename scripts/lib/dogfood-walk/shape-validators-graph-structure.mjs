@@ -1,7 +1,7 @@
 // Response-shape validators for the dogfood MCP walk: graph structure tools
 // (cycles, topological_order, lineage, containment_tree, reachability, impact,
 // blast_radius, subgraph).
-// Split out of scripts/dogfood-mcp-walk.mjs (structural decomposition, logic unchanged).
+// Split out of scripts/dogfood/dogfood-mcp-walk.mjs (structural decomposition, logic unchanged).
 import { matchRowsFailure, numericSummaryFailure } from "./shape-validators-primitives.mjs";
 
 export function cyclesShapeFailure(result) {

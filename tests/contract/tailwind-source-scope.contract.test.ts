@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * Tailwind scans code only: with automatic detection on, class-shaped text in `.md` prose becomes

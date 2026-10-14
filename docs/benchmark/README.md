@@ -56,12 +56,12 @@ Either way, **measurement before further investment**.
 Two paths, depending on which agent:
 
 - **Claude Code**: manual, see "Manual run protocol" below. (Claude Code CLI doesn't expose a non-interactive mode that's safe to script.)
-- **Codex CLI**: the legacy retrieval matrix is automated via [`scripts/benchmark.mjs`](../../scripts/benchmark.mjs) — `pnpm benchmark --bypass` runs all 10 tasks × 2 modes, captures transcripts, and writes a tool-call summary table. `--with-none` adds the physically no-vault control. This self-repository matrix is diagnostic, not causal, because the repository documents itself heavily.
+- **Codex CLI**: the legacy retrieval matrix is automated via [`scripts/benchmark/benchmark.mjs`](../../scripts/benchmark/benchmark.mjs) — `pnpm benchmark --bypass` runs all 10 tasks × 2 modes, captures transcripts, and writes a tool-call summary table. `--with-none` adds the physically no-vault control. This self-repository matrix is diagnostic, not causal, because the repository documents itself heavily.
 
 ### Lifecycle benchmark: greenfield versus brownfield
 
 The long-term investment question needs a different matrix from the legacy
-self-repository lookup benchmark. [`scripts/benchmark-lifecycle.mjs`](../../scripts/benchmark-lifecycle.mjs)
+self-repository lookup benchmark. [`scripts/benchmark/benchmark-lifecycle.mjs`](../../scripts/benchmark/benchmark-lifecycle.mjs)
 runs the same frozen task against the same source snapshot in two arms:
 
 | Arm | Subject contents | What it measures |
@@ -201,7 +201,7 @@ a change in behaviour.
 
 ### End-to-end change-flow benchmark
 
-The lifecycle matrix above stops before an edit. [`scripts/benchmark-change-flow.mjs`](../../scripts/benchmark-change-flow.mjs)
+The lifecycle matrix above stops before an edit. [`scripts/benchmark/benchmark-change-flow.mjs`](../../scripts/benchmark/benchmark-change-flow.mjs)
 measures the next boundary: one fixed change in a fresh repository, followed by
 tests, a scoped commit, a push to a local bare remote, a clean or recovered
 merge, post-merge tests, and branch cleanup. The `on` arm also updates one

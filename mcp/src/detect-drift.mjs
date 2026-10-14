@@ -1,5 +1,5 @@
 // Vault-to-code path drift: `path:` and path-shaped `elements:` entries that no longer exist.
-// Shared pure core of scripts/audit-vault-paths.mjs and validate_vault; read-only, `fileExists`
+// Shared pure core of scripts/vault/audit-vault-paths.mjs and validate_vault; read-only, `fileExists`
 // injectable.
 
 import { existsSync } from 'node:fs';

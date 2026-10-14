@@ -188,7 +188,7 @@ describe("CI job budgets — a lane cannot grow in silence", () => {
   /**
    * A matrix job skipped by its own `if` reports one check with the expression still in the name. That
    * phantom is tolerated: the draft guard must stay in every job header, and static jobs would
-   * triplicate the YAML. `scripts/pr-land.test.mjs` holds the enforcement.
+   * triplicate the YAML. `scripts/landing/pr-land.test.mjs` holds the enforcement.
    */
   it("keeps the draft guard in every matrix job header, as the draft-cost decision requires", () => {
     const guard = "github.event.pull_request.draft == false";

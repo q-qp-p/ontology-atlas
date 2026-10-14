@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
-import { locateGlobalCssLine, readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { locateGlobalCssLine, readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * Every step of the type ramp must follow the root font size, because browser text-only zoom changes

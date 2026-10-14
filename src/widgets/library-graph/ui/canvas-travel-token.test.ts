@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
-import { readGlobalCss } from '../../../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../../../scripts/lib/design/global-css.mjs';
 
 /**
  * The engine parses its clocks from CSS so they cannot drift from src/shared/motion/tokens.ts,

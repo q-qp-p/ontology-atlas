@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs';
 import { defineConfig } from '@playwright/test';
 
 import { POST_MERGE_SPECS } from './tests/e2e/post-merge-specs';
-import { foreignServer } from './scripts/lib/playwright-server-owner.mjs';
+import { foreignServer } from './scripts/lib/ci/playwright-server-owner.mjs';
 
 const servesStaticExport = Boolean(process.env.PLAYWRIGHT_STATIC);
 const isCI = process.env.CI === 'true' || process.env.CI === '1';
@@ -84,7 +84,7 @@ export default defineConfig({
     // serve the built static export: some specs measure layers absent in dev, e.g. same-route
     // navigation that only fails in production.
     command: servesStaticExport
-      ? `node scripts/serve-static-export.mjs --port=${webServerPort}`
+      ? `node scripts/web/serve-static-export.mjs --port=${webServerPort}`
       : `pnpm dev -p ${webServerPort}`,
     url: webServerOrigin,
     reuseExistingServer: !process.env.CI && !servesStaticExport,

@@ -196,7 +196,7 @@ describe('transcribed adapter versions', () => {
      * `acp-runtime-gate.contract.test.ts` reads the session-start code. A pin quietly returning
      * without a record, or the record's citation quietly leaving, is the drift this catches.
      */
-    const source = readFileSync(join(REPO_ROOT, 'scripts/build-acp-registry.mjs'), 'utf8');
+    const source = readFileSync(join(REPO_ROOT, 'scripts/registry-snapshots/build-acp-registry.mjs'), 'utf8');
     expect(source).not.toContain('reviewedUpstreamPackage:');
     expect(source).toContain('docs/DECISIONS.md');
   });

@@ -1,4 +1,4 @@
-// Preloaded only by `scripts/perf-mcp-memory.mjs`; the server never imports it.
+// Preloaded only by `scripts/perf/perf-mcp-memory.mjs`; the server never imports it.
 
 import net from 'node:net';
 

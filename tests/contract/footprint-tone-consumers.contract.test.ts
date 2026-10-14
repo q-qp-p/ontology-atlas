@@ -7,7 +7,7 @@ import {
   FOOTPRINT_TONE_FALLBACK,
   FOOTPRINT_TONE_TOKEN,
 } from "@/shared/lib/preferences/appearance-preferences";
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * Every trail tone reaches every consumer, including the settings preview, which must draw the same

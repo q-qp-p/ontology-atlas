@@ -23,8 +23,8 @@ import {
   parseBuildMacosSteps,
   PROBE_TIMEOUT_MS,
   probeTool,
-} from "../../scripts/release-rehearsal.mjs";
-import { RELEASE_ARTIFACT_STEPS } from "../../scripts/build-macos-release-artifact.mjs";
+} from "../../scripts/desktop-release/release-rehearsal.mjs";
+import { RELEASE_ARTIFACT_STEPS } from "../../scripts/desktop-release/build-macos-release-artifact.mjs";
 
 /**
  * These steps are wired nowhere outside the release workflow, so they first run only
@@ -111,7 +111,7 @@ describe("업데이터 아카이브는 서명된 앱을 담아야 한다", () =>
     it(`${scriptName} 이 앱 서명 뒤·DMG 패키징 앞에서 아카이브를 다시 만든다`, () => {
       const signAt = commands.findIndex((command) => command === signStep);
       const repackAt = commands.findIndex((command) => command === "pnpm desktop:repack-updater");
-      const dmgAt = commands.findIndex((command) => command.endsWith("scripts/package-macos-dmg.mjs"));
+      const dmgAt = commands.findIndex((command) => command.endsWith("scripts/desktop/package-macos-dmg.mjs"));
 
       expect(repackAt, `${scriptName} 에 desktop:repack-updater 가 없다`).toBeGreaterThan(-1);
       expect(
@@ -127,13 +127,13 @@ describe("업데이터 아카이브는 서명된 앱을 담아야 한다", () =>
 
   it("재포장 스크립트가 등록돼 있다", () => {
     expect(pkg.scripts["desktop:repack-updater"]).toBe(
-      "node scripts/repack-macos-updater-archive.mjs",
+      "node scripts/desktop-release/repack-macos-updater-archive.mjs",
     );
   });
 
   it("credentialed release command는 비밀 격리 오케스트레이터 하나만 실행한다", () => {
     expect(pkg.scripts["desktop:release-artifact"]).toBe(
-      "node scripts/build-macos-release-artifact.mjs",
+      "node scripts/desktop-release/build-macos-release-artifact.mjs",
     );
     expect(RELEASE_ARTIFACT_STEPS.length).toBe(11);
   });
@@ -175,7 +175,7 @@ describe("리허설이 릴리스 잡을 빠짐없이 덮는다", () => {
    * can exceed vitest's 5-second default on a runner. The test asserts what is printed, not how fast.
    */
   it("태그 없이 목록을 보면 admission이 검증됐다고 가장하지 않고 명시적으로 SKIP 한다", { timeout: 60_000 }, () => {
-    const rehearsal = spawnSync(process.execPath, ["scripts/release-rehearsal.mjs", "--list"], {
+    const rehearsal = spawnSync(process.execPath, ["scripts/desktop-release/release-rehearsal.mjs", "--list"], {
       cwd: root,
       encoding: "utf8",
     });
@@ -190,7 +190,7 @@ describe("리허설이 릴리스 잡을 빠짐없이 덮는다", () => {
     const sha = currentHeadSha(root);
     const rehearsal = spawnSync(
       process.execPath,
-      ["scripts/release-rehearsal.mjs", "--list", "--tag=v1.2.3"],
+      ["scripts/desktop-release/release-rehearsal.mjs", "--list", "--tag=v1.2.3"],
       { cwd: root, encoding: "utf8" },
     );
 
@@ -247,7 +247,7 @@ describe("리허설이 릴리스 잡을 빠짐없이 덮는다", () => {
   });
 
   it("desktop:release-rehearsal 이 등록돼 있다", () => {
-    expect(pkg.scripts["desktop:release-rehearsal"]).toBe("node scripts/release-rehearsal.mjs");
+    expect(pkg.scripts["desktop:release-rehearsal"]).toBe("node scripts/desktop-release/release-rehearsal.mjs");
   });
 
   it("버리는 업데이터 개인키를 저장소 밖에서 만들고 읽은 즉시 지운다", () => {
@@ -308,7 +308,7 @@ describe("다운로드 스모크 문구는 살아 있는 카탈로그에서 온�
    * `desktop:release-artifact`).
    */
   it("스모크 계약에 하드코딩된 다운로드 문장이 없다", () => {
-    const smoke = readFileSync(join(root, "scripts/desktop-smoke.mjs"), "utf8");
+    const smoke = readFileSync(join(root, "scripts/desktop/desktop-smoke.mjs"), "utf8");
     expect(smoke).toContain("DESKTOP_SMOKE_ROUTE_TEXT_KEYS");
     for (const retired of [
       "Install once. Work from your local vault.",

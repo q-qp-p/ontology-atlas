@@ -5,7 +5,7 @@ import { waitForPageSettled } from "./settle";
 /**
  * Accessibility ratchet over axe-core WCAG 2.x A/AA rules. A ratchet rather than zero, so the gate is
  * not red from day one; new rules start at zero and counts never rise. Retake the inventory with
- * `node scripts/measure-a11y.mjs`.
+ * `node scripts/design/measure-a11y.mjs`.
  */
 
 // Playwright specs load as CJS — using `import.meta` stops the file loading at all,

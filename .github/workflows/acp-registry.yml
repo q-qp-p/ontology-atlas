@@ -33,4 +33,4 @@ jobs:
           node-version: 24
 
       - name: Verify bundled ACP registry is current
-        run: node scripts/build-acp-registry.mjs --check
+        run: node scripts/registry-snapshots/build-acp-registry.mjs --check

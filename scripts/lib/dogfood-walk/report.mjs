@@ -1,7 +1,7 @@
 // Human-readable console report for the dogfood MCP walk: runs the RPC batch,
 // prints a header + status line per surface, evaluates the gate, and returns
 // the process exit code.
-// Split out of scripts/dogfood-mcp-walk.mjs (structural decomposition, logic unchanged).
+// Split out of scripts/dogfood/dogfood-mcp-walk.mjs (structural decomposition, logic unchanged).
 import { compileIndexesSummary } from "../../../mcp/scripts/verify/checks/compile.mjs";
 import { destructiveDryRunFailure } from "../../../mcp/scripts/verify/checks/write-dry-runs.mjs";
 import { formatCount } from "../../../mcp/scripts/verify/output.mjs";

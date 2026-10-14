@@ -29,7 +29,7 @@ import {
   formatNoTestMatchMessage,
   formatTestFilterSuffix,
   resolveTestNamePattern,
-} from '../../scripts/lib/test-name-pattern.mjs';
+} from '../../scripts/lib/ci/test-name-pattern.mjs';
 import { assertPnpmScriptsExist } from '../../scripts/lib/pnpm-script-refs.mjs';
 import { CLI_CLIENT_INFO } from './lib/mcp-call.mjs';
 import {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { listLocales } from '../../scripts/build-messages.mjs';
-import { checkEntry, checkLocale } from '../../scripts/check-translation-coverage.mjs';
+import { listLocales } from '../../scripts/i18n/build-messages.mjs';
+import { checkEntry, checkLocale } from '../../scripts/i18n/check-translation-coverage.mjs';
 
 const locales = listLocales().filter((locale) => locale !== 'en');
 const INJECTED = ['ko', 'ja', 'zh'];

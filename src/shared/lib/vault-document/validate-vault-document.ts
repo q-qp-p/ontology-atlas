@@ -374,7 +374,7 @@ function issuesHaveNoErrors(issues: readonly VaultDocumentIssue[]): boolean {
  * Precision differs from `validateVaultDocument`:
  *   - unclosed-frontmatter and parse-zero-keys are **undetectable** here, because this only
  *     sees what the lenient parser already produced. The CLI
- *     (`scripts/validate-vault.mjs`) covers the raw side; this is the fast UI path.
+ *     (`scripts/vault/validate-vault.mjs`) covers the raw side; this is the fast UI path.
  *   - missing-kind / empty-kind / unknown-kind are detected as usual.
  *
  * Heuristic for skipping noise: frontmatter that is empty, or has neither `kind` nor any

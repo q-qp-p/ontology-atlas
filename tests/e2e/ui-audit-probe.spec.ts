@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { FREEZE_CSS, auditPage } from "../../scripts/lib/ui-audit-probe.mjs";
+import { FREEZE_CSS, auditPage } from "../../scripts/lib/design/ui-audit-probe.mjs";
 
 const FIXTURE = `<!doctype html><html><head><style>
   :root { --text-body: 14px; --leading-body: 20px; --radius-card: 8px; }

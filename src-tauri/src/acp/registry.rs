@@ -1,4 +1,4 @@
-/// Generated into `src-tauri/src/acp-registry.json` by `scripts/build-acp-registry.mjs`
+/// Generated into `src-tauri/src/acp-registry.json` by `scripts/registry-snapshots/build-acp-registry.mjs`
 /// and never fetched at runtime: no unrequested network traffic, and it works offline.
 #[derive(Debug, Clone, serde::Deserialize)]
 pub(crate) struct RegistryAgent {

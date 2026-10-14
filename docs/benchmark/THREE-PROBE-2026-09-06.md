@@ -15,14 +15,14 @@ nothing here is on by default and no decision record was written, because the
 decision is the owner's to make from this page.
 
 Everything below was measured on this laptop against the running static export
-(`node scripts/serve-static-export.mjs --port=5540`) at 1512×982, device pixel
+(`node scripts/web/serve-static-export.mjs --port=5540`) at 1512×982, device pixel
 ratio 1, dark, in an isolated Chromium (ANGLE/Metal), not the owner's browser.
 The display runs at 120 Hz, so **8.33 ms is the floor**, not a good score.
 
 ## How to open it
 
 ```bash
-pnpm build && node scripts/serve-static-export.mjs --port=5540
+pnpm build && node scripts/web/serve-static-export.mjs --port=5540
 open "http://127.0.0.1:5540/en/topology/?e2e=1&guides=off&three=1"
 ```
 

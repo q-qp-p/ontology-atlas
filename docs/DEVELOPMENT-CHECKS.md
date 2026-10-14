@@ -30,8 +30,8 @@ it; the entries below name that condition per area.
 
 How main reuses a reviewed PR's result, how pre-push and PR CI split the
 lanes, and how browser jobs are sharded belong to the code that does it: the
-headers of `scripts/classify-change.mjs`, `scripts/run-ci-lane.mjs`,
-`scripts/run-playwright-ci.mjs`, `scripts/pr-land.mjs`, and the workflow files
+headers of `scripts/ci/classify-change.mjs`, `scripts/ci/run-ci-lane.mjs`,
+`scripts/ci/run-playwright-ci.mjs`, `scripts/landing/pr-land.mjs`, and the workflow files
 under `.github/workflows/`.
 
 Pre-push validates the pushed commit, refuses a checkout that could mask its
@@ -141,7 +141,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Accessibility rule census
 
-**Run**: `node scripts/measure-a11y.mjs`
+**Run**: `node scripts/design/measure-a11y.mjs`
 **Proves**: An axe-core census over WCAG 2.x A/AA rules, folded by rule, measures current violations before any ratchet baseline changes.
 **Escalate**: none.
 **Fix**: Run this before changing the baseline in `tests/e2e/a11y-ratchet.spec.ts`.
@@ -199,8 +199,8 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Browser allocation and coverage
 
-**Run**: `node --test scripts/run-playwright-ci.test.mjs`
-**Proves**: Files are assigned once, invalid options cannot start tests, and success requires execution results matching the assignment. Reports separate expected, flaky and skipped outcomes; declared skips remain allowed. `node scripts/run-playwright-ci.mjs --help` starts no tests.
+**Run**: `node --test scripts/ci/run-playwright-ci.test.mjs`
+**Proves**: Files are assigned once, invalid options cannot start tests, and success requires execution results matching the assignment. Reports separate expected, flaky and skipped outcomes; declared skips remain allowed. `node scripts/ci/run-playwright-ci.mjs --help` starts no tests.
 **Escalate**: `pnpm test:ci:impact` when command ownership or workflow wiring changes
 **Fix**: repair the allocator or its report verification; timing estimates must never suppress tests.
 
@@ -218,7 +218,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Capability quantifier integrity
 
-**Run**: `node scripts/run-focused-node-test.mjs --test-name-pattern "bounded-evidence omissions" mcp/src/meaning-evaluation.test.mjs`
+**Run**: `node scripts/ci/run-focused-node-test.mjs --test-name-pattern "bounded-evidence omissions" mcp/src/meaning-evaluation.test.mjs`
 **Proves**: Capability quantifier claims never omit their bounding evidence.
 **Escalate**: `pnpm test:mcp:unit`, then source/bundle MCP parity and a four-phase source-hidden field trial
 
@@ -227,14 +227,14 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 **Run**: `pnpm checks:changed`
 **Proves**: The changed tracked and untracked file set maps to first checks and explicit escalation gates.
 **Escalate**: none.
-**Fix**: To add a check, add a rule file under `scripts/lib/check-rules/<area>.mjs` (or a rule to the area file that owns the subject); the advisor loads that directory itself, so no index or other file changes. The `scripts/lib/focused-check-suggestions.mjs` header owns the rule shape and `order`.
+**Fix**: To add a check, add a rule file under `scripts/lib/check-rules/<area>.mjs` (or a rule to the area file that owns the subject); the advisor loads that directory itself, so no index or other file changes. The `scripts/lib/ci/focused-check-suggestions.mjs` header owns the rule shape and `order`.
 
 ### CI impact plan
 
 **Run**: `pnpm test:ci:impact`
 **Proves**: Changes select evidence, including nested specs; tooling tests stay focused while runtime planners remain exhaustive. Type-only imports do not wake runtime tests; source-reading contracts retain them. Main uses verified ancestry; scheduled/manual runs are exhaustive.
 **Escalate**: `pnpm exec vitest run tests/contract/workflow-budgets.contract.test.ts tests/contract/workflow-security.contract.test.ts` when workflow wiring changes
-**Fix**: update `scripts/classify-change.mjs`'s path-to-check rules so the new or moved path is classified instead of falling through as unknown.
+**Fix**: update `scripts/ci/classify-change.mjs`'s path-to-check rules so the new or moved path is classified instead of falling through as unknown.
 
 ### CI preparation step infinite wait
 
@@ -244,7 +244,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Claim-local semantic evidence
 
-**Run**: `node scripts/run-focused-node-test.mjs --test-name-pattern "every selected safe section|mixed README policy boundaries|selected deprecated ability prose|mixed selected instructions|over-bound policy split|line-scoped review unit|ordinary prose overlap" mcp/src/analyze.test.mjs mcp/src/analyze-adversarial.test.mjs mcp/src/meaning-evaluation.test.mjs`
+**Run**: `node scripts/ci/run-focused-node-test.mjs --test-name-pattern "every selected safe section|mixed README policy boundaries|selected deprecated ability prose|mixed selected instructions|over-bound policy split|line-scoped review unit|ordinary prose overlap" mcp/src/analyze.test.mjs mcp/src/analyze-adversarial.test.mjs mcp/src/meaning-evaluation.test.mjs`
 **Proves**: Selected evidence stays claim-local: safe sections share evidence and ordinary prose is not falsely linked.
 **Escalate**: `pnpm test:mcp:unit`, then verify source MCP and replay a fresh field trial
 
@@ -281,7 +281,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### CLI compact bootstrap totals
 
-**Run**: `node scripts/run-focused-node-test.mjs --test-name-pattern "compact import delivery preserves review totals" cli/src/integration.test.mjs`
+**Run**: `node scripts/ci/run-focused-node-test.mjs --test-name-pattern "compact import delivery preserves review totals" cli/src/integration.test.mjs`
 **Proves**: A compact bootstrap receipt keeps candidate and unresolved totals while exit 3, approval-required state, and zero writes remain unchanged.
 **Escalate**: `pnpm integration:cli:repo-analysis`
 
@@ -355,7 +355,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Compact task-claim routing
 
-**Run**: `node scripts/run-focused-node-test.mjs --test-name-pattern "persisted responsibility|task boundaries|claim boundaries" mcp/src/agent-brief-compact.test.mjs mcp/src/integration.test.mjs`
+**Run**: `node scripts/ci/run-focused-node-test.mjs --test-name-pattern "persisted responsibility|task boundaries|claim boundaries" mcp/src/agent-brief-compact.test.mjs mcp/src/integration.test.mjs`
 **Proves**: Compact `agent_brief` honors Definition/Includes/Excludes polarity and refuses conflicts, unsupported claims, and ties.
 **Escalate**: `pnpm test:mcp:unit`, then `pnpm integration:mcp` and a source-hidden replay before a product claim
 
@@ -499,7 +499,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 **Run**: `pnpm test:dogfood:script-refs`
 **Proves**: Help text and package-script bodies' `pnpm` references, including directory-scoped mcp/cli examples, resolve to real scripts, and focused Node test wrappers fail on a 0-match pattern instead of passing
-**Escalate**: none; run the printed direct sibling test for `scripts/lib/test-name-pattern.mjs` or `scripts/lib/pnpm-script-refs.mjs` first when `checks:changed` names one
+**Escalate**: none; run the printed direct sibling test for `scripts/lib/ci/test-name-pattern.mjs` or `scripts/lib/pnpm-script-refs.mjs` first when `checks:changed` names one
 **Fix**: Correct the stale script name or path in the referencing help text or README, or fix the focused-pattern parsing helper it names
 
 ### Dogfood shortcut argument helper
@@ -531,10 +531,10 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Early conflict scan
 
-**Run**: `node --test scripts/conflicts-scan.test.mjs`
+**Run**: `node --test scripts/landing/conflicts-scan.test.mjs`
 **Proves**: `pnpm conflicts:scan` lists the open pull requests (from one `gh pr list` call) and `--match` local branches whose changed files overlap this branch's, trial-merges only those with `git merge-tree`, names the conflicted files this branch changes, separates conflicts that come from the other head lagging `main`, and writes no ref, index or GitHub state.
-**Escalate**: `node --test scripts/bundle-branches.test.mjs` when the shared branch helpers change, or none
-**Fix**: repair `scripts/conflicts-scan.mjs`.
+**Escalate**: `node --test scripts/landing/bundle-branches.test.mjs` when the shared branch helpers change, or none
+**Fix**: repair `scripts/landing/conflicts-scan.mjs`.
 
 ### Exact task-navigation truth
 
@@ -544,7 +544,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### First-pass construction completion
 
-**Run**: `node scripts/run-focused-node-test.mjs --test-name-pattern "unfinished-scope project exclusion|redundant domain edge" mcp/src/construction-lifecycle.test.mjs mcp/src/ontology-engine.test.mjs`
+**Run**: `node scripts/ci/run-focused-node-test.mjs --test-name-pattern "unfinished-scope project exclusion|redundant domain edge" mcp/src/construction-lifecycle.test.mjs mcp/src/ontology-engine.test.mjs`
 **Proves**: An unfinished-scope project stays excluded and a redundant domain edge stays rejected during first-pass construction.
 **Escalate**: none
 
@@ -572,7 +572,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 **Run**: `pnpm test:checks:changed`
 **Proves**: Changed-path recommendations retain their coverage; within one stable-checkout run, an earlier default full contract suite covers later default contract-only invocations, while flags, environment overrides, lifecycle hooks, and extra commands remain separate.
 **Escalate**: none.
-**Fix**: Use the direct `pnpm exec node --test scripts/lib/focused-check-suggestions.test.mjs` or `scripts/suggest-focused-checks.test.mjs` first when printed.
+**Fix**: Use the direct `pnpm exec node --test scripts/lib/ci/focused-check-suggestions.test.mjs` or `scripts/ci/suggest-focused-checks.test.mjs` first when printed.
 
 ### Fresh-repo memory loop smoke
 
@@ -601,7 +601,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Gate yield report
 
-**Run**: `node --test scripts/gate-yield.test.mjs`
+**Run**: `node --test scripts/ci/gate-yield.test.mjs`
 **Proves**: Commands reduce to checks counted per distinct run, `no CI failure` needs 50+ runs, no failed run and 60+ days, a real-shaped artifact zip reaches the cache, and a low quota yields a partial table.
 **Escalate**: `pnpm gates:yield -- --runs=5` when listing, download or cache changed; it costs one REST call per day page, per uncached run's artifact list, and per report download.
 
@@ -654,7 +654,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 **Run**: `pnpm test:i18n:messages`
 **Proves**: Locale routing and the message parts under `messages/<locale>/` stay in parity across locales, and the composites are current.
 **Escalate**: none.
-**Fix**: Add the missing key to the same namespace file in every locale; changes to the validator itself first print `pnpm exec node --test scripts/validate-messages.test.mjs`.
+**Fix**: Add the missing key to the same namespace file in every locale; changes to the validator itself first print `pnpm exec node --test scripts/i18n/validate-messages.test.mjs`.
 
 ### i18n message composition
 
@@ -702,10 +702,10 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Landing several branches together
 
-**Run**: `node --test scripts/bundle-branches.test.mjs`
+**Run**: `node --test scripts/landing/bundle-branches.test.mjs`
 **Proves**: two or more ready branches merge through `/merge` as one integration branch and one `pnpm pr:land`: `pnpm bundle:plan` reports which branches carry work, shared files and trial-merge conflicts without touching a worktree, and `pnpm bundle:prune` removes only component branches `main` provably contains.
 **Escalate**: `pnpm test:pr:land` when the bundle changes how `pnpm pr:land` is called, or none
-**Fix**: repair `scripts/bundle-branches.mjs`.
+**Fix**: repair `scripts/landing/bundle-branches.mjs`.
 
 ### Lint/style
 
@@ -718,8 +718,8 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 **Run**: `pnpm docs:meta`
 **Proves**: Every living document under docs/ carries a kind, status and area that fit its folder, no ontology or hand-versioned key, and pointers (enforced_by, routes, decisions, superseded_by, guide registry) that resolve; a changed contract_version arrives with a decision that cites it. Headings and prose are not checked.
-**Escalate**: `pnpm test:docs:checks` when the kinds in `scripts/lib/doc-types.mjs`, a template or the check itself changes
-**Fix**: Start new documents with `pnpm doc:new`; add the missing key the message names; kinds and areas are listed in `scripts/lib/doc-types.mjs`.
+**Escalate**: `pnpm test:docs:checks` when the kinds in `scripts/lib/docs/doc-types.mjs`, a template or the check itself changes
+**Fix**: Start new documents with `pnpm doc:new`; add the missing key the message names; kinds and areas are listed in `scripts/lib/docs/doc-types.mjs`.
 
 ### Local pre-tag release preflight
 
@@ -757,7 +757,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Map edge-crossing and overlap measurement
 
-**Run**: `node scripts/measure-graph-readability.mjs`
+**Run**: `node scripts/design/measure-graph-readability.mjs`
 **Proves**: Edge crossings and node overlap on the map, measured against a built static export, stay within range; reports "not measurable" rather than a false perfect score when density folding hides it.
 **Escalate**: none.
 
@@ -792,7 +792,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 **Run**: `pnpm test:mcp:bundle`
 **Proves**: The bundle ships every declared server file with the one typed module stripped, the image's ownership label repeats the registry name, and the release uploads the exact artifact the registry entry points at.
 **Escalate**: `pnpm mcp:build-bundle` when the server's files or dependencies changed, since it boots the unpacked artifact
-**Fix**: Rebuild the bundle, or align `mcp/Dockerfile` and `scripts/lib/mcp-bundle.mjs` on one registry name
+**Fix**: Rebuild the bundle, or align `mcp/Dockerfile` and `scripts/lib/packaging/mcp-bundle.mjs` on one registry name
 
 ### MCP enum/argument suggestions
 
@@ -848,7 +848,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 **Run**: `pnpm mcp:registry:check`
 **Proves**: The image's ownership label still repeats the registry name and the artifact URL rule holds, before any release exists to publish.
 **Escalate**: `pnpm mcp:registry -- --tag=<published tag>` when an entry is actually going out; it validates the document the registry would reject
-**Fix**: Align `mcp/Dockerfile` and `scripts/lib/mcp-bundle.mjs` on one registry name, or shorten the registry description below the schema's 100 characters
+**Fix**: Align `mcp/Dockerfile` and `scripts/lib/packaging/mcp-bundle.mjs` on one registry name, or shorten the registry description below the schema's 100 characters
 
 ### MCP vault read tools
 
@@ -893,7 +893,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 **Run**: `pnpm test:pr:land`
 **Proves**: against a fake GitHub, queued pull requests merge behind one train CI run, conflicts eject one component, a red train bisects, the fast path needs all five rules, a `feat`, `fix`, `perf` or `design` pull request needs a change record or a `No change record:` reason, and `--plan` writes nothing; a real Git fixture keeps original commits reachable after merging.
 **Escalate**: `pnpm test:claude:hooks` when the landing guard changes, or `pnpm exec vitest run tests/contract/workflow-security.contract.test.ts` when a workflow trigger does
-**Fix**: repair `scripts/pr-land.mjs` (I/O) or `scripts/lib/landing-train.mjs` (decisions).
+**Fix**: repair `scripts/landing/pr-land.mjs` (I/O) or `scripts/lib/landing/landing-train.mjs` (decisions).
 
 ### Moved documents
 
@@ -1051,7 +1051,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Semantic source path case
 
-**Run**: `node scripts/run-focused-node-test.mjs --test-name-pattern "exact-case source selection|lowercase root readme|lowercase workspace readme|root readme case resolution" mcp/src/analyze.test.mjs`
+**Run**: `node scripts/ci/run-focused-node-test.mjs --test-name-pattern "exact-case source selection|lowercase root readme|lowercase workspace readme|root readme case resolution" mcp/src/analyze.test.mjs`
 **Proves**: Source path selection emits exact root/workspace bytes and rejects ambiguous case folds, non-files, and path escapes.
 **Escalate**: none
 
@@ -1064,7 +1064,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Small vault perf smoke
 
-**Run**: `node scripts/perf-vault.mjs 10`
+**Run**: `node scripts/perf/perf-vault.mjs 10`
 **Proves**: A small vault's walk/read/parse performance is within an acceptable range.
 **Escalate**: none.
 
@@ -1084,7 +1084,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Source-checkout MCP dependency preflight
 
-**Run**: `node scripts/lib/check-mcp-source-dependencies.mjs`
+**Run**: `node scripts/lib/dogfood-walk/check-mcp-source-dependencies.mjs`
 **Proves**: The MCP runtime dependency inventory is non-empty, every declaration is exactly pinned, and each installed version matches `mcp/package.json`, including pnpm-linked installations.
 **Escalate**: `pnpm test:dogfood:script-refs` when the command guard changes; `pnpm test:cli:lib` when its shared resolver changes
 **Fix**: Run `pnpm --dir mcp install --frozen-lockfile` (a root install also does this outside CI); nothing installs dependencies at run time.
@@ -1112,7 +1112,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Text and data-mark contrast measurement
 
-**Run**: `node scripts/measure-contrast.mjs`
+**Run**: `node scripts/design/measure-contrast.mjs`
 **Proves**: WCAG 1.4.3 text contrast and 1.4.11 adjacent data-mark contrast, measured over the rendered DOM with alpha compositing resolved, against a built static export.
 **Escalate**: none.
 

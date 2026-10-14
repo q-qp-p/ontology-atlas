@@ -82,7 +82,7 @@ the trial-merge conflicts. Select only branches you created.
   `messages/<locale>/<Namespace>.json`, resolve generated docs-vault JSON with
   `pnpm docs-vault:resolve-conflicts -- --dry-run` and then its write command,
   and recount a ratchet once on the merged tree. Read every file the plan
-  listed as shared, run `node scripts/classify-change.mjs --base=origin/main`
+  listed as shared, run `node scripts/ci/classify-change.mjs --base=origin/main`
   (`gates=true` means also run `pnpm lint`) and `pnpm checks:changed -- --run`, push, and open one draft whose body lists
   each component (branch @ short sha, and its pull request number) and a
   `### Conflicts` section naming each shared file and how it was resolved.

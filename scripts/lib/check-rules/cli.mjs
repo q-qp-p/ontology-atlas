@@ -11,7 +11,7 @@ export const rules = [
     order: 1120,
     command: 'pnpm test:mcp:maintenance',
     reason: 'maintenance_plan queue or formatter behavior changed',
-    matches: [/^cli\/src\/commands\/maintenance\.mjs$/, /^scripts\/dogfood-status\.(?:mjs|test\.mjs)$/],
+    matches: [/^cli\/src\/commands\/maintenance\.mjs$/, /^scripts\/dogfood\/dogfood-status\.(?:mjs|test\.mjs)$/],
   },
   {
     order: 1140,

@@ -213,7 +213,7 @@ CLI-only checks:
 node cli/src/index.mjs agent-setup docs/ontology --json
 node cli/src/index.mjs match-nodes docs/ontology --kind capability --min-degree 2 --sort degree --limit 8 --json
 node cli/src/index.mjs agent-brief docs/ontology --verify-fallbacks --json --exit-zero --fallback-timeout-ms 15000 --fallback-slow-ms 5000 --fallback-concurrency 4
-node scripts/perf-graph.mjs --json --check --n=1000
+node scripts/perf/perf-graph.mjs --json --check --n=1000
 ```
 
 `agent-setup` reports `operation: "agent_setup"`, `sideEffect: false`, and the

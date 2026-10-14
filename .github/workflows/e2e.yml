@@ -68,7 +68,7 @@ jobs:
           # A merge group has no base branch ref, and its two SHAs are minted by
           # GitHub, so they are data rather than a string anyone can choose.
           MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
-        run: node scripts/classify-change.mjs --event="$EVENT_NAME" --base="${MERGE_GROUP_BASE_SHA:-origin/$BASE_REF}"
+        run: node scripts/ci/classify-change.mjs --event="$EVENT_NAME" --base="${MERGE_GROUP_BASE_SHA:-origin/$BASE_REF}"
 
   build:
     name: Build browser artifact
@@ -148,7 +148,7 @@ jobs:
 
       - name: Run static-export evidence
         if: env.ACTIVE == 'true'
-        run: node scripts/run-ci-lane.mjs --lane=static
+        run: node scripts/ci/run-ci-lane.mjs --lane=static
         env:
           CI: true
 
@@ -209,7 +209,7 @@ jobs:
 
       - name: Run web-surface evidence
         if: env.ACTIVE == 'true'
-        run: node scripts/run-ci-lane.mjs --lane=web
+        run: node scripts/ci/run-ci-lane.mjs --lane=web
         env:
           CI: true
 
@@ -279,7 +279,7 @@ jobs:
 
       - name: Run browser evidence (shard ${{ matrix.shard }}/5)
         if: env.ACTIVE == 'true'
-        run: node scripts/run-ci-lane.mjs --lane=e2e --shard=${{ matrix.shard }}/5
+        run: node scripts/ci/run-ci-lane.mjs --lane=e2e --shard=${{ matrix.shard }}/5
         env:
           CI: true
 

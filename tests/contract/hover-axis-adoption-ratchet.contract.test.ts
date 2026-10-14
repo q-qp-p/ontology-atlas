@@ -3,7 +3,7 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { stripComments } from "../../scripts/lib/static-surface-census.mjs";
+import { stripComments } from "../../scripts/lib/design/static-surface-census.mjs";
 import { judgeRatchet } from "./lib/ratchet-base";
 
 /**

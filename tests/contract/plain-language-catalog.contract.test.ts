@@ -5,7 +5,7 @@ import { join } from 'node:path';
 
 import en from '../../messages/en.json';
 import ko from '../../messages/ko.json';
-import { column } from '../../scripts/lib/locale-vocabulary.mjs';
+import { column } from '../../scripts/lib/i18n/locale-vocabulary.mjs';
 import { GLOSSARY_TERMS, type GlossaryTerm } from '../../src/shared/config/term-glossary';
 
 /**

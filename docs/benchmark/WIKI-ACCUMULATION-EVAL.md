@@ -71,8 +71,8 @@ a wrong source, attach a new claim to the old citation, assert that import order
 wins, and omit a revision entirely. They check that these failures cannot produce
 a green report. The fixtures live in
 `tests/fixtures/wiki-accumulation-cases.mjs`; the runner lives in
-`scripts/evaluate-wiki-accumulation.mjs`; the rubric lives in
-`scripts/lib/wiki-accumulation-eval.mjs`.
+`scripts/benchmark/evaluate-wiki-accumulation.mjs`; the rubric lives in
+`scripts/lib/benchmark/wiki-accumulation-eval.mjs`.
 
 This extends the earlier
 [sequential accumulation probe](FINDINGS-2026-09-06-wiki-accumulation-probe.md)

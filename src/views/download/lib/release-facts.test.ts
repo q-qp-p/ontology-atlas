@@ -9,7 +9,7 @@ import {
   RELEASE_VERSION,
   buildDmgName,
 } from "./release-facts";
-import { RELEASE_ARTIFACT_STEPS } from "../../../../scripts/build-macos-release-artifact.mjs";
+import { RELEASE_ARTIFACT_STEPS } from "../../../../scripts/desktop-release/build-macos-release-artifact.mjs";
 
 function readJson(relativePath: string): Record<string, unknown> {
   return JSON.parse(readFileSync(join(process.cwd(), relativePath), "utf8"));

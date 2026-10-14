@@ -2,7 +2,7 @@ import type { NextConfig } from 'next';
 import { PHASE_DEVELOPMENT_SERVER } from 'next/constants';
 import createNextIntlPlugin from 'next-intl/plugin';
 
-import { watchMessages } from './scripts/build-messages.mjs';
+import { watchMessages } from './scripts/i18n/build-messages.mjs';
 
 import packageJson from './package.json' with { type: 'json' };
 
@@ -55,7 +55,7 @@ const nextConfig: NextConfig = {
 
 /*
  * `messages/<locale>.json` is composed from `messages/<locale>/<Namespace>.json`
- * (`scripts/build-messages.mjs`). `predev` composes it once; this keeps it current
+ * (`scripts/i18n/build-messages.mjs`). `predev` composes it once; this keeps it current
  * while the dev server runs, so an edited part reaches the screen like any source
  * file. One watcher per process, dev server only.
  */

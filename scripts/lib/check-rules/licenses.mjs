@@ -6,14 +6,14 @@ const SHIPPED_TREES = [
 ];
 
 const POLICY = [
-  /^scripts\/check-licenses\.mjs$/,
-  /^scripts\/lib\/(?:license-policy|third-party-inventory|attribution-marker)(?:\.test)?\.mjs$/,
+  /^scripts\/licenses\/check-licenses\.mjs$/,
+  /^scripts\/lib\/licenses\/(?:license-policy|third-party-inventory|attribution-marker)(?:\.test)?\.mjs$/,
   /^scripts\/data\/license-exceptions\.json$/,
 ];
 
 const GENERATOR = [
-  /^scripts\/build-notice(?:\.test)?\.mjs$/,
-  /^scripts\/lib\/(?:third-party-inventory|third-party-licenses|attribution-marker)\.mjs$/,
+  /^scripts\/licenses\/build-notice(?:\.test)?\.mjs$/,
+  /^scripts\/lib\/licenses\/(?:third-party-inventory|third-party-licenses|attribution-marker)\.mjs$/,
   /^NOTICE\.md$/,
   /^public\/third-party-licenses\.txt$/,
 ];
@@ -35,13 +35,13 @@ export const rules = [
 
 export const directTests = {
   script: [
-    ['scripts/check-licenses.mjs', 'scripts/lib/license-policy.test.mjs'],
-    ['scripts/lib/license-policy.mjs', 'scripts/lib/license-policy.test.mjs'],
-    ['scripts/lib/license-policy.test.mjs', 'scripts/lib/license-policy.test.mjs'],
-    ['scripts/lib/attribution-marker.mjs', 'scripts/lib/license-policy.test.mjs'],
-    ['scripts/build-notice.mjs', 'scripts/build-notice.test.mjs'],
-    ['scripts/build-notice.test.mjs', 'scripts/build-notice.test.mjs'],
-    ['scripts/lib/third-party-licenses.mjs', 'scripts/build-notice.test.mjs'],
-    ['scripts/lib/third-party-inventory.mjs', 'scripts/build-notice.test.mjs'],
+    ['scripts/licenses/check-licenses.mjs', 'scripts/lib/licenses/license-policy.test.mjs'],
+    ['scripts/lib/licenses/license-policy.mjs', 'scripts/lib/licenses/license-policy.test.mjs'],
+    ['scripts/lib/licenses/license-policy.test.mjs', 'scripts/lib/licenses/license-policy.test.mjs'],
+    ['scripts/lib/licenses/attribution-marker.mjs', 'scripts/lib/licenses/license-policy.test.mjs'],
+    ['scripts/licenses/build-notice.mjs', 'scripts/licenses/build-notice.test.mjs'],
+    ['scripts/licenses/build-notice.test.mjs', 'scripts/licenses/build-notice.test.mjs'],
+    ['scripts/lib/licenses/third-party-licenses.mjs', 'scripts/licenses/build-notice.test.mjs'],
+    ['scripts/lib/licenses/third-party-inventory.mjs', 'scripts/licenses/build-notice.test.mjs'],
   ],
 };

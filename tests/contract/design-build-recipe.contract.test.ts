@@ -45,8 +45,8 @@ describe.each(['.claude', '.agents'])('design-build references in %s', (tree) =>
 
   /** The instruments the recipe tells you to run. */
   const PRESCRIBED_INSTRUMENTS = [
-    'scripts/measure-graph-readability.mjs',
-    'scripts/measure-contrast.mjs',
+    'scripts/design/measure-graph-readability.mjs',
+    'scripts/design/measure-contrast.mjs',
     `${tree}/skills/ui-proof/SKILL.md`,
     `${tree}/skills/ui-proof/SKILL.md`,
     `${tree}/skills/ui-proof/SKILL.md`,

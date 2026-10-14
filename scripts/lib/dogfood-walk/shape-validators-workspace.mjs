@@ -1,7 +1,7 @@
 // Response-shape validators for the dogfood MCP walk: matches/orphans/path,
 // workspace_brief, health, and the cross-tool consistency + next-action
 // helpers the gate uses to summarize dogfood-walk health.
-// Split out of scripts/dogfood-mcp-walk.mjs (structural decomposition, logic unchanged).
+// Split out of scripts/dogfood/dogfood-mcp-walk.mjs (structural decomposition, logic unchanged).
 import { compileSummaryFailure } from "../../../mcp/scripts/verify/checks/compile.mjs";
 import { formatCount } from "../../../mcp/scripts/verify/output.mjs";
 import { listConceptsFailure } from "../../../mcp/scripts/verify/checks/concept-reads.mjs";

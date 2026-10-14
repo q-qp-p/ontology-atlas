@@ -4,7 +4,7 @@ import {
   SPRING_STABILITY_LIMIT,
   stepSpring,
 } from "@/widgets/ontology-map/engine/spring";
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * Spring stability margin: semi-implicit Euler diverges as `w*dt` reaches 1.0, and a NaN camera kills

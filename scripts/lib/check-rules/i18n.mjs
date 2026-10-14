@@ -35,7 +35,7 @@ export const rules = [
     matches: [
       MESSAGE_CATALOGUE,
       /^src\/i18n\/.*\.ts$/,
-      /^scripts\/(?:validate-messages\.test|build-messages(?:\.test)?)\.mjs$/,
+      /^scripts\/i18n\/(?:validate-messages\.test|build-messages(?:\.test)?)\.mjs$/,
     ],
   },
   {
@@ -56,6 +56,6 @@ export const rules = [
 
 export const directTests = {
   script: [
-    ['scripts/validate-messages.test.mjs', 'scripts/validate-messages.test.mjs'],
+    ['scripts/i18n/validate-messages.test.mjs', 'scripts/i18n/validate-messages.test.mjs'],
   ],
 };

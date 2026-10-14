@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
-import { FULL_LANE_COMMANDS } from "../../scripts/classify-change.mjs";
-import { suggestFocusedChecks } from "../../scripts/lib/focused-check-suggestions.mjs";
+import { FULL_LANE_COMMANDS } from "../../scripts/ci/classify-change.mjs";
+import { suggestFocusedChecks } from "../../scripts/lib/ci/focused-check-suggestions.mjs";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
@@ -64,7 +64,7 @@ describe("node:test reachability", () => {
   });
 
   it("the workflow actually invokes the registry counted as a caller", () => {
-    expect(workflows).toContain("node scripts/run-ci-lane.mjs --lane=gates");
+    expect(workflows).toContain("node scripts/ci/run-ci-lane.mjs --lane=gates");
   });
 
   it("runs every node:test suite somewhere, through the full or affected plan", () => {

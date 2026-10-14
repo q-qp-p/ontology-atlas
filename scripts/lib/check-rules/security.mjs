@@ -54,7 +54,7 @@ export const rules = [
       /^\.claude\/settings\.json$/,
       /^(?:\.mcp\.json|\.codex\/(?:config\.toml|hooks\.json))$/,
       /^\.(?:claude|codex)\/hooks\/.+\.sh$/,
-      /^scripts\/(?:build-updater-manifest|repack-macos-updater-archive|stage-hosted-updater-manifest|sign-macos-app|check-macos-release-secrets|build-macos-release-artifact)\.mjs$/,
+      /^scripts\/(?:desktop-release\/(?:build-updater-manifest|repack-macos-updater-archive|check-macos-release-secrets|build-macos-release-artifact)|download\/stage-hosted-updater-manifest|desktop\/sign-macos-app)\.mjs$/,
     ],
   },
   {

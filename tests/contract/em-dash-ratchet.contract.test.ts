@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { readLedgerSource } from '../../scripts/lib/record-ledgers.mjs';
+import { readLedgerSource } from '../../scripts/lib/records/record-ledgers.mjs';
 
 import { describe, expect, it } from "vitest";
 

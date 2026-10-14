@@ -38,7 +38,7 @@ import {
   formatNoTestMatchMessage,
   formatTestFilterSuffix,
   resolveTestNamePattern,
-} from "../../scripts/lib/test-name-pattern.mjs";
+} from "../../scripts/lib/ci/test-name-pattern.mjs";
 import { runJsonRpcProcess } from "../../scripts/lib/mcp-test-rpc.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

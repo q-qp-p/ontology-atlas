@@ -6,7 +6,7 @@ export const rules = [
     command: 'pnpm test:meaning-corpus',
     reason: 'business meaning corpus evaluator or its fixtures changed',
     matches: [
-      /^scripts\/evaluate-meaning-corpus(?:\.test)?\.mjs$/,
+      /^scripts\/benchmark\/evaluate-meaning-corpus(?:\.test)?\.mjs$/,
       /^tests\/fixtures\/meaning-corpus\//,
     ],
   },
@@ -14,21 +14,21 @@ export const rules = [
     order: 290,
     command: 'pnpm test:vault:validate',
     reason: 'vault validator script changed',
-    matches: [/^scripts\/validate-vault(?:-script)?\.test\.mjs$/, /^scripts\/validate-vault\.mjs$/],
+    matches: [/^scripts\/vault\/validate-vault(?:-script)?\.test\.mjs$/, /^scripts\/vault\/validate-vault\.mjs$/],
   },
   {
     order: 300,
     command: 'pnpm test:vault:audit',
     reason: 'vault path audit script changed',
-    matches: [/^scripts\/audit-vault-paths\.(?:mjs|test\.mjs)$/],
+    matches: [/^scripts\/vault\/audit-vault-paths\.(?:mjs|test\.mjs)$/],
   },
   {
     order: 390,
     command: 'pnpm test:vault:migrate',
     reason: 'vault migration behavior changed',
     matches: [
-      /^scripts\/migrate-vault\.(?:mjs|test\.mjs)$/,
-      /^scripts\/migrate-node-uids\.(?:mjs|test\.mjs)$/,
+      /^scripts\/vault\/migrate-vault\.(?:mjs|test\.mjs)$/,
+      /^scripts\/vault\/migrate-node-uids\.(?:mjs|test\.mjs)$/,
       /^scripts\/migrations\/[^/]+\.(?:mjs|test\.mjs)$/,
     ],
   },
@@ -37,7 +37,7 @@ export const rules = [
     command: 'pnpm vault:migrate --list',
     reason: 'vault migration inventory or runner changed',
     matches: [
-      /^scripts\/migrate-vault\.mjs$/,
+      /^scripts\/vault\/migrate-vault\.mjs$/,
       /^scripts\/migrations\/(?:README\.md|[^/]+\.mjs)$/,
     ],
   },
@@ -49,7 +49,7 @@ export const rules = [
      */
     command: 'pnpm vault:validate',
     reason: 'dogfood ontology or MCP/CLI dogfood surface changed',
-    matches: [/^docs\/ontology\//, /^mcp\//, /^cli\//, /^scripts\/dogfood/],
+    matches: [/^docs\/ontology\//, /^mcp\//, /^cli\//, /^scripts\/dogfood\/dogfood/],
   },
   {
     order: 1320,
@@ -66,7 +66,7 @@ export const rules = [
     reason: 'the vault feeds the gateway evidence specimen (file shown verbatim + node count)',
     matches: [
       /^docs\/ontology\//,
-      /^scripts\/generate-evidence-specimen\.mjs$/,
+      /^scripts\/download\/generate-evidence-specimen\.mjs$/,
       /^src\/views\/download\/model\/evidence-specimen\.generated\.ts$/,
     ],
   },
@@ -84,9 +84,9 @@ export const rules = [
 
 export const directTests = {
   script: [
-    ['scripts/audit-vault-paths.mjs', 'scripts/audit-vault-paths.test.mjs'],
-    ['scripts/audit-vault-paths.test.mjs', 'scripts/audit-vault-paths.test.mjs'],
-    ['scripts/validate-vault.mjs', 'scripts/validate-vault-script.test.mjs'],
-    ['scripts/validate-vault-script.test.mjs', 'scripts/validate-vault-script.test.mjs'],
+    ['scripts/vault/audit-vault-paths.mjs', 'scripts/vault/audit-vault-paths.test.mjs'],
+    ['scripts/vault/audit-vault-paths.test.mjs', 'scripts/vault/audit-vault-paths.test.mjs'],
+    ['scripts/vault/validate-vault.mjs', 'scripts/vault/validate-vault-script.test.mjs'],
+    ['scripts/vault/validate-vault-script.test.mjs', 'scripts/vault/validate-vault-script.test.mjs'],
   ],
 };

@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 /** Ignored outputs every worktree materializes from its authored inputs, in this order. */
-export const MATERIALIZERS = Object.freeze(['scripts/build-docs-vault.mjs', 'scripts/build-messages.mjs']);
+export const MATERIALIZERS = Object.freeze(['scripts/docs-vault/build-docs-vault.mjs', 'scripts/i18n/build-messages.mjs']);
 
 /**
  * `mcp/` is a separate package with its own lockfile, so a root install left it empty in every

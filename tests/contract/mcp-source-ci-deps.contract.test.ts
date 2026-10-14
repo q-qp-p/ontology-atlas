@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { buildImpactPlan, FULL_LANE_COMMANDS } from "../../scripts/classify-change.mjs";
+import { buildImpactPlan, FULL_LANE_COMMANDS } from "../../scripts/ci/classify-change.mjs";
 
 const ROOT = process.cwd();
 const read = (relativePath: string) => readFileSync(join(ROOT, relativePath), "utf8");
@@ -34,7 +34,7 @@ describe("Unit CI can launch the source MCP used by contract tests", () => {
     for (const lane of lanes) {
       const job = jobBlock(workflow, lane);
       const installAt = job.indexOf("pnpm --dir mcp install --frozen-lockfile");
-      const runAt = job.indexOf(`node scripts/run-ci-lane.mjs --lane=${lane}`);
+      const runAt = job.indexOf(`node scripts/ci/run-ci-lane.mjs --lane=${lane}`);
       expect(installAt, `${lane} lost its conditional MCP install`).toBeGreaterThan(-1);
       expect(runAt, `${lane} lost its executor`).toBeGreaterThan(installAt);
     }
@@ -44,7 +44,7 @@ describe("Unit CI can launch the source MCP used by contract tests", () => {
   it("installs the MCP lockfile before the full Unit + Contract suite", () => {
     const unit = jobBlock(read(".github/workflows/checks.yml"), "unit");
     const installAt = unit.indexOf("pnpm --dir mcp install --frozen-lockfile");
-    const testAt = unit.indexOf("node scripts/run-ci-lane.mjs --lane=unit");
+    const testAt = unit.indexOf("node scripts/ci/run-ci-lane.mjs --lane=unit");
     const contractPlan = buildImpactPlan({
       files: ["src/widgets/docs-vault/ui/DocsVaultEditor.tsx"],
     });

@@ -209,7 +209,7 @@ and Escape. The record is in `docs/DECISIONS.md` (one list).
 - **The catalogue is a committed file**, `src/shared/config/mcp-catalogue.generated.ts`,
   written by `pnpm mcp:catalogue` from the official MCP Registry (whose metadata is
   CC0-1.0) plus vendor pages a person read on a stated date. **Nothing is fetched while
-  the app runs** — the same rule `scripts/build-acp-registry.mjs` already follows. It
+  the app runs** — the same rule `scripts/registry-snapshots/build-acp-registry.mjs` already follows. It
   carries no download count, no ranking and no "recommended", and the screen states its
   size, its capture date, that Atlas has audited none of it, and that *By hand* reaches
   everything it does not list.

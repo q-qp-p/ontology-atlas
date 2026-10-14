@@ -1,6 +1,6 @@
 
 import { describe, expect, it } from "vitest";
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * The caps micro-label — `font-mono` + `uppercase` + `--tracking-caps-*` — is a Latin

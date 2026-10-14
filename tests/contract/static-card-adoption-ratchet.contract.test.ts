@@ -3,11 +3,11 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { censusStaticSurfaces, isHandCard } from "../../scripts/lib/static-surface-census.mjs";
+import { censusStaticSurfaces, isHandCard } from "../../scripts/lib/design/static-surface-census.mjs";
 
 /**
  * Hand-written box insets cannot grow. Width-conditional insets (`sm:px-5`) count as hand insets too.
- * The scanner is the single `scripts/lib/static-surface-census.mjs`.
+ * The scanner is the single `scripts/lib/design/static-surface-census.mjs`.
  */
 
 const ROOT = process.cwd();

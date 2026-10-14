@@ -30,7 +30,7 @@ Baseline `b3ef671a3`. Probe captures (scratch, not committed):
   the specimen card (`:719`); agents types the agent's request a character at a time (`AcpChatScene.tsx:117-121`).
 - The closing band holds the only full SHA-256 and verify command (`DownloadPage.tsx:939-961`); the facts strip shows a
   truncated hash (`:439-443`). Each release file is published with a `.sha256` sibling
-  (`.github/workflows/release-macos.yml:605-610`, verified by `scripts/check-macos-download-release.mjs:290-296`);
+  (`.github/workflows/release-macos.yml:605-610`, verified by `scripts/download/check-macos-download-release.mjs:290-296`);
   `docs/guide/trust.md:28-30` states signing but no verify command.
 - The conduction figure reads the specimen module (`model/conduction-cast.ts:1`, `:39`, `:50-51`, `:58`), so the generator
   and its gate (`.githooks/pre-push:192`, `scripts/lib/check-rules/vault.mjs:77-85`) keep a consumer. It already pauses
@@ -124,10 +124,10 @@ the StageMap case of `wheel-intent.contract.test.ts:68`, the map frame of `downl
 gateway part of `map-label-collision.spec.ts`. Kept: the specimen generator, `gateway:specimen:check`, its lane and rule;
 the fields only the card read (`frontmatter`, `omittedLines`, `file`, `url`, `vaultNodeCount`, `facts.kind`,
 `facts.domain`) go with `evidence-specimen.locales.test.ts`. Re-aimed: hosted-check needles
-(`scripts/check-hosted-download-surface.mjs:289-290`) to `download.screens.title` until slice 2 adds its titles; its `:301`
+(`scripts/download/check-hosted-download-surface.mjs:289-290`) to `download.screens.title` until slice 2 adds its titles; its `:301`
 needle `primaryCtaPublished`, rendered today only by the closing band, comes from the hero link of #2420;
-`scripts/desktop-smoke.mjs:88-93`, `:153-157`; the `trustVerifyCommand` checks (`check-desktop-readiness.mjs:986`,
-`validate-messages.test.mjs:127`, `check-translation-coverage.mjs:85-86`, `lib/locale-vocabulary.mjs:103-104`,
+`scripts/desktop/desktop-smoke.mjs:88-93`, `:153-157`; the `trustVerifyCommand` checks (`check-desktop-readiness.mjs:986`,
+`validate-messages.test.mjs:127`, `check-translation-coverage.mjs:85-86`, `lib/i18n/locale-vocabulary.mjs:103-104`,
 `desktop-smoke.test.mjs:167`); `download-gateway-grid.spec.ts:561-606` opens `?hero=three&e2e=1`;
 `docs/features/download.md:32-37`, `:46-47`; `docs/guide/trust.md` gains both verify commands and the release-path sentences.
 

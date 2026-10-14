@@ -1,5 +1,5 @@
 /**
- * Colour-gate exemption (`ALLOWLIST` in `scripts/check-no-raw-color.mjs`): the vignette's
+ * Colour-gate exemption (`ALLOWLIST` in `scripts/design/check-no-raw-color.mjs`): the vignette's
  * `rgba(3,3,4,...)` feeds `CanvasGradient.addColorStop()`, which cannot resolve `var(--...)`.
  * Do not add colours here. The vignette keeps a transparent centre so grid and dust show through.
  */

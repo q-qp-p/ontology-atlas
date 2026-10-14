@@ -701,7 +701,7 @@ injection." Implementations MUST NOT claim or imply the stronger meaning.
   duplicate primary/merged claims, defaults to dry-run, and refuses dirty
   Markdown in git vaults unless the owner explicitly passes `--force`.
 - **Future breaking changes require a new major version and a migration
-  path.** This repository's `scripts/migrate-vault.mjs` (invoked as
+  path.** This repository's `scripts/vault/migrate-vault.mjs` (invoked as
   `pnpm vault:migrate`) is the reference migration mechanism: it lists
   registered migrations (`--list`), defaults to a dry-run, and only writes
   to disk when the caller passes `--write` explicitly. Any future breaking

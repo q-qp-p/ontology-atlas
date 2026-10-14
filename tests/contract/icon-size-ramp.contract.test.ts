@@ -4,7 +4,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { ICON_SIZE } from '../../src/shared/ui/tokens/icon-size';
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * Content icon sizes are a numeric JSX prop that value lints cannot see. Runtime-variable icons and

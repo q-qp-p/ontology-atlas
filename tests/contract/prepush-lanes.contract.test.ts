@@ -3,7 +3,7 @@ import { readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { FULL_LANE_COMMANDS } from "../../scripts/classify-change.mjs";
+import { FULL_LANE_COMMANDS } from "../../scripts/ci/classify-change.mjs";
 
 /**
  * The pre-push hook is a **fast, path-scoped mirror of CI** — this locks the four
@@ -78,9 +78,9 @@ describe("pre-push 훅 — 빠른 CI 거울", () => {
   it("성능 시험은 훅에서 뺀다 — 바쁜 기계에서 잰 비율은 뜻이 없다", () => {
     const unitLane = executable.split("\n").find((line) => /lane unit /.test(line)) ?? "";
     expect(unitLane, "unit 레인을 못 찾았다 — 이 시험이 헛돈다").not.toBe("");
-    // The planner's emitted command excludes `*.perf.test.*`; `scripts/prepush.test.mjs`
+    // The planner's emitted command excludes `*.perf.test.*`; `scripts/ci/prepush.test.mjs`
     // proves that on its output, so only the hook's use of the planner is pinned here.
-    expect(executable).toContain('node scripts/prepush-unit-plan.mjs');
+    expect(executable).toContain('node scripts/ci/prepush-unit-plan.mjs');
 
     // CI must still run them; the exclusion is local-only.
     const ci = readFileSync(path.join(ROOT, ".github/workflows/checks.yml"), "utf8");
@@ -109,8 +109,8 @@ describe("pre-push 훅 — 빠른 CI 거울", () => {
     // The unit lane is selected by Vitest's module graph from the same three-dot
     // base the lane filters use. Running all 759 files to judge a leaf change is
     // what made this hook 367 s for a one-file diff.
-    // `--changed=<merge base>` in the emitted command is proved by `scripts/prepush.test.mjs`.
-    const planner = readFileSync(path.join(ROOT, 'scripts/prepush-unit-plan.mjs'), 'utf8');
+    // `--changed=<merge base>` in the emitted command is proved by `scripts/ci/prepush.test.mjs`.
+    const planner = readFileSync(path.join(ROOT, 'scripts/ci/prepush-unit-plan.mjs'), 'utf8');
     expect(planner).not.toMatch(/--maxWorkers|--testTimeout/);
     expect(executable, "unit 레인의 기준이 3점 병합 기점이 아니다").toMatch(
       /merge-base "\$BASE_REF" HEAD/,
@@ -175,7 +175,7 @@ describe("pre-push 훅 — 빠른 CI 거울", () => {
       app: /^src\/|^app\//,
       docs: /^docs\/|^[A-Z0-9_-]+\.md$|^\.claude\/|^\.agents\//,
       mcpCli: /^mcp\/|^cli\//,
-      messages: /^messages\/|^scripts\/validate-messages/,
+      messages: /^messages\/|^scripts\/i18n\/validate-messages/,
     };
     /*
      * Each pattern must appear in the hook — otherwise this test measures its own

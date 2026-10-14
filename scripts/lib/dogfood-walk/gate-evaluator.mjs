@@ -1,6 +1,6 @@
 // Evaluates a dogfood MCP walk response set against the expected shapes and
 // produces the ordered list of gate failures (empty = pass).
-// Split out of scripts/dogfood-mcp-walk.mjs (structural decomposition, logic unchanged).
+// Split out of scripts/dogfood/dogfood-mcp-walk.mjs (structural decomposition, logic unchanged).
 import {
   analyzeRepoStructureFailure,
   inferImportsFailure,

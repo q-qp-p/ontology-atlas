@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { measureReadability } from "../../scripts/lib/graph-readability.mjs";
+import { measureReadability } from "../../scripts/lib/design/graph-readability.mjs";
 
 /**
  * **Probes** for the graph readability instrument.
@@ -162,7 +162,7 @@ describe("노드 겹침 탐지", () => {
 });
 
 describe("계기가 스스로를 설명한다", () => {
-  const SOURCE = readFileSync(join(process.cwd(), "scripts/lib/graph-readability.mjs"), "utf8");
+  const SOURCE = readFileSync(join(process.cwd(), "scripts/lib/design/graph-readability.mjs"), "utf8");
 
   it("무엇을 일부러 안 재는지 근거와 함께 적어 둔다", () => {
     // What stops the next person returning with "let us measure angular resolution

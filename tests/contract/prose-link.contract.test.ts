@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 import { classNameOf, readClassSource, stringsOf } from './lib/jsx-class-source';
 
 /**

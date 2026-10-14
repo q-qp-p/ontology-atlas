@@ -55,7 +55,7 @@ keep real folders.
 1. **Script what source can answer.** A check that code, Git or a rendered page
    can answer is a script: `scripts/<name>.mjs` with a node test, a `pnpm`
    entry, a row in README's command table and a CI lane in
-   `scripts/classify-change.mjs`. The skill names the command and how to judge
+   `scripts/ci/classify-change.mjs`. The skill names the command and how to judge
    its output; it never carries a probe or a recipe for the agent to retype.
 2. **Name the moment.** One or two plain words for when it is used (`ui-build`,
    `ui-proof`, `land`), no product, vendor or person names. The description

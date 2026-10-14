@@ -34,7 +34,7 @@ export default defineConfig({
      */
     env: { NEXT_PUBLIC_RELEASE_VERSION: packageJson.version },
     // Composes messages/<locale>.json from its parts before any test imports it.
-    globalSetup: ['./scripts/build-messages.mjs'],
+    globalSetup: ['./scripts/i18n/build-messages.mjs'],
     projects: [
       {
         extends: true,

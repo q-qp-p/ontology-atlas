@@ -14,7 +14,7 @@ Each step has a guide with the same name; read only those.
 
 Measure before judging: `pnpm ui:audit` covers what a script can see (overflow,
 occlusion, overlap, targets, off-ramp values, contrast, repeated sets, scroll
-end), `node scripts/perf-node-drag.mjs` covers map drag. Judge only what they
+end), `node scripts/perf/perf-node-drag.mjs` covers map drag. Judge only what they
 cannot, and promote a visual suspicion to a defect only after a measurement
 confirms it.
 

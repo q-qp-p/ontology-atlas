@@ -31,7 +31,7 @@ describe("pre-commit 훅 배선", () => {
     const hook = join(ROOT, ".githooks", name);
     expect(() => accessSync(hook, constants.X_OK)).not.toThrow();
     const source = readFileSync(hook, "utf8");
-    expect(source).toContain("node scripts/build-docs-vault.mjs");
+    expect(source).toContain("node scripts/docs-vault/build-docs-vault.mjs");
     expect(source).not.toMatch(/^\s*git add/m);
   });
 
@@ -76,7 +76,7 @@ describe("pre-commit 훅 배선", () => {
         recursive: true,
       });
       mkdirSync(join(repo, "scripts"), { recursive: true });
-      cpSync(join(ROOT, "scripts", "build-docs-vault.mjs"), join(repo, "scripts", "build-docs-vault.mjs"));
+      cpSync(join(ROOT, "scripts", "docs-vault", "build-docs-vault.mjs"), join(repo, "scripts", "docs-vault", "build-docs-vault.mjs"));
       cpSync(join(ROOT, "scripts", "lib"), join(repo, "scripts", "lib"), { recursive: true });
       execFileSync("git", ["init", "-q"], { cwd: repo, env: FIXTURE_ENV });
       execFileSync("git", ["config", "maintenance.auto", "false"], { cwd: repo, env: FIXTURE_ENV });

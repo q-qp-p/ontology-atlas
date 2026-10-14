@@ -37,7 +37,7 @@ describe('Windows desktop beta release contract', () => {
     expect(workflow).toContain("-ArgumentList '/S'");
     expect(workflow).toContain("-Filter 'ontology-atlas.exe'");
     expect(workflow).not.toContain("-Filter 'Ontology Atlas.exe'");
-    expect(workflow).toContain('scripts/verify-mcp-binary.test.mjs');
+    expect(workflow).toContain('scripts/packaging/verify-mcp-binary.test.mjs');
     expect(workflow).toContain('verify-mcp-binary.mjs');
     expect(workflow).toContain('ontology-atlas-windows-x64');
     expect(workflow).toContain('(Get-Content package.json | ConvertFrom-Json).version');
@@ -46,7 +46,7 @@ describe('Windows desktop beta release contract', () => {
   });
 
   it('keeps the Windows sidecar and credential store native to Windows', () => {
-    const sidecar = read('scripts/lib/mcp-binary.mjs');
+    const sidecar = read('scripts/lib/packaging/mcp-binary.mjs');
     const cargo = read('src-tauri/Cargo.toml');
     const rustBridge = read('src-tauri/src/agent_setup.rs');
 
@@ -69,8 +69,8 @@ describe('Windows desktop beta release contract', () => {
   });
 
   it('publishes Windows facts only from the real release asset and checksum pair', () => {
-    const generator = read('scripts/generate-download-release-facts.mjs');
-    const verifier = read('scripts/check-macos-download-release.mjs');
+    const generator = read('scripts/download/generate-download-release-facts.mjs');
+    const verifier = read('scripts/download/check-macos-download-release.mjs');
     const generated = read('src/views/download/model/macos-release.generated.ts');
 
     expect(generator).toContain('WINDOWS_NAME_PATTERN');

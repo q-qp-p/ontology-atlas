@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import {
   censusStaticSurfaces,
   isHandBadge,
-} from "../../scripts/lib/static-surface-census.mjs";
+} from "../../scripts/lib/design/static-surface-census.mjs";
 
 /**
  * Hand-written badge geometry (radius plus inset or type step) without `badgeClass` cannot grow.
@@ -16,7 +16,7 @@ import {
 const ROOT = process.cwd();
 
 /**
- * The scanner is `scripts/lib/static-surface-census.mjs`: the ledger and the gate must count with the
+ * The scanner is `scripts/lib/design/static-surface-census.mjs`: the ledger and the gate must count with the
  * same function for the ledger-more-generous check to mean anything.
  */
 

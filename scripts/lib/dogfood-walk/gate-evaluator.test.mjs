@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // Tests for the dogfood MCP walk gate: recordResult + evaluateDogfoodGate.
-// Split out of scripts/dogfood-mcp-walk.test.mjs (structural decomposition, logic unchanged).
+// Split out of scripts/dogfood/dogfood-mcp-walk.test.mjs (structural decomposition, logic unchanged).
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { evaluateDogfoodGate, recordResult } from "../../dogfood-mcp-walk.mjs";
+import { evaluateDogfoodGate, recordResult } from "../../dogfood/dogfood-mcp-walk.mjs";
 import { compileIndexesSummary } from "../../../mcp/scripts/verify/checks/compile.mjs";
 import { VAULT_ISSUE_CODE_VALUES } from "../../../mcp/src/validate.mjs";
 import { makeDogfoodToolsList, okShape } from "./fixtures.mjs";

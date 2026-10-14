@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-import { readGlobalCss } from "../../scripts/lib/global-css.mjs";
+import { readGlobalCss } from "../../scripts/lib/design/global-css.mjs";
 
 // Calls **the same module** as the gate script. A copy would make the contract check
 // the copy rather than the gate.
@@ -11,7 +11,7 @@ import {
   parseTriggerFiles,
   SPEC_RULE_DOC,
   SPEC_RULE_SECTION,
-} from "../../scripts/lib/design-spec-census.mjs";
+} from "../../scripts/lib/design/design-spec-census.mjs";
 
 /**
  * Keeps the rule that changing the specification requires `design-contract` from living only in a
@@ -27,7 +27,7 @@ function readDoc() {
 
 describe("디자인 규격 → 원장 게이트", () => {
   it("트리거 목록은 정본 문서에서 유도된다 (코드에 복제본이 없다)", () => {
-    const gate = readFileSync("scripts/check-decision-record.mjs", "utf8");
+    const gate = readFileSync("scripts/records/check-decision-record.mjs", "utf8");
     expect(gate).toContain("design-spec-census.mjs");
     expect(gate).toContain("parseTriggerFiles");
     // A gate holding its own list makes two copies, and drift becomes the default.

@@ -1,13 +1,13 @@
 // CLI argument + timeout parsing for the dogfood MCP walk.
-// Split out of scripts/dogfood-mcp-walk.mjs (structural decomposition, logic unchanged).
-import { closestDogfoodOption, stripLeadingPnpmSeparator } from "../dogfood-args.mjs";
+// Split out of scripts/dogfood/dogfood-mcp-walk.mjs (structural decomposition, logic unchanged).
+import { closestDogfoodOption, stripLeadingPnpmSeparator } from "./dogfood-args.mjs";
 
 export function dogfoodUsage() {
   return [
     "Usage:",
     "  pnpm dogfood:help",
     "  pnpm dogfood:walk -- [--help]",
-    "  node scripts/dogfood-mcp-walk.mjs [--help]",
+    "  node scripts/dogfood/dogfood-mcp-walk.mjs [--help]",
     "",
     "Runs the source-checkout MCP dogfood walk against this repo's docs/ontology vault.",
     "The walk starts the local MCP stdio server, exercises read/diagnosis/graph-query",

@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-import { readGlobalCss } from "../../scripts/lib/global-css.mjs";
+import { readGlobalCss } from "../../scripts/lib/design/global-css.mjs";
 
 /**
  * The settings sheet has one type dialect: labels and pressable text use `text-body`, descriptions

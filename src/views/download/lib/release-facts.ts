@@ -1,7 +1,7 @@
 /**
  * Facts the repository knows before any build: the version (from `package.json` through
  * next.config.ts, since importing the manifest drags it into the bundle), minimum macOS
- * (`src-tauri/tauri.conf.json`) and the DMG name `scripts/check-macos-download-release.mjs`
+ * (`src-tauri/tauri.conf.json`) and the DMG name `scripts/download/check-macos-download-release.mjs`
  * enforces. Per-build size and checksum come from `lib/release-state.ts`, and
  * release-facts.test.ts catches drift.
  */
