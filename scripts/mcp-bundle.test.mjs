@@ -33,7 +33,7 @@ const WORKFLOW = readFileSync('.github/workflows/release-macos.yml', 'utf8');
 
 describe('bundle contents', () => {
   it('stages nested verification modules declared as a package directory', () => {
-    const { stageDir } = stage(MCP_PACKAGE);
+    const { stageDir } = stage({ ...MCP_PACKAGE, dependencies: {} });
     try {
       const nested = 'scripts/verify/cli.mjs';
       assert.equal(
