@@ -4,7 +4,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { FONT_WEIGHT } from '../../src/shared/ui/tokens/font-weight';
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * Type values on drawing surfaces escape the lint selector and ramp ratchet (template-string numbers,

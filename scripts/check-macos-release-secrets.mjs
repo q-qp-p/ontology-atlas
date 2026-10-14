@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { decodeNotaryApiKeySecret } from "./lib/notary-credentials.mjs";
+import { decodeNotaryApiKeySecret } from "./lib/desktop-release/notary-credentials.mjs";
 
 const releaseSecrets = [
   {

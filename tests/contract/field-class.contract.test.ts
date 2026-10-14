@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { fieldClass, type FieldFrame, type FieldSize } from '@/shared/ui/control-class';
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * `fieldClass` is a separate cva, not a ninth `shape`: fields are a different population and most

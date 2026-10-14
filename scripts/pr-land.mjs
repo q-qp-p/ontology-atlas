@@ -5,7 +5,7 @@
  * red trains. Disjoint changes take a lock-free fast path.
  */
 
-import { runMainCopyIfStale } from './lib/run-main-copy.mjs';
+import { runMainCopyIfStale } from './lib/landing/run-main-copy.mjs';
 import { execFileSync } from 'node:child_process';
 import { hostname } from 'node:os';
 
@@ -43,8 +43,8 @@ import {
   trainTitle,
   waiterOutcome,
   waiterPollSeconds,
-} from './lib/landing-train.mjs';
-import { CATEGORIES } from './lib/changelog-entry-template.mjs';
+} from './lib/landing/landing-train.mjs';
+import { CATEGORIES } from './lib/records/changelog-entry-template.mjs';
 
 export const LOCK_REF = 'refs/atlas/landing-lock';
 

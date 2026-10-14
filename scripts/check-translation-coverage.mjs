@@ -3,14 +3,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { listLocales, readLocaleParts } from './build-messages.mjs';
-import { KEEP_TERMS, KEEP_TERM_EXEMPT, keepTermsIn, stripKeepTerms } from './lib/keep-terms.mjs';
+import { KEEP_TERMS, KEEP_TERM_EXEMPT, keepTermsIn, stripKeepTerms } from './lib/i18n/keep-terms.mjs';
 import {
   analyzeMessage,
   flattenMessages,
   literalText,
   sameMultiset,
   visibleVariants,
-} from './lib/message-icu.mjs';
+} from './lib/i18n/message-icu.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REFERENCE_LOCALE = 'en';

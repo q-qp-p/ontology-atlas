@@ -10,7 +10,7 @@ import {
   type ControlSize,
   type ControlTone,
 } from '@/shared/ui/control-class';
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /** Every value `controlClass` emits is forced onto a ramp; this file is that enforcement. */
 

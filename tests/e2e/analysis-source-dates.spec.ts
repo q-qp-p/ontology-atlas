@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs';
-import { auditPage, FREEZE_CSS } from '../../scripts/lib/ui-audit-probe.mjs';
-import { parseRampNames, shouldFail, formatSummary } from '../../scripts/lib/ui-audit-checks.mjs';
+import { auditPage, FREEZE_CSS } from '../../scripts/lib/design/ui-audit-probe.mjs';
+import { parseRampNames, shouldFail, formatSummary } from '../../scripts/lib/design/ui-audit-checks.mjs';
 import { expect, test } from '@playwright/test';
 import { installLibraryWorkHarness } from './library-work-harness';
 import { openFolderFromFirstRun } from './open-folder';

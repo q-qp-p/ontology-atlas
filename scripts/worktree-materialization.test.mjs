@@ -28,9 +28,9 @@ const PILOT = `---\nstarted: 2026-09-01\ndecision_target: 20\ndecision_deadline:
 function seed(root) {
   for (const path of [
     'scripts/build-docs-vault.mjs', 'scripts/build-messages.mjs', 'scripts/new-record.mjs', 'scripts/prepare-worktree.mjs',
-    'scripts/lib/parse-frontmatter.mjs', 'scripts/lib/record-ledgers.mjs',
-    'scripts/lib/po-pilot-records.mjs', 'scripts/lib/po-pilot.mjs',
-    'scripts/lib/po-risk-router.mjs', 'scripts/lib/decision-record-template.mjs',
+    'scripts/lib/parse-frontmatter.mjs', 'scripts/lib/records/record-ledgers.mjs',
+    'scripts/lib/records/po-pilot-records.mjs', 'scripts/lib/records/po-pilot.mjs',
+    'scripts/lib/records/po-risk-router.mjs', 'scripts/lib/records/decision-record-template.mjs',
   ]) copy(root, path);
   for (const path of ['.githooks/post-checkout', '.githooks/post-merge']) copy(root, path);
   put(root, '.gitignore', '/src/entities/docs-vault/data/\n/public/docs-vault/\n/messages/*.json\n');

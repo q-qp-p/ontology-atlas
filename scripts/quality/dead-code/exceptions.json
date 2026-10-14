@@ -88,7 +88,7 @@
     {
       "key": "frontend:runtime:devDependencies:package.json:@formatjs/icu-messageformat-parser",
       "reason": "Only the message catalog checks import the ICU parser, and the scripts scope cannot claim root manifest dependencies.",
-      "consumer": "scripts/lib/message-icu.mjs",
+      "consumer": "scripts/lib/i18n/message-icu.mjs",
       "witness": "@formatjs/icu-messageformat-parser"
     },
     {

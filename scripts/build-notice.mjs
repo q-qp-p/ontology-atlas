@@ -9,9 +9,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { collectAttributionMarkers } from "./lib/attribution-marker.mjs";
-import { collectInventories } from "./lib/third-party-inventory.mjs";
-import { distinctNames, packageLicenseText, renderThirdPartyLicenses } from "./lib/third-party-licenses.mjs";
+import { collectAttributionMarkers } from "./lib/licenses/attribution-marker.mjs";
+import { collectInventories } from "./lib/licenses/third-party-inventory.mjs";
+import { distinctNames, packageLicenseText, renderThirdPartyLicenses } from "./lib/licenses/third-party-licenses.mjs";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 export const NOTICE_FILE = "NOTICE.md";

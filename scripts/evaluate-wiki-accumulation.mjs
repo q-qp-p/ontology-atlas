@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
 
 import { accumulationCases, distractors, negativeRetrieval } from '../tests/fixtures/wiki-accumulation-cases.mjs';
-import { evaluateAccumulation, summarizeAccumulation } from './lib/wiki-accumulation-eval.mjs';
+import { evaluateAccumulation, summarizeAccumulation } from './lib/benchmark/wiki-accumulation-eval.mjs';
 
 const args = process.argv.slice(2).filter((arg) => arg !== '--');
 if (args.includes('--help')) {
@@ -26,7 +26,7 @@ const selected = accumulationCases.filter((fixture) => !option('case') || fixtur
 if (!selected.length) throw new Error('No fixture matches --case.');
 const out = path.resolve(option('out') ?? path.join(tmpdir(), `atlas-wiki-accumulation-${Date.now()}.json`));
 const sha = (value) => createHash('sha256').update(value).digest('hex');
-const rubricSha256 = sha(await readFile(new URL('./lib/wiki-accumulation-eval.mjs', import.meta.url)));
+const rubricSha256 = sha(await readFile(new URL('./lib/benchmark/wiki-accumulation-eval.mjs', import.meta.url)));
 const corpusSha256 = sha(JSON.stringify({ accumulationCases, distractors, negativeRetrieval }));
 if (option('regrade')) {
   const saved = JSON.parse(await readFile(option('regrade'), 'utf8'));

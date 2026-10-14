@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
 
-import { contentTree, proofFile, recordProof, treeOf } from './lib/focused-checks-proof.mjs';
+import { contentTree, proofFile, recordProof, treeOf } from './lib/ci/focused-checks-proof.mjs';
 import { createTestReach } from './lib/import-graph/test-reach.mjs';
 import { fastCheckPlan, selectNodeTestFiles } from './lib/prepush/fast-checks.mjs';
 import { prepushUnitCommand } from './prepush-unit-plan.mjs';
@@ -20,8 +20,8 @@ function writeNodeShim(bin, { unitCommand = null, proof = true } = {}) {
   const unit = unitCommand === null
     ? `shift; exec ${realNode} ${quote(`${root}scripts/prepush-unit-plan.mjs`)} "$@"`
     : `printf '%s\\n' ${quote(unitCommand)}`;
-  const proofRun = proof ? `shift; exec ${realNode} ${quote(`${root}scripts/lib/focused-checks-proof.mjs`)} "$@"` : 'exit 1';
-  writeFileSync(join(bin, 'node'), `#!/bin/sh\ncase "$1" in\n  --input-type=module) exec ${realNode} "$@" ;;\n  scripts/lib/prepush/fast-checks.mjs) shift; exec ${realNode} ${quote(`${root}scripts/lib/prepush/fast-checks.mjs`)} "$@" ;;\n  scripts/prepush-unit-plan.mjs) ${unit} ;;\n  scripts/lib/focused-checks-proof.mjs) ${proofRun} ;;\nesac\nexit 0\n`, { mode: 0o755 });
+  const proofRun = proof ? `shift; exec ${realNode} ${quote(`${root}scripts/lib/ci/focused-checks-proof.mjs`)} "$@"` : 'exit 1';
+  writeFileSync(join(bin, 'node'), `#!/bin/sh\ncase "$1" in\n  --input-type=module) exec ${realNode} "$@" ;;\n  scripts/lib/prepush/fast-checks.mjs) shift; exec ${realNode} ${quote(`${root}scripts/lib/prepush/fast-checks.mjs`)} "$@" ;;\n  scripts/prepush-unit-plan.mjs) ${unit} ;;\n  scripts/lib/ci/focused-checks-proof.mjs) ${proofRun} ;;\nesac\nexit 0\n`, { mode: 0o755 });
 }
 
 function hookFixture(t, changes) {
@@ -344,7 +344,7 @@ test('planner CLI exits nonzero when the exact Git scope cannot be read', () => 
     const bin=join(cwd,'bin'); mkdirSync(bin);
     writeFileSync(join(bin,'pnpm'),'#!/bin/sh\nexit 0\n',{mode:0o755});
     mkdirSync(join(cwd,'scripts/lib'),{recursive:true});
-    copyFileSync(new URL('./lib/focused-checks-proof.mjs',import.meta.url),join(cwd,'scripts/lib/focused-checks-proof.mjs'));
+    copyFileSync(new URL('./lib/ci/focused-checks-proof.mjs',import.meta.url),join(cwd,'scripts/lib/ci/focused-checks-proof.mjs'));
     writeNodeShim(bin, { unitCommand: "pnpm exec vitest run src/a.test.ts" });
     const hook=new URL('../.githooks/pre-push',import.meta.url).pathname;
     const run=()=>spawnSync('sh',[hook],{cwd,encoding:'utf8',input:`refs/heads/test ${String(git('rev-parse','HEAD')).trim()} refs/heads/test ${BASE}\n`,env:{...process.env,PATH:bin+':'+process.env.PATH}});

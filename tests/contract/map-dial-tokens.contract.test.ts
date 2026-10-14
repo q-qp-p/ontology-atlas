@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { DIAL_TOKEN_SPECS, resolveDialTokens } from "@/widgets/ontology-map/dial/tokens";
 
-import { readGlobalCss } from "../../scripts/lib/global-css.mjs";
+import { readGlobalCss } from "../../scripts/lib/design/global-css.mjs";
 
 const css = readGlobalCss();
 const declared = new Map<string, string>();

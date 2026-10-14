@@ -3,8 +3,8 @@
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
-import { evaluatePoPilot, parsePoPilot, pilotCheckFailures } from './lib/po-pilot.mjs';
-import { loadPoPilotRecords } from './lib/po-pilot-records.mjs';
+import { evaluatePoPilot, parsePoPilot, pilotCheckFailures } from './lib/records/po-pilot.mjs';
+import { loadPoPilotRecords } from './lib/records/po-pilot-records.mjs';
 
 const DEFAULT_PILOT = 'docs/PO-PILOT.md';
 

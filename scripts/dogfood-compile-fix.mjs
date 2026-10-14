@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { closestDogfoodOption, stripLeadingPnpmSeparator } from './lib/dogfood-args.mjs';
+import { closestDogfoodOption, stripLeadingPnpmSeparator } from './lib/dogfood-walk/dogfood-args.mjs';
 
 const COMPILE_FIX_ARGS = ['cli/src/index.mjs', 'compile', 'docs/ontology', '--fix', '--summary', '--json'];
 const DIFF_ARGS = ['diff', '--', 'docs/ontology'];

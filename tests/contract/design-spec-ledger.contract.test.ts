@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-import { readGlobalCss } from "../../scripts/lib/global-css.mjs";
+import { readGlobalCss } from "../../scripts/lib/design/global-css.mjs";
 
 // Calls **the same module** as the gate script. A copy would make the contract check
 // the copy rather than the gate.
@@ -11,7 +11,7 @@ import {
   parseTriggerFiles,
   SPEC_RULE_DOC,
   SPEC_RULE_SECTION,
-} from "../../scripts/lib/design-spec-census.mjs";
+} from "../../scripts/lib/design/design-spec-census.mjs";
 
 /**
  * Keeps the rule that changing the specification requires `design-contract` from living only in a

@@ -8,7 +8,7 @@ import { runMcpSourceDependencyPreflight } from './check-mcp-source-dependencies
 
 const scratchRoot = '/tmp/atlas-mcp-preflight-agent';
 const fixtures = [];
-const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 
 before(() => mkdirSync(scratchRoot, { recursive: true }));
 

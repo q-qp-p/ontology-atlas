@@ -14,7 +14,7 @@ import {
   PAGE_TOP_PAD,
 } from "@/shared/ui/tokens/page-frame";
 import * as pageFrame from "@/shared/ui/tokens/page-frame";
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 import { blankComments } from '../../scripts/quality/source-language/inventory.mjs';
 
 /**

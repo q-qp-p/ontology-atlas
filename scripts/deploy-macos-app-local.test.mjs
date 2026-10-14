@@ -14,7 +14,7 @@ import {
 import {
   compareMacosAppBundleIdentity,
   measureMacosAppBundleIdentity,
-} from "./lib/macos-app-bundle-identity.mjs";
+} from "./lib/desktop/macos-app-bundle-identity.mjs";
 
 test("local deploy identity rejects a mixed app bundle before MCP use", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "ontology-atlas-app-identity-"));

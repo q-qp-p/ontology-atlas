@@ -4,8 +4,8 @@ import { mkdirSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { CHECKS, formatFinding, formatSummary, parseRampNames, shouldFail } from "./lib/ui-audit-checks.mjs";
-import { auditPage, FREEZE_CSS } from "./lib/ui-audit-probe.mjs";
+import { CHECKS, formatFinding, formatSummary, parseRampNames, shouldFail } from "./lib/design/ui-audit-checks.mjs";
+import { auditPage, FREEZE_CSS } from "./lib/design/ui-audit-probe.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DEFAULT_WIDTHS = [600, 768, 834, 1024, 1440, 1920, 2560];

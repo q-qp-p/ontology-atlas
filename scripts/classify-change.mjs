@@ -19,7 +19,7 @@ import {
   BROWSER_EXECUTION_SURFACE_PATTERNS,
   normalizeChangedPath,
   suggestFocusedChecks,
-} from './lib/focused-check-suggestions.mjs';
+} from './lib/ci/focused-check-suggestions.mjs';
 
 export const FULL_LANE_COMMANDS = Object.freeze({
   gates: Object.freeze([

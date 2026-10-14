@@ -83,7 +83,7 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 const [repoRoot, targetRoot, outDir] = process.argv.slice(2);
-const { constructionPrompts } = await import(pathToFileURL(join(repoRoot, 'scripts/lib/construction-prompts.mjs')));
+const { constructionPrompts } = await import(pathToFileURL(join(repoRoot, 'scripts/lib/benchmark/construction-prompts.mjs')));
 const { handoff, firstTurn } = constructionPrompts(repoRoot, targetRoot);
 writeFileSync(join(outDir, 'handoff.txt'), handoff);
 writeFileSync(join(outDir, 'turn-one.txt'), firstTurn);

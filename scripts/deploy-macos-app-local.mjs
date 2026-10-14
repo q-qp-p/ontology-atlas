@@ -6,8 +6,8 @@ import path from "node:path";
 import {
   compareMacosAppBundleIdentity,
   measureMacosAppBundleIdentity,
-} from "./lib/macos-app-bundle-identity.mjs";
-import { MCP_BINARY_NAME } from "./lib/mcp-binary.mjs";
+} from "./lib/desktop/macos-app-bundle-identity.mjs";
+import { MCP_BINARY_NAME } from "./lib/packaging/mcp-binary.mjs";
 import { loadMacosReleaseNames, resolveMacosExecutable } from "./lib/macos-release-names.mjs";
 import { listLocales } from "./build-messages.mjs";
 import { verifyMcpExactCase } from "./verify-mcp-binary.mjs";

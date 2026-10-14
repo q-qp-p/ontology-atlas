@@ -7,7 +7,7 @@ import test from 'node:test';
 import { evaluatePoPilot, parsePoPilot, pilotCheckFailures } from './po-pilot.mjs';
 import { loadPoPilotRecords, readPoPilotSource } from './po-pilot-records.mjs';
 
-const LEGACY = readFileSync(new URL('../../docs/PO-PILOT.md', import.meta.url), 'utf8');
+const LEGACY = readFileSync(new URL('../../../docs/PO-PILOT.md', import.meta.url), 'utf8');
 const UUIDS = [
   '10000000-0000-4000-8000-000000000001',
   '10000000-0000-4000-8000-000000000002',

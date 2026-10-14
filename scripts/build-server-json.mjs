@@ -13,7 +13,7 @@ import {
   registryInvariantProblems,
   serverJson,
   serverJsonProblems,
-} from './lib/mcp-bundle.mjs';
+} from './lib/packaging/mcp-bundle.mjs';
 
 const ROOT = process.cwd();
 const MCP_PACKAGE = path.join(ROOT, 'mcp', 'package.json');

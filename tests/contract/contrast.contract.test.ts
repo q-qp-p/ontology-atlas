@@ -11,7 +11,7 @@ import {
   judgeText,
   parseColor,
   relativeLuminance,
-} from "../../scripts/lib/contrast.mjs";
+} from "../../scripts/lib/design/contrast.mjs";
 
 /**
  * **Probes** for the contrast instrument.

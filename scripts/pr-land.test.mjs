@@ -31,7 +31,7 @@ import {
   SCHEDULED_CHECKS,
   worktreeToRemove,
 } from './pr-land.mjs';
-import { EJECTED_MARKER, LANDED_MARKER, QUEUE_LABEL, RED_CLOSE_PREFIX, trainCiStep } from './lib/landing-train.mjs';
+import { EJECTED_MARKER, LANDED_MARKER, QUEUE_LABEL, RED_CLOSE_PREFIX, trainCiStep } from './lib/landing/landing-train.mjs';
 
 /**
  * The landing train, driven by recorded `gh` output and a fake GitHub; no network. The recorded

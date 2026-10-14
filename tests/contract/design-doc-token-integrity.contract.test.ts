@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import { describe, expect, it } from "vitest";
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * Every token `docs/DESIGN-SYSTEM.md` cites must exist in `app/styles`. A name counts only inside

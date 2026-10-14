@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { judgeLicenses } from '../check-licenses.mjs';
+import { judgeLicenses } from '../../check-licenses.mjs';
 import { parseAttributionMarker } from './attribution-marker.mjs';
 import { electLicense, evaluateLicensePolicy, refusalReason } from './license-policy.mjs';
 

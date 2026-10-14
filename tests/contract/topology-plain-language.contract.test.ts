@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import koMessages from "../../messages/ko.json";
-import { column } from "../../scripts/lib/locale-vocabulary.mjs";
+import { column } from "../../scripts/lib/i18n/locale-vocabulary.mjs";
 
 const topology = koMessages.topology;
 

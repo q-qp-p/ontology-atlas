@@ -8,7 +8,7 @@ import { test } from 'node:test';
 import { checkDoc, citationProblems, contractBumpProblems, datedDocProblems, listLivingDocs, routeExists, run, STANDING_DATED_DOCS } from './check-doc-meta.mjs';
 import { createDoc } from './new-doc.mjs';
 import { formerPaths } from './doc-history.mjs';
-import { DOC_TYPES } from './lib/doc-types.mjs';
+import { DOC_TYPES } from './lib/docs/doc-types.mjs';
 
 const SOURCE_ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 

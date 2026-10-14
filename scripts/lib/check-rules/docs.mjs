@@ -31,7 +31,7 @@ export const rules = [
     matches: [
       /^scripts\/(?:build-docs-vault|build-messages|resolve-docs-vault-conflicts|prepare-worktree|new-record|worktree-materialization)\.(?:mjs|test\.mjs)$/,
       /^\.githooks\/post-(?:checkout|merge)$/,
-      /^scripts\/lib\/(?:record-ledgers|po-pilot-records|parse-frontmatter)\.(?:mjs|test\.mjs)$/,
+      /^scripts\/lib\/(?:records\/)?(?:record-ledgers|po-pilot-records|parse-frontmatter)\.(?:mjs|test\.mjs)$/,
     ],
   },
   {
@@ -61,7 +61,7 @@ export const rules = [
     // a template, the kind table or the move map can each break that.
     command: 'pnpm docs:meta && pnpm docs:move -- --check',
     reason: 'a living document, template, document kind or move changed — metadata and moved paths must stay current',
-    matches: [/^docs\/(?!ontology\/|records\/(?!README)|archive\/|audits\/|benchmark\/|prototypes\/|(?:DECISIONS|CHANGELOG|PO-PILOT)\.md$).+\.md$/, /^docs\/\.moved\.json$/, /^scripts\/lib\/doc-types\.mjs$/],
+    matches: [/^docs\/(?!ontology\/|records\/(?!README)|archive\/|audits\/|benchmark\/|prototypes\/|(?:DECISIONS|CHANGELOG|PO-PILOT)\.md$).+\.md$/, /^docs\/\.moved\.json$/, /^scripts\/lib\/docs\/doc-types\.mjs$/],
   },
   {
     order: 240,
@@ -100,7 +100,7 @@ export const rules = [
       /^scripts\/build-docs-surface\.(?:mjs|test\.mjs)$/,
       /^scripts\/check-doc-links\.(?:mjs|test\.mjs)$/,
       /^scripts\/(?:check-doc-meta|docs-move|new-doc|doc-history)\.(?:mjs|test\.mjs)$/,
-      /^scripts\/lib\/(?:docs-surface|doc-links|doc-types)\.mjs$/,
+      /^scripts\/lib\/docs\/(?:docs-surface|doc-links|doc-types)\.mjs$/,
     ],
   },
   {

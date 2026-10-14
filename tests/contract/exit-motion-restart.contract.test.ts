@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * Exit motion must actually play. Where only the class changes on one element, an unchanged

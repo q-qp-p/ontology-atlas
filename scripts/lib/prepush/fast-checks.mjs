@@ -3,7 +3,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { suggestFocusedChecks } from '../focused-check-suggestions.mjs';
+import { suggestFocusedChecks } from '../ci/focused-check-suggestions.mjs';
 
 const NODE_TEST_PATH = /^(?:scripts|mcp|cli)\/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*\/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\.test\.mjs$/;
 
@@ -34,7 +34,7 @@ export function fastCheckPlan(paths, { cwd = process.cwd(), scripts, suggestions
   return {
     lintFiles: [...new Set(paths.filter((file) => /\.[cm]?[jt]sx?$/.test(file) && exists(file)))].sort(),
     nodeFiles: [...nodeFiles].sort(),
-    docsRegistry: paths.some((file) => /^(?:README\.md|docs\/DEVELOPMENT-CHECKS\.md|package\.json|scripts\/check-dev-checks\.mjs|scripts\/lib\/dev-checks-template(?:\.test)?\.mjs)$/.test(file)),
+    docsRegistry: paths.some((file) => /^(?:README\.md|docs\/DEVELOPMENT-CHECKS\.md|package\.json|scripts\/check-dev-checks\.mjs|scripts\/lib\/records\/dev-checks-template(?:\.test)?\.mjs)$/.test(file)),
     workflows: paths.some((file) => /^\.github\/(?:workflows|actions)\/.+\.ya?ml$/.test(file)),
   };
 }

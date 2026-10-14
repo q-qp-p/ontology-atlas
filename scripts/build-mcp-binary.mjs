@@ -30,7 +30,7 @@ import {
   hostTargetTriple,
   pinnedBunVersion,
   SUPPORTED_TARGET_TRIPLES,
-} from './lib/mcp-binary.mjs';
+} from './lib/packaging/mcp-binary.mjs';
 import {
   verifyMcpBinary,
   verifyMcpExactCase,

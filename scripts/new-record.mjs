@@ -2,7 +2,7 @@
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, openSync, readFileSync, writeFileSync, closeSync } from 'node:fs';
 import path from 'node:path';
-import { isCalendarDate, validateNewRecord } from './lib/record-ledgers.mjs';
+import { isCalendarDate, validateNewRecord } from './lib/records/record-ledgers.mjs';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const VERSION = /^v\d+\.\d+\.\d+$/;

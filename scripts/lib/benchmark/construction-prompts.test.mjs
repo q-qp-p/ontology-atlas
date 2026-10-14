@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { constructionPrompts } from './construction-prompts.mjs';
 
-const checkout = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const checkout = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const files = ['src/i18n/locales.ts', 'src/i18n/answer-language.ts',
   'src/features/acp-session/model/use-acp-session.ts',
   'src/features/first-run-starter/model/build-from-code-prompt.ts'];

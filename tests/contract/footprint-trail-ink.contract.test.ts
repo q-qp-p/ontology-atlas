@@ -8,7 +8,7 @@ import {
 } from "@/shared/lib/preferences/appearance-preferences";
 import { trailNodeInkStrength } from "@/widgets/ontology-map/model/visibility/focus-state";
 import { draw as traceDraw } from "@/widgets/ontology-map/render/traces";
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /** Both selectable footprint trail inks must stay readable; contrast is accessibility, not taste. */
 

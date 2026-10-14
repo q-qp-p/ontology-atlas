@@ -1,6 +1,6 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { readPoPilotSource } from '../../scripts/lib/po-pilot-records.mjs';
+import { readPoPilotSource } from '../../scripts/lib/records/po-pilot-records.mjs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -15,12 +15,12 @@ import {
   PO_RISK_ROUTES,
   PO_SOLO_FIELDS,
   routePoDecision,
-} from '../../scripts/lib/po-risk-router.mjs';
+} from '../../scripts/lib/records/po-risk-router.mjs';
 import {
   evaluatePoPilot,
   parsePoPilot,
   pilotCheckFailures,
-} from '../../scripts/lib/po-pilot.mjs';
+} from '../../scripts/lib/records/po-pilot.mjs';
 import { parsePoRouteArgs } from '../../scripts/po-risk-router.mjs';
 
 /**

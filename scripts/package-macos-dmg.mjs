@@ -4,7 +4,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { loadMacosReleaseNames } from "./lib/macos-release-names.mjs";
-import { isTransientHdiutilFailure, stalePathForVolume } from "./lib/hdiutil-retry.mjs";
+import { isTransientHdiutilFailure, stalePathForVolume } from "./lib/desktop/hdiutil-retry.mjs";
 
 const root = process.cwd();
 const names = loadMacosReleaseNames(root);

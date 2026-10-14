@@ -12,7 +12,7 @@ import {
   namesMissingFromDoc,
   normalizeMcpTools,
   serializeSurface,
-} from './lib/docs-surface.mjs';
+} from './lib/docs/docs-surface.mjs';
 import { docCoverageProblems, parseArgs, usage } from './build-docs-surface.mjs';
 
 const SAMPLE_TOOLS = [

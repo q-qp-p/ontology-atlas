@@ -6,7 +6,7 @@ import {
   PO_RISK_ROUTES,
   routePoDecision,
 } from './po-risk-router.mjs';
-import { parseFrontmatter as parseSharedFrontmatter } from './parse-frontmatter.mjs';
+import { parseFrontmatter as parseSharedFrontmatter } from '../parse-frontmatter.mjs';
 
 // The register was written with two reviewers on every review route; these frozen names keep the
 // historical register checkable.

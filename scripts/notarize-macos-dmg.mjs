@@ -4,9 +4,9 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import crypto from "node:crypto";
 import { loadMacosReleaseNames } from "./lib/macos-release-names.mjs";
-import { resolveNotaryAuthentication } from "./lib/notary-credentials.mjs";
-import { formatCommandForLog } from "./lib/redact-command.mjs";
-import { releaseChildEnv } from "./lib/release-secret-env.mjs";
+import { resolveNotaryAuthentication } from "./lib/desktop-release/notary-credentials.mjs";
+import { formatCommandForLog } from "./lib/desktop-release/redact-command.mjs";
+import { releaseChildEnv } from "./lib/desktop-release/release-secret-env.mjs";
 
 const root = process.cwd();
 const names = loadMacosReleaseNames(root);

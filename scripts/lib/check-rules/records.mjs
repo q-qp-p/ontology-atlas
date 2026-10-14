@@ -5,7 +5,7 @@ export const rules = [
     order: 150,
     command: 'pnpm test:records',
     reason: 'immutable record composition or writers changed',
-    matches: [/^scripts\/(?:lib\/(?:record-ledgers|po-pilot-records)|new-record)(?:\.test)?\.mjs$/, /^docs\/records\//],
+    matches: [/^scripts\/(?:lib\/records\/(?:record-ledgers|po-pilot-records)|new-record)(?:\.test)?\.mjs$/, /^docs\/records\//],
   },
   {
     order: 540,
@@ -15,7 +15,7 @@ export const rules = [
     reason: 'the decision-ledger finder, its record template, or the gate that applies them changed',
     matches: [
       /^scripts\/decisions-find(?:\.test)?\.mjs$/,
-      /^scripts\/lib\/decision-record-template(?:\.test)?\.mjs$/,
+      /^scripts\/lib\/records\/decision-record-template(?:\.test)?\.mjs$/,
       /^scripts\/check-decision-record\.mjs$/,
     ],
   },
@@ -35,13 +35,13 @@ export const rules = [
     order: 570,
     command: 'pnpm test:dev-checks',
     reason: 'the development-checks entry template or its gate changed',
-    matches: [/^scripts\/lib\/dev-checks-template(?:\.test)?\.mjs$/, /^scripts\/check-dev-checks\.mjs$/],
+    matches: [/^scripts\/lib\/records\/dev-checks-template(?:\.test)?\.mjs$/, /^scripts\/check-dev-checks\.mjs$/],
   },
   {
     order: 580,
     command: 'pnpm test:changelog',
     reason: 'the changelog entry template or its gate changed',
-    matches: [/^scripts\/lib\/changelog-entry-template(?:\.test)?\.mjs$/, /^scripts\/check-changelog\.mjs$/],
+    matches: [/^scripts\/lib\/records\/changelog-entry-template(?:\.test)?\.mjs$/, /^scripts\/check-changelog\.mjs$/],
   },
   {
     order: 1040,

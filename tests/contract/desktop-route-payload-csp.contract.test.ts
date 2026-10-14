@@ -3,12 +3,12 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { connectSrcIsExact, DESKTOP_CONNECT_SRC_TOKENS } from "../../scripts/lib/desktop-csp.mjs";
+import { connectSrcIsExact, DESKTOP_CONNECT_SRC_TOKENS } from "../../scripts/lib/desktop/desktop-csp.mjs";
 
 /**
  * **A rail press in the installed app must be a route change, not a new document.**
  *
- * `scripts/lib/desktop-csp.mjs` carries the measurement: with `'self'` missing from
+ * `scripts/lib/desktop/desktop-csp.mjs` carries the measurement: with `'self'` missing from
  * `connect-src`, the App Router's fetch of the arriving route's payload is refused and the
  * router falls back to a full document load. Every rail press then re-booted the app, which
  * is both halves of inspection 122's blocker — one or two frames of the pre-hydration screen

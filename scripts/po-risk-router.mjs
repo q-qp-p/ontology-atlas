@@ -9,7 +9,7 @@ import {
   PO_EVIDENCE_STATES,
   PO_OUTCOMES,
   routePoDecision,
-} from './lib/po-risk-router.mjs';
+} from './lib/records/po-risk-router.mjs';
 
 function help() {
   return `Usage:

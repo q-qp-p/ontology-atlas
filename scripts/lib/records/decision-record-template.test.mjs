@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { parseLedger } from '../decisions-find.mjs';
+import { parseLedger } from '../../decisions-find.mjs';
 import { FIELDS, LIMITS, TEMPLATE, checkLedgerTemplate, checkRecordTemplate } from './decision-record-template.mjs';
 
 const GOOD = `## 2026-09-03 — The census header loses its bracket

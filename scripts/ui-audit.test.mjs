@@ -9,7 +9,7 @@ import {
   selectorPath,
   shouldFail,
   visibleShadow,
-} from "./lib/ui-audit-checks.mjs";
+} from "./lib/design/ui-audit-checks.mjs";
 
 test("parseRampNames groups ramp properties and ignores comments and pair suffixes", () => {
   const css = `:root { --text-body: 1rem; /* --text-ghost: 2px; */ --text-body--line-height: var(--leading-body);

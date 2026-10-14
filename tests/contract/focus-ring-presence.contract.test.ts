@@ -4,7 +4,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { controlClass } from '../../src/shared/ui/control-class';
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /** A comment is not a value — a trap stepped on four times in this round. */
 function stripComments(src: string): string {

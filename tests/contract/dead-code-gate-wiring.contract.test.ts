@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-import { suggestFocusedChecks } from '../../scripts/lib/focused-check-suggestions.mjs';
+import { suggestFocusedChecks } from '../../scripts/lib/ci/focused-check-suggestions.mjs';
 import { FULL_LANE_COMMANDS } from '../../scripts/classify-change.mjs';
 
 const PACKAGE = JSON.parse(readFileSync('package.json', 'utf8')) as {

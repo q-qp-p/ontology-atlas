@@ -23,7 +23,7 @@ import {
   bundleProvenance,
   dependencyClosure,
   isBundleBallast,
-} from './lib/mcp-bundle.mjs';
+} from './lib/packaging/mcp-bundle.mjs';
 
 const ROOT = process.cwd();
 const MCP_DIR = path.join(ROOT, 'mcp');

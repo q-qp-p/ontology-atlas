@@ -1,6 +1,6 @@
 // CLI argument + timeout parsing for the dogfood MCP walk.
 // Split out of scripts/dogfood-mcp-walk.mjs (structural decomposition, logic unchanged).
-import { closestDogfoodOption, stripLeadingPnpmSeparator } from "../dogfood-args.mjs";
+import { closestDogfoodOption, stripLeadingPnpmSeparator } from "./dogfood-args.mjs";
 
 export function dogfoodUsage() {
   return [

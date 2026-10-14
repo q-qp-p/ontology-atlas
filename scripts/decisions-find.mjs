@@ -7,7 +7,7 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { readLedgerSource } from './lib/record-ledgers.mjs';
+import { readLedgerSource } from './lib/records/record-ledgers.mjs';
 
 const HEADING = /^## (\d{4}-\d{2}-\d{2})(?: \((\d+)\))? [—–-]+ (.+)$/;
 // A field opens with a bold label (`**Decision**: …`) or, in some records, a

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * Status signal colours meet WCAG AA (>= 4.5:1) on the dark canvas, checked against the real token

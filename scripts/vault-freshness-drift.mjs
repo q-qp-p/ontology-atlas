@@ -10,7 +10,7 @@ import { parseFrontmatter } from "./lib/parse-frontmatter.mjs";
 import {
   buildFreshnessCommentMarkdown,
   computeVaultFreshnessDrift,
-} from "./lib/vault-freshness-drift.mjs";
+} from "./lib/vault/vault-freshness-drift.mjs";
 
 function usage() {
   return [

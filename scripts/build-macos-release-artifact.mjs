@@ -8,8 +8,8 @@ import { pathToFileURL } from "node:url";
 import {
   CURRENT_RELEASE_SECRET_NAMES,
   releaseChildEnv,
-} from "./lib/release-secret-env.mjs";
-import { decodeNotaryApiKeySecret } from "./lib/notary-credentials.mjs";
+} from "./lib/desktop-release/release-secret-env.mjs";
+import { decodeNotaryApiKeySecret } from "./lib/desktop-release/notary-credentials.mjs";
 
 const TAURI_UPDATER_SECRETS = [
   "TAURI_SIGNING_PRIVATE_KEY",

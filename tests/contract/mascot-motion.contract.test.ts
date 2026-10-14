@@ -4,7 +4,7 @@ import { inflateSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { MASCOT_MOTION_ROWS } from '../../scripts/build-brand-assets.mjs';
 import { MASCOT_WALK_MS } from '../../src/features/agent-activity/ui/AgentMascotPresence';
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 const ROOT = process.cwd();
 const CSS = readGlobalCss();

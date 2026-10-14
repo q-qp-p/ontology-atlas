@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { DESIGN_BASE_LENSES, DESIGN_CHANGE_SIGNALS } from '../../scripts/lib/design-proof-router.mjs';
-import { PO_BASE_LENSES, PO_REVIEWER, PO_RISK_ROUTES } from '../../scripts/lib/po-risk-router.mjs';
+import { DESIGN_BASE_LENSES, DESIGN_CHANGE_SIGNALS } from '../../scripts/lib/design/design-proof-router.mjs';
+import { PO_BASE_LENSES, PO_REVIEWER, PO_RISK_ROUTES } from '../../scripts/lib/records/po-risk-router.mjs';
 
 // The routers name one independent reviewer and its lenses. Each harness keeps its own reviewer prose;
 // this binds only identity, metadata, and that every routed lens id is named in both briefs.

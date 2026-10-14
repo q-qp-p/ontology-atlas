@@ -3,7 +3,7 @@
  * `pnpm dev-checks:check` — every entry in `docs/DEVELOPMENT-CHECKS.md` fits
  * the entry template, every `pnpm` command it names exists, and every area is
  * named once. Shape and reference integrity only; the template and the
- * measurement behind it live in `scripts/lib/dev-checks-template.mjs`.
+ * measurement behind it live in `scripts/lib/records/dev-checks-template.mjs`.
  *
  * It also keeps the two contributor registries order-keyed: the entries sorted
  * by area and the README command table sorted by command, so parallel branches
@@ -24,7 +24,7 @@ import {
   orderProblems,
   sortCommandTable,
   sortDevChecks,
-} from './lib/dev-checks-template.mjs';
+} from './lib/records/dev-checks-template.mjs';
 
 const FILE = 'docs/DEVELOPMENT-CHECKS.md';
 const README = 'README.md';

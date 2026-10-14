@@ -7,7 +7,7 @@ import {
   DESIGN_BASE_LENSES,
   DESIGN_CHANGE_SIGNALS,
   routeDesignProof,
-} from '../../scripts/lib/design-proof-router.mjs';
+} from '../../scripts/lib/design/design-proof-router.mjs';
 import { parseDesignRouteArgs } from '../../scripts/design-proof-router.mjs';
 
 const ROOT = process.cwd();

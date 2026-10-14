@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 
 import { realmDepthClarityAlpha } from "@/widgets/ontology-map/model/realm/realm-transition";
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * Map ink must clear WCAG 1.4.11 (3:1 non-text contrast) against the background. The check needs

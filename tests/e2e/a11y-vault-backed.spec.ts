@@ -12,7 +12,7 @@ const ANALYSIS_VAULT = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- Playwright specs load as CJS; using `import.meta` stops the file loading at all.
-const { judgeText } = require("../../scripts/lib/contrast.mjs");
+const { judgeText } = require("../../scripts/lib/design/contrast.mjs");
 const AXE_PATH = require.resolve("axe-core/axe.min.js");
 
 /**
@@ -49,7 +49,7 @@ const MIN_RULES_PASSED = 15;
 const MIN_COMBINATIONS = 6;
 
 /**
- * Collects colours and fonts; the contrast judgement is a pure function in `scripts/lib/contrast.mjs`.
+ * Collects colours and fonts; the contrast judgement is a pure function in `scripts/lib/design/contrast.mjs`.
  * `aria-hidden` content is skipped and `elementFromPoint` confirms visibility; both only shrink the
  * candidate set, so `MIN_COMBINATIONS` catches false negatives.
  */

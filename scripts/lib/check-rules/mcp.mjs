@@ -19,7 +19,7 @@ export const rules = [
     reason: 'the MCP ecosystem channel changed — bundle build, container image, registry entry, or release upload',
     matches: [
       /^scripts\/(?:build-mcp-bundle|build-server-json)\.mjs$/,
-      /^scripts\/lib\/mcp-bundle\.mjs$/,
+      /^scripts\/lib\/packaging\/mcp-bundle\.mjs$/,
       /^scripts\/mcp-bundle\.test\.mjs$/,
       /^mcp\/Dockerfile$/,
       /^mcp\/package\.json$/,

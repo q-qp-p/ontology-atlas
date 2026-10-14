@@ -1,4 +1,4 @@
-import { reviewedMainPushVerdict } from './lib/reviewed-main-push.mjs';
+import { reviewedMainPushVerdict } from './lib/ci/reviewed-main-push.mjs';
 
 const API = 'https://api.github.com';
 const SHA = /^[0-9a-f]{40}$/i;

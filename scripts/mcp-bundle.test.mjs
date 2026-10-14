@@ -23,7 +23,7 @@ import {
   registryInvariantProblems,
   serverJson,
   serverJsonProblems,
-} from './lib/mcp-bundle.mjs';
+} from './lib/packaging/mcp-bundle.mjs';
 import { parseArgs, tagProblems, usage } from './build-server-json.mjs';
 import { stage } from './build-mcp-bundle.mjs';
 

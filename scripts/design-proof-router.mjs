@@ -2,7 +2,7 @@
 
 import { pathToFileURL } from 'node:url';
 
-import { DESIGN_CHANGE_SIGNALS, routeDesignProof } from './lib/design-proof-router.mjs';
+import { DESIGN_CHANGE_SIGNALS, routeDesignProof } from './lib/design/design-proof-router.mjs';
 
 function help() {
   return `Usage:

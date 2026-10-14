@@ -5,7 +5,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { runChangelogCheck } from '../check-changelog.mjs';
+import { runChangelogCheck } from '../../check-changelog.mjs';
 import { CATEGORIES, TEMPLATE, checkChangelogShape, checkEntryTemplate, parseChangelog } from './changelog-entry-template.mjs';
 
 const GOOD = `## 2026-09-03 · v1.0.4: the harness proves its hooks on both runtimes

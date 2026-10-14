@@ -29,8 +29,8 @@ import {
   isFrozenDocPath,
   statusValues,
   typeFitsFolder,
-} from './lib/doc-types.mjs';
-import { collectMarkdownLinks, collectProseDocRefs, isExternalTarget } from './lib/doc-links.mjs';
+} from './lib/docs/doc-types.mjs';
+import { collectMarkdownLinks, collectProseDocRefs, isExternalTarget } from './lib/docs/doc-links.mjs';
 import { parseFrontmatter } from './lib/parse-frontmatter.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -374,7 +374,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   }
   if (problems.length > 0) {
     for (const problem of problems) console.error(`  - ${problem.file}: \`${problem.key}\` ${problem.message}`);
-    console.error(`[docs:meta] ${problems.length} problem(s) in ${checked} living documents. Templates: docs/.templates/; kinds and areas: scripts/lib/doc-types.mjs`);
+    console.error(`[docs:meta] ${problems.length} problem(s) in ${checked} living documents. Templates: docs/.templates/; kinds and areas: scripts/lib/docs/doc-types.mjs`);
     process.exit(1);
   }
   console.log(`[docs:meta] ok · ${checked} living documents carry valid metadata`);

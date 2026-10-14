@@ -1,8 +1,8 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { posix } from 'node:path';
 
-import { isSupportedSourcePath } from '../quality/source-language/source-paths.mjs';
-import { loadTestReach } from './import-graph/test-reach.mjs';
+import { isSupportedSourcePath } from '../../quality/source-language/source-paths.mjs';
+import { loadTestReach } from '../import-graph/test-reach.mjs';
 
 /**
  * The changed-path focused-check advisor: which checks a set of changed paths
@@ -28,9 +28,9 @@ import { loadTestReach } from './import-graph/test-reach.mjs';
  * rules carry their former position in the one table times ten, so a new rule
  * can sit between two of them without renumbering anything.
  */
-export const CHECK_RULES_DIRECTORY = new URL('./check-rules/', import.meta.url);
+export const CHECK_RULES_DIRECTORY = new URL('../check-rules/', import.meta.url);
 
-export { BROWSER_EXECUTION_SURFACE_PATTERNS, CI_PLANNER_SURFACE_PATTERNS } from './check-rules/ci.mjs';
+export { BROWSER_EXECUTION_SURFACE_PATTERNS, CI_PLANNER_SURFACE_PATTERNS } from '../check-rules/ci.mjs';
 
 const DIRECT_TEST_KINDS = ['mcp', 'cli', 'script', 'focusedCheck'];
 

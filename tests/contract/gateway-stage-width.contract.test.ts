@@ -3,7 +3,7 @@ import { join, relative } from "node:path";
 
 import { describe, expect, it } from "vitest";
 import { collectTokens } from '../../scripts/design-tokens.mjs';
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * Gateway stage width: the 48rem floor is pinned, the vw slope at 1920 must not exceed the floor,

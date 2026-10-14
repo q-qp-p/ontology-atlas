@@ -16,7 +16,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-import { inspectCodexRunContract } from "./lib/codex-run-contract.mjs";
+import { inspectCodexRunContract } from "./lib/desktop/codex-run-contract.mjs";
 import { extractCommentTokens } from "./quality/source-language/inventory.mjs";
 
 // The release gates compare a tag against package.json/Tauri/Cargo, so the
@@ -279,7 +279,7 @@ test("desktop readiness check proves Tauri macOS shell prerequisites", () => {
    * ★ `own-origin route payloads` is load-bearing. Without `'self'` in `connect-src` the App
    * Router cannot read the arriving route out of the bundle and every rail press in the
    * installed app becomes a full document load (inspection 122, B1/R1 — the measurement is in
-   * `scripts/lib/desktop-csp.mjs`).
+   * `scripts/lib/desktop/desktop-csp.mjs`).
    */
   assert.match(
     result.stdout,

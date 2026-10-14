@@ -3,7 +3,7 @@
  * legible**.
  *
  * **What this file does — collection, not judgement.** The computation lives in
- * `scripts/lib/contrast.mjs` (pure functions with fixture probes in
+ * `scripts/lib/design/contrast.mjs` (pure functions with fixture probes in
  * `tests/contract/contrast.contract.test.ts`). What happens here is **resolving the
  * real background**: walking up the ancestors and compositing translucent
  * backgrounds in order. This app uses alpha tokens for text and borders, so skipping
@@ -18,8 +18,8 @@
 import { chromium } from "@playwright/test";
 import { rmSync } from "node:fs";
 
-import { judgeText, judgeAdjacentMarks } from "./lib/contrast.mjs";
-import { collectAdjacentMarks } from "./lib/contrast-collect.mjs";
+import { judgeText, judgeAdjacentMarks } from "./lib/design/contrast.mjs";
+import { collectAdjacentMarks } from "./lib/design/contrast-collect.mjs";
 
 
 const [, , maybeBase, ...maybeRoutes] = process.argv;

@@ -5,8 +5,8 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { pathToFileURL } from 'node:url';
 
-import { relatedMessagesCommand } from './check-rules/i18n.mjs';
-import { rules as SECURITY_RULES } from './check-rules/security.mjs';
+import { relatedMessagesCommand } from '../check-rules/i18n.mjs';
+import { rules as SECURITY_RULES } from '../check-rules/security.mjs';
 
 import {
   CHECK_RULES_DIRECTORY,
@@ -88,7 +88,7 @@ describe('focused check suggestions', () => {
       ['mcp/src/server/tool-schemas/destructive-preview.mjs', 'pnpm integration:mcp:write'],
       ['mcp/src/tools/repo-analysis.mjs', 'pnpm integration:mcp:repo-analysis'],
       ['.claude/skills/ontology-field-trial/scripts/acp-replay.sh', 'pnpm exec vitest run tests/contract/field-trial-replay-scripts.contract.test.ts'],
-      ['scripts/lib/construction-prompts.mjs', 'pnpm exec vitest run tests/contract/field-trial-replay-scripts.contract.test.ts'],
+      ['scripts/lib/benchmark/construction-prompts.mjs', 'pnpm exec vitest run tests/contract/field-trial-replay-scripts.contract.test.ts'],
       ['docs/guide/body-backed-construction.md', 'pnpm exec vitest run tests/contract/guide-inbody-links.contract.test.ts'],
     ];
     assert.ok(subjects.length > 0);
@@ -155,7 +155,7 @@ describe('focused check suggestions', () => {
 
   it('suggests the living-document metadata gate for living docs only, never for frozen history or vault nodes', () => {
     const meta = 'pnpm docs:meta && pnpm docs:move -- --check';
-    for (const living of ['docs/contracts/analysis-records.md', 'docs/features/map/canvas.md', 'docs/records/README.md', 'docs/.moved.json', 'scripts/lib/doc-types.mjs']) {
+    for (const living of ['docs/contracts/analysis-records.md', 'docs/features/map/canvas.md', 'docs/records/README.md', 'docs/.moved.json', 'scripts/lib/docs/doc-types.mjs']) {
       assert.ok(commandNames(suggestFocusedChecks([living])).includes(meta), living);
     }
     for (const frozen of ['docs/DECISIONS.md', 'docs/records/decisions/x.md', 'docs/ontology/capabilities/x.md', 'docs/audits/x.md']) {
@@ -758,14 +758,14 @@ describe('focused check suggestions', () => {
 
   it('suggests narrow dogfood helper tests before broader dogfood gates', () => {
     const result = suggestFocusedChecks([
-      'scripts/lib/dogfood-args.mjs',
+      'scripts/lib/dogfood-walk/dogfood-args.mjs',
       'scripts/dogfood-compile-fix.test.mjs',
       'scripts/dogfood-status.mjs',
       'scripts/dogfood-graph-db-pack.mjs',
     ]);
 
     assert.deepEqual(domainCommands(result), [
-      'pnpm exec node --test scripts/lib/dogfood-args.test.mjs',
+      'pnpm exec node --test scripts/lib/dogfood-walk/dogfood-args.test.mjs',
       'pnpm exec node --test scripts/dogfood-compile-fix.test.mjs',
       'pnpm exec node --test scripts/dogfood-status.test.mjs',
       'pnpm exec node --test scripts/dogfood-graph-db-pack.test.mjs',
@@ -782,18 +782,18 @@ describe('focused check suggestions', () => {
     const result = suggestFocusedChecks([
       'scripts/run-focused-node-test.mjs',
       'scripts/run-focused-node-test.test.mjs',
-      'scripts/lib/focused-check-suggestions.mjs',
+      'scripts/lib/ci/focused-check-suggestions.mjs',
       'scripts/lib/pnpm-script-refs.mjs',
-      'scripts/lib/test-name-pattern.mjs',
-      'scripts/lib/test-name-pattern.test.mjs',
+      'scripts/lib/ci/test-name-pattern.mjs',
+      'scripts/lib/ci/test-name-pattern.test.mjs',
     ]);
 
     assert.deepEqual(domainCommands(result), [
       'pnpm test:ci:impact',
       'pnpm exec node --test scripts/run-focused-node-test.test.mjs',
-      'pnpm exec node --test scripts/lib/focused-check-suggestions.test.mjs',
+      'pnpm exec node --test scripts/lib/ci/focused-check-suggestions.test.mjs',
       'pnpm exec node --test scripts/lib/pnpm-script-refs.test.mjs',
-      'pnpm exec node --test scripts/lib/test-name-pattern.test.mjs',
+      'pnpm exec node --test scripts/lib/ci/test-name-pattern.test.mjs',
       'pnpm test:dogfood:script-refs',
       'pnpm test:checks:changed',
     ]);
@@ -808,11 +808,11 @@ describe('focused check suggestions', () => {
     );
     assert.deepEqual(
       result.commands.find(
-        (row) => row.command === 'pnpm exec node --test scripts/lib/test-name-pattern.test.mjs',
+        (row) => row.command === 'pnpm exec node --test scripts/lib/ci/test-name-pattern.test.mjs',
       )?.paths,
       [
-      'scripts/lib/test-name-pattern.mjs',
-      'scripts/lib/test-name-pattern.test.mjs',
+      'scripts/lib/ci/test-name-pattern.mjs',
+      'scripts/lib/ci/test-name-pattern.test.mjs',
       ],
     );
   });
@@ -907,8 +907,8 @@ describe('focused check suggestions', () => {
       'scripts/desktop-smoke.test.mjs',
       'scripts/verify-macos-dmg.mjs',
       'scripts/verify-macos-install-smoke.mjs',
-      'scripts/lib/macos-dmg-layout.mjs',
-      'scripts/lib/redact-command.mjs',
+      'scripts/lib/macos-artifact/macos-dmg-layout.mjs',
+      'scripts/lib/desktop-release/redact-command.mjs',
       'scripts/check-macos-download-release.mjs',
       'docs/DESKTOP-MACOS.md',
       'src/shared/lib/vault-folder/tauri-vault-fs.ts',
@@ -927,8 +927,8 @@ describe('focused check suggestions', () => {
       'pnpm exec node --test scripts/desktop-doctor.test.mjs',
       'pnpm exec node --test scripts/desktop-smoke.test.mjs',
       'pnpm exec node --test scripts/verify-macos-install-smoke.test.mjs',
-      'pnpm exec node --test scripts/lib/macos-dmg-layout.test.mjs',
-      'pnpm exec node --test scripts/lib/redact-command.test.mjs',
+      'pnpm exec node --test scripts/lib/macos-artifact/macos-dmg-layout.test.mjs',
+      'pnpm exec node --test scripts/lib/desktop-release/redact-command.test.mjs',
       'pnpm exec eslint --max-warnings 0 src/shared/lib/vault-folder/tauri-vault-fs.ts src/shared/lib/vault-folder/tauri-vault-fs.test.ts ' +
         'src/views/root-entry/ui/RootEntryPage.tsx src/views/root-entry/ui/RootEntryPage.test.tsx ' +
         'src/views/docs-vault/lib/persistence.ts src/views/docs-vault/ui/DocsVaultPage.tsx ' +
@@ -1513,10 +1513,10 @@ describe('focused check suggestions', () => {
     );
     assert.deepEqual(
       domainCommands(
-        suggestFocusedChecks(['scripts/lib/check-mcp-source-dependencies.mjs']),
+        suggestFocusedChecks(['scripts/lib/dogfood-walk/check-mcp-source-dependencies.mjs']),
       ),
       [
-        'pnpm exec node --test scripts/lib/check-mcp-source-dependencies.test.mjs',
+        'pnpm exec node --test scripts/lib/dogfood-walk/check-mcp-source-dependencies.test.mjs',
         'pnpm test:dogfood:script-refs',
       ],
     );
@@ -1641,12 +1641,12 @@ describe('focused check suggestions', () => {
 
   it('suggests the advisor self-test when the focused-check advisor changes', () => {
     const result = suggestFocusedChecks([
-      'scripts/lib/focused-check-suggestions.mjs',
+      'scripts/lib/ci/focused-check-suggestions.mjs',
       'scripts/suggest-focused-checks.test.mjs',
     ]);
 
     assert.deepEqual(domainCommands(result), [
-      'pnpm exec node --test scripts/lib/focused-check-suggestions.test.mjs',
+      'pnpm exec node --test scripts/lib/ci/focused-check-suggestions.test.mjs',
       'pnpm exec node --test scripts/suggest-focused-checks.test.mjs',
       'pnpm test:ci:impact',
       'pnpm test:checks:changed',
@@ -1659,8 +1659,8 @@ describe('focused check suggestions', () => {
       'scripts/classify-change.test.mjs',
       'scripts/run-ci-lane.mjs',
       'scripts/run-ci-lane.test.mjs',
-      'scripts/lib/focused-check-suggestions.mjs',
-      'scripts/lib/focused-check-suggestions.test.mjs',
+      'scripts/lib/ci/focused-check-suggestions.mjs',
+      'scripts/lib/ci/focused-check-suggestions.test.mjs',
       'scripts/suggest-focused-checks.mjs',
       'scripts/suggest-focused-checks.test.mjs',
       '.github/workflows/checks.yml',
@@ -1680,9 +1680,9 @@ describe('focused check suggestions', () => {
   it('routes every active PO policy surface to the outcome-router and sunset contracts', () => {
     const commands = ['pnpm test:po', 'pnpm po:pilot -- --check'];
     const paths = [
-      'scripts/lib/po-risk-router.mjs',
+      'scripts/lib/records/po-risk-router.mjs',
       'scripts/po-risk-router.mjs',
-      'scripts/lib/po-pilot.mjs',
+      'scripts/lib/records/po-pilot.mjs',
       'scripts/po-pilot.mjs',
       'scripts/check-decision-record.mjs',
       'tests/contract/po-route.contract.test.ts',
@@ -1708,9 +1708,9 @@ describe('focused check suggestions', () => {
 
   it('routes every active design policy surface to the fact-derived proof contracts', () => {
     const paths = [
-      'scripts/lib/design-proof-router.mjs',
+      'scripts/lib/design/design-proof-router.mjs',
       'scripts/design-proof-router.mjs',
-      'scripts/lib/design-spec-census.mjs',
+      'scripts/lib/design/design-spec-census.mjs',
       'scripts/check-decision-record.mjs',
       'tests/contract/design-proof-router.contract.test.ts',
       'tests/contract/design-spec-ledger.contract.test.ts',
@@ -2084,11 +2084,11 @@ describe('node tests for a changed script', () => {
     const markdown = commandsFor(['scripts/quality/markdown-language/inventory.mjs']);
     assert.ok(markdown.includes('pnpm exec node --test scripts/quality/markdown-language/inventory.test.mjs'));
     assert.ok(!markdown.includes('pnpm exec node --test scripts/quality/source-language/inventory.test.mjs'));
-    assert.ok(commandsFor(['scripts/lib/ui-audit-checks.mjs']).includes('pnpm exec node --test scripts/ui-audit.test.mjs'));
+    assert.ok(commandsFor(['scripts/lib/design/ui-audit-checks.mjs']).includes('pnpm exec node --test scripts/ui-audit.test.mjs'));
   });
 
   it('lists a command once even when two rules reach it', () => {
-    const commands = commandsFor(['scripts/lib/focused-check-suggestions.mjs', 'scripts/suggest-focused-checks.mjs']);
+    const commands = commandsFor(['scripts/lib/ci/focused-check-suggestions.mjs', 'scripts/suggest-focused-checks.mjs']);
     assert.equal(commands.length, new Set(commands).size);
   });
 });

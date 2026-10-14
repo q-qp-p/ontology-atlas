@@ -382,11 +382,11 @@ test('a checkout with no mcp/ records null, not an empty list, and says why', as
     for (const relative of [
       'scripts/build-docs-vault.mjs',
       'scripts/lib/parse-frontmatter.mjs',
-      'scripts/lib/record-ledgers.mjs',
-      'scripts/lib/po-pilot-records.mjs',
-      'scripts/lib/po-pilot.mjs',
-      'scripts/lib/po-risk-router.mjs',
-      'scripts/lib/decision-record-template.mjs',
+      'scripts/lib/records/record-ledgers.mjs',
+      'scripts/lib/records/po-pilot-records.mjs',
+      'scripts/lib/records/po-pilot.mjs',
+      'scripts/lib/records/po-risk-router.mjs',
+      'scripts/lib/records/decision-record-template.mjs',
     ]) {
       cpSync(path.join(SOURCE_ROOT, relative), path.join(root, relative));
     }

@@ -4,13 +4,13 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { isCommentOnlyChange, supportsCommentOnlyCheck } from './lib/comment-only-change.mjs';
-import { contentTree, proofFile, proofToRecord, recordProof, treeOf } from './lib/focused-checks-proof.mjs';
+import { isCommentOnlyChange, supportsCommentOnlyCheck } from './lib/ci/comment-only-change.mjs';
+import { contentTree, proofFile, proofToRecord, recordProof, treeOf } from './lib/ci/focused-checks-proof.mjs';
 
 import {
   formatFocusedCheckSuggestions,
   suggestFocusedChecks,
-} from './lib/focused-check-suggestions.mjs';
+} from './lib/ci/focused-check-suggestions.mjs';
 
 const SHARED_AGENT_CONFIG_PATTERNS = [
   /^\.agents\/skills\/[^/]+\/SKILL\.md$/,

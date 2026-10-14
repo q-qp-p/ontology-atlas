@@ -127,7 +127,7 @@ the fields only the card read (`frontmatter`, `omittedLines`, `file`, `url`, `va
 (`scripts/check-hosted-download-surface.mjs:289-290`) to `download.screens.title` until slice 2 adds its titles; its `:301`
 needle `primaryCtaPublished`, rendered today only by the closing band, comes from the hero link of #2420;
 `scripts/desktop-smoke.mjs:88-93`, `:153-157`; the `trustVerifyCommand` checks (`check-desktop-readiness.mjs:986`,
-`validate-messages.test.mjs:127`, `check-translation-coverage.mjs:85-86`, `lib/locale-vocabulary.mjs:103-104`,
+`validate-messages.test.mjs:127`, `check-translation-coverage.mjs:85-86`, `lib/i18n/locale-vocabulary.mjs:103-104`,
 `desktop-smoke.test.mjs:167`); `download-gateway-grid.spec.ts:561-606` opens `?hero=three&e2e=1`;
 `docs/features/download.md:32-37`, `:46-47`; `docs/guide/trust.md` gains both verify commands and the release-path sentences.
 

@@ -11,11 +11,11 @@ export const BROWSER_EXECUTION_SURFACE_PATTERNS = Object.freeze([
 ]);
 
 export const CI_PLANNER_SURFACE_PATTERNS = Object.freeze([
-  /^scripts\/(?:lib\/)?reviewed-main-push(?:\.test)?\.mjs$/,
+  /^scripts\/(?:lib\/ci\/)?reviewed-main-push(?:\.test)?\.mjs$/,
   /^scripts\/fixtures\/reviewed-main-push\.json$/,
   /^scripts\/classify-change(?:\.test)?\.mjs$/,
   /^scripts\/run-ci-lane(?:\.test)?\.mjs$/,
-  /^scripts\/lib\/focused-check-suggestions(?:\.test)?\.mjs$/,
+  /^scripts\/lib\/ci\/focused-check-suggestions(?:\.test)?\.mjs$/,
   /^scripts\/lib\/check-rules\//,
   /^scripts\/lib\/import-graph\//,
   /^scripts\/suggest-focused-checks(?:\.test)?\.mjs$/,
@@ -47,14 +47,14 @@ export const rules = [
     order: 80,
     command: 'pnpm test:pr:land',
     reason: 'the landing sequence or its state machine changed',
-    matches: [/^scripts\/pr-land(?:\.test)?\.mjs$/, /^scripts\/lib\/landing-train(?:\.test)?\.mjs$/],
+    matches: [/^scripts\/pr-land(?:\.test)?\.mjs$/, /^scripts\/lib\/landing\/landing-train(?:\.test)?\.mjs$/],
   },
   {
     order: 640,
     command: 'pnpm test:checks:changed',
     reason: 'changed-path focused-check advisor changed',
     matches: [
-      /^scripts\/lib\/focused-check-suggestions\.(?:mjs|test\.mjs)$/,
+      /^scripts\/lib\/ci\/focused-check-suggestions\.(?:mjs|test\.mjs)$/,
       /^scripts\/suggest-focused-checks\.(?:mjs|test\.mjs)$/,
       /^scripts\/lib\/check-rules\//,
       /^scripts\/lib\/import-graph\//,
@@ -82,13 +82,13 @@ export const rules = [
 
 export const directTests = {
   script: [
-    ['scripts/lib/run-main-copy.mjs', 'scripts/lib/run-main-copy.test.mjs'],
-    ['scripts/lib/run-main-copy.test.mjs', 'scripts/lib/run-main-copy.test.mjs'],
-    ['scripts/lib/playwright-server-owner.mjs', 'scripts/lib/playwright-server-owner.test.mjs'],
-    ['scripts/lib/playwright-server-owner.test.mjs', 'scripts/lib/playwright-server-owner.test.mjs'],
+    ['scripts/lib/landing/run-main-copy.mjs', 'scripts/lib/landing/run-main-copy.test.mjs'],
+    ['scripts/lib/landing/run-main-copy.test.mjs', 'scripts/lib/landing/run-main-copy.test.mjs'],
+    ['scripts/lib/ci/playwright-server-owner.mjs', 'scripts/lib/ci/playwright-server-owner.test.mjs'],
+    ['scripts/lib/ci/playwright-server-owner.test.mjs', 'scripts/lib/ci/playwright-server-owner.test.mjs'],
     ['scripts/bundle-branches.mjs', 'scripts/bundle-branches.test.mjs'],
     ['scripts/bundle-branches.test.mjs', 'scripts/bundle-branches.test.mjs'],
-    ['scripts/lib/focused-check-suggestions.mjs', 'scripts/lib/focused-check-suggestions.test.mjs'],
+    ['scripts/lib/ci/focused-check-suggestions.mjs', 'scripts/lib/ci/focused-check-suggestions.test.mjs'],
   ],
   focusedCheck: [
     ['scripts/suggest-focused-checks.mjs', 'scripts/suggest-focused-checks.test.mjs'],

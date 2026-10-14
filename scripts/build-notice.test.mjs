@@ -11,7 +11,7 @@ import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 
 import { INVENTORY_MARKER, LICENSES_FILE, NOTICE_FILE, buildNotice, buildOutputs, normalizeLicense } from "./build-notice.mjs";
-import { normalizeLicenseText, packageLicenseText, selectLicenseFiles } from "./lib/third-party-licenses.mjs";
+import { normalizeLicenseText, packageLicenseText, selectLicenseFiles } from "./lib/licenses/third-party-licenses.mjs";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const NOTICE = fs.readFileSync(path.join(REPO_ROOT, NOTICE_FILE), "utf8");

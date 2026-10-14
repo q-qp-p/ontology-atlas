@@ -16,8 +16,8 @@ import { execSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseFrontmatter } from './lib/parse-frontmatter.mjs';
-import { readPoPilotSource } from './lib/po-pilot-records.mjs';
-import { readLedgerSource } from './lib/record-ledgers.mjs';
+import { readPoPilotSource } from './lib/records/po-pilot-records.mjs';
+import { readLedgerSource } from './lib/records/record-ledgers.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');

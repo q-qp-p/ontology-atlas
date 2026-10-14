@@ -12,11 +12,11 @@ import {
   designSpecChangesBetween,
   parseTriggerFiles,
   SPEC_RULE_DOC,
-} from "./lib/design-spec-census.mjs";
+} from "./lib/design/design-spec-census.mjs";
 import { parseLedger } from "./decisions-find.mjs";
-import { isCommentOnlyChange } from "./lib/comment-only-change.mjs";
-import { FIELDS, LIMITS, TEMPLATE, checkLedgerTemplate } from "./lib/decision-record-template.mjs";
-import { readLedgerSource } from "./lib/record-ledgers.mjs";
+import { isCommentOnlyChange } from "./lib/ci/comment-only-change.mjs";
+import { FIELDS, LIMITS, TEMPLATE, checkLedgerTemplate } from "./lib/records/decision-record-template.mjs";
+import { readLedgerSource } from "./lib/records/record-ledgers.mjs";
 
 const LEDGER = "docs/DECISIONS.md";
 

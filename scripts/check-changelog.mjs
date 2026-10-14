@@ -4,13 +4,13 @@
  * template, and the file keeps one Unreleased entry at the top.
  *
  * The template and the measurement behind it live in
- * `scripts/lib/changelog-entry-template.mjs`. This gate runs inside
+ * `scripts/lib/records/changelog-entry-template.mjs`. This gate runs inside
  * `pnpm docs:check`, so the pre-push docs lane and CI see it; it judges shape
  * and size, not whether the entry says anything true.
  */
 
-import { CATEGORIES, LIMITS, TEMPLATE, checkChangelogTemplate, parseChangelog } from './lib/changelog-entry-template.mjs';
-import { readLedgerSource } from './lib/record-ledgers.mjs';
+import { CATEGORIES, LIMITS, TEMPLATE, checkChangelogTemplate, parseChangelog } from './lib/records/changelog-entry-template.mjs';
+import { readLedgerSource } from './lib/records/record-ledgers.mjs';
 
 const FILE = 'docs/CHANGELOG.md';
 

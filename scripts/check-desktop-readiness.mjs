@@ -4,10 +4,10 @@ import path from "node:path";
 import {
   evaluateAgentSetupGate,
   evaluateDesktopReleasePreflight,
-} from "./lib/release-script-contract.mjs";
-import { inspectCodexRunContract } from "./lib/codex-run-contract.mjs";
-import { connectSrcIsExact, DESKTOP_CONNECT_SRC_TOKENS } from "./lib/desktop-csp.mjs";
-import { matches, matchesAll } from "./lib/locale-vocabulary.mjs";
+} from "./lib/desktop/release-script-contract.mjs";
+import { inspectCodexRunContract } from "./lib/desktop/codex-run-contract.mjs";
+import { connectSrcIsExact, DESKTOP_CONNECT_SRC_TOKENS } from "./lib/desktop/desktop-csp.mjs";
+import { matches, matchesAll } from "./lib/i18n/locale-vocabulary.mjs";
 import { blankComments } from "./quality/source-language/inventory.mjs";
 
 const root = process.cwd();
@@ -119,7 +119,7 @@ const notarizeMacosDmgScript = readText("scripts/notarize-macos-dmg.mjs");
 const buildMacosReleaseArtifactScript = readText("scripts/build-macos-release-artifact.mjs");
 const releaseSourceScript = readText("scripts/check-macos-release-source.mjs");
 const releaseSecretsScript = readText("scripts/check-macos-release-secrets.mjs");
-const notaryCredentialsHelper = readText("scripts/lib/notary-credentials.mjs");
+const notaryCredentialsHelper = readText("scripts/lib/desktop-release/notary-credentials.mjs");
 const releaseTagScript = readText("scripts/check-macos-release-tag.mjs");
 const releaseSlotScript = readText("scripts/check-macos-release-slot.mjs");
 const releaseGithubScript = readText("scripts/check-macos-release-github.mjs");
@@ -444,13 +444,13 @@ if (
   pkg.scripts?.["test:desktop:check"]?.includes("scripts/check-macos-release-status.test.mjs") &&
   pkg.scripts?.["test:desktop:check"]?.includes("scripts/watch-macos-release-run.test.mjs") &&
   pkg.scripts?.["test:desktop:check"]?.includes("scripts/generate-download-release-facts.test.mjs") &&
-  pkg.scripts?.["test:desktop:check"]?.includes("scripts/lib/macos-checksum.test.mjs") &&
+  pkg.scripts?.["test:desktop:check"]?.includes("scripts/lib/macos-artifact/macos-checksum.test.mjs") &&
   pkg.scripts?.["test:desktop:check"]?.includes("scripts/lib/macos-release-names.test.mjs") &&
-  pkg.scripts?.["test:desktop:check"]?.includes("scripts/lib/release-script-contract.test.mjs")
+  pkg.scripts?.["test:desktop:check"]?.includes("scripts/lib/desktop/release-script-contract.test.mjs")
 ) {
   pass("desktop checker tests cover the GitHub release operator, source, run-watch, checksum filename, and completion gates");
 } else {
-  fail("package.json test:desktop:check must include scripts/check-macos-release-github.test.mjs, scripts/check-macos-release-source.test.mjs, scripts/watch-macos-release-run.test.mjs, scripts/check-macos-release-status.test.mjs, scripts/generate-download-release-facts.test.mjs, scripts/lib/macos-checksum.test.mjs, and scripts/lib/macos-release-names.test.mjs so the macOS release operator, source, run-watch, checksum filename, completion, and app-vs-asset naming gates stay covered");
+  fail("package.json test:desktop:check must include scripts/check-macos-release-github.test.mjs, scripts/check-macos-release-source.test.mjs, scripts/watch-macos-release-run.test.mjs, scripts/check-macos-release-status.test.mjs, scripts/generate-download-release-facts.test.mjs, scripts/lib/macos-artifact/macos-checksum.test.mjs, and scripts/lib/macos-release-names.test.mjs so the macOS release operator, source, run-watch, checksum filename, completion, and app-vs-asset naming gates stay covered");
 }
 
 // This suite owns 52 loopback-server call sites. Node 24 otherwise uses all 12
@@ -1557,7 +1557,7 @@ if (missingFolderUsageKeys.length === 0) {
   );
 }
 
-/** The `connect-src` list and why `'self'` is on it live in `scripts/lib/desktop-csp.mjs`. */
+/** The `connect-src` list and why `'self'` is on it live in `scripts/lib/desktop/desktop-csp.mjs`. */
 const tauriCsp = tauriConfig?.app?.security?.csp;
 if (
   tauriCsp &&

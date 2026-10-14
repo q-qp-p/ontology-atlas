@@ -479,7 +479,7 @@ jobs:
       # These readers parse authored Markdown, which is what a CRLF checkout changes.
       # They need no dependency tree of their own, so they cost seconds.
       - name: Ledger readers on a native CRLF checkout
-        run: node --test scripts/lib/record-ledgers.test.mjs scripts/lib/changelog-entry-template.test.mjs scripts/decisions-find.test.mjs scripts/lib/po-pilot-records.test.mjs
+        run: node --test scripts/lib/records/record-ledgers.test.mjs scripts/lib/records/changelog-entry-template.test.mjs scripts/decisions-find.test.mjs scripts/lib/records/po-pilot-records.test.mjs
 
       - name: Compose the changelog and the decision ledger
         run: |

@@ -15,7 +15,7 @@ import {
   isHistoricalDoc,
   linkFragment,
   stripFencedBlocks,
-} from './lib/doc-links.mjs';
+} from './lib/docs/doc-links.mjs';
 import { checkFile, listMarkdownFiles, parseArgs, resolveLinkTarget, usage } from './check-doc-links.mjs';
 
 function withRepo(files, fn) {

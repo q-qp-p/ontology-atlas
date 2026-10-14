@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
-import { runDevChecksCheck } from '../check-dev-checks.mjs';
+import { runDevChecksCheck } from '../../check-dev-checks.mjs';
 import {
   FIELDS,
   TEMPLATE,

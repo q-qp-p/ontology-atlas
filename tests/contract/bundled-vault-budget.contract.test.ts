@@ -7,7 +7,7 @@ import {
   GATEWAY_CHANGELOG_KEEP_SECTIONS,
   trimToRecentSections as generatorTrim,
 } from '../../scripts/build-docs-vault.mjs';
-import { readLedgerSource } from '../../scripts/lib/record-ledgers.mjs';
+import { readLedgerSource } from '../../scripts/lib/records/record-ledgers.mjs';
 
 /**
  * Always-on size gate: data JSON statically imported into the shared chunk is measurable as file

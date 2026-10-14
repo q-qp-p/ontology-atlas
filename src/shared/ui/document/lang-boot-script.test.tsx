@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { readGlobalCss } from "../../../../scripts/lib/global-css.mjs";
+import { readGlobalCss } from "../../../../scripts/lib/design/global-css.mjs";
 import { LangBootScript } from "./lang-boot-script";
 
 const STORED_ACCENT_KEY = "ontology-atlas:accent:v1";

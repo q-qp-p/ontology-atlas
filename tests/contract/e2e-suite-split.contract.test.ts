@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import playwrightConfig, { resolvePlaywrightWorkers } from '../../playwright.config';
-import { loadCheckRules } from '../../scripts/lib/focused-check-suggestions.mjs';
+import { loadCheckRules } from '../../scripts/lib/ci/focused-check-suggestions.mjs';
 import { POST_MERGE_SPECS } from '../e2e/post-merge-specs';
 
 /**

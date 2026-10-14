@@ -23,7 +23,7 @@ import {
   isExternalTarget,
   isHistoricalDoc,
   linkFragment,
-} from './lib/doc-links.mjs';
+} from './lib/docs/doc-links.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');

@@ -1,13 +1,13 @@
 /**
  * Graph readability measurement: collection, not judgement. It pulls coordinates only; the metrics
- * are computed in `scripts/lib/graph-readability.mjs`, which is pure and probeable with fixtures.
+ * are computed in `scripts/lib/design/graph-readability.mjs`, which is pure and probeable with fixtures.
  * Usage: `node scripts/measure-graph-readability.mjs [baseUrl]` on a static export.
  */
 
 import { chromium } from "@playwright/test";
 import { rmSync } from "node:fs";
 
-import { measureReadability } from "./lib/graph-readability.mjs";
+import { measureReadability } from "./lib/design/graph-readability.mjs";
 
 const BASE = process.argv[2] ?? "http://localhost:4173";
 const PROFILE = `/tmp/atlas-readability-${process.pid}`;

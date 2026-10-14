@@ -227,7 +227,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 **Run**: `pnpm checks:changed`
 **Proves**: The changed tracked and untracked file set maps to first checks and explicit escalation gates.
 **Escalate**: none.
-**Fix**: To add a check, add a rule file under `scripts/lib/check-rules/<area>.mjs` (or a rule to the area file that owns the subject); the advisor loads that directory itself, so no index or other file changes. The `scripts/lib/focused-check-suggestions.mjs` header owns the rule shape and `order`.
+**Fix**: To add a check, add a rule file under `scripts/lib/check-rules/<area>.mjs` (or a rule to the area file that owns the subject); the advisor loads that directory itself, so no index or other file changes. The `scripts/lib/ci/focused-check-suggestions.mjs` header owns the rule shape and `order`.
 
 ### CI impact plan
 
@@ -499,7 +499,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 **Run**: `pnpm test:dogfood:script-refs`
 **Proves**: Help text and package-script bodies' `pnpm` references, including directory-scoped mcp/cli examples, resolve to real scripts, and focused Node test wrappers fail on a 0-match pattern instead of passing
-**Escalate**: none; run the printed direct sibling test for `scripts/lib/test-name-pattern.mjs` or `scripts/lib/pnpm-script-refs.mjs` first when `checks:changed` names one
+**Escalate**: none; run the printed direct sibling test for `scripts/lib/ci/test-name-pattern.mjs` or `scripts/lib/pnpm-script-refs.mjs` first when `checks:changed` names one
 **Fix**: Correct the stale script name or path in the referencing help text or README, or fix the focused-pattern parsing helper it names
 
 ### Dogfood shortcut argument helper
@@ -572,7 +572,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 **Run**: `pnpm test:checks:changed`
 **Proves**: Changed-path recommendations retain their coverage; within one stable-checkout run, an earlier default full contract suite covers later default contract-only invocations, while flags, environment overrides, lifecycle hooks, and extra commands remain separate.
 **Escalate**: none.
-**Fix**: Use the direct `pnpm exec node --test scripts/lib/focused-check-suggestions.test.mjs` or `scripts/suggest-focused-checks.test.mjs` first when printed.
+**Fix**: Use the direct `pnpm exec node --test scripts/lib/ci/focused-check-suggestions.test.mjs` or `scripts/suggest-focused-checks.test.mjs` first when printed.
 
 ### Fresh-repo memory loop smoke
 
@@ -718,8 +718,8 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 **Run**: `pnpm docs:meta`
 **Proves**: Every living document under docs/ carries a kind, status and area that fit its folder, no ontology or hand-versioned key, and pointers (enforced_by, routes, decisions, superseded_by, guide registry) that resolve; a changed contract_version arrives with a decision that cites it. Headings and prose are not checked.
-**Escalate**: `pnpm test:docs:checks` when the kinds in `scripts/lib/doc-types.mjs`, a template or the check itself changes
-**Fix**: Start new documents with `pnpm doc:new`; add the missing key the message names; kinds and areas are listed in `scripts/lib/doc-types.mjs`.
+**Escalate**: `pnpm test:docs:checks` when the kinds in `scripts/lib/docs/doc-types.mjs`, a template or the check itself changes
+**Fix**: Start new documents with `pnpm doc:new`; add the missing key the message names; kinds and areas are listed in `scripts/lib/docs/doc-types.mjs`.
 
 ### Local pre-tag release preflight
 
@@ -792,7 +792,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 **Run**: `pnpm test:mcp:bundle`
 **Proves**: The bundle ships every declared server file with the one typed module stripped, the image's ownership label repeats the registry name, and the release uploads the exact artifact the registry entry points at.
 **Escalate**: `pnpm mcp:build-bundle` when the server's files or dependencies changed, since it boots the unpacked artifact
-**Fix**: Rebuild the bundle, or align `mcp/Dockerfile` and `scripts/lib/mcp-bundle.mjs` on one registry name
+**Fix**: Rebuild the bundle, or align `mcp/Dockerfile` and `scripts/lib/packaging/mcp-bundle.mjs` on one registry name
 
 ### MCP enum/argument suggestions
 
@@ -848,7 +848,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 **Run**: `pnpm mcp:registry:check`
 **Proves**: The image's ownership label still repeats the registry name and the artifact URL rule holds, before any release exists to publish.
 **Escalate**: `pnpm mcp:registry -- --tag=<published tag>` when an entry is actually going out; it validates the document the registry would reject
-**Fix**: Align `mcp/Dockerfile` and `scripts/lib/mcp-bundle.mjs` on one registry name, or shorten the registry description below the schema's 100 characters
+**Fix**: Align `mcp/Dockerfile` and `scripts/lib/packaging/mcp-bundle.mjs` on one registry name, or shorten the registry description below the schema's 100 characters
 
 ### MCP vault read tools
 
@@ -893,7 +893,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 **Run**: `pnpm test:pr:land`
 **Proves**: against a fake GitHub, queued pull requests merge behind one train CI run, conflicts eject one component, a red train bisects, the fast path needs all five rules, a `feat`, `fix`, `perf` or `design` pull request needs a change record or a `No change record:` reason, and `--plan` writes nothing; a real Git fixture keeps original commits reachable after merging.
 **Escalate**: `pnpm test:claude:hooks` when the landing guard changes, or `pnpm exec vitest run tests/contract/workflow-security.contract.test.ts` when a workflow trigger does
-**Fix**: repair `scripts/pr-land.mjs` (I/O) or `scripts/lib/landing-train.mjs` (decisions).
+**Fix**: repair `scripts/pr-land.mjs` (I/O) or `scripts/lib/landing/landing-train.mjs` (decisions).
 
 ### Moved documents
 
@@ -1084,7 +1084,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Source-checkout MCP dependency preflight
 
-**Run**: `node scripts/lib/check-mcp-source-dependencies.mjs`
+**Run**: `node scripts/lib/dogfood-walk/check-mcp-source-dependencies.mjs`
 **Proves**: The MCP runtime dependency inventory is non-empty, every declaration is exactly pinned, and each installed version matches `mcp/package.json`, including pnpm-linked installations.
 **Escalate**: `pnpm test:dogfood:script-refs` when the command guard changes; `pnpm test:cli:lib` when its shared resolver changes
 **Fix**: Run `pnpm --dir mcp install --frozen-lockfile` (a root install also does this outside CI); nothing installs dependencies at run time.

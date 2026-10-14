@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { FULL_LANE_COMMANDS } from "../../scripts/classify-change.mjs";
-import { suggestFocusedChecks } from "../../scripts/lib/focused-check-suggestions.mjs";
+import { suggestFocusedChecks } from "../../scripts/lib/ci/focused-check-suggestions.mjs";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 

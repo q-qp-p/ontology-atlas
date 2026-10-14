@@ -41,8 +41,8 @@ export const rules = [
     command: 'pnpm test:design-gates',
     reason: 'Atlas design proof routing, iterative Computer Use contract, motion evidence, or independent-review lens policy changed',
     matches: [
-      /^scripts\/(?:lib\/design-proof-router|design-proof-router)\.mjs$/,
-      /^scripts\/(?:lib\/design-spec-census|check-decision-record)\.mjs$/,
+      /^scripts\/(?:lib\/design\/design-proof-router|design-proof-router)\.mjs$/,
+      /^scripts\/(?:lib\/design\/design-spec-census|check-decision-record)\.mjs$/,
       /^tests\/contract\/(?:design-(?:proof-router|spec-ledger)|reviewer-wiring)\.contract\.test\.ts$/,
       /^docs\/PRODUCT-DESIGN-OPERATING-SYSTEM\.md$/,
       /^docs\/engineering\/motion-recording\.md$/,

@@ -27,7 +27,7 @@ import {
   diffSurface,
   namesMissingFromDoc,
   serializeSurface,
-} from './lib/docs-surface.mjs';
+} from './lib/docs/docs-surface.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');

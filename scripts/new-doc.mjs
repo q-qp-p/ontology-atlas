@@ -4,7 +4,7 @@
 //   pnpm doc:new -- --type=feature --area=library --slug=rounds [--title='Library rounds']
 //
 // It copies `docs/.templates/<type>.md`, fills the title, area and date, derives
-// the path from the kind (`scripts/lib/doc-types.mjs`), creates the file
+// the path from the kind (`scripts/lib/docs/doc-types.mjs`), creates the file
 // exclusively and prints the path. It edits no index: the Library tree and
 // `docs/README.md`'s folder table already cover a new document.
 //
@@ -15,7 +15,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { DOC_AREAS, DOC_TYPES, newDocPath } from './lib/doc-types.mjs';
+import { DOC_AREAS, DOC_TYPES, newDocPath } from './lib/docs/doc-types.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 

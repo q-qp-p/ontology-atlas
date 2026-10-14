@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { closestDogfoodOption, stripLeadingPnpmSeparator } from './lib/dogfood-args.mjs';
+import { closestDogfoodOption, stripLeadingPnpmSeparator } from './lib/dogfood-walk/dogfood-args.mjs';
 
 const STATUS_COMMANDS = [
   { label: 'health', args: ['cli/src/index.mjs', 'health', 'docs/ontology'] },

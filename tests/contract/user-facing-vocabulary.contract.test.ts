@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import en from '../../messages/en.json';
 import ko from '../../messages/ko.json';
-import { column } from '../../scripts/lib/locale-vocabulary.mjs';
+import { column } from '../../scripts/lib/i18n/locale-vocabulary.mjs';
 
 /**
  * One word per thing in the strings people read: this gate counts synonyms and does not pin prose.

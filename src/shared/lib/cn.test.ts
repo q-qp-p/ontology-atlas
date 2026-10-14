@@ -1,7 +1,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { cn, LEADING_RAMP_STEPS, RADIUS_RAMP_STEPS, TYPE_RAMP_STEPS } from './cn';
-import { readGlobalCss } from '../../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../../scripts/lib/design/global-css.mjs';
 
 /**
  * Ramp steps are derived from `app/globals.css`, not a hardcoded list, so a new step is in scope the

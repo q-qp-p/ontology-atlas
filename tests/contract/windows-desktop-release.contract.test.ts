@@ -46,7 +46,7 @@ describe('Windows desktop beta release contract', () => {
   });
 
   it('keeps the Windows sidecar and credential store native to Windows', () => {
-    const sidecar = read('scripts/lib/mcp-binary.mjs');
+    const sidecar = read('scripts/lib/packaging/mcp-binary.mjs');
     const cargo = read('src-tauri/Cargo.toml');
     const rustBridge = read('src-tauri/src/agent_setup.rs');
 

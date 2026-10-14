@@ -8,7 +8,7 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { parseSha256Checksum } from "./lib/macos-checksum.mjs";
+import { parseSha256Checksum } from "./lib/macos-artifact/macos-checksum.mjs";
 
 const ROOT = process.cwd();
 const OUTPUT_PATH = path.join(

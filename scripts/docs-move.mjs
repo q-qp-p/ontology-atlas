@@ -12,20 +12,20 @@
 //
 // Idempotent: a pair already moved is a no-op, a rewrite only ever replaces an
 // old path with a new one, and a second run changes nothing. Frozen history
-// (`scripts/lib/doc-types.mjs`) is never touched.
+// (`scripts/lib/docs/doc-types.mjs`) is never touched.
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { isFrozenRepoPath } from './lib/doc-types.mjs';
+import { isFrozenRepoPath } from './lib/docs/doc-types.mjs';
 import {
   collectHtmlAssetRefs,
   collectHtmlLinks,
   collectMarkdownLinks,
   isExternalTarget,
-} from './lib/doc-links.mjs';
+} from './lib/docs/doc-links.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TEXT_EXTENSIONS = new Set(['.ts', '.tsx', '.mjs', '.js', '.cjs', '.json', '.css', '.md', '.sh', '.rs', '.yml', '.yaml', '.toml', '.html']);

@@ -2,8 +2,8 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { classifySourcePath, isSupportedSourcePath } from '../quality/source-language/source-paths.mjs';
-import { extractCommentTokens } from '../quality/source-language/inventory.mjs';
+import { classifySourcePath, isSupportedSourcePath } from '../../quality/source-language/source-paths.mjs';
+import { extractCommentTokens } from '../../quality/source-language/inventory.mjs';
 
 const CANDIDATE = /^\/\/\s*Adapted from\b/;
 const MARKER = /^\/\/ Adapted from (https?:\/\/[^\s()]+) \(([A-Za-z0-9.+-]+), © ([^()\n]+?)\)$/;

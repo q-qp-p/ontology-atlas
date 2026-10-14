@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 // Same ESM import as the sibling contract: `require` bypasses the Vitest module graph, so editing
 // `contrast.mjs` would stop `pnpm checks:changed` recommending this contract.
-import { composite, contrastRatio, parseColor } from '../../scripts/lib/contrast.mjs';
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { composite, contrastRatio, parseColor } from '../../scripts/lib/design/contrast.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * Holds the map panel second ink ramp as properties, not values: legible on the panel surface,

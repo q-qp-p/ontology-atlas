@@ -5,8 +5,8 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { pathToFileURL } from "node:url";
-import { parseSha256Checksum } from "./lib/macos-checksum.mjs";
-import { parseHdiutilMountDir, verifyApplicationsSymlink } from "./lib/macos-dmg-layout.mjs";
+import { parseSha256Checksum } from "./lib/macos-artifact/macos-checksum.mjs";
+import { parseHdiutilMountDir, verifyApplicationsSymlink } from "./lib/macos-artifact/macos-dmg-layout.mjs";
 import { loadMacosReleaseNames } from "./lib/macos-release-names.mjs";
 import { verifyMcpBinary } from "./verify-mcp-binary.mjs";
 

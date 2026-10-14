@@ -1,7 +1,7 @@
 import { waitForDocumentPaint, waitForFiniteAnimations } from './visual-ready';
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
-import { judgeText } from "../../scripts/lib/contrast.mjs";
+import { judgeText } from "../../scripts/lib/design/contrast.mjs";
 import { AUDITED_ROUTES } from "./audited-routes";
 import { seedFirstRunSeen } from "./first-run-seed";
 

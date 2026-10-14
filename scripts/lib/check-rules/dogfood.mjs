@@ -8,8 +8,8 @@ export const rules = [
     matches: [
       /^package\.json$/,
       /^scripts\/lib\/pnpm-script-refs\.(?:mjs|test\.mjs)$/,
-      /^scripts\/lib\/test-name-pattern\.(?:mjs|test\.mjs)$/,
-      /^scripts\/lib\/check-mcp-source-dependencies\.(?:mjs|test\.mjs)$/,
+      /^scripts\/lib\/ci\/test-name-pattern\.(?:mjs|test\.mjs)$/,
+      /^scripts\/lib\/dogfood-walk\/check-mcp-source-dependencies\.(?:mjs|test\.mjs)$/,
       /^scripts\/run-focused-node-test\.(?:mjs|test\.mjs)$/,
       /^scripts\/dogfood-mcp-walk\.(?:mjs|test\.mjs)$/,
       /^cli\/src\/commands\/mcp-verify\.mjs$/,
@@ -29,7 +29,7 @@ export const rules = [
     order: 620,
     command: 'pnpm test:dogfood:args',
     reason: 'dogfood shortcut argument helper changed',
-    matches: [/^scripts\/lib\/dogfood-args\.(?:mjs|test\.mjs)$/],
+    matches: [/^scripts\/lib\/dogfood-walk\/dogfood-args\.(?:mjs|test\.mjs)$/],
   },
   {
     order: 630,
@@ -119,8 +119,8 @@ export const rules = [
 
 export const directTests = {
   script: [
-    ['scripts/lib/check-mcp-source-dependencies.mjs', 'scripts/lib/check-mcp-source-dependencies.test.mjs'],
-    ['scripts/lib/check-mcp-source-dependencies.test.mjs', 'scripts/lib/check-mcp-source-dependencies.test.mjs'],
+    ['scripts/lib/dogfood-walk/check-mcp-source-dependencies.mjs', 'scripts/lib/dogfood-walk/check-mcp-source-dependencies.test.mjs'],
+    ['scripts/lib/dogfood-walk/check-mcp-source-dependencies.test.mjs', 'scripts/lib/dogfood-walk/check-mcp-source-dependencies.test.mjs'],
     ['scripts/dogfood-compile-fix.mjs', 'scripts/dogfood-compile-fix.test.mjs'],
     ['scripts/dogfood-compile-fix.test.mjs', 'scripts/dogfood-compile-fix.test.mjs'],
     ['scripts/dogfood-mcp-walk.mjs', 'scripts/dogfood-mcp-walk.test.mjs'],
@@ -131,9 +131,9 @@ export const directTests = {
     ['scripts/dogfood-graph-db-pack.test.mjs', 'scripts/dogfood-graph-db-pack.test.mjs'],
     ['scripts/run-focused-node-test.mjs', 'scripts/run-focused-node-test.test.mjs'],
     ['scripts/run-focused-node-test.test.mjs', 'scripts/run-focused-node-test.test.mjs'],
-    ['scripts/lib/dogfood-args.mjs', 'scripts/lib/dogfood-args.test.mjs'],
-    ['scripts/lib/dogfood-args.test.mjs', 'scripts/lib/dogfood-args.test.mjs'],
+    ['scripts/lib/dogfood-walk/dogfood-args.mjs', 'scripts/lib/dogfood-walk/dogfood-args.test.mjs'],
+    ['scripts/lib/dogfood-walk/dogfood-args.test.mjs', 'scripts/lib/dogfood-walk/dogfood-args.test.mjs'],
     ['scripts/lib/pnpm-script-refs.mjs', 'scripts/lib/pnpm-script-refs.test.mjs'],
-    ['scripts/lib/test-name-pattern.mjs', 'scripts/lib/test-name-pattern.test.mjs'],
+    ['scripts/lib/ci/test-name-pattern.mjs', 'scripts/lib/ci/test-name-pattern.test.mjs'],
   ],
 };

@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
 import test from 'node:test';
 
-import { suggestFocusedChecks } from './lib/focused-check-suggestions.mjs';
+import { suggestFocusedChecks } from './lib/ci/focused-check-suggestions.mjs';
 import { commandsForLane } from './run-ci-lane.mjs';
 import {
   buildImpactPlan,
@@ -567,7 +567,7 @@ test('the perf lane starts only for code a measurement could import, and on ever
 test('CI regression-test edits run their checks without promoting unrelated product lanes', () => {
   for (const file of [
     'scripts/classify-change.test.mjs', 'scripts/run-ci-lane.test.mjs',
-    'scripts/lib/focused-check-suggestions.test.mjs', 'scripts/lib/import-graph/test-reach.test.mjs',
+    'scripts/lib/ci/focused-check-suggestions.test.mjs', 'scripts/lib/import-graph/test-reach.test.mjs',
     'scripts/run-playwright-ci.test.mjs', 'scripts/serve-static-export.test.mjs',
   ]) {
     const plan = buildImpactPlan({ files: [file] });

@@ -7,7 +7,7 @@ import ts from 'typescript';
 import { afterAll, describe, expect, it } from 'vitest';
 
 import { judgeRatchet, RAISES_DIR, type RatchetJudgement } from './lib/ratchet-base';
-import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
+import { readGlobalCss } from '../../scripts/lib/design/global-css.mjs';
 
 /**
  * Hand-written control classNames can never grow: button, anchor and form counts (registered, debt,

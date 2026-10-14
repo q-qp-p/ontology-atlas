@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { listLocales } from '../../scripts/build-messages.mjs';
 import { checkEntry, checkLocale } from '../../scripts/check-translation-coverage.mjs';
-import { KEEP_TERMS, keepTermsIn } from '../../scripts/lib/keep-terms.mjs';
+import { KEEP_TERMS, keepTermsIn } from '../../scripts/lib/i18n/keep-terms.mjs';
 
 const locales = listLocales().filter((locale) => locale !== 'en');
 

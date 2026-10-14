@@ -2,7 +2,7 @@
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { MCP_BINARY_NAME } from "./lib/mcp-binary.mjs";
+import { MCP_BINARY_NAME } from "./lib/packaging/mcp-binary.mjs";
 import { loadMacosReleaseNames } from "./lib/macos-release-names.mjs";
 import { verifyMcpExactCase } from "./verify-mcp-binary.mjs";
 
