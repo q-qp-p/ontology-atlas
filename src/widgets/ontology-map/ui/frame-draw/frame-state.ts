@@ -1,5 +1,5 @@
 import type { DomeNodeFrame } from "../../model/dome-view/runtime";
-import type { EvidenceLight } from "../../render/dome-light";
+import type { EvidenceLight } from "../../render/dome-view/dome-light";
 import { createStrataLodChords } from "../../model/dome-view/strata-lod";
 import type { PlacedRelationCaption } from "../../render/relation-captions";
 import type { TopologyWorld } from "../world/topology-world";

@@ -4,7 +4,7 @@ import type { CameraAxes } from "../engine/camera";
 import { edgeRevealProgress, type Point } from "../expressive/edge-reveal";
 import type { DomeRuntime } from "../model/dome-view/runtime";
 import type { TopologyMapLensKind } from "../model/visibility/path-lens";
-import { hexToRgb } from "../render/dome-light";
+import { hexToRgb } from "../render/dome-view/dome-light";
 import type { OntologyMapTokens } from "../tokens/read-map-tokens";
 import type { TopologyWorld } from "../ui/world/topology-world";
 import type { LightBatch, LightLayer } from "./light-layer";

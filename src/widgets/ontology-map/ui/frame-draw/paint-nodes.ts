@@ -15,7 +15,7 @@ import {
   EVIDENCE_EMISSION,
   focusFogFactor,
   type EvidenceLight,
-} from "../../render/dome-light";
+} from "../../render/dome-view/dome-light";
 import { realmDepthClarityAlpha, realmDepthClarityScale } from "../../model/realm/realm-transition";
 import { HITTABLE_MIN_TIER_ALPHA } from "../../model/visibility/tier-visibility";
 import { lerpColorHex } from "../../render/grid";

@@ -5,7 +5,7 @@ import type { FootprintInk } from "@/shared/lib/map-canvas/footprint-glyph";
 import type { ExpandPreference, FootprintPreference } from "@/shared/lib/preferences/appearance-preferences";
 import type { DomeNodeFrame } from "../../model/dome-view/runtime";
 import type { DomeViewKind } from "../../model/dome-view/types";
-import type { DomeLightFrame } from "../../render/dome-light";
+import type { DomeLightFrame } from "../../render/dome-view/dome-light";
 import type { TierRevealConfig } from "../../model/visibility/tier-visibility";
 import type { CanvasBackgroundVariant } from "../../render/grid";
 import type { ClusterBarLabels } from "../../render/cluster-chips";

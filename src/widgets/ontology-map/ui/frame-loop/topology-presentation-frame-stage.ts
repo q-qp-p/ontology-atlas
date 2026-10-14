@@ -13,7 +13,7 @@ import type { DomeViewKind } from "../../model/dome-view/types";
 import { stepFocusRamp } from "../../model/visibility/focus-state";
 import { fadeStrataLodOut, restStrataLod, stepStrataLod, type StrataLodState } from "../../model/dome-view/strata-lod";
 import { createStrataStage, sampleStrataStage } from "../../model/dome-view/strata-stage";
-import { hexToRgb, parseRgbTriple, type DomeLightFrame, type EvidenceLight, type Rgb } from "../../render/dome-light";
+import { hexToRgb, parseRgbTriple, type DomeLightFrame, type EvidenceLight, type Rgb } from "../../render/dome-view/dome-light";
 import {
   buildFootprintSteps,
   buildWalkedEdgeArrivalSteps,

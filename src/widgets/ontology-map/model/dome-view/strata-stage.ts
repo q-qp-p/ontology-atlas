@@ -3,7 +3,7 @@
  * grid on the lower three so a disc reads as a surface under perspective, and one sector
  * band per domain on the capability and element discs. Every node's bearing stays in its
  * domain's sector (`buildStrataTargets`), so a band draws a proven ownership fact. Geometry
- * only, through `projectDomePlanePoint` into reused arrays; paint is `render/dome-light.ts`.
+ * only, through `projectDomePlanePoint` into reused arrays; paint is `render/dome-view/dome-light.ts`.
  */
 import { DOME_PLANE } from "./cone-layout";
 import { projectDomePlanePoint, type DomePlaneSample } from "./frame";

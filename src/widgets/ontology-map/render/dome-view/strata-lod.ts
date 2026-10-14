@@ -1,5 +1,5 @@
 import type { EvidenceLight, Rgb } from "./dome-light";
-import { arrowHead, taperedCurve } from "./tapered-arrow";
+import { arrowHead, taperedCurve } from "../tapered-arrow";
 
 type StrataLodSheetKind = "fan" | "curtain" | "direct";
 

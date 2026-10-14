@@ -22,7 +22,7 @@ export const rules = [
     reason: "the Strata view's drawing changed",
     matches: [
       /^src\/widgets\/ontology-map\/model\/dome-view\/strata-stage\.ts$/,
-      /^src\/widgets\/ontology-map\/render\/dome-rings\.ts$/,
+      /^src\/widgets\/ontology-map\/render\/dome-view\/dome-rings\.ts$/,
     ],
   },
   {
@@ -31,7 +31,7 @@ export const rules = [
     reason: "Strata's level-of-detail draw budget and dust marks changed",
     matches: [
       /^src\/widgets\/ontology-map\/model\/dome-view\/strata-lod\.ts$/,
-      /^src\/widgets\/ontology-map\/render\/strata-lod\.ts$/,
+      /^src\/widgets\/ontology-map\/render\/dome-view\/strata-lod\.ts$/,
     ],
   },
   {

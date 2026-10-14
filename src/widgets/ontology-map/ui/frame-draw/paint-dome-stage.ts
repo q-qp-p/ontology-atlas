@@ -5,13 +5,13 @@ import {
   domeLineWidthFactor,
 } from "../../model/dome-view/ink";
 import type { DomeViewKind } from "../../model/dome-view/types";
-import { draw as domeRingsDraw } from "../../render/dome-rings";
-import { drawStrataStage, hexToRgb } from "../../render/dome-light";
+import { draw as domeRingsDraw } from "../../render/dome-view/dome-rings";
+import { drawStrataStage, hexToRgb } from "../../render/dome-view/dome-light";
 import {
   drawStrataLodChords,
   drawStrataLodSheets,
   type StrataLodChordDraw,
-} from "../../render/strata-lod";
+} from "../../render/dome-view/strata-lod";
 import { rollUpStrataDependencies } from "../../model/dome-view/strata-lod";
 import { lerpColorHex } from "../../render/grid";
 import type { WorldEdge } from "../world/topology-world";

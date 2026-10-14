@@ -12,7 +12,7 @@ import {
   domeEdgeWidthFactor,
   domeHaloPx,
 } from "../../model/dome-view/ink";
-import { focusFogFactor } from "../../render/dome-light";
+import { focusFogFactor } from "../../render/dome-view/dome-light";
 import {
   captionNormal,
   captionWithinFlatBudget,
