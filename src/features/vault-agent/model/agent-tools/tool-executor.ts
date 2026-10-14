@@ -8,13 +8,13 @@ import {
   type ConceptEvidenceInput,
 } from './concept-evidence-pack';
 import { findAgentTool } from './tool-catalog';
-import type { NormalizedToolCall } from './provider-adapter';
-import { AGENT_TOOL_RESULT_CHAR_CAP } from './types';
+import type { NormalizedToolCall } from '../providers/provider-adapter';
+import { AGENT_TOOL_RESULT_CHAR_CAP } from '../types';
 import type { VaultReadDoc, VaultReadPort } from './vault-read-port';
 import {
   containsCompetencyQualification,
   SOURCE_BACKED_COMPETENCY_MESSAGE,
-} from './competency-qualification-boundary';
+} from '../proposals/competency-qualification-boundary';
 
 export { GRAPH_FRONTMATTER_KEYS } from './concept-evidence-pack';
 

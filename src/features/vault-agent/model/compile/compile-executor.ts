@@ -1,12 +1,12 @@
 import type { WikiRetrievalResult } from '@/entities/docs-vault';
 
-import { wrapUntrusted } from './concept-evidence-pack';
+import { wrapUntrusted } from '../agent-tools/concept-evidence-pack';
 import {
   createCompileWikiReader,
   type CompileWikiReadState,
   type CompileWikiTarget,
 } from './compile-wiki-reader';
-import type { NormalizedToolCall } from './provider-adapter';
+import type { NormalizedToolCall } from '../providers/provider-adapter';
 import type { SourceReadPort } from './source-read-port';
 import {
   classifySourceFormat,
@@ -16,8 +16,8 @@ import {
   sourcePathProblem,
   SOURCE_TEXT_CHAR_CAP,
 } from './source-text';
-import type { ToolExecution } from './tool-executor';
-import { AGENT_TURN_VAULT_CHAR_CAP } from './types';
+import type { ToolExecution } from '../agent-tools/tool-executor';
+import { AGENT_TURN_VAULT_CHAR_CAP } from '../types';
 import {
   buildWikiPageProposal,
   type CompileSourceRead,

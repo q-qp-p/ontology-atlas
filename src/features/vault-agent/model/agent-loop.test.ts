@@ -7,8 +7,8 @@ import { anthropicAdapter } from './providers/anthropic';
 import { localAdapter } from './providers/local';
 import { PROVIDER_ADAPTERS } from './providers';
 import { EMPTY_SCREEN_CONTEXT } from './screen-context';
-import { AGENT_TOOLS } from './tool-catalog';
-import type { ToolExecution } from './tool-executor';
+import { AGENT_TOOLS } from './agent-tools/tool-catalog';
+import type { ToolExecution } from './agent-tools/tool-executor';
 import { AGENT_ROUND_CAP } from './types';
 
 const NOTICES: AgentLoopDeps['notices'] = {

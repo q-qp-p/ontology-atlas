@@ -8,16 +8,16 @@ import { useLocalVault, useVaultSessionIdentityScope } from "@/entities/vault-se
 import { llmChat, llmChatErrorMessage } from "@/shared/lib/llm-connection/tauri-llm";
 import { LOCAL_PROVIDER } from "@/shared/lib/llm-connection/tauri-secrets";
 
-import { runTurn, startTurn } from "./agent-loop";
+import { runTurn, startTurn } from "../agent-loop";
 import { compileAdapter } from "./compile-adapter";
 import { buildCompileConsentCard, type CompileConsentCard } from "./compile-consent-card";
 import { createCompileExecutor } from "./compile-executor";
 import { buildCompileSystemPrompt } from "./compile-system-prompt";
 import { COMPILE_ROUND_CAP, COMPILE_SOURCES_PER_TURN, COMPILE_TOOLS } from "./compile-tool-catalog";
-import { applyProposal } from "./proposal-applier";
+import { applyProposal } from "../proposals/proposal-applier";
 import type { SourceReadEntry, SourceReadPort } from "./source-read-port";
 import { classifySourceFormat } from "./source-text";
-import type { AgentTurn, ToolCallRecord } from "./types";
+import type { AgentTurn, ToolCallRecord } from "../types";
 
 /**
  * Compile run by the model on this computer, apart from `use-vault-agent.ts`'s ontology

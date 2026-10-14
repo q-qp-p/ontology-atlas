@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { AGENT_TOOLS } from './tool-catalog';
+import { AGENT_TOOLS } from '../agent-tools/tool-catalog';
 import { COMPILE_ROUND_CAP, COMPILE_SOURCES_PER_TURN, COMPILE_TOOLS } from './compile-tool-catalog';
 import { createCompileExecutor } from './compile-executor';
-import type { NormalizedToolCall } from './provider-adapter';
+import type { NormalizedToolCall } from '../providers/provider-adapter';
 import type { SourceReadEntry, SourceReadPort } from './source-read-port';
 import { SOURCE_TEXT_CHAR_CAP } from './source-text';
-import { AGENT_TURN_VAULT_CHAR_CAP } from './types';
+import { AGENT_TURN_VAULT_CHAR_CAP } from '../types';
 
 const PLAN = '# Quarter plan\n\nWe ship the Library in Q3.\n\nSources stay verbatim.';
 

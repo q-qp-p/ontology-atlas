@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildCompileConsentCard } from './compile-consent-card';
-import { applyProposal, type VaultWritePort } from './proposal-applier';
+import { applyProposal, type VaultWritePort } from '../proposals/proposal-applier';
 import type { WikiPageProposal } from './wiki-proposal';
 
 const LABELS = {

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   scope: 'local:first#1',
-  send: null as import('./agent-loop').AgentLoopDeps['send'] | null,
+  send: null as import('../agent-loop').AgentLoopDeps['send'] | null,
   resolveRun: null as ((value: { turn: unknown }) => void) | null,
   sourceHandles: new Map<string, { getFile: () => Promise<{ arrayBuffer: () => Promise<ArrayBuffer> }> }>(),
   fileHandles: new Map<string, { getFile: () => Promise<{ text: () => Promise<string>; lastModified: number }> }>(),
@@ -36,9 +36,9 @@ vi.mock('@/shared/lib/llm-connection/tauri-llm', () => ({
   llmChatErrorMessage: () => 'failed',
 }));
 
-vi.mock('./agent-loop', () => ({
+vi.mock('../agent-loop', () => ({
   startTurn: () => ({ id: 'turn-1' }),
-  runTurn: (deps: import('./agent-loop').AgentLoopDeps) => new Promise((resolve) => {
+  runTurn: (deps: import('../agent-loop').AgentLoopDeps) => new Promise((resolve) => {
     mocks.send = deps.send;
     mocks.resolveRun = resolve as (value: { turn: unknown }) => void;
   }),

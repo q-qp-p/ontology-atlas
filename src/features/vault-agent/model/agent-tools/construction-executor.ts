@@ -1,12 +1,12 @@
 import { containmentKeyFor } from '@/shared/lib/vault-document/containment-keys';
 import type { ConstructionSourcePreview, ConstructionSourceRange } from '@/shared/lib/llm-connection/tauri-local-construction';
-import type { NormalizedToolCall, ProviderAdapter } from './provider-adapter';
+import type { NormalizedToolCall, ProviderAdapter } from '../providers/provider-adapter';
 import type { AgentToolDefinition } from './tool-catalog';
 import type { ToolExecution } from './tool-executor';
 import type { VaultReadPort } from './vault-read-port';
 import { AGENT_TOOLS } from './tool-catalog';
 import { createToolExecutor } from './tool-executor';
-import { openaiAdapter } from './providers/openai';
+import { openaiAdapter } from '../providers/openai';
 
 export interface ConstructionSourcePort {
   preview:ConstructionSourcePreview;

@@ -23,7 +23,7 @@ import {
 } from "../../cli/src/lib/schema.mjs";
 import { parseFilter } from "../../mcp/src/query.mjs";
 import { buildNewNodeDoc } from "@/entities/docs-vault";
-import { buildProposal } from "@/features/vault-agent/model/proposal-builder";
+import { buildProposal } from "@/features/vault-agent/model/proposals/proposal-builder";
 import { VAULT_CREATED_BY_HUMAN } from "@/entities/docs-vault";
 
 const TEST_UID = "01890f3e-7b5d-4c0a-8f14-123456789abc";

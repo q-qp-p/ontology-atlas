@@ -30,11 +30,11 @@ Source baseline: `112127a49`. These are source facts, not runtime measurements.
   (`src/widgets/vault-agent-panel/ui/VaultAgentPanel.tsx:857`). Stop aborts its
   frontend controller and clears the running state
   (`src/widgets/vault-agent-panel/model/use-vault-agent.ts:165`). Local Compile
-  similarly returns to idle (`src/features/vault-agent/model/use-local-compile.ts:162`);
+  similarly returns to idle (`src/features/vault-agent/model/compile/use-local-compile.ts:162`);
   its running card has Stop (`src/views/library/ui/parts/LocalCompileCard.tsx:39`).
 - Both callers invoke `llmChat` without cancellation
   (`src/widgets/vault-agent-panel/model/use-vault-agent.ts:217`,
-  `src/features/vault-agent/model/use-local-compile.ts:235`). The loop's normal
+  `src/features/vault-agent/model/compile/use-local-compile.ts:235`). The loop's normal
   and closing requests have no cancellation parameter
   (`src/features/vault-agent/model/agent-loop.ts:31`, `:182`, `:311`).
 - The bridge has no cancellation argument (`src/shared/lib/llm-connection/tauri-llm.ts:74`),
@@ -46,7 +46,7 @@ Source baseline: `112127a49`. These are source facts, not runtime measurements.
   a time and refuses changed tail bytes (`src-tauri/src/llm_audit.rs:336`, `:367`).
 - Aborted results cannot produce a new proposal in either caller
   (`src/widgets/vault-agent-panel/model/use-vault-agent.ts:244`,
-  `src/features/vault-agent/model/use-local-compile.ts:255`). Local Compile only
+  `src/features/vault-agent/model/compile/use-local-compile.ts:255`). Local Compile only
   writes after its separate Allow action (`use-local-compile.ts:277`).
 
 Standing decisions: [2026-08-01 address connection](../DECISIONS.md#2026-08-01--the-fourth-connection-is-a-door-not-a-vendor-open-a-keyless-connect-by-address-branch-that-absorbs-ollama-lm-studio-and-llamacpp-into-one-place)

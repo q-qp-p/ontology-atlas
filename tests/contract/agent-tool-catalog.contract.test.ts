@@ -15,7 +15,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { AGENT_READ_TOOLS, AGENT_TOOLS, AGENT_WRITE_TOOLS } from '@/features/vault-agent/model/tool-catalog';
+import { AGENT_READ_TOOLS, AGENT_TOOLS, AGENT_WRITE_TOOLS } from '@/features/vault-agent/model/agent-tools/tool-catalog';
 
 const DEFINITIONS_DIR = join(__dirname, '../../mcp/src/server/tool-definitions');
 const MCP_SOURCE = readdirSync(DEFINITIONS_DIR)

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildWikiRetrievalIndex, type VaultDoc } from '@/entities/docs-vault';
-import { createCompileExecutor } from '@/features/vault-agent/model/compile-executor';
+import { createCompileExecutor } from '@/features/vault-agent/model/compile/compile-executor';
 import { parseFrontmatter } from '@/shared/lib/vault-document/parse-frontmatter';
 
 import { evaluateAccumulation } from '../../scripts/lib/wiki-accumulation-eval.mjs';

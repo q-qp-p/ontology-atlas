@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { runTurn, startTurn } from './agent-loop';
+import { runTurn, startTurn } from '../agent-loop';
 import { compileAdapter } from './compile-adapter';
 import { buildCompileConsentCard } from './compile-consent-card';
 import { createCompileExecutor } from './compile-executor';
 import { buildCompileSystemPrompt } from './compile-system-prompt';
 import { COMPILE_ROUND_CAP, COMPILE_SOURCES_PER_TURN, COMPILE_TOOLS } from './compile-tool-catalog';
-import { applyProposal, type VaultWritePort } from './proposal-applier';
+import { applyProposal, type VaultWritePort } from '../proposals/proposal-applier';
 import type { SourceReadPort } from './source-read-port';
-import type { ScreenContextSnapshot } from './types';
+import type { ScreenContextSnapshot } from '../types';
 
 /** The local Compile path end to end against a scripted OpenAI-compatible runner; only the applier writes. */
 

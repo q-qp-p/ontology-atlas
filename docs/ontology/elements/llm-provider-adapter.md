@@ -6,7 +6,7 @@ title: LLM provider adapter
 display_en: LLM provider adapter
 display_ko: LLM 공급자 어댑터
 domain: domains/agent-access
-path: src/features/vault-agent/model/provider-adapter.ts
+path: src/features/vault-agent/model/providers/provider-adapter.ts
 created_by: "agent:claude-code"
 ---
 

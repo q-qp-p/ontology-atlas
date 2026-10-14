@@ -1,6 +1,6 @@
 import { WIKI_SECTION_ORDER, WIKI_SOURCES_DIR } from '@/shared/lib/library/wiki-page-schema';
 
-import type { AgentToolDefinition } from './tool-catalog';
+import type { AgentToolDefinition } from '../agent-tools/tool-catalog';
 import { PARSER_SOURCE_FORMATS, READABLE_SOURCE_FORMATS, SOURCE_TEXT_CHAR_CAP } from './source-text';
 
 /**

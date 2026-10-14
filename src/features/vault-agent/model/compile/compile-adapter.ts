@@ -1,6 +1,6 @@
-import type { NormalizedResponse, ProviderAdapter, TurnAssembly } from './provider-adapter';
+import type { NormalizedResponse, ProviderAdapter, TurnAssembly } from '../providers/provider-adapter';
 import { isCompileWikiPath } from './compile-wiki-reader';
-import { openaiAdapter } from './providers/openai';
+import { openaiAdapter } from '../providers/openai';
 
 /** How many times one turn may be told to stop answering in prose and propose the page. */
 const COMPILE_NUDGE_CAP = 2;

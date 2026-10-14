@@ -6,7 +6,7 @@ title: Vault agent tool catalog
 display_en: Vault agent tool catalog
 display_ko: 볼트 에이전트 도구 목록
 domain: domains/agent-access
-path: src/features/vault-agent/model/tool-catalog.ts
+path: src/features/vault-agent/model/agent-tools/tool-catalog.ts
 created_by: "agent:claude-code"
 ---
 

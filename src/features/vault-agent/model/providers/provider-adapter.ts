@@ -1,6 +1,6 @@
 /** Where the three vendors take one form; Rust only handles secrets, transport and auditing. */
 
-import type { AgentJsonSchema, AgentToolDefinition } from './tool-catalog';
+import type { AgentJsonSchema, AgentToolDefinition } from '../agent-tools/tool-catalog';
 
 /** One tool result executed in a round trip. It is carried into the next round trip back to the model. */
 export interface ToolResultPayload {
