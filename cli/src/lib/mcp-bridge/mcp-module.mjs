@@ -181,7 +181,7 @@ async function importMcpModule(fileName) {
  * Imports `mcp/src/<fileName>` from the source checkout or the installed package. The in-flight promise is
  * cached, so batch and concurrent callers share one resolution.
  *
- * @param {string} fileName path inside `mcp/src`, e.g. `'schema.mjs'` or `'vault/absorb.mjs'`
+ * @param {string} fileName path inside `mcp/src`, e.g. `'vault/absorb.mjs'`
  * @returns {Promise<Record<string, unknown>>}
  */
 export async function loadMcpModule(fileName) {
