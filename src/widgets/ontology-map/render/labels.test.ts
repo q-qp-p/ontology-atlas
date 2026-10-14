@@ -170,7 +170,7 @@ describe("measureLabelVerticalMetrics: measured vertical extent", () => {
       measureText: () => (metrics ?? {}) as TextMetrics,
     }) as unknown as CanvasRenderingContext2D;
 
-  it("`fontBoundingBox*` 가 있으면 그 값을 쓴다", () => {
+  it("uses `fontBoundingBox*` when the browser reports it", () => {
     const ctx = ctxWith({ fontBoundingBoxAscent: 11, fontBoundingBoxDescent: 4 } as TextMetrics);
     // Results are cached per (kind, scale), so this test uses its own combination.
     const m = measureLabelVerticalMetrics(ctx, "element", 1.37);
