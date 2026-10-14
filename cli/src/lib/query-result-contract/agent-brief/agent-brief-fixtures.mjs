@@ -78,6 +78,21 @@ export function humanMeaningRepair(projectSlug) {
   };
 }
 
+export function humanMeaningRepairCompact(projectSlug) {
+  const { workflow, stopWhen: _stopWhen, writePolicy, ...rest } = humanMeaningRepair(projectSlug);
+  return {
+    ...rest,
+    contract: 'meaningRepairCompact:v1',
+    firstStep: workflow[0],
+    omitted: {
+      steps: workflow.slice(1).map((row) => row.step),
+      stopConditions: 9,
+      recovery: 'fullDetail',
+    },
+    writePolicy,
+  };
+}
+
 export function validAgentBrief() {
   return {
     operation: 'agent_brief',

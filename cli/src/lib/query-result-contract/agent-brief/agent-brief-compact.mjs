@@ -8,6 +8,7 @@ import {
   PROJECT_SOURCE_STATUSES,
   liveWitnessesSupported,
   validMeaningRepair,
+  validMeaningRepairCompact,
   validProjectSourceLive,
 } from '../project-source-meaning.mjs';
 import { assertQueryOperation } from '../query-operation.mjs';
@@ -99,7 +100,11 @@ export function assertAgentBriefCompactShape(result) {
   ) {
     throw new Error('agent_brief compact validation must preserve whole-vault problem and source-path status');
   }
-  if (!validMeaningRepair(result.meaningRepair, result.project.slug)) {
+  const repair = result.meaningRepair;
+  const repairValid = repair?.contract === 'meaningRepairCompact:v1'
+    ? validMeaningRepairCompact(repair, result.project.slug)
+    : validMeaningRepair(repair, result.project.slug);
+  if (!repairValid) {
     throw new Error('agent_brief compact meaningRepair must preserve the action-first human review packet');
   }
   if (!isPlainObject(result.purpose) || result.purpose.slug !== result.project.slug) {

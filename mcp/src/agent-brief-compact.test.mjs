@@ -284,6 +284,64 @@ DER parsing and unrelated encodings.
     }
   });
 
+  it('names the omitted repair steps and states them in the prompt only when review is required', () => {
+    const stepIds = [
+      'read_review_inputs', 'human_semantic_approval', 'write_approved_project_body',
+      'verify', 'refresh_conflict_guard', 'finalize',
+    ];
+    const withRepair = (status) => {
+      const row = structuredClone(brief);
+      row.meaningRepair.status = status;
+      row.meaningRepair.stopWhen = Array.from({ length: 9 }, (_, index) => `stop_${index}`);
+      if (status === 'human_review_required') {
+        row.meaningRepair.blockedBy = null;
+        row.meaningRepair.workflow = stepIds.map((step) => ({ step, calls: step === stepIds[0] ? [{ tool: 'query_ontology', arguments: {} }] : [] }));
+      }
+      return row;
+    };
+    const line = 'Meaning repair: human_review_required; step 1 of 6 is meaningRepair.firstStep; steps 2-6 (human_semantic_approval to finalize) and 9 stop conditions omitted; read detail=full before step 2.';
+    const task = 'Encode an optional DER SET and keep present elements ordered.';
+    const root = mkdtempSync(join(tmpdir(), 'atlas-compact-repair-'));
+    try {
+      mkdirSync(join(root, 'src'), { recursive: true });
+      mkdirSync(join(root, 'tests'), { recursive: true });
+      writeFileSync(join(root, 'package.json'), '{"scripts":{"test":"node --test"}}\n');
+      writeFileSync(join(root, 'src/writer.ts'), 'export function writeDerSet() { return true; }\n');
+      writeFileSync(join(root, 'tests/writer.test.ts'), "test('writes optional DER SET values', () => {});\n");
+      const navigationDocs = docs.map((row) => row.slug !== 'elements/writer' ? row : {
+        ...row,
+        body: '## Definition\n\nWriter implementation.\n\n## Evidence\n\n- `package.json`\n- Primary implementation: `src/writer.ts#writeDerSet`\n- Focused test: `tests/writer.test.ts#writes optional DER SET values`\n\n## Includes\n\nDER SET output ordering and optional values.\n\n## Excludes\n\nDER parsing and unrelated encodings.\n',
+      });
+      const review = withRepair('human_review_required');
+      for (const options of [{ docs: navigationDocs, sourceRoot: root }, { docs }]) {
+        const result = buildCompactAgentBrief({ brief: review, artifact, task, ...options });
+        assert.equal(result.focus.taskNavigation.status === 'ready', Boolean(options.sourceRoot));
+        assert.deepEqual(result.meaningRepair.firstStep, review.meaningRepair.workflow[0]);
+        assert.deepEqual(result.meaningRepair.omitted, { steps: stepIds.slice(1), stopConditions: 9, recovery: 'fullDetail' });
+        assert.equal(Object.hasOwn(result.meaningRepair, 'workflow'), false);
+        assert.equal(Object.hasOwn(result.meaningRepair, 'stopWhen'), false);
+        const lines = result.handoffPrompt.split('\n');
+        const index = lines.indexOf(line);
+        assert.ok(index >= 0 && lines[index + 1].startsWith('Next read:'));
+      }
+      for (const status of ['blocked', 'not_needed']) {
+        const result = buildCompactAgentBrief({ brief: withRepair(status), artifact, docs, task });
+        assert.equal(result.meaningRepair.firstStep, null);
+        assert.deepEqual(result.meaningRepair.omitted, { steps: [], stopConditions: 9, recovery: 'fullDetail' });
+        assert.doesNotMatch(result.handoffPrompt, /Meaning repair:/);
+      }
+      const raced = buildCompactAgentBrief({
+        brief: review, artifact, docs: navigationDocs, sourceRoot: root, confirmSourceCurrent: () => false, task,
+      });
+      assert.equal(raced.meaningRepair.blockedBy, 'source_changed_during_navigation');
+      assert.equal(raced.meaningRepair.firstStep, null);
+      assert.deepEqual(raced.meaningRepair.omitted, { steps: [], stopConditions: 9, recovery: 'fullDetail' });
+      assert.doesNotMatch(raced.handoffPrompt, /Meaning repair:/);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('downgrades outer currentness when a previously current private binding disappears', () => {
     const result = buildCompactAgentBrief({
       brief,
@@ -1594,15 +1652,26 @@ DER parsing and unrelated encodings.
 
   it('budgets the complete serialized object without charging presentation indentation', () => {
     const reviewBrief = structuredClone(brief);
-    reviewBrief.meaningRepair.stopWhen = Array.from(
-      { length: 280 }, (_, index) => `required_stop_${index}`,
+    reviewBrief.meaningRepair.workflow = Array.from(
+      { length: 300 }, (_, index) => ({ step: `required_step_${index}`, calls: [] }),
     );
     const result = buildCompactAgentBrief({
       brief: reviewBrief, artifact, docs, task: 'Encode an optional DER SET.',
     });
+    const { workflow, stopWhen, writePolicy, ...shared } = reviewBrief.meaningRepair;
     assert.ok(Buffer.byteLength(JSON.stringify(result), 'utf8') <= AGENT_BRIEF_COMPACT_MAX_BYTES);
     assert.ok(Buffer.byteLength(JSON.stringify(result, null, 2), 'utf8') > AGENT_BRIEF_COMPACT_MAX_BYTES);
-    assert.deepEqual(result.meaningRepair, reviewBrief.meaningRepair);
+    assert.deepEqual(result.meaningRepair, {
+      ...shared,
+      contract: 'meaningRepairCompact:v1',
+      firstStep: workflow[0],
+      omitted: {
+        steps: workflow.slice(1).map((row) => row.step),
+        stopConditions: stopWhen.length,
+        recovery: 'fullDetail',
+      },
+      writePolicy,
+    });
     assert.deepEqual(JSON.parse(JSON.stringify(result)), result);
     assert.equal(result.safety.humanApprovalRequiredForMeaningWrites, true);
     assert.equal(result.safety.automaticWrite, false);
@@ -1615,7 +1684,7 @@ DER parsing and unrelated encodings.
     const text = String.fromCodePoint(0x1F512).repeat(3000);
     assert.ok(text.length < AGENT_BRIEF_COMPACT_MAX_BYTES);
     assert.equal(Buffer.byteLength(text, 'utf8'), AGENT_BRIEF_COMPACT_MAX_BYTES);
-    wideBrief.meaningRepair.stopWhen = [text];
+    wideBrief.meaningRepair.blockedBy = text;
     assert.throws(() => buildCompactAgentBrief({
       brief: wideBrief, artifact, docs, task: 'Encode an optional DER SET.',
     }), /above the 12000-byte budget/);
@@ -1623,10 +1692,7 @@ DER parsing and unrelated encodings.
 
   it('fails closed when retained safety detail pushes the compact response over budget', () => {
     const oversizedBrief = structuredClone(brief);
-    oversizedBrief.meaningRepair.stopWhen = Array.from(
-      { length: 20 },
-      (_, index) => `required_stop_${index}_${'x'.repeat(400)}`,
-    );
+    oversizedBrief.meaningRepair.blockedBy = 'x'.repeat(12_000);
     assert.throws(
       () => buildCompactAgentBrief({
         brief: oversizedBrief,

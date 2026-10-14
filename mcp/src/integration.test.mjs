@@ -10760,7 +10760,12 @@ await test("query_ontology agent_brief — read-only known-task wire path stays 
         detail: "compact",
         task: "Change the task-scoped compact agent brief projection.",
       }),
-    ], 10_000, { OATLAS_READ_ONLY: "1" });
+      callTool(4, "query_ontology", {
+        operation: "agent_brief",
+        project: "ontology-atlas",
+        detail: "full",
+      }),
+    ], 20_000, { OATLAS_READ_ONLY: "1" });
     const connectionResponse = responses.find((row) => row.id === 2);
     const compactResponse = responses.find((row) => row.id === 3);
     assert.ok(connectionResponse?.result, "connection_info must return one wire result");
@@ -10771,13 +10776,30 @@ await test("query_ontology agent_brief — read-only known-task wire path stays 
     assert.equal(compact.focus.taskNavigation.currentness, "current");
     assert.equal(compact.focus.verification.runner, "package-script");
     assert.equal(compact.focus.verification.manifest, "mcp/package.json");
-    assert.ok(Buffer.byteLength(JSON.stringify(compact), "utf8") <= 12000);
+    const compactBytes = Buffer.byteLength(JSON.stringify(compact), "utf8");
+    console.log(`    compact agent_brief ${compactBytes} bytes; headroom ${12000 - compactBytes}`);
+    assert.ok(
+      compactBytes <= 12000,
+      `compact agent_brief is ${compactBytes} bytes; budget 12000, headroom ${12000 - compactBytes}`,
+    );
+    const repair = compact.meaningRepair;
+    assert.equal(repair.contract, "meaningRepairCompact:v1");
+    assert.equal(repair.status, "human_review_required");
+    const [firstCall] = repair.firstStep.calls;
+    assert.equal(firstCall.arguments.operation, "meaning_repair_review");
+    assert.equal(firstCall.arguments.expectedGraphHash, repair.provenance.graphHash);
+    assert.equal(firstCall.arguments.expectedSourceFingerprint, repair.provenance.sourceFingerprint);
+    assert.equal(firstCall.arguments.reviewRevision, repair.reviewRevision);
+    const full = getCallParsed(responses, 4);
+    assert.deepEqual(compact.fullDetail.arguments, { operation: "agent_brief", project: "ontology-atlas", detail: "full" });
+    assert.deepEqual(full.meaningRepair.workflow.slice(1).map((row) => row.step), repair.omitted.steps);
+    assert.equal(full.meaningRepair.stopWhen.length, repair.omitted.stopConditions);
     const wireCharacters = JSON.stringify(connectionResponse).length + JSON.stringify(compactResponse).length;
     // The budget grows by exactly the construction card's allowance
     // (CONSTRUCTION_CARD_MAX_CHARS, rounded up), not by what the dogfood prose weighs.
     assert.ok(
       wireCharacters < 22_000,
-      `connection_info + compact read-only wire path must stay below 22000 characters; received ${wireCharacters}`,
+      `connection_info + compact read-only wire path must stay below 22000 characters; received ${wireCharacters} (compact ${compactBytes} bytes, headroom ${12000 - compactBytes})`,
     );
     assert.equal(JSON.stringify(compactResponse).includes(repo), false, "wire response must not expose the private root");
   } finally {

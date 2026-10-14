@@ -243,6 +243,15 @@ test('buildMeaningRepair separates declared, review candidates, and unresolved t
       },
     }],
   });
+  assert.deepEqual(result.workflow.map((row) => row.step), [
+    'read_review_inputs',
+    'human_semantic_approval',
+    'write_approved_project_body',
+    'verify',
+    'refresh_conflict_guard',
+    'finalize',
+  ]);
+  assert.equal(result.stopWhen.length, 9);
   assert.equal(result.writePolicy.humanApprovalRequired, true);
   assert.equal(result.writePolicy.automaticWrite, false);
   assert.ok(
