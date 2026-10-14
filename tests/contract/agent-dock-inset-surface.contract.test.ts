@@ -6,8 +6,8 @@ import { AGENT_DOCK_INSET_SURFACE_CLASS, agentDockReflowStyle } from "../../src/
 
 const home = readFileSync("src/views/home/ui/HomePage.tsx", "utf8");
 const dock = readFileSync("src/views/home/ui/TopologyAgentDock.tsx", "utf8");
-const orchestration = readFileSync("src/views/home/model/use-topology-agent-orchestration.tsx", "utf8");
-const runtimeController = readFileSync("src/views/home/model/use-acp-runtime-controller.ts", "utf8");
+const orchestration = readFileSync("src/views/home/model/agent/use-topology-agent-orchestration.tsx", "utf8");
+const runtimeController = readFileSync("src/views/home/model/agent/use-acp-runtime-controller.ts", "utf8");
 const vaultAgent = readFileSync("src/widgets/vault-agent-panel/ui/VaultAgentPanel.tsx", "utf8");
 
 function insetDockOpenSources(source: string): string[][] {

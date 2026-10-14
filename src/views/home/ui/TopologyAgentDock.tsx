@@ -1,10 +1,10 @@
-import type { VaultAgentPrefill } from "../model/agent-chat-door";
-import type { useAcpRuntimeController } from "../model/use-acp-runtime-controller";
+import type { VaultAgentPrefill } from "../model/agent/agent-chat-door";
+import type { useAcpRuntimeController } from "../model/agent/use-acp-runtime-controller";
 import type { useHomeWorkbenchController } from "../model/use-home-workbench-controller";
-import type { useTopologyAgentActivity } from "../model/use-topology-agent-activity";
-import type { useTopologyAgentOrchestration } from "../model/use-topology-agent-orchestration";
-import type { useTopologyAnalysisReview } from "../model/use-topology-analysis-review";
-import type { useTopologyAuthoring } from "../model/use-topology-authoring";
+import type { useTopologyAgentActivity } from "../model/agent/use-topology-agent-activity";
+import type { useTopologyAgentOrchestration } from "../model/agent/use-topology-agent-orchestration";
+import type { useTopologyAnalysisReview } from "../model/agent/use-topology-analysis-review";
+import type { useTopologyAuthoring } from "../model/authoring/use-topology-authoring";
 import type { useTopologyCanvasFocus } from "../model/use-topology-canvas-focus";
 import type { useTopologyNavigationActions } from "../model/use-topology-navigation-actions";
 import type { useTopologyPreferences } from "../model/use-topology-preferences";
@@ -19,7 +19,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslations } from 'next-intl';
 import { subjectSuggestions } from "@/features/acp-session";
-import { resolveAnalysisFindingTarget } from '../model/analysis-finding-target';
+import { resolveAnalysisFindingTarget } from '../model/agent/analysis-finding-target';
 const VaultAgentPanel = dynamic(
   () => import("@/widgets/vault-agent-panel").then((m) => m.VaultAgentPanel),
   { ssr: false },
@@ -28,7 +28,7 @@ const VaultAgentPanel = dynamic(
 interface TopologyAgentDockProps {
   vaultAgentPrefill: VaultAgentPrefill | null;
   chatSuggestions: import("@/features/acp-session/model/chat-suggestions/chat-suggestions").ChatSuggestion[];
-  routeState: import("@/views/home/model/url-state").HomeRouteState;
+  routeState: import("@/views/home/model/route-state/url-state").HomeRouteState;
   topologyCanvasFocus: Pick<ReturnType<typeof useTopologyCanvasFocus>, "chatKnownSlugs" | "chatKnownRelations" | "handleChatHoverSlug">;
   topologyAuthoring: Pick<ReturnType<typeof useTopologyAuthoring>, "edgePanelModel" | "selectedEdge" | "setAcpRelationPreview">;
   topologyAnalysisReview: Pick<

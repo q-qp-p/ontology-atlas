@@ -22,7 +22,7 @@
  * **A lens dims what has already said it is not the point.**
  *
  * The trail lens publishes `data-trail-lens="on"` on the document element (see
- * `views/home/model/use-footprint-trail.ts`, which explains why it is an attribute and not
+ * `views/home/model/trail/use-footprint-trail.ts`, which explains why it is an attribute and not
  * React state). Any surface carrying `data-attention-role="supporting-detail"` recedes for as
  * long as a lens is open and returns the moment it is hovered or focused — so nothing becomes
  * unreachable, and a keyboard user restores it by tabbing into it.

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
 
-const inspector = readFileSync("src/views/home/model/use-topology-inspector-state.tsx", "utf8");
+const inspector = readFileSync("src/views/home/model/inspector/use-topology-inspector-state.tsx", "utf8");
 const chrome = readFileSync("src/views/home/ui/TopologyCommandChrome.tsx", "utf8");
 const canvas = readFileSync("src/views/home/ui/TopologyCanvasSurface.tsx", "utf8");
 const hint = readFileSync("src/widgets/search-hint/ui/SearchHint.tsx", "utf8");

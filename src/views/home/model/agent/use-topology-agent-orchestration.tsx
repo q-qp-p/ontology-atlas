@@ -1,10 +1,10 @@
 import type { useAcpRuntimeController } from "./use-acp-runtime-controller";
-import type { useHomeWorkbenchController } from "./use-home-workbench-controller";
-import type { useTopologyAuthoring } from "./use-topology-authoring";
-import type { useTopologyGraphProjection } from "./use-topology-graph-projection";
-import type { useTopologyIndexPresentation } from "./use-topology-index-presentation";
-import type { useTopologyPreferences } from "./use-topology-preferences";
-import type { useTopologyVaultReadModel } from "./use-topology-vault-read-model";
+import type { useHomeWorkbenchController } from "../use-home-workbench-controller";
+import type { useTopologyAuthoring } from "../authoring/use-topology-authoring";
+import type { useTopologyGraphProjection } from "../map-canvas/use-topology-graph-projection";
+import type { useTopologyIndexPresentation } from "../index-panel/use-topology-index-presentation";
+import type { useTopologyPreferences } from "../use-topology-preferences";
+import type { useTopologyVaultReadModel } from "../use-topology-vault-read-model";
 
 import { resolveNodeAgentTarget } from "@/entities/knowledge-graph";
 import { buildBusinessFlowRequest, nodeIntent, screenIntentFor, sentenceForIntent, type FirstWordsLabels, type ScreenContextSnapshot } from "@/features/vault-agent";
@@ -28,9 +28,9 @@ function hashAskRequest(kind: string, ref: string): number {
 interface Options {
   setOntologySearchOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setVaultAgentPrefill: React.Dispatch<React.SetStateAction<VaultAgentPrefill | null>>;
-  routeState: import("@/views/home/model/url-state").HomeRouteState;
+  routeState: import("@/views/home/model/route-state/url-state").HomeRouteState;
   agentDockTouchedRef: React.RefObject<boolean>;
-  setRouteState: (updater: Partial<import("@/views/home/model/url-state").HomeRouteState> | ((current: import("@/views/home/model/url-state").HomeRouteState) => import("@/views/home/model/url-state").HomeRouteState), options?: import("@/views/home/model/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
+  setRouteState: (updater: Partial<import("@/views/home/model/route-state/url-state").HomeRouteState> | ((current: import("@/views/home/model/route-state/url-state").HomeRouteState) => import("@/views/home/model/route-state/url-state").HomeRouteState), options?: import("@/views/home/model/route-state/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
   agentDockDefaultOpen: ReturnType<typeof useAgentDockDefaultOpen>;
   topologyIndexPresentation: Pick<ReturnType<typeof useTopologyIndexPresentation>, "handleIndexTabExpand">;
   topologyPreferences: Pick<ReturnType<typeof useTopologyPreferences>, "businessFlowRequestText">;

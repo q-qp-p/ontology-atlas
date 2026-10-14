@@ -16,7 +16,7 @@ import {
   type FootprintTrailEntry,
   type TrailEdge,
   type TrailStepCaption,
-} from "../lib/trail/footprint-trail";
+} from "../../lib/trail/footprint-trail";
 
 type InsightNode = { id: string } & NonNullable<Parameters<typeof resolveNodeAgentTarget>[0]>;
 

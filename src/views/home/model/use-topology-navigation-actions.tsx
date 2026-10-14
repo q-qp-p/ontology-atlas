@@ -1,22 +1,22 @@
-import type { useTopologyAgentOrchestration } from "./use-topology-agent-orchestration";
-import type { useTopologyAuthoring } from "./use-topology-authoring";
+import type { useTopologyAgentOrchestration } from "./agent/use-topology-agent-orchestration";
+import type { useTopologyAuthoring } from "./authoring/use-topology-authoring";
 import type { useTopologyCanvasFocus } from "./use-topology-canvas-focus";
-import type { useTopologyGraphProjection } from "./use-topology-graph-projection";
-import type { useTopologyIndexPresentation } from "./use-topology-index-presentation";
-import type { useTopologyInspectorState } from "./use-topology-inspector-state";
+import type { useTopologyGraphProjection } from "./map-canvas/use-topology-graph-projection";
+import type { useTopologyIndexPresentation } from "./index-panel/use-topology-index-presentation";
+import type { useTopologyInspectorState } from "./inspector/use-topology-inspector-state";
 import type { useTopologyPreferences } from "./use-topology-preferences";
-import type { useTopologySourceReadiness } from "./use-topology-source-readiness";
+import type { useTopologySourceReadiness } from "./project-source/use-topology-source-readiness";
 
 import type { ChatSuggestion } from "@/features/acp-session";
 import { type AcpMapIntent } from "@/widgets/acp-chat-panel";
 import { useCallback, useMemo } from "react";
 import { useLatestRef } from "@/shared/lib/use-latest-ref";
 import { restoreTopologyFocusAfterDatasheetClose } from "../lib/keyboard/topology-focus-return";
-import { resolveTopologyNodeClickRouteState, selectTopologyPathRouteState } from "./url-state";
+import { resolveTopologyNodeClickRouteState, selectTopologyPathRouteState } from "./route-state/url-state";
 
 interface Options {
   setExpandAllActive: React.Dispatch<React.SetStateAction<boolean>>;
-  setRouteState: (updater: Partial<import("@/views/home/model/url-state").HomeRouteState> | ((current: import("@/views/home/model/url-state").HomeRouteState) => import("@/views/home/model/url-state").HomeRouteState), options?: import("@/views/home/model/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
+  setRouteState: (updater: Partial<import("@/views/home/model/route-state/url-state").HomeRouteState> | ((current: import("@/views/home/model/route-state/url-state").HomeRouteState) => import("@/views/home/model/route-state/url-state").HomeRouteState), options?: import("@/views/home/model/route-state/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
   replayPastWalk: (walkId: string) => string | null;
   topologyInspectorState: Pick<ReturnType<typeof useTopologyInspectorState>, "panelDatasheetModel">;
   topologyAgentOrchestration: Pick<ReturnType<typeof useTopologyAgentOrchestration>, "closeVaultAgent">;

@@ -1,5 +1,5 @@
 import type { useTopologyPreferences } from "./use-topology-preferences";
-import type { useTopologyRouteControls } from "./use-topology-route-controls";
+import type { useTopologyRouteControls } from "./route-state/use-topology-route-controls";
 
 import { computeOntologyChangeset, useChangeBaseline } from "@/entities/knowledge-graph";
 import { useArrivingVaultIdentityScope, useLocalVault, useSummaryFreshness, useVaultSessionIdentityScope } from "@/entities/vault-session";
@@ -16,16 +16,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveDeeplinkMissDecision } from "../lib/selection/deeplink-miss-notice";
 import { resolveTopologySelectedOntologyNode } from "../lib/selection/resolve-topology-selected-node";
 import { deriveDustySlugs } from "../lib/map-canvas/topology-dusty";
-import { clearVaultScopedRouteState } from "./url-state";
-import { buildSpotlightFitSignature, useSpotlightFitTransition } from "./use-spotlight-fit-transition";
+import { clearVaultScopedRouteState } from "./route-state/url-state";
+import { buildSpotlightFitSignature, useSpotlightFitTransition } from "./map-canvas/use-spotlight-fit-transition";
 const DEEPLINK_MISS_GRACE_MS = 4000;
 interface Options {
   router: ReturnType<typeof useRouter>;
-  recentWindow: import("./url-state").HomeRouteState["recentWindow"];
+  recentWindow: import("./route-state/url-state").HomeRouteState["recentWindow"];
   pathSourceSlug: string | null;
   pathTargetSlug: string | null;
   expandAllActive: boolean;
-  setRouteState: (updater: Partial<import("@/views/home/model/url-state").HomeRouteState> | ((current: import("@/views/home/model/url-state").HomeRouteState) => import("@/views/home/model/url-state").HomeRouteState), options?: import("@/views/home/model/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
+  setRouteState: (updater: Partial<import("@/views/home/model/route-state/url-state").HomeRouteState> | ((current: import("@/views/home/model/route-state/url-state").HomeRouteState) => import("@/views/home/model/route-state/url-state").HomeRouteState), options?: import("@/views/home/model/route-state/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
   setFitViewToken: React.Dispatch<React.SetStateAction<number>>;
   selectedSlug: string | null;
   projectsQuery: ReturnType<typeof useProjects>;

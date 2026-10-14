@@ -9,7 +9,7 @@ import {
 } from "@/entities/knowledge-graph";
 import { buildDocsVaultHref } from "@/entities/docs-vault";
 import { buildFullDetailGroups, buildFullDetailReachModel } from "@/widgets/full-detail-a1";
-import type { TopologyNodeFocusModel } from "../lib/inspector/topology-node-focus";
+import type { TopologyNodeFocusModel } from "../../lib/inspector/topology-node-focus";
 import type { NodeDatasheetDerivation } from "./use-node-datasheet-model";
 
 /**

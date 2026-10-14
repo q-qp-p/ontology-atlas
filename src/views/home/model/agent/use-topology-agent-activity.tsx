@@ -1,6 +1,6 @@
 import type { useAcpRuntimeController } from "./use-acp-runtime-controller";
-import type { useTopologyAuthoring } from "./use-topology-authoring";
-import type { useTopologyVaultReadModel } from "./use-topology-vault-read-model";
+import type { useTopologyAuthoring } from "../authoring/use-topology-authoring";
+import type { useTopologyVaultReadModel } from "../use-topology-vault-read-model";
 
 import type { AcpTurnActivity } from "@/features/acp-session";
 import { connectorAcpServers, runtimeOwnsWriteGate, vaultMcpServers, vaultSelfReadSlot } from "@/features/acp-session";
@@ -8,7 +8,7 @@ import { type AgentLiveWorkInput } from "@/features/agent-activity";
 import { useVaultConnectors } from "@/features/mcp-connectors";
 import { createVaultAcpWorkReceiptStore, type AcpWorkReceipt, type AcpWorkReceiptStore } from "@/shared/lib/meaning-transition/acp-work-receipt";
 import { useCallback, useMemo, useRef } from "react";
-import { acpHeartbeatAgentName, buildAcpTurnHeartbeat, createVaultAcpHeartbeatStore, type AcpHeartbeatStore } from "../lib/agent/acp-agent-heartbeat";
+import { acpHeartbeatAgentName, buildAcpTurnHeartbeat, createVaultAcpHeartbeatStore, type AcpHeartbeatStore } from "../../lib/agent/acp-agent-heartbeat";
 
 interface Options {
   topologyAuthoring: Pick<ReturnType<typeof useTopologyAuthoring>, "agentServer" | "acpTurnActivityFrame" | "setAcpTurnActivityFrame">;

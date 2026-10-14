@@ -3,11 +3,11 @@ import { describe, expect, it } from 'vitest';
 import ts from 'typescript';
 
 import { agentChatDoor, type AgentChatDoorInput } from './agent-chat-door';
-import { parseHomeRouteState } from './url-state';
+import { parseHomeRouteState } from '../route-state/url-state';
 
 const homePageSource = readFileSync('src/views/home/ui/HomePage.tsx', 'utf8');
-const indexSource = readFileSync('src/views/home/model/use-topology-index-presentation.tsx', 'utf8');
-const agentSource = readFileSync('src/views/home/model/use-topology-agent-orchestration.tsx', 'utf8');
+const indexSource = readFileSync('src/views/home/model/index-panel/use-topology-index-presentation.tsx', 'utf8');
+const agentSource = readFileSync('src/views/home/model/agent/use-topology-agent-orchestration.tsx', 'utf8');
 const dockSource = readFileSync('src/views/home/ui/TopologyAgentDock.tsx', 'utf8');
 
 function frameWidthOwners(source: string): string[] {

@@ -1,21 +1,21 @@
-import type { useHomeWorkbenchController } from "./use-home-workbench-controller";
-import type { useTopologyAuthoring } from "./use-topology-authoring";
-import type { useTopologyCanvasFocus } from "./use-topology-canvas-focus";
-import type { useTopologyRouteControls } from "./use-topology-route-controls";
-import type { useTopologyVaultReadModel } from "./use-topology-vault-read-model";
+import type { useHomeWorkbenchController } from "../use-home-workbench-controller";
+import type { useTopologyAuthoring } from "../authoring/use-topology-authoring";
+import type { useTopologyCanvasFocus } from "../use-topology-canvas-focus";
+import type { useTopologyRouteControls } from "../route-state/use-topology-route-controls";
+import type { useTopologyVaultReadModel } from "../use-topology-vault-read-model";
 
 import { readFirstRunStarterDismissed, writeFirstRunStarterDismissed } from "@/features/first-run-starter";
 import { useSurfaceSwap } from "@/shared/lib/render-timing/use-presence";
 import { VAULT_START_STEPS_DISMISSED_KEY } from "@/widgets/topology-controls";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
-import { resolveContextualIndexState } from "../lib/index-panel/resolve-contextual-index-state";
+import { resolveContextualIndexState } from "../../lib/index-panel/resolve-contextual-index-state";
 import { useIndexSelectionOverride } from "./use-index-selection-override";
 
 interface Options {
   v2DatasheetModel: { slug: string; nodeId: string; title: string; sourceTitle: string | null; kind: string; domain: { id: string; title: string; } | null; powered: boolean; updatedAtLabel: string | null; metric: { contains: number; usedBy: number; dependsOn: number; belongsTo: number; evidence: number; }; groups: import("@/widgets/ontology-map/ui/detail-panel/map-datasheet").V2ConnectionGroupsView; evidence: { rows: import("@/widgets/ontology-map/ui/detail-panel/map-datasheet").V2EvidenceRow[]; total: number; }; codeLocations: string[]; handoffText: string; documentHref: string | null; mentionDocumentHref: string | null; meaningEditHref: string; lastEditSubject: { kind: import("@/shared/lib/edit-provenance/last-edit-subject").LastEditSubjectKind; ageLabel: string; } | null; mtimeConflict: boolean; } | null;
-  analysisMode: import("@/views/home/model/url-state").TopologyAnalysisMode;
-  setRouteState: (updater: Partial<import("@/views/home/model/url-state").HomeRouteState> | ((current: import("@/views/home/model/url-state").HomeRouteState) => import("@/views/home/model/url-state").HomeRouteState), options?: import("@/views/home/model/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
-  routeState: import("@/views/home/model/url-state").HomeRouteState;
+  analysisMode: import("@/views/home/model/route-state/url-state").TopologyAnalysisMode;
+  setRouteState: (updater: Partial<import("@/views/home/model/route-state/url-state").HomeRouteState> | ((current: import("@/views/home/model/route-state/url-state").HomeRouteState) => import("@/views/home/model/route-state/url-state").HomeRouteState), options?: import("@/views/home/model/route-state/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
+  routeState: import("@/views/home/model/route-state/url-state").HomeRouteState;
   meaningEditorIntent: boolean;
   indexState: import("@/widgets/topology-index-panel/lib/index-panel-state").IndexPanelState | null;
   topologyAuthoring: Pick<ReturnType<typeof useTopologyAuthoring>, "canCreateNode" | "selectedEdge">;

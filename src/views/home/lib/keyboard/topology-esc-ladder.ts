@@ -1,7 +1,7 @@
 /**
  * The order one Escape dismisses the canvas selection layer; overlays with their own Escape handler
  * are not here. A pure decision table: `handleTopologyEscape` in the keyboard-tour hook
- * (`model/use-topology-keyboard-tour.tsx`) dispatches one rung per keypress, which keeps the
+ * (`model/keyboard/use-topology-keyboard-tour.tsx`) dispatches one rung per keypress, which keeps the
  * shortcut sheet's "one step at a time" promise.
  */
 export interface TopologyEscLadderInput {

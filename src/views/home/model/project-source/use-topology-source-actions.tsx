@@ -1,12 +1,12 @@
-import type { useTopologyCanvasFocus } from "./use-topology-canvas-focus";
-import type { useTopologyPreferences } from "./use-topology-preferences";
+import type { useTopologyCanvasFocus } from "../use-topology-canvas-focus";
+import type { useTopologyPreferences } from "../use-topology-preferences";
 import type { useTopologySourceReadiness } from "./use-topology-source-readiness";
 
 import { copyText } from "@/shared/lib/clipboard/copy-text";
 import { formatProjectSourceHandoff } from "@/shared/lib/project-source/project-source-receipt";
 import { useToast } from "@/shared/ui";
 import { useCallback, useMemo } from "react";
-import { copyHandoffWithFeedback } from "../lib/project-source/copy-handoff-with-feedback";
+import { copyHandoffWithFeedback } from "../../lib/project-source/copy-handoff-with-feedback";
 
 interface Options {
   toast: ReturnType<typeof useToast>;

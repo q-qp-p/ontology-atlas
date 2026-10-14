@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   HOME_QUERY_KEYS,
-  VAULT_SCOPED_HOME_QUERY_KEYS } from "@/views/home/model/url-state";
+  VAULT_SCOPED_HOME_QUERY_KEYS } from "@/views/home/model/route-state/url-state";
 /**
  * Registry gate for state that outlives its scope: every URL query key and persistent storage
  * key has one row. A key missing from registry or code fails; a `vault-scoped` key must be protected.
@@ -242,8 +242,8 @@ const STORAGE_KEY_REGISTRY: StorageEntry[] = [
     kind: "storage",
     scope: "vault-scoped",
     scopedBy: "useVaultIdentityScope",
-    file: "src/views/home/model/hex-board-placement-store.ts",
-    provenBy: "src/views/home/model/hex-board-placement-store.test.ts",
+    file: "src/views/home/model/map-canvas/hex-board-placement-store.ts",
+    provenBy: "src/views/home/model/map-canvas/hex-board-placement-store.test.ts",
     note: "Hex board placement (append-only tile cells) per folder — view state, never meaning",
   },
   {
@@ -251,8 +251,8 @@ const STORAGE_KEY_REGISTRY: StorageEntry[] = [
     kind: "storage",
     scope: "vault-scoped",
     scopedBy: "useVaultIdentityScope",
-    file: "src/views/home/model/flat-ring-memory-store.ts",
-    provenBy: "src/views/home/model/flat-ring-memory-store.test.ts",
+    file: "src/views/home/model/map-canvas/flat-ring-memory-store.ts",
+    provenBy: "src/views/home/model/map-canvas/flat-ring-memory-store.test.ts",
     note: "Flat dial memory per folder: ring radii, domain angles and order, capability order — view state, never meaning",
   },
   {
@@ -494,8 +494,8 @@ describe("범위 등록부 — URL 쿼리 키", () => {
       "utf8");
     const owners = [
       ['src/views/home/model/use-topology-vault-read-model.tsx', 'useTopologyVaultReadModel', ['clearVaultScopedRouteState', 'useVaultSessionIdentityScope']],
-      ['src/views/home/model/use-topology-graph-projection.ts', 'useTopologyGraphProjection', ['resolveCanvasSelectedSlug']],
-      ['src/views/home/model/use-topology-scene-controls.tsx', 'useTopologySceneControls', ['useTopologyPathLens']],
+      ['src/views/home/model/map-canvas/use-topology-graph-projection.ts', 'useTopologyGraphProjection', ['resolveCanvasSelectedSlug']],
+      ['src/views/home/model/map-canvas/use-topology-scene-controls.tsx', 'useTopologySceneControls', ['useTopologyPathLens']],
       ['src/views/home/ui/TopologyCommandChrome.tsx', 'TopologyCommandChrome', ['canCopyTopologyPathPacket']]
         ] as const;
     for (const [file, owner, witnesses] of owners) {
@@ -508,9 +508,9 @@ describe("범위 등록부 — URL 쿼리 키", () => {
                 expect(source, `${witness} missing in ${file}`).toMatch(usage);
             }
         }
-        const scene = readFileSync(join(REPO_ROOT, 'src/views/home/model/use-topology-scene-controls.tsx'), 'utf8');
+        const scene = readFileSync(join(REPO_ROOT, 'src/views/home/model/map-canvas/use-topology-scene-controls.tsx'), 'utf8');
         expect(scene).toMatch(/\buseTopologyPathLens\(\{/);
-        const pathLens = readFileSync(join(REPO_ROOT, "src/views/home/model/use-topology-path-lens.ts"), "utf8");
+        const pathLens = readFileSync(join(REPO_ROOT, "src/views/home/model/map-canvas/use-topology-path-lens.ts"), "utf8");
         expect(pathLens).toMatch(/\bresolveTopologyPathChipState\(\{/);
         expect(pathLens).toMatch(/\bcanCopyTopologyPathPacket\(chipState\)/);
     });

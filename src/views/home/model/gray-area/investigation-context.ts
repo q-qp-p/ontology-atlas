@@ -1,7 +1,7 @@
 import type { AnalysisCaptureContext } from '@/features/acp-session';
 import { buildGrayAreaCandidates, buildGrayAreaInvestigation, parseInvestigationPacket } from '@/features/gray-area';
 import type { VaultDoc } from '@/entities/docs-vault';
-import type { useAcpRuntimeController } from '../use-acp-runtime-controller';
+import type { useAcpRuntimeController } from '../agent/use-acp-runtime-controller';
 
 export function investigationCaptureContext(
   base:AnalysisCaptureContext,

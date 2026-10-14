@@ -1,5 +1,5 @@
-import type { useTopologyPreferences } from "./use-topology-preferences";
-import type { useTopologyVaultReadModel } from "./use-topology-vault-read-model";
+import type { useTopologyPreferences } from "../use-topology-preferences";
+import type { useTopologyVaultReadModel } from "../use-topology-vault-read-model";
 
 import { useMemo } from "react";
 import { projectSlugForSource, useProjectSourceModel } from "./use-project-source-model";

@@ -5,16 +5,16 @@ import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } fro
 
 import { verifyHandlePermission } from "@/entities/local-fs-handle";
 
-import type { FootprintTrailEntry } from "../lib/trail/footprint-trail";
+import type { FootprintTrailEntry } from "../../lib/trail/footprint-trail";
 import {
   describePastTrailDay,
   newPastWalkId,
   refinePastWalkEntries,
   PAST_WALK_MIN_ENTRIES,
   type PastWalk,
-} from "../lib/trail/past-trail-record";
-import { createVaultFilePastTrailStore, type PastTrailStore } from "../lib/trail/past-trail-store";
-import type { TopologyPastWalkRow } from "../ui/TopologyTrailChip";
+} from "../../lib/trail/past-trail-record";
+import { createVaultFilePastTrailStore, type PastTrailStore } from "../../lib/trail/past-trail-store";
+import type { TopologyPastWalkRow } from "../../ui/TopologyTrailChip";
 import { derivedHook } from "@/shared/lib/derived-hook";
 
 // Short, since the wait is a window in which closing loses the last step (tab-hide flushes it).

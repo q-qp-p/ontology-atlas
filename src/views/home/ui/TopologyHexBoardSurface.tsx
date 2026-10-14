@@ -5,8 +5,8 @@ import { useTranslations } from "next-intl";
 import type { KnowledgeGraphNode } from "@/entities/knowledge-graph";
 import { useHexRelief, writeHexRelief, type MapNavigationSpeed } from "@/shared/lib/preferences/appearance-preferences";
 import { OntologyHexBoardMap, type HexBoardLabels, type HexPlacementRecord, type OntologyMapEdge, type OntologyMapNode } from "@/widgets/ontology-map";
-import { readHexPlacement, writeHexPlacement } from "../model/hex-board-placement-store";
-import { useMapEvidenceStates, type MapEvidence, type MapEvidenceAvailability } from "../model/use-map-evidence-states";
+import { readHexPlacement, writeHexPlacement } from "../model/map-canvas/hex-board-placement-store";
+import { useMapEvidenceStates, type MapEvidence, type MapEvidenceAvailability } from "../model/map-canvas/use-map-evidence-states";
 
 /** Flat-top hexagon, 16 × 14. */
 const HEX_SWATCH = "15,7 11.5,13 4.5,13 1,7 4.5,1 11.5,1";

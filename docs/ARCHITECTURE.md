@@ -859,9 +859,9 @@ to an agent.
 | `realm` | `/`, `/topology` | "realm" containment-subtree root | canonical `<kind>:<slug>` (bare slug promoted) |
 | `mode` | `/`, `/topology` | analysis mode | `overview` \| `focus` \| `path` \| `health` |
 | `pathFrom` / `pathTo` (aliases `from` / `to`) | `/`, `/topology` | path source / target | node id |
-| `hub` · `c` · `impact` · `pulse` · `index` · `create` | `/`, `/topology` | focused hub · category · impact mode · pulse window · INDEX panel state · legacy create-node intent | see `src/views/home/model/url-state.ts` |
+| `hub` · `c` · `impact` · `pulse` · `index` · `create` | `/`, `/topology` | focused hub · category · impact mode · pulse window · INDEX panel state · legacy create-node intent | see `src/views/home/model/route-state/url-state.ts` |
 | `workbench` · `edit` | `/topology` | contextual writer state · optional relation/target | `edit` \| `create`; `edit=<relation>:<targetId>` |
-| `recent` · `ask` | `/`, `/topology` | recent-change lens · agent first-words intent | typed parsers in `src/views/home/model/url-state.ts` |
+| `recent` · `ask` | `/`, `/topology` | recent-change lens · agent first-words intent | typed parsers in `src/views/home/model/route-state/url-state.ts` |
 | `via` | `/`, `/topology`, `/ontology` | origin marker for the return chip | `insights:<tab>` |
 | `review` | `/`, `/topology`, `/ontology/insights` | selected Analysis claim/declaration carried across a document or correction return | `analysis:<nodeId>` / `relation:<edgeId>`; legacy review ids remain compatible context |
 | `constellation` | `/topology` | saved Map task scope or creation intent | stable folder UUID \| `new` |

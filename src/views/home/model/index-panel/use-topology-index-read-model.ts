@@ -12,7 +12,7 @@ import {
   computeRealmBoundary,
   computeRealmCensus,
   findRealmSubtree,
-} from "../lib/index-panel/realm-ledger";
+} from "../../lib/index-panel/realm-ledger";
 
 type Translate = (key: string, values?: Record<string, string | number>) => string;
 

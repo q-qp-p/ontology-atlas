@@ -6,7 +6,7 @@ import type { KnowledgeGraphNode } from "@/entities/knowledge-graph";
 // Pins the sentence the body editor's conflict raises and the `domain:` a "create under this
 // domain" node gets.
 // Heavy collaborators are stubbed.
-vi.mock("./use-agent-connect-model", () => ({ useAgentConnectModel: () => ({}) }));
+vi.mock("../agent/use-agent-connect-model", () => ({ useAgentConnectModel: () => ({}) }));
 vi.mock("./use-bootstrap-flow", () => ({
   useBootstrapFlow: () => ({
     bootstrapOpen: false,

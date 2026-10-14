@@ -212,7 +212,7 @@ export const rules = [
     reason: "the path lens framing changed",
     matches: [
       /^src\/widgets\/ontology-map\/model\/path-lens\.ts$/,
-      /^src\/views\/home\/model\/use-topology-path-lens\.ts$/,
+      /^src\/views\/home\/model\/map-canvas\/use-topology-path-lens\.ts$/,
     ],
   },
   {

@@ -1,5 +1,5 @@
-import type { useTopologyPreferences } from "./use-topology-preferences";
-import type { useTopologyVaultReadModel } from "./use-topology-vault-read-model";
+import type { useTopologyPreferences } from "../use-topology-preferences";
+import type { useTopologyVaultReadModel } from "../use-topology-vault-read-model";
 
 import { buildNewNodeDoc } from "@/entities/docs-vault";
 import { buildOntologyChangeSet, type MeaningEditRelation, meaningEditRelationForEdgeType, type OntologyChangeSet, type OntologyRelationEditPlan, parseOntologyMeaningEditParam } from "@/entities/knowledge-graph";
@@ -13,16 +13,16 @@ import { MOTION } from "@/shared/motion";
 import { useToast } from "@/shared/ui";
 import { type AcpOntologyRelationPreview } from "@/widgets/acp-chat-panel";
 import { type KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { resolveAgentFocusNodeId, resolveOntologyRelationPreview } from "../lib/agent/resolve-agent-focus-node";
-import { resolveNodeVaultRef, resolveTopologyNodeEditTarget } from "../lib/authoring/topology-node-edit";
-import { type CreateNodeKind } from "../ui/CreateNodeForm";
-import { selectTopologyNodeRouteState } from "./url-state";
-import { useAgentConnectModel } from "./use-agent-connect-model";
+import { resolveAgentFocusNodeId, resolveOntologyRelationPreview } from "../../lib/agent/resolve-agent-focus-node";
+import { resolveNodeVaultRef, resolveTopologyNodeEditTarget } from "../../lib/authoring/topology-node-edit";
+import { type CreateNodeKind } from "../../ui/CreateNodeForm";
+import { selectTopologyNodeRouteState } from "../route-state/url-state";
+import { useAgentConnectModel } from "../agent/use-agent-connect-model";
 import { useBootstrapFlow } from "./use-bootstrap-flow";
 import { useTopologyEdgeInteractions } from "./use-topology-edge-interactions";
 
 interface Options {
-  setRouteState: (updater: Partial<import("@/views/home/model/url-state").HomeRouteState> | ((current: import("@/views/home/model/url-state").HomeRouteState) => import("@/views/home/model/url-state").HomeRouteState), options?: import("@/views/home/model/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
+  setRouteState: (updater: Partial<import("@/views/home/model/route-state/url-state").HomeRouteState> | ((current: import("@/views/home/model/route-state/url-state").HomeRouteState) => import("@/views/home/model/route-state/url-state").HomeRouteState), options?: import("@/views/home/model/route-state/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
   meaningEditorIntent: boolean;
   meaningEditParam: string | null;
   toast: ReturnType<typeof useToast>;

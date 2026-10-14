@@ -83,7 +83,7 @@ survive the compatibility hop; the return removes the incompatible slug, view, a
 view-doc · pin · unpin · copy URL · print · edit · new doc · rename · delete · insert TOC · export doc HTML · source-server · source-local · find tags
 
 #### New document (P5c — kind-first, `NewDocKindDialog`)
-"New doc" no longer opens a bare filename prompt with a generic `title:`-only template. It first asks which kind the document is (domain / capability / element / document — the same four current write flows recognize), then prompts for a title. `buildNewNodeDoc` (shared with the map's create-node flow, `src/views/home/model/use-topology-authoring.tsx`) places the file under the kind's vault folder (`domains/`, `capabilities/`, `elements/`, `documents/`) and writes normalized `slug`/`kind`/`domain`/`title` frontmatter — so every document created through the palette is a graph node from the moment it exists, not an orphan the growth queue has to catch later.
+"New doc" no longer opens a bare filename prompt with a generic `title:`-only template. It first asks which kind the document is (domain / capability / element / document — the same four current write flows recognize), then prompts for a title. `buildNewNodeDoc` (shared with the map's create-node flow, `src/views/home/model/authoring/use-topology-authoring.tsx`) places the file under the kind's vault folder (`domains/`, `capabilities/`, `elements/`, `documents/`) and writes normalized `slug`/`kind`/`domain`/`title` frontmatter — so every document created through the palette is a graph node from the moment it exists, not an orphan the growth queue has to catch later.
 
 #### Visual / behavioral details
 - Indigo accent (`rgba(139,151,255,…)`) for active, gold star for pinned

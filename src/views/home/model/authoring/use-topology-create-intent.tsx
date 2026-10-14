@@ -1,18 +1,18 @@
 import type { useTopologyAuthoring } from "./use-topology-authoring";
-import type { useTopologyCanvasFocus } from "./use-topology-canvas-focus";
+import type { useTopologyCanvasFocus } from "../use-topology-canvas-focus";
 
 import { useCallback, useEffect, useState } from "react";
-import { type CreateNodeKind } from "../ui/CreateNodeForm";
+import { type CreateNodeKind } from "../../ui/CreateNodeForm";
 
 interface Options {
-  analysisMode: import("@/views/home/model/url-state").TopologyAnalysisMode;
+  analysisMode: import("@/views/home/model/route-state/url-state").TopologyAnalysisMode;
   createNodeIntent: boolean;
   ontologySearchOpen: boolean;
   shortcutsOpen: boolean;
   setOntologySearchOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setShortcutsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setDocsDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setRouteState: (updater: Partial<import("@/views/home/model/url-state").HomeRouteState> | ((current: import("@/views/home/model/url-state").HomeRouteState) => import("@/views/home/model/url-state").HomeRouteState), options?: import("@/views/home/model/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
+  setRouteState: (updater: Partial<import("@/views/home/model/route-state/url-state").HomeRouteState> | ((current: import("@/views/home/model/route-state/url-state").HomeRouteState) => import("@/views/home/model/route-state/url-state").HomeRouteState), options?: import("@/views/home/model/route-state/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
   topologyCanvasFocus: Pick<ReturnType<typeof useTopologyCanvasFocus>, "setFullDetailSlug">;
   topologyAuthoring: Pick<ReturnType<typeof useTopologyAuthoring>, "canCreateNode" | "createNodeOpen" | "bootstrapOpen" | "setCreateNodeOpen">;
 }

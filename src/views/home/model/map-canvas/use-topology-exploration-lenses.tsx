@@ -1,15 +1,15 @@
 import type { useTopologyGraphProjection } from "./use-topology-graph-projection";
-import type { useTopologyRouteControls } from "./use-topology-route-controls";
-import type { useTopologyVaultReadModel } from "./use-topology-vault-read-model";
+import type { useTopologyRouteControls } from "../route-state/use-topology-route-controls";
+import type { useTopologyVaultReadModel } from "../use-topology-vault-read-model";
 
 import { resolveNodeDocument } from "@/entities/knowledge-graph";
 import { type ConstellationCandidate } from "@/features/saved-constellations";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { buildContainmentParentMap, deriveDeeplinkAncestorExpansion } from "./url-state";
+import { buildContainmentParentMap, deriveDeeplinkAncestorExpansion } from "../route-state/url-state";
 
 interface Options {
-  routeState: import("@/views/home/model/url-state").HomeRouteState;
-  setRouteState: (updater: Partial<import("@/views/home/model/url-state").HomeRouteState> | ((current: import("@/views/home/model/url-state").HomeRouteState) => import("@/views/home/model/url-state").HomeRouteState), options?: import("@/views/home/model/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
+  routeState: import("@/views/home/model/route-state/url-state").HomeRouteState;
+  setRouteState: (updater: Partial<import("@/views/home/model/route-state/url-state").HomeRouteState> | ((current: import("@/views/home/model/route-state/url-state").HomeRouteState) => import("@/views/home/model/route-state/url-state").HomeRouteState), options?: import("@/views/home/model/route-state/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
   topologyRouteControls: Pick<ReturnType<typeof useTopologyRouteControls>, "expandedParentSet" | "selectedProject">;
   topologyGraphProjection: Pick<ReturnType<typeof useTopologyGraphProjection>, "ontologyMapGraph" | "spotlightIds" | "canvasSelectedSlug">;
   topologyVaultReadModel: Pick<ReturnType<typeof useTopologyVaultReadModel>, "vault" | "ontologyInsight">;

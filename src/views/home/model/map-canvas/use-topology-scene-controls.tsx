@@ -1,10 +1,10 @@
-import type { useTopologyAuthoring } from "./use-topology-authoring";
-import type { useTopologyCanvasFocus } from "./use-topology-canvas-focus";
+import type { useTopologyAuthoring } from "../authoring/use-topology-authoring";
+import type { useTopologyCanvasFocus } from "../use-topology-canvas-focus";
 import type { useTopologyExplorationLenses } from "./use-topology-exploration-lenses";
 import type { useTopologyGraphProjection } from "./use-topology-graph-projection";
-import type { useTopologyPreferences } from "./use-topology-preferences";
-import type { useTopologyRouteControls } from "./use-topology-route-controls";
-import type { useTopologyVaultReadModel } from "./use-topology-vault-read-model";
+import type { useTopologyPreferences } from "../use-topology-preferences";
+import type { useTopologyRouteControls } from "../route-state/use-topology-route-controls";
+import type { useTopologyVaultReadModel } from "../use-topology-vault-read-model";
 
 import { useProjects } from "@/features/project-data-source";
 import { completeMapNavigation } from "@/shared/lib/navigation/map-navigation-pending";
@@ -13,9 +13,9 @@ import { useToast } from "@/shared/ui";
 import type { DialLabels } from "@/widgets/ontology-map";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { countProjectRelationsWithinGraph, resolveTopologyOverlayState, resolveTopologyRenderState } from "../lib/map-canvas/topology-render-state";
-import { selectTopologyNodeRouteState } from "./url-state";
-import { useTopologyIndexReadModel } from "./use-topology-index-read-model";
+import { countProjectRelationsWithinGraph, resolveTopologyOverlayState, resolveTopologyRenderState } from "../../lib/map-canvas/topology-render-state";
+import { selectTopologyNodeRouteState } from "../route-state/url-state";
+import { useTopologyIndexReadModel } from "../index-panel/use-topology-index-read-model";
 import { useTopologyPathLens } from "./use-topology-path-lens";
 
 function reportTopologyGraphStats(
@@ -31,9 +31,9 @@ function reportTopologyGraphStats(
 interface Options {
   pathSourceSlug: string | null;
   pathTargetSlug: string | null;
-  analysisMode: import("@/views/home/model/url-state").TopologyAnalysisMode;
+  analysisMode: import("@/views/home/model/route-state/url-state").TopologyAnalysisMode;
   expandAllActive: boolean;
-  setRouteState: (updater: Partial<import("@/views/home/model/url-state").HomeRouteState> | ((current: import("@/views/home/model/url-state").HomeRouteState) => import("@/views/home/model/url-state").HomeRouteState), options?: import("@/views/home/model/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
+  setRouteState: (updater: Partial<import("@/views/home/model/route-state/url-state").HomeRouteState> | ((current: import("@/views/home/model/route-state/url-state").HomeRouteState) => import("@/views/home/model/route-state/url-state").HomeRouteState), options?: import("@/views/home/model/route-state/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
   setExpandAllActive: React.Dispatch<React.SetStateAction<boolean>>;
   setFitViewToken: React.Dispatch<React.SetStateAction<number>>;
   toast: ReturnType<typeof useToast>;

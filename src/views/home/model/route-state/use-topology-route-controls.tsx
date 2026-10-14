@@ -1,4 +1,4 @@
-import type { useTopologyPreferences } from "./use-topology-preferences";
+import type { useTopologyPreferences } from "../use-topology-preferences";
 
 import { useLocalStorageBoolean } from "@/shared/lib/preferences/use-local-storage-boolean";
 import { resolveIndexPanelState, resolveLeftSlotOwner, resolveRenderedIndexPanelState, type IndexPanelState } from "@/widgets/topology-index-panel";
@@ -9,10 +9,10 @@ interface Options {
   expandedParentSlugs: string[];
   expandAllActive: boolean;
   setExpandAllActive: React.Dispatch<React.SetStateAction<boolean>>;
-  setRouteState: (updater: Partial<import("@/views/home/model/url-state").HomeRouteState> | ((current: import("@/views/home/model/url-state").HomeRouteState) => import("@/views/home/model/url-state").HomeRouteState), options?: import("@/views/home/model/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
+  setRouteState: (updater: Partial<import("@/views/home/model/route-state/url-state").HomeRouteState> | ((current: import("@/views/home/model/route-state/url-state").HomeRouteState) => import("@/views/home/model/route-state/url-state").HomeRouteState), options?: import("@/views/home/model/route-state/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
   setFitViewToken: React.Dispatch<React.SetStateAction<number>>;
   indexState: import("@/widgets/topology-index-panel/lib/index-panel-state").IndexPanelState | null;
-  analysisMode: import("@/views/home/model/url-state").TopologyAnalysisMode;
+  analysisMode: import("@/views/home/model/route-state/url-state").TopologyAnalysisMode;
   selectedSlug: string | null;
   renderProjects: import("@/entities/project/model/types").Project[];
   topologyPreferences: Pick<ReturnType<typeof useTopologyPreferences>, "expand">;

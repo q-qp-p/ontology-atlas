@@ -92,7 +92,7 @@ ingress paths converge on the same shape. The dialog never says "ontology".
   motion-preference change, and `requestOntologyMapFrame()` wake it.
 - **Canonical census** — every surface that says "N concepts" uses one
   derivation (`computeCanonicalCensus`). Its callers are the Topology index
-  (`src/views/home/model/use-topology-index-read-model.ts`) and project detail
+  (`src/views/home/model/index-panel/use-topology-index-read-model.ts`) and project detail
   (`src/views/project-detail/ui/ProjectDetailPage.tsx`); a surface-specific
   subset is labeled as a subset rather than presented as the vault total.
 - **Library on the web** — the local-vault gate is capability-based

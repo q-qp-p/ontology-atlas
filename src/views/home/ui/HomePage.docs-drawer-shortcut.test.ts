@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
  * A source-level guard, since HomePage has no render harness: with the agent dock open only the `d`
  * drawer toggle goes quiet, or the full-width drawer paints over the answer. The dock is not modal.
  */
-const keyboardSource = readFileSync("src/views/home/model/use-topology-keyboard-tour.tsx", "utf8");
+const keyboardSource = readFileSync("src/views/home/model/keyboard/use-topology-keyboard-tour.tsx", "utf8");
 const homePageSource = readFileSync("src/views/home/ui/HomePage.tsx", "utf8");
 
 describe("documents drawer shortcut while the agent dock is open", () => {

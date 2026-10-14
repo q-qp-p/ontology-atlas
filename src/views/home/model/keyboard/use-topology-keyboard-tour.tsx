@@ -1,11 +1,11 @@
-import type { useTopologyAgentOrchestration } from "./use-topology-agent-orchestration";
-import type { useTopologyAuthoring } from "./use-topology-authoring";
-import type { useTopologyCanvasFocus } from "./use-topology-canvas-focus";
-import type { useTopologyExplorationLenses } from "./use-topology-exploration-lenses";
-import type { useTopologyGraphProjection } from "./use-topology-graph-projection";
-import type { useTopologyInspectorState } from "./use-topology-inspector-state";
-import type { useTopologyNavigationActions } from "./use-topology-navigation-actions";
-import type { useTopologyRouteControls } from "./use-topology-route-controls";
+import type { useTopologyAgentOrchestration } from "../agent/use-topology-agent-orchestration";
+import type { useTopologyAuthoring } from "../authoring/use-topology-authoring";
+import type { useTopologyCanvasFocus } from "../use-topology-canvas-focus";
+import type { useTopologyExplorationLenses } from "../map-canvas/use-topology-exploration-lenses";
+import type { useTopologyGraphProjection } from "../map-canvas/use-topology-graph-projection";
+import type { useTopologyInspectorState } from "../inspector/use-topology-inspector-state";
+import type { useTopologyNavigationActions } from "../use-topology-navigation-actions";
+import type { useTopologyRouteControls } from "../route-state/use-topology-route-controls";
 
 import { type ProjectImpactMode } from "@/entities/project";
 import { useFirstRunSampleModeSettled } from "@/features/first-run-starter";
@@ -14,9 +14,9 @@ import { useClaimShellKey } from "@/shared/lib/keyboard/shell-key-claims";
 import { derivedHook } from "@/shared/lib/derived-hook";
 import { useTypingShortcuts } from "@/shared/lib/keyboard/use-typing-shortcut";
 import { useCallback, useEffect, useEffectEvent, useRef } from "react";
-import { shouldSuppressGlobalShortcuts } from "../lib/keyboard/blocking-surface";
-import { resolveTourAnchorNodeId } from "../lib/keyboard/resolve-tour-anchor-node";
-import { resolveTopologyEscLadderAction } from "../lib/keyboard/topology-esc-ladder";
+import { shouldSuppressGlobalShortcuts } from "../../lib/keyboard/blocking-surface";
+import { resolveTourAnchorNodeId } from "../../lib/keyboard/resolve-tour-anchor-node";
+import { resolveTopologyEscLadderAction } from "../../lib/keyboard/topology-esc-ladder";
 import { useFocusReturnOnClose } from "./use-focus-return-on-close";
 
 const CANVAS_RETURN = ["ontology-map-canvas"] as const;
@@ -47,7 +47,7 @@ interface Options {
   ontologySearchOpen: boolean;
   localGraphRoot: string | null;
   setLocalGraphStack: React.Dispatch<React.SetStateAction<string[]>>;
-  setRouteState: (updater: Partial<import("@/views/home/model/url-state").HomeRouteState> | ((current: import("@/views/home/model/url-state").HomeRouteState) => import("@/views/home/model/url-state").HomeRouteState), options?: import("@/views/home/model/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
+  setRouteState: (updater: Partial<import("@/views/home/model/route-state/url-state").HomeRouteState> | ((current: import("@/views/home/model/route-state/url-state").HomeRouteState) => import("@/views/home/model/route-state/url-state").HomeRouteState), options?: import("@/views/home/model/route-state/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
   sampleModeSettled: ReturnType<typeof useFirstRunSampleModeSettled>;
   requestVaultOpen: () => void;
   topologyAgentOrchestration: Pick<ReturnType<typeof useTopologyAgentOrchestration>, "agentDockOpen">;
