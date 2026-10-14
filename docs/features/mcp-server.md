@@ -260,7 +260,7 @@ known coding task, opt-in `detail:"compact"` plus a request-local `task` returns
 an `agentBriefCompact:v2` projection capped at 12,000 UTF-8 bytes of the complete
 serialized JSON object, including its handoff prompt. Display indentation is
 excluded; the current combined two-call wire guard is 22,000 characters. It keeps
-final source/meaning currentness, the compact meaning-repair and human-approval
+final source/meaning currentness, the meaning-repair guards and first step, the names of the repair steps it omits, and the human-approval
 guards, a broad persisted capability only when its Definition/Includes/Excludes
 agree with the desired work and explicit non-goals, cited element/path evidence,
 explicit impact/verification unknowns, bounded full-body reads, and an exact

@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import { agentBriefExitCode, assertAgentBriefResponseShape } from './agent-brief.mjs';
 import { assertAgentBriefCompactShape } from './agent-brief-compact.mjs';
+import { humanMeaningRepair, humanMeaningRepairCompact, validAgentBrief as validFull } from './agent-brief-fixtures.mjs';
 
 describe('agent-brief-compact', () => {
   it('validates compact agent_brief truth fields, byte budget, and full-detail boundary', () => {
@@ -284,6 +285,61 @@ describe('agent-brief-compact', () => {
         purpose: { ...valid.purpose, statement: 'x'.repeat(8_000) },
       }),
       /fit 12000 UTF-8 JSON bytes/,
+    );
+
+    const withRepair = (meaningRepair) => ({ ...valid, meaningRepair });
+    const compactRepair = humanMeaningRepairCompact('project/app');
+    assert.equal(assertAgentBriefCompactShape(withRepair(compactRepair)).meaningRepair, compactRepair);
+    const blockedCompact = {
+      ...structuredClone(valid.meaningRepair),
+      contract: 'meaningRepairCompact:v1',
+      firstStep: null,
+      omitted: { steps: [], stopConditions: 9, recovery: 'fullDetail' },
+    };
+    delete blockedCompact.workflow;
+    delete blockedCompact.stopWhen;
+    assert.ok(assertAgentBriefCompactShape(withRepair(blockedCompact)));
+    const legacy = humanMeaningRepair('project/app');
+    assert.ok(assertAgentBriefCompactShape(withRepair(legacy)));
+    for (const mutate of [
+      (row) => { row.omitted.steps.pop(); },
+      (row) => { row.omitted.steps.push('extra'); },
+      (row) => { row.omitted.steps[0] = 'renamed'; },
+      (row) => { row.omitted.steps.reverse(); },
+      (row) => { row.omitted.steps = []; },
+      (row) => { row.omitted.stopConditions = 0; },
+      (row) => { row.omitted.stopConditions = 1.5; },
+      (row) => { row.omitted.recovery = 'exactCall'; },
+      (row) => { row.firstStep = null; },
+      (row) => { row.firstStep.calls[0].arguments.expectedGraphHash = 'project-graph-v1:other'; },
+      (row) => { row.firstStep.calls[0].arguments.reviewRevision = `sha256:${'b'.repeat(64)}`; },
+      (row) => { row.workflow = []; },
+      (row) => { row.contract = 'meaningRepair:v2'; },
+    ]) {
+      const malformed = structuredClone(compactRepair);
+      mutate(malformed);
+      assert.throws(() => assertAgentBriefCompactShape(withRepair(malformed)), /action-first human review packet/);
+    }
+    const falseBlocked = structuredClone(blockedCompact);
+    falseBlocked.omitted.steps = ['human_semantic_approval'];
+    assert.throws(() => assertAgentBriefCompactShape(withRepair(falseBlocked)), /action-first human review packet/);
+    const notNeeded = {
+      ...structuredClone(compactRepair),
+      status: 'not_needed',
+      primaryQuestion: null,
+      questionsNeedingReview: [],
+      firstStep: null,
+    };
+    assert.throws(() => assertAgentBriefCompactShape(withRepair(notNeeded)), /action-first human review packet/);
+    notNeeded.omitted.steps = [];
+    assert.ok(assertAgentBriefCompactShape(withRepair(notNeeded)));
+
+    const onlyStepOne = { ...legacy, workflow: legacy.workflow.slice(0, 1) };
+    assert.throws(() => assertAgentBriefCompactShape(withRepair(onlyStepOne)), /action-first human review packet/);
+    assert.throws(() => assertAgentBriefResponseShape({ ...validFull(), meaningRepair: onlyStepOne }), /action-first/);
+    assert.throws(
+      () => assertAgentBriefResponseShape({ ...validFull(), meaningRepair: { ...compactRepair, projectSlug: validFull().projectSlug } }),
+      /action-first/,
     );
   });
 });

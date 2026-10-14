@@ -185,7 +185,7 @@ v2 mode returns one selected-project handoff capped at 12,000 UTF-8 JSON bytes:
 final source and meaning currentness, one broad capability selected only when
 its persisted Definition/Includes/Excludes are compatible with the task, cited
 element/path anchors, explicit impact and verification unknowns, a bounded
-full-body next read, and an exact full-detail follow-up. A desired/negative
+full-body next read, and an exact full-detail follow-up. Its meaning repair keeps the first step and names the approval-to-finalize steps only the full brief repeats. A desired/negative
 boundary conflict, an unsupported claim, or a tied top claim returns no
 capability. Definition prose describes what a capability touches, so it
 corroborates but never selects on its own: at least one desired word must reach

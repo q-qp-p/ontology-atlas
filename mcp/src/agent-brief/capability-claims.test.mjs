@@ -19,7 +19,7 @@ const literalBlocks = {
 function select(candidates, task = 'Rotate encryption keys.') {
   const docs = [project, ...candidates];
   return buildCompactAgentBrief({
-    brief: { projectSlug: 'project' },
+    brief: { projectSlug: 'project', meaningRepair: { workflow: [], stopWhen: ['source_not_current'] } },
     artifact: { nodes: docs.map((doc) => ({ slug: doc.slug, ...doc.frontmatter })), edges: [] },
     docs, task,
   });

@@ -15,7 +15,7 @@ import {
   symlinkSync,
 } from 'node:fs';
 import { join, dirname, resolve, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { tmpdir } from 'node:os';
 import {
   CLI_COMMANDS,
@@ -6910,6 +6910,52 @@ await test('agent-brief --project — selects one project in a multi-project vau
     const compactGraphPack = await run(['agent-brief', root, '--project', 'projects/beta', '--compact', '--task', 'Beta task', '--graph-db-pack']);
     assert.equal(compactGraphPack.code, 1);
     assert.match(compactGraphPack.stderr, /--compact cannot be used with --graph-db-pack/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+await test('agent-brief --compact — prints REPAIR READ from firstStep or a legacy workflow and names omitted steps', async () => {
+  const root = withVault([{
+    slug: 'project',
+    content: '---\nkind: project\ntitle: Repair Probe\n---\n## Definition\n\nA probe project.\n',
+  }]);
+  const fixtures = pathToFileURL(join(__dirname, 'lib/query-result-contract/agent-brief/agent-brief-fixtures.mjs')).href;
+  const realMcp = join(__dirname, '..', '..', 'mcp', 'src', 'index.js');
+  const proxy = join(root, 'repair-proxy-mcp.mjs');
+  writeFileSync(proxy, [
+    "import { spawn } from 'node:child_process';",
+    "import readline from 'node:readline';",
+    `import { humanMeaningRepair, humanMeaningRepairCompact } from ${JSON.stringify(fixtures)};`,
+    `const child = spawn(process.execPath, [${JSON.stringify(realMcp)}], { stdio: ['pipe', 'pipe', 'inherit'], env: process.env });`,
+    "process.stdin.pipe(child.stdin);",
+    "readline.createInterface({ input: child.stdout }).on('line', (line) => {",
+    "  const message = JSON.parse(line);",
+    "  const structured = message.result?.structuredContent;",
+    "  if (structured?.contract === 'agentBriefCompact:v2') {",
+    "    structured.meaningRepair = (process.env.REPAIR_SHAPE === 'legacy' ? humanMeaningRepair : humanMeaningRepairCompact)(structured.project.slug);",
+    "    message.result.content = [{ type: 'text', text: JSON.stringify(structured) }];",
+    "  }",
+    "  console.log(JSON.stringify(message));",
+    "});",
+    "child.on('exit', (code) => process.exit(code ?? 0));",
+    '',
+  ].join('\n'));
+  try {
+    const args = ['agent-brief', root, '--compact', '--task', 'Change the probe.', '--exit-zero'];
+    const compact = await run(args, { env: { OATLAS_MCP_PATH: proxy } });
+    assert.equal(compact.code, 0, `stdout: ${compact.stdout}\nstderr: ${compact.stderr}`);
+    const human = stripAnsi(compact.stdout);
+    assert.match(human, /REPAIR READ\s+query_ontology/);
+    assert.match(
+      human,
+      /REPAIR OMITTED steps 2-6 \(human_semantic_approval to finalize\) and 9 stop conditions; read FULL DETAIL before step 2/,
+    );
+    const legacy = await run(args, { env: { OATLAS_MCP_PATH: proxy, REPAIR_SHAPE: 'legacy' } });
+    assert.equal(legacy.code, 0, `stdout: ${legacy.stdout}\nstderr: ${legacy.stderr}`);
+    const legacyHuman = stripAnsi(legacy.stdout);
+    assert.match(legacyHuman, /REPAIR READ\s+query_ontology/);
+    assert.doesNotMatch(legacyHuman, /REPAIR OMITTED/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

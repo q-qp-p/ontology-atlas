@@ -705,11 +705,30 @@ function sourceLiveSuffix(result) {
   return ` (live ${live.sourceRevision ?? 'unknown'}: ${summary.supported ?? 0}/${summary.total ?? 0} witnesses resolve)`;
 }
 
+function compactMeaningRepair(repair, stopConditions) {
+  const { workflow, stopWhen: _stopWhen, writePolicy, ...shared } = repair;
+  return {
+    ...shared,
+    contract: 'meaningRepairCompact:v1',
+    firstStep: workflow[0] ?? null,
+    omitted: { steps: workflow.slice(1).map((row) => row.step), stopConditions, recovery: 'fullDetail' },
+    writePolicy,
+  };
+}
+
+function meaningRepairLines({ status, firstStep, omitted }) {
+  if (status !== 'human_review_required' || !firstStep || omitted.steps.length === 0) return [];
+  return [
+    `Meaning repair: ${status}; step 1 of ${omitted.steps.length + 1} is meaningRepair.firstStep; steps 2-${omitted.steps.length + 1} (${omitted.steps[0]} to ${omitted.steps.at(-1)}) and ${omitted.stopConditions} stop conditions omitted; read detail=full before step 2.`,
+  ];
+}
+
 function buildCompactHandoffPrompt(result) {
   const capability = result.focus.capability;
   const anchors = result.focus.evidenceAnchors;
   const navigation = result.focus.taskNavigation;
   const nextRead = result.nextReads[0];
+  const repairLines = meaningRepairLines(result.meaningRepair);
   const nextReadLine = `Next read: ${nextRead ? `${nextRead.tool} ${JSON.stringify(nextRead.arguments)}` : 'inspect source from the recorded anchor'}`;
   const unknownLines = formatUncertaintyLines(result.focus);
   const qualifierLines = result.focus.qualifiers
@@ -752,6 +771,7 @@ function buildCompactHandoffPrompt(result) {
       verificationLine,
       'Tests: named positive + negative regression; exact observable output.',
       ...unknownLines,
+      ...repairLines,
       nextReadLine,
       sourcePolicy,
       'Full: detail=full',
@@ -772,6 +792,7 @@ function buildCompactHandoffPrompt(result) {
     `Impact: ${result.focus.impact.status}/${result.focus.impact.completeness}`,
     ...unknownLines,
     `Verify: ${result.focus.verification.status}${result.focus.verification.recordedPaths.length > 0 ? ` at ${result.focus.verification.recordedPaths.join(', ')}` : '; discover near the anchor'}`,
+    ...repairLines,
     nextReadLine,
     `Full detail: ${result.fullDetail.tool} ${JSON.stringify(result.fullDetail.arguments)}`,
   ].join('\n');
@@ -860,7 +881,6 @@ export function buildCompactAgentBrief({
         reviewRevision: null,
         questions: null,
         workflow: [],
-        stopWhen: ['source_changed_during_navigation'],
       };
       effectiveStatus = 'needs_attention';
       effectiveReadiness = { ...brief.readiness, status: 'needs_attention' };
@@ -921,7 +941,7 @@ export function buildCompactAgentBrief({
       meaning: compactMeaningCurrentness(effectiveMeaningAssessment),
     },
     validation: compactValidation(brief),
-    meaningRepair: effectiveMeaningRepair,
+    meaningRepair: compactMeaningRepair(effectiveMeaningRepair, brief.meaningRepair.stopWhen.length),
     purpose: {
       slug: brief.projectSlug,
       statement: projectDefinition,

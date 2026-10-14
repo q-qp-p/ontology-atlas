@@ -191,25 +191,32 @@ export function validMeaningAssessment(value, projectSlug) {
     && (provenance.sourceReceiptContractVersion === null || provenance.sourceReceiptContractVersion === 1);
 }
 
-export function validMeaningRepair(value, projectSlug) {
-  const rootKeys = [
-    'contract',
-    'status',
-    'projectSlug',
-    'blockedBy',
-    'primaryQuestion',
-    'questionsNeedingReview',
-    'provenance',
-    'reviewRevision',
-    'questions',
-    'workflow',
-    'stopWhen',
-    'writePolicy',
-  ];
+const MEANING_REPAIR_STEP_IDS = [
+  'read_review_inputs',
+  'human_semantic_approval',
+  'write_approved_project_body',
+  'verify',
+  'refresh_conflict_guard',
+  'finalize',
+];
+
+const MEANING_REPAIR_ROOT_KEYS = [
+  'contract',
+  'status',
+  'projectSlug',
+  'blockedBy',
+  'primaryQuestion',
+  'questionsNeedingReview',
+  'provenance',
+  'reviewRevision',
+  'questions',
+];
+
+function validMeaningRepairCore(value, projectSlug, contract, tailKeys, validTail, validBlocked, validReview) {
   if (
     !isPlainObject(value)
-    || !hasExactKeys(value, rootKeys)
-    || value.contract !== 'meaningRepair:v2'
+    || !hasExactKeys(value, [...MEANING_REPAIR_ROOT_KEYS, ...tailKeys])
+    || value.contract !== contract
     || value.projectSlug !== projectSlug
     || new TextEncoder().encode(JSON.stringify(value)).byteLength > MEANING_REPAIR_PACKET_MAX_BYTES
     || !['blocked', 'human_review_required', 'not_needed'].includes(value.status)
@@ -217,10 +224,7 @@ export function validMeaningRepair(value, projectSlug) {
     || !Array.isArray(value.questionsNeedingReview)
     || value.questionsNeedingReview.some((id) => !['abilities', 'evidence'].includes(id))
     || new Set(value.questionsNeedingReview).size !== value.questionsNeedingReview.length
-    || !Array.isArray(value.workflow)
-    || !Array.isArray(value.stopWhen)
-    || value.stopWhen.length === 0
-    || value.stopWhen.some((id) => !hasNonEmptyString(id))
+    || !validTail(value)
     || !isPlainObject(value.writePolicy)
     || !hasExactKeys(value.writePolicy, ['humanApprovalRequired', 'automaticWrite', 'automaticFinalize'])
     || value.writePolicy.humanApprovalRequired !== true
@@ -234,7 +238,7 @@ export function validMeaningRepair(value, projectSlug) {
       && value.provenance === null
       && value.reviewRevision === null
       && value.questions === null
-      && value.workflow.length === 0;
+      && validBlocked(value);
   }
   if (
     value.blockedBy !== null
@@ -262,11 +266,45 @@ export function validMeaningRepair(value, projectSlug) {
   if (value.status === 'not_needed') {
     return value.primaryQuestion === null
       && value.questionsNeedingReview.length === 0
-      && value.workflow.length === 0;
+      && validBlocked(value);
   }
   return value.questionsNeedingReview.length > 0
     && value.primaryQuestion === value.questionsNeedingReview[0]
-    && validMeaningRepairWorkflow(value.workflow, value, projectSlug);
+    && validReview(value);
+}
+
+export function validMeaningRepair(value, projectSlug) {
+  return validMeaningRepairCore(
+    value,
+    projectSlug,
+    'meaningRepair:v2',
+    ['workflow', 'stopWhen', 'writePolicy'],
+    (repair) => Array.isArray(repair.workflow)
+      && Array.isArray(repair.stopWhen)
+      && repair.stopWhen.length > 0
+      && repair.stopWhen.every((id) => hasNonEmptyString(id)),
+    (repair) => repair.workflow.length === 0,
+    (repair) => validMeaningRepairWorkflow(repair.workflow, repair, projectSlug),
+  );
+}
+
+export function validMeaningRepairCompact(value, projectSlug) {
+  return validMeaningRepairCore(
+    value,
+    projectSlug,
+    'meaningRepairCompact:v1',
+    ['firstStep', 'omitted', 'writePolicy'],
+    (repair) => isPlainObject(repair.omitted)
+      && hasExactKeys(repair.omitted, ['steps', 'stopConditions', 'recovery'])
+      && Array.isArray(repair.omitted.steps)
+      && Number.isInteger(repair.omitted.stopConditions)
+      && repair.omitted.stopConditions >= 1
+      && repair.omitted.recovery === 'fullDetail',
+    (repair) => repair.firstStep === null && repair.omitted.steps.length === 0,
+    (repair) => validMeaningRepairReadStep(repair.firstStep, repair, projectSlug)
+      && repair.omitted.steps.length === MEANING_REPAIR_STEP_IDS.length - 1
+      && repair.omitted.steps.every((id, index) => id === MEANING_REPAIR_STEP_IDS[index + 1]),
+  );
 }
 
 function validMeaningRepairQuestion(value, basis, state) {
@@ -294,28 +332,27 @@ function validMeaningRepairQuestion(value, basis, state) {
 }
 
 function validMeaningRepairWorkflow(workflow, repair, projectSlug) {
-  const steps = [
-    'read_review_inputs',
-    'human_semantic_approval',
-    'write_approved_project_body',
-    'verify',
-    'refresh_conflict_guard',
-    'finalize',
-  ];
-  const shapeValid = workflow.length === steps.length && workflow.every((row, index) => (
-    isPlainObject(row)
-    && row.step === steps[index]
+  const shapeValid = workflow.length === MEANING_REPAIR_STEP_IDS.length && workflow.every((row, index) => (
+    validMeaningRepairStepShape(row, MEANING_REPAIR_STEP_IDS[index])
+  ));
+  return shapeValid && validMeaningRepairReadStep(workflow[0], repair, projectSlug);
+}
+
+function validMeaningRepairStepShape(row, id) {
+  return isPlainObject(row)
+    && row.step === id
     && Array.isArray(row.calls)
     && row.calls.every((call) => (
       isPlainObject(call)
       && hasNonEmptyString(call.tool)
       && isPlainObject(call.arguments)
-    ))
-  ));
-  if (!shapeValid) return false;
-  const readStep = workflow[0];
+    ));
+}
+
+function validMeaningRepairReadStep(readStep, repair, projectSlug) {
   if (
-    !hasExactKeys(readStep, ['step', 'derivation', 'calls'])
+    !validMeaningRepairStepShape(readStep, MEANING_REPAIR_STEP_IDS[0])
+    || !hasExactKeys(readStep, ['step', 'derivation', 'calls'])
     || !isPlainObject(readStep.derivation)
     || !hasExactKeys(readStep.derivation, ['operation', 'order'])
     || readStep.derivation.operation !== 'meaning_repair_review'
