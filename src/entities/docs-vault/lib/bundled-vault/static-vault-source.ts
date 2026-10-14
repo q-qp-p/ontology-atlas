@@ -1,10 +1,10 @@
 import type { SampleSource } from '@/shared/lib/vault-folder/sample-source';
-import sampleStorefrontContent from '../data/sample-storefront.content.json';
-import sampleStorefrontManifest from '../data/sample-storefront.manifest.json';
-import gatewayContent from '../data/gateway-content.json';
-import gatewayChangelog from '../data/gateway-changelog.json';
-import vaultManifest from '../data/manifest.json';
-import type { VaultManifest } from '../model/types';
+import sampleStorefrontContent from '../../data/sample-storefront.content.json';
+import sampleStorefrontManifest from '../../data/sample-storefront.manifest.json';
+import gatewayContent from '../../data/gateway-content.json';
+import gatewayChangelog from '../../data/gateway-changelog.json';
+import vaultManifest from '../../data/manifest.json';
+import type { VaultManifest } from '../../model/types';
 
 /** The bundled vault in static mode; manifest and content travel as one pair so they can never mix vaults. */
 export interface StaticVaultSource {

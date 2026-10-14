@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { walkVault } from '@/entities/docs-vault/lib/walk-vault';
+import { walkVault } from '@/entities/docs-vault/lib/local-manifest/walk-vault';
 import { addSourcesInBrowser } from './add-sources';
 
 afterEach(() => vi.unstubAllGlobals());

@@ -24,7 +24,7 @@ import type {
   VaultManifest,
   VaultSourceFile,
   VaultTreeNode,
-} from '../model/types';
+} from '../../model/types';
 
 /**
  * Frontmatter keys whose refs count as backlinks: the same set as `mcp/src/vault/`

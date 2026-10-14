@@ -588,7 +588,7 @@ sha256 it recorded and its own truncation record
 — and, when no page cites it, the Compile button in that row's place. `not checked` is its
 own word because hashing is lazy: reporting an unmeasured file as `behind` made this pane
 contradict its own state row, which reads `checking` in exactly that window. Both directions are derived in
-`buildLibraryPairing` (`src/entities/docs-vault/lib/vault-library.ts`) from the same
+`buildLibraryPairing` (`src/entities/docs-vault/lib/library/vault-library.ts`) from the same
 `sources:` and `source_hash:` frontmatter the state machine already reads, so no second
 store can drift from it.
 

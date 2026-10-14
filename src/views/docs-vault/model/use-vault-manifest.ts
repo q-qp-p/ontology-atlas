@@ -74,7 +74,7 @@ export function useVaultManifest({
       ? normalizedQuerySlug
       : null;
 
-  // Bundled headings live in a lazily loaded chunk (`entities/docs-vault/lib/static-headings.ts`);
+  // Bundled headings live in a lazily loaded chunk (`entities/docs-vault/lib/bundled-vault/static-headings.ts`);
   // use the map only for the vault currently drawn.
   const [staticHeadingsBundle, setStaticHeadingsBundle] = useState<{
     source: string;

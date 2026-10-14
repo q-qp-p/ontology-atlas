@@ -924,7 +924,7 @@ export async function scanVaultDir(
   }
 
   // D-1 — register FRONTMATTER relation-ref backlinks (mirrors
-  // `src/entities/docs-vault/lib/build-local-manifest.ts`). The body pass above
+  // `src/entities/docs-vault/lib/local-manifest/build-local-manifest.ts`). The body pass above
   // only saw markdown links, so a doc referenced purely through frontmatter
   // (`dependencies: [capabilities/mcp-server]`, …) showed a false "no
   // backlinks" in the sample (build-time) reader. Same relation-key set as the

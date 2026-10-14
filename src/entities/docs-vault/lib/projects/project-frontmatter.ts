@@ -4,7 +4,7 @@
  */
 
 import type { Project, ProjectInput } from '@/entities/project';
-import { generateNodeUid } from './build-vault-markdown';
+import { generateNodeUid } from '../authoring/build-vault-markdown';
 
 /** Starter display names from the `init` template; only these follow a rename, never a user's own. */
 const STARTER_PROJECT_DISPLAY_VALUES: ReadonlySet<string> = new Set([

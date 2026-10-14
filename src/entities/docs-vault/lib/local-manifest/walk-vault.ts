@@ -1,4 +1,4 @@
-import { pendingSourceCopyPaths } from "./source-copy-publication";
+import { pendingSourceCopyPaths } from "../library/source-copy-publication";
 
 export interface WalkEntry {
   handle: FileSystemFileHandle;

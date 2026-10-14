@@ -1,4 +1,4 @@
-import type { VaultDoc } from '../model/types';
+import type { VaultDoc } from '../../model/types';
 
 export interface RelatedDocMatch {
   doc: VaultDoc;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { deriveOntologyFromVault } from './derive-ontology-from-vault';
-import sampleStorefrontManifestRaw from '../data/sample-storefront.manifest.json';
-import type { VaultDoc, VaultManifest } from '../model/types';
+import { deriveOntologyFromVault } from '../derive-ontology-from-vault';
+import sampleStorefrontManifestRaw from '../../data/sample-storefront.manifest.json';
+import type { VaultDoc, VaultManifest } from '../../model/types';
 
 // The default sample (`samples/storefront/`) is what every visitor without a vault sees.
 // Expectations derive from the manifest, never pinned counts (precedent: `tests/e2e/map-smoke.spec.ts`).

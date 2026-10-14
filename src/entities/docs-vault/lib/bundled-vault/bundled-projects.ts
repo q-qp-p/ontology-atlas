@@ -1,6 +1,6 @@
 import type { Project } from '@/entities/project';
 import type { SampleSource } from '@/shared/lib/vault-folder/sample-source';
-import { deriveProjectsFromVault } from './derive-projects-from-vault';
+import { deriveProjectsFromVault } from '../projects/derive-projects-from-vault';
 import { resolveStaticVaultSource } from './static-vault-source';
 
 /**

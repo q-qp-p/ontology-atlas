@@ -1,5 +1,5 @@
 import { readDisplayNames, type Project } from '@/entities/project';
-import type { VaultDoc, VaultManifest } from '../model/types';
+import type { VaultDoc, VaultManifest } from '../../model/types';
 import { computeProjectSlug, isProjectVaultDoc } from './project-slug';
 
 export function deriveProjectsFromVault(manifest: VaultManifest): Project[] {

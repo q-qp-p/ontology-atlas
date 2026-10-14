@@ -1,6 +1,6 @@
 import { getTopologyFocusHref, getTopologyProjectHref } from "@/entities/project";
-import type { VaultDoc } from "../model/types";
-import { computeProjectSlug } from "./project-slug";
+import type { VaultDoc } from "../../model/types";
+import { computeProjectSlug } from "../projects/project-slug";
 
 /** Non-project kinds with a topology node. */
 const FOCUSABLE_ONTOLOGY_KINDS = new Set(["domain", "capability", "element"]);

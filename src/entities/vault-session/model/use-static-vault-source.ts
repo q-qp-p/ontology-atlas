@@ -8,7 +8,7 @@ import { useSampleSource } from './use-sample-source';
 
 /**
  * Screen code must use this hook, not `vaultManifest` / `vaultContent`, or it ignores the sample.
- * In local mode callers discard the value. See `entities/docs-vault/lib/static-vault-source.ts`.
+ * In local mode callers discard the value. See `entities/docs-vault/lib/bundled-vault/static-vault-source.ts`.
  */
 export function useStaticVaultSource(): StaticVaultSource {
   const [sampleSource] = useSampleSource();

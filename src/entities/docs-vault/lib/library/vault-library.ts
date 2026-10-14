@@ -1,6 +1,6 @@
 import { isWikiFurnitureSlug } from '@/shared/lib/library/wiki-page-schema';
 
-import type { VaultDoc, VaultSourceFile } from '../model/types';
+import type { VaultDoc, VaultSourceFile } from '../../model/types';
 
 /**
  * The two vault file kinds that are not the graph: raw sources under `sources/` and wiki pages

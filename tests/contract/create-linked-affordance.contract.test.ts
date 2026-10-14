@@ -46,7 +46,7 @@ describe("「이어서 새로 만들기」 — 어포던스 계약", () => {
      * screen's single create-concept path.
      */
     expect(authoring).toMatch(/buildNewNodeDoc\(\{ \.\.\.input, createdBy: "human" \}\)/);
-    expect(read("src/entities/docs-vault/lib/build-vault-markdown.ts")).toMatch(
+    expect(read("src/entities/docs-vault/lib/authoring/build-vault-markdown.ts")).toMatch(
       /createdBy: args\.createdBy,/,
     );
   });

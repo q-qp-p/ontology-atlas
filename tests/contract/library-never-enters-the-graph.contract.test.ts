@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { buildLocalManifest } from '@/entities/docs-vault/lib/build-local-manifest';
+import { buildLocalManifest } from '@/entities/docs-vault/lib/local-manifest/build-local-manifest';
 import { deriveOntologyFromVault } from '@/entities/docs-vault/lib/derive-ontology-from-vault';
 import { walkMd as walkCliVault } from '../../cli/src/lib/walk-vault.mjs';
 import { walkMd } from '../../mcp/src/vault/slug-paths.mjs';

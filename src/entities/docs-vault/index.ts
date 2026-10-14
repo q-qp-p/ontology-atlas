@@ -10,11 +10,11 @@ export { default as vaultManifest } from './data/manifest.json';
 export {
   resolveStaticVaultSource,
   type StaticVaultSource,
-} from './lib/static-vault-source';
+} from './lib/bundled-vault/static-vault-source';
 export {
   loadStaticVaultHeadings,
   type StaticVaultHeadings,
-} from './lib/static-headings';
+} from './lib/bundled-vault/static-headings';
 export {
   pinnedDocsStorageKey,
   recentDocsStorageKey,
@@ -26,15 +26,15 @@ export {
   buildLocalManifestWithEntries,
   rebuildLocalManifestIncremental,
   computeLocalVaultFingerprintWithStamps,
-} from './lib/build-local-manifest';
+} from './lib/local-manifest/build-local-manifest';
 export type {
   LocalVaultBuild,
   BuiltVaultEntry,
   VaultBuildObserver,
   VaultStampIndex,
-} from './lib/build-local-manifest';
-export { VAULT_SOURCES_DIR } from './lib/walk-vault';
-export { createSourceCopyBatch } from './lib/source-copy-publication';
+} from './lib/local-manifest/build-local-manifest';
+export { VAULT_SOURCES_DIR } from './lib/local-manifest/walk-vault';
+export { createSourceCopyBatch } from './lib/library/source-copy-publication';
 export {
   buildLibraryModel,
   selectWikiPages,
@@ -44,22 +44,22 @@ export {
   isWikiPage,
   newestWikiPage,
   sourceNeedsCompile,
-} from './lib/vault-library';
+} from './lib/library/vault-library';
 export type {
   LibraryModel,
   LibraryOriginalLink,
   LibrarySourceRow,
   LibraryWikiPage,
   LibraryWriteUpLink,
-} from './lib/vault-library';
-export { candidateKey, discoverCandidatesInHandle } from './lib/source-discovery';
-export type { SourceCandidate, SourceDiscoveryReport } from './lib/source-discovery';
+} from './lib/library/vault-library';
+export { candidateKey, discoverCandidatesInHandle } from './lib/library/source-discovery';
+export type { SourceCandidate, SourceDiscoveryReport } from './lib/library/source-discovery';
 export {
   buildProjectMarkdown,
   projectToFrontmatter,
   buildStarterDisplaySync,
   isStarterProjectDescription,
-} from './lib/project-frontmatter';
+} from './lib/projects/project-frontmatter';
 export {
   buildVaultMarkdown,
   buildNewNodeDoc,
@@ -67,7 +67,7 @@ export {
   vaultFolderForKind,
   VAULT_CREATED_BY_HUMAN,
   vaultAgentCreatedBy,
-} from './lib/build-vault-markdown';
+} from './lib/authoring/build-vault-markdown';
 export {
   deriveArrivedOntology,
   deriveOntologyFromVault,
@@ -75,36 +75,36 @@ export {
 } from './lib/derive-ontology-from-vault';
 export { createSummaryStalenessScan, daysBehind, SUMMARY_KINDS } from './lib/summary-freshness';
 export type { SummaryStaleness } from './lib/summary-freshness';
-export { deriveProjectsFromVault } from './lib/derive-projects-from-vault';
-export { deriveBundledProjects, bundledProjectSlugs } from './lib/bundled-projects';
+export { deriveProjectsFromVault } from './lib/projects/derive-projects-from-vault';
+export { deriveBundledProjects, bundledProjectSlugs } from './lib/bundled-vault/bundled-projects';
 export {
   findProjectVaultDoc,
   findProjectDocInList,
   resolveSoleProjectSlug,
   hasSeveralProjectDocs,
-} from './lib/project-slug';
-export { extractProjectBody } from './lib/resolve-project-body';
+} from './lib/projects/project-slug';
+export { extractProjectBody } from './lib/projects/resolve-project-body';
 export type {
   VaultOntologyDerivation,
 } from './lib/derive-ontology-from-vault';
-export { findRelatedDocs } from './lib/related-docs';
-export { buildWikiRetrievalIndex, type WikiRetrievalResult } from './lib/wiki-retrieval';
-export { buildDocsVaultHref } from './lib/href';
-export { buildOntologyDeeplinkForDoc } from './lib/ontology-deeplink';
-export { buildTopologyDeeplinkForDoc } from './lib/topology-deeplink';
-export { applyFrontmatterUpdates } from './lib/frontmatter-updates';
-export type { FrontmatterUpdateValue } from './lib/frontmatter-updates';
+export { findRelatedDocs } from './lib/doc-navigation/related-docs';
+export { buildWikiRetrievalIndex, type WikiRetrievalResult } from './lib/library/wiki-retrieval';
+export { buildDocsVaultHref } from './lib/doc-navigation/href';
+export { buildOntologyDeeplinkForDoc } from './lib/doc-navigation/ontology-deeplink';
+export { buildTopologyDeeplinkForDoc } from './lib/doc-navigation/topology-deeplink';
+export { applyFrontmatterUpdates } from './lib/authoring/frontmatter-updates';
+export type { FrontmatterUpdateValue } from './lib/authoring/frontmatter-updates';
 export {
   computeRenameRefContext,
   planKindChangeReferrers,
   planReferrerRewrite,
   rewriteMovedDocSelf,
-} from './lib/rename-ref-rewrites';
+} from './lib/authoring/rename-ref-rewrites';
 export type {
   KindChangeReferrer,
   ReferrerListKept,
   ReferrerListMove,
-} from './lib/rename-ref-rewrites';
-export { fetchServerDocContent, buildDocsVaultAssetCandidates } from './lib/server-doc-content';
+} from './lib/authoring/rename-ref-rewrites';
+export { fetchServerDocContent, buildDocsVaultAssetCandidates } from './lib/bundled-vault/server-doc-content';
 export { buildReviewQueue, reviewDigest } from './lib/review';
 export type { ReviewQueueRow } from './lib/review';
