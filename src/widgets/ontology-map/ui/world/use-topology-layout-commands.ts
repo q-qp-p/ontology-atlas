@@ -8,11 +8,11 @@ import {
 import {
   type SpringOffset,
 } from "../../expressive/release-offsets";
-import { createForceSimulation, type ForceSimulation } from "../../model/force-layout";
+import { createForceSimulation, type ForceSimulation } from "../../model/layout/force-layout";
 import {
   type RealmTransitionState
-} from "../../model/realm-transition";
-import { initHomeSpring, type HomeSpringState } from "../../model/relayout-home";
+} from "../../model/realm/realm-transition";
+import { initHomeSpring, type HomeSpringState } from "../../model/layout/relayout-home";
 import type { NodeDragState } from "../input/topology-pointer-types";
 import { readOntologyMapTokensOrNull } from "../../tokens/topology-read-tokens";
 import { type RealmRuntimeData } from "./topology-realm-runtime";

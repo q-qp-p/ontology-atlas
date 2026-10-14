@@ -1,5 +1,5 @@
-import type { NodeEgoState } from "../../model/focus-state";
-import { resolveFreshnessVisual } from "../../model/freshness";
+import type { NodeEgoState } from "../../model/visibility/focus-state";
+import { resolveFreshnessVisual } from "../../model/ambient/freshness";
 import type { DomeViewKind } from "../../model/dome-view/types";
 import { hexToRgb, mixRgbHex } from "../../render/dome-light";
 import { lerpColorHex } from "../../render/grid";

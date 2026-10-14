@@ -7,7 +7,7 @@
  */
 
 import { smoothstep } from "./altitude";
-import type { LayoutNodeKind } from "./layout";
+import type { LayoutNodeKind } from "../layout/layout";
 
 interface TierRevealBand {
   enterRatio: number;

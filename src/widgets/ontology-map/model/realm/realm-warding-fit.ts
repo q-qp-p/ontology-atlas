@@ -4,7 +4,7 @@
  * The loop (`use-topology-loop.ts`) keeps the state in a ref and steps it each frame.
  */
 
-import { easeInOutCubic } from "./camera-easing";
+import { easeInOutCubic } from "../camera/camera-easing";
 
 /** The design charter's 240 ms ceiling. */
 export const WARDING_REFIT_MS = 240;

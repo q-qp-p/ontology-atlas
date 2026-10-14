@@ -5,8 +5,8 @@
  * gesture interrupts. Durations are feel constants, not themable `--map-*` tokens.
  */
 
-import type { CameraTarget } from "../engine/camera";
-import { CAMERA_TWEEN_MAX_MS, CAMERA_TWEEN_MIN_MS, easeZoomScale, zoomStepProgress } from "./motion-physics";
+import type { CameraTarget } from "../../engine/camera";
+import { CAMERA_TWEEN_MAX_MS, CAMERA_TWEEN_MIN_MS, easeZoomScale, zoomStepProgress } from "../motion-physics";
 
 export interface CameraKeyframe {
   x: number;

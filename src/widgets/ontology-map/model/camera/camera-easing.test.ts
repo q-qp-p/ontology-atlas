@@ -12,7 +12,7 @@ import {
   VAN_WIJK_RHO,
   vanWijkCameraKeyframe,
 } from "./camera-easing";
-import { ZOOM_STEP_TAU_MS } from "./motion-physics";
+import { ZOOM_STEP_TAU_MS } from "../motion-physics";
 
 describe("easeAnchoredZoom", () => {
   const width = 1200;

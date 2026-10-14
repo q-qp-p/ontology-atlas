@@ -1,5 +1,5 @@
-import { trailNodeInkStrength } from "../../model/focus-state";
-import { computeSelectionPulse, type SelectionPulseVisual } from "../../model/selection-pulse";
+import { trailNodeInkStrength } from "../../model/visibility/focus-state";
+import { computeSelectionPulse, type SelectionPulseVisual } from "../../model/ambient/selection-pulse";
 import { drawFootprintSteps } from "@/shared/lib/map-canvas/footprint-glyph";
 import {
   DOME_HALO_ALPHA_CAP,
@@ -16,8 +16,8 @@ import {
   focusFogFactor,
   type EvidenceLight,
 } from "../../render/dome-light";
-import { realmDepthClarityAlpha, realmDepthClarityScale } from "../../model/realm-transition";
-import { HITTABLE_MIN_TIER_ALPHA } from "../../model/tier-visibility";
+import { realmDepthClarityAlpha, realmDepthClarityScale } from "../../model/realm/realm-transition";
+import { HITTABLE_MIN_TIER_ALPHA } from "../../model/visibility/tier-visibility";
 import { lerpColorHex } from "../../render/grid";
 import { NODE_DISC_LABEL_PRIORITY } from "../../render/label-layout";
 import {

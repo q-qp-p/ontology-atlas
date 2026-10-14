@@ -1,6 +1,6 @@
-import type { ClusterChip } from "../../model/density-gate";
-import { stepEmphasis } from "../../model/focus-state";
-import { relaxNewlyVisible } from "../../model/layout";
+import type { ClusterChip } from "../../model/layout/density-gate";
+import { stepEmphasis } from "../../model/visibility/focus-state";
+import { relaxNewlyVisible } from "../../model/layout/layout";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import {
   recomputeWorldGeometry,

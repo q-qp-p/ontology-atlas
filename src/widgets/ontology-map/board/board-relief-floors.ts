@@ -1,4 +1,4 @@
-import type { HexTile } from "../model/hex-board";
+import type { HexTile } from "../model/board/hex-board";
 import { hexFonts, type HexDrawState } from "../render/hex-board";
 import type { HexBoardTokens } from "../tokens/read-hex-board-tokens";
 import { face, FRONT_SIDES, prismPolygons, wall, type PaintedFace } from "./board-geometry";

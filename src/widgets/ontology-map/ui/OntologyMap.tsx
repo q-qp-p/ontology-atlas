@@ -11,9 +11,9 @@ import { readOntologyMapTokensOrNull } from "../tokens/topology-read-tokens";
 import { ICON_SIZE } from "@/shared/ui/tokens/icon-size";
 import { useTopologyLoop } from "./loop/use-topology-loop";
 import { OntologyMapTierLegend } from "./OntologyMapTierLegend";
-import type { TierNameAnchor } from "../model/tier-names";
-import type { TierRevealConfig } from "../model/tier-visibility";
-import type { TopologyMapLensKind } from "../model/path-lens";
+import type { TierNameAnchor } from "../model/dome-view/tier-names";
+import type { TierRevealConfig } from "../model/visibility/tier-visibility";
+import type { TopologyMapLensKind } from "../model/visibility/path-lens";
 import type { ClusterBarLabels } from "../render/cluster-chips";
 import type { DomeViewKind } from "../model/dome-view/types";
 import { DEFAULT_EXPAND, DEFAULT_MAP_ARRANGEMENT, DEFAULT_MAP_NAVIGATION_SPEED } from "@/shared/lib/preferences/appearance-preferences";
@@ -121,7 +121,7 @@ export interface OntologyMapProps {
   fitViewToken: number;
   /**
    * Bump to **toggle** the replay of the ontology growing in containment order
-   * (`model/growth-replay.ts`) — a bump while one runs stops it.
+   * (`model/ambient/growth-replay.ts`) — a bump while one runs stops it.
    */
   growthReplayToken?: number;
   /** Fires true when a growth replay starts and false when it ends, however it ends. */
@@ -488,7 +488,7 @@ export function OntologyMap(props: OntologyMapProps) {
    * ── Strata's tier names ────────────────────────────────────────────────────
    *
    * Where the frame placed each name beside its plane's rim this frame
-   * (`model/tier-names.ts`); `OntologyMapTierLegend` draws them and measures them.
+   * (`model/dome-view/tier-names.ts`); `OntologyMapTierLegend` draws them and measures them.
    */
   const [tierNames, setTierNames] = useState<readonly TierNameAnchor[] | null>(null);
   const handleTierNames = useCallback((next: readonly TierNameAnchor[] | null) => {

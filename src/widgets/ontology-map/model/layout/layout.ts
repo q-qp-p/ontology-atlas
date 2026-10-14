@@ -11,7 +11,7 @@
 import { DEFAULT_EXPAND } from "@/shared/lib/preferences/appearance-preferences";
 import type { ExpandStructure } from "@/shared/lib/preferences/appearance-preferences";
 import { DENSITY_GATE_THRESHOLD } from "./density-gate";
-import { rankEgoNeighborsByDOI } from "./focus-state";
+import { rankEgoNeighborsByDOI } from "../visibility/focus-state";
 
 export type LayoutNodeKind = "project" | "domain" | "capability" | "element";
 

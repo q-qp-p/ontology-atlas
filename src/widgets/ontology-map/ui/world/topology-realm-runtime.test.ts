@@ -4,9 +4,9 @@ import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import { buildTopologyWorld } from "./topology-world";
 import type { OntologyMapEdge, OntologyMapNode } from "../OntologyMap";
 import { buildRealmRuntimeData, realmCameraTarget, realmVisibleBounds } from "./topology-realm-runtime";
-import { DENSITY_GATE_THRESHOLD } from "../../model/density-gate";
-import { computeRealmLayout, extractRealmSubtree } from "../../model/realm";
-import type { LayoutRings } from "../../model/layout";
+import { DENSITY_GATE_THRESHOLD } from "../../model/layout/density-gate";
+import { computeRealmLayout, extractRealmSubtree } from "../../model/realm/realm";
+import type { LayoutRings } from "../../model/layout/layout";
 
 const tokens = {
   radiusProject: 20,

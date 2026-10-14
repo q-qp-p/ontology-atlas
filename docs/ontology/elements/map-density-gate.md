@@ -6,7 +6,7 @@ title: Map density gate
 display_en: Map density gate
 display_ko: 지도 밀도 게이트
 domain: domains/human-workbench
-path: src/widgets/ontology-map/model/density-gate.ts
+path: src/widgets/ontology-map/model/layout/density-gate.ts
 created_by: "agent:claude-code"
 ---
 

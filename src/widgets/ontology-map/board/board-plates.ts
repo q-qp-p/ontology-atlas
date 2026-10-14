@@ -1,5 +1,5 @@
-import type { HexBoardLayout, HexTile } from "../model/hex-board";
-import { hexKey, SQRT3 } from "../model/hex-grid";
+import type { HexBoardLayout, HexTile } from "../model/board/hex-board";
+import { hexKey, SQRT3 } from "../model/board/hex-grid";
 import { hexFonts, type HexDrawState, type HexTextBox } from "../render/hex-board";
 import type { HexBoardTokens } from "../tokens/read-hex-board-tokens";
 import { COS, face, FRONT_SIDES, side, SIN, wall } from "./board-geometry";

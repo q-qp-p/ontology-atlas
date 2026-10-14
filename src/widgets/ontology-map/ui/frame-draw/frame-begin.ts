@@ -1,17 +1,17 @@
-import { buildTrailGlintLegs, type TrailGlintLeg } from "../../model/footprint-steps";
+import { buildTrailGlintLegs, type TrailGlintLeg } from "../../model/visibility/footprint-steps";
 import {
   resolveNodeEgoStateWithPair,
   resolveTrailLensNodeEgoState,
   type EdgePairFocus,
   type NodeEgoState,
-} from "../../model/focus-state";
-import { resolveBackgroundOrigin } from "../../model/background-parallax";
+} from "../../model/visibility/focus-state";
+import { resolveBackgroundOrigin } from "../../model/camera/background-parallax";
 import { footprintScaleFor } from "@/shared/lib/map-canvas/footprint-glyph";
 import { DEFAULT_EXPAND } from "@/shared/lib/preferences/appearance-preferences";
-import { depthParallaxOffsetFor, ZERO_PARALLAX } from "../../model/realm-depth-parallax";
+import { depthParallaxOffsetFor, ZERO_PARALLAX } from "../../model/realm/realm-depth-parallax";
 import { DOME_RING_ALPHA } from "../../model/dome-view/ink";
 import type { DomeNodeFrame } from "../../model/dome-view/runtime";
-import { DEFAULT_TIER_REVEAL } from "../../model/tier-visibility";
+import { DEFAULT_TIER_REVEAL } from "../../model/visibility/tier-visibility";
 import { labelZoomScale } from "../../render/labels";
 import { worldToScreen } from "../camera/topology-camera-math";
 import { passState, ZERO_DOME_FRAME, domeNodeFrameReused } from "./frame-state";

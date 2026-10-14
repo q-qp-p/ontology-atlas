@@ -29,16 +29,16 @@ import {
 import {
   EGO_NEIGHBOR_LIMIT,
   selectiveEgoNeighbors,
-} from "@/widgets/ontology-map/model/focus-state";
+} from "@/widgets/ontology-map/model/visibility/focus-state";
 import {
   DISC_LABEL_TOP_K,
   selectDiscLabelEligible,
-} from "@/widgets/ontology-map/model/label-lod";
+} from "@/widgets/ontology-map/model/visibility/label-lod";
 import {
   computeConcentricLayout,
   type LayoutGraphNode,
   type LayoutRings,
-} from "@/widgets/ontology-map/model/layout";
+} from "@/widgets/ontology-map/model/layout/layout";
 import {
   MAX_EXPANDED_PARENTS,
   limitExpandedParents,

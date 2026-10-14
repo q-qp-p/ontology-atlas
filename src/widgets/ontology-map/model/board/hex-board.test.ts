@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { deriveOntologyFromVault, resolveStaticVaultSource } from "@/entities/docs-vault";
-import type { TreeInputEdge, TreeInputNode } from "./containment-tree";
+import type { TreeInputEdge, TreeInputNode } from "../containment-tree";
 import {
   computeHexBoard,
   fitHexRadius,

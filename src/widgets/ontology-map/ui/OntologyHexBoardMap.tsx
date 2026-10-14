@@ -31,9 +31,9 @@ import {
   type HexTile,
   type HexWalkDirection,
   hexGutter,
-} from "../model/hex-board";
-import { SQRT3 } from "../model/hex-grid";
-import { buildHexLattice, closedNodes, HexFocusRoutes, layCanals, type HexRouteJob } from "../model/hex-router";
+} from "../model/board/hex-board";
+import { SQRT3 } from "../model/board/hex-grid";
+import { buildHexLattice, closedNodes, HexFocusRoutes, layCanals, type HexRouteJob } from "../model/board/hex-router";
 import { buildBoardScene, isSlabBand, reliefLiftPx } from "../board/board-scene";
 import { drawBoard } from "../board/board-paint";
 import type { PaintedFace } from "../board/board-geometry";

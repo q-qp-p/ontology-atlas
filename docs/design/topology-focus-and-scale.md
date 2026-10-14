@@ -93,7 +93,7 @@ not a claim about a Sigma-era `NodeDetailPanel` API:
 
 ### Current focus + context in the graph
 
-- `model/focus-state.ts` owns durable selected ego state and hover emphasis;
+- `model/visibility/focus-state.ts` owns durable selected ego state and hover emphasis;
   `topology-physics-step.ts` and the canvas draw layer apply the focus/dim and
   tier-reveal result without changing the graph data model.
 - `engine/camera.ts` springs camera movement within scale and pan bounds.

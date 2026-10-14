@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { TreeInputEdge, TreeInputNode } from "./containment-tree";
+import type { TreeInputEdge, TreeInputNode } from "../containment-tree";
 import { computeHexBoard, type HexBoardLayout } from "./hex-board";
 import { buildHexLattice, HexFocusRoutes, HexRouteRun, HexRouter, layCanals, type HexRouteJob } from "./hex-router";
 

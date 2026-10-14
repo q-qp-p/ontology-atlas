@@ -1,7 +1,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { CONE_HEIGHT_SCALE } from "@/widgets/ontology-map/model/cone-layout";
+import { CONE_HEIGHT_SCALE } from "@/widgets/ontology-map/model/dome-view/cone-layout";
 import { DOME_NODE_PX } from "@/widgets/ontology-map/model/dome-view/ink";
 import { buildDomeModel } from "@/widgets/ontology-map/model/dome-view/model-build";
 import { DOME_PITCH_DEFAULT } from "@/widgets/ontology-map/model/dome-view/orbit";

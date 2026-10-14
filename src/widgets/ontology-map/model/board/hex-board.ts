@@ -5,7 +5,7 @@
  * Placement is append-only: a kept record is honoured, a new domain takes the next spiral
  * slot and a new capability its region's first free cell; only an overflow re-seeds, and it
  * is reported (`reflowed`). A name is drawn only at cell sizes where every name fits its
- * face, never clipped. Unit space; maths in `model/hex-grid.ts`.
+ * face, never clipped. Unit space; maths in `model/board/hex-grid.ts`.
  */
 
 import {
@@ -15,7 +15,7 @@ import {
   type DomainFlow,
   type TreeInputEdge,
   type TreeInputNode,
-} from "./containment-tree";
+} from "../containment-tree";
 import {
   axialRound,
   axialToUnit,

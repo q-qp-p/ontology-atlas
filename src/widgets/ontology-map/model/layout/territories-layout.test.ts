@@ -11,7 +11,7 @@ import {
   type TerritoryLayout,
   type TerritoryTextRole,
 } from "./territories-layout";
-import type { TreeInputEdge, TreeInputNode } from "./containment-tree";
+import type { TreeInputEdge, TreeInputNode } from "../containment-tree";
 
 const FONT_PX: Record<TerritoryTextRole, number> = {
   project: TERRITORY_GEOMETRY.projectFontPx,

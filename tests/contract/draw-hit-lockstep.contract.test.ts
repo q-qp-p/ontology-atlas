@@ -4,7 +4,7 @@ import {
   HITTABLE_MIN_TIER_ALPHA,
   isNodeHittable,
   type HittableNodeInput,
-} from "@/widgets/ontology-map/model/tier-visibility";
+} from "@/widgets/ontology-map/model/visibility/tier-visibility";
 
 /**
  * Draw and hit read the same value: hit reads the alpha map draw already builds, so they cannot
@@ -50,7 +50,7 @@ describe("draw/hit lockstep contract", () => {
     // The draw pass skips at `alpha <= HITTABLE_MIN_TIER_ALPHA`, so the first
     // alpha that paints is the first alpha that answers the pointer. A future
     // edit that raises this floor without narrowing the reveal bands re-opens the
-    // band and fails the sweep in `model/tier-visibility.test.ts`.
+    // band and fails the sweep in `model/visibility/tier-visibility.test.ts`.
     expect(HITTABLE_MIN_TIER_ALPHA).toBe(0.02);
     const atFloor = new Map([["n", HITTABLE_MIN_TIER_ALPHA]]);
     expect(

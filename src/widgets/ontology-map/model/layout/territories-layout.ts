@@ -11,7 +11,7 @@ import {
   type ContainmentTree,
   type TreeInputEdge,
   type TreeInputNode,
-} from "./containment-tree";
+} from "../containment-tree";
 
 /** So the renderer can answer with its real fonts. */
 export type TerritoryTextRole = "project" | "domain" | "domainStats" | "capability" | "element" | "chip";

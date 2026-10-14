@@ -12,7 +12,7 @@ import {
   drawStrataLodSheets,
   type StrataLodChordDraw,
 } from "../../render/strata-lod";
-import { rollUpStrataDependencies } from "../../model/strata-lod";
+import { rollUpStrataDependencies } from "../../model/dome-view/strata-lod";
 import { lerpColorHex } from "../../render/grid";
 import type { WorldEdge } from "../world/topology-world";
 import {

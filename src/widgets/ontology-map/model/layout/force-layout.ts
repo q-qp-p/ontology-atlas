@@ -1,6 +1,6 @@
 /**
  * Seeded force simulation so a dragged node moves like a force graph. The deterministic
- * concentric layout (`model/layout.ts`) seeds positions to keep spatial memory,
+ * concentric layout (`model/layout/layout.ts`) seeds positions to keep spatial memory,
  * and `graphology-layout-forceatlas2` relaxes and reacts on a bounded synchronous tick budget
  * while warm: no worker, since there is no steady-state cost to offload. FA2 has no fixed
  * node, so a pin is re-stamped after every `assign`. Deterministic for identical seeds,

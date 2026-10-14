@@ -4,7 +4,7 @@
  * The caller (`use-topology-loop.ts`) owns the per-node state and stops once all converge.
  */
 
-import { stepSpring, type SpringAxisState } from "../engine/spring";
+import { stepSpring, type SpringAxisState } from "../../engine/spring";
 
 export interface HomeSpringState {
   x: SpringAxisState;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { hexGutter, type HexTile } from "../model/hex-board";
-import { SQRT3 } from "../model/hex-grid";
+import { hexGutter, type HexTile } from "../model/board/hex-board";
+import { SQRT3 } from "../model/board/hex-grid";
 import { RELIEF_PITCH_REST } from "./relief-projection";
 import { pickReliefTile } from "./relief-pick";
 

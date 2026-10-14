@@ -6,7 +6,7 @@ import {
   isCanvasActive,
   isDomeSpinAnimating,
   isEgoTailAnimating, shouldSkipFrame, type CanvasActivityFlags, type DomeSpinInput, type EgoTailActivityInput } from "./idle-gate";
-import { stepFocusRamp } from "./focus-state";
+import { stepFocusRamp } from "../visibility/focus-state";
 
 const IDLE: CanvasActivityFlags = {
   pointerActive: false,

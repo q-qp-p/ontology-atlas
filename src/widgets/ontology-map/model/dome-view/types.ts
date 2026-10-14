@@ -1,4 +1,4 @@
-import type { ConeCircle, ConeCoord, ConeInputNode, ConeKind } from '../cone-layout';
+import type { ConeCircle, ConeCoord, ConeInputNode, ConeKind } from './cone-layout';
 
 /**
  * The opt-in 3D view, where height and bearing carry typed facts or relations place nodes.

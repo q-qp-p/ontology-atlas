@@ -2,24 +2,24 @@ import type { RefObject } from "react";
 
 import type { CameraAxes, CameraTarget } from "../../engine/camera";
 import type { PointerMachineState } from "../../interaction/pointer-state-machine";
-import { ambientSleepFactor } from "../../model/ambient-sleep";
-import { createFocusRampClock } from "../../model/focus-state";
-import { easeAnchoredZoom, easeCameraKeyframe, type CameraTween, type ZoomEase } from "../../model/camera-easing";
+import { ambientSleepFactor } from "../../model/ambient/ambient-sleep";
+import { createFocusRampClock } from "../../model/visibility/focus-state";
+import { easeAnchoredZoom, easeCameraKeyframe, type CameraTween, type ZoomEase } from "../../model/camera/camera-easing";
 import type { DomeRuntime } from "../../model/dome-view/runtime";
-import type { GrowthReplay } from "../../model/growth-replay";
+import type { GrowthReplay } from "../../model/ambient/growth-replay";
 import {
   depthParallaxFactorForDepth,
   isDepthParallaxActive,
   stepDepthParallax,
   ZERO_PARALLAX,
   type DepthParallaxOffset,
-} from "../../model/realm-depth-parallax";
-import type { RealmTransitionState } from "../../model/realm-transition";
+} from "../../model/realm/realm-depth-parallax";
+import type { RealmTransitionState } from "../../model/realm/realm-transition";
 import {
   classifyZoomTier,
   type TierRevealConfig,
   type ZoomTier,
-} from "../../model/tier-visibility";
+} from "../../model/visibility/tier-visibility";
 import { updatePulses, type Pulse } from "../../render/edge-fireflies";
 import { lastDialFrame } from "../../dial/frame/frame";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
@@ -217,7 +217,7 @@ export function createCameraFrameStage(sources: CameraFrameStageSources) {
             /*
              * Passing the viewport width selects the **van Wijk optimal
              * path** (see the `VAN_WIJK_RHO` doc-block in
-             * `model/camera-easing.ts`). Without it this degrades to
+             * `model/camera/camera-easing.ts`). Without it this degrades to
              * per-axis linear interpolation, which is what the
              * "looks like a lerp" sweep across the screen was whenever a
              * move and a zoom overlapped.

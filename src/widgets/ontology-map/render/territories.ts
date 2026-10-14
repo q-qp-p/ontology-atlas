@@ -1,5 +1,5 @@
 /**
- * Canvas 2D drawing for the Territories view (`model/territories-layout.ts`). Pure: every position
+ * Canvas 2D drawing for the Territories view (`model/layout/territories-layout.ts`). Pure: every position
  * comes from the layout. Channels: disc size = element count; ring = evidence; shelf arcs and trunk
  * = membership; tapered strokes with a count pill = rolled-up dependencies; arrows = focus needs.
  */
@@ -17,7 +17,7 @@ import {
   type TerritoryLabel,
   type TerritoryLayout,
   type TerritoryTextRole,
-} from "../model/territories-layout";
+} from "../model/layout/territories-layout";
 
 export type TerritoryEvidenceState = "current" | "stale" | "unknown";
 

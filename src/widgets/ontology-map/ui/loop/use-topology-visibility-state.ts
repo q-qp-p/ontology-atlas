@@ -5,8 +5,8 @@ import {
   useCallback,
   useRef
 } from "react";
-import type { ClusterChip } from "../../model/density-gate";
-import { type GrowthReplay } from "../../model/growth-replay";
+import type { ClusterChip } from "../../model/layout/density-gate";
+import { type GrowthReplay } from "../../model/ambient/growth-replay";
 
 const EMPTY_EXPANDED_SET: ReadonlySet<string> = new Set();
 
@@ -144,7 +144,7 @@ export function useTopologyVisibilityState({
   const appearRef = useRef<Map<string, number>>(new Map());
 
   /**
-   * Growth replay in flight (`model/growth-replay.ts`), or null. While it runs
+   * Growth replay in flight (`model/ambient/growth-replay.ts`), or null. While it runs
    * the draw reads `growthReplayAppearRef` instead of `appearRef`, so the
    * physics step's own appear ramp is untouched and resumes the moment the
    * replay ends or is cancelled by input.

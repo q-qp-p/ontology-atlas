@@ -1,10 +1,10 @@
 import { projectTourAnchor } from "./topology-tour-anchor";
 import type { CameraAxes } from "../../engine/camera";
-import type { ClusterChip } from "../../model/density-gate";
+import type { ClusterChip } from "../../model/layout/density-gate";
 import type { DomeRuntime } from "../../model/dome-view/runtime";
-import { parseClusterMoreChipId } from "../../model/focus-state";
-import { computeVisibleWardingRadius } from "../../model/realm";
-import type { DepthParallaxOffset } from "../../model/realm-depth-parallax";
+import { parseClusterMoreChipId } from "../../model/visibility/focus-state";
+import { computeVisibleWardingRadius } from "../../model/realm/realm";
+import type { DepthParallaxOffset } from "../../model/realm/realm-depth-parallax";
 import {
   isRealmOutsideCulled,
   REALM_EXIT_OUTSIDE_RETURN_DELAY_MS,
@@ -15,12 +15,12 @@ import {
   realmWardingDrawProgress,
   realmWardingEraseProgress,
   type RealmTransitionState,
-} from "../../model/realm-transition";
+} from "../../model/realm/realm-transition";
 import {
   initWardingFit,
   stepWardingFit,
   type WardingFitState,
-} from "../../model/realm-warding-fit";
+} from "../../model/realm/realm-warding-fit";
 import { orbitButtonRect } from "../../render/cluster-chips";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import { worldToScreen } from "../camera/topology-camera-math";

@@ -1,8 +1,8 @@
 import type { MapArrangement } from "@/shared/lib/preferences/appearance-preferences";
 import type { CameraAxes, CameraTarget } from "../../engine/camera";
 import type { PointerMachineState } from "../../interaction/pointer-state-machine";
-import { ambientSleepFactor, isAmbientAsleep } from "../../model/ambient-sleep";
-import { followOrbitTarget, startOrbitCadence, type OrbitCadence } from "../../model/orbit-cadence";
+import { ambientSleepFactor, isAmbientAsleep } from "../../model/ambient/ambient-sleep";
+import { followOrbitTarget, startOrbitCadence, type OrbitCadence } from "../../model/camera/orbit-cadence";
 import {
   CAMERA_TRANSITION_MIN_MS,
   cameraTransitionDurationMs,
@@ -10,7 +10,7 @@ import {
   easeOutCubic,
   type CameraKeyframe,
   type CameraTweenAltitude,
-} from "../../model/camera-easing";
+} from "../../model/camera/camera-easing";
 import {
   chargeTierLag,
   commitDomeEntrySweep,
@@ -51,8 +51,8 @@ import {
   type DomeRuntime,
 } from "../../model/dome-view/runtime";
 import type { DomeModel } from "../../model/dome-view/types";
-import { isDomeSpinAnimating } from "../../model/idle-gate";
-import type { RealmTransitionState } from "../../model/realm-transition";
+import { isDomeSpinAnimating } from "../../model/ambient/idle-gate";
+import type { RealmTransitionState } from "../../model/realm/realm-transition";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import {
   computeDomeFocusCameraTarget,
@@ -702,7 +702,7 @@ export function createDomeFrameStage(sources: DomeFrameStageSources) {
             }
           }
           // Auto-spin runs only while `spinArmed`; any interaction lowers it, and re-entering 3D or auto-align
-          // rearms it. Speed scales by the ambient sleep factor (`model/ambient-sleep.ts`); 0 if reduced motion.
+          // rearms it. Speed scales by the ambient sleep factor (`model/ambient/ambient-sleep.ts`); 0 if reduced motion.
           const spinFactor = ambientSleepFactor(now, lastInputMsRef.current, ambientSleepDelayRef.current);
           if (
             dome.yawVel === 0 &&

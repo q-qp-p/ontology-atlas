@@ -344,7 +344,7 @@ export function TopologyCanvasSurface(props: TopologyCanvasSurfaceProps) {
             </Tooltip>
           )}
           {/* Replays the ontology appearing in containment order
-             (`ontology-map/model/growth-replay.ts`); desktop only. */}
+             (`ontology-map/model/ambient/growth-replay.ts`); desktop only. */}
           {structure || createNodeOpen ||
             selectedEdgeOwnsRightRail ||
             topologyBlockingOverlayActive ||

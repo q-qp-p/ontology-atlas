@@ -46,8 +46,8 @@ import {
   DEFAULT_MAP_NAVIGATION_SPEED,
 } from "@/shared/lib/preferences/appearance-preferences";
 import type { DomeViewKind } from "../../model/dome-view/types";
-import { createStrataLodState, type StrataLodState } from "../../model/strata-lod";
-import { DEFAULT_TIER_REVEAL } from "../../model/tier-visibility";
+import { createStrataLodState, type StrataLodState } from "../../model/dome-view/strata-lod";
+import { DEFAULT_TIER_REVEAL } from "../../model/visibility/tier-visibility";
 import type { TopologyPointerHandlers } from "../input/topology-pointer-types";
 
 import type { MapLayoutMark } from "@/shared/lib/map-canvas/map-layout-morph-store";

@@ -6,9 +6,9 @@
  * only, through `projectDomePlanePoint` into reused arrays; paint is `render/dome-light.ts`.
  */
 import { DOME_PLANE } from "./cone-layout";
-import { projectDomePlanePoint, type DomePlaneSample } from "./dome-view/frame";
-import type { DomeRuntime } from "./dome-view/runtime";
-import type { DomeSector, DomeViewKind } from "./dome-view/types";
+import { projectDomePlanePoint, type DomePlaneSample } from "./frame";
+import type { DomeRuntime } from "./runtime";
+import type { DomeSector, DomeViewKind } from "./types";
 
 const TAU = Math.PI * 2;
 

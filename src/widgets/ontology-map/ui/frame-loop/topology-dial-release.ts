@@ -1,5 +1,5 @@
-import { createForceSimulation, type ForceSimulation } from "../../model/force-layout";
-import { initHomeSpring, type HomeSpringState } from "../../model/relayout-home";
+import { createForceSimulation, type ForceSimulation } from "../../model/layout/force-layout";
+import { initHomeSpring, type HomeSpringState } from "../../model/layout/relayout-home";
 import type { TopologyWorld } from "../world/topology-world";
 
 type Point = { x: number; y: number };

@@ -22,7 +22,7 @@ import type { MapNavigationSpeed, MapSpeed } from "@/shared/lib/preferences/appe
 import { listenForGesturePinch } from "../../interaction/gesture-pinch";
 import { INITIAL_POINTER_MACHINE_STATE } from "../../interaction/pointer-state-machine";
 import { MOMENTUM_TAU_MS } from "../../model/motion-physics";
-import type { ZoomEase } from "../../model/camera-easing";
+import type { ZoomEase } from "../../model/camera/camera-easing";
 import { createTopologyPointerHandlers } from "./topology-pointer-handlers";
 import type { PointerHandlerRefs } from "./topology-pointer-types";
 

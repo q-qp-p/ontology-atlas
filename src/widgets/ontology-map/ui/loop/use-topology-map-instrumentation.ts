@@ -5,15 +5,15 @@ import { useEffect } from "react";
 import type { CameraAxes, CameraTarget } from "../../engine/camera";
 import { measureCanvasInsets } from "../../interaction/free-area";
 import type { PointerMachineState } from "../../interaction/pointer-state-machine";
-import type { ClusterChip } from "../../model/density-gate";
-import { projectDomeEdgeControl } from "../../model/dome-edge";
+import type { ClusterChip } from "../../model/layout/density-gate";
+import { projectDomeEdgeControl } from "../../model/dome-view/dome-edge";
 import { DOME_ASSEMBLE_TOTAL_MS } from "../../model/dome-view/frame";
 import type { DomeRuntime } from "../../model/dome-view/runtime";
-import type { ForceSimulation } from "../../model/force-layout";
-import type { TopologyMapLensKind } from "../../model/path-lens";
+import type { ForceSimulation } from "../../model/layout/force-layout";
+import type { TopologyMapLensKind } from "../../model/visibility/path-lens";
 import { isPreviewEndpoint, isPreviewEndpointHidden } from "../../render/preview-edge";
 import type { OntologyMapProps } from "../OntologyMap";
-import type { StrataLodState } from "../../model/strata-lod";
+import type { StrataLodState } from "../../model/dome-view/strata-lod";
 import {
   lastDrawnLabelBoxes,
   lastDrawnLod,

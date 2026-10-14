@@ -1,7 +1,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { realmDepthClarityAlpha } from "@/widgets/ontology-map/model/realm-transition";
+import { realmDepthClarityAlpha } from "@/widgets/ontology-map/model/realm/realm-transition";
 import { readGlobalCss } from '../../scripts/lib/global-css.mjs';
 
 /**

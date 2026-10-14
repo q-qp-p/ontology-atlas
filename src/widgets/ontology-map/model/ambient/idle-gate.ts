@@ -12,7 +12,7 @@ export interface CanvasActivityFlags {
   selectionPulseActive: boolean;
   /** The only always-on motion. */
   egoTailAnimating: boolean;
-  /** `model/growth-replay.ts` */
+  /** `model/ambient/growth-replay.ts` */
   growthReplaying?: boolean;
   emphasisTarget: boolean;
   /**

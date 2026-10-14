@@ -171,7 +171,7 @@
        ring (above) with one slowly circulating bright arc (glow 0 — reuse `strokeKindOutline`
        path + `setLineDash`/`lineDashOffset` time animation only). seg is
        circumference ratio, period is 1 rotation(ms, linear, clockwise). Pure phase calculation
-       in `model/hover-shimmer.ts`. */
+       in `model/ambient/hover-shimmer.ts`. */
     --map-hover-shimmer-seg: 0.16;
     --map-hover-shimmer-period-ms: 2400;
 
@@ -343,7 +343,7 @@
     --map-altitude-far-low-ratio: 0.62;
     /* Overview entry scale = tight-fit × this ratio. Kept above the far-high
        ratio (0.92) so the DEFAULT overview reads as CIRCUIT (farT ≈ 0), while
-       tier visibility rides a separate zoom-ratio signal (model/tier-visibility). */
+       tier visibility rides a separate zoom-ratio signal (model/visibility/tier-visibility). */
     --map-overview-entry-ratio: 0.95;
     /*
      * Top band 104: the label pipeline culls against `--map-safe-inset-top` (148); a smaller band put
@@ -369,7 +369,7 @@
     --map-emphasis-rise-tau: 0.09;
     --map-emphasis-decay-tau: 0.15;
     /* Click focus signal motion — time constant for color transition where neighbors=indigo·others=gray ramp-dim
-       on node click (single symmetric rise/decay). Overlaid on the same timeline as camera dive (~200~420ms) so "click pushed back background" causality is read as one gesture rather than a hard cut. On deselect, returns with same τ while background dim·selection ring fade out together. Consumed by `stepFocusRamp` (`model/focus-state.ts`). */
+       on node click (single symmetric rise/decay). Overlaid on the same timeline as camera dive (~200~420ms) so "click pushed back background" causality is read as one gesture rather than a hard cut. On deselect, returns with same τ while background dim·selection ring fade out together. Consumed by `stepFocusRamp` (`model/visibility/focus-state.ts`). */
     --map-focus-dim-tau: 0.16;
     /* rank7 — time constant for cluster chip expand/collapse ramp (single symmetric rise/decay). When children subtree of collapsed parent expands, interpolate child draw alpha 0→1 with this τ, and 1→0 when collapsing, eliminating "pop in/out" hard cuts. Consistent entrance/exit fade regardless of camera zoom. Slightly longer than emphasis (0.09) (~0.17s) to create rhythm of subtree opening as a single block. Reuses `stepEmphasis` (`focus-state.ts`). */
     --map-cluster-reveal-tau: 0.17;
@@ -377,7 +377,7 @@
     --map-breathe-amplitude: 0.04;
     --map-breathe-freq-rad: 1.15;
     --map-pulse-duration-ms: 420;
-    /* One-time commit pulse on click, at most 200ms (`model/selection-pulse.ts`). */
+    /* One-time commit pulse on click, at most 200ms (`model/ambient/selection-pulse.ts`). */
     --map-select-pulse-duration-ms: 180;
     --map-tip-fade-ms: 120;
     /* depends edge comet-tail progression speed (t += dt × speed). Default is ambient

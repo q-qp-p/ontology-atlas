@@ -1,6 +1,6 @@
 /**
  * The proximity constellation is the only background; line or shape forms compete with the data.
- * It owns no timer: it multiplies `ambientFactor` (`model/ambient-sleep.ts`), so it stops at idle.
+ * It owns no timer: it multiplies `ambientFactor` (`model/ambient/ambient-sleep.ts`), so it stops at idle.
  * Under reduced motion it runs `SETTLE_STEPS` frames to a still image, not a blank canvas.
  */
 

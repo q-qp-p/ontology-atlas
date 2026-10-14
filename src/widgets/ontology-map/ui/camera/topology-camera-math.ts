@@ -531,7 +531,7 @@ export function computeFocusCameraTarget(
   viewportWidth: number,
   viewportHeight: number,
   focusedSlug: string | null,
-  /** `overviewScale × overviewEntryRatio` at the current viewport — the zoom-ratio's "1.0" anchor (`model/tier-visibility.ts#computeZoomRatio`). */
+  /** `overviewScale × overviewEntryRatio` at the current viewport — the zoom-ratio's "1.0" anchor (`model/visibility/tier-visibility.ts#computeZoomRatio`). */
   overviewEntryScale: number,
   /**
    * S8 defect 4 — while a realm is expanded, that realm's member set. Restricting

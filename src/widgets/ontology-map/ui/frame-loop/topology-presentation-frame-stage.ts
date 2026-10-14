@@ -4,30 +4,30 @@ import {
   type RefObject
 } from "react";
 import type { CameraAxes } from "../../engine/camera";
-import { ambientSleepFactor } from "../../model/ambient-sleep";
-import type { ClusterChip } from "../../model/density-gate";
+import { ambientSleepFactor } from "../../model/ambient/ambient-sleep";
+import type { ClusterChip } from "../../model/layout/density-gate";
 import { DOME_ASSEMBLE_TOTAL_MS } from "../../model/dome-view/frame";
 import { domeRingAlphaFor } from "../../model/dome-view/ink";
 import type { DomeRuntime } from "../../model/dome-view/runtime";
 import type { DomeViewKind } from "../../model/dome-view/types";
-import { stepFocusRamp } from "../../model/focus-state";
-import { fadeStrataLodOut, restStrataLod, stepStrataLod, type StrataLodState } from "../../model/strata-lod";
-import { createStrataStage, sampleStrataStage } from "../../model/strata-stage";
+import { stepFocusRamp } from "../../model/visibility/focus-state";
+import { fadeStrataLodOut, restStrataLod, stepStrataLod, type StrataLodState } from "../../model/dome-view/strata-lod";
+import { createStrataStage, sampleStrataStage } from "../../model/dome-view/strata-stage";
 import { hexToRgb, parseRgbTriple, type DomeLightFrame, type EvidenceLight, type Rgb } from "../../render/dome-light";
 import {
   buildFootprintSteps,
   buildWalkedEdgeArrivalSteps,
   buildWalkedEdgeDirections,
   buildWalkedEdgeKeys,
-} from "../../model/footprint-steps";
-import { type GrowthReplay } from "../../model/growth-replay";
-import type { TopologyMapLensKind } from "../../model/path-lens";
+} from "../../model/visibility/footprint-steps";
+import { type GrowthReplay } from "../../model/ambient/growth-replay";
+import type { TopologyMapLensKind } from "../../model/visibility/path-lens";
 import {
   type DepthParallaxOffset
-} from "../../model/realm-depth-parallax";
-import { stepSpotlightPhase } from "../../model/spotlight-motion";
-import { placeTierNames, sameTierNames, type TierNameAnchor, type TierPlane } from "../../model/tier-names";
-import { type TierRevealConfig } from "../../model/tier-visibility";
+} from "../../model/realm/realm-depth-parallax";
+import { stepSpotlightPhase } from "../../model/ambient/spotlight-motion";
+import { placeTierNames, sameTierNames, type TierNameAnchor, type TierPlane } from "../../model/dome-view/tier-names";
+import { type TierRevealConfig } from "../../model/visibility/tier-visibility";
 import { type AnimatedBackground } from "../../render/animated-background";
 import type { ClusterBarLabels } from "../../render/cluster-chips";
 import type { Pulse } from "../../render/edge-fireflies";
@@ -489,7 +489,7 @@ export function createPresentationFrameStage({ domeRuntimeRef,
             clusterBarLabels: getClusterBarLabels(),
             domeRingAlpha: domeRingAlphaFor(mapArrangementRef.current),
             domeTierRaisedKind: domeTierRaisedKindRef.current,
-            // Concept names give way to the tier names placed last frame (`model/tier-names.ts`).
+            // Concept names give way to the tier names placed last frame (`model/dome-view/tier-names.ts`).
             tierNameBoxes: domeTierAnchorsSentRef.current,
             dial: flatDialRef.current,
         });
@@ -529,7 +529,7 @@ export function createPresentationFrameStage({ domeRuntimeRef,
             onHiddenDependenciesChangeRef.current?.(hiddenDependencies);
         }
         /*
-         * **Where each Strata tier name stands this frame** (`model/tier-names.ts`). The
+         * **Where each Strata tier name stands this frame** (`model/dome-view/tier-names.ts`). The
          * planes are the rings the frame just drew, not the model: during an orbit or a
          * morph the two are different numbers. The room is the fit's own free box — the
          * canvas minus the chrome it measured on each side — so a name never lands where

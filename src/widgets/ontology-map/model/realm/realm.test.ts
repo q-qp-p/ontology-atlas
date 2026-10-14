@@ -12,7 +12,7 @@ import {
   WARDING_VISIBLE_MARGIN_RATIO,
   WARDING_VISIBLE_MIN_MARGIN,
 } from "./realm";
-import { computeConcentricLayout, type LayoutRadii, type LayoutRings } from "./layout";
+import { computeConcentricLayout, type LayoutRadii, type LayoutRings } from "../layout/layout";
 
 const RINGS: LayoutRings = { domain: 250, capability: 145, element: 90 };
 const RADII: LayoutRadii = { project: 25, domain: 17, capability: 11, element: 7 };

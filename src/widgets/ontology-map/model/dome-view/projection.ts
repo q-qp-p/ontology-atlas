@@ -1,4 +1,4 @@
-import { DOME_PLANE } from '../cone-layout';
+import { DOME_PLANE } from './cone-layout';
 import type { DomeCoord, DomeModel } from './types';
 
 /**

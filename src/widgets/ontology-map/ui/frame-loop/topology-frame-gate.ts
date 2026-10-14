@@ -7,13 +7,13 @@ import { lastDialFrame } from "../../dial/frame/frame";
 import type { CameraAxes, CameraTarget } from "../../engine/camera";
 import { MAX_FRAME_DELTA_SECONDS } from "../../engine/spring";
 import { type PointerMachineState } from "../../interaction/pointer-state-machine";
-import { ambientSleepFactor, isAmbientAsleep } from "../../model/ambient-sleep";
-import { easeInOutCubic } from "../../model/camera-easing";
+import { ambientSleepFactor, isAmbientAsleep } from "../../model/ambient/ambient-sleep";
+import { easeInOutCubic } from "../../model/camera/camera-easing";
 import { DOME_ASSEMBLE_TOTAL_MS } from "../../model/dome-view/frame";
 import { clampDomePitch } from "../../model/dome-view/orbit";
 import type { DomeRuntime } from "../../model/dome-view/runtime";
-import { stepGrowthReplay, type GrowthReplay } from "../../model/growth-replay";
-import type { StrataLodState } from "../../model/strata-lod";
+import { stepGrowthReplay, type GrowthReplay } from "../../model/ambient/growth-replay";
+import type { StrataLodState } from "../../model/dome-view/strata-lod";
 import {
   extendsGrace,
   isCameraUnsettled,
@@ -21,10 +21,10 @@ import {
   isEgoTailAnimating,
   isSceneActive,
   shouldSkipFrame,
-} from "../../model/idle-gate";
+} from "../../model/ambient/idle-gate";
 import {
   type RealmTransitionState
-} from "../../model/realm-transition";
+} from "../../model/realm/realm-transition";
 import type { Pulse } from "../../render/edge-fireflies";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import type { OntologyMapProps } from "../OntologyMap";
@@ -302,7 +302,7 @@ export function createFrameGate({
                 Math.abs(cam.y.value - prev.y) > 0.01 ||
                 Math.abs(cam.scale.value - prev.s) > 0.0001;
             prevCameraSampleRef.current = { x: cam.x.value, y: cam.y.value, s: cam.scale.value };
-            // Comets and the fresh breathe sleep rather than switch off (`model/ambient-sleep.ts`).
+            // Comets and the fresh breathe sleep rather than switch off (`model/ambient/ambient-sleep.ts`).
             const ambientFactor = ambientSleepFactor(now, lastInputMsRef.current, ambientSleepDelayRef.current);
             const ambientAsleep = isAmbientAsleep(ambientFactor);
             // Does the dome still have to move — assembly/teardown ramp, auto-spin,

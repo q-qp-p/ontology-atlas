@@ -13,10 +13,10 @@ import {
   type SpringOffset,
 } from "../../expressive/release-offsets";
 import { tugFactorForHop, tugFalloffForDistance } from "../../interaction/drag-tug";
-import type { CameraTween, CameraTweenAltitude } from "../../model/camera-easing";
+import type { CameraTween, CameraTweenAltitude } from "../../model/camera/camera-easing";
 import { DOME_ASSEMBLE_TOTAL_MS } from "../../model/dome-view/frame";
 import type { DomeRuntime } from "../../model/dome-view/runtime";
-import { createForceSimulation, type ForceSimulation } from "../../model/force-layout";
+import { createForceSimulation, type ForceSimulation } from "../../model/layout/force-layout";
 import {
   isRealmOutsideCulled,
   REALM_EXIT_FLIP_MS,
@@ -31,16 +31,16 @@ import {
   realmOutsideReturnPosition,
   realmTransitionReducer,
   type RealmTransitionState,
-} from "../../model/realm-transition";
-import type { WardingFitState } from "../../model/realm-warding-fit";
+} from "../../model/realm/realm-transition";
+import type { WardingFitState } from "../../model/realm/realm-warding-fit";
 import {
   initHomeSpring,
   isHomeSpringConverged,
   stepHomeSpring,
   type HomeSpringState,
-} from "../../model/relayout-home";
+} from "../../model/layout/relayout-home";
 import { holdTierAssemblyBounds, isTierAssembling, settleTierAssembly, stepTierAssembly } from "../../morph/tier-assembly";
-import { relaxNodeSeparation, type SeparationNode } from "../../model/separation";
+import { relaxNodeSeparation, type SeparationNode } from "../../model/layout/separation";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import { computeOverviewFitScale } from "../camera/topology-camera-math";
 import { dialReleaseHoming } from "./topology-dial-release";

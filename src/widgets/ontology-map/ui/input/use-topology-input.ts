@@ -27,15 +27,15 @@ import { listenForGesturePinch } from "../../interaction/gesture-pinch";
 import { keyboardZoomIntent } from "../../interaction/keyboard-zoom";
 import { createPinchWheelStream } from "../../interaction/wheel";
 import { type PointerMachineState } from "../../interaction/pointer-state-machine";
-import { type CameraTween, type ZoomEase } from "../../model/camera-easing";
-import type { ClusterChip } from "../../model/density-gate";
+import { type CameraTween, type ZoomEase } from "../../model/camera/camera-easing";
+import type { ClusterChip } from "../../model/layout/density-gate";
 import { commitDomeEntrySweep } from "../../model/dome-view/frame";
 import type { DomeRuntime } from "../../model/dome-view/runtime";
-import { type ForceSimulation } from "../../model/force-layout";
+import { type ForceSimulation } from "../../model/layout/force-layout";
 import {
   type DepthParallaxOffset
-} from "../../model/realm-depth-parallax";
-import { type TierRevealConfig } from "../../model/tier-visibility";
+} from "../../model/realm/realm-depth-parallax";
+import { type TierRevealConfig } from "../../model/visibility/tier-visibility";
 import type { ClusterBarLabels } from "../../render/cluster-chips";
 import { centerForInsets, computeEffectiveCameraScaleMax, computeEffectiveCameraScaleMin } from "../camera/topology-camera-math";
 import { createTopologyPointerHandlers } from "./topology-pointer-handlers";

@@ -1,4 +1,4 @@
-import { backgroundParallaxOrigin } from "../../model/background-parallax";
+import { backgroundParallaxOrigin } from "../../model/camera/background-parallax";
 import { DEPTH_DOT_LAYERS, draw as gridDraw } from "../../render/grid";
 import { drawRealmStars, drawStarDust } from "../../render/starfield";
 import { worldToScreen } from "../camera/topology-camera-math";

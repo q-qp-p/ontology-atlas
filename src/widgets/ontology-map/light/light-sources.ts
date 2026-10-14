@@ -4,7 +4,7 @@ import { dialLightFrame } from "../dial/frame/frame";
 import { createDialLightSource } from "../dial/light-source";
 import type { CameraAxes } from "../engine/camera";
 import type { Point } from "../expressive/edge-reveal";
-import type { TopologyMapLensKind } from "../model/path-lens";
+import type { TopologyMapLensKind } from "../model/visibility/path-lens";
 import type { OntologyMapTokens } from "../tokens/read-map-tokens";
 import { radiusForKind, type TopologyWorld, type WorldEdge } from "../ui/world/topology-world";
 import {

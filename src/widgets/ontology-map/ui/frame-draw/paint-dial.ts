@@ -1,4 +1,4 @@
-import { computeSelectionPulse } from "../../model/selection-pulse";
+import { computeSelectionPulse } from "../../model/ambient/selection-pulse";
 import { dialConceptTotal } from "../../dial/dial-model";
 import { clearDialFrame, dialOwnsFlatPaint, paintDialFrame } from "../../dial/frame/frame";
 import { readDialTokens } from "../../dial/tokens";
