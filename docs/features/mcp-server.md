@@ -257,9 +257,11 @@ An explicit project now scopes every handoff count, hub, entrypoint, and graph
 pack to that project's containment tree; a multi-project vault fails closed
 until `project` is supplied. The complete response remains the default. For a
 known coding task, opt-in `detail:"compact"` plus a request-local `task` returns
-an `agentBriefCompact:v2` projection capped at 12,000 UTF-8 bytes of the complete
-serialized JSON object, including its handoff prompt. Display indentation is
-excluded; the current combined two-call wire guard is 22,000 characters. It keeps
+an `agentBriefCompact:v3` projection: `structuredContent` and a separate handoff
+text, together at most 12,000 UTF-8 bytes. Each channel stands alone (the text adds
+the repair step-1 call with its guards, `Safety:` and the exact `Full:` call; the
+structure adds `readerRules`), and optional units fill both identically. The
+current combined two-call wire guard is 22,000 characters. It keeps
 final source/meaning currentness, the meaning-repair guards and first step, the names of the repair steps it omits, and the human-approval
 guards, a broad persisted capability only when its Definition/Includes/Excludes
 agree with the desired work and explicit non-goals, cited element/path evidence,
@@ -281,9 +283,9 @@ including the project. A failed row or a capped body remains incomplete; only
 `ok:true` with `bodyInfo.truncated:false` establishes a complete body read.
 The same source fingerprint, revision, and graph hash are checked again after
 the named reads; a mismatch detected by the exact-file guards or that final
-recheck withdraws every target and downgrades outer currentness. Compact v2
+recheck withdraws every target and downgrades outer currentness. Compact v3
 sends typed facts once in `structuredContent` and
-the handoff prompt as human text. The current `OATLAS_READ_ONLY=1` frozen-control
+the handoff as `content[0].text`. The current `OATLAS_READ_ONLY=1` frozen-control
 run reduced source reads from four to one, wall time by 23.9%, and uncached input
 by 19.1%; two order-reversed blind judges preferred the treatment. The two-call
 wire path measured 12,928 characters. The full read/write profile and

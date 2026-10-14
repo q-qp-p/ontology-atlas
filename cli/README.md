@@ -181,7 +181,7 @@ These wrap the MCP server so the developer has the same authority as an AI agent
 | `ontology-atlas delete <slug>` | Permanent delete. Default refuses if any backlinks remain — preview them with the bare command, then `--confirm` to apply (or `--force` to delete anyway). |
 
 When a coding task is already known, add `--compact --task "..."` to `agent-brief`. This opt-in
-v2 mode returns one selected-project handoff capped at 12,000 UTF-8 JSON bytes:
+v3 mode returns one selected-project handoff, `structuredContent` plus a handoff text of at most 12,000 UTF-8 bytes together (`--json` prints the structure, `--prompt` the text):
 final source and meaning currentness, one broad capability selected only when
 its persisted Definition/Includes/Excludes are compatible with the task, cited
 element/path anchors, explicit impact and verification unknowns, a bounded
