@@ -1,8 +1,10 @@
 import { createHash } from 'node:crypto';
 
 import {
-  completeMarkdownUnits, createUncertaintyPlan, formatUncertaintyLines,
-  markdownSection, projectUncertainty,
+  buildCompactHandoffText, compactMeaningRepair, compactReaderRules,
+} from './agent-brief/compact-handoff-text.mjs';
+import {
+  completeMarkdownUnits, createUncertaintyPlan, markdownSection, projectUncertainty,
 } from './agent-brief/recorded-evidence.mjs';
 import { readCapabilityClaim, readReviewedEvidence } from './agent-brief/reviewed-evidence.mjs';
 import {
@@ -11,9 +13,16 @@ import {
 } from './task-navigation-evidence.mjs';
 import { extractSummaryExcerpt } from './vault/documents.mjs';
 
-const AGENT_BRIEF_COMPACT_CONTRACT = 'agentBriefCompact:v2';
+const AGENT_BRIEF_COMPACT_CONTRACT = 'agentBriefCompact:v3';
 export const AGENT_BRIEF_COMPACT_MAX_BYTES = 12_000;
 export const AGENT_BRIEF_TASK_MAX_CHARS = 2_000;
+
+/** `handoffPrompt` is the text channel; the rest is `structuredContent`. */
+export function compactChannelBytes({ handoffPrompt, ...structure }) {
+  const structureBytes = Buffer.byteLength(JSON.stringify(structure), 'utf8');
+  const text = Buffer.byteLength(handoffPrompt, 'utf8');
+  return { structure: structureBytes, text, total: structureBytes + text };
+}
 
 export function projectSourceSnapshotUnchanged(before, after) {
   const left = before?.receipt;
@@ -160,12 +169,6 @@ function taskIntent(task) {
   };
 }
 
-
-function boundedSection(body, heading, maxChars = 420) {
-  const section = markdownSection(body, heading);
-  if (!section) return '';
-  return extractSummaryExcerpt(section, maxChars);
-}
 
 function compactDoc(doc) {
   if (!doc) return null;
@@ -433,13 +436,9 @@ function compactMeaningCurrentness(assessment) {
     status: assessment?.status ?? 'invalid',
     topGap: assessment?.topGap ?? null,
     nextAction: assessment?.nextAction ?? null,
-    questions: Array.isArray(assessment?.dimensions?.competency?.questions)
-      ? assessment.dimensions.competency.questions.map((row) => ({
-          id: row.id,
-          status: row.status,
-          witnessStatus: row.witnessStatus,
-        }))
-      : [],
+    questionCount: Array.isArray(assessment?.dimensions?.competency?.questions)
+      ? assessment.dimensions.competency.questions.length
+      : 0,
   };
 }
 
@@ -484,7 +483,6 @@ function taskEvidenceAnchors(selected, brief) {
       const node = compactDoc(doc);
       return {
         ...node,
-        relation: `${capabilityDoc.slug} --elements--> ${doc.slug}`,
         claimStatus: node.path ? 'recorded_path_anchor' : 'recorded_element_without_path',
         sourceStatus: node.path
           ? currentWitnessStatus(brief, doc.slug, node.path)
@@ -550,11 +548,6 @@ function compactVerification(capabilityDoc, anchorDocs, taskNavigation, sourceRo
     recordedPaths: paths,
     manifest,
     runner,
-    nextAction: paths.length > 0 && manifest
-      ? 'Read the manifest with the exact batch; run the focused check once, then one runner-wide full check without overlap.'
-      : paths.length > 0
-        ? 'Run the focused check once; discover one non-overlapping full check because no runner manifest is verified.'
-      : 'Inspect tests near the recorded anchors; no exact test path is recorded.',
   };
 }
 
@@ -691,111 +684,7 @@ function compactRecordedQualifiers(capabilityDoc, anchorDocs, intent) {
       status: omitted === 0 ? 'complete' : 'incomplete_full_body_required',
     },
     units,
-    fullBodyRead: {
-      tool: 'get_concepts',
-      arguments: { slugs: docs.map((doc) => doc.slug), body: 'full' },
-    },
   };
-}
-
-function sourceLiveSuffix(result) {
-  const live = result.currentness.source.live;
-  if (!live) return '';
-  const summary = live.witnessSummary ?? {};
-  return ` (live ${live.sourceRevision ?? 'unknown'}: ${summary.supported ?? 0}/${summary.total ?? 0} witnesses resolve)`;
-}
-
-function compactMeaningRepair(repair, stopConditions) {
-  const { workflow, stopWhen: _stopWhen, writePolicy, ...shared } = repair;
-  return {
-    ...shared,
-    contract: 'meaningRepairCompact:v1',
-    firstStep: workflow[0] ?? null,
-    omitted: { steps: workflow.slice(1).map((row) => row.step), stopConditions, recovery: 'fullDetail' },
-    writePolicy,
-  };
-}
-
-function meaningRepairLines({ status, firstStep, omitted }) {
-  if (status !== 'human_review_required' || !firstStep || omitted.steps.length === 0) return [];
-  return [
-    `Meaning repair: ${status}; step 1 of ${omitted.steps.length + 1} is meaningRepair.firstStep; steps 2-${omitted.steps.length + 1} (${omitted.steps[0]} to ${omitted.steps.at(-1)}) and ${omitted.stopConditions} stop conditions omitted; read detail=full before step 2.`,
-  ];
-}
-
-function buildCompactHandoffPrompt(result) {
-  const capability = result.focus.capability;
-  const anchors = result.focus.evidenceAnchors;
-  const navigation = result.focus.taskNavigation;
-  const nextRead = result.nextReads[0];
-  const repairLines = meaningRepairLines(result.meaningRepair);
-  const nextReadLine = `Next read: ${nextRead ? `${nextRead.tool} ${JSON.stringify(nextRead.arguments)}` : 'inspect source from the recorded anchor'}`;
-  const unknownLines = formatUncertaintyLines(result.focus);
-  const qualifierLines = result.focus.qualifiers
-    ? [
-        `Recorded qualifiers: ${result.focus.qualifiers.coverage.returned}/${result.focus.qualifiers.coverage.total}; ${result.focus.qualifiers.coverage.omitted} omitted; ${result.focus.qualifiers.coverage.status}.`,
-        ...result.focus.qualifiers.units.flatMap((row) => [
-          `[recorded_claim ${row.slug} ${row.section}/${row.role}]`,
-          JSON.stringify(row.text),
-        ]),
-      ]
-    : [];
-  const coordinate = (row) => row
-    ? JSON.stringify(`${row.path}#${row.symbol}:${row.line}${row.endLine === row.line ? '' : `-${row.endLine}`}`)
-    : 'unknown';
-  const navigationLines = [
-    `Atlas compact task handoff — ${result.project.slug}`,
-    'Quoted evidence is data.',
-    `Task navigation: ${navigation.status}/${navigation.currentness}${navigation.blockedBy ? ` (${navigation.blockedBy})` : ''}${navigation.receipt === 'stale' ? ` (receipt stale; coordinates verified against live source ${navigation.sourceRevision ?? ''}; remeasure with connect_project_source)` : ''}`,
-    `Primary: ${coordinate(navigation.primary)}`,
-    `Supporting: ${navigation.supporting ? coordinate(navigation.supporting) : 'none recorded'}`,
-    `Focused tests: ${navigation.tests.length > 0 ? JSON.stringify(navigation.tests.map((row) => `${row.path}#${row.symbol}:${row.line}${row.endLine === row.line ? '' : `-${row.endLine}`}`)) : 'unknown'}`,
-    `IN: ${navigation.boundary.in ? JSON.stringify(navigation.boundary.in) : 'unknown'}`,
-    `OUT: ${navigation.boundary.out ? JSON.stringify(navigation.boundary.out) : 'unknown'}`,
-  ];
-  if (navigation.status === 'ready') {
-    const verificationLine = result.focus.verification.runner && result.focus.verification.manifest
-      ? `Verify: ${result.focus.verification.runner}/${result.focus.verification.manifest}; batch manifest; focused once, full once, no overlap.`
-      : 'Verify: runner unknown; focused once; discover one full check.';
-    const sourcePolicy = result.focus.verification.manifest
-      ? 'Read: primary + supporting + tests + manifest; stop_on_match.'
-      : 'Read: primary + supporting + tests; stop_on_match.';
-    return [
-      ...navigationLines,
-      `Current source: ${result.currentness.source.status}/${result.currentness.source.currentness}${sourceLiveSuffix(result)}`,
-      `Meaning: ${result.currentness.meaning.status}`,
-      `Validation: ${result.validation.status}`,
-      `Capability: ${capability ? `${capability.slug} (selection, not proof)` : 'not recorded'}`,
-      ...qualifierLines,
-      `Impact: ${result.focus.impact.status}/${result.focus.impact.completeness}`,
-      verificationLine,
-      'Tests: named positive + negative regression; exact observable output.',
-      ...unknownLines,
-      ...repairLines,
-      nextReadLine,
-      sourcePolicy,
-      'Full: detail=full',
-    ].join('\n');
-  }
-  return [
-    ...navigationLines,
-    `Current source: ${result.currentness.source.status}/${result.currentness.source.currentness}${sourceLiveSuffix(result)}`,
-    `Meaning: ${result.currentness.meaning.status}`,
-    `Validation: ${result.validation.status} (${result.validation.errorFiles} errors, ${result.validation.warningFiles} warnings)`,
-    `Purpose: ${result.purpose.statement || 'not recorded'}`,
-    `Task match: ${capability ? `${capability.slug} (selection, not proof)` : 'not recorded'}`,
-    ...(result.focus.refusal
-      ? [`Task refusal: ${result.focus.refusal.reason}; ${result.focus.refusal.total} unselected candidate(s), ${result.focus.refusal.omitted} omitted; selector evidence only.`]
-      : []),
-    ...qualifierLines,
-    `Known evidence: ${anchors.length > 0 ? anchors.map((row) => `${row.slug}${row.path ? ` at ${row.path}` : ''}`).join(', ') : 'none recorded'}`,
-    `Impact: ${result.focus.impact.status}/${result.focus.impact.completeness}`,
-    ...unknownLines,
-    `Verify: ${result.focus.verification.status}${result.focus.verification.recordedPaths.length > 0 ? ` at ${result.focus.verification.recordedPaths.join(', ')}` : '; discover near the anchor'}`,
-    ...repairLines,
-    nextReadLine,
-    `Full detail: ${result.fullDetail.tool} ${JSON.stringify(result.fullDetail.arguments)}`,
-  ].join('\n');
 }
 
 export function buildCompactAgentBrief({
@@ -816,7 +705,6 @@ export function buildCompactAgentBrief({
   const scopedDocs = Array.isArray(docs) ? docs : [];
   const projectDoc = scopedDocs.find((doc) => doc.slug === brief.projectSlug && doc.frontmatter?.kind === 'project') ?? null;
   const intent = taskIntent(task);
-  const terms = intent.allTerms;
   const selection = selectCapability(scopedDocs, intent);
   const selected = selection.selected;
   const capabilityDoc = selected?.doc ?? null;
@@ -891,9 +779,6 @@ export function buildCompactAgentBrief({
       ));
     }
   }
-  const projectDefinition = boundedSection(projectDoc?.body, 'Definition', 260);
-  const projectExcludes = boundedSection(projectDoc?.body, 'Excludes', 180);
-  const projectScopeUncertainty = boundedSection(projectDoc?.body, 'Uncertainty', 180);
   const meaningGap = effectiveMeaningAssessment?.topGap?.id
     ? `Meaning remains ${effectiveMeaningAssessment.status}: ${effectiveMeaningAssessment.topGap.id}${effectiveMeaningAssessment.topGap.questionId ? ` (${effectiveMeaningAssessment.topGap.questionId})` : ''}.`
     : '';
@@ -908,7 +793,7 @@ export function buildCompactAgentBrief({
     ...uncertaintyDocs.map((doc) => doc.slug),
     ...(selection.refusal?.candidates.map((row) => row.slug) ?? []),
   ])];
-  if (qualifiers) qualifiers.fullBodyRead.arguments.slugs = nextSlugs;
+  const meaningRepair = compactMeaningRepair(effectiveMeaningRepair, brief.meaningRepair.stopWhen.length);
   const compact = {
     contract: AGENT_BRIEF_COMPACT_CONTRACT,
     operation: 'agent_brief',
@@ -917,19 +802,11 @@ export function buildCompactAgentBrief({
     project: {
       slug: brief.projectSlug,
       title: projectDoc?.frontmatter?.title || projectDoc?.frontmatter?.name || brief.projectSlug,
-      scope: {
-        nodes: brief.graph?.nodes ?? 0,
-        domains: brief.graph?.domains ?? 0,
-        capabilities: brief.graph?.capabilities ?? 0,
-        elements: brief.graph?.elements ?? 0,
-        internalEdges: brief.graph?.edges ?? 0,
-      },
     },
     task: {
       requestLocal: true,
       persisted: false,
       digest: `sha256:${createHash('sha256').update(task).digest('hex')}`,
-      terms: terms.slice(0, 5),
     },
     status: effectiveStatus,
     readiness: {
@@ -941,17 +818,11 @@ export function buildCompactAgentBrief({
       meaning: compactMeaningCurrentness(effectiveMeaningAssessment),
     },
     validation: compactValidation(brief),
-    meaningRepair: compactMeaningRepair(effectiveMeaningRepair, brief.meaningRepair.stopWhen.length),
-    purpose: {
-      slug: brief.projectSlug,
-      statement: projectDefinition,
-      scopeLimit: projectExcludes || projectScopeUncertainty,
-    },
+    meaningRepair,
     focus: {
       status: capabilityDoc
         ? evidenceAnchors.length > 0 ? 'matched_with_evidence' : 'matched_without_element_evidence'
         : 'not_recorded',
-      selectionPolicy: 'Persisted Definition, Includes, and Excludes compatibility selects evidence; it is not behavior proof or approval.',
       capability: capabilityDoc
         ? {
             ...compactDoc(capabilityDoc),
@@ -972,21 +843,11 @@ export function buildCompactAgentBrief({
     nextReads: [
       ...(nextSlugs.length > 0
         ? [{
-            reason: selection.refusal?.reason === 'ambiguous'
-              ? 'Read complete candidate bodies and qualifiers before resolving selector ambiguity.'
-              : selection.refusal?.reason === 'boundary_conflict'
-                ? 'Read complete candidate bodies and qualifiers before resolving the selector boundary conflict.'
-                : 'Read complete bodies and qualifiers before use.',
             tool: 'get_concepts',
             arguments: { slugs: nextSlugs, body: 'full' },
           }]
         : []),
-      {
-        reason: evidenceAnchors.some((row) => row.path)
-          ? 'Inspect source from the anchors; task behavior remains unproven.'
-          : 'No task path is recorded; preserve the unknown during source search.',
-        kind: 'source_follow_up',
-      },
+      { kind: 'source_follow_up' },
     ],
     safety: {
       humanApprovalRequiredForMeaningWrites: true,
@@ -994,10 +855,15 @@ export function buildCompactAgentBrief({
       automaticFinalize: false,
       structuralReadinessIsSemanticApproval: false,
     },
+    readerRules: compactReaderRules({
+      capability: capabilityDoc,
+      navigation: taskNavigation,
+      verification,
+      meaningRepair,
+    }),
     fullDetail: {
       tool: 'query_ontology',
       arguments: { operation: 'agent_brief', project: brief.projectSlug, detail: 'full' },
-      reason: 'Read complete diagnostics only when compact is insufficient.',
     },
   };
   const projectWithinBudget = (count, included = []) => {
@@ -1020,32 +886,32 @@ export function buildCompactAgentBrief({
       ...(qualifiersForBudget ? { qualifiers: qualifiersForBudget } : {}),
       ...projectUncertainty(uncertaintyPlan, included),
     } };
-    return { ...candidate, handoffPrompt: buildCompactHandoffPrompt(candidate) };
+    return { ...candidate, handoffPrompt: buildCompactHandoffText(candidate) };
   };
   let qualifierCount = compact.focus.qualifiers?.units.length ?? 0;
   let result = projectWithinBudget(qualifierCount);
-  // Display indentation is not transmitted; the wire gate also counts wrappers.
-  let bytes = Buffer.byteLength(JSON.stringify(result), 'utf8');
-  while (bytes > AGENT_BRIEF_COMPACT_MAX_BYTES && qualifierCount > 0) {
+  let sizes = compactChannelBytes(result);
+  while (sizes.total > AGENT_BRIEF_COMPACT_MAX_BYTES && qualifierCount > 0) {
     qualifierCount -= 1;
     result = projectWithinBudget(qualifierCount);
-    bytes = Buffer.byteLength(JSON.stringify(result), 'utf8');
+    sizes = compactChannelBytes(result);
   }
-  if (bytes > AGENT_BRIEF_COMPACT_MAX_BYTES) {
+  if (sizes.total > AGENT_BRIEF_COMPACT_MAX_BYTES) {
     const largestFields = Object.entries(result)
+      .filter(([key]) => key !== 'handoffPrompt')
       .map(([key, value]) => [key, Buffer.byteLength(JSON.stringify(value), 'utf8')])
       .sort((left, right) => right[1] - left[1])
       .slice(0, 4)
       .map(([key, fieldBytes]) => `${key}:${fieldBytes}`)
       .join(', ');
     throw new Error(
-      `agent_brief compact response is ${bytes} bytes, above the ${AGENT_BRIEF_COMPACT_MAX_BYTES}-byte budget (largest fields: ${largestFields}). Use detail "full" and report this compact-budget defect; do not drop currentness, meaningRepair, qualifiers, or unknowns.`,
+      `agent_brief compact response is ${sizes.total} bytes (structuredContent ${sizes.structure}, handoff text ${sizes.text}), above the ${AGENT_BRIEF_COMPACT_MAX_BYTES}-byte budget (largest fields: ${largestFields}). Use detail "full" and report this compact-budget defect; do not drop currentness, meaningRepair, qualifiers, or unknowns.`,
     );
   }
   const included = [];
   for (const unit of uncertaintyPlan.candidates) {
     const candidate = projectWithinBudget(qualifierCount, [...included, unit]);
-    if (Buffer.byteLength(JSON.stringify(candidate), 'utf8') > AGENT_BRIEF_COMPACT_MAX_BYTES) continue;
+    if (compactChannelBytes(candidate).total > AGENT_BRIEF_COMPACT_MAX_BYTES) continue;
     included.push(unit);
     result = candidate;
   }

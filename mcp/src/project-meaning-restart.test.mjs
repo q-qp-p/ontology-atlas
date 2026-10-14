@@ -11,6 +11,7 @@ import {
   renderProjectCompetencyMarkdown,
 } from './project-meaning-receipt.mjs';
 import { runJsonRpcProcess } from '../../scripts/lib/mcp-test-rpc.mjs';
+import { parseMcpToolResponse } from '../../cli/src/lib/mcp-bridge/mcp-call.mjs';
 import { assertAgentBriefResponseShape } from '../../cli/src/lib/query-result-contract/agent-brief/agent-brief.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -175,7 +176,7 @@ test('fresh MCP readers keep edited answers unconfirmed until explicit finalizat
     return calls.map((_, index) => {
       const response = responses.find(({ id }) => id === index + 2);
       assert.ok(response?.result && !response.result.isError, JSON.stringify(response));
-      return response.result.structuredContent ?? JSON.parse(response.result.content[0].text);
+      return parseMcpToolResponse(response);
     });
   };
   try {

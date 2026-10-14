@@ -31,7 +31,7 @@ Task-scoped agent brief projection is the read-side implementation that turns on
 ## Includes
 
 - One selected project and one request-local task turned into a bounded handoff: currentness, one broad capability whose persisted Definition, Includes and Excludes are compatible with the task, cited implementation anchors, explicit unknowns, and exact next reads.
-- A compact v2 opt-in response under a 12,000-byte UTF-8 JSON ceiling that never cuts a recorded qualifier unit to fit.
+- A compact v3 opt-in response whose typed structure and self-sufficient handoff text share one 12,000-byte UTF-8 bound and never cut a recorded qualifier unit to fit.
 - Abstention with reasons when no capability claim is compatible, when boundaries conflict, or when candidates tie; at most three unselected candidates with full-body next reads.
 - A source-current task-navigation receipt for reviewed implementation, supporting and focused-test coordinates, read from the one element whose Evidence is opened.
 
