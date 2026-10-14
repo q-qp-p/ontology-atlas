@@ -68,43 +68,43 @@ async function measureDoc(page: Page, title: string, expectFile: string) {
   // Did the instrument really open the screen it meant to measure? Without this line
   // the spec could measure the wrong document eight times and stay green (it nearly
   // did).
-  expect(measured.openedFile, "계측 대상 문서가 열렸는가").toBe(expectFile);
+  expect(measured.openedFile, "was the document under measurement opened").toBe(expectFile);
   return measured;
 }
 
-test.describe("결함 볼트 — 화면이 검사 결과를 말하는가", () => {
-  test("② 오류가 파일 옆에서 보인다 (경고만 보여 주지 않는다)", async ({ page }) => {
+test.describe("defective vault: does the screen state the check result", () => {
+  test("(2) errors show beside the file, not only warnings", async ({ page }) => {
     await loadVault(page, BROKEN_VAULT);
     await openDocument(page, "capabilities/checkout");
     const checkout = await measureDoc(page, "결제하기", "capabilities/checkout.md");
     console.log("[doc/checkout]", JSON.stringify(checkout));
     expect(checkout.hasBlock).toBe(true);
     const severities = checkout.diagnostics.map((d) => d.severity);
-    expect(severities, "missing-uid 는 오류다 — 경고만 보이면 정확히 거꾸로다").toContain(
+    expect(severities, "missing-uid is an error; showing only warnings is exactly backwards").toContain(
       "error",
     );
-    expect(severities, "같은 문서의 경고도 계속 보여야 한다").toContain("warning");
+    expect(severities, "warnings on the same document must keep showing").toContain("warning");
   });
 
-  test("③ kind 없는 문서가 자기 문제를 말한다", async ({ page }) => {
+  test("(3) a document without kind states its own problem", async ({ page }) => {
     await loadVault(page, BROKEN_VAULT);
     await openDocument(page, "notes/handover");
     const note = await measureDoc(page, "인수인계 메모", "notes/handover.md");
     console.log("[doc/handover]", JSON.stringify(note));
     expect(
       note.hasBlock,
-      "kind 가 없으면 블록 자체가 안 그려졌다 — 사라지는 가장 흔한 경로가 침묵한다",
+      "without kind the block itself was not drawn, so the most common path to disappearing stays silent",
     ).toBe(true);
     expect(note.diagnostics.length).toBeGreaterThan(0);
 
     await openDocument(page, "elements/ghost");
     const ghost = await measureDoc(page, "유령 모듈", "elements/ghost.md");
     console.log("[doc/ghost]", JSON.stringify(ghost));
-    expect(ghost.hasBlock, "kind 가 비었을 때도 같다").toBe(true);
+    expect(ghost.hasBlock, "the same holds when kind is empty").toBe(true);
     expect(ghost.diagnostics.map((d) => d.severity)).toContain("error");
   });
 
-  test("④ 지도에 없는 문서는 「지도 근거」라고 말하지 않고, 죽은 CTA 도 없다", async ({
+  test("(4) a document absent from the map claims no map evidence and has no dead CTA", async ({
     page,
   }) => {
     await loadVault(page, BROKEN_VAULT);
@@ -112,14 +112,14 @@ test.describe("결함 볼트 — 화면이 검사 결과를 말하는가", () =>
     // `notes/handover` has no kind, so it is not a graph node.
     const note = await measureDoc(page, "인수인계 메모", "notes/handover.md");
     console.log("[doc/handover-map]", JSON.stringify(note));
-    expect(note.proofState, "그래프에 없는 문서다").toBe("false");
-    expect(note.mapHref, "?p= 를 못 만들면 「지도에서 열기」 자체를 렌더하지 않는다").toBeNull();
+    expect(note.proofState, "the document is not in the graph").toBe("false");
+    expect(note.mapHref, "without a ?p= the open-on-map action is not rendered at all").toBeNull();
     // The bottom backlink strip's "open in map" is **the originally measured defect**:
     // a `?? '/topology/'` fallback rendered an address with no `?p=`, so pressing it
     // selected nothing.
     expect(
       note.stripMapHref,
-      "하단 스트립도 같은 규칙 — 잡을 노드가 없으면 링크가 없다",
+      "the bottom strip follows the same rule: no node to hold means no link",
     ).toBeNull();
 
     // A node that really exists in the graph must say the opposite.
@@ -128,6 +128,6 @@ test.describe("결함 볼트 — 화면이 검사 결과를 말하는가", () =>
     console.log("[doc/orders]", JSON.stringify(domain));
     expect(domain.proofState).toBe("true");
     expect(domain.mapHref ?? "").toContain("p=");
-    expect(domain.stripMapHref ?? "", "노드가 있으면 스트립 링크는 그대로 산다").toContain("p=");
+    expect(domain.stripMapHref ?? "", "with a node, the strip link stays alive").toContain("p=");
   });
 });

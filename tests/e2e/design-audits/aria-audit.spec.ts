@@ -25,7 +25,7 @@ const ROUTES = [
 /** Minimum scanned count: an empty violation list passes automatically on a screen that never mounted. */
 const MIN_SCANNED_PER_ROUTE = 5;
 
-test("접근성 없는 버튼·링크 탐지", async ({ page }) => {
+test("detects buttons and links without accessible names", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   const findings: string[] = [];
   /** How many were scanned per screen — the denominator that blocks "passed having seen 0". */
@@ -55,7 +55,7 @@ test("접근성 없는 버튼·링크 탐지", async ({ page }) => {
           page.evaluate(
             () => document.querySelectorAll('button, [role="button"], a').length,
           ),
-        { timeout: 20_000, message: `${url} 에서 훑을 컨트롤이 안 나타났다` },
+        { timeout: 20_000, message: `no control to scan appeared on ${url}` },
       )
       .toBeGreaterThanOrEqual(MIN_SCANNED_PER_ROUTE);
 
@@ -131,7 +131,7 @@ test("접근성 없는 버튼·링크 탐지", async ({ page }) => {
           const map = (window as unknown as { __atlasMap?: { selection?: () => { nodeId: string | null } } }).__atlasMap;
           return map?.selection?.().nodeId ?? null;
         }),
-      { timeout: 20_000, message: "초점 화면이 그 노드를 열지 않았다 — 감사 대상이 비어 있다" },
+      { timeout: 20_000, message: "the focus screen did not open that node, so the audit target is empty" },
     )
     .toBe(FOCUS_NODE_ID);
 
@@ -140,6 +140,6 @@ test("접근성 없는 버튼·링크 탐지", async ({ page }) => {
   for (const f of findings.slice(0, 20)) console.log(`[A11Y-AUDIT]   ${f}`);
   expect(
     findings,
-    `접근성 라벨 없는 인터랙티브 요소 ${findings.length}건:\n${findings.slice(0, 10).join("\n")}`,
+    `${findings.length} interactive elements without an accessible label:\n${findings.slice(0, 10).join("\n")}`,
   ).toHaveLength(0);
 });

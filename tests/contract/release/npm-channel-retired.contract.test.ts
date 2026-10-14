@@ -130,8 +130,8 @@ function report(offences: Offence[]): string {
   return offences.map((o) => `  ${o.file}:${o.line} [${o.rule}] ${o.text.slice(0, 110)}`).join("\n");
 }
 
-describe("npm 채널은 폐기됐다 — 죽은 npx 안내 차단", () => {
-  it("Tier C: 소스가 실행 불가능한 맨몸 `ontology-atlas <명령>` 을 만들지 않는다", async () => {
+describe("the npm channel is retired: block dead npx instructions", () => {
+  it("Tier C: source does not produce a bare `ontology-atlas <command>` that cannot run", async () => {
     const { execFileSync } = await import("node:child_process");
     const files = execFileSync("git", ["ls-files", "src", "app"], {
       encoding: "utf8",
@@ -147,7 +147,7 @@ describe("npm 채널은 폐기됐다 — 죽은 npx 안내 차단", () => {
       .filter((f) => !f.includes("docs-vault/data"))
       .filter((f) => !TIER_C_ALLOWED.includes(f));
 
-    expect(files.length, "Tier C 파일 목록이 비었다 — 경로 계약이 깨졌다").toBeGreaterThan(100);
+    expect(files.length, "the Tier C file list is empty, so the path contract is broken").toBeGreaterThan(100);
 
     const offences: Offence[] = [];
     for (const rel of files) {
@@ -174,7 +174,7 @@ describe("npm 채널은 폐기됐다 — 죽은 npx 안내 차단", () => {
    * unnoticed. This feeds it one violating line and three valid ones and confirms
    * only the former is caught.
    */
-  it("Tier C 프로브: 명령만 잡고 제품명·살아있는 형태는 통과시킨다", () => {
+  it("Tier C probe: catches the command only, and lets the product name and live forms pass", () => {
     expect(BARE_CLI_PATTERN.test('`ontology-atlas validate ${target}`')).toBe(true);
     expect(BARE_CLI_PATTERN.test('"ontology-atlas agent-brief [vault]"')).toBe(true);
     // The product name in prose — not a command.
@@ -187,7 +187,7 @@ describe("npm 채널은 폐기됐다 — 죽은 npx 안내 차단", () => {
     );
   });
 
-  it("Tier A: 런치 초안 · 이슈 템플릿 · 기여 안내 · 스타터에 죽은 명령이 없다", async () => {
+  it("Tier A: no dead command in launch drafts, issue templates, contributor guide or starters", async () => {
     const { glob } = await import("node:fs/promises");
     const files: string[] = [];
     for (const pattern of TIER_A_GLOBS) {
@@ -197,7 +197,7 @@ describe("npm 채널은 폐기됐다 — 죽은 npx 안내 차단", () => {
     // The gate proves itself alive — if the glob matches nothing, this assertion
     // fails before "no violations" can be reported. (In 2026-07 a gate of the same
     // kind silently passed everything after an external process failed.)
-    expect(files.length, "Tier A glob matched nothing — 경로 계약이 깨졌다").toBeGreaterThan(5);
+    expect(files.length, "Tier A glob matched nothing, so the path contract is broken").toBeGreaterThan(5);
 
     const offences = files.flatMap((rel) =>
       offencesIn(readFileSync(join(process.cwd(), rel), "utf8"), rel, false),
@@ -213,9 +213,9 @@ describe("npm 채널은 폐기됐다 — 죽은 npx 안내 차단", () => {
     ).toEqual([]);
   });
 
-  it("Tier B: 참고 문서의 코드 블록 안에 죽은 명령이 없다 (산문 인용은 허용)", () => {
+  it("Tier B: no dead command inside code blocks of reference docs (prose quotes are allowed)", () => {
     const present = TIER_B_FILES.filter((rel) => existsSync(join(process.cwd(), rel)));
-    expect(present, "Tier B 파일 경로가 깨졌다").toEqual(TIER_B_FILES);
+    expect(present, "the Tier B file paths are broken").toEqual(TIER_B_FILES);
 
     const offences = present.flatMap((rel) =>
       offencesIn(readFileSync(join(process.cwd(), rel), "utf8"), rel, true),
@@ -233,7 +233,7 @@ describe("npm 채널은 폐기됐다 — 죽은 npx 안내 차단", () => {
   // design.md's procedure of proving "one violation fails, one valid line passes"
   // before switching a rule on, made resident inside the gate itself. A silently
   // disabled detector fails here first.
-  it("프로브: 위반은 잡고, 정직한 산문과 살아있는 경로는 통과시킨다", () => {
+  it("probe: catches violations and lets honest prose and live paths pass", () => {
     const violations = [
       "npx ontology-atlas init my-vault",
       "  - \"npx ontology-atlas init\"",
@@ -249,7 +249,7 @@ describe("npm 채널은 폐기됐다 — 죽은 npx 안내 차단", () => {
     for (const line of violations) {
       expect(
         offencesIn(line, "probe", false).length,
-        `놓쳤다: ${line}`,
+        `missed: ${line}`,
       ).toBeGreaterThanOrEqual(1);
     }
 
@@ -260,7 +260,7 @@ describe("npm 채널은 폐기됐다 — 죽은 npx 안내 차단", () => {
       "npx create-next-app",
     ];
     for (const line of allowed) {
-      expect(offencesIn(line, "probe", false), `오탐: ${line}`).toHaveLength(0);
+      expect(offencesIn(line, "probe", false), `false positive: ${line}`).toHaveLength(0);
     }
 
     // Does the inside/outside-fence discrimination really split — Tier B's core
@@ -278,7 +278,7 @@ describe("npm 채널은 폐기됐다 — 죽은 npx 안내 차단", () => {
     // property.
     const linesOf = (fencedOnly: boolean) =>
       new Set(offencesIn(doc, "probe", fencedOnly).map((o) => o.line)).size;
-    expect(linesOf(true), "Tier B 는 펜스 안 한 줄만 잡아야 한다").toBe(1);
-    expect(linesOf(false), "Tier A 는 산문 인용 줄까지 두 줄을 잡아야 한다").toBe(2);
+    expect(linesOf(true), "Tier B must catch only the line inside the fence").toBe(1);
+    expect(linesOf(false), "Tier A must catch two lines, including the prose quote line").toBe(2);
   });
 });

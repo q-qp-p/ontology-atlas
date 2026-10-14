@@ -71,10 +71,10 @@ function undeclaredRefs(source: string, declared: Set<string>): string[] {
     .filter((name) => !declared.has(name));
 }
 
-describe("없는 토큰을 부르는 var() — 조용히 깨지는 것을 막는다", () => {
+describe("var() that calls a missing token — prevents silent breakage", () => {
   const declared = collectDeclared();
 
-  it("src·app 의 모든 fallback 없는 var() 가 선언된 토큰을 가리킨다", () => {
+  it("every fallback-less var() in src·app points at a declared token", () => {
     const violations: string[] = [];
     for (const file of files) {
       if (/\.test\.tsx?$/.test(file)) continue;
@@ -100,7 +100,7 @@ describe("없는 토큰을 부르는 var() — 조용히 깨지는 것을 막는
   // A silently disabled detector fails here first. The check above claims "0
   // violations", and it must be possible to tell whether that 0 means "really
   // clean" or "the regex saw nothing".
-  it("프로브 — 미선언 참조는 잡고, 선언·fallback·arbitrary property 는 통과시킨다", () => {
+  it("probe — an undeclared reference is caught, and a declaration, fallback, and fallback and arbitrary property pass", () => {
     const probe = new Set(["--color-real"]);
     expect(undeclaredRefs('var(--color-ghost)', probe)).toEqual(["--color-ghost"]);
     expect(undeclaredRefs('var(--color-real)', probe)).toEqual([]);
@@ -116,7 +116,7 @@ describe("없는 토큰을 부르는 var() — 조용히 깨지는 것을 막는
   });
 
   // The name it actually caught — a regression fails here by name.
-  it("2026-07-28 에 잡힌 유령 토큰이 되살아나지 않는다", () => {
+  it("the ghost token caught on 2026-07-28 does not come back", () => {
     expect(declared.has("--color-status-warning-a36")).toBe(false);
     for (const file of files) {
       expect(codeOf(file, REFERENCE_SHAPE)).not.toContain(

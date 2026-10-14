@@ -21,10 +21,10 @@ const PATH = /폴더|볼트|문서함|앱 받기|앱에서 열기|내 데이터/
 const EXEMPT: ReadonlyArray<{ route: string; why: string }> = [
   {
     route: "/ko/",
-    why: "관문 — 「놓지 않는다」 판정 확정(2026-08-08 원장). 대신 아래 도달 계약이 잰다",
+    why: "Gateway: the verdict not to place one is settled (2026-08-08 ledger). The reach contract below measures instead",
   },
-  { route: "/ko/download/", why: "관문과 같은 뷰 — 같은 도달 계약이 잰다" },
-  { route: "/ko/changelog/", why: "지난 결정을 인용하는 산문 — 지시가 아니다" },
+  { route: "/ko/download/", why: "the same view as the gateway, measured by the same reach contract" },
+  { route: "/ko/changelog/", why: "prose quoting past decisions, not an instruction" },
 ];
 const EXEMPT_ROUTES = new Set(EXEMPT.map((e) => e.route));
 
@@ -72,10 +72,10 @@ const pickerCalls = (page: import("@playwright/test").Page) =>
 const paintedTestId = (page: import("@playwright/test").Page, testId: string) =>
   page.getByTestId(testId).filter({ visible: true });
 
-test.describe("막다른 CTA 금지 — 폴더를 열라고 말한 자리", () => {
+test.describe("no dead-end CTA: every place that tells you to open a folder", () => {
   test.use({ viewport: { width: 1512, height: 900 } });
 
-  test("말한 자리마다 여는 길이 있다 (감사 대상 전 라우트)", async ({ page }) => {
+  test("each such place has a way to open it (every audited route)", async ({ page }) => {
     test.setTimeout(180_000);
 
     const unpaired: string[] = [];
@@ -154,8 +154,8 @@ test.describe("막다른 CTA 금지 — 폴더를 열라고 말한 자리", () =
     // "nothing mismatched", and **never matching a pair** is equally green (in that case
     // the "path exists" predicate is dead, which should make this check permanently red —
     // except the exception list would hide it).
-    expect(sentences, "폴더 문장을 하나도 못 찾았다 — 스캐너가 죽었다").toBeGreaterThan(4);
-    expect(paired, "짝을 한 번도 못 맞췄다 — 「길 있음」 판정기가 죽었다").toBeGreaterThan(2);
+    expect(sentences, "no folder sentence was found, so the scanner is dead").toBeGreaterThan(4);
+    expect(paired, "no pair was ever matched, so the has-a-way judge is dead").toBeGreaterThan(2);
 
     expect(
       unpaired,
@@ -168,7 +168,7 @@ test.describe("막다른 CTA 금지 — 폴더를 열라고 말한 자리", () =
    * **Existing ≠ doing.** Without this layer, a button that is merely visible and does
    * nothing passes — exactly the state of the old gate, which watched only the URL.
    */
-  test("그 길은 실제로 폴더 선택기를 부른다", async ({ page, context }) => {
+  test("that way really invokes the folder picker", async ({ page, context }) => {
     const SITES = [
       { route: "/ko/ontology/insights/?tab=flow", testId: "flow-open-vault" },
       { route: "/ko/project/storefront/", testId: "project-detail-open-vault" },
@@ -194,10 +194,10 @@ test.describe("막다른 CTA 금지 — 폴더를 열라고 말한 자리", () =
       // The assertion below waits on its own.
 
       const cta = paintedTestId(page, site.testId);
-      await expect(cta, `${url}: 폴더 여는 길이 안 보인다`).toBeVisible();
+      await expect(cta, `${url}: the way to open a folder is not visible`).toBeVisible();
       await expect(
         cta,
-        `${site.route}: FSA 를 지원하는데 내려받기로 강등됐다 — 능력 판정이 틀렸다`,
+        `${site.route}: downgraded to download although FSA is supported, so the capability verdict is wrong`,
       ).toHaveAttribute("data-open-vault-cta", "picker");
 
       await cta.click();
@@ -205,7 +205,7 @@ test.describe("막다른 CTA 금지 — 폴더를 열라고 말한 자리", () =
       await expect
         .poll(() => pickerCalls(page), {
           timeout: 10_000,
-          message: `${site.route}: 눌러도 폴더 선택기가 안 열렸다`,
+          message: `${site.route}: the folder picker did not open on press`,
         })
         .toBeGreaterThan(0);
     }
@@ -215,7 +215,7 @@ test.describe("막다른 CTA 금지 — 폴더를 열라고 말한 자리", () =
    * If it cannot be written, say so before the press: create and edit must agree, driven by the
    * capability flag `canEdit`.
    */
-  test("쓸 수 없으면 누르기 전에 말한다 — 만들기와 편집이 같다", async ({ page }) => {
+  test("says so before pressing when unusable, the same for create and edit", async ({ page }) => {
     for (const route of ["/ko/project/new/", "/ko/project/storefront/edit/"]) {
       await page.goto(`${route}?guides=off`, { waitUntil: "domcontentloaded" });
       await page.evaluate(() => document.fonts.ready);
@@ -223,7 +223,7 @@ test.describe("막다른 CTA 금지 — 폴더를 열라고 말한 자리", () =
 
       await expect(
         page.getByTestId("project-write-disabled-banner").first(),
-        `${route}: 쓰기 잠금을 미리 말하지 않는다`,
+        `${route}: does not announce the write lock in advance`,
       ).toBeVisible();
 
       const submits = await page.evaluate(() =>
@@ -236,10 +236,10 @@ test.describe("막다른 CTA 금지 — 폴더를 열라고 말한 자리", () =
       );
 
       // Idling guard — finding no buttons makes "all locked" trivially true.
-      expect(submits.length, `${route}: 저장 버튼을 하나도 못 찾았다`).toBeGreaterThan(0);
+      expect(submits.length, `${route}: no save button was found`).toBeGreaterThan(0);
       expect(
         submits.filter((b) => !b.disabled),
-        `${route}: 저장할 수 없는데 저장 버튼이 열려 있다 — 눌러야 거절을 알게 된다`,
+        `${route}: the save button is enabled although saving is impossible, so refusal is learned only by pressing`,
       ).toEqual([]);
     }
   });
@@ -248,7 +248,7 @@ test.describe("막다른 CTA 금지 — 폴더를 열라고 말한 자리", () =
    * On a browser without FSA (Firefox and so on) it degrades to **why + where to**.
    * "Coming soon" is not used (.claude/rules/surfaces.md).
    */
-  test("FSA 미지원이면 앱 내려받기로 강등된다", async ({ page, context }) => {
+  test("without FSA support it downgrades to the app download", async ({ page, context }) => {
     await context.addInitScript(() => {
       delete (window as unknown as { showDirectoryPicker?: unknown }).showDirectoryPicker;
     });
@@ -274,12 +274,12 @@ test.describe("막다른 CTA 금지 — 폴더를 열라고 말한 자리", () =
  * hop is above the fold, (2) pressing it arrives, (3) the landing point invokes the picker.
  * `first-run-starter-open` opens `VaultOpenGuideSheet`; only `vault-guide-pick-existing` invokes it.
  */
-test.describe("관문은 폴더를 여는 화면이 아니다 — 대신 그 화면에 닿는다", () => {
+test.describe("the gateway is not a folder-opening screen but reaches that screen", () => {
   // Only the installed app's opening window is measured.
   const REACH_WIDTHS = [{ width: 1512, height: 900 }] as const;
 
   for (const viewport of REACH_WIDTHS) {
-    test(`${viewport.width}: 접힘 안 홉 → 지도 → 시트 → 선택기 호출`, async ({ page, context }) => {
+    test(`${viewport.width}: hop inside the fold, then map, sheet and picker invocation`, async ({ page, context }) => {
       await context.addInitScript(() => {
         const w = window as unknown as {
           __picked?: number;
@@ -341,7 +341,7 @@ test.describe("관문은 폴더를 여는 화면이 아니다 — 대신 그 화
           },
           {
             timeout: 25_000,
-            message: `${viewport.width}: 관문 접힘 안에 지도로 가는 길이 없다 — 폴더를 열 수 있는 화면에 닿지 못한다`,
+            message: `${viewport.width}: there is no way to the map inside the gateway fold, so the screen that can open a folder is unreachable`,
           },
         )
         .toBeGreaterThan(0);
@@ -365,7 +365,7 @@ test.describe("관문은 폴더를 여는 화면이 아니다 — 대신 그 화
       );
       expect(
         folderControls,
-        "관문에 폴더 여는 컨트롤이 생겼다 — 첫 실행 표면이 둘이 된다. 되돌리려면 원장부터",
+        "the gateway gained a folder-opening control, making two first-run surfaces. To reverse this, start with the ledger",
       ).toBe(0);
 
       // ② Pressing it arrives.
@@ -378,20 +378,20 @@ test.describe("관문은 폴더를 여는 화면이 아니다 — 대신 그 화
       const starter = page.getByTestId("first-run-starter-open");
       await expect(
         starter,
-        `${viewport.width}: 착지점에 폴더 여는 주 행동이 안 보인다`,
+        `${viewport.width}: the primary folder-opening action is not visible at the landing point`,
       ).toBeVisible();
       /* Visible is not pressable: hydration may not be finished, so retry the press until the sheet opens. */
       const sheet = page.getByTestId("vault-guide-sheet");
       await expect(async () => {
         if (!(await sheet.isVisible())) await starter.click({ timeout: 5_000 });
         await expect(sheet).toBeVisible({ timeout: 1_000 });
-      }, `${viewport.width}: 안내 시트가 안 열렸다 — 착지점의 경로가 바뀌었다`).toPass({ timeout: 25_000 });
+      }, `${viewport.width}: the guide sheet did not open, so the path to the landing point changed`).toPass({ timeout: 25_000 });
 
       await page.getByTestId("vault-guide-pick-existing").click();
       await expect
         .poll(() => pickerCalls(page), {
           timeout: 10_000,
-          message: `${viewport.width}: 착지점까지 갔는데 폴더 선택기가 안 열렸다 — 한 홉 뒤 막다른 길`,
+          message: `${viewport.width}: reached the landing point but the folder picker did not open, a dead end one hop later`,
         })
         .toBeGreaterThan(0);
     });

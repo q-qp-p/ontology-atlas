@@ -89,13 +89,13 @@ const insight = derivationToInsight(derivation, "ko", {
   agentSlugPrefix: resolveStaticVaultSource("dogfood").agentSlugPrefix,
 });
 
-describe("화면 · CLI · MCP 개념 정합 (번들 dogfood == docs/ontology)", () => {
-  it("문서 있는 개념의 수가 컴파일된 노드 수와 같다", () => {
+describe("screen · CLI · MCP concept parity (bundled dogfood == docs/ontology)", () => {
+  it("the number of concepts with a document equals the number of compiled nodes", () => {
     const documented = insight.nodes.filter((node) => node.hasOwnDocument !== false);
     expect(documented).toHaveLength(compiled.nodeCount);
   });
 
-  it("문서 없는 개념의 집합이 컴파일러의 미해석 참조 집합과 정확히 같다", () => {
+  it("the set of concepts without a document is exactly the compiler's unresolved-reference set", () => {
     const webRefs = new Set(
       insight.nodes
         .filter((node) => node.hasOwnDocument === false)
@@ -108,7 +108,7 @@ describe("화면 · CLI · MCP 개념 정합 (번들 dogfood == docs/ontology)",
     expect([...referencedOnlyRefs].filter((ref) => !webRefs.has(ref))).toEqual([]);
   });
 
-  it("화면의 총 개념 수 = 컴파일된 노드 + 이름만 적힌 개념 (CLI overview 가 내는 두 수)", () => {
+  it("the total concept count on screen = compiled nodes + name-only concepts (the two numbers CLI overview emits)", () => {
     expect(insight.nodes).toHaveLength(compiled.nodeCount + compiled.referencedOnlyCount);
   });
 
@@ -116,7 +116,7 @@ describe("화면 · CLI · MCP 개념 정합 (번들 dogfood == docs/ontology)",
    * Folding compiler edges by (from,to,type) must equal the web's edge set exactly, so whichever side
    * learns a new frontmatter key first is caught here.
    */
-  it("컴파일러 관계를 (from,to,type) 로 접으면 화면의 관계 집합과 정확히 같다", () => {
+  it("folding compiler relations to (from,to,type) gives exactly the relation set on screen", () => {
     const strip = (value: string) => value.replace(/^ontology\//, '');
     const slugOf = new Map<string, string>();
     for (const node of insight.nodes) {
@@ -150,12 +150,12 @@ describe("화면 · CLI · MCP 개념 정합 (번들 dogfood == docs/ontology)",
     expect(insight.edges).toHaveLength(webSet.size);
   });
 
-  it("모든 노드의 에이전트 이름이 볼트에서 해석된다 (붙여넣으면 동작한다)", () => {
+  it("every node's agent name resolves in the vault (pasting it works)", () => {
     const unusable: string[] = [];
     for (const node of insight.nodes) {
       const target = resolveNodeAgentTarget(node);
       if (target.ref === null) {
-        unusable.push(`${node.id}: 이름 없음`);
+        unusable.push(`${node.id}: no name`);
         continue;
       }
       const known = target.documented
@@ -170,8 +170,8 @@ describe("화면 · CLI · MCP 개념 정합 (번들 dogfood == docs/ontology)",
   });
 });
 
-describe("이름만 적힌 개념을 물으면 엔진이 정직하게 답한다", () => {
-  it("'없음' 이 아니라 '누가 어떤 키로 적었는지' 를 돌려준다", () => {
+describe("asking about a name-only concept, the engine answers honestly", () => {
+  it("returns 'who wrote it under which key' rather than 'none'", () => {
     const syntheticCompiled = compileOntology([
       {
         slug: "capabilities/ghost-parent",

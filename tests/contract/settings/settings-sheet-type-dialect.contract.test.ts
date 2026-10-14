@@ -59,8 +59,8 @@ function captionLines(source: string): string[] {
     .map((line) => line.trim().slice(0, 100));
 }
 
-describe("설정 루트 시트 — 타입 방언은 하나다", () => {
-  it("루트 시트 어디에도 `text-caption`(9.5px) 이 없다", () => {
+describe("settings root sheet: there is one type dialect", () => {
+  it("there is no `text-caption` (9.5px) anywhere in the root sheet", () => {
     const offenders = ROOT_SHEET_FILES.flatMap((file) => {
       const source = sourceWithoutComments(file);
       return source.includes("text-caption") ? [file] : [];
@@ -79,7 +79,7 @@ describe("설정 루트 시트 — 타입 방언은 하나다", () => {
    * and that it is a file using the type ramp.
    */
   /** Drill-in destinations use **exactly** the root's dialect. No 9.5px exemption (see above). */
-  it("드릴인 목적지에도 9.5px 이 없다", () => {
+  it("there is no 9.5px in the drill-in destinations either", () => {
     const offenders = DRILL_IN_FILES.flatMap((path) =>
       captionLines(sourceAtPath(path)).map((line) => `${path.split("/").pop()}: ${line}`),
     );
@@ -95,10 +95,10 @@ describe("설정 루트 시트 — 타입 방언은 하나다", () => {
    * drill-in's section header are the same thing. Once a copy exists, one of them
    * drops a step again (which is what happened this time).
    */
-  it("절 이름 규격이 한 곳에 있고 소비처가 그것을 가리킨다", () => {
+  it("the section name spec lives in one place and consumers point at it", () => {
     const primitives = sourceWithoutComments("settings-primitives.tsx");
-    expect(primitives, "SETTINGS_SECTION_LABEL 이 없다").toContain("SETTINGS_SECTION_LABEL");
-    expect(primitives, "절 이름은 text-label(11) 이다").toMatch(
+    expect(primitives, "SETTINGS_SECTION_LABEL is missing").toContain("SETTINGS_SECTION_LABEL");
+    expect(primitives, "a section name is text-label (11)").toMatch(
       /SETTINGS_SECTION_LABEL\s*=\s*\n?\s*'[^']*\btext-label\b/,
     );
     /*
@@ -109,16 +109,16 @@ describe("설정 루트 시트 — 타입 방언은 하나다", () => {
      * what is checked is that it is used **in the `className` position**.
      */
     const setup = sourceWithoutComments("VaultAgentSetupPanel.tsx");
-    expect(setup, "드릴인 절 이름이 규격을 className 으로 쓰지 않는다").toMatch(
+    expect(setup, "the drill-in section name does not use the spec as a className").toMatch(
       /className=\{[^}]*SETTINGS_SECTION_LABEL/,
     );
   });
 
-  it("게이트가 빈 집합 위에서 돌지 않는다", () => {
+  it("the gate does not run on an empty set", () => {
     for (const path of DRILL_IN_FILES) {
       const source = sourceAtPath(path);
-      expect(source.length, `${path} 을 못 읽었다`).toBeGreaterThan(200);
-      expect(source, `${path} 이 타입 램프를 안 쓴다 — 목록이 낡았다`).toMatch(
+      expect(source.length, `could not read ${path}`).toBeGreaterThan(200);
+      expect(source, `${path} does not use the type ramp, so the list is stale`).toMatch(
         /text-(body|label|title|body-lg)/,
       );
     }
@@ -129,16 +129,16 @@ describe("설정 루트 시트 — 타입 방언은 하나다", () => {
     );
     for (const file of ROOT_SHEET_FILES) {
       const source = sourceWithoutComments(file);
-      expect(source.length, `${file} 을 못 읽었다`).toBeGreaterThan(200);
+      expect(source.length, `could not read ${file}`).toBeGreaterThan(200);
       // A pane built wholly from the shared primitives still sits on the ramp through them.
-      expect(source, `${file} 이 타입 램프를 안 쓴다 — 목록이 낡았다`).toMatch(
+      expect(source, `${file} does not use the type ramp, so the list is stale`).toMatch(
         /text-(body|label|title|body-lg)|from '\.\.?\/settings-primitives'/,
       );
     }
   });
 });
 
-describe("한 시트 안에서 «값 하나 고르기» 는 한 규격이다", () => {
+describe("\"pick one value\" inside one sheet has one spec", () => {
   /**
    * `Choice`'s radio chip and `SegmentSwitch`'s segment are both "pick one value".
    * There was no reason for them to differ, and they did — 24px/9.5px against
@@ -153,7 +153,7 @@ describe("한 시트 안에서 «값 하나 고르기» 는 한 규격이다", (
    * Do not pin the source class string: the check asserts the same height (`h-8`) and type step
    * (`text-body`), as a literal or through `controlClass({ className })`.
    */
-  it("라디오 칩 · 세그먼트 · 알림 칩이 같은 높이·같은 단을 쓴다", () => {
+  it("radio chip, segment and notification chip use the same height and the same step", () => {
     const primitives = sourceWithoutComments("settings-primitives.tsx");
     const activity = sourceWithoutComments("AgentActivitySettings.tsx");
 
@@ -163,14 +163,14 @@ describe("한 시트 안에서 «값 하나 고르기» 는 한 규격이다", (
      */
     expect(
       primitives.match(/<SegmentedControl\b/g)?.length ?? 0,
-      "설정 시트의 «값 하나 고르기» 둘(Choice·SegmentSwitch)이 값 층 위임을 잃었다",
+      "the two \"pick one value\" controls of the settings sheet (Choice and SegmentSwitch) lost the value layer delegation",
     ).toBeGreaterThanOrEqual(2);
 
     const valueLayer = sourceAtPath("src/shared/ui/control-class.ts");
     for (const shape of ["chip", "segment"]) {
       expect(
         valueLayer,
-        `${shape} lg 가 32px 단(min-h-8)을 잃었다 — 두 그릇이 같은 높이라는 전제가 깨진다`,
+        `${shape} lg lost the 32px step (min-h-8), which breaks the premise that both containers have the same height`,
       ).toMatch(new RegExp(`shape: '${shape}', size: 'lg', class: '[^']*min-h-8`));
     }
 
@@ -186,7 +186,7 @@ describe("한 시트 안에서 «값 하나 고르기» 는 한 규격이다", (
      * rows are never pressed below 44px" test below, and without excluding it this
      * assertion fights that one (which actually happened).
      */
-    expect(primitives, "시트에 램프 밖 컨트롤 높이가 생겼다").not.toMatch(/(?<!min-)\bh-(7|9|10|11)\b/);
+    expect(primitives, "a control height outside the ramp appeared in the sheet").not.toMatch(/(?<!min-)\bh-(7|9|10|11)\b/);
   });
 
   /**
@@ -209,7 +209,7 @@ describe("한 시트 안에서 «값 하나 고르기» 는 한 규격이다", (
   });
 });
 
-describe("LNB 는 크롬 치수를 빌려오지 않는다", () => {
+describe("the LNB does not borrow chrome dimensions", () => {
   /**
    * The LNB takes its dimensions from this sheet (the same padding as `SettingsRow`, `px-3 py-2`), not
    * from the nav-rail tile. No new token is created: a single consumer does not need one.
@@ -218,7 +218,7 @@ describe("LNB 는 크롬 치수를 빌려오지 않는다", () => {
    * Do not pin the class string as one block: the value layer splits it, so the inset and type step
    * are checked value by value.
    */
-  it("LNB 항목이 오른쪽 칸 행과 같은 인셋을 쓰고 한 단 위 글자를 쓴다", () => {
+  it("LNB items use the same inset as the rows of the right-hand section and one step larger text", () => {
     const nav = sourceWithoutComments("SettingsNav.tsx");
     const menu = sourceWithoutComments("AppSettingsMenu.tsx");
     /*
@@ -243,30 +243,30 @@ describe("LNB 는 크롬 치수를 빌려오지 않는다", () => {
       else if (ch === '>' && depth === 0) break;
     }
     const lnb = nav.slice(from, to);
-    expect(lnb.length, "LNB 항목의 여는 태그를 못 찾았다 — 이 검사가 헛돈다").toBeGreaterThan(40);
+    expect(lnb.length, "could not find the opening tag of an LNB item, so this check spins idle").toBeGreaterThan(40);
 
     // Inset — must equal the `px-3 py-2` used by the right pane's row (`SettingsRow`).
-    expect(lnb, "LNB 인셋이 크롬 치수(px-2.5 py-1.5)로 되돌아갔다").toMatch(/\bpx-3 py-2\b/);
+    expect(lnb, "the LNB inset went back to the chrome dimensions (px-2.5 py-1.5)").toMatch(/\bpx-3 py-2\b/);
     /* Type uses the row label step (`text-body`) so the nav stays a quiet index below each pane head. */
-    expect(lnb, "LNB 글자가 행 제목 단(text-body)이 아니다").toMatch(/\btext-body\b(?!-)/);
-    expect(lnb, "LNB 가 다시 칸 제목보다 커졌다").not.toMatch(/\btext-body-lg\b/);
+    expect(lnb, "LNB text is not at the row title step (text-body)").toMatch(/\btext-body\b(?!-)/);
+    expect(lnb, "the LNB got bigger than the section title again").not.toMatch(/\btext-body-lg\b/);
     const primitives = sourceWithoutComments("settings-primitives.tsx");
     const head = primitives.slice(primitives.indexOf("export function SettingsPaneHead"));
-    expect(head.length, "SettingsPaneHead 가 없다 — 칸마다 머리가 하나라는 규격이 사라졌다").toBeGreaterThan(40);
-    expect(head.slice(0, 900), "칸 머리가 제목 단(text-title)을 잃었다").toMatch(/\btext-title\b/);
-    expect(menu, "설정 시트가 칸 머리를 그리지 않는다").toMatch(/<SettingsPaneHead\b/);
+    expect(head.length, "SettingsPaneHead is missing, so the spec of one head per section is gone").toBeGreaterThan(40);
+    expect(head.slice(0, 900), "the section head lost the title step (text-title)").toMatch(/\btext-title\b/);
+    expect(menu, "the settings sheet does not draw the section head").toMatch(/<SettingsPaneHead\b/);
     // Radius — the card family, not chrome's chip.
-    expect(lnb, "LNB 반경이 칩으로 되돌아갔다").toMatch(/\brounded-(?:lg|card)\b/);
+    expect(lnb, "the LNB radius went back to the chip").toMatch(/\brounded-(?:lg|card)\b/);
   });
 
-  it("LNB 아이콘이 글자보다 크다 — 훑기 채널로 선다", () => {
+  it("LNB icons are bigger than the text, standing as the scanning channel", () => {
     const nav = sourceWithoutComments("SettingsNav.tsx");
     // At the text's own size the icon matches it and the scanning channel disappears.
     expect(nav).toMatch(/<Icon size=\{16\}/);
   });
 
   /** `SettingsRow` is the single source for the inset — change it and the contract above loses its basis. */
-  it("오른쪽 칸 행의 인셋이 LNB 가 맞춘 그 값이다", () => {
+  it("the inset of the right-hand section rows is the value the LNB aligned to", () => {
     const primitives = sourceWithoutComments("settings-primitives.tsx");
     /*
      * The horizontal inset lives unconditionally in the shared part; assert the inset and gap, not the
@@ -279,9 +279,9 @@ describe("LNB 는 크롬 치수를 빌려오지 않는다", () => {
   });
 
   /* There are two row heights: the taller one is decided by the presence of a mark, not a free axis. */
-  it("키가 큰 행은 마크가 있는 행뿐이다 — 높이를 고르는 축이 아니다", () => {
+  it("the only tall rows are rows with a mark, and height is not an axis to choose", () => {
     const primitives = sourceWithoutComments("settings-primitives.tsx");
-    expect(primitives, "큰 치수가 사라졌다면 이 계약을 지울 때다").toMatch(
+    expect(primitives, "if the large dimension is gone, it is time to delete this contract").toMatch(
       /\bmin-h-16 py-2\.5\b/,
     );
     // The condition selecting the larger dimension must be **whether a mark slot exists**.
@@ -289,12 +289,12 @@ describe("LNB 는 크롬 치수를 빌려오지 않는다", () => {
   });
 });
 
-describe("패널은 최소 창 안에서 자기 거터를 먹지 않는다", () => {
+describe("the panel does not eat its own gutter inside the minimum window", () => {
   /**
    * The panel height is derived: the minimum window height 720 minus the overlay gutter `p-3`,
    * less one more gutter (696 - 24 = 672).
    */
-  it("패널 높이가 최소 창 − 오버레이 거터 2벌 을 넘지 않는다", () => {
+  it("the panel height does not exceed the minimum window minus two overlay gutters", () => {
     const menu = sourceWithoutComments("AppSettingsMenu.tsx");
     const token = /h-\[var\((--[a-z0-9-]+)\)\] max-h-\[calc\(100dvh-1\.5rem\)\]/.exec(menu)?.[1];
     expect(token, "the panel's fixed height is not a token").toBeDefined();
@@ -304,7 +304,7 @@ describe("패널은 최소 창 안에서 자기 거터를 먹지 않는다", () 
     const tauri = JSON.parse(readFileSync("src-tauri/tauri.conf.json", "utf8"));
     const minHeight: number = tauri.app.windows[0].minHeight;
     const OVERLAY_GUTTER = 12; // The overlay's `p-3`
-    expect(minHeight, "최소 창 높이 계약이 사라졌다").toBeGreaterThan(0);
+    expect(minHeight, "the minimum window height contract is gone").toBeGreaterThan(0);
     expect(height).toBeLessThanOrEqual(minHeight - OVERLAY_GUTTER * 4);
     // And it must exceed the previous value (640), or this change has been reverted.
     expect(height).toBeGreaterThan(640);

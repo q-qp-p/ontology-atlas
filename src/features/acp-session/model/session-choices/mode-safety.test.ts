@@ -9,48 +9,48 @@ import { partitionModes } from './mode-safety';
 
 const mode = (id: string, name = id) => ({ id, name });
 
-describe('작업 방식 — 아는 것과 모르는 것을 가른다', () => {
-  it('관문을 없앤다고 잰 것은 아예 안 보여 준다', () => {
+describe('work modes: separates what is known from what is not', () => {
+  it('does not show a mode measured to remove the gate at all', () => {
     const out = partitionModes([mode('default'), mode('bypassPermissions')]);
     expect(out.offered.map((m) => m.id)).toEqual(['default']);
     expect(out.unverified).toEqual([]);
   });
 
-  it('codex 의 `agent` 도 숨긴다 — 이름은 평범한데 실측이 다르다', () => {
+  it('hides the `agent` of codex too, since the name is ordinary but the measurement differs', () => {
     // Launching codex on `agent` wrote outside the working folder with zero permission requests.
     const out = partitionModes([mode('agent'), mode('read-only')]);
     expect(out.offered.map((m) => m.id)).toEqual(['read-only']);
   });
 
-  it('재 봐서 안전한 것은 그냥 보여 준다', () => {
+  it('shows a mode measured safe as is', () => {
     const out = partitionModes([mode('default'), mode('read-only'), mode('plan')]);
     expect(out.unverified).toEqual([]);
     expect(out.offered).toHaveLength(3);
   });
 
-  it('**모르는 모드는 보여 주되 모른다고 표시한다**', () => {
+  it('**shows an unknown mode but marks it unknown**', () => {
     const out = partitionModes([mode('default'), mode('turbo-yolo')]);
     expect(out.offered.map((m) => m.id)).toEqual(['default', 'turbo-yolo']);
     expect(out.unverified).toEqual(['turbo-yolo']);
   });
 
-  it('모르는 것을 숨기지 않는다 — 멀쩡한 새 모드를 막는 것도 거짓말이다', () => {
+  it('does not hide the unknown, since blocking a perfectly fine new mode is also a lie', () => {
     const out = partitionModes([mode('some-new-safe-mode')]);
     expect(out.offered).toHaveLength(1);
   });
 
-  it('대소문자와 공백에 흔들리지 않는다 — 어댑터마다 표기가 다르다', () => {
+  it('is not shaken by letter case or whitespace, since adapters spell differently', () => {
     expect(partitionModes([mode(' BypassPermissions ')]).offered).toEqual([]);
     expect(partitionModes([mode('Read-Only')]).unverified).toEqual([]);
   });
 
-  it('모양이 깨진 항목은 조용히 버리지 않고 모르는 것으로 센다', () => {
+  it('counts a malformed entry as unknown instead of dropping it quietly', () => {
     const out = partitionModes([{ id: '', name: 'x' }, mode('default')]);
     expect(out.offered.map((m) => m.id)).toEqual(['default']);
     expect(out.dropped).toBe(1);
   });
 
-  it('빈 목록은 빈 결과다', () => {
+  it('returns an empty result for an empty list', () => {
     expect(partitionModes([])).toEqual({ offered: [], unverified: [], dropped: 0 });
   });
 });
@@ -60,7 +60,7 @@ describe('작업 방식 — 아는 것과 모르는 것을 가른다', () => {
  * sandbox, the others to writable ones. Opening `agent` requires measuring again and editing
  * this block.
  */
-describe('실측한 어댑터 — codex-acp 1.6.2', () => {
+describe('measured adapter: codex-acp 1.6.2', () => {
   /** The mode list exactly as it arrived in the session. */
   const CODEX_ACP_1_6_2_MODES = [
     { id: 'read-only', name: 'Read-only' },
@@ -68,7 +68,7 @@ describe('실측한 어댑터 — codex-acp 1.6.2', () => {
     { id: 'agent-full-access', name: 'Agent (full access)' },
   ];
 
-  it('읽기 하나만 내준다 — 쓰기 모드는 관문이 없어서 숨긴다', () => {
+  it('offers only read, and hides the write mode because it has no gate', () => {
     const out = partitionModes(CODEX_ACP_1_6_2_MODES);
     expect(out.offered.map((m) => m.id)).toEqual(['read-only']);
     expect(out.unverified).toEqual([]);
@@ -78,7 +78,7 @@ describe('실측한 어댑터 — codex-acp 1.6.2', () => {
    * ⚠️ This test comes first. If the adapter cuts down to a single mode, the tests above pass while
    * measuring nothing — "a check that is always green is not a check".
    */
-  it('실측 목록에 숨길 것이 실제로 들어 있다 — 아니면 위 검사가 헛돈다', () => {
+  it('has something to hide in the measured list, otherwise the check above spins idle', () => {
     expect(CODEX_ACP_1_6_2_MODES).toHaveLength(3);
     expect(partitionModes(CODEX_ACP_1_6_2_MODES).offered).toHaveLength(1);
   });

@@ -82,14 +82,14 @@ const AUDIT = `(() => {
       const label = el.getAttribute("data-testid")
         || (el.textContent || "").replace(/\\s+/g, " ").trim().slice(0, 20)
         || el.tagName + "." + String(el.className).slice(0, 40);
-      out.below.push(label + " " + r.toFixed(2) + " (바탕 " + bg.join(",") + ")");
+      out.below.push(label + " " + r.toFixed(2) + " (background " + bg.join(",") + ")");
     }
   }
   return out;
 })()`;
 
 for (const route of ROUTES) {
-  test(`초점 표시가 보인다 — ${route}`, async ({ page }) => {
+  test(`the focus indicator is visible: ${route}`, async ({ page }) => {
     test.setTimeout(120_000);
     await page.setViewportSize({ width: 1512, height: 900 });
     await seedFirstRunSeen(page);
@@ -115,11 +115,11 @@ for (const route of ROUTES) {
     };
 
     // The denominator first — going green having measured nothing is this class of check's default failure.
-    expect(got.measured, `${route}: 초점 표시를 하나도 못 쟀다 — 검사가 헛돌고 있다`).toBeGreaterThan(3);
-    console.log(`[focus] ${route} 잰 것 ${got.measured} · 최저 ${got.worst?.toFixed(2)}:1`);
+    expect(got.measured, `${route}: no focus indicator could be measured, so the check spins idle`).toBeGreaterThan(3);
+    console.log(`[focus] ${route} measured ${got.measured} · lowest ${got.worst?.toFixed(2)}:1`);
     expect(
       got.below,
-      `${route}: 초점 표시가 ${FLOOR}:1 아래다 (알파를 바탕과 합성한 값) — ${got.below.join(" · ")}`,
+      `${route}: the focus indicator is below ${FLOOR}:1 (alpha composited over the background) — ${got.below.join(" · ")}`,
     ).toEqual([]);
   });
 }

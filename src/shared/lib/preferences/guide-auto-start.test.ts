@@ -21,12 +21,12 @@ describe("guide auto-start switch", () => {
     window.localStorage.clear();
   });
 
-  it("기본값은 끔 — 필요한 사람만 켠다 (2026-08-13 소유자 확정)", () => {
+  it("the default is off, so only those who need it turn it on (owner confirmed 2026-08-13)", () => {
     expect(DEFAULT_GUIDE_AUTO_START).toBe(false);
     expect(readGuideAutoStart()).toBe(false);
   });
 
-  it("켜면 저장되고, 끄면 되돌아온다", () => {
+  it("turning it on saves it, and turning it off reverts", () => {
     writeGuideAutoStart(true);
     expect(readGuideAutoStart()).toBe(true);
     writeGuideAutoStart(false);
@@ -38,7 +38,7 @@ describe("guide auto-start switch", () => {
    * the default flipped to off must survive, while unknown, empty and corrupt
    * values all fall back to the default (off).
    */
-  it("켜 둔 저장값(\"1\")은 살아남고, 모르는 값은 끔이다", () => {
+  it("a stored on value of 1 survives and an unknown value means off", () => {
     expect(resolveGuideAutoStart("1")).toBe(true);
     expect(resolveGuideAutoStart("0")).toBe(false);
     for (const raw of [null, "", "yes", "true", "nope"]) {

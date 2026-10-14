@@ -87,8 +87,8 @@ function capturedSpeed(): number {
   return speedOf(edges[0]);
 }
 
-describe("stepTopologyPhysics — 앰비언트 휴면 배선", () => {
-  it("각성(계수 1)이면 종전 속도 그대로 — 보고 있는 사람의 화면은 1픽셀도 안 바뀐다", () => {
+describe("stepTopologyPhysics: ambient sleep wiring", () => {
+  it("awake (factor 1) keeps the old speed, so the screen of someone watching does not change by one pixel", () => {
     vi.mocked(updateParticles).mockClear();
     stepTopologyPhysics(baseInput({ ambientFactor: 1 }));
     const awake = capturedSpeed();
@@ -101,7 +101,7 @@ describe("stepTopologyPhysics — 앰비언트 휴면 배선", () => {
     expect(legacy).toBe(awake);
   });
 
-  it("잠듦(계수 0)이면 혜성 속도가 0 — 위상이 전진하지 않는다", () => {
+  it("asleep (factor 0) means comet speed 0, and the phase does not advance", () => {
     vi.mocked(updateParticles).mockClear();
     stepTopologyPhysics(baseInput({ ambientFactor: 0 }));
     expect(capturedSpeed()).toBe(0);
@@ -110,7 +110,7 @@ describe("stepTopologyPhysics — 앰비언트 휴면 배선", () => {
   // Without the ramp the comets **stop dead** mid-orbit, and a frozen particle reads
   // as "is it broken?". The factor has to multiply linearly for them to flow and then
   // gradually come to rest.
-  it("램프 중(계수 0<f<1)이면 속도가 비례해 줄어든다", () => {
+  it("mid-ramp (0 < factor < 1) the speed shrinks proportionally", () => {
     vi.mocked(updateParticles).mockClear();
     stepTopologyPhysics(baseInput({ ambientFactor: 1 }));
     const full = capturedSpeed();

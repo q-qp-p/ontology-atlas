@@ -18,17 +18,17 @@ const CI_REGISTRY = 'scripts/ci/classify-change.mjs';
 function docsCheckSubScripts(): string[] {
   const pkg = JSON.parse(read('package.json')) as { scripts: Record<string, string> };
   const def = pkg.scripts['docs:check'];
-  expect(def, 'package.json 에 docs:check 가 없다 — 이 계약의 전제가 사라졌다').toBeTruthy();
+  expect(def, 'docs:check is missing from package.json — the premise of this contract is gone').toBeTruthy();
   return [...def.matchAll(/pnpm\s+([a-z0-9:-]+)/g)].map((m) => m[1]);
 }
 
-describe('docs:check — 하위 검사가 전부 CI 에서 불린다', () => {
-  it('정의에서 하위 검사를 실제로 뽑아낸다 (공회전 차단)', () => {
+describe('docs:check — every sub-check is called in CI', () => {
+  it('really extracts the sub-checks from the definition (idle guard)', () => {
     // Extracting 0 and passing with "everything is covered" is this contract's only failure mode.
     expect(docsCheckSubScripts().length).toBeGreaterThan(1);
   });
 
-  it.each(docsCheckSubScripts())('%s 를 부르는 CI 스텝이 있다', (script) => {
+  it.each(docsCheckSubScripts())('there is a CI step that calls %s', (script) => {
     const workflow = read(WORKFLOW);
     const registry = read(CI_REGISTRY);
     /**

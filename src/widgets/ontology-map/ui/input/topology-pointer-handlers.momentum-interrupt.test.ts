@@ -79,8 +79,8 @@ function fakeWheelEvent(): WheelEvent {
   } as unknown as WheelEvent;
 }
 
-describe("createTopologyPointerHandlers — flick 관성 활강 중단", () => {
-  it("포인터다운은 진행 중인 flick 속도를 0 으로 잡고 타깃을 현재 위치로 고정한다", () => {
+describe("createTopologyPointerHandlers: interrupting flick momentum glide", () => {
+  it("pointer down zeroes the flick velocity in progress and pins the target to the current position", () => {
     const refs = buildRefs();
     const { handlePointerDown } = createTopologyPointerHandlers(refs);
 
@@ -96,7 +96,7 @@ describe("createTopologyPointerHandlers — flick 관성 활강 중단", () => {
     expect(refs.cameraTargetRef.current.ty).toBe(-40);
   });
 
-  it("정지 상태(속도 0)의 포인터다운은 타깃을 건드리지 않는다(불필요한 상태 변경 회피)", () => {
+  it("pointer down while still (velocity 0) leaves the target alone (avoids needless state changes)", () => {
     const refs = buildRefs({
       cameraRef: ref({ x: { value: 120, velocity: 0 }, y: { value: -40, velocity: 0 }, scale: { value: 1, velocity: 0 } }),
       cameraTargetRef: ref({ tx: -60, ty: 25, tscale: 1 }),
@@ -110,7 +110,7 @@ describe("createTopologyPointerHandlers — flick 관성 활강 중단", () => {
     expect(refs.cameraTargetRef.current.ty).toBe(25);
   });
 
-  it("휠 줌은 진행 중인 flick 의 x/y 잔여 속도를 흘리지 않는다", () => {
+  it("wheel zoom does not discard the x/y residual velocity of a flick in progress", () => {
     const refs = buildRefs();
     const { handleWheel } = createTopologyPointerHandlers(refs);
 

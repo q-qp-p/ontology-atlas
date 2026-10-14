@@ -19,46 +19,46 @@ const PROJECT_ROUTE_FILES = [
   'app/[locale]/project/[slug]/opengraph-image.tsx',
 ];
 
-describe('번들 샘플 project 라우트 전집 계약', () => {
-  it('전집이 dogfood 와 storefront 양쪽의 project slug 를 모두 담는다', () => {
+describe('bundled sample project route full-set contract', () => {
+  it('the full set holds the project slugs of both dogfood and storefront', () => {
     const slugs = bundledProjectSlugs();
 
     for (const source of ['dogfood', 'storefront'] as const) {
       const fromSource = deriveProjectsFromVault(resolveStaticVaultSource(source).manifest);
       // If a sample has a project node, its slug must be in the enumeration.
-      expect(fromSource.length, `${source} 샘플에 kind: project 문서가 없다`).toBeGreaterThan(0);
+      expect(fromSource.length, `the ${source} sample has no kind: project document`).toBeGreaterThan(0);
       for (const project of fromSource) {
-        expect(slugs, `${source} 의 ${project.slug} 가 정적 라우트 전집에서 빠졌다`).toContain(
+        expect(slugs, `${project.slug} of ${source} is missing from the static route full set`).toContain(
           project.slug,
         );
       }
     }
   });
 
-  it('전집에 중복 slug 가 없다 (같은 주소를 두 번 만들지 않는다)', () => {
+  it('the full set has no duplicate slug (the same address is not made twice)', () => {
     const slugs = bundledProjectSlugs();
     expect(slugs).toEqual([...new Set(slugs)]);
   });
 
-  it('전집의 모든 slug 가 실제 Project 로 해석된다 (메타데이터·본문이 붙는다)', () => {
+  it('every slug of the full set resolves to a real Project (metadata and body attach)', () => {
     const projects = deriveBundledProjects();
     const resolved = new Set(projects.map((p) => p.slug));
     for (const slug of bundledProjectSlugs()) {
-      expect(resolved, `${slug} 는 라우트만 있고 Project 가 없다 (notFound 로 떨어진다)`).toContain(
+      expect(resolved, `${slug} has a route but no Project (it falls to notFound)`).toContain(
         slug,
       );
     }
   });
 
-  it('project 라우트 파일이 전집 함수를 쓴다 (단일 매니페스트로 되돌아가지 않는다)', () => {
+  it('the project route file uses the full-set function (it does not go back to a single manifest)', () => {
     const offenders: string[] = [];
     for (const rel of PROJECT_ROUTE_FILES) {
       const source = readFileSync(path.join(process.cwd(), rel), 'utf8');
       if (!source.includes('bundledProjectSlugs')) {
-        offenders.push(`${rel} — bundledProjectSlugs() 를 쓰지 않는다`);
+        offenders.push(`${rel}: does not use bundledProjectSlugs()`);
       }
       if (/deriveProjectsFromVault\s*\(/.test(source)) {
-        offenders.push(`${rel} — 매니페스트 하나에서 직접 유도한다`);
+        offenders.push(`${rel}: derives directly from a single manifest`);
       }
     }
     expect(offenders).toEqual([]);

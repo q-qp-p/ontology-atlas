@@ -11,13 +11,13 @@ vi.mock('@tauri-apps/api/core', () => ({
 
 import { isLlmChatBridgeAvailable, llmChat, llmChatErrorMessage } from './tauri-llm';
 
-describe('tauri-llm 웹 강등', () => {
-  it('Tauri 런타임이 아니면 브리지가 없다고 말한다', () => {
+describe('tauri-llm web downgrade', () => {
+  it('outside the Tauri runtime it reports that there is no bridge', () => {
     mocks.isTauri.mockReturnValue(false);
     expect(isLlmChatBridgeAvailable()).toBe(false);
   });
 
-  it('웹에서는 invoke 없이 null 을 돌려준다 — 전송 경로 자체가 없다', async () => {
+  it('on the web it returns null without invoke, since there is no transfer path at all', async () => {
     mocks.isTauri.mockReturnValue(false);
     mocks.invoke.mockClear();
     const result = await llmChat({
@@ -32,7 +32,7 @@ describe('tauri-llm 웹 강등', () => {
     expect(mocks.invoke).not.toHaveBeenCalled();
   });
 
-  it('데스크톱에서는 Rust 커맨드 계약 그대로 인자를 넘긴다', async () => {
+  it('on desktop it passes arguments exactly as the Rust command contract says', async () => {
     mocks.isTauri.mockReturnValue(true);
     mocks.invoke.mockClear();
     mocks.invoke.mockImplementation((command: string) => Promise.resolve(command === "llm_chat_prepare" ? "request-1" : command === "llm_chat_cancel" ? false : {
@@ -75,7 +75,7 @@ describe('tauri-llm 웹 강등', () => {
     });
   });
 
-  it('이 파일에는 키를 담는 타입도 인자도 없다', () => {
+  it('this file has no type or argument that carries a key', () => {
     // Keys flow only inside Rust; the contract breaks the moment the bridge
     // touches one. Same discipline as the source-reflection contract in
     // `tauri-secrets.ts`.
@@ -84,7 +84,7 @@ describe('tauri-llm 웹 강등', () => {
     expect(source).not.toMatch(/apiKey|api_key/);
   });
 
-  it('Rust 의 Err(String) 을 사용자 한 줄로 접는다', () => {
+  it('folds a Rust Err(String) into one user-facing line', () => {
     // Rust now sends only the code (`src-tauri/src/errors.rs`). The sentence is chosen
     // here, the one side that knows the reader's language.
     const lookup = (code: string) => (code === 'no-response' ? '답을 받지 못했어요.' : undefined);

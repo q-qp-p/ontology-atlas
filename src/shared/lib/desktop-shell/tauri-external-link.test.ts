@@ -26,8 +26,8 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
-describe('밖으로 나가는 링크', () => {
-  it('앱에서는 클릭을 가로채 OS 로 넘긴다', () => {
+describe('links that leave the app', () => {
+  it('in the app a click is intercepted and handed to the OS', () => {
     const remove = installExternalLinkOpener();
     const link = anchor('https://example.com/install');
 
@@ -42,7 +42,7 @@ describe('밖으로 나가는 링크', () => {
     remove();
   });
 
-  it('링크 안쪽 글자를 눌러도 열린다', () => {
+  it('clicking text inside the link opens it too', () => {
     const remove = installExternalLinkOpener();
     const link = anchor('https://example.com/x');
     const inner = document.createElement('span');
@@ -54,7 +54,7 @@ describe('밖으로 나가는 링크', () => {
     remove();
   });
 
-  it('웹에서는 아예 붙지 않는다 — 브라우저가 이미 연다', () => {
+  it('on the web it is not attached at all, since the browser already opens it', () => {
     tauri = false;
     const remove = installExternalLinkOpener();
     const link = anchor('https://example.com/x');
@@ -67,19 +67,19 @@ describe('밖으로 나가는 링크', () => {
     remove();
   });
 
-  it('앱 안 이동은 건드리지 않는다', () => {
+  it('leaves in-app navigation alone', () => {
     const remove = installExternalLinkOpener();
     for (const href of ['/ko/topology/', '#section', 'mailto:a@b.c']) {
       const link = anchor(href, '');
       const event = new MouseEvent('click', { bubbles: true, cancelable: true });
       link.dispatchEvent(event);
-      expect(event.defaultPrevented, `${href} 를 가로챘다`).toBe(false);
+      expect(event.defaultPrevented, `${href} was intercepted`).toBe(false);
     }
     expect(invoke).not.toHaveBeenCalled();
     remove();
   });
 
-  it('떼면 더는 안 듣는다', () => {
+  it('stops listening once detached', () => {
     const remove = installExternalLinkOpener();
     remove();
     anchor('https://example.com/x').dispatchEvent(
@@ -88,7 +88,7 @@ describe('밖으로 나가는 링크', () => {
     expect(invoke).not.toHaveBeenCalled();
   });
 
-  it('http/https 만 밖으로 나간다 — 허용 목록이지 금지 목록이 아니다', () => {
+  it('only http/https leave the app, an allow list rather than a deny list', () => {
     expect(isExternalHttpUrl('https://example.com')).toBe(true);
     expect(isExternalHttpUrl('http://example.com')).toBe(true);
     for (const bad of [
@@ -99,7 +99,7 @@ describe('밖으로 나가는 링크', () => {
       '/ko/topology/',
       'https://exa mple.com',
     ]) {
-      expect(isExternalHttpUrl(bad), `${bad} 를 열려고 한다`).toBe(false);
+      expect(isExternalHttpUrl(bad), `tried to open ${bad}`).toBe(false);
     }
   });
 });

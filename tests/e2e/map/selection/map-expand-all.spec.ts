@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { seedFirstRunSeen } from "../../first-run-seed";
 import { waitForMapStill } from "../../settle";
 
-test("모두 펼치기는 주장한 수를 드러내고, 접기로 되돌린다", async ({ page }) => {
+test("expand all reveals the claimed count and collapse restores it", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 900 });
   await seedFirstRunSeen(page);
@@ -29,19 +29,19 @@ test("모두 펼치기는 주장한 수를 드러내고, 접기로 되돌린다"
     });
 
   const first = await nodePos();
-  expect(first, "주문 도메인을 지도에서 못 찾았다 — 이 스펙이 공회전한다").not.toBeNull();
+  expect(first, "the order domain was not found on the map, so this spec spins idle").not.toBeNull();
   await page.mouse.click(first!.px, first!.py);
   await expect
     .poll(() => page.evaluate(() => (window as unknown as { __atlasMap: { selection: () => { nodeId: string | null } } }).__atlasMap.selection().nodeId), {
       timeout: 15_000,
-      message: "주문 도메인이 선택되지 않았다",
+      message: "the order domain was not selected",
     })
     .toBe("domain:order");
   await waitForMapStill(page);
 
   const before = await visibleCount();
   const chipBefore = await orderChip();
-  expect(chipBefore, "주문 칩이 없다 — chips() 창구가 죽었다").not.toBeNull();
+  expect(chipBefore, "the order chip is missing, so the chips() hook is dead").not.toBeNull();
   expect(chipBefore!.expanded).toBe(false);
   expect(chipBefore!.claimedCount).toBeGreaterThan(0);
 
@@ -51,12 +51,12 @@ test("모두 펼치기는 주장한 수를 드러내고, 접기로 되돌린다"
   await expect
     .poll(async () => (await visibleCount()) - before, {
       timeout: 20_000,
-      message: "펼침이 주장한 수만큼 드러내지 않았다",
+      message: "the expansion did not reveal as many as it claimed",
     })
     .toBe(chipBefore!.claimedCount);
   const chipAfter = await orderChip();
   expect(chipAfter!.expanded).toBe(true);
-  expect(chipAfter!.shownChildren, "chips 가 화면과 다른 말을 한다").toBe(chipBefore!.claimedCount);
+  expect(chipAfter!.shownChildren, "chips disagrees with what the screen shows").toBe(chipBefore!.claimedCount);
 
   const overlapPairs = await page.evaluate(() => {
     const m = (window as unknown as { __atlasMap: { nodes: () => Array<{ hidden: boolean; x: number; y: number; radius: number }> } }).__atlasMap;
@@ -71,12 +71,12 @@ test("모두 펼치기는 주장한 수를 드러내고, 접기로 되돌린다"
     }
     return pairs;
   });
-  expect(overlapPairs, "펼쳐진 노드가 서로 겹쳤다").toBe(0);
+  expect(overlapPairs, "the expanded nodes overlap each other").toBe(0);
 
   await waitForMapStill(page);
   const expanded = await nodePos();
   await page.mouse.click(expanded!.px, expanded!.py - (expanded!.r + 32));
   await expect
-    .poll(visibleCount, { timeout: 20_000, message: "접기가 원상 복귀하지 않았다" })
+    .poll(visibleCount, { timeout: 20_000, message: "collapse did not restore the original state" })
     .toBe(before);
 });

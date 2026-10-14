@@ -268,7 +268,7 @@ describe("computeEgoBounds", () => {
   // S8 defect 4 — a fling neighbour outside the warding circle (thousands of units
   // out) inflated the ego bbox during realm expansion and flung the camera off
   // screen. restrictIds keeps only the realm's members.
-  it("restrictIds 는 영역 밖(fling) 이웃을 bbox 에서 제외한다", () => {
+  it("restrictIds excludes neighbours outside the area (fling) from the bbox", () => {
     const nodes: WorldNode[] = [
       node({ id: "f", kind: "domain", x: 0, y: 0 }), // r14
       node({ id: "inside", kind: "capability", x: 100, y: 0 }), // a realm member, r8 → maxX 108
@@ -294,7 +294,7 @@ describe("computeClusterDiscBounds", () => {
     return { nodeById, childrenByParent: cbp };
   }
 
-  it("부모 + 직속 자식 부챗살의 반지름 패딩 bbox", () => {
+  it("the radius-padded bbox of a parent plus its direct children fan", () => {
     const nodes: WorldNode[] = [
       node({ id: "d", kind: "domain", x: 0, y: 0 }), // r14
       node({ id: "c1", kind: "capability", x: 100, y: 0 }), // r8 → maxX 108
@@ -311,12 +311,12 @@ describe("computeClusterDiscBounds", () => {
     expect(bounds!.maxY).toBe(14);
   });
 
-  it("부모 미해결이면 null", () => {
+  it("null when the parent is unresolved", () => {
     const world = discWorld([node({ id: "d", kind: "domain", x: 0, y: 0 })], { d: [] });
     expect(computeClusterDiscBounds(world, tokens, "missing")).toBeNull();
   });
 
-  it("restrictIds 를 주면 그 집합의 자식만 bbox 에 포함(고팬아웃 배치 fit)", () => {
+  it("with restrictIds only that set's children enter the bbox (fit for a high fan-out layout)", () => {
     const nodes: WorldNode[] = [
       node({ id: "d", kind: "domain", x: 0, y: 0 }), // r14
       node({ id: "c1", kind: "capability", x: 100, y: 0 }), // r8 → maxX 108
@@ -333,7 +333,7 @@ describe("computeClusterDiscBounds", () => {
 
 /** P3a — the contract for deriving the ink ramp's level. */
 describe("containmentLevelFor", () => {
-  it("project 가 낀 엣지는 L0, domain 은 L1, 그 외는 L2", () => {
+  it("an edge touching a project is L0, domain is L1, everything else is L2", () => {
     expect(containmentLevelFor("project", "domain")).toBe(0);
     expect(containmentLevelFor("domain", "capability")).toBe(1);
     expect(containmentLevelFor("capability", "element")).toBe(2);
@@ -343,21 +343,21 @@ describe("containmentLevelFor", () => {
 });
 
 /** B4 — magnitude encoding: a compressed rank cue. */
-describe("computeMagnitudeScale (S2 파트 2 — √childCount)", () => {
-  it("domain/capability 만 배율을 받고 project/element 는 1", () => {
+describe("computeMagnitudeScale (part 2, square root of childCount)", () => {
+  it("only domain and capability get a multiplier, project and element stay at 1", () => {
     expect(computeMagnitudeScale("project", 100, 100, 0.45)).toBe(1);
     expect(computeMagnitudeScale("element", 100, 100, 0.45)).toBe(1);
     expect(computeMagnitudeScale("domain", 100, 100, 0.45)).toBeGreaterThan(1);
   });
 
-  it("항상 base(1) 이상 — childCount 1 은 정확히 base, 최대는 +40% 상한", () => {
+  it("always at least base (1): childCount 1 is exactly base, and the maximum is capped at +40%", () => {
     expect(computeMagnitudeScale("domain", 1, 103, 0.45)).toBe(1);
     // Even at the maximum (= maxChildCount) it never exceeds the +40% cap (1.4).
     expect(computeMagnitudeScale("domain", 103, 103, 0.45)).toBeLessThanOrEqual(1.4);
     expect(computeMagnitudeScale("domain", 103, 103, 0.45)).toBeGreaterThan(1.2);
   });
 
-  it("√ 압축 — 큰 격차를 압축하되 순위 단서 유지(막대그래프 아님)", () => {
+  it("square-root compression squeezes large gaps while keeping the rank cue (not a bar chart)", () => {
     const big = computeMagnitudeScale("domain", 103, 103, 0.45);
     const small = computeMagnitudeScale("domain", 9, 103, 0.45);
     // An 11× difference in children (9 → 103) compresses to within ~1.3× of size factor.
@@ -365,7 +365,7 @@ describe("computeMagnitudeScale (S2 파트 2 — √childCount)", () => {
     expect(big / small).toBeLessThan(1.4);
   });
 
-  it("단조 — 직속 자식 수가 크면 배율도 크거나 같다", () => {
+  it("monotonic: more direct children never gives a smaller multiplier", () => {
     let prev = 0;
     for (const c of [1, 5, 20, 60, 103]) {
       const v = computeMagnitudeScale("capability", c, 103, 0.45);
@@ -374,7 +374,7 @@ describe("computeMagnitudeScale (S2 파트 2 — √childCount)", () => {
     }
   });
 
-  it("방어 — maxChildCount 0 / childCount 0 / k 0 은 전부 1", () => {
+  it("defensive: maxChildCount 0, childCount 0 and k 0 all give 1", () => {
     expect(computeMagnitudeScale("domain", 0, 103, 0.45)).toBe(1);
     expect(computeMagnitudeScale("domain", 10, 0, 0.45)).toBe(1);
     expect(computeMagnitudeScale("domain", 10, 103, 0)).toBe(1);

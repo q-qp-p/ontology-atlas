@@ -17,7 +17,7 @@ async function openGuideSheetOnFirstRun(page: Page) {
   await expect(page.getByTestId("vault-guide-sheet")).toBeVisible({ timeout: 20_000 });
 }
 
-test("첫 실행 시트 — 프로그램 포커스가 브라우저 기본 링을 그리지 않는다", async ({ page }) => {
+test("first-run sheet: programmatic focus does not draw the browser default ring", async ({ page }) => {
   await openGuideSheetOnFirstRun(page);
 
   const probe = await page.evaluate(() => {
@@ -32,11 +32,11 @@ test("첫 실행 시트 — 프로그램 포커스가 브라우저 기본 링을
     };
   });
 
-  expect(probe, "시트를 못 찾았다").not.toBeNull();
+  expect(probe, "the sheet was not found").not.toBeNull();
 
   // ① Focus must **still** be on the container — removing the accessibility handling
   //    along with the ring is breaking something else, not a fix.
-  expect(probe!.focused, "시트가 포커스를 안 받는다 — 스크린리더 낭독 시작점이 사라졌다").toBe(
+  expect(probe!.focused, "the sheet does not receive focus, so the screen reader starting point is gone").toBe(
     true,
   );
 
@@ -44,6 +44,6 @@ test("첫 실행 시트 — 프로그램 포커스가 브라우저 기본 링을
   //    ring (our token ring is drawn with `solid`/`ring-*`).
   expect(
     probe!.outlineStyle,
-    `브라우저 기본 포커스 링이 살아 있다 (outline: ${probe!.outlineStyle} ${probe!.outlineWidth})`,
+    `the browser default focus ring is alive (outline: ${probe!.outlineStyle} ${probe!.outlineWidth})`,
   ).not.toBe("auto");
 });

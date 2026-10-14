@@ -91,8 +91,8 @@ function scan(): string[] {
   return bad;
 }
 
-describe("타입 램프 × 행간 짝 — 조건부 크기 어긋남 차단", () => {
-  it("램프 클래스와 arbitrary 크기가 한 원소에 공존하면 명시 행간이 있다", () => {
+describe("type ramp x leading pair: blocks conditional size drift", () => {
+  it("when a ramp class and an arbitrary size coexist on one element, an explicit leading exists", () => {
     const bad = scan();
     expect(
       bad,
@@ -104,7 +104,7 @@ describe("타입 램프 × 행간 짝 — 조건부 크기 어긋남 차단", ()
     ).toEqual([]);
   });
 
-  it("스캔이 실제로 램프를 읽는다 — 0건이 '안 봄'이 아니어야 한다", () => {
+  it("the scan really reads the ramp, so 0 results must not mean \"not looked at\"", () => {
     const files: string[] = [];
     for (const root of ROOTS) collectSourceFiles(join(process.cwd(), root), files);
     const regions = files.flatMap((f) => extractClassNameRegions(readFileSync(f, "utf8")));
@@ -112,7 +112,7 @@ describe("타입 램프 × 행간 짝 — 조건부 크기 어긋남 차단", ()
     expect(regions.filter((r) => RAMP_STEP.test(r)).length).toBeGreaterThan(300);
   });
 
-  it("판정이 실제로 잡는다 (프로브)", () => {
+  it("the verdict really catches (probe)", () => {
     // ① The defect: a ramp step + a conditional arbitrary size + no line height.
     expect(isMismatchedPair('"text-title font-semibold sm:text-[length:var(--text-display)]"')).toBe(
       true,

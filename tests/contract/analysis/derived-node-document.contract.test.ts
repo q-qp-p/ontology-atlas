@@ -34,8 +34,8 @@ function withGhostDoc(manifest: VaultManifest): VaultManifest {
   return { ...manifest, docs: [...manifest.docs, ghost] };
 }
 
-describe("파생 노드와 문서 노드의 구분 (번들 샘플)", () => {
-  it("자기 문서 노드는 frontmatter 문서와 1:1 이고, 파생 노드는 (있다면) 문서 노드로 세지 않는다", () => {
+describe("derived nodes versus document nodes (bundled sample)", () => {
+  it("its own document node is 1:1 with a frontmatter document, and derived nodes (if any) are not counted as document nodes", () => {
     const derivation = deriveOntologyFromVault(
       resolveStaticVaultSource("dogfood").manifest,
     );
@@ -48,7 +48,7 @@ describe("파생 노드와 문서 노드의 구분 (번들 샘플)", () => {
     expect(own.length + derived.length).toBe(derivation.nodes.length);
   });
 
-  it("이름만 불린 참조는 파생 노드로 나타나되 문서 노드라 불리지 않는다 (합성 표본)", () => {
+  it("a name-only reference appears as a derived node yet is not called a document node (synthetic sample)", () => {
     const derivation = deriveOntologyFromVault(
       withGhostDoc(resolveStaticVaultSource("dogfood").manifest),
     );
@@ -62,7 +62,7 @@ describe("파생 노드와 문서 노드의 구분 (번들 샘플)", () => {
     expect(resolved.ownSlug).toBeNull();
   });
 
-  it("파생 노드의 sourceSlug 는 남의 문서라 자기 문서로 승격되지 않는다", () => {
+  it("the sourceSlug of a derived node is someone else's document, so it is not promoted to its own document", () => {
     // Runs against the synthetic sample — a clean dogfood vault has 0 derived nodes, so
     // this loop would idle, and an idling gate guards nothing.
     const derivation = deriveOntologyFromVault(

@@ -50,14 +50,14 @@ describe("ProjectFallbackClient", () => {
     mocks.replace.mockReset();
   });
 
-  it("query slug를 프로젝트 상세 화면에 전달한다", () => {
+  it("passes the query slug to the project detail screen", () => {
     render(<ProjectFallbackClient />);
 
     expect(screen.getByTestId("detail-page")).toHaveTextContent("project");
     expect(screen.queryByTestId("editor-page")).not.toBeInTheDocument();
   });
 
-  it("edit query를 프로젝트 편집 화면과 복귀 상태에 전달한다", () => {
+  it("passes the edit query to the project editor and its return state", () => {
     mocks.search =
       "slug=project&mode=edit&returnTo=%2Fproject%2Ffallback%2F%3Fslug%3Dproject&saved=1";
 
@@ -75,7 +75,7 @@ describe("ProjectFallbackClient", () => {
     expect(screen.queryByTestId("detail-page")).not.toBeInTheDocument();
   });
 
-  it("slug 없는 직접 fallback은 프로젝트 목록으로 복귀한다", () => {
+  it("returns a direct fallback without a slug to the project list", () => {
     mocks.search = "";
 
     render(<ProjectFallbackClient />);

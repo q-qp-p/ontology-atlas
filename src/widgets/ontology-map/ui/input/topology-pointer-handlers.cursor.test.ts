@@ -100,9 +100,9 @@ function pointerEvent(
   } as unknown as ReactPointerEvent<HTMLCanvasElement>;
 }
 
-describe("커서 어포던스 — 각 표면이 자기 1차 행동을 보여준다", () => {
+describe("cursor affordance: each surface shows its own primary action", () => {
   // A world with no nodes at all, so every hover is background.
-  it("빈 배경 호버는 `grab` — 이 캔버스의 1차 행동은 팬이다", () => {
+  it("hovering the empty background shows `grab`, since the primary action of this canvas is pan", () => {
     const refs = buildRefs();
     const canvas = fakeCanvas();
     const { handlePointerMove } = createTopologyPointerHandlers(refs);
@@ -112,7 +112,7 @@ describe("커서 어포던스 — 각 표면이 자기 1차 행동을 보여준�
     expect(canvas.style.cursor).toBe("grab");
   });
 
-  it("배경을 미는 동안은 `grabbing`", () => {
+  it("while pushing the background it shows `grabbing`", () => {
     const refs = buildRefs();
     const canvas = fakeCanvas();
     const { handlePointerDown, handlePointerMove } = createTopologyPointerHandlers(refs);
@@ -130,7 +130,7 @@ describe("커서 어포던스 — 각 표면이 자기 1차 행동을 보여준�
    * `grabbing` behind while the mouse sat still. Clearing the inline style lets the
    * canvas class (`cursor-grab`) restore it.
    */
-  it("놓으면 쥔 모양을 놓는다 — 인라인 커서가 비워진다", () => {
+  it("releasing drops the grip shape, so the inline cursor is cleared", () => {
     const canvas = fakeCanvas();
     const refs = refsWithCanvas(canvas);
     const { handlePointerDown, handlePointerMove, handlePointerUp } =
@@ -150,7 +150,7 @@ describe("커서 어포던스 — 각 표면이 자기 1차 행동을 보여준�
  * Pinned on a count, not milliseconds: `worldToScreen` is called three times per edge when candidates
  * are built, so zero calls means no rebuild while the camera is still.
  */
-describe("엣지 후보 캐시 — 정지한 카메라에서 재계산 0회", () => {
+describe("edge candidate cache: zero recomputation on a still camera", () => {
   function worldWithEdges(): PointerHandlerRefs["worldRef"]["current"] {
     const nodes = [
       { id: "a", slug: "a", kind: "domain", x: 0, y: 0, magnitudeScale: 1 },
@@ -166,7 +166,7 @@ describe("엣지 후보 캐시 — 정지한 카메라에서 재계산 0회", ()
     } as unknown as PointerHandlerRefs["worldRef"]["current"];
   }
 
-  it("배경 위 반복 이동은 첫 프레임만 후보를 만든다", () => {
+  it("repeated moves over the background build candidates only on the first frame", () => {
     const canvas = fakeCanvas();
     const refs = buildRefs({
       worldRef: ref(worldWithEdges()),
@@ -185,7 +185,7 @@ describe("엣지 후보 캐시 — 정지한 카메라에서 재계산 0회", ()
 
     const firstPass = vi.mocked(worldToScreen).mock.calls.length;
     // If this path never runs at all, the comparison below is vacuously true.
-    expect(firstPass, "후보를 한 번도 안 만들었다 — 이 테스트는 아무것도 안 지킨다").toBeGreaterThan(0);
+    expect(firstPass, "candidates were never built, so this test guards nothing").toBeGreaterThan(0);
     handlePointerMove(pointerEvent(canvas, 410, 310));
     expect(
       vi.mocked(worldToScreen).mock.calls.length,

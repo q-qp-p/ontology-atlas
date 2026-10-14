@@ -7,7 +7,7 @@ import { expect, test } from "@playwright/test";
  * Only public, login-free paths are verified.
  */
 
-test("404에서 '홈으로' CTA가 history 보존 없이 홈 이동", async ({ page }) => {
+test("the home CTA on the 404 page navigates home without preserving history", async ({ page }) => {
   await page.goto("/en/");
   await page.goto("/en/this-route-really-does-not-exist/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
@@ -26,7 +26,7 @@ test("404에서 '홈으로' CTA가 history 보존 없이 홈 이동", async ({ p
   expect(new URL(page.url()).pathname).toBe("/en/");
 });
 
-test("404 '이전 화면으로' 버튼이 history 있을 때 goBack", async ({ page }) => {
+test("the 404 back button calls goBack when history exists", async ({ page }) => {
   await page.goto("/en/");
   const firstPath = new URL(page.url()).pathname;
   await page.goto("/en/another-missing-route/");

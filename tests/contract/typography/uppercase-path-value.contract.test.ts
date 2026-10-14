@@ -35,8 +35,8 @@ interface Offence {
   snippet: string;
 }
 
-describe("uppercase 원소 안의 경로성 값 — 주소는 대문자 변형하지 않는다", () => {
-  it("src/**/*.tsx 의 uppercase 원소 자식에 slug/path/폴더명 값이 없다", () => {
+describe("path-like values inside an uppercase element: an address is not uppercased", () => {
+  it("children of uppercase elements in src/**/*.tsx hold no slug/path/folder name value", () => {
     const root = process.cwd();
     const files: string[] = [];
     walkTsx(join(root, "src"), files);
@@ -79,8 +79,8 @@ describe("uppercase 원소 안의 경로성 값 — 주소는 대문자 변형�
 
     // The gate proves itself alive — if the scan breaks and reads 0, this assertion
     // fires before anything reports "no violations".
-    expect(files.length, "src 의 .tsx 파일 수").toBeGreaterThan(100);
-    expect(uppercaseSites, "uppercase 클래스 문자열 사용처 수").toBeGreaterThan(100);
+    expect(files.length, "number of .tsx files in src").toBeGreaterThan(100);
+    expect(uppercaseSites, "number of places using the uppercase class string").toBeGreaterThan(100);
 
     const report = offences
       .map((o) => `  ${o.file}:${o.line} → ${o.snippet}`)

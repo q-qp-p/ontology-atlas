@@ -55,7 +55,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 for (const route of KOREAN_ROUTES) {
-  test(`한글에는 대문자 자간이 걸리지 않는다 — ${route}`, async ({ page }) => {
+  test(`uppercase tracking is not applied to Hangul — ${route}`, async ({ page }) => {
     await page.setViewportSize({ width: 1512, height: 949 });
     const destination = route === '/ko/docs/' ? '/ko/library/?tab=ontology' : route;
     await page.goto(`${destination}${destination.includes('?') ? '&' : '?'}guides=off`);
@@ -91,7 +91,7 @@ for (const route of KOREAN_ROUTES) {
     const offenders = await trackedHangul(page, MAX_HANGUL_TRACKING_PX, HANGUL_SOURCE);
     expect(
       offenders,
-      '한글 문자열에 대문자 자간이 걸렸다 — 음절 사이가 단어 사이만큼 벌어진다',
+      'uppercase tracking was applied to a Hangul string, so syllables spread apart like words',
     ).toEqual([]);
   });
 }
@@ -102,7 +102,7 @@ for (const route of KOREAN_ROUTES) {
  * the two things it must stay quiet about: a Latin string wearing the same step, and a Hangul
  * string wearing the body-text pair that was deliberately kept.
  */
-test('계기 프로브 — 심은 위반은 잡고, 지킨 값과 라틴 문자는 놓아둔다', async ({ page }) => {
+test('instrument probe: catches a planted violation and leaves compliant values and Latin text alone', async ({ page }) => {
   await page.setViewportSize({ width: 1512, height: 949 });
   await page.goto('/ko/?guides=off');
   await expect.poll(() => page.evaluate(() => document.documentElement.lang)).toBe('ko');
@@ -124,7 +124,7 @@ test('계기 프로브 — 심은 위반은 잡고, 지킨 값과 라틴 문자�
   const planted = (await trackedHangul(page, MAX_HANGUL_TRACKING_PX, HANGUL_SOURCE)).map(
     (offender) => offender.text,
   );
-  expect(planted, '심은 위반을 못 잡으면 이 계기는 영구 초록이다').toContain('이 폴더 내주기');
+  expect(planted, 'if the planted violation is missed, this instrument is permanently green').toContain('이 폴더 내주기');
   // Latin wearing the same step is the specification, not a defect, and the token under `:lang(ko)`
   // is already zero — neither may be reported.
   expect(planted).not.toContain('CONNECTORS');

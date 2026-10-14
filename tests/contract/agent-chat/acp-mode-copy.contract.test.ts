@@ -15,20 +15,20 @@ const bundles: Array<[string, Bundle]> = [
   ["en", en as unknown as Bundle],
 ];
 
-describe("작업 방식 문구", () => {
-  it("옮기기로 한 목록이 비어 있지 않다 — 아니면 아래가 헛돈다", () => {
+describe("work-mode copy", () => {
+  it("the list of modes to translate is not empty — otherwise what follows idles", () => {
     expect(MEASURED_MODE_IDS.length).toBeGreaterThanOrEqual(5);
   });
 
   describe.each(bundles)("%s", (_locale, bundle) => {
-    it("모든 id 에 이름과 한 줄 설명이 있다", () => {
+    it("every id has a name and a one-line description", () => {
       for (const id of MEASURED_MODE_IDS) {
-        expect(bundle.acpChat?.modeName?.[id], `${id} 이름`).toBeTruthy();
-        expect(bundle.acpChat?.modeHint?.[id], `${id} 설명`).toBeTruthy();
+        expect(bundle.acpChat?.modeName?.[id], `${id} name`).toBeTruthy();
+        expect(bundle.acpChat?.modeHint?.[id], `${id} description`).toBeTruthy();
       }
     });
 
-    it("설명이 한 줄이다 — 목록 안에서 읽는 글이다", () => {
+    it("the description is one line — it is text read inside a list", () => {
       for (const id of MEASURED_MODE_IDS) {
         const hint = bundle.acpChat?.modeHint?.[id] ?? "";
         expect(hint.length, `${id}`).toBeLessThan(60);
@@ -36,20 +36,20 @@ describe("작업 방식 문구", () => {
       }
     });
 
-    it("두 언어가 같은 id 집합을 덮는다", () => {
+    it("both languages cover the same set of ids", () => {
       expect(Object.keys(bundle.acpChat?.modeName ?? {}).sort()).toEqual([...MEASURED_MODE_IDS].sort());
       expect(Object.keys(bundle.acpChat?.modeHint ?? {}).sort()).toEqual([...MEASURED_MODE_IDS].sort());
     });
   });
 
-  it("모르는 모드는 옮기지 않는다 — 어댑터 이름을 그대로 쓴다", () => {
+  it("an unknown mode is not translated — the adapter name is used as it is", () => {
     expect(modeCopyKey("bypassPermissions")).toBeNull();
     expect(modeCopyKey("acceptEdits")).toBeNull();
     expect(modeCopyKey("some-new-mode")).toBeNull();
     expect(modeCopyKey(null)).toBeNull();
   });
 
-  it("어댑터 표기 차이에 흔들리지 않는다", () => {
+  it("it does not waver over differences in adapter notation", () => {
     expect(modeCopyKey("dontAsk")).toBe("dontask");
     expect(modeCopyKey(" Read-Only ")).toBe("read-only");
     expect(modeCopyKey("default")).toBe("default");

@@ -31,28 +31,28 @@ function converges(angularFrequency: number, dt: number): boolean {
   return Math.abs(state.value) < 1;
 }
 
-describe("스프링 안정 여유 — 토큰 × 프레임 클램프", () => {
-  it("램프의 각주파수 토큰을 실제로 찾았다", () => {
+describe("spring stability margin: token times frame clamp", () => {
+  it("actually found the angular-frequency tokens of the ramp", () => {
     // If the regex silently matches nothing, the checks below pass vacuously.
     expect(angularFrequencyTokens().length).toBeGreaterThan(0);
   });
 
-  it("모든 각주파수 토큰이 클램프와 곱해도 안정 경계 안에 있다", () => {
+  it("every angular-frequency token stays inside the stability bound even multiplied by the clamp", () => {
     const violations = angularFrequencyTokens()
       .map((token) => ({ ...token, product: token.value * MAX_FRAME_DELTA_SECONDS }))
       .filter((token) => token.product >= SPRING_STABILITY_LIMIT);
 
     expect(
       violations,
-      `ω·dt 가 안정 경계(${SPRING_STABILITY_LIMIT}) 이상이면 카메라가 NaN 이 되고 캔버스가 죽는다`,
+      `if omega*dt reaches the stability bound (${SPRING_STABILITY_LIMIT}) the camera becomes NaN and the canvas dies`,
     ).toEqual([]);
   });
 
-  it("그 곱이 실제로 수렴한다 — 산술이 아니라 적분으로 확인", () => {
+  it("the product really converges, verified by integration rather than arithmetic", () => {
     for (const token of angularFrequencyTokens()) {
       expect(
         converges(token.value, MAX_FRAME_DELTA_SECONDS),
-        `${token.name} = ${token.value} 가 dt=${MAX_FRAME_DELTA_SECONDS} 에서 발산한다`,
+        `${token.name} = ${token.value} diverges at dt=${MAX_FRAME_DELTA_SECONDS}`,
       ).toBe(true);
     }
   });
@@ -61,7 +61,7 @@ describe("스프링 안정 여유 — 토큰 × 프레임 클램프", () => {
    * The probe proving the boundary claim is true. Without it the checks above stand on
    * the **unverified premise** that the boundary is 1.0.
    */
-  it("프로브: 경계 바로 아래는 수렴하고 경계에서는 발산한다", () => {
+  it("probe: just below the bound converges and at the bound diverges", () => {
     const dt = MAX_FRAME_DELTA_SECONDS;
     expect(converges((SPRING_STABILITY_LIMIT * 0.75) / dt, dt)).toBe(true);
     expect(converges(SPRING_STABILITY_LIMIT / dt, dt)).toBe(false);

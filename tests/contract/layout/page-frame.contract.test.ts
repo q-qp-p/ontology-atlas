@@ -46,8 +46,8 @@ const MEMBERS = [
 
 const read = (relative: string) => readFileSync(join(REPO_ROOT, relative), "utf8");
 
-describe("페이지 틀 규격", () => {
-  it("값이 장부와 같다 — 바꾸려면 이 줄도 같이 고쳐라", () => {
+describe("page frame spec", () => {
+  it("the values equal the ledger — to change them, fix this line too", () => {
     expect(PAGE_FRAME).toBe(
       "mx-auto w-full max-w-[var(--page-max)] px-5 pt-6 md:px-10 md:pt-12 lg:pb-[var(--page-bottom-breath)]",
     );
@@ -55,10 +55,10 @@ describe("페이지 틀 규격", () => {
     expect(PAGE_TITLE_ROW).toBe("flex flex-wrap items-baseline gap-x-3 gap-y-1");
   });
 
-  it("최대 폭은 실재하는 토큰을 가리킨다 — 두 곳에 적지 않는다", () => {
+  it("the max width points at an existing token — it is not written in two places", () => {
     expect(PAGE_FRAME).toContain("max-w-[var(--page-max)]");
     const css = readGlobalCss();
-    expect(css, "`--page-max` 가 정의돼 있지 않다 — 틀이 없는 값을 가리킨다").toMatch(
+    expect(css, "`--page-max` is not defined — the frame points at a missing value").toMatch(
       /--page-max:\s*\S+/,
     );
   });
@@ -71,7 +71,7 @@ describe("페이지 틀 규격", () => {
    * insights 48 (no button), skills 52 (button 32). That was the real reason the three
    * differed while wearing the same frame.
    */
-  it("헤더는 위를 맞추고, 바닥선 정렬은 제목 블록 안으로 내린다", () => {
+  it("the header aligns the top, and baseline alignment moves down into the title block", () => {
     expect(PAGE_HEADER_ROW).toContain("items-start");
     expect(PAGE_HEADER_ROW).not.toContain("items-end");
     expect(PAGE_TITLE_ROW).toContain("items-baseline");
@@ -82,17 +82,17 @@ describe("페이지 틀 규격", () => {
    * page pays it. `scroll-end-gap.spec.ts` opens routes with no folder, where these pages are shorter
    * than the viewport and its measurement is skipped, so a class assertion is needed.
    */
-  it("바닥 여백은 lg 에서 틀이 낸다 — 화면마다 다시 정하지 않는다", () => {
-    expect(PAGE_FRAME, "틀이 lg 바닥 여백을 안 낸다").toContain(
+  it("the bottom margin at lg comes from the frame — screens do not decide it again", () => {
+    expect(PAGE_FRAME, "the frame does not emit the lg bottom margin").toContain(
       "lg:pb-[var(--page-bottom-breath)]",
     );
     const css = readGlobalCss();
-    expect(css, "`--page-bottom-breath` 가 정의돼 있지 않다 — 없는 값을 가리킨다").toMatch(
+    expect(css, "`--page-bottom-breath` is not defined — it points at a missing value").toMatch(
       /--page-bottom-breath:\s*\S+/,
     );
     // Below `lg` the frame stays silent: a plain `pb-*` here would fight the per-surface tab-bar
     // reserve, which is the half that genuinely differs per screen.
-    expect(PAGE_FRAME, "틀이 lg 아래 바닥까지 정하면 화면별 탭바 예약과 싸운다").not.toMatch(
+    expect(PAGE_FRAME, "if the frame also fixes the bottom below lg it fights each screen's tab bar reservation").not.toMatch(
       /(^|\s)pb-/,
     );
   });
@@ -101,29 +101,29 @@ describe("페이지 틀 규격", () => {
    * The form column carries the desktop bottom breath itself, so it has one definition site and a
    * member that restates it is caught below.
    */
-  it("폼 틀이 lg 바닥 여백을 스스로 낸다", () => {
+  it("the form frame emits the lg bottom margin itself", () => {
     expect(PAGE_FRAME_FORM).toContain("lg:pb-[var(--page-bottom-breath)]");
   });
 
-  it("멤버가 lg 바닥 여백을 두 번째로 다시 적지 않는다", () => {
+  it("members do not write the lg bottom margin a second time", () => {
     for (const member of [...MEMBERS, ...FORM_MEMBERS]) {
       const source = read(member);
       expect(
         source,
-        `${member} 가 lg 바닥 여백을 다시 적는다 — 값이 두 곳에 있으면 그날부터 갈라진다`,
+        `${member} writes the lg bottom margin again — with the value in two places they diverge from that day`,
       ).not.toContain("lg:pb-[var(--page-bottom-breath)]");
     }
   });
 
-  it("멤버 세 화면이 전부 이 틀을 입는다", () => {
+  it("all three member screens wear this frame", () => {
     // The floor exists so an empty list cannot pass as a green run; it is not a claim about how many
     // screens the wide frame deserves.
-    expect(MEMBERS.length, "멤버가 비면 이 시험 전체가 공회전한다").toBeGreaterThan(1);
+    expect(MEMBERS.length, "with no members this whole test idles").toBeGreaterThan(1);
     for (const member of MEMBERS) {
       const source = read(member);
-      expect(source, `${member} 가 PAGE_FRAME 을 안 쓴다`).toContain("PAGE_FRAME");
-      expect(source, `${member} 가 PAGE_HEADER_ROW 를 안 쓴다`).toContain("PAGE_HEADER_ROW");
-      expect(source, `${member} 가 PAGE_TITLE_ROW 를 안 쓴다`).toContain("PAGE_TITLE_ROW");
+      expect(source, `${member} does not use PAGE_FRAME`).toContain("PAGE_FRAME");
+      expect(source, `${member} does not use PAGE_HEADER_ROW`).toContain("PAGE_HEADER_ROW");
+      expect(source, `${member} does not use PAGE_TITLE_ROW`).toContain("PAGE_TITLE_ROW");
     }
   });
 
@@ -131,10 +131,10 @@ describe("페이지 틀 규격", () => {
    * Stops a local width constant reappearing — that is how this defect started
    * (`PAGE_MAX_WIDTH = 1600` living alongside `--page-max`).
    */
-  it("멤버 안에 폭을 다시 정하는 값이 없다", () => {
+  it("no member re-decides the width", () => {
     for (const member of MEMBERS) {
       const source = read(member);
-      expect(source, `${member} 에 지역 폭 상수가 있다`).not.toMatch(/PAGE_MAX_WIDTH/);
+      expect(source, `${member} has a local width constant`).not.toMatch(/PAGE_MAX_WIDTH/);
       // ⚠️ A **measure width** such as `max-w-[720px]` is legitimate — the project
       // description paragraph uses one. What is blocked is **rebuilding the page column by
       // hand**, so it is caught only when `mx-auto` and a literal max width appear **in the
@@ -143,12 +143,12 @@ describe("페이지 틀 규격", () => {
       const columnLike = [...source.matchAll(/className=\{?["`][^"`]*["`]/g)]
         .map((hit) => hit[0])
         .filter((chunk) => chunk.includes("mx-auto") && /max-w-\[\d+px\]/.test(chunk));
-      expect(columnLike, `${member} 가 페이지 컬럼을 손으로 다시 만들었다`).toEqual([]);
+      expect(columnLike, `${member} rebuilt the page column by hand`).toEqual([]);
     }
   });
 });
 
-describe("페이지 틀 — 둘째 컬럼과 상단 여백 (2026-08-11)", () => {
+describe("page frame — second column and top margin (2026-08-11)", () => {
   /**
    * ⚠️ **This property is the whole of this extension.** Forcing 1600 onto form
    * screens was not the answer (longer input lines are worse to read and to fill in).
@@ -156,50 +156,50 @@ describe("페이지 틀 — 둘째 컬럼과 상단 여백 (2026-08-11)", () => 
    * jumping vertically when moving between routes is why this spec exists at all, and a
    * different width is no reason for a different title height.
    */
-  it("세 상수의 상단 여백이 같다 — 폭이 달라도 제목 y 는 같다", () => {
+  it("the three constants share the same top margin — the title y is the same whatever the width", () => {
     const topPad = (spec: string) => spec.match(/\bpt-\S+|\bmd:pt-\S+/g)?.sort().join(" ") ?? "";
     expect(topPad(PAGE_FRAME)).toBe(topPad(PAGE_FRAME_FORM));
     expect(topPad(PAGE_FRAME)).toBe(topPad(`x ${PAGE_TOP_PAD}`));
-    expect(topPad(PAGE_FRAME), "상단 여백을 못 읽었다 — 이 시험이 공회전한다").not.toBe("");
+    expect(topPad(PAGE_FRAME), "could not read the top margin — this test idles").not.toBe("");
   });
 
   /**
    * 960 is written once and both constants read the same value. They are bound rather than merged
    * because they are different roles (page column vs. row column inside a card).
    */
-  it("폼 폭 960 은 한 번만 정해진다 — 두 상수가 같은 값을 본다", () => {
+  it("the form width 960 is decided once — both constants see the same value", () => {
     const width = (spec: string) => spec.match(/max-w-\[\d+px\]/)?.[0] ?? "";
-    expect(width(PAGE_FRAME_FORM), "폼 프레임에서 폭을 못 읽었다 — 이 시험이 공회전한다").not.toBe(
+    expect(width(PAGE_FRAME_FORM), "could not read the width from the form frame — this test idles").not.toBe(
       "",
     );
-    expect(width(PAGE_COLUMN_FORM), "행 컬럼에서 폭을 못 읽었다").toBe(width(PAGE_FRAME_FORM));
+    expect(width(PAGE_COLUMN_FORM), "could not read the width from the row column").toBe(width(PAGE_FRAME_FORM));
   });
 
-  it("폼 컬럼은 좁고, 폭을 한 곳에서만 정한다", () => {
+  it("the form column is narrow and decides the width in one place only", () => {
     expect(PAGE_FRAME_FORM).toContain("max-w-[960px]");
     expect(PAGE_FRAME_FORM).not.toContain("--page-max");
     // The floor exists so an empty list cannot pass as a green run.
-    expect(FORM_MEMBERS.length, "폼 멤버가 비면 공회전이다").toBeGreaterThanOrEqual(2);
+    expect(FORM_MEMBERS.length, "with no form members this idles").toBeGreaterThanOrEqual(2);
     for (const member of FORM_MEMBERS) {
       const source = read(member);
-      expect(source, `${member} 가 PAGE_FRAME_FORM 을 안 쓴다`).toContain("PAGE_FRAME_FORM");
+      expect(source, `${member} does not use PAGE_FRAME_FORM`).toContain("PAGE_FRAME_FORM");
       // The 1600 column is the thing they left; wearing both is how a screen ends up in neither.
-      expect(source, `${member} 가 넓은 틀도 같이 입었다`).not.toMatch(/PAGE_FRAME(?!_FORM)/);
-      expect(source, `${member} 가 폭을 다시 적었다`).not.toMatch(/max-w-\[9[0-9]{2}px\]/);
+      expect(source, `${member} also wears the wide frame`).not.toMatch(/PAGE_FRAME(?!_FORM)/);
+      expect(source, `${member} wrote the width again`).not.toMatch(/max-w-\[9[0-9]{2}px\]/);
     }
   });
 
-  it("safe-area 화면도 상단은 규격을 따른다 — 여기만 8px 아래였다", () => {
-    expect(TOP_PAD_MEMBERS.length, "멤버가 비면 공회전이다").toBeGreaterThan(0);
+  it("safe-area screens also follow the spec at the top — only here it was 8px lower", () => {
+    expect(TOP_PAD_MEMBERS.length, "with no members this idles").toBeGreaterThan(0);
     for (const member of TOP_PAD_MEMBERS) {
       const source = read(member).replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-      expect(source, `${member} 가 아직 md:pt-14 다 — 제목이 8px 아래 있다`).not.toMatch(/md:pt-14\b/);
-      expect(source, `${member} 의 md 상단이 규격(48px)이 아니다`).toMatch(/md:pt-12\b/);
+      expect(source, `${member} is still md:pt-14 — the title sits 8px low`).not.toMatch(/md:pt-14\b/);
+      expect(source, `the md top of ${member} is not the spec (48px)`).toMatch(/md:pt-12\b/);
     }
   });
 });
 
-describe("읽기 컬럼은 문서함이 소유한다 (2026-08-11 판정)", () => {
+describe("the reading column is owned by the document library (ruling of 2026-08-11)", () => {
   /**
    * What this test locks is **the character of the width, not its value**: the docs
    * body must be a measure width (a named conventional value), not a hand-written px.
@@ -215,7 +215,7 @@ describe("읽기 컬럼은 문서함이 소유한다 (2026-08-11 판정)", () =>
     );
   });
 
-  it("문서함이 페이지 틀을 입지 않는다 — 세 칸 작업대라 상단 48px 이 틀리다", () => {
+  it("the document library does not wear the page frame — it is a three-pane workbench so a 48px top is wrong", () => {
     const rendered = [
       DOCS_PAGE,
       ...readdirSync("src/views/docs-vault/ui")
@@ -223,7 +223,7 @@ describe("읽기 컬럼은 문서함이 소유한다 (2026-08-11 판정)", () =>
         .map((name) => `src/views/docs-vault/ui/${name}`),
     ];
     for (const file of new Set(rendered)) {
-      expect(read(file), `${file} 가 PAGE_FRAME 을 입었다 — 트리와 본문이 같은 높이에서 시작해야 한다`).not.toContain(
+      expect(read(file), `${file} wore PAGE_FRAME — the tree and the body must start at the same height`).not.toContain(
         "PAGE_FRAME",
       );
     }

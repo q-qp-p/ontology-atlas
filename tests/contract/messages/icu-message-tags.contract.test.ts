@@ -21,7 +21,7 @@ function collect(node: unknown, path: string, out: Array<[string, string]>): voi
   }
 }
 
-describe("i18n 메시지 — `<` 를 글자로 쓰지 않는다", () => {
+describe("i18n messages never use `<` as a literal character", () => {
   it.each(LOCALES)("%s", (locale) => {
     const messages = JSON.parse(readFileSync(`messages/${locale}.json`, "utf8"));
     const entries: Array<[string, string]> = [];
@@ -45,7 +45,7 @@ describe("i18n 메시지 — `<` 를 글자로 쓰지 않는다", () => {
    * **Whether the detector actually catches.** Without this check, the regex above
    * could one day silently pass everything and nobody would know.
    */
-  it("probe: 짝 없는 태그를 실제로 잡는다", () => {
+  it("probe: catches an unpaired tag for real", () => {
     const bad = 'export ATLAS=<path to checkout>';
     const good = 'export ATLAS="path to checkout"';
     const richText = "우리는 <b>이렇게</b> 강조한다";

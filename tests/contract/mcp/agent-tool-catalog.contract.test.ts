@@ -55,7 +55,7 @@ function matchBrace(source: string, open: number, openChar: '{' | '['): number {
       if (depth === 0) return index + 1;
     }
   }
-  throw new Error('괄호 짝을 찾지 못했다');
+  throw new Error('could not find the matching parenthesis');
 }
 
 interface McpToolShape {
@@ -66,7 +66,7 @@ interface McpToolShape {
 /** Extracts one tool's top-level inputSchema argument names and required list from the MCP source. */
 function readMcpToolShape(toolName: string): McpToolShape {
   const nameAt = MCP_SOURCE.indexOf(`name: '${toolName}',`);
-  if (nameAt < 0) throw new Error(`MCP 에 없는 도구: ${toolName}`);
+  if (nameAt < 0) throw new Error(`tool missing from the MCP: ${toolName}`);
   const schemaAt = MCP_SOURCE.indexOf('inputSchema:', nameAt);
   const schemaOpen = MCP_SOURCE.indexOf('{', schemaAt);
   const schemaEnd = matchBrace(MCP_SOURCE, schemaOpen, '{');
@@ -175,8 +175,8 @@ function collectDepthOneKeys(body: string): string[] {
   return keys;
 }
 
-describe('에이전트 도구 카탈로그 ↔ MCP 서버 정의', () => {
-  it('추출기 자체가 동작한다 (get_concept 은 slug/uid 중 하나와 body 를 받는다)', () => {
+describe('agent tool catalog matches the MCP server definition', () => {
+  it('the extractor itself works (get_concept takes one of slug/uid plus body)', () => {
     // If the parser silently returns an empty array, every test below is meaningless.
     const shape = readMcpToolShape('get_concept');
     expect(shape.propertyNames).toEqual(['slug', 'uid', 'body']);
@@ -185,7 +185,7 @@ describe('에이전트 도구 카탈로그 ↔ MCP 서버 정의', () => {
   });
 
   it.each(AGENT_TOOLS.map((tool) => [tool.name, tool] as const))(
-    '%s — 인자 이름 집합이 MCP 와 같다',
+    '%s: the argument name set equals the one on the MCP side',
     (_name, tool) => {
       const mcp = readMcpToolShape(tool.name);
       const ours = Object.keys(tool.parameters.properties ?? {});
@@ -194,7 +194,7 @@ describe('에이전트 도구 카탈로그 ↔ MCP 서버 정의', () => {
   );
 
   it.each(AGENT_TOOLS.map((tool) => [tool.name, tool] as const))(
-    '%s — 필수 인자가 MCP 와 같다',
+    '%s: the required arguments equal those on the MCP side',
     (_name, tool) => {
       const mcp = readMcpToolShape(tool.name);
       const ours = [...(tool.parameters.required ?? [])];
@@ -202,7 +202,7 @@ describe('에이전트 도구 카탈로그 ↔ MCP 서버 정의', () => {
     },
   );
 
-  it('볼트 밖을 보는 도구는 하나도 주지 않는다', () => {
+  it('offers no tool that looks outside the vault', () => {
     // Work that needs code belongs to the terminal — the tool set makes that boundary structural.
     const forbidden = [
       'analyze_repo_structure',
@@ -219,7 +219,7 @@ describe('에이전트 도구 카탈로그 ↔ MCP 서버 정의', () => {
     }
   });
 
-  it('최소 출하선: 읽기 6종 이상 + 쓰기 5종', () => {
+  it('minimum shipped set: at least 6 read tools plus 5 write tools', () => {
     expect(AGENT_READ_TOOLS.length).toBeGreaterThanOrEqual(6);
     expect(AGENT_WRITE_TOOLS.map((tool) => tool.name).sort()).toEqual([
       'add_concept',

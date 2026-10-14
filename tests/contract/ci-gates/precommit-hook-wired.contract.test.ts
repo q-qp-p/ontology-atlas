@@ -18,8 +18,8 @@ const FIXTURE_ENV = Object.fromEntries(
 const HOOK = join(ROOT, ".githooks", "pre-commit");
 const REFRESH_HOOKS = ["post-checkout", "post-merge"] as const;
 
-describe("pre-commit 훅 배선", () => {
-  it("훅 파일이 있고 실행 가능하며 stage 를 건드리지 않는다", () => {
+describe("pre-commit hook wiring", () => {
+  it("the hook file exists, is executable and does not touch the stage", () => {
     expect(() => accessSync(HOOK, constants.X_OK)).not.toThrow();
     // A hook that silently changes the stage commits bytes nobody wrote under a
     // person's name, so `git add` inside the hook is forbidden. The index-versus-
@@ -27,7 +27,7 @@ describe("pre-commit 훅 배선", () => {
     expect(readFileSync(HOOK, "utf-8")).not.toMatch(/^\s*git add/m);
   });
 
-  it.each(REFRESH_HOOKS)("%s 는 생성물을 갱신하되 stage 하지 않는다", (name) => {
+  it.each(REFRESH_HOOKS)("%s refreshes generated output but does not stage it", (name) => {
     const hook = join(ROOT, ".githooks", name);
     expect(() => accessSync(hook, constants.X_OK)).not.toThrow();
     const source = readFileSync(hook, "utf8");
@@ -35,7 +35,7 @@ describe("pre-commit 훅 배선", () => {
     expect(source).not.toMatch(/^\s*git add/m);
   });
 
-  it("staged 원본만 재료로 쓰고 그 생성 실패를 차단한다", () => {
+  it("uses only staged sources as material and blocks on their generation failure", () => {
     const repo = mkdtempSync(join(tmpdir(), "atlas-precommit-index-"));
     const bin = join(repo, "bin");
     try {
@@ -68,7 +68,7 @@ describe("pre-commit 훅 배선", () => {
     }
   });
 
-  it("실제 생성기가 staged policy JSON 오류를 막고 unstaged 오류는 읽지 않는다", () => {
+  it("the real generator blocks staged policy JSON errors and does not read unstaged ones", () => {
     const repo = mkdtempSync(join(tmpdir(), "atlas-precommit-record-json-"));
     try {
       cpSync(join(ROOT, "docs"), join(repo, "docs"), { recursive: true });

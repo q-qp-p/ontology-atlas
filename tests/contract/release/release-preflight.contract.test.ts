@@ -44,18 +44,18 @@ const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as {
   scripts: Record<string, string>;
 };
 
-describe("번들 MCP 의존은 재현 가능해야 한다", () => {
+describe("the bundled MCP dependencies must be reproducible", () => {
   /**
    * `mcp/`'s `package-lock.json` is **npm's** and pnpm does not read it. Without a
    * lockfile, `pnpm --dir mcp install` makes the runner resolve fresh from the
    * registry on every release — the sidecar's dependency tree changes with no commit,
    * and that binary ships in the app.
    */
-  it("워크플로가 mcp 의존을 얼려서 깐다", () => {
+  it("the workflow installs the mcp dependencies frozen", () => {
     expect(workflow).toContain("pnpm --dir mcp install --frozen-lockfile");
   });
 
-  it("얼릴 대상인 pnpm 락파일이 저장소에 있다", () => {
+  it("the pnpm lockfile to be frozen exists in the repository", () => {
     const lockfile = readFileSync(join(root, "mcp/pnpm-lock.yaml"), "utf8");
     expect(lockfile).toContain("lockfileVersion");
     // The name the app sidecar actually compiles in; this checks the lockfile freezes it.
@@ -67,7 +67,7 @@ describe("번들 MCP 의존은 재현 가능해야 한다", () => {
    * consumers and the release runner different trees. There are currently no overrides, so the two
    * tests compare empty sets and arm themselves when one reappears.
    */
-  it("npm 과 pnpm 이 같은 override 를 본다", () => {
+  it("npm and pnpm see the same override", () => {
     const mcpPkg = JSON.parse(readFileSync(join(root, "mcp/package.json"), "utf8")) as {
       overrides?: Record<string, string>;
       pnpm?: { overrides?: Record<string, string> };
@@ -75,20 +75,20 @@ describe("번들 MCP 의존은 재현 가능해야 한다", () => {
     expect(mcpPkg.pnpm?.overrides ?? {}).toEqual(mcpPkg.overrides ?? {});
   });
 
-  it("얼린 락파일이 그 override 를 실제로 반영한다", () => {
+  it("the frozen lockfile really reflects that override", () => {
     const mcpPkg = JSON.parse(readFileSync(join(root, "mcp/package.json"), "utf8")) as {
       overrides?: Record<string, string>;
     };
     const lockfile = readFileSync(join(root, "mcp/pnpm-lock.yaml"), "utf8");
     for (const [name, version] of Object.entries(mcpPkg.overrides ?? {})) {
-      expect(lockfile, `${name} override 가 락파일에 반영되지 않았다`).toContain(
+      expect(lockfile, `the ${name} override is not reflected in the lockfile`).toContain(
         `${name}@${version}`,
       );
     }
   });
 });
 
-describe("업데이터 아카이브는 서명된 앱을 담아야 한다", () => {
+describe("the updater archive must contain the signed app", () => {
   /**
    * `tauri build` emits `.app.tar.gz` with the unsigned app and signing happens afterwards, so only
    * updater users meet "is damaged". The one correct slot is immediately after app signing and
@@ -108,30 +108,30 @@ describe("업데이터 아카이브는 서명된 앱을 담아야 한다", () =>
   ] as const;
 
   for (const [scriptName, commands, signStep] of pipelines) {
-    it(`${scriptName} 이 앱 서명 뒤·DMG 패키징 앞에서 아카이브를 다시 만든다`, () => {
+    it(`${scriptName} rebuilds the archive after app signing and before DMG packaging`, () => {
       const signAt = commands.findIndex((command) => command === signStep);
       const repackAt = commands.findIndex((command) => command === "pnpm desktop:repack-updater");
       const dmgAt = commands.findIndex((command) => command.endsWith("scripts/desktop/package-macos-dmg.mjs"));
 
-      expect(repackAt, `${scriptName} 에 desktop:repack-updater 가 없다`).toBeGreaterThan(-1);
+      expect(repackAt, `${scriptName} has no desktop:repack-updater`).toBeGreaterThan(-1);
       expect(
         repackAt,
-        "서명보다 먼저 다시 담으면 서명 전 앱을 그대로 포장한다 — 아무것도 고치지 않고 초록만 준다",
+        "repacking before signing packs the unsigned app as it is, which fixes nothing and just gives a green",
       ).toBeGreaterThan(signAt);
       expect(
         repackAt,
-        "DMG 패키징보다 뒤면 DMG 와 아카이브가 서로 다른 앱을 담는다",
+        "after DMG packaging, the DMG and the archive hold different apps",
       ).toBeLessThan(dmgAt);
     });
   }
 
-  it("재포장 스크립트가 등록돼 있다", () => {
+  it("the repack script is registered", () => {
     expect(pkg.scripts["desktop:repack-updater"]).toBe(
       "node scripts/desktop-release/repack-macos-updater-archive.mjs",
     );
   });
 
-  it("credentialed release command는 비밀 격리 오케스트레이터 하나만 실행한다", () => {
+  it("the credentialed release command runs only one secret-isolating orchestrator", () => {
     expect(pkg.scripts["desktop:release-artifact"]).toBe(
       "node scripts/desktop-release/build-macos-release-artifact.mjs",
     );
@@ -139,16 +139,16 @@ describe("업데이터 아카이브는 서명된 앱을 담아야 한다", () =>
   });
 });
 
-describe("리허설이 릴리스 잡을 빠짐없이 덮는다", () => {
+describe("the rehearsal covers every release job", () => {
   const admissionSteps = parseAdmitReleaseSteps(workflow);
   const steps = parseBuildMacosSteps(workflow);
 
-  it("admit-release 잡의 태그 검증과 source admission 단계를 실제로 읽어 온다", () => {
+  it("actually reads the tag verification and source admission steps of the admit-release job", () => {
     expect(admissionSteps.map((step) => step.name)).toContain("Verify requested release version");
     expect(admissionSteps.map((step) => step.name)).toContain("Admit tag at current main SHA");
   });
 
-  it("기존 태그가 주어지면 현재 HEAD의 전체 SHA로 admission 명령을 만든다", () => {
+  it("given an existing tag, builds the admission command with the full SHA of the current HEAD", () => {
     const sha = currentHeadSha(root);
     expect(sha).toMatch(/^[0-9a-f]{40}$/i);
     expect(admissionCheckCommands("v1.2.3", sha)).toEqual([
@@ -174,7 +174,7 @@ describe("리허설이 릴리스 잡을 빠짐없이 덮는다", () => {
    * `--list` really invokes all four tools; a slow first `cargo`/`rustc` call through the rustup shim
    * can exceed vitest's 5-second default on a runner. The test asserts what is printed, not how fast.
    */
-  it("태그 없이 목록을 보면 admission이 검증됐다고 가장하지 않고 명시적으로 SKIP 한다", { timeout: 60_000 }, () => {
+  it("listing without a tag explicitly says SKIP rather than pretending admission was verified", { timeout: 60_000 }, () => {
     const rehearsal = spawnSync(process.execPath, ["scripts/desktop-release/release-rehearsal.mjs", "--list"], {
       cwd: root,
       encoding: "utf8",
@@ -186,7 +186,7 @@ describe("리허설이 릴리스 잡을 빠짐없이 덮는다", () => {
     expect(rehearsal.stdout).toContain("ADMISSION SKIP");
   });
 
-  it("태그 목록은 현재 HEAD SHA로 workflow의 admission 두 검사를 나란히 보인다", { timeout: 60_000 }, () => {
+  it("the tag list shows the two admission checks of the workflow side by side with the current HEAD SHA", { timeout: 60_000 }, () => {
     const sha = currentHeadSha(root);
     const rehearsal = spawnSync(
       process.execPath,
@@ -203,7 +203,7 @@ describe("리허설이 릴리스 잡을 빠짐없이 덮는다", () => {
     );
   });
 
-  it("build-macos 잡의 단계를 실제로 읽어 온다", () => {
+  it("actually reads the steps of the build-macos job", () => {
     // If the parser silently returns 0 steps, the rehearsal does nothing and goes green.
     expect(steps.length).toBeGreaterThan(10);
     expect(steps.map((step) => step.name)).toContain("Build bundled MCP sidecar");
@@ -216,7 +216,7 @@ describe("리허설이 릴리스 잡을 빠짐없이 덮는다", () => {
    * Without one of the three, that step becomes another "square first stepped on by
    * tagging" and we start a fifth round trip.
    */
-  it("모든 단계가 실행·대체·명시적 생략 중 하나로 분류된다", () => {
+  it("every step is classified as run, replaced or explicitly skipped", () => {
     const skips = REHEARSAL_SKIPS as Record<string, string | undefined>;
     const substitutes = REHEARSAL_SUBSTITUTES as Record<string, unknown>;
     const unclassified = [...admissionSteps, ...steps].filter((step: { name: string; uses: string | null }) => {
@@ -232,13 +232,13 @@ describe("리허설이 릴리스 잡을 빠짐없이 덮는다", () => {
     ).toEqual([]);
   });
 
-  it("생략 사유는 비어 있지 않다", () => {
+  it("a skip reason is not empty", () => {
     for (const [name, reason] of Object.entries(REHEARSAL_SKIPS)) {
-      expect(reason.length, `${name} 의 생략 사유가 비어 있다`).toBeGreaterThan(20);
+      expect(reason.length, `the skip reason of ${name} is empty`).toBeGreaterThan(20);
     }
   });
 
-  it("리허설이 사이드카를 첫 cargo 호출보다 먼저 굽는다", () => {
+  it("the rehearsal bakes the sidecar before the first cargo call", () => {
     // Checks the workflow's order contract (the sibling file) carried over to the rehearsal intact.
     const names = steps.map((step) => step.name);
     expect(names.indexOf("Build bundled MCP sidecar")).toBeLessThan(
@@ -246,11 +246,11 @@ describe("리허설이 릴리스 잡을 빠짐없이 덮는다", () => {
     );
   });
 
-  it("desktop:release-rehearsal 이 등록돼 있다", () => {
+  it("desktop:release-rehearsal is registered", () => {
     expect(pkg.scripts["desktop:release-rehearsal"]).toBe("node scripts/desktop-release/release-rehearsal.mjs");
   });
 
-  it("버리는 업데이터 개인키를 저장소 밖에서 만들고 읽은 즉시 지운다", () => {
+  it("creates the throwaway updater private key outside the repository and deletes it right after reading", () => {
     const sandbox = mkdtempSync(join(tmpdir(), "ontology-atlas-rehearsal-key-"));
     const repoRoot = join(sandbox, "repo");
     const tempRoot = join(sandbox, "system-temp");
@@ -279,7 +279,7 @@ describe("리허설이 릴리스 잡을 빠짐없이 덮는다", () => {
     }
   });
 
-  it("버리는 업데이터 키 생성이 실패해도 임시 디렉터리를 남기지 않는다", () => {
+  it("leaves no temporary directory behind even when the throwaway updater key generation fails", () => {
     const sandbox = mkdtempSync(join(tmpdir(), "ontology-atlas-rehearsal-key-fail-"));
     const tempRoot = join(sandbox, "system-temp");
     mkdirSync(tempRoot);
@@ -299,7 +299,7 @@ describe("리허설이 릴리스 잡을 빠짐없이 덮는다", () => {
   });
 });
 
-describe("다운로드 스모크 문구는 살아 있는 카탈로그에서 온다", () => {
+describe("the download smoke wording comes from the live catalog", () => {
   /**
    * #730 rebuilt the download screen and removed a sentence, but `desktop:smoke` was
    * left demanding **yesterday's sentence**, and its unit test only checked that the
@@ -307,7 +307,7 @@ describe("다운로드 스모크 문구는 살아 있는 카탈로그에서 온�
    * in the release build after tagging (the second step of
    * `desktop:release-artifact`).
    */
-  it("스모크 계약에 하드코딩된 다운로드 문장이 없다", () => {
+  it("the smoke contract has no hard-coded download sentence", () => {
     const smoke = readFileSync(join(root, "scripts/desktop/desktop-smoke.mjs"), "utf8");
     expect(smoke).toContain("DESKTOP_SMOKE_ROUTE_TEXT_KEYS");
     for (const retired of [
@@ -315,7 +315,7 @@ describe("다운로드 스모크 문구는 살아 있는 카탈로그에서 온�
       "한 번 설치하고, 내 로컬 vault 에서 작업하세요.",
       "download-fact-strip",
     ]) {
-      expect(smoke, `${retired} — 어제의 문구/마커가 아직 게이트에 남아 있다`).not.toContain(
+      expect(smoke, `${retired}: yesterday wording or marker is still left in the gate`).not.toContain(
         retired,
       );
     }
@@ -327,22 +327,22 @@ describe("다운로드 스모크 문구는 살아 있는 카탈로그에서 온�
  * missing sends someone to install a tool that is fine, and without a timeout the test ties to
  * machine speed.
  */
-describe("릴리스 리허설의 도구 확인", () => {
-  it("답한 도구는 버전을 그대로 돌려준다", () => {
+describe("tool check of the release rehearsal", () => {
+  it("a tool that answers gives its version back as it is", () => {
     const result = probeTool("x", ["--version"], {
       spawn: () => ({ status: 0, stdout: "1.2.3\n다음 줄" }),
     });
     expect(result).toEqual({ state: "ok", version: "1.2.3" });
   });
 
-  it("실행 파일이 없으면 `missing` 이다", () => {
+  it("a missing executable is `missing`", () => {
     const result = probeTool("x", ["--version"], {
       spawn: () => ({ status: null, error: { code: "ENOENT" } }),
     });
     expect(result.state).toBe("missing");
   });
 
-  it("상한에 걸리면 `unknown` 이다 — 없다고 말하지 않는다", () => {
+  it("hitting the limit is `unknown`, and it does not claim the tool is absent", () => {
     // Node kills a timed-out child with a signal. Folding that into "missing" is the
     // "pretending to know what you do not" that this repository forbids across all
     // loading and progress surfaces.
@@ -354,7 +354,7 @@ describe("릴리스 리허설의 도구 확인", () => {
     ).toBe("unknown");
   });
 
-  it("상한을 실제로 넘겨 준다 — 안 넘기면 스크립트가 영영 기다릴 수 있다", () => {
+  it("really passes the limit along, since without it the script could wait forever", () => {
     let seen: Record<string, unknown> | undefined;
     probeTool("x", [], {
       timeout: 1234,
@@ -366,7 +366,7 @@ describe("릴리스 리허설의 도구 확인", () => {
     expect(seen?.timeout).toBe(1234);
   });
 
-  it("기본 상한이 유한하고 0 이 아니다 — 그래야 상한이 상한이다", () => {
+  it("the default limit is finite and not 0, otherwise a limit is no limit", () => {
     expect(PROBE_TIMEOUT_MS).toBeGreaterThan(0);
     expect(Number.isFinite(PROBE_TIMEOUT_MS)).toBe(true);
   });

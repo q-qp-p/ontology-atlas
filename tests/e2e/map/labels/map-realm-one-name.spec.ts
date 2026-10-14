@@ -3,7 +3,7 @@ import { seedFirstRunSeen } from "../../first-run-seed";
 import { waitForMapStill } from "../../settle";
 
 /** One thing, one name inside a realm: the ledger header reads the localized `display`, not `title`. */
-test("영역 안에서도 한 사물에 한 이름", async ({ page }) => {
+test("one name per thing, even inside a realm", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 900 });
   await seedFirstRunSeen(page);
@@ -20,10 +20,10 @@ test("영역 안에서도 한 사물에 한 이름", async ({ page }) => {
     const m = (window as unknown as { __atlasMap: { nodes: () => Array<{ id: string; label: string }> } }).__atlasMap;
     return m.nodes().find((n) => n.id === "domain:payment")?.label ?? null;
   });
-  expect(onCanvas, "지도에서 결제 노드를 못 찾았다 — 스펙이 공회전한다").toBeTruthy();
+  expect(onCanvas, "the payment node was not found on the map, so the spec spins idle").toBeTruthy();
 
   const chip = (await chipTitle.textContent())?.trim();
   const ledger = (await ledgerTitle.textContent())?.trim();
-  expect(chip, "칩이 지도와 다른 이름을 쓴다").toBe(onCanvas);
-  expect(ledger, "원장 머리가 지도·칩과 다른 이름을 쓴다").toBe(onCanvas);
+  expect(chip, "the chip uses a different name from the map").toBe(onCanvas);
+  expect(ledger, "the ledger header uses a different name from the map and chip").toBe(onCanvas);
 });

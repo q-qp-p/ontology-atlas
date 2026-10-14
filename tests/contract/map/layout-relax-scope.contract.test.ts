@@ -52,7 +52,7 @@ const movedIds = (
 };
 
 describe("layout relax scope contract", () => {
-  it("범위 밖 노드는 **한 톨도 움직이지 않는다** (완화 대상에서 아예 빠진다)", () => {
+  it("a node outside the scope does not move at all, since it is dropped from relaxation", () => {
     const nodes = denseVault(DENSITY_GATE_THRESHOLD * 4);
     // Exclude the subtree the gate will fold (all of c0's children) from the scope.
     const scope = new Set(nodes.filter((n) => n.parentId !== "c0").map((n) => n.id));
@@ -61,14 +61,14 @@ describe("layout relax scope contract", () => {
     expect(outsideMoved).toEqual([]);
   });
 
-  it("범위를 생략하면 종전 동작 — 전부 완화 대상이다", () => {
+  it("omitting the scope keeps the previous behavior, so everything is relaxed", () => {
     const nodes = denseVault(DENSITY_GATE_THRESHOLD * 4);
     const withScope = movedIds(nodes, new Set(nodes.map((n) => n.id)));
     const withoutScope = movedIds(nodes);
     expect([...withoutScope].sort()).toEqual([...withScope].sort());
   });
 
-  it("좌표 구멍이 없다 — 범위 밖 노드도 **씨앗 좌표를 갖는다**", () => {
+  it("there is no coordinate hole, and an out-of-scope node also keeps its seed coordinates", () => {
     // If coordinates are empty when a tier opens or a chip expands, nodes pile up at
     // the origin. This design assumes placement always runs and only relaxation is
     // skipped.
@@ -81,12 +81,12 @@ describe("layout relax scope contract", () => {
     expect(atOrigin.map((p) => p.id)).toEqual(["p"]);
   });
 
-  it("범위가 비면 완화를 아예 건너뛴다 — 아무도 안 움직인다", () => {
+  it("an empty scope skips relaxation entirely, so nobody moves", () => {
     const nodes = denseVault(DENSITY_GATE_THRESHOLD * 4);
     expect(movedIds(nodes, new Set()).size).toBe(0);
   });
 
-  it("범위 밖은 **장애물로도 남지 않는다** — 있든 없든 범위 안 좌표가 같다", () => {
+  it("out-of-scope nodes do not remain as obstacles either, so in-scope coordinates are the same with or without them", () => {
     // The first attempt left out-of-scope nodes in items as `pinned: true`. Movement
     // was blocked but grid rebuilds and pair enumeration still ran, so **the cost did
     // not fall at all** (measured: N=3,000 stayed at 2,081ms; excluding them gave
@@ -108,7 +108,7 @@ describe("layout relax scope contract", () => {
     }
   });
 
-  it("범위 안 노드는 여전히 겹침이 풀린다 — 좁혔다고 품질을 잃지 않는다", () => {
+  it("in-scope nodes still get their overlaps resolved, so narrowing loses no quality", () => {
     const nodes = denseVault(DENSITY_GATE_THRESHOLD * 4);
     const scope = new Set(nodes.filter((n) => n.parentId !== "c0").map((n) => n.id));
     const placed = place(nodes, scope);
@@ -126,7 +126,7 @@ describe("layout relax scope contract", () => {
     expect(collisions).toBe(0);
   });
 
-  describe("펼침 시 국소 재완화 (relaxNewlyVisible)", () => {
+  describe("local re-relaxation on expand (relaxNewlyVisible)", () => {
     /**
      * Within one parent, phyllotaxis spacing already prevents collisions (measured 0
      * overlaps), but **fans of different parents do overlap** — 5 cases when 3 expand,
@@ -157,7 +157,7 @@ describe("layout relax scope contract", () => {
         ]),
       );
 
-    it("bbox 밖의 **먼** 노드는 결과에 영향을 주지 않는다 — 비용이 클릭 수와 무관한 이유", () => {
+    it("a far node outside the bbox does not affect the result, which is why the cost is independent of the click count", () => {
       // Neighbours influence each other; what is pinned is that distant nodes are never looked at, so
       // per-click cost is independent of how many clusters are expanded.
       const near = twoFans(DENSITY_GATE_THRESHOLD * 3);
@@ -189,7 +189,7 @@ describe("layout relax scope contract", () => {
       }
     });
 
-    it("이미 놓인 노드는 **한 톨도 움직이지 않는다** — 발밑이 흔들리지 않는다", () => {
+    it("an already placed node does not move at all, so the ground under the user stays steady", () => {
       const nodes = twoFans(DENSITY_GATE_THRESHOLD * 3);
       const placed = new Set(nodes.filter((n) => n.parentId !== "c0").map((n) => n.id));
       const newly = new Set(nodes.filter((n) => n.parentId === "c0").map((n) => n.id));
@@ -205,7 +205,7 @@ describe("layout relax scope contract", () => {
       }
     });
 
-    it("새로 보이는 노드는 이웃과의 겹침이 풀린다", () => {
+    it("a newly visible node gets its overlap with neighbors resolved", () => {
       const nodes = twoFans(DENSITY_GATE_THRESHOLD * 3);
       const placed = new Set(nodes.filter((n) => n.parentId !== "c0").map((n) => n.id));
       const newly = new Set(nodes.filter((n) => n.parentId === "c0").map((n) => n.id));
@@ -231,7 +231,7 @@ describe("layout relax scope contract", () => {
       expect(relaxed).toBeLessThan(seeded);
     });
 
-    it("새로 보이는 것이 없으면 아무 일도 안 한다", () => {
+    it("does nothing when nothing is newly visible", () => {
       const nodes = twoFans(DENSITY_GATE_THRESHOLD * 3);
       const before = seedAll(nodes);
       const after = seedAll(nodes);

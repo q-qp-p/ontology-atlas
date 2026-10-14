@@ -61,17 +61,17 @@ const presentInProduct = (id: string): boolean => {
 
 const missing = huntedMarkers.filter((id) => !presentInProduct(id));
 
-describe("데스크톱 검증 프로브 표식 계약", () => {
-  it("프로브가 표식을 실제로 찾고 있다 — 빈손으로 통과하지 않는다", () => {
+describe("desktop verification probe marker contract", () => {
+  it("the probe really looks for markers — it does not pass empty-handed", () => {
     // Proves the scanner is not idling; only ever lowered to match a measurement.
     expect(
       huntedMarkers.length,
-      `프로브가 찾는 표식을 ${huntedMarkers.length}개만 뽑았다 — 스캐너가 헛돈다`,
+      `the probe extracted only ${huntedMarkers.length} markers it hunts for — the scanner idles`,
     ).toBeGreaterThan(30);
-    expect(productSource.length, "제품 소스를 못 읽었다").toBeGreaterThan(100_000);
+    expect(productSource.length, "could not read the product source").toBeGreaterThan(100_000);
   });
 
-  it("리스트박스 조립 규칙이 빈 집합 위에서 공회전하지 않는다", () => {
+  it("the listbox assembly rule does not idle on an empty set", () => {
     // The target this special case judges must exist today: a probe looks for
     // `ai-local-model-listbox`, and it counts as present only through the assembly
     // rule, not as a source string. If either breaks, the special case must be deleted
@@ -85,7 +85,7 @@ describe("데스크톱 검증 프로브 표식 계약", () => {
    * ⚠️ **When the count falls, lower the cap with it.** Otherwise everything cleared
    * becomes headroom again — this repository's ratchet discipline.
    */
-  it("없는 표식을 기다리는 프로브가 늘지 않는다", () => {
+  it("probes waiting for a missing marker do not grow", () => {
     expect(
       missing.length,
       `The probes wait for ${missing.length} markers the product does not render (cap ${RETIRED_MARKER_CAP}). ` +
@@ -101,16 +101,16 @@ describe("데스크톱 검증 프로브 표식 계약", () => {
    * A retired verification must not come back as an assertion: a reporter only reports a value, and
    * requiring it revives a ghost gate.
    */
-  it("계약이 은퇴한 토폴로지 요구를 되살리지 않는다", () => {
+  it("the contract does not revive a retired topology requirement", () => {
     const contract = readFileSync(join(REPO_ROOT, "scripts/lib/verify-macos/payload-contract.mjs"), "utf8");
     const revived = [...contract.matchAll(/require(Topology\w+)/g)].map(([, name]) => name);
     expect(
       [...new Set(revived)],
-      `은퇴한 토폴로지 요구가 계약에 다시 나타났다: ${[...new Set(revived)].join(", ")}`,
+      `a retired topology requirement reappeared in the contract: ${[...new Set(revived)].join(", ")}`,
     ).toEqual([]);
   });
 
-  it("죽은 플래그를 넘기는 스크립트가 없다", () => {
+  it("there are no scripts passing a dead flag", () => {
     const pkg = readFileSync(join(REPO_ROOT, "package.json"), "utf8");
     const deadFlags = [
       "--verify-topology-drag",

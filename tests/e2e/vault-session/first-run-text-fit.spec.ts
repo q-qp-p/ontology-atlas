@@ -15,7 +15,7 @@ const VIEWPORTS = [
 
 const LOCALES = ["en", "ko"] as const;
 
-test.describe("첫 실행 카드 텍스트 맞춤", () => {
+test.describe("first-run card text fit", () => {
   for (const locale of LOCALES) {
     for (const viewport of VIEWPORTS) {
       test(`${locale} · ${viewport.label}px`, async ({ page }) => {
@@ -71,20 +71,20 @@ test.describe("첫 실행 카드 텍스트 맞춤", () => {
 
         expect(
           measurement.clipped,
-          `첫 실행 카드가 자기 문자열을 자른다:\n${measurement.clipped
+          `the first-run card clips its own strings:\n${measurement.clipped
             .map((row) => `  "${row.text}" ${row.scrollWidth}px → ${row.clientWidth}px`)
             .join("\n")}`,
         ).toEqual([]);
 
         const { terms, equals, definitions } = measurement.columns;
-        expect(terms.length, "용어 사전 행이 없다").toBeGreaterThan(0);
+        expect(terms.length, "there is no glossary row").toBeGreaterThan(0);
         expect(new Set(terms.map((row) => row.x)).size).toBe(1);
         expect(new Set(equals.map((row) => row.x)).size).toBe(1);
         expect(new Set(definitions.map((row) => row.x)).size).toBe(1);
         for (let index = 0; index < terms.length; index += 1) {
           expect(
             new Set([terms[index]?.y, equals[index]?.y, definitions[index]?.y]).size,
-            `${index}번째 용어가 한 줄에 서지 않는다`,
+            `term number ${index} does not fit on one line`,
           ).toBe(1);
         }
       });

@@ -127,17 +127,17 @@ async function expectLocalOnlyTransition(
   await waitFrames(page, 15);
   const frames = await stopFrameTextTrace(page);
 
-  expect(frames.length, `${destination}: 프레임 표본이 없다`).toBeGreaterThan(2);
+  expect(frames.length, `${destination}: there are no frame samples`).toBeGreaterThan(2);
   const leaked = frames.flatMap((text, index) =>
     SAMPLE_MARKERS.filter((marker) => text.includes(marker)).map((marker) => ({ index, marker })),
   );
   expect(
     leaked,
-    `${destination}: 로컬 볼트가 열린 뒤 번들 샘플이 한 프레임이라도 그려졌다`,
+    `${destination}: the bundled sample was drawn in at least one frame after the local vault opened`,
   ).toEqual([]);
 }
 
-test('선택한 로컬 볼트의 LNB 전환은 번들 샘플을 한 프레임도 그리지 않는다', async ({ page }) => {
+test('switching the LNB in a chosen local vault draws the bundled sample in no frame', async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 949 });
   await stubDirectoryPicker(page, LOCAL_ONLY_VAULT);
@@ -168,7 +168,7 @@ test('선택한 로컬 볼트의 LNB 전환은 번들 샘플을 한 프레임도
   await expect(installedRail).toHaveAttribute('data-hidden', 'false');
   expect(
     await installedRail.evaluate((element) => Math.round(element.getBoundingClientRect().width)),
-    '실제 로컬 볼트가 열린 설치 셸의 LNB 폭이 0이다',
+    'the LNB width is 0 in the installed shell with a real local vault open',
   ).toBeGreaterThan(0);
   await expectLocalOnlyTransition(page, 'library', 'Local Only Capability', 'ontology');
   await expect(page.getByTestId('docs-missing-slug-banner')).toHaveCount(0);
@@ -178,7 +178,7 @@ test('선택한 로컬 볼트의 LNB 전환은 번들 샘플을 한 프레임도
   await expectLocalOnlyTransition(page, 'projects', '로컬 전용 프로젝트');
 });
 
-test('설치 셸의 목적지 프리렌더는 hydration 전에도 번들 sample을 넣지 않는다', async ({ page }) => {
+test('the destination prerender of the installed shell puts no bundled sample in even before hydration', async ({ page }) => {
   await page.addInitScript(() => {
     const state = window as unknown as {
       __TAURI_INTERNALS__?: unknown;
@@ -207,5 +207,5 @@ test('설치 셸의 목적지 프리렌더는 hydration 전에도 번들 sample�
   const leaked = frames.flatMap((text, index) =>
     SAMPLE_MARKERS.filter((marker) => text.includes(marker)).map((marker) => ({ index, marker })),
   );
-  expect(leaked, '설치 앱 정적 HTML에 sample 세계가 먼저 들어왔다').toEqual([]);
+  expect(leaked, 'the sample world came first into the static HTML of the installed app').toEqual([]);
 });

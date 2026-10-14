@@ -582,7 +582,7 @@ const judgeControl = {
     }),
 } satisfies Record<keyof typeof FALLBACK, (o?: JudgeOptions) => RatchetJudgement>;
 
-describe('컨트롤 채택 래칫 — 폼(`<input>` · `<textarea>` · `<select>` · `<label>`)', () => {
+describe('control adoption ratchet — forms (`<input>` · `<textarea>` · `<select>` · `<label>`)', () => {
   /**
    * ⚠️ **A lower bound on the debt count punishes progress.** This assertion used
    * to require "more than 20" and turned red the moment debt fell 29 → 20 — the
@@ -597,11 +597,11 @@ describe('컨트롤 채택 래칫 — 폼(`<input>` · `<textarea>` · `<select>
    * Total and debt are different numbers: assert the three categories sum to the total, which holds
    * whether debt is 0 or 100.
    */
-  it('세 부류의 합이 전수와 같다 — 어느 칸에도 안 들어간 폼이 없다', () => {
+  it('the three classes sum to the census — no form falls into no bucket', () => {
     expect(fieldCensus.registered + fieldCensus.noBasis + fieldCensus.debt).toBe(fieldCensus.total);
   });
 
-  it('손으로 규격을 쓴 폼이 머지 베이스보다 늘지 않는다', () => {
+  it('hand-written form specs do not grow past the merge base', () => {
     const verdict = judgeControl.fieldDebt();
     const worst = [...fieldCensus.byFile.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
     expect(
@@ -614,7 +614,7 @@ describe('컨트롤 채택 래칫 — 폼(`<input>` · `<textarea>` · `<select>
     ).toBeLessThanOrEqual(verdict.ceiling);
   });
 
-  it('세 부류의 합이 전수와 같다 — 어느 칸에도 안 들어간 건이 없다', () => {
+  it('the three classes sum to the census — no item falls into no bucket', () => {
     expect(fieldCensus.registered + fieldCensus.noBasis + fieldCensus.debt).toBe(fieldCensus.total);
   });
 
@@ -626,7 +626,7 @@ describe('컨트롤 채택 래칫 — 폼(`<input>` · `<textarea>` · `<select>
    * Measure the scanner's field of view (the tag exists in the repository), not debt: debt reaching
    * 0 is the destination, and a lower bound on debt turns red on progress.
    */
-  it('네 태그를 각각 보고 있다 — 한 태그만 보면서 총계로 위장하지 못한다', () => {
+  it('each of the four tags is watched separately — one tag cannot pose as the total', () => {
     const seen = Object.fromEntries(FIELD_TAGS.map((tag) => [tag, 0])) as Record<string, number>;
     for (const file of scannedFiles) {
       const source = readFileSync(file, 'utf8');
@@ -635,19 +635,19 @@ describe('컨트롤 채택 래칫 — 폼(`<input>` · `<textarea>` · `<select>
       }
     }
     for (const tag of FIELD_TAGS) {
-      expect(seen[tag], `<${tag}> 가 저장소에 하나도 없다 — 스캐너의 시야 밖이거나 태그가 사라졌다`).toBeGreaterThan(0);
+      expect(seen[tag], `no <${tag}> in the repository — it is outside the scanner's view or the tag disappeared`).toBeGreaterThan(0);
     }
   });
 });
 
-describe('컨트롤 채택 래칫 — 등재된 「값 층 밖」', () => {
-  it('등재된 파일이 전부 실재한다 — 없는 파일을 세면 수가 거짓이 된다', () => {
+describe('control adoption ratchet — registered "outside the value layer"', () => {
+  it('every registered file exists — counting a missing file makes the number false', () => {
     for (const entry of OUTSIDE_VALUE_LAYER) {
-      expect(existsSync(entry.file), `${entry.file} 이 없다 — 옮겼거나 지웠으면 등록부도 고친다`).toBe(true);
+      expect(existsSync(entry.file), `${entry.file} is missing — if it moved or was deleted, fix the registry too`).toBe(true);
     }
   });
 
-  it('각 줄의 근거가 아직 파일에 있다 — 근거가 사라지면 주장도 죽는다', () => {
+  it('the basis of each line is still in the file — when the basis disappears the claim dies', () => {
     for (const entry of OUTSIDE_VALUE_LAYER) {
       expect(
         readFileSync(entry.file, 'utf8').includes(entry.proof),
@@ -657,9 +657,9 @@ describe('컨트롤 채택 래칫 — 등재된 「값 층 밖」', () => {
     }
   });
 
-  it('`chrome-token` 줄의 토큰이 정말 고정 단 밖이다 — px 하나가 되면 부채로 내려온다', () => {
+  it('the token on a `chrome-token` line is really outside the fixed steps — once it is a single px it falls back to debt', () => {
     const chromeTokens = OUTSIDE_VALUE_LAYER.filter((e) => e.claim === 'chrome-token');
-    expect(chromeTokens.length, '`chrome-token` 줄이 하나도 없으면 이 검사는 공집합 위에서 논다').toBeGreaterThan(0);
+    expect(chromeTokens.length, 'with no `chrome-token` line this check runs on an empty set').toBeGreaterThan(0);
     for (const entry of chromeTokens) {
       expect(
         tokenIsBeyondFixedSteps(globalsCss, entry.proof),
@@ -669,7 +669,7 @@ describe('컨트롤 채택 래칫 — 등재된 「값 층 밖」', () => {
     }
   });
 
-  it('등재 수가 그 파일의 실측을 넘지 않는다 — 있지도 않은 것을 등재할 수 없다', () => {
+  it('the registered count does not exceed the measurement of that file — nothing absent can be registered', () => {
     for (const [file, claimed] of registeredByFile) {
       const actual = byFile.get(file) ?? 0;
       expect(
@@ -680,7 +680,7 @@ describe('컨트롤 채택 래칫 — 등재된 「값 층 밖」', () => {
     }
   });
 
-  it('등재가 머지 베이스보다 늘지 않는다 — 늘리려면 raise 기록에 왜를 적는다', () => {
+  it('registrations do not grow past the merge base — to grow them, write the why in the raise record', () => {
     const verdict = judgeControl.registered();
     expect(
       verdict.current,
@@ -692,14 +692,14 @@ describe('컨트롤 채택 래칫 — 등재된 「값 층 밖」', () => {
   });
 });
 
-describe('컨트롤 채택 래칫 — 앵커(`<Link>` · `<a>`)', () => {
-  it('등재된 앵커 파일이 전부 실재한다', () => {
+describe('control adoption ratchet — anchors (`<Link>` · `<a>`)', () => {
+  it('every registered anchor file exists', () => {
     for (const entry of OUTSIDE_VALUE_LAYER_ANCHORS) {
-      expect(existsSync(entry.file), `${entry.file} 이 없다 — 옮겼거나 지웠으면 등록부도 고친다`).toBe(true);
+      expect(existsSync(entry.file), `${entry.file} is missing — if it moved or was deleted, fix the registry too`).toBe(true);
     }
   });
 
-  it('각 줄의 근거가 아직 파일에 있다 — 근거가 사라지면 주장도 죽는다', () => {
+  it('the basis of each line is still in the file — when the basis disappears the claim dies', () => {
     for (const entry of OUTSIDE_VALUE_LAYER_ANCHORS) {
       expect(
         readFileSync(entry.file, 'utf8').includes(entry.proof),
@@ -709,9 +709,9 @@ describe('컨트롤 채택 래칫 — 앵커(`<Link>` · `<a>`)', () => {
     }
   });
 
-  it('`chrome-token` 앵커 줄의 토큰이 정말 고정 단 밖이다', () => {
+  it('the token on a `chrome-token` anchor line is really outside the fixed steps', () => {
     const chromeTokens = OUTSIDE_VALUE_LAYER_ANCHORS.filter((e) => e.claim === 'chrome-token');
-    expect(chromeTokens.length, '`chrome-token` 줄이 없으면 이 검사는 공집합 위에서 논다').toBeGreaterThan(0);
+    expect(chromeTokens.length, 'with no `chrome-token` line this check runs on an empty set').toBeGreaterThan(0);
     for (const entry of chromeTokens) {
       expect(
         tokenIsBeyondFixedSteps(globalsCss, entry.proof),
@@ -721,7 +721,7 @@ describe('컨트롤 채택 래칫 — 앵커(`<Link>` · `<a>`)', () => {
     }
   });
 
-  it('등재 수가 그 파일의 실측을 넘지 않는다 — 있지도 않은 것을 등재할 수 없다', () => {
+  it('the registered count does not exceed the measurement of that file — nothing absent can be registered', () => {
     for (const [file, claimed] of anchorCensus.registeredByFile) {
       const actual = anchorCensus.byFile.get(file) ?? 0;
       expect(
@@ -732,7 +732,7 @@ describe('컨트롤 채택 래칫 — 앵커(`<Link>` · `<a>`)', () => {
     }
   });
 
-  it('앵커 등재가 머지 베이스보다 늘지 않는다', () => {
+  it('anchor registrations do not grow past the merge base', () => {
     const verdict = judgeControl.anchorRegistered();
     expect(
       verdict.current,
@@ -742,7 +742,7 @@ describe('컨트롤 채택 래칫 — 앵커(`<Link>` · `<a>`)', () => {
     ).toBeLessThanOrEqual(verdict.ceiling);
   });
 
-  it('앵커 부채가 머지 베이스보다 늘지 않는다 — 누를 수 있는 것은 전부 값 층을 지난다', () => {
+  it('anchor debt does not grow past the merge base — everything pressable passes through the value layer', () => {
     const verdict = judgeControl.anchorDebt();
     const worst = [...anchorCensus.byFile.entries()]
       .filter(([f]) => !anchorCensus.registeredByFile.has(f))
@@ -759,7 +759,7 @@ describe('컨트롤 채택 래칫 — 앵커(`<Link>` · `<a>`)', () => {
     ).toBeLessThanOrEqual(verdict.ceiling);
   });
 
-  it('세 수의 합이 앵커 전수와 맞는다', () => {
+  it('the three numbers sum to the anchor census', () => {
     expect(anchorCensus.registered + anchorCensus.noBasis + anchorCensus.debt).toBe(anchorCensus.total);
   });
 
@@ -767,7 +767,7 @@ describe('컨트롤 채택 래칫 — 앵커(`<Link>` · `<a>`)', () => {
    * Per-tag counts are not pinned as a literal: both tags are counted and together they are the
    * whole census.
    */
-  it('태그 내역이 전수와 맞는다 — 두 태그가 서로를 잃지 않는다', () => {
+  it('the tag breakdown matches the census — the two tags never lose each other', () => {
     const perTag = Object.fromEntries(
       ANCHOR_TAGS.map((tag) => [tag, census(scannedFiles, [], [tag], []).total]),
     );
@@ -778,8 +778,8 @@ describe('컨트롤 채택 래칫 — 앵커(`<Link>` · `<a>`)', () => {
   });
 });
 
-describe('컨트롤 채택 래칫 — 아직 안 옮긴 부채', () => {
-  it('부채가 머지 베이스보다 늘지 않는다 — 새 컨트롤은 controlClass() 를 쓴다', () => {
+describe('control adoption ratchet — debt not yet migrated', () => {
+  it('debt does not grow past the merge base — a new control uses controlClass()', () => {
     const verdict = judgeControl.debt();
     const worst = [...byFile.entries()]
       .filter(([f]) => !registeredByFile.has(f))
@@ -795,7 +795,7 @@ describe('컨트롤 채택 래칫 — 아직 안 옮긴 부채', () => {
     ).toBeLessThanOrEqual(verdict.ceiling);
   });
 
-  it('세 수의 합이 전수와 맞는다 — 갈라진 수가 서로를 잃지 않는다', () => {
+  it('the three numbers sum to the census — the split counts never lose each other', () => {
     expect(
       registered + noBasis + debt,
       `registered ${registered} + no basis ${noBasis} + debt ${debt} differs from the census total ${total}. ` +
@@ -804,19 +804,19 @@ describe('컨트롤 채택 래칫 — 아직 안 옮긴 부채', () => {
   });
 });
 
-describe('컨트롤 채택 래칫 — 근거 없음(값 층이 낼 것이 없다)', () => {
-  it('등재된 파일이 전부 실재하고 근거가 아직 파일에 있다', () => {
-    expect(NO_BASIS.length, '이 등록부가 비면 아래 검사 전부가 공집합 위에서 논다').toBeGreaterThan(0);
+describe('control adoption ratchet — no basis (the value layer has nothing to emit)', () => {
+  it('every registered file exists and its basis is still in the file', () => {
+    expect(NO_BASIS.length, 'if this registry is empty every check below runs on an empty set').toBeGreaterThan(0);
     for (const entry of NO_BASIS) {
-      expect(existsSync(entry.file), `${entry.file} 이 없다 — 옮겼거나 지웠으면 등록부도 고친다`).toBe(true);
+      expect(existsSync(entry.file), `${entry.file} is missing — if it moved or was deleted, fix the registry too`).toBe(true);
       expect(
         readFileSync(entry.file, 'utf8').includes(entry.proof),
-        `${entry.file} 에서 «${entry.proof}» 가 사라졌다 — 이 줄의 주장이 그 근거 위에 서 있다.`,
+        `«${entry.proof}» disappeared from ${entry.file} — the claim of this line stands on that basis.`,
       ).toBe(true);
     }
   });
 
-  it('등재한 수만큼 **자격 있는** 클릭면이 그 파일에 실재한다 — 규격을 하나라도 달면 부채로 돌아온다', () => {
+  it('as many **qualifying** click surfaces as registered really exist in that file — adding any spec returns it to debt', () => {
     for (const entry of NO_BASIS) {
       const tags = entry.family === 'button' ? BUTTON_TAGS : ANCHOR_TAGS;
       const qualified = handWrittenTags(entry.file, tags).filter(isClickSurface).length;
@@ -829,7 +829,7 @@ describe('컨트롤 채택 래칫 — 근거 없음(값 층이 낼 것이 없다
     }
   });
 
-  it('이 사유의 **전수**가 머지 베이스보다 늘지 않는다 — 새 클릭면은 조용히 면제되지 않는다', () => {
+  it('the **whole** of this reason does not grow past the merge base — a new click surface is not exempted silently', () => {
     const hits = today.clickSurfaces;
     const verdict = judgeControl.clickSurfaces();
     expect(
@@ -839,10 +839,10 @@ describe('컨트롤 채택 래칫 — 근거 없음(값 층이 낼 것이 없다
         'A new full-bleed click catcher appeared. If it truly carries zero spec, register it in ' +
         `${REGISTRY_DIR}/no-basis/ and say why in the raise record; otherwise repay it as debt.`,
     ).toBeLessThanOrEqual(verdict.ceiling);
-    expect(noBasis, '등재한 근거 없음이 실측 전수를 넘었다').toBeLessThanOrEqual(hits.length);
+    expect(noBasis, 'the registered no-basis count exceeded the measured total').toBeLessThanOrEqual(hits.length);
   });
 
-  it('근거 없음이 머지 베이스보다 늘지 않는다', () => {
+  it('no-basis does not grow past the merge base', () => {
     for (const verdict of [judgeControl.noBasis(), judgeControl.anchorNoBasis()]) {
       expect(
         verdict.current,
@@ -852,10 +852,10 @@ describe('컨트롤 채택 래칫 — 근거 없음(값 층이 낼 것이 없다
     }
   });
 
-  it('근거 없음 수가 그 파일의 실측을 넘지 않는다 — 파일 면제가 아니다', () => {
+  it('the no-basis count does not exceed the measurement of that file — this is not a file exemption', () => {
     for (const [file, claimed] of noBasisByFile) {
       const actual = byFile.get(file) ?? 0;
-      expect(claimed, `${file}: 근거 없음 ${claimed} 인데 실측 손 컨트롤은 ${actual} 뿐이다.`).toBeLessThanOrEqual(
+      expect(claimed, `${file}: ${claimed} no-basis registered but only ${actual} hand controls measured.`).toBeLessThanOrEqual(
         actual,
       );
     }
@@ -876,19 +876,19 @@ describe('컨트롤 채택 래칫 — 근거 없음(값 층이 낼 것이 없다
  * scratch-repository probes at the end prove it), and the fallback ceilings are
  * literals (④).
  */
-describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가', () => {
+describe('detector probes — what this gate really catches', () => {
   const FIXTURE = 'tests/fixtures/control-adoption/HandWrittenControl.tsx.fixture';
 
-  it('① 손으로 쓴 컨트롤을 실제로 센다 — 0을 통과로 읽지 않는다', () => {
-    expect(existsSync(FIXTURE), '프로브 픽스처가 사라지면 탐지기 증명도 사라진다').toBe(true);
+  it('① it really counts hand-written controls — zero is not read as a pass', () => {
+    expect(existsSync(FIXTURE), 'if the probe fixture disappears the detector proof disappears too').toBe(true);
     // Two fixtures: one off-ramp spec + one **unregistered** chrome-token place.
-    expect(countInFile(FIXTURE), '픽스처의 손 컨트롤 2건을 못 셌다면 파서가 깨진 것이다').toBe(2);
+    expect(countInFile(FIXTURE), 'if the 2 hand controls of the fixture were not counted the parser is broken').toBe(2);
 
     /*
      * Measure the number of files scanned, not remaining debt: a lower bound on debt turns red once
      * everything is moved.
      */
-    expect(scannedFiles.length, '훑은 파일이 너무 적다 — 스캐너의 시야가 죽었다').toBeGreaterThan(150);
+    expect(scannedFiles.length, 'too few files scanned — the scanner is blind').toBeGreaterThan(150);
   });
 
   it('a class counts as adopted only when every path to it runs through the value layer', () => {
@@ -1003,7 +1003,7 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
     }
   });
 
-  it('② 등재 안 된 자리를 손 컨트롤로 만들면 **부채**로 잡힌다 — 등재 쪽으로 새지 않는다', () => {
+  it('② an unregistered spot made into a hand control is caught as **debt** — it does not leak to the registered side', () => {
     /*
      * Adding the fixtures to the scan sends both straight to debt. A place using a
      * chrome token is **not registered unless it is in the registry** — the rule is
@@ -1014,11 +1014,11 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
     expect(withFixture.debt).toBe(debt + 2);
     expect(
       withFixture.debt,
-      '미등재 자리에 손 컨트롤이 늘었는데 판정하는 수가 안 올랐다면 이 게이트는 아무것도 안 막는다',
+      'a hand control grew in an unregistered spot yet the judged number did not rise, so this gate blocks nothing',
     ).toBeGreaterThan(debt);
   });
 
-  it('③ 등록부에서 줄을 지우면 그 자리가 **부채로 돌아온다** — 등재가 사실을 지우지 않는다', () => {
+  it('③ deleting a line from the registry **returns that spot to debt** — registration does not erase the fact', () => {
     for (const entry of OUTSIDE_VALUE_LAYER) {
       const without = census(
         scannedFiles,
@@ -1027,15 +1027,15 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
       expect(without.registered).toBe(registered - entry.count);
       expect(
         without.debt,
-        `${entry.file}(${entry.proof}) 줄을 지웠는데 부채가 안 늘었다 — 그 줄은 아무것도 등재하고 있지 않다`,
+        `${entry.file}(${entry.proof}) line deleted but debt did not grow — that line registers nothing`,
       ).toBe(debt + entry.count);
     }
   });
 
-  it('④ 대체 천장이 **리터럴**이다 — 등록부에서 파생되면 「늘지 않는다」가 실패 불가가 된다', () => {
+  it('④ the fallback ceiling is a **literal** — if derived from the registry, "does not grow" cannot fail', () => {
     const source = readFileSync(SELF, 'utf8');
     const block = /const FALLBACK = \{\n([\s\S]*?)\n\} as const;/.exec(source);
-    expect(block, 'FALLBACK 블록을 못 찾았다 — 이 프로브가 헛돈다').not.toBeNull();
+    expect(block, 'could not find the FALLBACK block — this probe spins idle').not.toBeNull();
     const lines = block![1].split('\n').map((line) => line.trim());
     expect(lines.length).toBe(Object.keys(FALLBACK).length);
     for (const line of lines) {
@@ -1051,13 +1051,13 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
    * The negative example is derived from the CSS rather than a named token, so a legitimate change to
    * one token's value cannot fail the check.
    */
-  it('⑤ 토큰 검사가 아무거나 통과시키지 않는다 — 고정 단 토큰은 반드시 거절한다', () => {
+  it('⑤ the token check does not pass just anything — a fixed-step token is always refused', () => {
     // Positive: redefined per condition, or using a viewport function.
     expect(tokenIsBeyondFixedSteps(globalsCss, '--git-row-h')).toBe(true);
     expect(tokenIsBeyondFixedSteps(globalsCss, '--overlay-close-size')).toBe(true);
     expect(
       tokenIsBeyondFixedSteps(globalsCss, '--control-h-md'),
-      'coarse 승격이 사라졌다면 그건 손가락 바닥이 무너진 것이다',
+      'if the coarse promotion disappeared, the finger floor has collapsed',
     ).toBe(true);
 
     // Negative: pick a "one declaration + plain px" token straight from the CSS.
@@ -1072,42 +1072,42 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
       .map(([token]) => token);
     expect(
       plainPx.length,
-      '평범한 px 토큰이 하나도 없다 — 이 프로브가 빈 집합 위에서 돌고 있다',
+      'there is no plain px token — this probe runs on an empty set',
     ).toBeGreaterThan(10);
     for (const token of plainPx) {
       expect(
         tokenIsBeyondFixedSteps(globalsCss, token),
-        `${token} 은 px 하나뿐인데 통과했다 — 「크롬 토큰이라 못 옮긴다」가 무제한 면제가 된다`,
+        `${token} is a single px yet passed — "a chrome token, so it cannot move" becomes an unlimited exemption`,
       ).toBe(false);
     }
     // A token that does not exist is not evidence.
     expect(tokenIsBeyondFixedSteps(globalsCss, '--not-a-real-token-xyz')).toBe(false);
   });
 
-  it('⑦ 앵커 탐지기가 실제로 센다 — `<button>` 만 세던 사각지대의 자(尺)', () => {
+  it('⑦ the anchor detector really counts — a yardstick for the blind spot that counted only `<button>`', () => {
     // Must count the fixture's two anchors (one `<Link>`, one `<a>`).
     expect(
       countInFile(FIXTURE, ANCHOR_TAGS),
-      '픽스처의 손 앵커 2건을 못 셌다면 앵커 탐지기가 죽은 것이다',
+      'if the 2 hand anchors of the fixture were not counted the anchor detector is dead',
     ).toBe(2);
     /*
      * Alive on the real tree — without this, "anchor debt 0" and "not counted at
      * all" are the same green. **But measure the scanner's field of view, not the
      * debt count** (same reason as above).
      */
-    expect(scannedFiles.length, '훑은 파일이 너무 적다 — 스캐너의 시야가 죽었다').toBeGreaterThan(150);
+    expect(scannedFiles.length, 'too few files scanned — the scanner is blind').toBeGreaterThan(150);
   });
 
-  it('⑧ 앵커를 하나 더 쓰면 **앵커 부채로** 잡힌다 — 버튼 수는 안 움직인다', () => {
+  it('⑧ writing one more anchor is caught as **anchor debt** — the button count does not move', () => {
     const withFixture = census([...scannedFiles, FIXTURE], OUTSIDE_VALUE_LAYER_ANCHORS, ANCHOR_TAGS, NO_BASIS_ANCHORS);
     // The fixtures are not in the registry, so both go to **debt**.
     expect(withFixture.registered).toBe(anchorCensus.registered);
     expect(withFixture.debt).toBe(anchorCensus.debt + 2);
     // The two counts do not contaminate each other.
-    expect(census([...scannedFiles, FIXTURE]).debt, '앵커 픽스처가 버튼 부채를 움직였다').toBe(debt + 2);
+    expect(census([...scannedFiles, FIXTURE]).debt, 'the anchor fixture moved the button debt').toBe(debt + 2);
   });
 
-  it('⑪ 앵커 등록부에서 줄을 지우면 그 자리가 **부채로 돌아온다**', () => {
+  it('⑪ deleting a line from the anchor registry **returns that spot to debt**', () => {
     for (const entry of OUTSIDE_VALUE_LAYER_ANCHORS) {
       const without = census(
         scannedFiles,
@@ -1118,7 +1118,7 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
       expect(without.registered).toBe(anchorCensus.registered - entry.count);
       expect(
         without.debt,
-        `${entry.file}(${entry.proof}) 줄을 지웠는데 앵커 부채가 안 늘었다 — 그 줄은 아무것도 등재하고 있지 않다`,
+        `${entry.file}(${entry.proof}) line deleted but anchor debt did not grow — that line registers nothing`,
       ).toBe(anchorCensus.debt + entry.count);
     }
   });
@@ -1127,10 +1127,10 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
    * Plant a hand anchor in a registered file and check debt rises: registration must not become a
    * file-wide exemption, and the check holds even at zero defects.
    */
-  it('⑫ 앵커 등재는 **파일 면제가 아니다** — 등재된 파일에 손 앵커를 더하면 부채가 오른다', () => {
+  it('⑫ anchor registration is **not a file exemption** — adding a hand anchor to a registered file raises debt', () => {
     const file = 'src/views/download/ui/DownloadPage.tsx';
     const claimed = anchorCensus.registeredByFile.get(file) ?? 0;
-    expect(claimed, '이 프로브는 그 파일이 실제로 등재돼 있을 때만 뜻이 있다').toBeGreaterThan(0);
+    expect(claimed, 'this probe means something only when that file is actually registered').toBeGreaterThan(0);
     const withOneMore = census(
       [...scannedFiles, FIXTURE],
       OUTSIDE_VALUE_LAYER_ANCHORS,
@@ -1139,7 +1139,7 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
     );
     expect(
       withOneMore.debt - anchorCensus.debt,
-      '등재된 파일 곁에 손 앵커를 더했는데 부채가 안 올랐다 — 등재가 면제로 새고 있다',
+      'a hand anchor was added next to a registered file but debt did not rise — registration is leaking into an exemption',
     ).toBeGreaterThan(0);
   });
 
@@ -1147,31 +1147,31 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
    * `shape-gap` needs a condition for when it reopens; without one it becomes a permanent exemption,
    * breaking the debt-list definition of the registry.
    */
-  it('⑭ `shape-gap` 등재는 전부 «언제 다시 여는가» 를 진다', () => {
+  it('⑭ every `shape-gap` registration carries "when to reopen"', () => {
     const gaps = OUTSIDE_VALUE_LAYER.concat(OUTSIDE_VALUE_LAYER_ANCHORS).filter(
       (e) => e.claim === 'shape-gap',
     );
-    expect(gaps.length, '이 단언은 shape-gap 등재가 있을 때만 뜻이 있다').toBeGreaterThan(0);
+    expect(gaps.length, 'this assertion means something only when shape-gap registrations exist').toBeGreaterThan(0);
     for (const e of gaps) {
       expect(
         e.conditional,
-        `${e.file} 의 shape-gap 등재에 조건이 없다 — 조건 없는 「못 낸다」는 영구 면제다`,
+        `the shape-gap registration of ${e.file} has no condition — an unconditional "cannot emit" is a permanent exemption`,
       ).toBeTruthy();
       expect(
         (e.conditional ?? '').length,
-        `${e.file} 의 조건이 너무 짧다 — 무엇이 관측되면 다시 여는지 적어야 한다`,
+        `the condition of ${e.file} is too short — write what observation reopens it`,
       ).toBeGreaterThan(15);
     }
   });
 
-  it('⑬ 기각된 주장이 실제로 기각된다 — 하단 탭바의 56px 은 크롬 토큰 면제가 아니다', () => {
+  it('⑬ a rejected claim is really rejected — the 56px of the bottom tab bar is not a chrome-token exemption', () => {
     /*
      * Pins that the fixed 56px token is rejected by the gate; if the value becomes conditional this turns
      * red and the registration is reconsidered.
      */
     expect(
       tokenIsBeyondFixedSteps(globalsCss, '--topology-bottom-tab-min-height'),
-      '이 토큰이 조건부가 됐다 — BottomTabBar 2건의 `chrome-token` 등재를 다시 심사하라',
+      'this token became conditional — re-examine the two `chrome-token` registrations of BottomTabBar',
     ).toBe(false);
     /*
      * Guards only that a fixed 56px token cannot buy a chrome exemption: checks registration under the
@@ -1182,17 +1182,17 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
       .map((e) => e.claim);
     expect(
       !bottomTabClaims.includes('chrome-token'),
-      'BottomTabBar 가 `chrome-token` 으로 등재됐다 — 그 주장은 56px 고정 단이라 기각된 것이다',
+      'BottomTabBar was registered as `chrome-token` — that claim was rejected because 56px is a fixed step',
     ).toBe(true);
   });
 
-  it('⑩ 값 층을 지난 앵커는 안 센다 — 램프를 통과해도 세면 옮길 이유가 사라진다', () => {
+  it('⑩ an anchor that passed through the value layer is not counted — counting it after the ramp removes the reason to migrate', () => {
     // The probe only means something if a consumer exists: an anchor already using `controlClass`.
     const adopted = scannedFiles.filter((f) => {
       const src = readFileSync(f, 'utf8');
       return /<(Link|a)\b[^>]*controlClass\s*\(/.test(src.replace(/\n/g, ' '));
     });
-    expect(adopted.length, '값 층을 지난 앵커 소비처가 0이면 이 면제는 검증된 적이 없다').toBeGreaterThan(0);
+    expect(adopted.length, 'with zero anchor consumers through the value layer this exemption was never verified').toBeGreaterThan(0);
   });
 
   /*
@@ -1200,13 +1200,13 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
    * what it catches on the real tree, what it rejects, synthetic input, and row deletion.
    */
 
-  it('⑭ 판정 함수가 실물에서 센다 — 빈 집합 위에서 놀지 않는다', () => {
+  it('⑭ the judging function counts on real files — it does not spin on an empty set', () => {
     const hits = clickSurfaceCensus(scannedFiles);
-    expect(hits.length, '실물에서 한 자리도 못 잡으면 이 부류는 검증된 적이 없다').toBeGreaterThan(0);
+    expect(hits.length, 'if it catches not one spot in real files this class was never verified').toBeGreaterThan(0);
     for (const file of new Set(hits)) {
       expect(
         NO_BASIS.some((e) => e.file === file),
-        `${file} 이 클릭면 판정을 통과하는데 등록부에 없다 — 등재하거나 부채로 갚아라.`,
+        `${file} passes the click-surface judgement but is not in the registry — register it or pay it off as debt.`,
       ).toBe(true);
     }
   });
@@ -1215,7 +1215,7 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
    * Test the predicate (`isClickSurface`) with a synthetic tag, not a real file's debt: being full-bleed
    * alone must not buy an exemption, and this holds at zero defects.
    */
-  it('⑮ 음성 대조군 — 전면이어도 규격을 지면 클릭면이 아니다', () => {
+  it('⑮ negative control — a full-bleed element carrying a spec is not a click surface', () => {
     /*
      * `DemoStage`'s playback overlay really had this shape — full-bleed (`inset-0`)
      * with a scrim background, but it carries **`text-body` and `leading-body`**. The
@@ -1228,7 +1228,7 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
       ' text-[color:var(--color-text-primary)] transition-colors"';
     expect(
       isClickSurface(fullBleedWithSpec),
-      '전면 + 스크림이지만 타입을 싣는 오버레이가 클릭면으로 통과했다 — 「전면이면 면제」가 열렸다',
+      'a full-bleed scrim overlay that carries type passed as a click surface — "full-bleed is exempt" has opened',
     ).toBe(false);
     expect(NO_BASIS.some((e) => e.file === 'src/views/download/ui/DemoStage.tsx')).toBe(false);
     // Anchor 0 means "0 after seeing all 102", not "not counted".
@@ -1239,17 +1239,17 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
      * the `fullBleed` assertions above would already have gone red first, making this
      * probe moot.
      */
-    expect(anchorCensus.total, '앵커를 한 건도 안 세고 있으면 아래 0 은 무의미하다').toBeGreaterThan(0);
+    expect(anchorCensus.total, 'if no anchor is counted the zero below means nothing').toBeGreaterThan(0);
     expect(today.anchorClickSurfaces.length, 'an anchor click surface that is not registered as no-basis').toBe(anchorCensus.noBasis);
   });
 
-  it('⑯ 합성 프로브 — 규격을 하나만 달아도, 전면을 벗어나도 자격이 죽는다', () => {
+  it('⑯ synthetic probe — attaching even one spec, or leaving full-bleed, kills the qualification', () => {
     const scrim = ' type="button" className="absolute inset-0 z-[25] bg-[color:var(--x)]" onClick={close}';
-    expect(isClickSurface(scrim), '순수 스크림을 못 잡으면 판정 함수가 죽은 것이다').toBe(true);
+    expect(isClickSurface(scrim), 'if a pure scrim is not caught the judging function is dead').toBe(true);
     for (const spec of ['px-3', 'min-h-9', 'rounded-chip', 'text-label', 'border', 'font-medium', 'gap-2']) {
       expect(
         isClickSurface(scrim.replace('inset-0', `inset-0 ${spec}`)),
-        `«${spec}» 를 달았는데도 통과한다 — 값 층이 낼 것이 생겼는데 「낼 것이 없다」가 남으면 도피처다.`,
+        `it still passes with «${spec}» attached — once the value layer has something to emit, a leftover "nothing to emit" is an escape hatch.`,
       ).toBe(false);
     }
     // The same holds when hidden behind a variant prefix.
@@ -1258,7 +1258,7 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
     expect(isClickSurface(scrim.replace('inset-0 ', ''))).toBe(false);
   });
 
-  it('⑰ 근거 없음 줄을 지우면 그 자리가 **부채로 돌아온다** — 분류가 사실을 지우지 않는다', () => {
+  it('⑰ deleting a no-basis line **returns that spot to debt** — classification does not erase the fact', () => {
     for (const entry of NO_BASIS_BUTTONS) {
       const without = census(
         scannedFiles,
@@ -1269,7 +1269,7 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
       expect(without.noBasis).toBe(noBasis - entry.count);
       expect(
         without.debt,
-        `${entry.file} 줄을 지웠는데 부채가 안 늘었다 — 그 줄은 아무것도 분류하고 있지 않다`,
+        `${entry.file} line deleted but debt did not grow — that line classifies nothing`,
       ).toBe(debt + entry.count);
     }
     // Adding fixtures does not leak into no-basis — anything not in the registry is debt.
@@ -1282,15 +1282,15 @@ describe('탐지기 프로브 — 이 게이트가 실제로 무엇을 잡는가
    * Plant a hand control in a registered file and check debt rises: registration must not exempt a
    * whole file; this holds even when defects are 0.
    */
-  it('⑥ 등재는 **파일 면제가 아니다** — 등재된 파일에 손 컨트롤을 더하면 부채가 오른다', () => {
+  it('⑥ registration is **not a file exemption** — adding a hand control to a registered file raises debt', () => {
     const registeredFile = OUTSIDE_VALUE_LAYER[0]?.file;
-    expect(registeredFile, '등록부가 비었다 — 이 프로브가 헛돈다').toBeTruthy();
+    expect(registeredFile, 'the registry is empty — this probe spins idle').toBeTruthy();
     expect(registeredByFile.has(registeredFile as string)).toBe(true);
 
     const withOneMore = census([...scannedFiles, FIXTURE], OUTSIDE_VALUE_LAYER, BUTTON_TAGS, NO_BASIS_BUTTONS);
     expect(
       withOneMore.debt - debt,
-      '등재된 파일 곁에 손 컨트롤을 더했는데 부채가 안 올랐다 — 등재가 면제로 새고 있다',
+      'a hand control was added next to a registered file but debt did not rise — registration is leaking into an exemption',
     ).toBeGreaterThan(0);
   });
 });
@@ -1334,43 +1334,43 @@ function chatPanelAttributes(text: string): string[][] {
   return found;
 }
 
-describe('컨트롤 소유권 — 한 화면에 닫기는 하나', () => {
-  it('탐지기가 공회전하지 않는다 — 세 호스트 모두에서 패널을 찾는다', () => {
+describe('control ownership — one close per screen', () => {
+  it('the detector does not idle — it finds the panel in all three hosts', () => {
     for (const host of WORKBENCH_HOSTS) {
       const tags = chatPanelAttributes(readFileSync(host, 'utf8'));
-      expect(tags.length, `${host} 에서 AcpChatPanel 을 못 찾았다`).toBeGreaterThan(0);
+      expect(tags.length, `could not find AcpChatPanel in ${host}`).toBeGreaterThan(0);
       // A tag with no attributes read means the brace walk stopped early.
-      expect(tags[0].length, `${host} 의 속성을 못 읽었다`).toBeGreaterThan(3);
+      expect(tags[0].length, `could not read the attributes of ${host}`).toBeGreaterThan(3);
     }
   });
 
-  it('호스트는 자기 닫기를 패널에 넘기지 않는다', () => {
+  it('hosts do not pass their own close to the panel', () => {
     for (const host of WORKBENCH_HOSTS) {
       for (const attributes of chatPanelAttributes(readFileSync(host, 'utf8'))) {
         expect(
           attributes,
-          `${host}: 워크벤치 안의 대화 패널에 onClose 를 넘겼다 — X 가 둘이 되고, 안쪽 것은 자기 것이 아닌 화면을 닫는다`,
+          `${host}: passed onClose to the chat panel inside the workbench — there would be two X buttons, and the inner one closes a screen that is not its own`,
         ).not.toContain('onClose');
       }
     }
   });
 
-  it('패널에는 넘겨줄 닫기 자체가 없다 — 규칙이 무시되는 prop 으로 반만 지켜지지 않게', () => {
+  it('the panel has no close of its own to hand over — so the rule is not half-kept through an ignored prop', () => {
     const panel = readFileSync(WORKBENCH_HOSTED_PANEL, 'utf8');
     const props = readFileSync(WORKBENCH_HOSTED_PANEL_PROPS, 'utf8');
-    expect(panel, '패널이 여전히 닫기 버튼을 그린다').not.toContain('data-testid="acp-chat-close"');
+    expect(panel, 'the panel still draws a close button').not.toContain('data-testid="acp-chat-close"');
     expect(props, 'the panel props still accept onClose').not.toMatch(/^\s*onClose\??:/m);
-    expect(panel, '패널이 여전히 onClose 를 받는다').not.toMatch(/^\s*onClose\??:/m);
+    expect(panel, 'the panel still accepts onClose').not.toMatch(/^\s*onClose\??:/m);
   });
 
   /**
    * ⚠️ **A gate that can only pass is not a gate.** The violation is planted in the shape it had:
    * a host passing its own close down to the panel it contains.
    */
-  it('탐지기 프로브 — 심은 위반을 잡고, 이웃 prop 은 놓아둔다', () => {
+  it('detector probe — catches the planted violation and leaves the neighbouring prop alone', () => {
     const host = readFileSync(WORKBENCH_HOSTS[1], 'utf8');
     const planted = host.replace('onTurnStarted={capture.onTurnStarted}', 'onClose={onClose}');
-    expect(planted, '심을 자리를 못 찾았다 — 이 프로브가 헛돈다').not.toBe(host);
+    expect(planted, 'could not find a place to plant it — this probe spins idle').not.toBe(host);
     expect(chatPanelAttributes(planted).some((attrs) => attrs.includes('onClose'))).toBe(true);
     // `onDraftPresenceChange` and friends are not close buttons; the detector must name the prop.
     expect(chatPanelAttributes(host).some((attrs) => attrs.includes('onClose'))).toBe(false);
@@ -1383,7 +1383,7 @@ describe('컨트롤 소유권 — 한 화면에 닫기는 하나', () => {
  * regression must turn red, a raise record turns it green, a fall needs no file. Two branches
  * registering different places must merge without a conflict.
  */
-describe('머지 베이스 판정 — 스크래치 저장소 프로브', () => {
+describe('merge base judgement — scratch repository probe', () => {
   const scratch = mkdtempSync(join(tmpdir(), 'control-adoption-judge-'));
   afterAll(() => rmSync(scratch, { recursive: true, force: true }));
 

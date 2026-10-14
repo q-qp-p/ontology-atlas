@@ -234,22 +234,22 @@ describe("draw — ego contains comet (Guardian E)", () => {
 
 /** The depends directional taper: thick at source → thin at target, monotonically decreasing. */
 describe("dependsTaperFactor", () => {
-  it("u=0(source) 최대, u=1(target) 최소, 단조 감소", () => {
+  it("u=0 (source) is the maximum, u=1 (target) the minimum, monotonically decreasing", () => {
     expect(dependsTaperFactor(0)).toBeCloseTo(DEPENDS_TAPER_START, 6);
     expect(dependsTaperFactor(1)).toBeCloseTo(DEPENDS_TAPER_END, 6);
     expect(dependsTaperFactor(0)).toBeGreaterThan(dependsTaperFactor(0.5));
     expect(dependsTaperFactor(0.5)).toBeGreaterThan(dependsTaperFactor(1));
   });
-  it("범위를 벗어난 u 는 [0,1] 로 clamp", () => {
+  it("an out-of-range u is clamped to [0,1]", () => {
     expect(dependsTaperFactor(-3)).toBeCloseTo(DEPENDS_TAPER_START, 6);
     expect(dependsTaperFactor(9)).toBeCloseTo(DEPENDS_TAPER_END, 6);
   });
-  it("source 계수 > target 계수 (방향이 굵기로 읽힘)", () => {
+  it("source coefficient > target coefficient (direction reads as thickness)", () => {
     expect(DEPENDS_TAPER_START).toBeGreaterThan(DEPENDS_TAPER_END);
   });
 });
 
-describe("draw — depends 방향 테이퍼", () => {
+describe("draw: depends direction taper", () => {
   const TOKENS = {
     edgeContains: "#3a3a42", edgeDepends: "#4c4c63", edgeDim: "#1a1a1f",
     indigo: "#5e6ad2", indigoBright: "#8b97ff",
@@ -266,7 +266,7 @@ describe("draw — depends 방향 테이퍼", () => {
     draw(ctx, state, TOKENS);
     return widths;
   }
-  it("source 세그먼트가 target 세그먼트보다 굵다", () => {
+  it("the source segment is thicker than the target segment", () => {
     const widths = collectSegmentWidths({
       a: { x: 0, y: 0 }, b: { x: 200, y: 0 }, control: { x: 100, y: 30 },
       relationType: "depends", egoState: "normal", farT: 0, t: 0,
@@ -274,7 +274,7 @@ describe("draw — depends 방향 테이퍼", () => {
     expect(widths.length).toBeGreaterThan(2);
     expect(widths[0]).toBeGreaterThan(widths[widths.length - 1]);
   });
-  it("contains 는 단일 stroke — 테이퍼 없음(방향이 구조로 자명)", () => {
+  it("contains is a single stroke with no taper (direction is evident from structure)", () => {
     const widths = collectSegmentWidths({
       a: { x: 0, y: 0 }, b: { x: 200, y: 0 }, control: { x: 100, y: 30 },
       relationType: "contains", egoState: "normal", farT: 0, t: 0,
@@ -311,7 +311,7 @@ describe("draw — containment ink ladder", () => {
     return { stroke, width };
   }
 
-  it("L0 는 진하고 굵게(뼈대), L1 기본, L2 는 물러난다(잔가지)", () => {
+  it("L0 is dark and thick (skeleton), L1 is the default, L2 recedes (twigs)", () => {
     const l0 = drawAndCapture(0);
     const l1 = drawAndCapture(1);
     const l2 = drawAndCapture(2);
@@ -322,31 +322,31 @@ describe("draw — containment ink ladder", () => {
     expect(l1.width).toBeGreaterThan(l2.width);
   });
 
-  it("레벨 미지정(레거시 호출)은 L1 과 동일 — 무회귀", () => {
+  it("an unspecified level (legacy call) equals L1, with no regression", () => {
     expect(drawAndCapture(undefined)).toEqual(drawAndCapture(1));
   });
 });
 
 /** The depends bow: a left-perpendicular offset that separates a mutual pair. */
 describe("computeDependsBowControlPoint", () => {
-  it("제어점이 중점에서 진행 방향 왼쪽 법선으로 오프셋된다", () => {
+  it("the control point is offset from the midpoint along the left normal of the travel direction", () => {
     const c = computeDependsBowControlPoint({ x: 0, y: 0 }, { x: 100, y: 0 }, 92);
     expect(c.x).toBeCloseTo(50, 5);
     expect(c.y).toBeCloseTo(12, 5); // len*0.12 = 12 < maxBow; left is +y in screen coordinates
   });
 
-  it("A→B 와 B→A 가 서로 반대쪽으로 휘어 두 호로 분리된다", () => {
+  it("A to B and B to A bow to opposite sides and separate into two arcs", () => {
     const ab = computeDependsBowControlPoint({ x: 0, y: 0 }, { x: 100, y: 0 }, 92);
     const ba = computeDependsBowControlPoint({ x: 100, y: 0 }, { x: 0, y: 0 }, 92);
     expect(Math.sign(ab.y)).not.toBe(Math.sign(ba.y));
   });
 
-  it("긴 엣지는 maxBow 로 캡된다", () => {
+  it("a long edge is capped by maxBow", () => {
     const c = computeDependsBowControlPoint({ x: 0, y: 0 }, { x: 2000, y: 0 }, 92);
     expect(Math.abs(c.y)).toBeCloseTo(92, 5);
   });
 
-  it("영길이 방어 — NaN 없이 중점 반환", () => {
+  it("guards against zero length and returns the midpoint without NaN", () => {
     const c = computeDependsBowControlPoint({ x: 5, y: 5 }, { x: 5, y: 5 }, 92);
     expect(Number.isFinite(c.x)).toBe(true);
     expect(Number.isFinite(c.y)).toBe(true);

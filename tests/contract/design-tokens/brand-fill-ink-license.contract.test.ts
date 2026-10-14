@@ -31,11 +31,11 @@ type Rgba = readonly number[];
 /** First definition in `app/globals.css` wins; `var()` aliases are followed. */
 function cssToken(name: string): Rgba {
   const m = new RegExp(`${name}:\\s*([^;]+);`).exec(css);
-  if (!m) throw new Error(`globals.css 에 ${name} 이 없다`);
+  if (!m) throw new Error(`${name} is missing from globals.css`);
   const v = m[1].trim();
   if (v.startsWith("var(")) return cssToken(v.slice(4, -1).trim());
   const parsed = parseColor(v);
-  if (!parsed) throw new Error(`${name} 값(${v})을 색으로 못 읽는다`);
+  if (!parsed) throw new Error(`cannot read the value of ${name} (${v}) as a colour`);
   return parsed as Rgba;
 }
 
@@ -52,24 +52,24 @@ const AA = 4.5;
 
 const ratioOn = (ink: Rgba, bg: Rgba) => contrastRatio(composite(ink, bg), bg);
 
-describe("브랜드 면 위 잉크 — 라이선스는 값이 아니라 대비가 낸다", () => {
-  it("탐지기가 공회전하지 않는다 — 면 토큰이 실재하고 불투명하다", () => {
+describe("ink on brand fills — the licence comes from contrast, not from the value", () => {
+  it("the detector does not idle — the fill tokens exist and are opaque", () => {
     const names = Object.keys(SOLID_FILLS);
-    expect(names.length, "볼 면이 하나도 없다").toBeGreaterThan(0);
+    expect(names.length, "no fill to look at").toBeGreaterThan(0);
     for (const [name, fill] of Object.entries(SOLID_FILLS)) {
-      expect(fill[3], `${name} 이 불투명하지 않다 — 그러면 틴트 계약의 관할이다`).toBe(1);
+      expect(fill[3], `${name} is not opaque — then it belongs to the tint contract`).toBe(1);
     }
   });
 
-  it("지정된 잉크가 라이선스를 만족한다 — text-on-accent 는 모든 브랜드 면에서 AA", () => {
+  it("the designated ink satisfies the licence — text-on-accent is AA on every brand fill", () => {
     const onAccent = cssToken("--color-text-on-accent");
     for (const [name, fill] of Object.entries(SOLID_FILLS)) {
       const r = ratioOn(onAccent, fill);
-      expect(r, `text-on-accent 가 ${name} 위에서 ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(AA);
+      expect(r, `text-on-accent on ${name} is ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(AA);
     }
   });
 
-  it("분리의 근거가 아직 실재한다 — text-primary 는 브랜드 면에서 실제로 AA 를 깬다", () => {
+  it("the reason for the split still exists — text-primary really fails AA on the brand fill", () => {
     /*
      * Detector liveness: if `text-primary` ever passes AA on a brand fill, the two inks have
      * converged and this contract can be retired.
@@ -78,7 +78,7 @@ describe("브랜드 면 위 잉크 — 라이선스는 값이 아니라 대비�
     const r = ratioOn(primary, SOLID_FILLS["indigo-brand"]);
     expect(
       r,
-      `text-primary 가 브랜드 면에서 ${r.toFixed(2)}:1 — AA 를 통과한다면 이 계약의 존재 이유를 재평가하라`,
+      `text-primary on the brand fill is ${r.toFixed(2)}:1 — if it passes AA, re-evaluate why this contract exists`,
     ).toBeLessThan(AA);
   });
 });
@@ -105,7 +105,7 @@ describe("브랜드 면 위 잉크 — 라이선스는 값이 아니라 대비�
  * ink" is tracked below, and a rise in that number is read as this blind spot
  * growing.
  */
-describe("브랜드 면 × 잉크 페어링 — 소스 전수", () => {
+describe("brand fill × ink pairing — full source census", () => {
   const FILL_RE = /bg-\[color:var\(--color-indigo-brand(?:-hover)?\)\]/;
   const INK_RE = /text-\[color:var\(--color-([a-z0-9-]+)\)\]/g;
 
@@ -175,12 +175,12 @@ describe("브랜드 면 × 잉크 페어링 — 소스 전수", () => {
     return { offenders, fillsSeen, inklessFills };
   };
 
-  it("탐지기가 실제로 브랜드 면을 보고 있다 — 전집합이 비어 있지 않다", () => {
+  it("the detector really sees brand fills — the universe is not empty", () => {
     const { fillsSeen } = scan();
-    expect(fillsSeen, "브랜드 면을 하나도 못 찾았다 — 정규식이 램프와 어긋났다").toBeGreaterThan(10);
+    expect(fillsSeen, "could not find a single brand fill — the regex drifted from the ramp").toBeGreaterThan(10);
   });
 
-  it("위반 0 — 브랜드 면을 진 잉크는 AA 를 넘는다", () => {
+  it("zero violations — ink carried by a brand fill exceeds AA", () => {
     const { offenders } = scan();
     expect(
       offenders,
@@ -191,16 +191,16 @@ describe("브랜드 면 × 잉크 페어링 — 소스 전수", () => {
     ).toEqual([]);
   });
 
-  it("사각이 커지지 않는다 — 잉크 없는 브랜드 면 리터럴의 상한", () => {
+  it("the blind spot does not grow — ceiling on brand-fill literals without ink", () => {
     /*
      * Blind spot: a fill and its ink split across different literals. The count of ink-less brand fill
      * literals bounds it; open the place before raising the ceiling.
      */
     const { inklessFills } = scan();
-    expect(inklessFills, "잉크 없는 브랜드 면 리터럴이 늘었다 — 각 자리가 정말 글자 없는 면인지 확인하라").toBeLessThanOrEqual(16);
+    expect(inklessFills, "brand-fill literals without ink grew — check that each spot is really a fill with no text").toBeLessThanOrEqual(16);
   });
 
-  it("사각이 줄었으면 상한도 내린다 — 여유를 무료로 두지 않는다", () => {
+  it("when the blind spot shrinks the ceiling comes down too — slack is not left free", () => {
     /*
      * Lower the ceiling when the blind spot shrinks, so slack cannot become a free pass for the next
      * genuine pair.
@@ -208,31 +208,31 @@ describe("브랜드 면 × 잉크 페어링 — 소스 전수", () => {
     const { inklessFills } = scan();
     expect(
       inklessFills,
-      "잉크 없는 브랜드 면 리터럴이 줄었다 — 위 상한 15 도 같이 내려라.",
+      "brand-fill literals without ink shrank — lower the ceiling of 15 above too.",
     ).toBeGreaterThanOrEqual(15);
   });
 
-  it("탐지기가 심은 위반을 잡고 정상 짝은 놓아준다", () => {
+  it("the detector catches the planted violation and lets the proper pair go", () => {
     const bad = `rounded-full bg-[color:var(--color-indigo-brand)] text-[color:var(--color-text-primary)]`;
     const good = `rounded-full bg-[color:var(--color-indigo-brand)] text-[color:var(--color-text-on-accent)]`;
     const inkless = `h-1 w-1 rounded-full bg-[color:var(--color-indigo-brand)]`;
     const tint = `bg-[color:var(--color-indigo-a16)] text-[color:var(--color-text-primary)]`;
     const hover = `bg-[color:var(--color-indigo-brand-hover)] text-[color:var(--color-text-tertiary)]`;
 
-    expect(unlicensedInks(bad), "심은 위반을 못 잡는다").toHaveLength(1);
-    expect(unlicensedInks(good), "고친 짝을 위반으로 센다").toEqual([]);
-    expect(unlicensedInks(inkless), "글자 없는 면은 이 계약 밖이다").toEqual([]);
-    expect(unlicensedInks(tint), "틴트는 accent-ink-contrast 의 관할이다").toEqual([]);
+    expect(unlicensedInks(bad), "does not catch the planted violation").toHaveLength(1);
+    expect(unlicensedInks(good), "counts the fixed pair as a violation").toEqual([]);
+    expect(unlicensedInks(inkless), "a fill without text is outside this contract").toEqual([]);
+    expect(unlicensedInks(tint), "tints belong to accent-ink-contrast").toEqual([]);
     expect(
       unlicensedInks(hover),
-      "호버 면도 같은 라이선스를 진다 — 대비는 상태를 가리지 않는다",
+      "the hover fill carries the same licence — contrast does not care about state",
     ).toHaveLength(1);
   });
 
-  it("리터럴 단위가 상수로 뺀 className 도 본다 — 태그 파서가 원리적으로 못 보던 층", () => {
+  it("also sees a className lifted into a constant at literal level — a layer the tag parser could never see", () => {
     const src = readFileSync(join(ROOT, "src/shared/ui/controls/button.tsx"), "utf8");
     const withFill = literals(src).filter((l) => FILL_RE.test(l));
-    expect(withFill.length, "상수 className 의 브랜드 면을 못 찾았다").toBeGreaterThan(0);
-    expect(withFill.some((l) => /text-on-accent/.test(l)), "그 상수의 잉크를 못 읽는다").toBe(true);
+    expect(withFill.length, "could not find the brand fill of the constant className").toBeGreaterThan(0);
+    expect(withFill.some((l) => /text-on-accent/.test(l)), "cannot read the ink of that constant").toBe(true);
   });
 });

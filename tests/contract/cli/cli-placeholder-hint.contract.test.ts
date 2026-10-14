@@ -97,16 +97,16 @@ function stripComments(src: string): string {
   return out;
 }
 
-describe("CLI 자리 표시 — 보여 주는 화면은 채우는 법도 보여 준다", () => {
+describe("CLI placeholders — a screen that shows one also shows how to fill it", () => {
   const files = walk("src").filter((f) => !DEFINITION_FILES.includes(f));
   const sources = new Map(files.map((f) => [f, stripComments(readFileSync(f, "utf8"))]));
 
-  it("probe: 실제로 소스를 읽고 있다", () => {
+  it("probe: it really reads the source", () => {
     expect(files.length).toBeGreaterThan(100);
     expect(ATLAS_CHECKOUT_PLACEHOLDER).toBe("$ATLAS");
   });
 
-  it("probe: 자리 표시를 쓰는 파일이 실제로 존재한다 — 0건이면 탐지기가 죽은 것", () => {
+  it("probe: files that use placeholders really exist — zero means the detector is dead", () => {
     // The detector also matches `atlasCli` so a reintroduced, unhinted helper cannot bypass this
     // contract.
     const users = [...sources].filter(
@@ -119,7 +119,7 @@ describe("CLI 자리 표시 — 보여 주는 화면은 채우는 법도 보여 
    * **A ratchet only shrinks.** If the list can grow it becomes a new rule rather
    * than an exception, and the gate becomes a rubber stamp.
    */
-  it("래칫: 미처리 목록이 자라지 않는다", () => {
+  it("ratchet: the pending list does not grow", () => {
     expect(HANDOFF_BLOBS_PENDING.length).toBeLessThanOrEqual(6);
   });
 
@@ -128,16 +128,16 @@ describe("CLI 자리 표시 — 보여 주는 화면은 채우는 법도 보여 
    * disappeared, this fails — otherwise a name that blocks nothing stays forever and
    * hands the next person a false inventory of "6 still to go".
    */
-  it.each(HANDOFF_BLOBS_PENDING)("래칫 항목 %s 는 아직 실재하는 미처리다", (file) => {
+  it.each(HANDOFF_BLOBS_PENDING)("ratchet entry %s is still a real pending item", (file) => {
     const src = sources.get(file);
-    expect(src, `목록에 있는데 파일이 없다 — 항목을 지워라`).toBeDefined();
+    expect(src, `in the list but the file is missing — delete the entry`).toBeDefined();
     expect(
       src!.includes(HINT_KEY) || src!.includes(AGENT_HINT),
-      `이미 안내를 싣고 있다 — 래칫에서 지워라 (그래야 목록이 재고로 남는다)`,
+      `it already carries guidance — delete it from the ratchet (so the list stays an inventory)`,
     ).toBe(false);
   });
 
-  it("사람이 읽는 자리 표시에는 안내가 붙어 있다", () => {
+  it("human-read placeholders carry guidance", () => {
     const offenders = [...sources]
       // **Looking only at files that hand-write the placeholder leaves a hole.** The
       // first version did that: the `/git` degraded card that motivated this gate never
@@ -176,14 +176,14 @@ describe("CLI 자리 표시 — 보여 주는 화면은 채우는 법도 보여 
  * The i18n half — the key must exist in both locales. With only one, the other
  * language's users see **the key path** drawn where the hint should be.
  */
-describe("CLI 자리 표시 안내 — 두 로케일에 다 있다", () => {
+describe("CLI placeholder guidance — present in both locales", () => {
   const PATHS = [
     ["atlasGit", HINT_KEY],
     ["projectPages", "selector", HINT_KEY],
     ["nav", "settingsMenu", HINT_KEY],
   ] as const;
 
-  it.each(["ko", "en"])("%s 에 안내 문구가 있다", (locale) => {
+  it.each(["ko", "en"])("%s has guidance copy", (locale) => {
     const messages = JSON.parse(readFileSync(`messages/${locale}.json`, "utf8"));
     for (const path of PATHS) {
       const value = path.reduce<unknown>(

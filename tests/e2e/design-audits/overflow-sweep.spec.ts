@@ -114,7 +114,7 @@ for (const vp of VIEWPORTS) {
  * does not grow and only `body.scrollWidth` reports overflow. Deleting the `bodyScroll` term
  * as redundant turns this red.
  */
-test("계기 프로브 — 넘친 원소를 실제로 잡고, documentElement 만으로는 못 잡는다", async ({ page }) => {
+test("instrument probe: catches an overflowing element for real, which documentElement alone cannot", async ({ page }) => {
   await page.setViewportSize({ width: 1040, height: 720 });
   await page.goto("/ko/library/?tab=ontology&guides=off", { waitUntil: "domcontentloaded" });
   await waitForDocumentPaint(page);
@@ -125,7 +125,7 @@ test("계기 프로브 — 넘친 원소를 실제로 잡고, documentElement �
   const clean = await measureOverflow(page);
   expect(
     isOverflowing(clean),
-    "심기 전부터 넘쳐 있으면 이 프로브가 아무것도 증명하지 못한다",
+    "if it overflows before planting, this probe proves nothing",
   ).toBe(false);
 
   await page.evaluate(() => {
@@ -140,11 +140,11 @@ test("계기 프로브 — 넘친 원소를 실제로 잡고, documentElement �
   /* **Calls the gate's own predicate** — asserting the measurement alone stays green when a term is deleted. */
   expect(
     isOverflowing(dirty),
-    "심어 둔 1400px 을 게이트 판정식이 못 잡았다 — 이 스윕의 0은 증거가 아니다",
+    "the gate's verdict formula missed the planted 1400px, so this sweep's zero is not evidence",
   ).toBe(true);
   expect(
     dirty.scroll,
-    "documentElement.scrollWidth 가 넘침을 봤다면 overflow-x:hidden 전제가 바뀐 것이다 — 그때는 이 주석을 고쳐라",
+    "if documentElement.scrollWidth saw the overflow, the overflow-x:hidden premise changed; update this message then",
   ).toBeLessThanOrEqual(dirty.client);
 
   await page.evaluate(() => document.querySelector('[data-testid="ovf-probe"]')?.remove());

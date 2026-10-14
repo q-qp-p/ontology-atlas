@@ -21,14 +21,14 @@ import {
  * map" — the first is visible the moment the screen opens, the second is met only
  * by someone who drags a long way on a wide screen.
  */
-describe('대화 패널 폭 — 사용자가 끌되 지도는 지킨다', () => {
-  it('넓은 화면에서는 상한이 지도의 몫으로 정해진다', () => {
+describe('chat panel width: the user drags it, the map is protected', () => {
+  it('on a wide screen the cap is set by what the map needs', () => {
     // 1512 − 64 (rail) − 480 (map) = 968
     expect(maxChatWidth(1512)).toBe(1512 - RAIL_WIDTH - MAP_MIN_WIDTH);
     expect(clampChatWidth(2000, 1512)).toBe(968);
   });
 
-  it('좁은 화면에서는 하한이 이긴다 — 읽히지 않는 패널을 만들지 않는다', () => {
+  it('on a narrow screen the floor wins, so the panel never becomes unreadable', () => {
     /*
      * 800 − 64 − 480 = 256, below the lower bound of 320. Following the arithmetic
      * would turn the panel into vertical text, so a slightly narrower map wins.
@@ -37,16 +37,16 @@ describe('대화 패널 폭 — 사용자가 끌되 지도는 지킨다', () => 
     expect(clampChatWidth(600, 800)).toBe(CHAT_WIDTH_MIN);
   });
 
-  it('하한 아래로는 못 내려간다', () => {
+  it('never goes below the floor', () => {
     expect(clampChatWidth(100, 1512)).toBe(CHAT_WIDTH_MIN);
   });
 
-  it('잴 수 없는 값은 기본값으로 돌아간다 — 0px 패널을 만들지 않는다', () => {
+  it('an unmeasurable value falls back to the default, so there is no 0px panel', () => {
     expect(clampChatWidth(Number.NaN, 1512)).toBe(CHAT_WIDTH_DEFAULT);
     expect(maxChatWidth(Number.NaN)).toBe(CHAT_WIDTH_DEFAULT);
   });
 
-  it('정수로 떨어진다 — 반 픽셀 폭은 글자를 뭉갠다', () => {
+  it('rounds to an integer, because a half-pixel width smears text', () => {
     expect(clampChatWidth(420.4, 1512)).toBe(420);
   });
 
@@ -78,7 +78,7 @@ describe('대화 패널 폭 — 사용자가 끌되 지도는 지킨다', () => 
  * (`tests/e2e/insights/analysis-workbench.spec.ts`, "showing a relationship reveals its hidden endpoint
  * at 1040px"). Nothing about that change went near the map.
  */
-describe('대화 패널 폭 — 아무도 안 고른 폭은 지도에 더 양보한다', () => {
+describe('chat panel width: a width nobody chose yields more room to the map', () => {
   it('leaves the map its comfortable share at the app\u2019s smallest window', () => {
     // 1040 − 64 (rail) − 540 (map comfort) = 436, which is under the 520 ceiling.
     expect(defaultChatWidth(1040)).toBe(1040 - RAIL_WIDTH - MAP_COMFORT_WIDTH);
@@ -112,7 +112,7 @@ describe('대화 패널 폭 — 아무도 안 고른 폭은 지도에 더 양보
   });
 });
 
-describe('대화 패널 폭 — 저장', () => {
+describe('chat panel width: storage', () => {
   function fakeStorage(initial: Record<string, string> = {}) {
     const map = new Map(Object.entries(initial));
     return {
@@ -122,20 +122,20 @@ describe('대화 패널 폭 — 저장', () => {
     };
   }
 
-  it('저장한 값을 그대로 되읽는다', () => {
+  it('reads a stored value back unchanged', () => {
     const storage = fakeStorage();
     writeStoredChatWidth(storage, 512);
     expect(storage.map.get(CHAT_WIDTH_STORAGE_KEY)).toBe('512');
     expect(readStoredChatWidth(storage)).toBe(512);
   });
 
-  it('없거나 망가진 값은 null — 호출자가 기본값을 쓴다', () => {
+  it('a missing or corrupt value is null, so the caller uses the default', () => {
     expect(readStoredChatWidth(fakeStorage())).toBe(null);
     expect(readStoredChatWidth(fakeStorage({ [CHAT_WIDTH_STORAGE_KEY]: 'wide' }))).toBe(null);
     expect(readStoredChatWidth(fakeStorage({ [CHAT_WIDTH_STORAGE_KEY]: '0' }))).toBe(null);
   });
 
-  it('저장소가 막혀 있어도 터지지 않는다 — 패널은 열려야 한다', () => {
+  it('does not throw when storage is blocked, because the panel must still open', () => {
     const blocked = {
       getItem: () => {
         throw new Error('denied');

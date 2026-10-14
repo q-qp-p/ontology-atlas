@@ -69,33 +69,33 @@ function readRules(): Rule[] {
 describe("`.claude/rules` path scoping contract", () => {
   const rules = readRules();
 
-  it("규칙 파일이 실제로 있다 — 빈 디렉터리를 통과시키지 않는다", () => {
+  it("the rule files really exist — an empty directory does not pass", () => {
     expect(rules.length).toBeGreaterThanOrEqual(8);
   });
 
-  it("상주로 정한 셋은 `paths:` 를 갖지 않는다", () => {
+  it("the three set as resident have no `paths:`", () => {
     for (const name of ALWAYS_LOADED) {
       const rule = rules.find((r) => r.file === name);
-      expect(rule, `${name} 이 없다`).toBeDefined();
-      expect(rule?.paths, `${name} 은 조건 없이 실려야 한다`).toBeNull();
+      expect(rule, `${name} is missing`).toBeDefined();
+      expect(rule?.paths, `${name} must be loaded unconditionally`).toBeNull();
     }
   });
 
-  it("나머지는 전부 조건부다 — 상주 목록은 명시적으로만 늘어난다", () => {
+  it("all the rest are conditional — the resident list grows only explicitly", () => {
     // Promoting a new rule to resident requires adding it to ALWAYS_LOADED above with
     // its reason. Otherwise the road back to 73KB is free.
     const unconditional = rules.filter((r) => r.paths === null).map((r) => r.file);
     expect(unconditional.sort()).toEqual([...ALWAYS_LOADED].sort());
   });
 
-  it("frontmatter 를 연 규칙은 비지 않은 `paths` 목록을 갖는다", () => {
+  it("a rule that opens frontmatter has a non-empty `paths` list", () => {
     for (const rule of rules) {
       if (rule.paths === null) continue;
-      expect(rule.paths.length, `${rule.file} 의 paths 가 비었다`).toBeGreaterThan(0);
+      expect(rule.paths.length, `the paths of ${rule.file} are empty`).toBeGreaterThan(0);
     }
   });
 
-  it("**모든 글롭이 오늘 무언가를 맞춘다** — 0개짜리는 조용히 사라진 규칙이다", () => {
+  it("**every glob matches something today** — one with zero matches is a silently vanished rule", () => {
     const dead: string[] = [];
     for (const rule of rules) {
       if (rule.paths === null) continue;
@@ -104,13 +104,13 @@ describe("`.claude/rules` path scoping contract", () => {
         try {
           hits = globSync(pattern).length;
         } catch {
-          dead.push(`${rule.file}: ${pattern} (글롭 오류)`);
+          dead.push(`${rule.file}: ${pattern} (glob error)`);
           continue;
         }
         if (hits === 0) dead.push(`${rule.file}: ${pattern}`);
       }
     }
-    expect(dead, `아무 파일도 안 맞는 글롭 — 이 규칙은 실리지 않는다:\n${dead.join("\n")}`).toEqual(
+    expect(dead, `globs that match no file — this rule is not loaded:\n${dead.join("\n")}`).toEqual(
       [],
     );
   // The pre-push hook intentionally runs this contract in both the full unit lane

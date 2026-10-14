@@ -7,18 +7,18 @@ import { controlClass } from "@/shared/ui/control-class";
  * `items-center` has nothing to centre and text sticks to the top of the `min-h-6` box. Pins the
  * trap.
  */
-describe("truncate 축과 flex 모양", () => {
-  it("**함정 재현** — truncate 를 켜면 모양의 flex 가 사라진다", () => {
+describe("truncate axis and flex shape", () => {
+  it("**trap reproduction** — turning truncate on removes the shape's flex", () => {
     const withTruncate = controlClass({ shape: "link", truncate: true });
     expect(withTruncate).toContain("block");
     expect(withTruncate).not.toContain("inline-flex");
   });
 
-  it("truncate 를 안 켜면 모양이 flex 를 지킨다", () => {
+  it("without truncate the shape keeps its flex", () => {
     expect(controlClass({ shape: "link" })).toContain("inline-flex");
   });
 
-  it("가운데 정렬은 flex 가 있어야 뜻이 있다", () => {
+  it("centre alignment only means something with flex", () => {
     // `items-center` is present in both cases, so the classes look fine and only the
     // screen is wrong. This check records that difference.
     expect(controlClass({ shape: "link", truncate: true })).toContain("items-center");

@@ -59,16 +59,16 @@ const TOLERATED: Readonly<Record<string, readonly string[]>> = Object.fromEntrie
   column('internalTerms', 'ko').terms.map((entry: { term: string; tolerated: string[] }) => [entry.term, entry.tolerated]),
 );
 
-describe('카탈로그 전체 — 내부에서 만든 말이 화면에 닿지 않는다', () => {
-  it('검사가 헛돌고 있지 않다 — 카탈로그를 실제로 읽는다', () => {
+describe('whole catalog — internally coined words never reach the screen', () => {
+  it('the check is not idling — it really reads the catalog', () => {
     expect(flatten(CATALOG).length).toBeGreaterThan(2_000);
   });
 
   it.each(INTERNAL_TERMS.map(({ term, not }) => [term, not] as const))(
-    '「%s」이(가) 새 자리로 번지지 않는다',
+    'the term "%s" does not spread to new spots',
     (term, not) => {
       const tolerated = TOLERATED[term];
-      expect(tolerated, `TOLERATED 에 「${term}」 항목이 없다`).toBeDefined();
+      expect(tolerated, `TOLERATED has no entry for "${term}"`).toBeDefined();
       const hits = internalTermHits(CATALOG, term, not);
       const unlisted = hits.filter((key) => !tolerated.includes(key));
 
@@ -80,21 +80,21 @@ describe('카탈로그 전체 — 내부에서 만든 말이 화면에 닿지 �
 
       expect(
         hits.length,
-        `「${term}」이(가) ${tolerated.length} → ${hits.length} 로 늘었다.`,
+        `"${term}" grew from ${tolerated.length} to ${hits.length}.`,
       ).toBeLessThanOrEqual(tolerated.length);
     },
   );
 
-  it('허용 목록이 실재하는 키를 가리킨다 — 고친 자리는 목록에서도 지운다', () => {
+  it('the allow list points at existing keys — a spot that was fixed is removed from the list too', () => {
     const keys = new Set(flatten(CATALOG).map(({ key }) => key));
     const stale: string[] = [];
     for (const [term, list] of Object.entries(TOLERATED)) {
       for (const key of list) if (!keys.has(key)) stale.push(`${term}: ${key}`);
     }
-    expect(stale, `허용 목록이 없는 키를 가리킨다 — 지워라\n${stale.join('\n')}`).toEqual([]);
+    expect(stale, `the allow list points at missing keys — delete them\n${stale.join('\n')}`).toEqual([]);
   });
 
-  it('probe: 심어 놓은 위반을 실제로 잡는다', () => {
+  it('probe: really catches a planted violation', () => {
     expect(internalTermHits({ card: { title: '수리 큐' } }, '수리 큐')).toEqual(['card.title']);
     expect(internalTermHits({ a: { b: '깨끗한 문장' } }, '수리 큐')).toEqual([]);
     // The paper-contract carve-out really carves out, and only that.
@@ -151,8 +151,8 @@ const INTENTIONALLY_ENGLISH: ReadonlySet<string> = new Set(Object.keys(column('u
  */
 const UNTRANSLATED_BASELINE: readonly string[] = column('untranslatedEnglish', 'ko').baseline;
 
-describe('한국어 카탈로그 — 번역되지 않은 영어 문장', () => {
-  it('영어로 남은 자리가 늘지 않는다', () => {
+describe('Korean catalog — untranslated English sentences', () => {
+  it('spots left in English do not grow', () => {
     const offenders = untranslatedEnglish(CATALOG, INTENTIONALLY_ENGLISH);
     const unlisted = offenders.filter((key) => !UNTRANSLATED_BASELINE.includes(key));
 
@@ -166,20 +166,20 @@ describe('한국어 카탈로그 — 번역되지 않은 영어 문장', () => {
 
     expect(
       offenders.length,
-      `번역 안 된 자리가 ${UNTRANSLATED_BASELINE.length} → ${offenders.length} 로 늘었다.`,
+      `untranslated spots grew from ${UNTRANSLATED_BASELINE.length} to ${offenders.length}.`,
     ).toBeLessThanOrEqual(UNTRANSLATED_BASELINE.length);
   });
 
-  it('두 목록이 실재하는 키를 가리킨다', () => {
+  it('both lists point at existing keys', () => {
     const keys = new Set(flatten(CATALOG).map(({ key }) => key));
     for (const key of [...INTENTIONALLY_ENGLISH, ...UNTRANSLATED_BASELINE]) {
-      expect(keys.has(key), `목록의 "${key}" 가 카탈로그에 없다 — 지워라`).toBe(true);
+      expect(keys.has(key), `"${key}" in the list is not in the catalog — delete it`).toBe(true);
     }
   });
 
   // One Latin word slips past the rule above ("Kind", "Project · {count}"), and the search palette
   // group labels show on the Korean screen.
-  it('검색 팔레트의 한국어 문자열은 모두 한글을 담는다', () => {
+  it('every Korean string of the search palette contains Hangul', () => {
     const latinOnly = flatten(CATALOG)
       .filter(({ key }) => key.startsWith('searchWidgets.globalSearch.'))
       .filter(({ text }) => /[A-Za-z]/.test(stripIcu(text)) && !HANGUL.test(text))
@@ -187,7 +187,7 @@ describe('한국어 카탈로그 — 번역되지 않은 영어 문장', () => {
     expect(latinOnly).toEqual([]);
   });
 
-  it('probe: 심어 놓은 영어 문장을 잡고, 이름과 자리표시자는 놓아준다', () => {
+  it('probe: catches a planted English sentence and lets names and placeholders go', () => {
     const none = new Set<string>();
     expect(untranslatedEnglish({ card: { hint: 'Missing dependency reference' } }, none)).toEqual([
       'card.hint',
@@ -245,8 +245,8 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
-describe('기술 용어 — 그대로 쓰고, 설명은 TermHint 가 연다', () => {
-  it('카탈로그가 쓰는 머리글자는 모두 용어집에 풀이가 있다', () => {
+describe('technical terms — kept as they are, explained by TermHint', () => {
+  it('every acronym the catalog uses has an explanation in the glossary', () => {
     for (const glossary of [ko.termHints, en.termHints]) {
       expect(
         unexplainedTerms(CATALOG, glossary as unknown as Json),
@@ -255,7 +255,7 @@ describe('기술 용어 — 그대로 쓰고, 설명은 TermHint 가 연다', ()
     }
   });
 
-  it('카탈로그가 쓰는 용어마다 TermHint 를 그리는 화면이 하나 이상 있다', () => {
+  it('every term the catalog uses has at least one screen that draws a TermHint', () => {
     const texts = flatten(CATALOG).map(({ text }) => text);
     const source = sourceFiles(join(process.cwd(), 'src')).map((file) => readFileSync(file, 'utf8')).join('\n');
     const missing = GLOSSARY_TERMS.filter(
@@ -264,7 +264,7 @@ describe('기술 용어 — 그대로 쓰고, 설명은 TermHint 가 연다', ()
     expect(missing, 'Put a TermHint at the first prominent occurrence of each term.').toEqual([]);
   });
 
-  it('probe: 용어집에 없는 머리글자를 잡고, 있으면 놓아준다', () => {
+  it('probe: catches an acronym missing from the glossary and lets it go when present', () => {
     const glossary = { mcp: { expansion: 'MCP (Model Context Protocol)', explanation: '설명' } };
     expect(unexplainedTerms({ card: { hint: 'ACP 로 연결하세요' } }, glossary)).toEqual(['ACP']);
     expect(unexplainedTerms({ card: { hint: 'MCP 연결' } }, glossary)).toEqual([]);

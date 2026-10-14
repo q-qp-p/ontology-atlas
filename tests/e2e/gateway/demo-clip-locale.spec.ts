@@ -11,7 +11,7 @@ const CASES = [
 ] as const;
 
 for (const { path, tag } of CASES) {
-  test(`${tag}: 재생되는 영상과 포스터가 같은 로케일이다`, async ({ page }) => {
+  test(`${tag}: the playing video and its poster share a locale`, async ({ page }) => {
     await page.goto(path);
 
     const video = page.locator('video').first();
@@ -33,13 +33,13 @@ for (const { path, tag } of CASES) {
     });
 
     // Evidence it is not idling: a source really was selected.
-    expect(info.currentSrc, '영상 소스가 하나도 로드되지 않았다').not.toBe('');
-    expect(info.poster, '포스터가 비어 있다').not.toBe('');
+    expect(info.currentSrc, 'no video source was loaded').not.toBe('');
+    expect(info.poster, 'the poster is empty').not.toBe('');
 
-    expect(info.currentSrc, `${tag} 페이지가 다른 로케일 영상을 튼다`).toContain(
+    expect(info.currentSrc, `the ${tag} page plays a video of another locale`).toContain(
       `atlas-tour.${tag}.`,
     );
-    expect(info.poster, `${tag} 페이지가 다른 로케일 포스터를 쓴다`).toContain(
+    expect(info.poster, `the ${tag} page uses a poster of another locale`).toContain(
       `atlas-tour.${tag}-poster`,
     );
   });

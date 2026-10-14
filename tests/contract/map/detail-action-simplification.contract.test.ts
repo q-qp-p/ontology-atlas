@@ -7,21 +7,21 @@ import { describe, expect, it } from "vitest";
  */
 const FILE = "src/widgets/ontology-map/ui/OntologyMapDetailPanel.tsx";
 
-describe("노드 상세 행동 단순화", () => {
+describe("node detail action simplification", () => {
   const source = readFileSync(FILE, "utf8");
 
-  it("주 행동과 두 disclosure 메뉴가 모두 실재한다", () => {
+  it("the primary action and both disclosure menus all exist", () => {
     expect(source).toContain('data-action-role="primary"');
     expect(source).toContain('triggerTestId="map-detail-panel-edit-menu-trigger"');
     expect(source).toContain('triggerTestId="map-detail-panel-more-menu-trigger"');
   });
 
-  it("옛 액션 타일 잉크와 tile grid를 되살리지 않는다", () => {
+  it("does not bring back the old action-tile ink or the tile grid", () => {
     expect(source).not.toContain("ACTION_TILE_INK");
     expect(source).not.toContain('shape: "tile"');
   });
 
-  it("주 행동의 긴 라벨은 한 줄에 머물고 접근 가능한 이름은 보존한다", () => {
+  it("the primary action's long label stays on one line and keeps its accessible name", () => {
     expect(source).toContain('<span className="truncate">{labels.actionAskAgent}</span>');
     expect(source).toContain('aria-label={labels.actionAskAgent}');
     expect(source).toContain('<span className="truncate">{labels.actionCopyHandoff}</span>');

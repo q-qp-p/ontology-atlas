@@ -79,7 +79,7 @@ describe("useCountUp — insights count-up (#3)", () => {
     expect(renderHook(() => useCountUp(3)).result.current).toBe(0);
   });
 
-  it("인트로 도중 target 이 바뀌면 새 target 에서 끝난다 — 견본이 사용자 폴더를 덮으면 안 된다", () => {
+  it("if the target changes mid-intro it ends at the new target, since a sample must not overwrite the user folder", () => {
     mockReducedMotion(false);
     const frames: FrameRequestCallback[] = [];
     vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
@@ -106,7 +106,7 @@ describe("useCountUp — insights count-up (#3)", () => {
         act(() => frames.shift()!(clock));
       }
 
-      expect(result.current, "인트로가 옛 target 으로 착지해 사용자 값을 덮었다").toBe(5);
+      expect(result.current, "the intro landed on the old target and overwrote the user value").toBe(5);
     } finally {
       nowSpy.mockRestore();
       vi.unstubAllGlobals();

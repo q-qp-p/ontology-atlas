@@ -19,12 +19,12 @@ const docs = loadVaultDocs(VAULT_ROOT) as Array<{
   frontmatter: Record<string, unknown>;
 }>;
 
-describe("도그푸드 볼트 — 슬러그 형태와 저작 출처", () => {
-  it("볼트가 비어 있지 않다 (계약의 전제)", () => {
+describe("dogfood vault: slug shape and authorship provenance", () => {
+  it("the vault is not empty (a premise of the contract)", () => {
     expect(docs.length).toBeGreaterThan(0);
   });
 
-  it("모든 노드의 슬러그가 스키마 폴더 아래에서 평평하다", () => {
+  it("every node slug is flat under a schema folder", () => {
     const violations = docs
       .map((doc) => ({
         slug: doc.slug,
@@ -34,7 +34,7 @@ describe("도그푸드 볼트 — 슬러그 형태와 저작 출처", () => {
     expect(violations).toEqual([]);
   });
 
-  it("모든 노드에 created_by 가 있고 값은 human | agent:* 다", () => {
+  it("every node has created_by and the value is human | agent:*", () => {
     const violations = docs
       .map((doc) => ({ slug: doc.slug, value: doc.frontmatter.created_by }))
       .filter(
@@ -49,7 +49,7 @@ describe("도그푸드 볼트 — 슬러그 형태와 저작 출처", () => {
     expect(violations).toEqual([]);
   });
 
-  it("human 저작이 최소 1개는 있다 — 사람 판단이 성립 조건인 노드가 사라지면 볼트 정체성이 바뀐 것", () => {
+  it("there is at least 1 human authorship; if nodes that need human judgment vanish, the vault identity has changed", () => {
     expect(docs.some((doc) => doc.frontmatter.created_by === CREATED_BY_HUMAN)).toBe(
       true,
     );

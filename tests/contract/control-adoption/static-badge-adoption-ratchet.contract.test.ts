@@ -45,24 +45,24 @@ const DEBT: ReadonlyArray<readonly [file: string, count: number]> = [
   ["src/widgets/vault-agent-panel/ui/AgentLockedState.tsx", 1],
 ];
 
-describe("정적 배지 채택 래칫", () => {
+describe("static badge adoption ratchet", () => {
   const census = censusStaticSurfaces(ROOT);
   const found = census.badges;
   const ledger = new Map(DEBT);
 
-  it("탐지기가 공회전하지 않는다 — 파일을 실제로 훑고 장부가 실재한다", () => {
+  it("the detector does not idle — it really scans files and the ledger exists", () => {
     // Locks that enough files were scanned, not that the number of caught files is non-zero.
-    expect(census.scanned, "훑은 파일이 너무 적다 — 워커가 죽었다").toBeGreaterThan(100);
+    expect(census.scanned, "too few files scanned — the worker died").toBeGreaterThan(100);
     for (const [file] of DEBT) {
-      expect(statSync(path.join(ROOT, file)).isFile(), `${file} 이 실재하지 않는다`).toBe(true);
+      expect(statSync(path.join(ROOT, file)).isFile(), `${file} does not exist`).toBe(true);
     }
   });
 
-  it("손으로 쓴 배지 기하는 장부를 넘지 못한다 — 새 파일은 첫날부터 0", () => {
+  it("hand-written badge geometry cannot exceed the ledger — a new file starts at 0 on day one", () => {
     const over: string[] = [];
     for (const [file, count] of found) {
       const allowed = ledger.get(file) ?? 0;
-      if (count > allowed) over.push(`${file}: ${count} > 장부 ${allowed}`);
+      if (count > allowed) over.push(`${file}: ${count} > ledger ${allowed}`);
     }
     expect(
       over,
@@ -71,17 +71,17 @@ describe("정적 배지 채택 래칫", () => {
     ).toEqual([]);
   });
 
-  it("장부의 회수분은 내린다 — 실측보다 후한 장부는 래칫이 아니다", () => {
+  it("reclaimed ledger entries come down — a ledger more generous than the measurement is not a ratchet", () => {
     const stale: string[] = [];
     for (const [file, allowed] of DEBT) {
       const actual = found.get(file) ?? 0;
-      if (actual < allowed) stale.push(`${file}: 장부 ${allowed} > 실측 ${actual} — 내려라`);
+      if (actual < allowed) stale.push(`${file}: ledger ${allowed} > measured ${actual} — lower it`);
     }
     expect(stale).toEqual([]);
   });
 
   /* ── Standing probes (/gate-probe) ── */
-  it("프로브: 손 배지는 잡고 badgeClass 소비자·상태 점은 안 잡는다", () => {
+  it("probe: hand badges are caught, badgeClass consumers and status dots are not", () => {
     expect(isHandBadge('<span className="rounded-full px-2 py-0.5 text-caption"')).toBe(true);
     expect(isHandBadge('<span className="rounded-micro text-label"')).toBe(true);
     expect(isHandBadge('<span className={badgeClass({ shape: "pill" })}')).toBe(false);

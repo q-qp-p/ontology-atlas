@@ -49,18 +49,18 @@ function stripParenthesized(text: string): string {
   return text.replace(/[(（][^)）]*[)）]/g, " ");
 }
 
-describe("화면 글자 용어집 계약", () => {
-  it("사정거리가 비어 있지 않다 — 빈손으로 통과하지 않는다", () => {
+describe("on-screen text glossary contract", () => {
+  it("the range is not empty — it does not pass empty-handed", () => {
     for (const locale of LOCALES) {
       expect(
         Object.keys(MESSAGES[locale]).length,
-        `${locale} 메시지를 하나도 못 읽었다`,
+        `could not read a single ${locale} message`,
       ).toBeGreaterThan(1000);
     }
   });
 
   for (const { word, use, parenthesizedOk } of BANNED) {
-    it(`화면에 ${word.source} 가 없다 — ${use} 를 쓴다`, () => {
+    it(`the screen has no ${word.source} — use ${use}`, () => {
       const hits: string[] = [];
       for (const locale of LOCALES) {
         for (const [key, text] of Object.entries(MESSAGES[locale])) {

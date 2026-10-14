@@ -36,8 +36,8 @@ function collectSourceFiles(dir: string, acc: string[] = []): string[] {
   return acc;
 }
 
-describe('스타터 볼트 언어 — 생성 경로 전부가 화면 언어를 넘긴다', () => {
-  it('어떤 scaffoldOntology 호출도 로케일을 빠뜨리거나 하드코딩하지 않는다', () => {
+describe('starter vault language: every creation path passes the screen language', () => {
+  it('no scaffoldOntology call omits or hard-codes the locale', () => {
     const files = collectSourceFiles(SRC_DIR);
     expect(files.length).toBeGreaterThan(20);
 
@@ -67,11 +67,11 @@ describe('스타터 볼트 언어 — 생성 경로 전부가 화면 언어를 �
     // either count to 0, the gate must fail rather than pass.
     expect(
       callSites.length,
-      'scaffoldOntology 호출부를 하나도 못 찾았다 — 게이트가 무력화됐다.',
+      'found no scaffoldOntology call site, so the gate is disabled.',
     ).toBeGreaterThan(0);
     expect(
       starterRequests.length,
-      '「starter: { locale }」 요청을 하나도 못 찾았다 — 만드는 문 두 곳이 게이트 밖으로 빠졌다.',
+      'found no "starter: { locale }" request, so the two creation doors have fallen outside the gate.',
     ).toBeGreaterThan(0);
     expect(callSites.length + starterRequests.length).toBeGreaterThanOrEqual(4);
 

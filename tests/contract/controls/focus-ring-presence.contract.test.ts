@@ -57,35 +57,35 @@ const OUTLINE_OFF = 'focus-visible:outline-none';
 const SHAPES = ['chip', 'icon', 'row', 'link', 'pill', 'card'] as const;
 const SIZES = ['sm', 'md', 'lg'] as const;
 
-describe('키보드 초점 — base 레이어가 바닥을 깔고, 값 층이 그 위에 얹는다', () => {
+describe('keyboard focus — the base layer lays the floor and the value layer builds on it', () => {
   /**
    * The floor is the base rule in `globals.css`: `:where()` gives specificity 0 and
    * `outline-offset: -2px` keeps box size. Both checks are needed: floor alone hides a value layer
    * that lost its ring; value layer alone leaves bypassing elements bare.
    */
-  it('base 레이어가 모든 상호작용 요소에 초점 바닥을 깐다', () => {
+  it('the base layer lays a focus floor on every interactive element', () => {
     const css = readGlobalCss();
     const rule = /:where\(([\s\S]{0,400}?)\):focus-visible\s*\{([\s\S]{0,200}?)\}/.exec(css);
-    expect(rule, 'globals.css 의 `:where(...):focus-visible` 바닥 규칙이 사라졌다').not.toBeNull();
+    expect(rule, 'the `:where(...):focus-visible` floor rule in globals.css disappeared').not.toBeNull();
 
     const selector = rule![1];
     for (const needed of ['button', 'summary', 'a[href]', 'role="button"', 'tabindex']) {
-      expect(selector, `초점 바닥이 ${needed} 를 안 덮는다`).toContain(needed);
+      expect(selector, `the focus floor does not cover ${needed}`).toContain(needed);
     }
     // Programmatically moved focus (a modal container) must be excluded. `toContain('-1')` is not enough:
     // it passes while `-1` appears anywhere in the selector.
     expect(
       selector.replace(/\s+/g, ''),
-      'tabindex="-1" 를 면제하지 않으면 프로그램으로 옮긴 초점(모달 컨테이너)에도 링이 그려진다',
+      'unless tabindex="-1" is exempted, a ring is also drawn on programmatically moved focus (modal container)',
     ).toContain('[tabindex]:not([tabindex="-1"])');
 
     const body = rule![2];
-    expect(body, '바닥이 아웃라인을 안 그린다').toMatch(/outline:\s*2px/);
-    expect(body, '안쪽으로 안 그리면 상자 치수가 바뀌고 이웃과 겹친다').toMatch(/outline-offset:\s*-/);
-    expect(body, '초점 색이 인디고 계보가 아니다').toMatch(/--color-indigo/);
+    expect(body, 'the floor does not draw an outline').toMatch(/outline:\s*2px/);
+    expect(body, 'unless drawn inward the box size changes and it overlaps neighbours').toMatch(/outline-offset:\s*-/);
+    expect(body, 'the focus colour is not of the indigo lineage').toMatch(/--color-indigo/);
   });
 
-  it('모든 모양 × 크기 조합이 초점 링을 싣는다', () => {
+  it('every shape × size combination carries a focus ring', () => {
     const missing: string[] = [];
     for (const shape of SHAPES) {
       for (const size of SIZES) {
@@ -106,17 +106,17 @@ describe('키보드 초점 — base 레이어가 바닥을 깔고, 값 층이 �
     ).toEqual([]);
   });
 
-  it('초점 링 색이 인디고 계보다 — 다른 색이 새로 들어오지 않는다', () => {
+  it('the focus ring colour is of the indigo lineage — no new colour enters', () => {
     const out = controlClass({ shape: 'chip', size: 'md' });
     const ring = /focus-visible:ring-\[color:var\((--[a-z0-9-]+)\)\]/.exec(out);
-    expect(ring, '초점 링이 토큰을 참조하지 않는다').not.toBeNull();
+    expect(ring, 'the focus ring does not reference a token').not.toBeNull();
     expect(
       ring![1],
-      `초점 링은 인디고 계보여야 한다 — 지금 ${ring![1]}`,
+      `the focus ring must be of the indigo lineage — now ${ring![1]}`,
     ).toMatch(/indigo/);
   });
 
-  it('링은 inset 이다 — 촘촘한 행에서 이웃과 겹치지 않고 상자 치수를 안 바꾼다', () => {
+  it('the ring is inset — in dense rows it does not overlap neighbours and does not change the box size', () => {
     expect(controlClass({ shape: 'row', size: 'md' })).toContain('focus-visible:ring-inset');
   });
 
@@ -125,9 +125,9 @@ describe('키보드 초점 — base 레이어가 바닥을 깔고, 값 층이 �
    * invisible (WCAG 2.4.7). Scope is the opening tag; a border change counts as an indicator and
    * `tabIndex={-1}` containers are exempt because a ring there is the defect.
    */
-  it('초점을 끄기만 하고 아무 표시도 안 주는 자리가 없다', () => {
+  it('no spot only turns focus off and gives no indication', () => {
     const files = collectTsx();
-    expect(files.length, '스캔이 비었다 — 공집합 위의 게이트는 게이트가 아니다').toBeGreaterThan(150);
+    expect(files.length, 'the scan is empty — a gate on an empty set is not a gate').toBeGreaterThan(150);
 
     /** Legitimate focus indicators other than a ring — border, background, or shadow changes. */
     const ANY_INDICATOR = /focus-visible:(ring-|border-|bg-|shadow-|text-)/;
@@ -148,7 +148,7 @@ describe('키보드 초점 — base 레이어가 바닥을 깔고, 값 층이 �
       }
     }
 
-    expect(scannedTags, '`outline-none` 을 쓰는 태그를 한 개도 못 찾았다 — 탐지기가 죽었다').toBeGreaterThan(50);
+    expect(scannedTags, 'could not find a single tag using `outline-none` — the detector is dead').toBeGreaterThan(50);
     expect(
       offenders,
       '`focus-visible:outline-none` **only removes** the default browser ring. Without a replacement\n' +
@@ -157,7 +157,7 @@ describe('키보드 초점 — base 레이어가 바닥을 깔고, 값 층이 �
     ).toEqual([]);
   });
 
-  it('프로브 — 탐지기가 실제로 먹는다', () => {
+  it('probe — the detector really bites', () => {
     const scan = (body: string): string[] => {
       const src = stripComments(body);
       const out: string[] = [];

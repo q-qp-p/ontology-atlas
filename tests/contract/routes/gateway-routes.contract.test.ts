@@ -12,25 +12,25 @@ const repoRoot = resolve(__dirname, '../../..');
  */
 const GATEWAY_ROUTES = ['download', 'guide', 'changelog'] as const;
 
-describe('관문 라우트 등록', () => {
-  it.each(GATEWAY_ROUTES)('`/%s` 라우트가 실제로 존재한다', (route) => {
+describe('gateway route registration', () => {
+  it.each(GATEWAY_ROUTES)('the `/%s` route really exists', (route) => {
     expect(existsSync(resolve(repoRoot, `app/[locale]/${route}/page.tsx`))).toBe(true);
   });
 
-  it.each(GATEWAY_ROUTES)('`/%s` 는 관문 크롬을 쓴다 (레일 없음)', (route) => {
+  it.each(GATEWAY_ROUTES)('`/%s` uses the gateway chrome (no rail)', (route) => {
     expect(isGatewayRoute(`/${route}`)).toBe(true);
     expect(isGatewayRoute(`/ko/${route}`)).toBe(true);
     expect(isGatewayRoute(`/en/${route}/`)).toBe(true);
   });
 
-  it('워크벤치 라우트는 관문이 아니다', () => {
+  it('workbench routes are not gateways', () => {
     for (const path of ['/topology', '/docs', '/ontology/studio', '/projects']) {
-      expect(isGatewayRoute(path), `${path} 가 관문으로 판정됐다`).toBe(false);
+      expect(isGatewayRoute(path), `${path} was judged a gateway`).toBe(false);
     }
   });
 
   /** `/docs` is the workspace library, not gateway reading material, so it must stay a workbench route. */
-  it('`/docs` 는 워크벤치로 남는다 — 가이드와 이름이 갈렸다', () => {
+  it('`/docs` stays a workbench, since the guide and its name were split', () => {
     expect(isGatewayRoute('/docs')).toBe(false);
     expect(isGatewayRoute('/guide')).toBe(true);
   });
@@ -39,7 +39,7 @@ describe('관문 라우트 등록', () => {
    * `/` alone is decided by the **visitor**, not the path. Breaking this branch while
    * registering a new route makes the installed app recommend installing itself.
    */
-  it('`/` 판정은 방문자 맥락이 정한다 — 등록 목록이 이 분기를 삼키지 않았다', () => {
+  it('the `/` verdict is decided by the visitor context, and the registered list did not swallow this branch', () => {
     const web = { hasVault: false, desktop: false, vaultKnown: true };
     const worker = { hasVault: true, desktop: false, vaultKnown: true };
     const app = { hasVault: false, desktop: true, vaultKnown: true };
@@ -48,7 +48,7 @@ describe('관문 라우트 등록', () => {
     expect(isGatewaySurface('/', app)).toBe(false);
   });
 
-  it('관문 읽을거리는 앱 안에서도 관문 크롬이다 — 워크벤치가 아니다', () => {
+  it('gateway reading is gateway chrome inside the app too, not a workbench', () => {
     const app = { hasVault: true, desktop: true, vaultKnown: true };
     expect(isGatewaySurface('/guide', app)).toBe(true);
     expect(isGatewaySurface('/changelog', app)).toBe(true);
@@ -71,22 +71,22 @@ describe('관문 라우트 등록', () => {
  * name**. All three are failures invisible without running, so they are compared
  * here.
  */
-describe('가이드 차례', () => {
+describe('guide table of contents', () => {
   it(
-    '차례의 모든 장이 볼트에 실제 본문을 갖는다',
+    'every chapter of the table of contents has real body text in the vault',
     async () => {
       const { GUIDE_PAGES } = await import('@/views/gateway-doc');
       const { readVaultDoc } = await import('@/views/gateway-doc');
       for (const page of GUIDE_PAGES) {
         const body = readVaultDoc(page.slug);
-        expect(body, `${page.slug} 의 본문이 볼트에 없다`).toBeTruthy();
-        expect((body ?? '').length, `${page.slug} 가 사실상 비어 있다`).toBeGreaterThan(200);
+        expect(body, `the body of ${page.slug} is not in the vault`).toBeTruthy();
+        expect((body ?? '').length, `${page.slug} is practically empty`).toBeGreaterThan(200);
       }
     },
     30_000,
   );
 
-  it('차례의 모든 장이 두 로케일 모두에 이름을 갖는다', async () => {
+  it('every chapter of the table of contents has a name in both locales', async () => {
     const { GUIDE_PAGES } = await import('@/views/gateway-doc');
     for (const locale of ['ko', 'en'] as const) {
       const messages = JSON.parse(
@@ -96,27 +96,27 @@ describe('가이드 차례', () => {
       for (const page of GUIDE_PAGES) {
         expect(
           titles[page.titleKey],
-          `${locale}.json 에 gatewayNav.guidePages.${page.titleKey} 가 없다 — 화면에 키 이름이 그대로 나온다`,
+          `${locale}.json has no gatewayNav.guidePages.${page.titleKey}, so the key name shows up on screen as it is`,
         ).toBeTruthy();
       }
     }
   });
 
-  it('URL 마디와 볼트 슬러그가 어긋나지 않는다', async () => {
+  it('URL segments and vault slugs do not drift apart', async () => {
     const { GUIDE_PAGES } = await import('@/views/gateway-doc');
     for (const page of GUIDE_PAGES) {
-      expect(page.slug, `${page.segment} 의 슬러그 규칙이 깨졌다`).toBe(`guide/${page.segment}`);
+      expect(page.slug, `the slug rule of ${page.segment} is broken`).toBe(`guide/${page.segment}`);
     }
   });
 });
 
-describe('X 링크 자리', () => {
+describe('X link slot', () => {
   const source = readFileSync(
     resolve(repoRoot, 'src/shared/config/social-links.ts'),
     'utf8',
   );
 
-  it('핸들이 비면 URL 이 null · 채워지면 그 핸들의 주소다', async () => {
+  it('the URL is null when the handle is empty, and that handle\'s address when filled', async () => {
     const { X_HANDLE, xProfileUrl } = await import('@/shared/config/social-links');
     /**
      * `X_HANDLE` is typed `string` so the `=== ''` comparison stays valid when the handle is filled in;
@@ -127,7 +127,7 @@ describe('X 링크 자리', () => {
     else expect(xProfileUrl()).toBe(`https://x.com/${handle}`);
   });
 
-  it('핸들만 저장한다 — URL 전체를 박지 않는다', () => {
+  it('stores the handle only, never the full URL', () => {
     // The contract that keeps the constant stable through another domain change
     // (twitter.com → x.com).
     expect(source).toMatch(/export const X_HANDLE = '[^/]*';/);

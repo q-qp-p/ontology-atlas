@@ -18,18 +18,18 @@ import { describe, expect, it } from "vitest";
 const ROOT = process.cwd();
 const read = (rel: string) => readFileSync(join(ROOT, rel), "utf8");
 
-describe("「이어서 새로 만들기」 — 어포던스 계약", () => {
+describe("\"create next\" — affordance contract", () => {
   const inspector = read("src/views/home/ui/TopologyInspectorSurfaces.tsx");
   const composer = read("src/views/home/ui/TopologyBlockingOverlays.tsx");
   const authoring = read("src/views/home/model/authoring/use-topology-authoring.tsx");
 
-  it("도메인 노드에서만 뜬다 — 다른 kind 는 이어 붙일 수가 없다", () => {
+  it("appears only on domain nodes — other kinds cannot be linked on", () => {
     expect(inspector).toMatch(/canCreateNode && canvasSelectedGraphNode\?\.kind === "domain"/);
     // Without the condition the tile appears where nothing can be linked.
     expect(inspector).toMatch(/onCreateLinked=\{/);
   });
 
-  it("고른 도메인이 미리 골라진다 — 방금 누른 노드를 다시 묻지 않는다", () => {
+  it("the chosen domain is preselected — it does not ask again about the node just pressed", () => {
     // Seeded with the domain's own vault ref, the value the picker offers; the bare graph-id tail would
     // write a second spelling of the relation.
     expect(inspector).toMatch(/setCreateNodeSeedDomain\(resolveNodeVaultRef\(canvasSelectedGraphNode\)\)/);
@@ -40,7 +40,7 @@ describe("「이어서 새로 만들기」 — 어포던스 계약", () => {
     );
   });
 
-  it("화면에서 만든 노드에 `human` 스탬프가 찍힌다", () => {
+  it("a node created on screen gets the `human` stamp", () => {
     /*
      * The `human` stamp is applied at write time and only for an actor the call path proves; this is the
      * screen's single create-concept path.
@@ -51,7 +51,7 @@ describe("「이어서 새로 만들기」 — 어포던스 계약", () => {
     );
   });
 
-  it("타일은 핸들러가 있을 때만 그려진다 — 라벨만 있고 문이 없으면 안 된다", () => {
+  it("the tile is drawn only when a handler exists — a label without a door must not happen", () => {
     const panel = read("src/widgets/ontology-map/ui/OntologyMapDetailPanel.tsx");
     expect(panel).toMatch(/onCreateLinked && labels\.actionCreateLinked/);
   });

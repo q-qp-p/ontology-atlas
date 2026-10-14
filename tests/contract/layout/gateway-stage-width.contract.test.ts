@@ -21,7 +21,7 @@ function parseStageClamp(css: string): { floorRem: number; slopeVw: number; capR
   );
   expect(
     match,
-    `${TOKEN} 이 app/globals.css 에 clamp(<rem>, <vw>, <rem>) 꼴로 선언돼 있어야 한다`,
+    `${TOKEN} must be declared in app/globals.css in the form clamp(<rem>, <vw>, <rem>)`,
   ).not.toBeNull();
   const [, floor, slope, cap] = match!;
   return { floorRem: Number(floor), slopeVw: Number(slope), capRem: Number(cap) };
@@ -37,15 +37,15 @@ function walk(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-describe("관문 무대 폭 — --gateway-stage-max 의 불변식", () => {
+describe("gateway stage width — invariants of --gateway-stage-max", () => {
   const css = readGlobalCss();
   const clamp = parseStageClamp(css);
 
-  it("(a) 바닥은 48rem — 원장 (83) 의 소유자 승인값이다", () => {
+  it("(a) the floor is 48rem — the value the owner approved in ledger entry (83)", () => {
     expect(clamp.floorRem).toBe(48);
   });
 
-  it("(b) ≤1920 무회귀 — 기울기가 1920 에서 바닥을 넘지 않는다", () => {
+  it("(b) no regression up to 1920 — the slope does not exceed the floor at 1920", () => {
     const slopeAt1920 = (clamp.slopeVw / 100) * 1920;
     const floorPx = clamp.floorRem * 16;
     expect(
@@ -55,16 +55,16 @@ describe("관문 무대 폭 — --gateway-stage-max 의 불변식", () => {
     ).toBeLessThanOrEqual(floorPx);
   });
 
-  it("(c) 상한은 클립 원본 폭(1512px)을 넘지 않는다", () => {
+  it("(c) the cap does not exceed the original clip width (1512px)", () => {
     const capPx = clamp.capRem * 16;
     expect(capPx).toBeGreaterThanOrEqual(clamp.floorRem * 16);
     expect(
       capPx,
-      "상한이 클립 원본(1512px 폭)을 넘으면 1x 밀도에서 영상을 업스케일하게 된다",
+      "a cap above the original clip (1512px wide) upscales the video at 1x density",
     ).toBeLessThanOrEqual(1512);
   });
 
-  it("(d) 무대 폭의 진실원은 토큰 하나다 — 소비 1곳 + 로컬 48rem 0곳", () => {
+  it("(d) the source of truth of stage width is one token — 1 consumer + 0 local 48rem", () => {
     const downloadFiles = walk(join(repoRoot, "src", "views", "download"));
     const consumers: string[] = [];
     const strays: string[] = [];
@@ -77,9 +77,9 @@ describe("관문 무대 폭 — --gateway-stage-max 의 불변식", () => {
     }
     expect(
       consumers.sort(),
-      "시연 무대(DemoStage)만 토큰을 소비해야 한다 — 에이전트 장면은 근거 절의 격자에 선다",
+      "only the demo stage (DemoStage) must consume the token — the agent scene stands on the grid of the basis section",
     ).toEqual(["src/views/download/ui/DemoStage.tsx"]);
-    expect(strays, "무대 폭을 따로 정하는 max-w-[48rem] 이 남아 있다").toEqual([]);
+    expect(strays, "a max-w-[48rem] that decides the stage width separately remains").toEqual([]);
   });
 
   it("(e) pnpm design:tokens prints the declared formula", () => {

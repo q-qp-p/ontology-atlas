@@ -100,7 +100,7 @@ describe("createTopologyPointerHandlers — handleContextMenu (W2-B)", () => {
   });
 });
 
-describe("createTopologyPointerHandlers — 빈 캔버스 우클릭 (2026-08-03)", () => {
+describe("createTopologyPointerHandlers: right-click on an empty canvas", () => {
   /*
    * Removing the top "+ Concept" chrome pill made this position **the only
    * door for creating a node on a populated map**, because the empty map's two entry
@@ -108,7 +108,7 @@ describe("createTopologyPointerHandlers — 빈 캔버스 우클릭 (2026-08-03)
    * fills. If this wiring breaks, nothing can be created from the map in a vault that
    * already has nodes.
    */
-  it("빈 자리에서는 만들기를 부르고 브라우저 기본 메뉴를 막는다", () => {
+  it("on empty space it calls create and blocks the browser default menu", () => {
     vi.mocked(hitTestWorld).mockReturnValue(null);
     const onContextMenuPane = vi.fn();
     const { handleContextMenu } = createTopologyPointerHandlers(
@@ -122,7 +122,7 @@ describe("createTopologyPointerHandlers — 빈 캔버스 우클릭 (2026-08-03)
     expect(event.preventDefault).toHaveBeenCalledTimes(1);
   });
 
-  it("노드를 맞히면 빈 자리 콜백은 안 부른다 — 두 자리가 섞이면 안 된다", () => {
+  it("hitting a node does not call the empty-space callback, because the two places must not mix", () => {
     vi.mocked(hitTestWorld).mockReturnValue("capabilities/mcp-server");
     const onContextMenuNode = vi.fn();
     const onContextMenuPane = vi.fn();
@@ -136,7 +136,7 @@ describe("createTopologyPointerHandlers — 빈 캔버스 우클릭 (2026-08-03)
     expect(onContextMenuPane).not.toHaveBeenCalled();
   });
 
-  it("소비처가 없으면 종전대로 no-op — 브라우저 기본 메뉴가 살아 있다", () => {
+  it("with no consumer it is a no-op as before, and the browser default menu stays alive", () => {
     vi.mocked(hitTestWorld).mockReturnValue(null);
     const { handleContextMenu } = createTopologyPointerHandlers(buildRefs({}));
     const event = fakeContextMenuEvent(10, 20);

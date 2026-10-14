@@ -65,9 +65,9 @@ const countReading = (page: import("@playwright/test").Page) =>
 
 test.use({ bypassCSP: true });
 
-test.describe("관문 읽을거리 — 좁은 화면에서도 닿는다", () => {
+test.describe("gateway reading material is reachable even on narrow screens", () => {
   for (const { w, h } of WIDTHS) {
-    test(`${w}×${h} — 관문 표면 어디서든 가이드와 변경 내역에 닿는다`, async ({ page }) => {
+    test(`${w}×${h}: the guide and changelog are reachable from every gateway surface`, async ({ page }) => {
       test.setTimeout(120_000);
       await page.setViewportSize({ width: w, height: h });
 
@@ -88,17 +88,17 @@ test.describe("관문 읽을거리 — 좁은 화면에서도 닿는다", () => 
 
         const seen = await countReading(page);
         measured += 1;
-        if (seen.guide < 1) dead.push(`${route} → 가이드 0`);
-        if (seen.changelog < 1) dead.push(`${route} → 변경 내역 0`);
+        if (seen.guide < 1) dead.push(`${route} → guide 0`);
+        if (seen.changelog < 1) dead.push(`${route} → changelog 0`);
         // Inside the guide, **another chapter must be reachable**. A single index link does
         // not count as reaching the guide — that was the hole described above.
         if (route.startsWith("/ko/guide") && seen.chapters < 5) {
-          dead.push(`${route} → 갈 수 있는 장 ${seen.chapters}개 (차례가 없다)`);
+          dead.push(`${route} → reachable chapters ${seen.chapters} (no table of contents)`);
         }
       }
 
       // Idling guard — if no route opened at all, the 0 below does not mean "clean".
-      expect(measured, "관문 라우트를 하나도 안 쟀다").toBe(GATEWAY_ROUTES.length);
+      expect(measured, "no gateway route was measured").toBe(GATEWAY_ROUTES.length);
 
       expect(
         dead,

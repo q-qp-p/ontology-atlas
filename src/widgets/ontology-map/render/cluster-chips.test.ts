@@ -21,7 +21,7 @@ import {
  * pixels are verified on the running screen.
  */
 describe("clusterChipLabel", () => {
-  it("접힘=`+N`, 펼침=`− N`(숫자 유지)", () => {
+  it("collapsed is `+N`, expanded is `- N` (the number is kept)", () => {
     expect(clusterChipLabel(108, false)).toBe("+108");
     expect(clusterChipLabel(108, true)).toBe("− 108");
     expect(clusterChipLabel(5, false)).toBe("+5");
@@ -29,19 +29,19 @@ describe("clusterChipLabel", () => {
 });
 
 describe("clusterChipScale", () => {
-  it("카메라 스케일을 따르되 0.85~1.5 밴드로 clamp (판독 유지)", () => {
+  it("follows the camera scale but clamps to a 0.85-1.5 band to stay legible", () => {
     expect(clusterChipScale(1)).toBe(1);
     expect(clusterChipScale(0.4)).toBe(0.85);
     expect(clusterChipScale(3)).toBe(1.5);
     expect(clusterChipScale(1.2)).toBeCloseTo(1.2, 6);
   });
-  it("비유한 스케일은 1 로 폴백", () => {
+  it("a non-finite scale falls back to 1", () => {
     expect(clusterChipScale(Number.NaN)).toBe(1);
   });
 });
 
 describe("clusterChipRect scale", () => {
-  it("scale 을 주면 폭·높이가 비례한다(히트/드로우 공용)", () => {
+  it("width and height scale proportionally with scale (shared by hit and draw)", () => {
     const base = clusterChipRect(0, 0, "+12", 1);
     const big = clusterChipRect(0, 0, "+12", 1.5);
     expect(big.w).toBeCloseTo(base.w * 1.5, 6);
@@ -52,24 +52,24 @@ describe("clusterChipRect scale", () => {
 });
 
 describe("clusterChipRect", () => {
-  it("anchor 를 중심으로 사각형을 놓는다(중심 = anchor)", () => {
+  it("places the rectangle around the anchor (centre = anchor)", () => {
     const rect = clusterChipRect(200, 150, "+12");
     expect(rect.x + rect.w / 2).toBeCloseTo(200, 6);
     expect(rect.y + rect.h / 2).toBeCloseTo(150, 6);
     expect(rect.h).toBe(CLUSTER_CHIP_HEIGHT);
   });
 
-  it("결정론 — 같은 입력 → 같은 사각형(히트/드로우 일치의 근거)", () => {
+  it("deterministic: the same input gives the same rectangle (the basis for hit and draw agreeing)", () => {
     expect(clusterChipRect(10, 20, "+7")).toEqual(clusterChipRect(10, 20, "+7"));
   });
 
-  it("라벨이 길수록 폭이 넓다(카운트 자릿수 반영)", () => {
+  it("a longer label gives a wider rectangle (reflects the digit count)", () => {
     const narrow = clusterChipRect(0, 0, "+9");
     const wide = clusterChipRect(0, 0, "+108");
     expect(wide.w).toBeGreaterThan(narrow.w);
   });
 
-  it("point-in-rect: anchor 지점은 반드시 사각형 안이다", () => {
+  it("point-in-rect: the anchor point is always inside the rectangle", () => {
     const cx = 300;
     const cy = 220;
     const rect = clusterChipRect(cx, cy, clusterChipLabel(40, false));
@@ -85,7 +85,7 @@ describe("clusterChipRect", () => {
  * coordinates drift.
  */
 describe("clusterBadgeLabel", () => {
-  it("펼침 배지는 컴팩트 `−N`(공백 없음, +N 과 대칭)", () => {
+  it("the expanded badge is a compact `-N` (no space, symmetric with +N)", () => {
     expect(clusterBadgeLabel(63)).toBe("−63");
     expect(clusterBadgeLabel(5)).toBe("−5");
   });
@@ -100,7 +100,7 @@ describe("clusterBadgeRect", () => {
    * The badge sits upper-left because the upper-right is the orbit button's bearing; sharing a shoulder
    * put 80% of the badge under the button (`tests/contract/settings/expand-settings.contract.test.ts`).
    */
-  it("배지는 부모의 좌상단(스크린 x- 왼쪽, y- 위)에 앉는다", () => {
+  it("the badge sits at the parent's top-left (screen x to the left, y up)", () => {
     const rect = clusterBadgeRect(PARENT_X, PARENT_Y, NODE_R, clusterBadgeLabel(63));
     const cx = rect.x + rect.w / 2;
     const cy = rect.y + rect.h / 2;
@@ -108,7 +108,7 @@ describe("clusterBadgeRect", () => {
     expect(cy).toBeLessThan(PARENT_Y); // Top
   });
 
-  it("배지는 부모 노드 반지름 바깥에 완전히 벗어난다(오라·노드 겹침 차단)", () => {
+  it("the badge lies fully outside the parent node radius (no aura or node overlap)", () => {
     const rect = clusterBadgeRect(PARENT_X, PARENT_Y, NODE_R, clusterBadgeLabel(63));
     // Distance to the badge corner nearest the parent (**lower-right**) > node radius.
     const nearX = rect.x + rect.w; // The right edge is closer to the parent
@@ -117,7 +117,7 @@ describe("clusterBadgeRect", () => {
     expect(dist).toBeGreaterThan(NODE_R);
   });
 
-  it("노드 반지름이 클수록 배지는 더 바깥으로 밀린다(카메라 추종)", () => {
+  it("a larger node radius pushes the badge further out (follows the camera)", () => {
     const near = clusterBadgeRect(PARENT_X, PARENT_Y, 10, clusterBadgeLabel(9));
     const far = clusterBadgeRect(PARENT_X, PARENT_Y, 40, clusterBadgeLabel(9));
     const nearReach = Math.hypot(near.x + near.w / 2 - PARENT_X, near.y + near.h / 2 - PARENT_Y);
@@ -125,7 +125,7 @@ describe("clusterBadgeRect", () => {
     expect(farReach).toBeGreaterThan(nearReach);
   });
 
-  it("scale 을 주면 폭·높이가 비례한다(히트/드로우 공용)", () => {
+  it("width and height scale proportionally with scale (shared by hit and draw)", () => {
     const base = clusterBadgeRect(PARENT_X, PARENT_Y, NODE_R, "−12", 1);
     const big = clusterBadgeRect(PARENT_X, PARENT_Y, NODE_R, "−12", 1.5);
     expect(big.w).toBeCloseTo(base.w * 1.5, 6);
@@ -133,13 +133,13 @@ describe("clusterBadgeRect", () => {
     expect(base.h).toBe(CLUSTER_BADGE_HEIGHT);
   });
 
-  it("결정론 — 같은 입력 → 같은 사각형(히트/드로우 일치의 근거)", () => {
+  it("deterministic: the same input gives the same rectangle (the basis for hit and draw agreeing)", () => {
     expect(clusterBadgeRect(PARENT_X, PARENT_Y, NODE_R, "−7")).toEqual(
       clusterBadgeRect(PARENT_X, PARENT_Y, NODE_R, "−7"),
     );
   });
 
-  it("배지 높이는 접힘 pill 보다 작다(미니 배지)", () => {
+  it("the badge height is smaller than the collapsed pill (mini badge)", () => {
     expect(CLUSTER_BADGE_HEIGHT).toBeLessThan(CLUSTER_CHIP_HEIGHT);
   });
 });
@@ -150,15 +150,15 @@ describe("clusterBadgeRect", () => {
  * reservation) or dodge empty space (a ghost reservation). The two functions are
  * always edited together.
  */
-describe("clusterChipOccupancyRect (S11 라벨 예약)", () => {
+describe("clusterChipOccupancyRect (label reservation for cluster chips)", () => {
   const base = { screenX: 400, screenY: 300, count: 31, hovered: false };
 
-  it("접힘 = pill 사각형과 정확히 일치한다", () => {
+  it("collapsed matches the pill rectangle exactly", () => {
     const rect = clusterChipOccupancyRect({ ...base, expanded: false });
     expect(rect).toEqual(clusterChipRect(400, 300, clusterChipLabel(31, false)));
   });
 
-  it("펼침 = 부모 우상단 배지 사각형과 정확히 일치한다", () => {
+  it("expanded matches the parent's top-right badge rectangle exactly", () => {
     const rect = clusterChipOccupancyRect({
       ...base,
       expanded: true,
@@ -169,11 +169,11 @@ describe("clusterChipOccupancyRect (S11 라벨 예약)", () => {
     expect(rect).toEqual(clusterBadgeRect(200, 250, 18, clusterBadgeLabel(31)));
   });
 
-  it("펼침인데 부모 지오메트리가 없으면 null — draw 도 그리지 않는다", () => {
+  it("expanded with no parent geometry is null, and draw paints nothing either", () => {
     expect(clusterChipOccupancyRect({ ...base, expanded: true })).toBeNull();
   });
 
-  it("reveal 램프로 사라지는 형태는 점유하지 않는다 — 안 보이는 칩이 라벨을 밀어내면 유령 여백", () => {
+  it("a shape that fades out on the reveal ramp reserves nothing, since an invisible chip pushing labels away would leave a ghost margin", () => {
     // Collapsed pill alpha = 1 − revealT, so at revealT=1 the pill is invisible.
     expect(clusterChipOccupancyRect({ ...base, expanded: false, revealT: 1 })).toBeNull();
     // Expanded badge alpha = revealT, so at revealT=0 the badge is invisible.
@@ -189,7 +189,7 @@ describe("clusterChipOccupancyRect (S11 라벨 예약)", () => {
     ).toBeNull();
   });
 
-  it("줌 스케일이 예약 폭에도 그대로 반영된다", () => {
+  it("the zoom scale carries through to the reserved width as well", () => {
     const small = clusterChipOccupancyRect({ ...base, expanded: false, scale: 1 })!;
     const large = clusterChipOccupancyRect({ ...base, expanded: false, scale: 1.5 })!;
     expect(large.w).toBeCloseTo(small.w * 1.5);
@@ -201,7 +201,7 @@ describe("clusterChipOccupancyRect (S11 라벨 예약)", () => {
  * The chip walks the gap: the collapsed pill and the expanded badge sit 51-147px apart, so at the end
  * of the transition the pill's position must equal the badge's and the crossfade happens at one point.
  */
-describe("clusterChipTravelPoint — 칩이 배지 자리로 걸어간다", () => {
+describe("clusterChipTravelPoint: the chip walks to the badge position", () => {
   const base = {
     screenX: 100,
     screenY: 400,
@@ -211,7 +211,7 @@ describe("clusterChipTravelPoint — 칩이 배지 자리로 걸어간다", () =
     scale: 1,
   };
 
-  it("정착 상태에서는 anchor 에서 한 픽셀도 안 움직인다 — 회귀 0", () => {
+  it("at rest it moves not one pixel from the anchor, with zero regression", () => {
     // Both revealT omitted (backward compatible) and 0 (collapsed, at rest) must keep the earlier coordinates.
     for (const revealT of [undefined, 0]) {
       const p = clusterChipTravelPoint({ ...base, revealT });
@@ -219,7 +219,7 @@ describe("clusterChipTravelPoint — 칩이 배지 자리로 걸어간다", () =
     }
   });
 
-  it("전이가 끝나면 배지 자리에 **도착한다** — 크로스페이드가 한 점에서 일어난다", () => {
+  it("when the transition ends it **arrives** at the badge position, so the crossfade happens at one point", () => {
     const arrived = clusterChipTravelPoint({ ...base, revealT: 1 });
     const badge = clusterBadgeCenter(
       base.parentScreenX,
@@ -231,7 +231,7 @@ describe("clusterChipTravelPoint — 칩이 배지 자리로 걸어간다", () =
     expect(arrived.y).toBeCloseTo(badge.y, 6);
   });
 
-  it("중간에서는 두 점 사이에 있다 — 순간이동이 아니다", () => {
+  it("midway it lies between the two points rather than teleporting", () => {
     const mid = clusterChipTravelPoint({ ...base, revealT: 0.5 });
     const badge = clusterBadgeCenter(
       base.parentScreenX,
@@ -243,7 +243,7 @@ describe("clusterChipTravelPoint — 칩이 배지 자리로 걸어간다", () =
     expect(mid.y).toBeCloseTo((base.screenY + badge.y) / 2, 6);
   });
 
-  it("목적지를 모르면 움직이지 않는다 — 표류 금지", () => {
+  it("does not move when the destination is unknown, so there is no drift", () => {
     // Without parent coordinates or radius (the degraded path) the badge is not
     // drawn either. A pill drifting off alone there is drift, not travel.
     for (const missing of [
@@ -256,7 +256,7 @@ describe("clusterChipTravelPoint — 칩이 배지 자리로 걸어간다", () =
     }
   });
 
-  it("점유 사각형이 이동을 따라간다 — 빈 자리를 피하지 않는다", () => {
+  it("the occupancy rectangle follows the movement and does not avoid the empty spot", () => {
     // If label avoidance keeps dodging the anchor, labels land on the ink of the
     // pill that walked away. Draw and occupancy must use the same travel point.
     //

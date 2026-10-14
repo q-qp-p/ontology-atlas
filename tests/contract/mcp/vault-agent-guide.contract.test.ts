@@ -74,13 +74,13 @@ const knownNames = new Set([
 const toolMentions = (markdown: string): string[] =>
   [...markdown.matchAll(/`([a-z][a-z0-9]*(?:_[a-z0-9]+)+)\b[^`]*`/gu)].map((m) => m[1]);
 
-describe("볼트 에이전트 안내문", () => {
-  it("등록된 MCP 도구 목록을 실제로 읽었다 — 아니면 아래가 전부 헛돈다", () => {
+describe("vault agent guide", () => {
+  it("actually read the registered MCP tool list, otherwise everything below spins idle", () => {
     expect(registeredTools.size).toBeGreaterThan(20);
     expect(registeredTools.has("list_concepts")).toBe(true);
   });
 
-  it("제품이 내놓는 health 검사 이름을 실제로 읽었다", () => {
+  it("actually read the health check names the product exposes", () => {
     // The guide's closing step tells the agent to read these checks by name. A renamed
     // check makes that instruction false, so the names are locked here.
     expect(healthCheckIds.size).toBeGreaterThan(5);
@@ -88,7 +88,7 @@ describe("볼트 에이전트 안내문", () => {
     expect(healthCheckIds.has("relation_recommendations")).toBe(true);
   });
 
-  it("스타터의 frontmatter 칸도 실제로 읽었다", () => {
+  it("actually read the starter's frontmatter fields too", () => {
     expect(starterFrontmatterKeys.has("display_ko")).toBe(true);
     expect(starterFrontmatterKeys.has("title")).toBe(true);
     // Idling guard — a typo must not be present here.
@@ -101,7 +101,7 @@ describe("볼트 에이전트 안내문", () => {
 
       const bridge = vaultClaudeBridgeForLocale(locale);
 
-      it("CLI 템플릿과 바이트 동일하다", () => {
+      it("is byte-identical to the CLI template", () => {
         expect(guide.content).toBe(
           readFileSync(templatePath(locale, VAULT_AGENT_GUIDE_PATH), "utf8"),
         );
@@ -115,7 +115,7 @@ describe("볼트 에이전트 안내문", () => {
        * reaches it through the `@AGENTS.md` import in `CLAUDE.md`. The product own checker
        * (`claude-agents-bridge`) decides, so the rule is not reimplemented here.
        */
-      it("Claude Code 로 가는 다리가 실제로 이어져 있다 — 제품 자신의 검사기로 판정", () => {
+      it("the bridge to Claude Code is really connected, judged by the product's own checker", () => {
         const analysis = analyzeAgentFiles({
           files: [
             { path: VAULT_AGENT_GUIDE_PATH, content: guide.content },
@@ -126,26 +126,26 @@ describe("볼트 에이전트 안내문", () => {
         expect(analysis.drift).toEqual([]);
       });
 
-      it("다리만 있고 안내문이 없으면 그 검사가 빨개진다 — 헛돌지 않는다", () => {
+      it("that check goes red when the bridge exists but the guide does not, so it does not spin idle", () => {
         const analysis = analyzeAgentFiles({
           files: [{ path: VAULT_CLAUDE_BRIDGE_PATH, content: bridge.content }],
         });
         expect(analysis.checks.claudeAgentsBridge.status).toBe("drift");
       });
 
-      it("도구를 실제로 추천한다 — 안 하면 이 안내문은 있으나 마나다", () => {
+      it("actually recommends tools, otherwise the guide is worthless", () => {
         // In the measurement, what changed the behaviour was the "call this first" table.
         expect(toolMentions(guide.content).length).toBeGreaterThanOrEqual(1);
       });
 
-      it("추천한 도구가 전부 실재한다", () => {
+      it("every recommended tool exists", () => {
         const missing = [...new Set(toolMentions(guide.content))].filter(
           (name) => !knownNames.has(name),
         );
-        expect(missing, "안내문이 없는 도구를 부르라고 한다").toEqual([]);
+        expect(missing, "the guide tells the agent to call a tool that does not exist").toEqual([]);
       });
 
-      it("서버 이름을 대 준다 — 이름을 모르면 못 부른다", () => {
+      it("names the server, since an agent that does not know the name cannot call it", () => {
         // Measured: before the name was given, the agent could not find us in its tool list.
         expect(MCP_SERVER_NAME.length).toBeGreaterThan(0);
         expect(guide.content).toContain(MCP_SERVER_NAME);
@@ -157,7 +157,7 @@ describe("볼트 에이전트 안내문", () => {
    * The guide claims every node keeps `title` in English; the shipped starter data is asked instead of
    * pinning the sentence, so a changed convention breaks this check first.
    */
-  it("스타터가 실제로 그 규약을 지킨다 — 안내문의 주장이 데이터와 맞는가", () => {
+  it("the starter really keeps that convention, so the guide's claim matches the data", () => {
     const named = starterFilesForLocale("ko").filter((file) =>
       /^display_en:/m.test(file.content),
     );
@@ -165,17 +165,17 @@ describe("볼트 에이전트 안내문", () => {
     for (const file of named) {
       const title = /^title:\s*(.+)$/m.exec(file.content)?.[1]?.trim();
       const displayEn = /^display_en:\s*(.+)$/m.exec(file.content)?.[1]?.trim();
-      expect(title, `${file.relPath}: title 이 정본(영어) 이름이어야 한다`).toBe(displayEn);
+      expect(title, `${file.relPath}: title must be the canonical (English) name`).toBe(displayEn);
     }
   });
 
-  it("두 언어가 같은 도구를 추천한다 — 한쪽만 고치면 다른 쪽이 낡는다", () => {
+  it("both languages recommend the same tools, since fixing only one leaves the other stale", () => {
     const named = (locale: "en" | "ko") =>
       [...new Set(toolMentions(vaultAgentGuideForLocale(locale).content))].sort();
     expect(named("ko")).toEqual(named("en"));
   });
 
-  it("모르는 로케일은 영어로 떨어진다 — 스타터와 같은 규율", () => {
+  it("an unknown locale falls back to English, the same discipline as the starter", () => {
     expect(vaultAgentGuideForLocale("fr")).toEqual(vaultAgentGuideForLocale("en"));
   });
 });

@@ -138,27 +138,27 @@ async function waitForEvidenceMotionToSettle(page: Page, evidence: string): Prom
  */
 const STATES: readonly VaultState[] = [
   {
-    name: "지도 · 관계 contextual editor",
+    name: "Map: relation contextual editor",
     url: "/ko/topology/?p=capability%3Acheckout&workbench=edit&edit=relates%3Acapability%3Ainvoice",
     evidence: '[data-testid="meaning-editor-panel"]',
   },
   {
-    name: "지도 — 볼트 축척",
+    name: "Map: vault scale",
     url: "/ko/topology/",
     evidence: '[data-testid="topology-concept-search"]',
   },
   {
-    name: "인사이트 · 할 일",
+    name: "Insights: to do",
     url: "/ko/ontology/insights/?tab=do-next",
     evidence: '[id^="insights-tabpanel"]',
   },
   {
-    name: "인사이트 · 구성",
+    name: "Insights: composition",
     url: "/ko/ontology/insights/?tab=composition",
     evidence: '[id^="insights-tabpanel"]',
   },
   {
-    name: "인사이트 · 연결",
+    name: "Insights: connections",
     url: "/ko/ontology/insights/?tab=connections",
     evidence: '[id^="insights-tabpanel"]',
   },
@@ -186,43 +186,43 @@ const STATES: readonly VaultState[] = [
     },
   },
   {
-    name: "인사이트 · 신선도",
+    name: "Insights: freshness",
     url: "/ko/ontology/insights/?tab=freshness",
     evidence: '[id^="insights-tabpanel"]',
   },
   {
     // Both states below are vault-backed: the composition board needs a project with an ontology and the
     // rows need domains, so the ratchet measures what only data can open.
-    name: "프로젝트 상세 · 구성 판",
+    name: "Project detail: composition board",
     url: "/ko/project/storefront/",
     evidence: '[data-testid="project-detail-composition"]',
   },
   {
-    name: "프로젝트 상세 · 도메인 행",
+    name: "Project detail: domain row",
     url: "/ko/project/storefront/",
     evidence: '[data-testid="project-detail-domains"]',
   },
   {
     // The old ratchet measured an **empty screen without even a `<main>`** here.
-    name: "프로젝트 편집",
+    name: "Project edit",
     url: "/ko/project/storefront/edit/",
     evidence: "form, input",
   },
   {
-    name: "프로젝트 목록",
+    name: "Project list",
     url: "/ko/projects/",
     evidence: '[data-testid="project-selector-card"]',
     minMainElements: MIN_PROJECTS_MAIN_ELEMENTS,
     async verify(page) {
       const card = page.getByTestId("project-selector-card").first();
-      await expect(card.locator("h2 a"), "프로젝트 이름 링크가 없다").toBeVisible();
-      await expect(card.getByRole("link", { name: /상세로 가기$/ }), "상세 진입 링크가 없다").toBeVisible();
-      await expect(card.getByRole("link", { name: "지도에서 보기" }), "지도 진입 링크가 없다").toBeVisible();
-      await expect(page.getByTestId("project-selector-new-cta"), "새 프로젝트 동작이 없다").toBeVisible();
+      await expect(card.locator("h2 a"), "the project name link is missing").toBeVisible();
+      await expect(card.getByRole("link", { name: /상세로 가기$/ }), "the detail entry link is missing").toBeVisible();
+      await expect(card.getByRole("link", { name: "지도에서 보기" }), "the map entry link is missing").toBeVisible();
+      await expect(page.getByTestId("project-selector-new-cta"), "the new project action is missing").toBeVisible();
     },
   },
   {
-    name: "문서함",
+    name: "Document box",
     url: "/ko/docs/",
     evidence: '[data-testid="docs-vault-doc-list"]',
   },
@@ -230,7 +230,7 @@ const STATES: readonly VaultState[] = [
     // Creating from the map opens a **change review** after the input step. If the
     // old immediate-write path returns, this evidence disappears and the gate turns
     // red instead of idling.
-    name: "지도 · 새 개념 변경안 검토",
+    name: "Map: new concept change review",
     url: "/ko/topology/?workbench=create",
     evidence: '[data-testid="create-node-change-review"]',
     async act(page) {
@@ -242,7 +242,7 @@ const STATES: readonly VaultState[] = [
   },
 ];
 
-test("볼트를 물린 접근성·대비 래칫 — 데이터가 있어야 존재하는 상태를 잰다", async ({ page }) => {
+test("vault-backed accessibility and contrast ratchet: measures states that exist only with data", async ({ page }) => {
   // 14 states × (convergence wait + axe) — well past the default 60s.
   //
   // ⚠️ **The generous budget is for the failure path** (measured with a probe):
@@ -268,14 +268,14 @@ test("볼트를 물린 접근성·대비 래칫 — 데이터가 있어야 존�
   //   would make this file meaningless.
   await expect(
     page.getByTestId("first-run-starter"),
-    "첫 실행 카드가 안 사라졌다 — 볼트가 안 물렸다. 이 스펙의 나머지는 모두 미측정이다.",
+    "The first-run card did not go away, so no vault is attached. Everything else in this spec is unmeasured.",
   ).toHaveCount(0, { timeout: 30_000 });
 
   // ★ Do not run on an empty set — emptying `STATES` makes the loop below run 0
   //   times and every assertion green (an empty set satisfies every universal
   //   claim). Pinned as a literal: deriving it from the measurement would make
   //   "it never shrinks" impossible to fail in principle.
-  expect(STATES.length, "재는 상태가 줄었다 — 지웠다면 왜 지웠는지가 diff 에 보여야 한다").toBeGreaterThanOrEqual(14);
+  expect(STATES.length, "the measured states shrank; if one was removed, the diff must show why").toBeGreaterThanOrEqual(14);
 
   const axeCounts = new Map<string, number>();
   const axeSamples = new Map<string, string>();
@@ -309,7 +309,7 @@ test("볼트를 물린 접근성·대비 래칫 — 데이터가 있어야 존�
     const mainElements = await page.evaluate(() => document.querySelectorAll("main *").length);
     const minimumMainElements = state.minMainElements ?? MIN_MAIN_ELEMENTS;
     if (mainElements < minimumMainElements) {
-      thinBodies.push(`  ${state.name}: <main> 안 요소 ${mainElements} (최소 ${minimumMainElements})`);
+      thinBodies.push(`  ${state.name}: elements in <main>: ${mainElements} (minimum ${minimumMainElements})`);
     }
 
     await page.addScriptTag({ path: AXE_PATH });
@@ -332,7 +332,7 @@ test("볼트를 물린 접근성·대비 래칫 — 데이터가 있어야 존�
     }, WCAG_TAGS);
 
     if (axeResult.rulesPassed < MIN_RULES_PASSED) {
-      thinAxe.push(`  ${state.name}: 내용에 적용돼 통과한 룰 ${axeResult.rulesPassed}`);
+      thinAxe.push(`  ${state.name}: rules applied to content and passed: ${axeResult.rulesPassed}`);
     }
     for (const v of axeResult.violations) {
       axeCounts.set(v.id, (axeCounts.get(v.id) ?? 0) + v.count);
@@ -359,7 +359,7 @@ test("볼트를 물린 접근성·대비 래칫 — 데이터가 있어야 존�
     }
     totalCombinations += combos;
     if (combos < MIN_COMBINATIONS) {
-      thinCombos.push(`  ${state.name}: 잰 조합 ${combos}`);
+      thinCombos.push(`  ${state.name}: combinations measured: ${combos}`);
     }
   }
 
@@ -377,16 +377,16 @@ test("볼트를 물린 접근성·대비 래칫 — 데이터가 있어야 존�
   ).toEqual([]);
   expect(
     thinAxe,
-    `axe 가 룰을 ${MIN_RULES_PASSED}개도 내용에 적용하지 못했다 — 채집이 깨졌다.\n${thinAxe.join("\n")}`,
+    `axe applied not even ${MIN_RULES_PASSED} rules to the content, so collection is broken.\n${thinAxe.join("\n")}`,
   ).toEqual([]);
   expect(
     thinCombos,
-    `대비 판정이 조합을 ${MIN_COMBINATIONS}개도 못 쟀다 — 채집이 깨졌다.\n${thinCombos.join("\n")}`,
+    `the contrast check did not measure even ${MIN_COMBINATIONS} combinations, so collection is broken.\n${thinCombos.join("\n")}`,
   ).toEqual([]);
 
   // ★ Aggregate collection guard — clearing every per-state floor while the total
   //   runs dry means collection is broken. Measured total: around 250 combinations.
-  expect(totalCombinations, "대비 조합 총합이 바닥 아래다 — 채집이 깨졌다").toBeGreaterThan(120);
+  expect(totalCombinations, "the contrast combination total is below the floor, so collection is broken").toBeGreaterThan(120);
 
   // ── ③ The ratchet ───────────────────────────────────────────────────
   const unknown = [...axeCounts.keys()].filter((id) => !(id in AXE_BASELINE)).sort();
@@ -399,7 +399,7 @@ test("볼트를 물린 접근성·대비 래칫 — 데이터가 있어야 존�
 
   for (const [id, max] of Object.entries(AXE_BASELINE)) {
     const actual = axeCounts.get(id) ?? 0;
-    expect(actual, `\`${id}\` 위반이 ${max} → ${actual} 로 늘었다.`).toBeLessThanOrEqual(max);
+    expect(actual, `\`${id}\` violations grew from ${max} to ${actual}.`).toBeLessThanOrEqual(max);
   }
 
   expect(

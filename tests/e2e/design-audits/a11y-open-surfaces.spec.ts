@@ -97,25 +97,25 @@ const OPENERS: readonly Opener[] = [
     surface: '[data-testid="analysis-workbench"]',
   },
   {
-    name: "설정 시트",
+    name: "Settings sheet",
     route: "/ko/topology/",
     trigger: "app-settings-trigger",
     surface: '[data-testid="app-settings-popover"]',
   },
   {
-    name: "단축키 시트",
+    name: "Shortcuts sheet",
     route: "/ko/topology/",
     trigger: "topology-shortcuts-help-button",
     surface: '[role="dialog"]',
   },
   {
-    name: "이 지도에서 검색",
+    name: "Search in this map",
     route: "/ko/topology/",
     trigger: "topology-concept-search",
     surface: '[role="dialog"]',
   },
   {
-    name: "문서 정렬 메뉴",
+    name: "Document sort menu",
     route: "/ko/docs/",
     trigger: "docs-sidebar-order-toggle",
     surface: '[data-testid="docs-sidebar-order-menu"]',
@@ -127,7 +127,7 @@ const OPENERS: readonly Opener[] = [
     surface: '[data-testid="analysis-selected-request"]',
   },
   {
-    name: "프로젝트 검수 근거",
+    name: "Project review evidence",
     route: "/ko/project/storefront/",
     trigger: "construction-review-evidence-toggle",
     surface: '[data-testid="construction-review-evidence"]',
@@ -147,7 +147,7 @@ const OPENERS: readonly Opener[] = [
     dogfood: true,
   },
   {
-    name: "아키텍처 근거 흐름",
+    name: "Architecture evidence flow",
     route: "/ko/architecture/?view=architecture",
     trigger: "architecture-evidence-rail",
     surface: '[data-testid="architecture-evidence-dock"]',
@@ -245,14 +245,14 @@ async function openAndAudit(page: Page, o: Opener) {
   }, WCAG_TAGS);
 }
 
-test("접근성 래칫(열린 표면) — 새 룰 위반 0, 기존 개수는 늘지 않는다", async ({ page }) => {
+test("accessibility ratchet (open surfaces): zero new rule violations and no growth in existing counts", async ({ page }) => {
   test.setTimeout(180_000);
   await page.setViewportSize({ width: 1512, height: 900 });
 
-  expect(OPENERS.length, "열 표면 목록이 비면 시험은 공집합 위에서 전부 초록이다").toBeGreaterThanOrEqual(5);
+  expect(OPENERS.length, "if the list of surfaces to open is empty, the test is green over an empty set").toBeGreaterThanOrEqual(5);
   expect(
     new Set(OPENERS.map((o) => o.route)).size,
-    "전부 한 라우트에서만 열면 다른 축의 표면은 여전히 아무도 안 본다",
+    "if everything opens on one route, surfaces on other axes are still seen by no one",
   ).toBeGreaterThanOrEqual(3);
 
   const counts = new Map<string, number>();
@@ -262,7 +262,7 @@ test("접근성 래칫(열린 표면) — 새 룰 위반 0, 기존 개수는 늘
   for (const o of OPENERS) {
     const r = await openAndAudit(page, o);
     if (r.rulesPassed < MIN_RULES_PASSED) {
-      thin.push(`  ${o.name}: 내용에 적용돼 통과한 룰 ${r.rulesPassed}`);
+      thin.push(`  ${o.name}: rules applied to content and passed: ${r.rulesPassed}`);
     }
     for (const v of r.violations) {
       counts.set(v.id, (counts.get(v.id) ?? 0) + v.count);
@@ -297,9 +297,9 @@ test("접근성 래칫(열린 표면) — 새 룰 위반 0, 기존 개수는 늘
   // regress**.
   const slack = Object.entries(BASELINE)
     .filter(([id, max]) => (counts.get(id) ?? 0) < max)
-    .map(([id, max]) => `  ${id}: 기준선 ${max} · 실측 ${counts.get(id) ?? 0}`);
+    .map(([id, max]) => `  ${id}: baseline ${max} · measured ${counts.get(id) ?? 0}`);
   expect(
     slack,
-    `열린 표면의 위반이 줄었다 — 이 파일의 BASELINE 도 같이 내려라.\n${slack.join("\n")}`,
+    `Violations on open surfaces dropped; lower BASELINE in this file too.\n${slack.join("\n")}`,
   ).toEqual([]);
 });

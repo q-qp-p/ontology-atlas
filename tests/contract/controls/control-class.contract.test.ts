@@ -62,8 +62,8 @@ const allScoped = (fn: (cls: string, label: string) => void) => {
               );
 };
 
-describe('controlClass — 램프 밖 값을 낼 수 없다', () => {
-  it('arbitrary 크기·반경을 내지 않는다', () => {
+describe('controlClass — no value can fall outside the ramp', () => {
+  it('emits no arbitrary sizes or radii', () => {
     const offenders: string[] = [];
     all((shape, size, tone, active) => {
       for (const c of controlClass({ shape, size, tone, active }).split(' ')) {
@@ -73,10 +73,10 @@ describe('controlClass — 램프 밖 값을 낼 수 없다', () => {
         }
       }
     });
-    expect(offenders, `램프를 우회한 값이 있다:\n${offenders.join('\n')}`).toEqual([]);
+    expect(offenders, `values that bypass the ramp:\n${offenders.join('\n')}`).toEqual([]);
   });
 
-  it('폰트 크기는 등록된 타입 램프 스텝만 쓴다', () => {
+  it('font sizes use only registered type-ramp steps', () => {
     // An undefined step leaves no literal behind: Tailwind emits no class and the text renders at the
     // root 16px, outside the hardcoded-value check's view.
     const offenders: string[] = [];
@@ -92,10 +92,10 @@ describe('controlClass — 램프 밖 값을 낼 수 없다', () => {
         }
       }
     });
-    expect(offenders, `타입 램프에 없는 스텝:\n${offenders.join('\n')}`).toEqual([]);
+    expect(offenders, `steps missing from the type ramp:\n${offenders.join('\n')}`).toEqual([]);
   });
 
-  it('반경은 4단 램프 안이다', () => {
+  it('radii stay inside the four-step ramp', () => {
     const offenders: string[] = [];
     all((shape, size, tone, active) => {
       for (const c of controlClass({ shape, size, tone, active }).split(' ')) {
@@ -103,10 +103,10 @@ describe('controlClass — 램프 밖 값을 낼 수 없다', () => {
         if (m && !RADIUS_STEPS.includes(m[1]) && m[1] !== 'full') offenders.push(`${shape}: ${c}`);
       }
     });
-    expect(offenders, `반경 램프 밖:\n${offenders.join('\n')}`).toEqual([]);
+    expect(offenders, `radii outside the ramp:\n${offenders.join('\n')}`).toEqual([]);
   });
 
-  it('색은 전부 토큰 참조다 — hex 도 rgb 도 안 낸다', () => {
+  it('every colour is a token reference — no hex and no rgb', () => {
     const offenders: string[] = [];
     all((shape, size, tone, active) => {
       const cls = controlClass({ shape, size, tone, active });
@@ -118,10 +118,10 @@ describe('controlClass — 램프 밖 값을 낼 수 없다', () => {
         }
       }
     });
-    expect(offenders, `토큰을 안 거친 색:\n${offenders.join('\n')}`).toEqual([]);
+    expect(offenders, `colours that skip the tokens:\n${offenders.join('\n')}`).toEqual([]);
   });
 
-  it('두 번째 채색 시스템을 만들지 않는다 — 인디고 외 hue 0', () => {
+  it('does not create a second colouring system — no hue besides indigo', () => {
     // The charter: neutrals + a single indigo. Expressing a pressed state with a new colour is the most common escape.
     const tokens = new Set<string>();
     all((shape, size, tone, active) => {
@@ -139,25 +139,25 @@ describe('controlClass — 램프 밖 값을 낼 수 없다', () => {
     const hued = [...tokens].filter(
       (t) => !/^(text|divider|border|overlay|canvas|panel|elevated|secondary)/.test(t) && !SIGNAL.test(t),
     );
-    expect(hued.sort(), `인디고 계열과 신호 3종만 허용된다: ${hued.join(', ')}`).toEqual(
+    expect(hued.sort(), `only the indigo family and the three signals are allowed: ${hued.join(', ')}`).toEqual(
       hued.filter((t) => t.startsWith('indigo')).sort(),
     );
   });
 });
 
-describe('controlClass — 모양이 실제로 서로 다르다', () => {
-  it('여섯 모양이 서로 구별되는 문자열을 낸다', () => {
+describe('controlClass — the shapes really differ from each other', () => {
+  it('the six shapes emit mutually distinct strings', () => {
     // Two shapes emitting the same value are not a classification — they are one thing with two names.
     const seen = new Map<string, ControlShape>();
     for (const shape of SHAPES) {
       const cls = controlClass({ shape });
       const dup = seen.get(cls);
-      expect(dup, `\`${shape}\` 와 \`${dup}\` 이 같은 클래스를 낸다`).toBeUndefined();
+      expect(dup, `\`${shape}\` and \`${dup}\` emit the same class`).toBeUndefined();
       seen.set(cls, shape);
     }
   });
 
-  it('칩·필의 `md`·`lg` 는 사다리 위에 선다 — `sm` 만 24px 바닥에 남는다', () => {
+  it('chip and pill `md` and `lg` sit on the ladder — only `sm` stays on the 24px floor', () => {
     /*
      * The ladder decides the height and padding follows inside it: `md` and `lg` stand on
      * `--control-h-md` (32px); only `sm` stays at the WCAG 2.5.8 minimum target of 24px.
@@ -166,12 +166,12 @@ describe('controlClass — 모양이 실제로 서로 다르다', () => {
       for (const size of ['md', 'lg'] as const) {
         expect(
           controlClass({ shape, size }),
-          `${shape}/${size} 가 사다리(32px)에 안 선다 — 패딩의 부산물로 되돌아갔다`,
+          `${shape}/${size} is off the 32px ladder — it went back to being a by-product of padding`,
         ).toContain('min-h-8');
       }
       expect(
         controlClass({ shape, size: 'sm' }),
-        `${shape}/sm 이 32px 로 올라갔다 — 24px 바닥이 사라지면 밀도가 통째로 바뀐다`,
+        `${shape}/sm rose to 32px — without the 24px floor the density changes wholesale`,
       ).not.toContain('min-h-8');
     }
     // No hard height — it would clip a wrapped chip and hide content.
@@ -179,36 +179,36 @@ describe('controlClass — 모양이 실제로 서로 다르다', () => {
       for (const size of SIZES) {
         expect(
           controlClass({ shape, size }),
-          `${shape}/${size} 가 하드 높이를 쓴다 — 넘치는 내용이 잘린다`,
+          `${shape}/${size} uses a hard height — overflowing content gets clipped`,
         ).not.toMatch(/(^| )h-\d/);
       }
     }
   });
 
-  it('정사각 모양은 좌우 패딩을 받지 않는다 — 받으면 정사각이 아니다', () => {
+  it('square shapes take no horizontal padding — with it they are no longer square', () => {
     for (const size of SIZES) {
       const cls = controlClass({ shape: 'icon', size });
-      expect(cls, `icon/${size} 에 px 가 붙었다: ${cls}`).not.toMatch(/\bpx-/);
+      expect(cls, `icon/${size} gained px: ${cls}`).not.toMatch(/\bpx-/);
       const [, h] = /\bh-(\d+)\b/.exec(cls) ?? [];
       const [, w] = /\bw-(\d+)\b/.exec(cls) ?? [];
-      expect(h, `icon/${size} 의 높이·너비가 다르다`).toBe(w);
+      expect(h, `icon/${size} has different height and width`).toBe(w);
     }
   });
 
-  it('세로 타일은 아이콘 위·글자 아래다 — 가로 모양들과 축이 다르다', () => {
+  it('the vertical tile puts the icon above and the text below — its axis differs from the horizontal shapes', () => {
     const cls = controlClass({ shape: 'tile' });
     expect(cls).toContain('flex-col');
     expect(cls).toContain('text-center');
   });
 
-  it('link 의 바닥은 24(2.5.8 AA)다', () => {
+  it('the floor of link is 24 (2.5.8 AA)', () => {
     for (const size of SIZES) {
       const cls = controlClass({ shape: 'link', size });
-      expect(cls, `link/${size} 바닥이 24(min-h-6)가 아니다`).toMatch(/(^| )min-h-6( |$)/);
+      expect(cls, `the floor of link/${size} is not 24 (min-h-6)`).toMatch(/(^| )min-h-6( |$)/);
     }
   });
 
-  it('홀로 선 글자 컨트롤은 손가락에 잡힌다 — 기본값이 안전한 쪽이다', () => {
+  it('a lone text control is reachable by a finger — the default is the safe side', () => {
     /*
      * `link` has no border and no background, so visually it must be exactly the
      * text — but if the hit area is also text-sized it drops from 24 to 16px, below
@@ -216,35 +216,35 @@ describe('controlClass — 모양이 실제로 서로 다르다', () => {
      * exactly this reason.
      */
     for (const size of SIZES) {
-      expect(controlClass({ shape: 'link', size }), `link/${size} 에 최소 높이가 없다`).toMatch(
+      expect(controlClass({ shape: 'link', size }), `link/${size} has no minimum height`).toMatch(
         /min-h-/,
       );
     }
   });
 
-  it('모든 모양이 반경을 갖는다 — 안 주면 호버 배경이 각진다', () => {
+  it('every shape has a radius — without one the hover background turns square-cornered', () => {
     // `row` originally shipped without a radius, which made hover on normalised list rows square-cornered.
     for (const shape of SHAPES) {
-      expect(controlClass({ shape }), `${shape} 에 반경이 없다`).toMatch(/rounded-/);
+      expect(controlClass({ shape }), `${shape} has no radius`).toMatch(/rounded-/);
     }
   });
 
-  it('행 모양은 좌정렬 전폭이다 — 그게 목록 행의 정체성이다', () => {
+  it('the row shape is left-aligned and full width — that is the identity of a list row', () => {
     const cls = controlClass({ shape: 'row' });
     expect(cls).toContain('w-full');
     expect(cls).toContain('text-left');
   });
 
-  it('눌린 상태가 눌리지 않은 상태와 다르다', () => {
+  it('the pressed state differs from the unpressed state', () => {
     for (const shape of SHAPES) {
       expect(
         controlClass({ shape, active: true }),
-        `\`${shape}\` 의 눌림 상태가 화면에서 구별되지 않는다`,
+        `the pressed state of \`${shape}\` is not distinguishable on screen`,
       ).not.toBe(controlClass({ shape, active: false }));
     }
   });
 
-  it('className 은 덧붙고, 램프 값을 이기지 않는다', () => {
+  it('className is appended and does not beat the ramp value', () => {
     // `cn()` is tailwind-merge, so on the same axis the later class wins. The
     // discipline "pass placement only" is not kept if it lives only in a document, so
     // at minimum the "it appends" contract is pinned here.
@@ -261,12 +261,12 @@ describe('controlClass — 모양이 실제로 서로 다르다', () => {
  * added without evidence becomes a second system by itself. So each axis carries
  * one test that **turns red when its evidence disappears**.
  */
-describe('controlClass — 여덟째 모양과 세 축', () => {
+describe('controlClass — the eighth shape and the three axes', () => {
   const GLOBALS = readGlobalCss();
   const cssVar = (name: string): string | undefined =>
     new RegExp(`^\\s*${name}:\\s*([^;]+);`, 'm').exec(GLOBALS)?.[1].trim();
 
-  it('여덟째 모양은 보더가 없고 인셋이 있다 — 그 사이가 비어 있어서 생겼다', () => {
+  it('the eighth shape has no border and has an inset — it exists because that gap was empty', () => {
     /*
      * `chip`/`pill`/`card`/`tile` require a border, so inside an already-bordered box
      * they become a box in a box; `link` has zero inset, so a segment's hit area
@@ -278,14 +278,14 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
       // without that this test turns red **for every shape**. The first run did exactly
       // that.
       const base = cls.split(' ').filter((c) => !c.includes(':') || c.startsWith('border-[color:'));
-      expect(base.join(' '), `segment/${size} 에 보더가 붙었다 — 상자 속 상자가 된다`).not.toMatch(
+      expect(base.join(' '), `segment/${size} gained a border — it becomes a box inside a box`).not.toMatch(
         /(^| )border(-|$| )/,
       );
-      expect(cls, `segment/${size} 에 좌우 인셋이 없다 — 그러면 link 와 같다`).toMatch(/\bpx-/);
+      expect(cls, `segment/${size} has no horizontal inset — then it equals link`).toMatch(/\bpx-/);
     }
   });
 
-  it('세그먼트 반경은 `--chrome-radius-inner` 와 같은 값이다 — 별칭이라 픽셀이 안 바뀐다', () => {
+  it('the segment radius equals `--chrome-radius-inner` — it is an alias, so no pixel changes', () => {
     /*
      * Five consumers were using `rounded-[var(--chrome-radius-inner)]`. The only
      * evidence that moving them is safe is that the token is an **alias** for
@@ -295,12 +295,12 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
      */
     expect(
       cssVar('--chrome-radius-inner'),
-      '`--chrome-radius-inner` 가 `--radius-chip` 의 별칭이 아니게 됐다 — segment 가 rounded-chip 을 쓰면 안 된다',
+      '`--chrome-radius-inner` is no longer an alias of `--radius-chip` — segment must not use rounded-chip',
     ).toBe('var(--radius-chip)');
     expect(controlClass({ shape: 'segment' })).toContain('rounded-chip');
   });
 
-  it('두 무채 램프는 실제로 값이 다르다 — 같아지면 `scope` 축은 폐기 대상이다', () => {
+  it('the two neutral ramps really differ in value — if they equalise, the `scope` axis is to be retired', () => {
     /*
      * The **only** evidence that the `scope` axis should exist. The day the two ramps
      * carry the same values, the axis does nothing while still adding a choice, so
@@ -315,12 +315,12 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
     for (const step of DIVERGING_STEPS) {
       const app = cssVar(`--color-text-${step}`);
       const panel = cssVar(`--map-panel-text-${step}`);
-      expect(app, `--color-text-${step} 를 못 읽었다`).toBeTruthy();
-      expect(panel, `--map-panel-text-${step} 를 못 읽었다`).toBeTruthy();
+      expect(app, `could not read --color-text-${step}`).toBeTruthy();
+      expect(panel, `could not read --map-panel-text-${step}`).toBeTruthy();
       pairs.push([app as string, panel as string]);
     }
     // Idling guard — if all three steps were not read, the assertion below passes on an empty set.
-    expect(pairs.length, '두 램프의 단을 하나도 못 짝지었다').toBe(3);
+    expect(pairs.length, 'could not pair any step of the two ramps').toBe(3);
     /*
      * ⚠️ This started as "pass if any one differs", and `/gate-probe` caught that
      * it was **not a gate**: reverting one of the remapped steps to the same value
@@ -338,15 +338,15 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
     ).toEqual([]);
   });
 
-  it('quaternary 는 수렴 상태로 고정한다 — 다시 갈라지면 panel 컴파운드를 되살려야 한다', () => {
+  it('quaternary is pinned to the converged state — if it diverges again the panel compound must be revived', () => {
     /*
      * Quaternary is pinned as converged in both ramps. It is not an alias `var()`: `prefers-contrast:
      * more` raises only the global quaternary, which would invert it above tertiary in the panel ladder.
      */
     const app = cssVar('--color-text-quaternary');
     const panel = cssVar('--map-panel-text-quaternary');
-    expect(app, '--color-text-quaternary 를 못 읽었다').toBeTruthy();
-    expect(panel, '--map-panel-text-quaternary 를 못 읽었다').toBeTruthy();
+    expect(app, 'could not read --color-text-quaternary').toBeTruthy();
+    expect(panel, 'could not read --map-panel-text-quaternary').toBeTruthy();
     expect(
       panel,
       `quaternary diverged between the two ramps again (global ${app} · panel ${panel}), ` +
@@ -356,12 +356,12 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
     const onPanel = controlClass({ shape: 'chip', size: 'md', tone: 'muted', scope: 'panel' });
     expect(
       onPanel.includes('--map-panel-text-quaternary'),
-      '수렴 상태인데 panel 컴파운드가 되살아나 있다 — 같은 값을 내는 무노동 분기다. 지워라.',
+      'the state is converged but the panel compound came back — it is an idle branch emitting the same value. Delete it.',
     ).toBe(false);
     expect(onPanel).toContain('text-[color:var(--color-text-quaternary)]');
   });
 
-  it('`scope: panel` 은 잉크만 바꾼다 — 바탕·보더로 새면 두 번째 채색 시스템이다', () => {
+  it('`scope: panel` changes only the ink — leaking into background or border makes a second colouring system', () => {
     /*
      * The price of opening this axis must be only "the value layer acknowledges a
      * second ramp". If the panel namespace also starts emitting through `bg-` and
@@ -374,38 +374,38 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
         if (!/^(?:[a-z-]+:)*text-\[color:/.test(c)) offenders.push(`${label}: ${c}`);
       }
     });
-    expect(offenders, `패널 램프가 잉크 밖으로 샜다:\n${offenders.join('\n')}`).toEqual([]);
+    expect(offenders, `the panel ramp leaked outside the ink:\n${offenders.join('\n')}`).toEqual([]);
   });
 
-  it('신호 3종과 인디고는 `scope` 를 안 탄다 — 뜻으로 정해지는 색은 바탕을 안 본다', () => {
+  it('the three signals and indigo ignore `scope` — colours fixed by meaning do not look at the background', () => {
     for (const tone of ['accent', 'accentOnTint', 'warning', 'danger', 'success'] as const) {
       expect(
         controlClass({ shape: 'chip', tone, scope: 'panel' }),
-        `${tone} 가 패널에서 다른 색이 됐다`,
+        `${tone} became a different colour in the panel`,
       ).toBe(controlClass({ shape: 'chip', tone, scope: 'app' }));
     }
   });
 
-  it('`scope` 가 실제로 무언가를 바꾼다 — 값이 갈리는 무채 단은 패널에서 다른 잉크다', () => {
+  it('`scope` really changes something — a neutral step whose value differs is a different ink in the panel', () => {
     // Without this the axis could become a complete no-op with the test above still green. `muted` is
     // excluded because it has no remap (quaternary is pinned converged).
     for (const tone of ['default', 'secondary', 'strong'] as const) {
       expect(
         controlClass({ shape: 'chip', tone, scope: 'panel' }),
-        `${tone} 가 패널에서 그대로다 — scope 축이 공회전한다`,
+        `${tone} is unchanged in the panel — the scope axis idles`,
       ).not.toBe(controlClass({ shape: 'chip', tone, scope: 'app' }));
     }
   });
 
-  it('`truncate` 는 display 를 flex 밖으로 뺀다 — 안 그러면 `…` 가 안 그려진다', () => {
+  it('`truncate` takes display out of flex — otherwise `…` is never drawn', () => {
     /*
      * Measured: at the same text and width, `inline-block` gives `…` while
      * `inline-flex` hard-clips. Adding the `truncate` utility alone does not fix it.
      */
     for (const shape of SHAPES) {
       const cls = controlClass({ shape, truncate: true });
-      expect(cls, `${shape}/truncate 에 truncate 가 없다`).toContain('truncate');
-      expect(cls, `${shape}/truncate 가 여전히 flex 다 — 말줄임이 하드 클립된다`).not.toMatch(
+      expect(cls, `${shape}/truncate has no truncate`).toContain('truncate');
+      expect(cls, `${shape}/truncate is still flex — the ellipsis is hard-clipped`).not.toMatch(
         /(^| )(inline-)?flex( |$)/,
       );
       // Turning it off leaves today's behaviour unchanged.
@@ -413,28 +413,28 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
     }
   });
 
-  it('채움 톤은 바탕과 잉크를 한 쌍으로 내고 보더를 지운다', () => {
+  it('the filled tone emits background and ink as a pair and removes the border', () => {
     /*
      * Emitting ink alone leaves consumers hand-writing `bg-…`, which passes shape
      * through `className` and neutralises the layer. So they are emitted as a pair.
      */
     for (const shape of SHAPES) {
       const cls = controlClass({ shape, tone: 'onAccent' });
-      expect(cls, `${shape}/onAccent 에 채움이 없다`).toContain('bg-[color:var(--color-indigo-brand)]');
-      expect(cls, `${shape}/onAccent 에 전경 토큰이 없다`).toContain(
+      expect(cls, `${shape}/onAccent has no fill`).toContain('bg-[color:var(--color-indigo-brand)]');
+      expect(cls, `${shape}/onAccent has no foreground token`).toContain(
         'text-[color:var(--color-text-on-accent)]',
       );
-      expect(cls, `${shape}/onAccent 에 보더가 남았다 — 채운 주 동작은 테두리가 없다`).not.toMatch(
+      expect(cls, `${shape}/onAccent kept a border — a filled primary action has no outline`).not.toMatch(
         /border-\[color:/,
       );
     }
     // The foreground token must exist. If it does not, the browser ignores the colour
     // entirely and the inherited colour shows through — which reads on screen as
     // "slightly darker text" and nobody can point at it.
-    expect(cssVar('--color-text-on-accent'), '`--color-text-on-accent` 가 globals.css 에 없다').toBeTruthy();
+    expect(cssVar('--color-text-on-accent'), '`--color-text-on-accent` is missing from globals.css').toBeTruthy();
   });
 
-  it('`min-h-8` 은 `--control-h-md` 와 같은 값이다 — 사다리 토큰이 움직이면 여기가 먼저 빨개진다', () => {
+  it('`min-h-8` equals `--control-h-md` — when the ladder token moves, this goes red first', () => {
     /*
      * **This is the central gate of the whole arrangement.** The value layer emits a
      * Tailwind step (`min-h-8`) while the token (`--control-h-md`) lives in CSS.
@@ -447,26 +447,26 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
      * this line is what says so.
      */
     const px = Number(/^(\d+)px$/.exec(cssVar('--control-h-md') ?? '')?.[1]);
-    expect(px, '`--control-h-md` 를 px 로 못 읽었다').toBeGreaterThan(0);
+    expect(px, 'could not read `--control-h-md` as px').toBeGreaterThan(0);
 
     let checked = 0;
     for (const shape of ['chip', 'pill'] as const) {
       for (const size of ['md', 'lg'] as const) {
         const cls = controlClass({ shape, size });
         const step = Number(/\bmin-h-(\d+)\b/.exec(cls)?.[1]);
-        expect(step, `${shape}/${size} 에서 min-h 스텝을 못 읽었다: ${cls}`).toBeGreaterThan(0);
+        expect(step, `could not read the min-h step in ${shape}/${size}: ${cls}`).toBeGreaterThan(0);
         expect(
           step * 4,
-          `${shape}/${size} 의 min-h-${step}(${step * 4}px) 이 --control-h-md(${px}px) 와 다르다`,
+          `min-h-${step}(${step * 4}px) of ${shape}/${size} differs from --control-h-md(${px}px)`,
         ).toBe(px);
         checked += 1;
       }
     }
     // Idling guard — a gate that passes without running a single combination is not a gate.
-    expect(checked, '사다리에 선 조합을 하나도 못 쟀다').toBe(4);
+    expect(checked, 'did not measure a single combination on the ladder').toBe(4);
   });
 
-  it('가로 한 줄 모양 전 조합이 명시 높이를 선언하고, 그 값은 높이 어휘 안이다', () => {
+  it('every horizontal single-line shape declares an explicit height, and the value is in the height vocabulary', () => {
     /*
      * Every single-row horizontal shape (chip, pill, segment, row, card) declares an explicit `min-h-*`,
      * icon an `h-*`, and the px value is inside the height vocabulary, derived from
@@ -475,7 +475,7 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
     const WCAG_TARGET_FLOOR_PX = 24;
     const tokenPx = (name: string): number => {
       const px = Number(/^(\d+)px$/.exec(cssVar(name) ?? '')?.[1]);
-      expect(px, `\`${name}\` 을 px 로 못 읽었다 — 어휘를 파생할 수 없다`).toBeGreaterThan(0);
+      expect(px, `could not read \`${name}\` as px — the vocabulary cannot be derived`).toBeGreaterThan(0);
       return px;
     };
     const vocabulary = new Set([
@@ -487,7 +487,7 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
       tokenPx('--touch-target-min'),
     ]);
     // If the tokens converge and the vocabulary shrinks, the derivation itself loses its signal.
-    expect([...vocabulary].sort((a, b) => a - b), '높이 어휘가 6단이 아니다').toEqual([24, 28, 32, 36, 40, 44]);
+    expect([...vocabulary].sort((a, b) => a - b), 'the height vocabulary is not six steps').toEqual([24, 28, 32, 36, 40, 44]);
 
     const offenders: string[] = [];
     let checked = 0;
@@ -496,14 +496,14 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
         const cls = controlClass({ shape, size });
         const step = Number(/\bmin-h-(\d+)\b/.exec(cls)?.[1]);
         if (!step) {
-          offenders.push(`${shape}/${size}: 명시 min-h 없음 — 높이가 패딩의 부산물이다 (${cls})`);
+          offenders.push(`${shape}/${size}: no explicit min-h — the height is a by-product of padding (${cls})`);
           continue;
         }
         if (!vocabulary.has(step * 4)) {
-          offenders.push(`${shape}/${size}: min-h-${step}(${step * 4}px) 는 높이 어휘 밖이다`);
+          offenders.push(`${shape}/${size}: min-h-${step}(${step * 4}px) is outside the height vocabulary`);
         }
         if (step * 4 < WCAG_TARGET_FLOOR_PX) {
-          offenders.push(`${shape}/${size}: ${step * 4}px — WCAG 2.5.8 바닥(24px) 미달`);
+          offenders.push(`${shape}/${size}: ${step * 4}px — below the WCAG 2.5.8 floor (24px)`);
         }
         checked += 1;
       }
@@ -512,17 +512,17 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
       const cls = controlClass({ shape: 'icon', size });
       const step = Number(/\bh-(\d+)\b/.exec(cls)?.[1]);
       if (!step || !vocabulary.has(step * 4)) {
-        offenders.push(`icon/${size}: 정사각 높이가 어휘 밖이다 (${cls})`);
+        offenders.push(`icon/${size}: the square height is outside the vocabulary (${cls})`);
       } else {
         checked += 1;
       }
     }
-    expect(offenders, `사다리 밖 조합:\n${offenders.join('\n')}`).toEqual([]);
+    expect(offenders, `combinations off the ladder:\n${offenders.join('\n')}`).toEqual([]);
     // Idling guard — were all 5 shapes × 4 sizes + icon 4 = 24 combinations actually measured?
-    expect(checked, '어휘 판정을 전 조합에 돌리지 못했다').toBe(5 * SIZES.length + SIZES.length);
+    expect(checked, 'did not run the vocabulary check on every combination').toBe(5 * SIZES.length + SIZES.length);
   });
 
-  it('마이크로 티어는 칩에서만 실재한다 — 다른 모양의 `xs` 는 `sm` 의 별칭이다', () => {
+  it('the micro tier is real only for chips — `xs` of the other shapes is an alias of `sm`', () => {
     /*
      * `xs` is an alias for `sm` outside chips: the size axis is shared across shapes and only chips have
      * a micro-tier consumer. Unwinding the alias must be an explicit decision.
@@ -530,14 +530,14 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
     for (const shape of SHAPES.filter((sh) => sh !== 'chip')) {
       expect(
         controlClass({ shape, size: 'xs' }),
-        `${shape}/xs 가 sm 과 갈라졌다 — 소비처 전수와 함께 별칭을 푼 결정인가?`,
+        `${shape}/xs diverged from sm — was the alias dissolved together with an audit of every consumer?`,
       ).toBe(controlClass({ shape, size: 'sm' }));
     }
     // It is real for chips — as a pure alias this step would only add a choice.
     expect(controlClass({ shape: 'chip', size: 'xs' })).not.toBe(controlClass({ shape: 'chip', size: 'sm' }));
   });
 
-  it('칩 마이크로 티어 — 반경은 micro, 높이는 그대로 24 바닥이다', () => {
+  it('chip micro tier — the radius is micro, the height stays on the 24 floor', () => {
     /*
      * The micro tier opens **inset, type, and radius** — not height. Never creating a
      * step below 24 (WCAG 2.5.8) is the ladder's first discipline. The 4px radius is
@@ -548,10 +548,10 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
     expect(cls).toContain('rounded-micro');
     expect(cls).toContain('min-h-6');
     expect(cls).toContain('text-caption');
-    expect(cls, 'chip/xs 의 인셋은 sm(px-2) 한 칸 아래다').toContain('px-1.5');
+    expect(cls, 'the inset of chip/xs is one step below sm (px-2)').toContain('px-1.5');
   });
 
-  it('어느 조합도 반경 클래스를 정확히 하나 낸다 — 둘이면 CSS 소스 순서가 승자다', () => {
+  it('every combination emits exactly one radius class — with two, CSS source order is the winner', () => {
     /*
      * Locks the cost of moving the chip radius from the base into a size compound.
      * Even with cn's radius group merge (`RADIUS_RAMP_STEPS`), a combination that
@@ -562,13 +562,13 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
       const n = controlClass({ shape, size, tone, active })
         .split(' ')
         .filter((c) => /^rounded-/.test(c)).length;
-      expect(n, `${shape}/${size}/${tone}/${active}: 반경 클래스가 ${n}개다`).toBe(1);
+      expect(n, `${shape}/${size}/${tone}/${active}: ${n} radius classes`).toBe(1);
       counted += 1;
     });
-    expect(counted, '조합을 하나도 안 돌렸다').toBeGreaterThan(500);
+    expect(counted, 'did not run a single combination').toBeGreaterThan(500);
   });
 
-  it('칩·필의 기본 보더는 앱 다수(border-soft)다 — 옮길 때마다 진해지던 문을 닫는다', () => {
+  it('the default border of chips and pills is the app majority (border-soft) — closes the door that darkened it on every move', () => {
     /*
      * Inventory at registration: hand-written borders on chip-radius elements were
      * **border-soft/chrome-border 74 vs divider 18** (4:1). If the ramp default is the
@@ -579,13 +579,13 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
     for (const shape of ['chip', 'pill', 'card', 'tile'] as const) {
       expect(
         controlClass({ shape }),
-        `${shape} 의 기본 보더가 다수(0.06)에서 벗어났다`,
+        `the default border of ${shape} left the majority (0.06)`,
       ).toContain('border-[color:var(--color-border-soft)]');
       expect(controlClass({ shape })).not.toContain('border-[color:var(--color-divider)]');
     }
   });
 
-  it('신호 톤의 잉크는 글자 역할 토큰이다 — success 가 신호색이면 소비처가 램프 밖에 남는다', () => {
+  it('the ink of signal tones is a text-role token — if success is a signal colour, consumers stay outside the ramp', () => {
     /*
      * Danger and success tones use text-role tokens; a signal colour belongs to dots and borders, not ink
      * in a sentence. `warning` still uses the signal token `--color-status-warning`.
@@ -595,18 +595,18 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
     expect(controlClass({ shape: 'chip', tone: 'warning' })).toContain('--color-status-warning');
   });
 
-  it('삭제된 `fixedHeight` 축이 되살아나지 않는다 — 값이 아니라 축으로 되돌리는 것이 그때의 실수였다', () => {
+  it('the removed `fixedHeight` axis does not return — the mistake then was going back to an axis instead of a value', () => {
     const source = readFileSync(join(process.cwd(), 'src/shared/ui/control-class.ts'), 'utf8');
     const live = source
       .split('\n')
       .filter((l) => !/^\s*(\*|\/\*|\/\/)/.test(l))
       .join('\n');
-    expect(live, '`fixedHeight` 축이 돌아왔다 — 사다리에 이미 있는 값이면 그건 축이 아니라 `size` 다').not.toMatch(
+    expect(live, '`fixedHeight` axis is back — if the value already exists on the ladder it is not an axis but `size`').not.toMatch(
       /fixedHeight/,
     );
   });
 
-  it('새 축 셋의 기본값은 오늘 출력과 바이트 동일하다 — 축을 더한 것이 회귀가 아니게', () => {
+  it('the defaults of the three new axes are byte-identical to today\'s output — so adding the axes is no regression', () => {
     /*
      * 244 places already use these values. If the defaults move by one character all
      * of them change silently — this test locks that door.
@@ -621,7 +621,7 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
             scope: 'app',
             truncate: false,
           });
-          expect(controlClass({ shape, size, tone }), `${shape}/${size}/${tone} 의 기본값이 움직였다`).toBe(
+          expect(controlClass({ shape, size, tone }), `the default of ${shape}/${size}/${tone} moved`).toBe(
             explicit,
           );
         }
@@ -629,7 +629,7 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
     }
   });
 
-  it('새 축을 다 켜도 램프 밖 값이 안 나온다 — 축은 구멍이지 뒷문이 아니다', () => {
+  it('turning on every new axis yields no value outside the ramp — an axis is a hole, not a back door', () => {
     const offenders: string[] = [];
     let counted = 0;
     allScoped((cls, label) => {
@@ -648,8 +648,8 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
       }
     });
     // Idling guard — were the combinations actually built?
-    expect(counted, '축 조합을 하나도 안 돌렸다').toBeGreaterThan(1000);
-    expect(offenders, `축을 켰더니 램프 밖으로 샜다:\n${offenders.slice(0, 20).join('\n')}`).toEqual([]);
+    expect(counted, 'did not run a single axis combination').toBeGreaterThan(1000);
+    expect(offenders, `turning the axes on leaked outside the ramp:\n${offenders.slice(0, 20).join('\n')}`).toEqual([]);
   });
 });
 
@@ -657,16 +657,16 @@ describe('controlClass — 여덟째 모양과 세 축', () => {
  * Hover is composed by cva at run time from keys like `hoverInk: 'strong'`, so lint cannot see it;
  * the contract judges the resulting string.
  */
-describe('호버 축 — 값 층이 내는 결과 문자열', () => {
+describe('hover axis — the result strings of the value layer', () => {
   const hovers = (s: string) => s.split(' ').filter((c) => c.startsWith('hover:'));
 
-  it('탐지기가 공회전하지 않는다 — 축이 실제로 무언가를 낸다', () => {
+  it('the detector does not idle — the axis really emits something', () => {
     expect(hovers(controlClass({ hoverInk: 'strong' })).length).toBeGreaterThan(0);
     expect(hovers(controlClass({ shape: 'row', hoverSurface: 'lift' })).length).toBeGreaterThan(0);
     expect(hovers(controlClass({ hoverBorder: 'strong' })).length).toBeGreaterThan(0);
   });
 
-  it('기본값은 아무것도 안 낸다 — 전부 옵트인이다', () => {
+  it('the default emits nothing — everything is opt-in', () => {
     /*
      * Turning it on by default would silently change places that have no hover at all
      * today (30 places counting borders alone). That is a global visual change rather
@@ -674,11 +674,11 @@ describe('호버 축 — 값 층이 내는 결과 문자열', () => {
      * judgement.
      */
     for (const shape of ['chip', 'pill', 'row', 'icon', 'segment', 'card', 'tile', 'link'] as const) {
-      expect(hovers(controlClass({ shape })), `${shape} 기본값이 호버를 낸다`).toEqual([]);
+      expect(hovers(controlClass({ shape })), `${shape} default emits a hover`).toEqual([]);
     }
   });
 
-  it('잉크는 scope 가 값을 고른다 — 축은 밝기 단만 고른다', () => {
+  it('scope picks the value of the ink — the axis picks only the brightness step', () => {
     expect(controlClass({ hoverInk: 'strong' })).toContain(
       'hover:text-[color:var(--color-text-primary)]',
     );
@@ -693,7 +693,7 @@ describe('호버 축 — 값 층이 내는 결과 문자열', () => {
     );
   });
 
-  it('면은 행과 부품이 다른 단을 쓴다 — rest 가 다르기 때문이다', () => {
+  it('surfaces use different steps for rows and parts — because their rest differs', () => {
     // Rows rest transparent so they take the first step; parts already sit one step up so they take the next.
     expect(controlClass({ shape: 'row', hoverSurface: 'lift' })).toContain(
       'hover:bg-[color:var(--color-overlay-1)]',
@@ -708,7 +708,7 @@ describe('호버 축 — 값 층이 내는 결과 문자열', () => {
     );
   });
 
-  it('골라진 것은 호버를 안 받는다 — 「곧」과 「지금」이 같은 말을 하면 안 된다', () => {
+  it('a selected item receives no hover — "soon" and "now" must not say the same thing', () => {
     /*
      * Hover over a selected item's border weakens it, so selected items take no hover; the key absorbs
      * a guard consumers used to write by hand.
@@ -719,11 +719,11 @@ describe('호버 축 — 값 층이 내는 결과 문자열', () => {
       { hoverBorder: 'strong' },
       { hoverInk: 'secondary', hoverSurface: 'lift', hoverBorder: 'strong' },
     ] as const) {
-      expect(hovers(controlClass({ ...v, active: true })), `${JSON.stringify(v)} 가 active 에서 샜다`).toEqual([]);
+      expect(hovers(controlClass({ ...v, active: true })), `${JSON.stringify(v)} leaked at active`).toEqual([]);
     }
   });
 
-  it('셋은 서로 독립이다 — 두 속성이 함께 필요한 자리가 96곳이었다', () => {
+  it('the three are independent of each other — there were 96 places needing two attributes together', () => {
     const both = controlClass({ hoverInk: 'strong', hoverBorder: 'strong' });
     expect(both).toContain('hover:text-[color:var(--color-text-primary)]');
     expect(both).toContain('hover:border-[color:var(--color-border-strong)]');
@@ -731,7 +731,7 @@ describe('호버 축 — 값 층이 내는 결과 문자열', () => {
     expect(hovers(all3)).toHaveLength(3);
   });
 
-  it('축이 램프 밖으로 새지 않는다 — 전 조합이 토큰만 낸다', () => {
+  it('the axes do not leak outside the ramp — every combination emits only tokens', () => {
     const offenders: string[] = [];
     for (const shape of ['chip', 'pill', 'row', 'icon', 'segment', 'card', 'tile', 'link'] as const) {
       for (const scope of ['app', 'panel'] as const) {
@@ -748,10 +748,10 @@ describe('호버 축 — 값 층이 내는 결과 문자열', () => {
         }
       }
     }
-    expect(offenders, '호버 축이 토큰이 아닌 값을 냈다').toEqual([]);
+    expect(offenders, 'the hover axis emitted a value that is not a token').toEqual([]);
   });
 
-  it('축이 조용히 늘지 않는다 — 선택지는 실측 다수파만', () => {
+  it('the axes do not grow silently — choices are only the measured majority', () => {
     const SOURCE = readFileSync(join(process.cwd(), 'src/shared/ui/control-class.ts'), 'utf8');
     /*
      * Pins the options in source — adding one requires editing this line, and that

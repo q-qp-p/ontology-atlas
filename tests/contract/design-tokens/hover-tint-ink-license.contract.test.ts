@@ -165,19 +165,19 @@ function scan() {
   return { offenders, boundary, facesSeen, judged };
 }
 
-describe("호버 틴트 면 위의 잉크 — 계산이 판정한다", () => {
+describe("ink on hover tint faces — calculation judges", () => {
   const census = scan();
 
-  it("탐지기가 공회전하지 않는다 — 호스트가 실재하고 호버 면을 실제로 찾는다", () => {
-    expect(HOSTS.length, "호스트 표면 토큰을 못 읽었다").toBeGreaterThanOrEqual(3);
+  it("the detector does not idle — hosts exist and hover faces are really found", () => {
+    expect(HOSTS.length, "could not read the host surface tokens").toBeGreaterThanOrEqual(3);
     for (const [name, host] of HOSTS) {
-      expect(host[3], `${name} 이 불투명하지 않다 — 호스트의 전제가 깨진다`).toBe(1);
+      expect(host[3], `${name} is not opaque — the host premise breaks`).toBe(1);
     }
-    expect(census.facesSeen, "호버 면을 하나도 못 찾았다 — 정규식이 램프와 어긋났다").toBeGreaterThan(20);
-    expect(census.judged, "잉크까지 짝지어 판정한 자리가 없다").toBeGreaterThan(5);
+    expect(census.facesSeen, "could not find a single hover face — the regex drifted from the ramp").toBeGreaterThan(20);
+    expect(census.judged, "no spot was judged with its ink paired").toBeGreaterThan(5);
   });
 
-  it("분리의 근거가 아직 실재한다 — 실제로 AA 를 깨는 짝이 계산 가능하다", () => {
+  it("the reason for the split still exists — a pair that really breaks AA is computable", () => {
     /*
      * `/gate-probe`: a detector idling on an empty set is forbidden. The day this
      * assertion turns red is the day the danger ramp has converged enough to pass on
@@ -188,13 +188,13 @@ describe("호버 틴트 면 위의 잉크 — 계산이 판정한다", () => {
     const worst = Math.min(...HOSTS.map(([, h]) => ratio(ink, composite(face, h))));
     expect(
       worst,
-      "danger-a32 면 위 danger-text 가 이제 AA 를 넘는다 — 이 계약의 존재 이유를 재평가하라",
+      "danger-text on a danger-a32 face now exceeds AA — re-evaluate why this contract exists",
     ).toBeLessThan(AA);
   });
 
-  it("위반 0 — 어느 호스트에서도 못 넘는 호버 짝은 없다", () => {
+  it("zero violations — no hover pair fails on every host", () => {
     const lines = census.offenders.map(
-      (o) => `${o.where}: hover ${o.face} × ${o.ink} — 최선 ${o.best.toFixed(2)} (필요 ${AA})`,
+      (o) => `${o.where}: hover ${o.face} × ${o.ink} — best ${o.best.toFixed(2)} (needs ${AA})`,
     );
     expect(
       lines,
@@ -205,7 +205,7 @@ describe("호버 틴트 면 위의 잉크 — 계산이 판정한다", () => {
     ).toEqual([]);
   });
 
-  it("경계 자리는 세어만 둔다 — 표면을 옮기면 조용히 깨지는 자리들", () => {
+  it("edge spots are only counted — spots that break silently when a surface moves", () => {
     /*
      * Pairs that pass only on the surface they currently sit on. Not defects, but they
      * break if moved, so a growing count means those places need opening. Today's
@@ -214,10 +214,10 @@ describe("호버 틴트 면 위의 잉크 — 계산이 판정한다", () => {
     const lines = census.boundary.map(
       (o) => `${o.where}: ${o.face} × ${o.ink} — ${o.worst.toFixed(2)}~${o.best.toFixed(2)}`,
     );
-    expect(lines.length, `경계 자리가 늘었다:\n${lines.join("\n")}`).toBeLessThanOrEqual(12);
+    expect(lines.length, `edge spots grew:\n${lines.join("\n")}`).toBeLessThanOrEqual(12);
   });
 
-  it("탐지기가 심은 위반을 잡고 정상 짝은 놓아준다", () => {
+  it("the detector catches the planted violation and lets the proper pair go", () => {
     const judge = (literal: string) => {
       const out: string[] = [];
       HOVER_FACE.lastIndex = 0;
@@ -235,25 +235,25 @@ describe("호버 틴트 면 위의 잉크 — 계산이 판정한다", () => {
 
     expect(
       judge("text-[color:var(--color-danger-text)] hover:bg-[color:var(--color-danger-a32)]"),
-      "심은 위반(고친 그 짝)을 못 잡는다",
+      "does not catch the planted violation (the very pair that was fixed)",
     ).toHaveLength(1);
     expect(
       judge("text-[color:var(--color-danger-text)] hover:bg-[color:var(--color-danger-a12)]"),
-      "고친 짝을 위반으로 센다 — 그러면 고칠 이유가 사라진다",
+      "counts the fixed pair as a violation — then the reason to fix disappears",
     ).toEqual([]);
     expect(
       judge("hover:bg-[color:var(--color-overlay-1)]"),
-      "잉크를 모르는 자리는 판정하지 않는다",
+      "a spot with unknown ink is not judged",
     ).toEqual([]);
     expect(
       judge("text-[color:var(--color-text-on-accent)] hover:bg-[color:var(--color-indigo-brand-hover)]"),
-      "불투명 면은 brand-fill-ink-license 의 관할이다",
+      "an opaque face belongs to brand-fill-ink-license",
     ).toEqual([]);
     expect(
       judge(
         "text-[color:var(--color-text-tertiary)] hover:bg-[color:var(--color-danger-a32)] hover:text-[color:var(--color-text-primary)]",
       ),
-      "호버 잉크가 있으면 그것이 쉬는 잉크를 이겨야 한다",
+      "if there is a hover ink it must beat the resting ink",
     ).toEqual([]);
   });
 });

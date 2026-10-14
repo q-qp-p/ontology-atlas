@@ -61,7 +61,7 @@ function fakeWheelEvent(): WheelEvent {
 }
 
 describe("createTopologyPointerHandlers — handleWheel dismisses transient hover cards", () => {
-  it("휠 줌 첫 틱에 엣지 호버 카드를 즉시 dismiss 한다 (3티어 관통 잔류 차단)", () => {
+  it("the first wheel-zoom tick dismisses the edge hover card immediately (blocks leftovers across the three tiers)", () => {
     const hoveredEdgeRef = ref<{
       sourceId: string;
       targetId: string;
@@ -80,7 +80,7 @@ describe("createTopologyPointerHandlers — handleWheel dismisses transient hove
     expect(onHoverEdge).toHaveBeenCalledWith(null, null);
   });
 
-  it("휠 줌 시 클러스터 호버 툴팁도 함께 dismiss 한다", () => {
+  it("wheel zoom dismisses the cluster hover tooltip as well", () => {
     const hoveredClusterIdRef = ref<string | null>("domain:x");
     const onHoverCluster = vi.fn();
 
@@ -94,7 +94,7 @@ describe("createTopologyPointerHandlers — handleWheel dismisses transient hove
     expect(onHoverCluster).toHaveBeenCalledWith(null);
   });
 
-  it("떠 있는 카드가 없으면 dismiss 콜백을 부르지 않는다 (불필요한 재렌더 방지)", () => {
+  it("does not call the dismiss callback when no card is floating (avoids a needless re-render)", () => {
     const hoveredEdgeRef = ref<{
       sourceId: string;
       targetId: string;

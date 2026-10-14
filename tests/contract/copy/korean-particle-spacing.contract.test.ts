@@ -67,7 +67,7 @@ describe("Korean particle spacing", () => {
     expect([...planted.matchAll(SPACED)].length).toBe(1);
   });
 
-  it("leaves the determiner 이 alone", () => {
+  it("leaves the determiner 'i' (this) alone", () => {
     /* The determiner keeps its space; the probe uses a catalogue entry that is still live. */
     const determiner = "{ago} 이 지도를 마지막으로 봤어요";
     expect(DETERMINER_EXEMPTIONS.some((exempt) => determiner.includes(exempt))).toBe(true);

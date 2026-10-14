@@ -8,7 +8,7 @@ type Probe = {
   selection: () => { nodeId: string | null };
 };
 
-test("더블클릭은 선택을 지키지, 선택을 되돌리지 않는다", async ({ page }) => {
+test("a double-click keeps the selection and does not undo it", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 900 });
   await seedFirstRunSeen(page);
@@ -26,10 +26,10 @@ test("더블클릭은 선택을 지키지, 선택을 되돌리지 않는다", as
   const selected = () => page.evaluate(() => (window as unknown as { __atlasMap: Probe }).__atlasMap.selection().nodeId);
 
   const at = await chip();
-  expect(at, "주문 도메인을 다이얼에서 못 찾았다").not.toBeNull();
+  expect(at, "the order domain was not found in the dial").not.toBeNull();
   const openBefore = new URL(page.url()).searchParams.get("open");
   await page.mouse.dblclick(at!.px, at!.py);
-  await expect.poll(selected, { timeout: 20_000, message: "더블클릭의 두 번째 탭이 선택을 되돌렸다" }).toBe("domain:order");
+  await expect.poll(selected, { timeout: 20_000, message: "the second tap of the double-click undid the selection" }).toBe("domain:order");
   // The overview opens nothing: the expanded parents in the address stay as they were.
   expect(new URL(page.url()).searchParams.get("open")).toBe(openBefore);
 

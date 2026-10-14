@@ -50,8 +50,8 @@ function renderPanel(
  * **taught** before the agent's own facts. The seam has to be free while it is empty:
  * with nothing supplied, the line is the line that shipped.
  */
-describe('결과 줄의 두 번째 줄 — 사실 목록', () => {
-  it('브리프가 없으면 에이전트·걸린 시간·허용·거절만 말한다', () => {
+describe('second line of a result row: fact list', () => {
+  it('says only agent, time taken, allow and reject when there is no brief', () => {
     renderPanel();
     const row = screen.getByTestId('agent-inbox-result-row');
     // The gaps between facts are CSS, so the text node reads them back without spaces.
@@ -59,7 +59,7 @@ describe('결과 줄의 두 번째 줄 — 사실 목록', () => {
     expect(row.textContent).toContain('Claude Code·3분·3분 전·허용 2·거절 0');
   });
 
-  it('브리프가 있으면 에이전트 사실 앞에 먼저 온다', () => {
+  it('puts the brief before the agent facts when there is one', () => {
     renderPanel(() => [
       { label: '새로 알아야 할 것', count: 4 },
       { label: '확실하지 않은 것', count: 2, tone: 'warning' },
@@ -74,10 +74,10 @@ describe('결과 줄의 두 번째 줄 — 사실 목록', () => {
 });
 
 /** Each tab says what is not there in its own words, and only the To do one carries a door. */
-describe('빈 탭', () => {
+describe('empty tab', () => {
   const empty: BellInbox = { todos: [], results: [], history: [], unreadResults: 0 };
 
-  it('세 탭이 서로 다른 문장을 말한다', () => {
+  it('has the three tabs say different sentences', () => {
     renderPanel(undefined, empty);
     expect(screen.getByTestId('agent-inbox-todo-empty')).toHaveTextContent(
       '여기 올라온 기다리는 일은 없어요.',
@@ -97,7 +97,7 @@ describe('빈 탭', () => {
  * timeline's node names are not accent-coloured; a result row, whose whole row is the button, gains
  * no word-level mark.
  */
-describe('패널의 잉크와 숫자 — 주의를 끄는 것만 인디고', () => {
+describe('ink and numbers of the panel: only what draws attention is indigo', () => {
   const history: BellInbox = {
     todos: [],
     results: [task],
@@ -139,7 +139,7 @@ describe('패널의 잉크와 숫자 — 주의를 끄는 것만 인디고', () 
     );
   }
 
-  it('기록의 대상 이름은 인디고를 내려놓고 밑줄로 눌릴 수 있음을 말한다', () => {
+  it('drops indigo from the target name in history and shows by underline that it can be pressed', () => {
     renderHistory();
     fireEvent.click(screen.getByRole('tab', { name: '기록' }));
     const object = screen.getByRole('button', { name: '지도에서 주문 열기' });
@@ -153,7 +153,7 @@ describe('패널의 잉크와 숫자 — 주의를 끄는 것만 인디고', () 
     expect(object.className).toContain('hover:decoration-[color:var(--color-indigo-accent)]');
   });
 
-  it('결과 줄은 눌렀을 때 어디로 가는지 이름으로 말한다 — 요약을 지우지 않고', () => {
+  it('says by name where a result row goes when pressed, without erasing the summary', () => {
     renderHistory();
     fireEvent.click(screen.getByRole('tab', { name: /결과/ }));
     const row = screen.getByTestId('agent-inbox-result-row');
@@ -166,7 +166,7 @@ describe('패널의 잉크와 숫자 — 주의를 끄는 것만 인디고', () 
     expect(row.querySelector('.underline')).toBeNull();
   });
 
-  it('기록 탭은 숫자를 달지 않는다 — 셀 수 있는 것만 센다', () => {
+  it('hangs no number on the history tab, counting only what can be counted', () => {
     renderHistory();
     // To do and Results count things a person acts on or is credited with; the timeline's
     // length is a windowed log, a different unit in the same engraved slot.
@@ -180,7 +180,7 @@ describe('패널의 잉크와 숫자 — 주의를 끄는 것만 인디고', () 
  * A task that wrote once lasts 0 ms, so under a second the duration is left out; above it every size
  * keeps the next unit only when not zero.
  */
-describe('걸린 시간 — 1초 미만은 말하지 않고, 긴 시간은 한 규칙으로', () => {
+describe('time taken: nothing under 1 second is said, and long times follow one rule', () => {
   const historyRow = (durationMs: number | null): BellHistoryRow => ({
     id: `history:${durationMs}`,
     at: NOW - 3 * MINUTE,

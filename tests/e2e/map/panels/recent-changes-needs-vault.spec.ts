@@ -9,7 +9,7 @@ import { waitForAnimationsDone } from '../../settle';
  */
 
 /* One page load walks the whole contract rather than paying the map's load per property. */
-test('최근 변경 — 샘플에서 폴더로 가는 길이 모달로 열리고 닫힌다', async ({ page }) => {
+test('recent changes: the path from the sample to a folder opens and closes as a modal', async ({ page }) => {
   await page.setViewportSize({ width: 1512, height: 900 });
   // The page's scripts have loaded (so the chip answers a press) and its toolbar is at rest.
   await page.goto('/ko/topology/?guides=off', { waitUntil: 'networkidle' });
@@ -30,7 +30,7 @@ test('최근 변경 — 샘플에서 폴더로 가는 길이 모달로 열리고
   // Opening it moves focus to the next action.
   await expect(page.getByTestId('recent-changes-needs-vault-open')).toBeFocused();
   // It does not switch the lens on: a lens with nothing to highlight would be left on.
-  expect(page.url(), '`?recent=` 가 붙으면 안 된다').toBe(before);
+  expect(page.url(), '`?recent=` must not be appended').toBe(before);
 
   // `design.md`: a modal must **prove** a dim/scrim or blocked interaction.
   const scrim = page.getByTestId('recent-changes-needs-vault-scrim');
@@ -40,7 +40,7 @@ test('최근 변경 — 샘플에서 폴더로 가는 길이 모달로 열리고
     const parts = m ? m[1].split(',').map(Number) : [];
     return parts.length > 3 ? parts[3] : 1;
   });
-  expect(alpha, 'scrim 이 투명하면 모달이 아니라 떠 있는 카드다').toBeGreaterThan(0.2);
+  expect(alpha, 'a transparent scrim makes it a floating card, not a modal').toBeGreaterThan(0.2);
 
   // Escape and a press on the scrim both close it.
   await page.keyboard.press('Escape');

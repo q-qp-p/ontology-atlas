@@ -18,10 +18,10 @@ function frameContentWidth(frameConst: string): number {
   const source = read('src/shared/ui/tokens/page-frame.ts');
   // The declaration is split across two lines (the string sits on the line after `= `). A line-wise search misses it.
   const declaration = new RegExp(`export const ${frameConst}\\s*=\\s*"([^"]+)"`).exec(source);
-  if (!declaration) throw new Error(`${frameConst} 선언을 못 찾았다`);
+  if (!declaration) throw new Error(`could not find the declaration of ${frameConst}`);
   const classes = declaration[1];
   const max = /max-w-\[(\d+)px\]/.exec(classes);
-  if (!max) throw new Error(`${frameConst} 에 max-w 리터럴이 없다`);
+  if (!max) throw new Error(`${frameConst} has no max-w literal`);
   // On wide screens the value that actually applies is `md:px-N`.
   const pad = /md:px-(\d+)/.exec(classes);
   const padPx = pad ? Number(pad[1]) * SPACING_STEP : 0;
@@ -39,7 +39,7 @@ function frameContentWidth(frameConst: string): number {
  */
 function gridClassName(source: string): string {
   const match = /className="([^"]*lg:grid-cols-\[[^\]]+\][^"]*)"/.exec(source);
-  if (!match) throw new Error('className 안의 lg:grid-cols 리터럴을 못 찾았다');
+  if (!match) throw new Error('could not find the lg:grid-cols literal in className');
   return match[1];
 }
 
@@ -53,7 +53,7 @@ function fixedTrackWidth(source: string): { fixed: number; tracks: string[] } {
    * considered.
    */
   const match = /lg:grid-cols-\[([^\]]+)\]/.exec(gridClassName(source));
-  if (!match) throw new Error('lg:grid-cols 트랙을 못 읽었다');
+  if (!match) throw new Error('could not read the lg:grid-cols track');
   // `minmax(0,1fr)_260px` — count paren depth so commas inside are left alone.
   const tracks: string[] = [];
   let depth = 0;
@@ -82,10 +82,10 @@ function gapWidth(source: string): number {
   return match ? Number(match[1]) * SPACING_STEP : 0;
 }
 
-describe('두 열 폼 격자 — 자기 틀 안에 들어가는가', () => {
+describe('two-column form grid — does it fit inside its own frame', () => {
   const form = read('src/features/project-edit/ui/ProjectForm.tsx');
 
-  it('고정 트랙 + 간격이 틀의 내용 상자를 넘지 않는다', () => {
+  it('fixed tracks + gaps do not exceed the content box of the frame', () => {
     const content = frameContentWidth('PAGE_FRAME_FORM');
     const { fixed, tracks } = fixedTrackWidth(form);
     const gap = gapWidth(form);
@@ -96,15 +96,15 @@ describe('두 열 폼 격자 — 자기 틀 안에 들어가는가', () => {
     ).toBeLessThanOrEqual(content);
   });
 
-  it('늘어나는 트랙이 하나는 있다 — 전부 고정이면 틀이 바뀔 때 다시 넘친다', () => {
+  it('there is one flexible track — if all are fixed it overflows again when the frame changes', () => {
     const { tracks } = fixedTrackWidth(form);
     expect(
       tracks.some((track) => /fr|minmax|auto/.test(track)),
-      '모든 트랙이 고정 폭이다 — 틀이 좁아지면 그대로 넘친다',
+      'every track is a fixed width — it overflows as it is when the frame narrows',
     ).toBe(true);
   });
 
-  it('검사기가 헛돌지 않는다 — 양쪽에서 실제로 값을 읽어 왔다', () => {
+  it('the checker does not idle — it really read values from both sides', () => {
     // If the extractor silently returns 0, both tests above pass.
     expect(frameContentWidth('PAGE_FRAME_FORM')).toBeGreaterThan(400);
     // Must be 32px (`gap-8`). An 8 means a different gap in the file was picked up.

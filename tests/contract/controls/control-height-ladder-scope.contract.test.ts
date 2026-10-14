@@ -9,7 +9,7 @@ import { readGlobalCss } from '../../../scripts/lib/design/global-css.mjs';
  * `controlClass()` emits, so places outside the value layer where a chrome token owns the dimension
  * are held here. Source table: `docs/DESIGN-SYSTEM.md`.
  */
-describe('컨트롤 높이 사다리 — 적용 범위', () => {
+describe('control height ladder — scope of application', () => {
   const GLOBALS = readGlobalCss();
 
   /** The first `--name: <value>;` declaration. Multi-line values (`max(\n …\n)`) read as one. */
@@ -34,7 +34,7 @@ describe('컨트롤 높이 사다리 — 적용 범위', () => {
     const WCAG_TARGET_FLOOR_PX = 24;
     const tokenPx = (name: string): number => {
       const px = basePx(cssVar(name) ?? '');
-      expect(px, `\`${name}\` 을 px 로 못 읽었다 — 어휘를 파생할 수 없다`).not.toBeNull();
+      expect(px, `could not read \`${name}\` as px — the vocabulary cannot be derived`).not.toBeNull();
       return px as number;
     };
     const vocabulary = new Set([
@@ -47,7 +47,7 @@ describe('컨트롤 높이 사다리 — 적용 범위', () => {
     ]);
     // If tokens converge and the vocabulary shrinks, the derivation itself loses its
     // signal.
-    expect([...vocabulary].sort((a, b) => a - b), '높이 어휘가 6단이 아니다').toEqual([
+    expect([...vocabulary].sort((a, b) => a - b), 'the height vocabulary is not six steps').toEqual([
       24, 28, 32, 36, 40, 44,
     ]);
     return vocabulary;
@@ -62,17 +62,17 @@ describe('컨트롤 높이 사다리 — 적용 범위', () => {
       const [, name, value] = match;
       const px = basePx(value);
       if (px === null) {
-        offenders.push(`${name}: 기본 px 를 못 읽었다 — \`${value.replace(/\s+/g, ' ')}\``);
+        offenders.push(`${name}: could not read the default px — \`${value.replace(/\s+/g, ' ')}\``);
         continue;
       }
       if (!vocabulary.has(px)) {
-        offenders.push(`${name}: ${px}px 는 높이 어휘 밖이다`);
+        offenders.push(`${name}: ${px}px is outside the height vocabulary`);
       }
     }
     return offenders;
   }
 
-  it('타일 치수 토큰의 기본값이 전부 높이 어휘 안이다 — 34 가 태어난 구멍', () => {
+  it('every default of the tile size tokens is inside the height vocabulary — the hole 34 was born in', () => {
     const vocabulary = heightVocabulary();
 
     // Idling guard — a scan returning 0 means a broken regex or path, not "no
@@ -80,22 +80,22 @@ describe('컨트롤 높이 사다리 — 적용 범위', () => {
     const scanned = [...GLOBALS.matchAll(TILE_DIMENSION_DECL)];
     expect(
       scanned.length,
-      '타일 치수 선언을 하나도 못 셌다 — 셀렉터나 파일 경로가 깨졌다',
+      'could not count a single tile size declaration — the selector or file path broke',
     ).toBeGreaterThanOrEqual(3);
     // **Both** the base declaration and the coarse promotion must be caught (blocking
     // the accident where only the promotion is off-vocabulary).
     expect(
       scanned.filter(([, , value]) => value.includes('max(')).length,
-      'coarse 승격 선언이 스캔에 안 잡혔다 — 다중 줄 값을 놓치고 있다',
+      'the coarse promotion declaration was missed by the scan — multi-line values are being skipped',
     ).toBeGreaterThan(0);
 
     expect(
       tileDimensionOffenders(GLOBALS, vocabulary),
-      '타일 치수 토큰이 사다리 밖이다. 새 값이 필요하면 축을 더하지 말고 사다리 표를 고쳐라.',
+      'a tile size token is off the ladder. If a new value is needed, fix the ladder table instead of adding an axis.',
     ).toEqual([]);
   });
 
-  it('세로로 쌓는 컨트롤은 **안쪽 타일**이 사다리에 선다 — 바깥 합계는 사다리의 일이 아니다', () => {
+  it('a vertically stacked control puts its **inner tile** on the ladder — the outer total is not the ladder\'s business', () => {
     /*
      * Nav rail items render at **62px** on every route (measured at 1440×900):
      * `py-1.5`(12) + tile 32 + `gap-1`(4) + label line box 14. 62 is not in the
@@ -108,14 +108,14 @@ describe('컨트롤 높이 사다리 — 적용 범위', () => {
      */
     const railTile = basePx(cssVar('--app-nav-rail-tile-height') ?? '');
     const controlMd = basePx(cssVar('--control-h-md') ?? '');
-    expect(railTile, '`--app-nav-rail-tile-height` 를 px 로 못 읽었다').not.toBeNull();
+    expect(railTile, 'could not read `--app-nav-rail-tile-height` as px').not.toBeNull();
     expect(
       railTile,
-      '세로 컨트롤의 안쪽 타일이 사다리에서 내려왔다 — `--control-h-md` 와 같아야 한다',
+      'the inner tile of a vertical control came off the ladder — it must equal `--control-h-md`',
     ).toBe(controlMd);
   });
 
-  it('문서함 헤더 타일이 자기 치수 토큰을 다시 만들지 않았다', () => {
+  it('the document library header tile does not rebuild its own size token', () => {
     /*
      * The way this comes back has exactly this shape: "this one surface needs slightly
      * different density" → a new `--<surface>-tile-size` → the day the chrome token
@@ -126,16 +126,16 @@ describe('컨트롤 높이 사다리 — 적용 범위', () => {
       join(process.cwd(), 'src/views/docs-vault/ui/parts/DocsHeaderTile.tsx'),
       'utf8',
     );
-    expect(source, '문서함 헤더 타일이 크롬 치수 토큰을 안 읽는다').toContain(
+    expect(source, 'the document library header tile does not read the chrome size token').toContain(
       'size-[var(--chrome-tile-size)]',
     );
     expect(
       /--docs-header-tile-size\s*\)/.test(source),
-      '삭제한 `--docs-header-tile-size` 를 다시 참조한다',
+      'it references the deleted `--docs-header-tile-size` again',
     ).toBe(false);
   });
 
-  it('게이트가 실제로 위반을 잡는다 — 세 형태와 34 로 프로브', () => {
+  it('the gate really catches violations — probed with three forms and 34', () => {
     const vocabulary = heightVocabulary();
 
     // Violation — the exact declaration that produced 34.
@@ -149,7 +149,7 @@ describe('컨트롤 높이 사다리 — 적용 범위', () => {
         '  --foo-tile-size: max(\n    34px,\n    var(--touch-target-min)\n  );\n',
         vocabulary,
       ),
-      '다중 줄 max() 안의 어휘 밖 기본값을 놓쳤다',
+      'missed an out-of-vocabulary default inside a multi-line max()',
     ).toHaveLength(1);
     // Violation — the base value of the scale form is off-vocabulary.
     expect(
@@ -179,7 +179,7 @@ describe('컨트롤 높이 사다리 — 적용 범위', () => {
         '  --app-nav-rail-tile-width: calc(38px * var(--topology-ui-scale-factor));\n',
         vocabulary,
       ),
-      '폭 토큰을 높이 어휘로 재고 있다',
+      'a width token is being measured against the height vocabulary',
     ).toEqual([]);
   });
 });

@@ -49,12 +49,12 @@ function countEmDash(locale: "ko" | "en"): { strings: number; withDash: number }
   return { strings, withDash };
 }
 
-describe("작대기 래칫 — 사용자 문구", () => {
+describe("em-dash ratchet — user-facing copy", () => {
   for (const locale of ["ko", "en"] as const) {
-    it(`${locale}: 작대기를 쓰는 문구가 늘지 않는다`, () => {
+    it(`${locale}: copy using an em dash does not grow`, () => {
       const { strings, withDash } = countEmDash(locale);
       // Idling guard — failing to read the file and passing with "0 hits" is the worst failure here.
-      expect(strings, `${locale} 문구를 하나도 못 읽었다 — 이 래칫이 헛돈다`).toBeGreaterThan(
+      expect(strings, `${locale}: could not read a single string — this ratchet idles`).toBeGreaterThan(
         2_000,
       );
       expect(
@@ -78,7 +78,7 @@ describe("작대기 래칫 — 사용자 문구", () => {
  * `docs/ontology/**`, `docs/CHANGELOG.md`. The boundary is whether a user reads it; the append-only
  * decisions ledger and agent-facing docs are excluded.
  */
-describe("작대기 — 화면에 그려지는 문서", () => {
+describe("em dash — documents rendered on screen", () => {
   const RENDERED_DOC_ROOTS = [
     join(REPO_ROOT, "samples", "storefront"),
     join(REPO_ROOT, "docs", "guide"),
@@ -97,12 +97,12 @@ describe("작대기 — 화면에 그려지는 문서", () => {
     return out;
   };
 
-  it("화면에 그려지는 문서에 작대기가 없다", () => {
+  it("no document rendered on screen has an em dash", () => {
     const files = [...RENDERED_DOC_ROOTS.flatMap(markdownFiles), ...RENDERED_DOC_FILES];
-    expect(files.length, "문서를 하나도 못 읽었다. 이 시험이 헛돈다").toBeGreaterThan(0);
+    expect(files.length, "could not read a single document. This test idles").toBeGreaterThan(0);
     // Each root really produced files — one root at 0 can still clear the total.
     for (const root of RENDERED_DOC_ROOTS) {
-      expect(markdownFiles(root).length, `${root} 에서 문서를 못 읽었다`).toBeGreaterThan(0);
+      expect(markdownFiles(root).length, `could not read documents from ${root}`).toBeGreaterThan(0);
     }
     /**
      * Code blocks are exempt: guide transcripts record what the CLI actually prints, dashes included, and

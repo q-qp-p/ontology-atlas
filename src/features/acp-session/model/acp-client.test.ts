@@ -182,8 +182,8 @@ function outcomeOf(sent: Array<Record<string, unknown>>, id: number) {
 const insideVault = async () => 'allow-inside-vault' as const;
 const alwaysAsk = async () => 'ask' as const;
 
-describe('ACP 클라이언트 — 우리가 선언한 것만 답한다', () => {
-  it('선언하지 않은 능력이 오면 침묵하지 않고 「없다」고 답한다', async () => {
+describe('ACP client: answers only what we declared', () => {
+  it('answers "none" instead of staying silent when an undeclared capability arrives', async () => {
     // Staying silent leaves the other side waiting forever, and to the user that looks only like "it froze".
     const t = fakeTransport();
     const notices: string[] = [];
@@ -201,7 +201,7 @@ describe('ACP 클라이언트 — 우리가 선언한 것만 답한다', () => {
     expect(notices).toContain('declined:fs/write_text_file');
   });
 
-  it('initialize 는 파일·터미널 능력을 선언하지 않는다', () => {
+  it('does not declare file or terminal capabilities in initialize', () => {
     const t = fakeTransport();
     const client = createAcpClient(t.transport, { verdict: alwaysAsk, askUser: async () => null });
     void client.initialize();
@@ -212,8 +212,8 @@ describe('ACP 클라이언트 — 우리가 선언한 것만 답한다', () => {
   });
 });
 
-describe('ACP 클라이언트 — 권한 정책', () => {
-  it('볼트 안 **읽기**는 앱이 대신 허용한다 (매번 물으면 대화가 성립하지 않는다)', async () => {
+describe('ACP client: permission policy', () => {
+  it('allows in-vault **reads** on behalf of the app (asking every time would make conversation impossible)', async () => {
     const t = fakeTransport();
     const askUser = vi.fn(async () => null);
     const autoAllowed = vi.fn();
@@ -227,7 +227,7 @@ describe('ACP 클라이언트 — 권한 정책', () => {
     expect(autoAllowed).toHaveBeenCalledWith(expect.objectContaining({ filePath: '/vault/notes.md' }));
   });
 
-  it('우리 서버의 읽기가 볼트 상대 경로를 들고 오면 앱이 대신 허용한다 — `read_source` 는 `sources/…` 로 부른다', async () => {
+  it('allows a read by our server on behalf of the app when it carries a vault-relative path; `read_source` is called as `sources/…`', async () => {
     // Rust judges absolute paths only, so vault-relative `sources/...` reads need this allowance.
     const t = fakeTransport();
     const askUser = vi.fn(async () => null);
@@ -258,7 +258,7 @@ describe('ACP 클라이언트 — 권한 정책', () => {
     await vi.waitFor(() => expect(askUser).toHaveBeenCalledTimes(1));
   });
 
-  it('볼트 안이라도 **편집**은 묻는다 — 경로가 안전하다는 것이 변경을 봤다는 뜻은 아니다', async () => {
+  it('asks about **edits** even inside the vault, since a safe path does not mean the change was seen', async () => {
     const t = fakeTransport();
     const askUser = vi.fn(async () => null);
     createAcpClient(t.transport, { verdict: insideVault, askUser });
@@ -270,7 +270,7 @@ describe('ACP 클라이언트 — 권한 정책', () => {
     expect(outcomeOf(t.sent, 7)).toEqual({ outcome: 'selected', optionId: 'reject' });
   });
 
-  it('종류를 밝히지 않은 도구는 볼트 안이라도 묻는다 — 모르는 것은 닫힌 쪽으로 떨어진다', async () => {
+  it('asks about a tool with no stated kind even inside the vault; the unknown falls to the closed side', async () => {
     const t = fakeTransport();
     const askUser = vi.fn(async () => null);
     createAcpClient(t.transport, { verdict: insideVault, askUser });
@@ -283,7 +283,7 @@ describe('ACP 클라이언트 — 권한 정책', () => {
     expect(askUser).toHaveBeenCalledTimes(1);
   });
 
-  it('판정이 실패해도 **답은 나간다** — 상대를 영원히 기다리게 하지 않는다', async () => {
+  it('**still sends the answer** when the judgment fails, so the other side never waits forever', async () => {
     const t = fakeTransport();
     const askUser = vi.fn(async () => null);
     const notices: string[] = [];
@@ -304,7 +304,7 @@ describe('ACP 클라이언트 — 권한 정책', () => {
     expect(notices.some((m) => m.startsWith('verdict-failed'))).toBe(true);
   });
 
-  it('볼트 밖이면 사용자에게 묻고, 답을 그대로 전한다', async () => {
+  it('asks the user outside the vault and passes the answer through', async () => {
     const t = fakeTransport();
     const askUser = vi.fn(async (_request: AcpPermissionRequest) => 'allow');
     createAcpClient(t.transport, { verdict: alwaysAsk, askUser });
@@ -320,7 +320,7 @@ describe('ACP 클라이언트 — 권한 정책', () => {
     expect(outcomeOf(t.sent, 7)).toEqual({ outcome: 'selected', optionId: 'allow' });
   });
 
-  it('사용자가 답하지 않으면 거절이다 — 안 물어본 것을 허용으로 세지 않는다', async () => {
+  it('rejects when the user does not answer; an unasked request is not counted as allowed', async () => {
     const t = fakeTransport();
     createAcpClient(t.transport, { verdict: alwaysAsk, askUser: async () => null });
 
@@ -330,7 +330,7 @@ describe('ACP 클라이언트 — 권한 정책', () => {
     expect(outcomeOf(t.sent, 7)).toEqual({ outcome: 'selected', optionId: 'reject' });
   });
 
-  it('묻다가 실패해도 거절이다', async () => {
+  it('rejects when asking fails too', async () => {
     const t = fakeTransport();
     createAcpClient(t.transport, {
       verdict: alwaysAsk,
@@ -344,7 +344,7 @@ describe('ACP 클라이언트 — 권한 정책', () => {
     expect(outcomeOf(t.sent, 7)).toMatchObject({ optionId: 'reject' });
   });
 
-  it('앱이 `allow_always` 를 대신 고르지 않는다', async () => {
+  it('does not choose `allow_always` on behalf of the app', async () => {
     /*
      * Measured: that option's `_meta.permission` carries a rule granting "this entire directory for the
      * whole session". Widening the boundary is the user's decision alone.
@@ -357,7 +357,7 @@ describe('ACP 클라이언트 — 권한 정책', () => {
     expect(outcomeOf(t.sent, 7)?.optionId).not.toBe('allow_always');
   });
 
-  it('화면이 그 요청에 없는 선택지를 돌려주면 거절로 떨어진다', async () => {
+  it('rejects when the screen returns an option that was not in the request', async () => {
     // A screen bug returning a stale request's value must not be allowed to permit the wrong thing.
     const t = fakeTransport();
     createAcpClient(t.transport, { verdict: alwaysAsk, askUser: async () => 'not-an-option' });
@@ -367,7 +367,7 @@ describe('ACP 클라이언트 — 권한 정책', () => {
     expect(outcomeOf(t.sent, 7)).toMatchObject({ optionId: 'reject' });
   });
 
-  it('경로를 모르면 묻는다 — 판단할 수 없는 것을 통과시키지 않는다', async () => {
+  it('asks when the path is unknown; what cannot be judged does not pass', async () => {
     const t = fakeTransport();
     const askUser = vi.fn(async () => null);
     // Without a path the answer is meaningless, even one saying inside the vault.
@@ -385,7 +385,7 @@ describe('ACP 클라이언트 — 권한 정책', () => {
     await vi.waitFor(() => expect(askUser).toHaveBeenCalled());
   });
 
-  it('거절 선택지조차 없으면 취소로 답한다 (답을 안 하면 상대가 멈춘다)', async () => {
+  it('answers with a cancel when there is not even a reject option (no answer would stall the other side)', async () => {
     const t = fakeTransport();
     createAcpClient(t.transport, { verdict: alwaysAsk, askUser: async () => null });
 
@@ -400,11 +400,11 @@ describe('ACP 클라이언트 — 권한 정책', () => {
   });
 });
 
-describe('ACP 클라이언트 — Codex MCP 승인 상관관계', () => {
+describe('ACP client: Codex MCP approval correlation', () => {
   it.each([
     ['reject', 'reject'],
     ['allow', 'allow'],
-  ])('정확히 연결된 Atlas 쓰기의 명시적 %s를 %s_once로 전달한다', async (choice, optionId) => {
+  ])('passes an explicit %s on a correctly linked Atlas write as %s_once', async (choice, optionId) => {
     const t = fakeTransport();
     const updates: Array<Record<string, unknown>> = [];
     const askUser = vi.fn(async (_request: AcpPermissionRequest) => choice);
@@ -441,7 +441,7 @@ describe('ACP 클라이언트 — Codex MCP 승인 상관관계', () => {
     expect(outcomeOf(t.sent, 81)).toEqual({ outcome: 'selected', optionId });
   });
 
-  it('status-only refinement는 구조화된 시작 정보를 지우지 않는다', async () => {
+  it('keeps the structured start info through a status-only refinement', async () => {
     const t = fakeTransport();
     const askUser = vi.fn(async (_request: AcpPermissionRequest) => 'reject');
     createAcpClient(t.transport, {
@@ -469,7 +469,7 @@ describe('ACP 클라이언트 — Codex MCP 승인 상관관계', () => {
     expect(askUser.mock.calls[0][0].toolName).toBe('mcp__atlas-vault__patch_concept');
   });
 
-  it('session 또는 toolCallId가 다르면 다른 호출의 정보를 소비하지 않고 취소한다', async () => {
+  it('cancels without consuming the info of another call when the session or toolCallId differs', async () => {
     const t = fakeTransport();
     const askUser = vi.fn(async () => 'reject');
     createAcpClient(t.transport, {
@@ -494,23 +494,23 @@ describe('ACP 클라이언트 — Codex MCP 승인 상관관계', () => {
   });
 
   it.each([
-    ['선행 update 없음', null],
+    ['no preceding update', null],
     [
-      'arguments 누락',
+      'arguments missing',
       {
         server: 'atlas-vault',
         tool: 'patch_concept',
       },
     ],
     [
-      'arguments가 객체 아님',
+      'arguments is not an object',
       {
         server: 'atlas-vault',
         tool: 'patch_concept',
         arguments: [],
       },
     ],
-  ])('MCP 문맥이 불완전하면 카드를 열지 않고 cancelled: %s', async (_label, rawInput) => {
+  ])('opens no card and cancels when the MCP context is incomplete: %s', async (_label, rawInput) => {
     const t = fakeTransport();
     const askUser = vi.fn(async () => 'allow');
     const notices: string[] = [];
@@ -534,7 +534,7 @@ describe('ACP 클라이언트 — Codex MCP 승인 상관관계', () => {
     expect(notices).toContain('permission-context-missing:mcp-tool-approval');
   });
 
-  it('같은 호출의 malformed MCP refinement는 앞선 인자를 재사용하지 않는다', async () => {
+  it('does not reuse earlier arguments for a malformed MCP refinement of the same call', async () => {
     const t = fakeTransport();
     const askUser = vi.fn(async () => 'allow');
     createAcpClient(t.transport, {
@@ -558,7 +558,7 @@ describe('ACP 클라이언트 — Codex MCP 승인 상관관계', () => {
     expect(askUser).not.toHaveBeenCalled();
   });
 
-  it('정확히 연결된 다른 MCP 서버는 일반 명시적 카드로 남는다', async () => {
+  it('leaves another correctly linked MCP server as a plain explicit card', async () => {
     const t = fakeTransport();
     const askUser = vi.fn(async (_request: AcpPermissionRequest) => 'allow');
     createAcpClient(t.transport, {
@@ -585,7 +585,7 @@ describe('ACP 클라이언트 — Codex MCP 승인 상관관계', () => {
     expect(outcomeOf(t.sent, 81)).toEqual({ outcome: 'selected', optionId: 'allow' });
   });
 
-  it('상관 정보는 한 번만 쓰고 완료·세션 취소 때 버린다', async () => {
+  it('uses correlation info once and discards it on completion or session cancel', async () => {
     const t = fakeTransport();
     const askUser = vi.fn(async () => 'reject');
     const client = createAcpClient(t.transport, {
@@ -627,8 +627,8 @@ describe('ACP 클라이언트 — Codex MCP 승인 상관관계', () => {
   });
 });
 
-describe('ACP 클라이언트 — 요청/응답과 잡음', () => {
-  it('session/new 는 sessionId 를 돌려주고, 없으면 실패한다', async () => {
+describe('ACP client: requests, responses and noise', () => {
+  it('returns a sessionId from session/new and fails without one', async () => {
     const t = fakeTransport();
     const client = createAcpClient(t.transport, { verdict: alwaysAsk, askUser: async () => null });
 
@@ -641,7 +641,7 @@ describe('ACP 클라이언트 — 요청/응답과 잡음', () => {
     await expect(bad).rejects.toThrow(/sessionId/);
   });
 
-  it('아직 재 보지 않은 모드는 목록에 남기되 안전 상태도 함께 돌려준다', async () => {
+  it('keeps a mode not yet re-examined in the list and returns its safety state with it', async () => {
     const t = fakeTransport();
     const client = createAcpClient(t.transport, { verdict: alwaysAsk, askUser: async () => null });
 
@@ -671,7 +671,7 @@ describe('ACP 클라이언트 — 요청/응답과 잡음', () => {
     });
   });
 
-  it('session/update 는 화면으로 흘리고 답하지 않는다', async () => {
+  it('passes session/update through to the screen and does not answer it', async () => {
     const t = fakeTransport();
     const updates: Array<Record<string, unknown>> = [];
     createAcpClient(t.transport, {
@@ -689,7 +689,7 @@ describe('ACP 클라이언트 — 요청/응답과 잡음', () => {
     expect(t.sent).toHaveLength(0);
   });
 
-  it('JSON 이 아닌 줄은 버리되 조용히 버리지 않는다', () => {
+  it('drops lines that are not JSON, but not silently', () => {
     const t = fakeTransport();
     const notices: string[] = [];
     createAcpClient(t.transport, {
@@ -704,7 +704,7 @@ describe('ACP 클라이언트 — 요청/응답과 잡음', () => {
     expect(notices[0]).toContain('unparsable:');
   });
 
-  it('dispose 하면 기다리던 호출이 실패하고 더는 줄을 먹지 않는다', async () => {
+  it('fails pending calls on dispose and eats no more lines', async () => {
     const t = fakeTransport();
     const client = createAcpClient(t.transport, { verdict: alwaysAsk, askUser: async () => null });
     const waiting = client.initialize();
@@ -717,7 +717,7 @@ describe('ACP 클라이언트 — 요청/응답과 잡음', () => {
   });
 });
 
-describe('ACP 클라이언트 — 답이 안 오면 언젠가 끝난다', () => {
+describe('ACP client: an unanswered request eventually ends', () => {
   it.each([
     ['initialize', (client: ReturnType<typeof createAcpClient>) => client.initialize()],
     [
@@ -725,7 +725,7 @@ describe('ACP 클라이언트 — 답이 안 오면 언젠가 끝난다', () => 
       (client: ReturnType<typeof createAcpClient>) =>
         client.prompt('s-1', [{ type: 'text', text: '이 폴더를 훑어봐' }]),
     ],
-  ])('%s 전송이 거절되면 timeout 없이 즉시 실패하고 늦은 답은 무시한다', async (method, run) => {
+  ])('fails %s at once with no timeout when sending is refused, and ignores the late answer', async (method, run) => {
     const t = rejectingTransport();
     const notices: string[] = [];
     const client = createAcpClient(t.transport, {
@@ -750,7 +750,7 @@ describe('ACP 클라이언트 — 답이 안 오면 언젠가 끝난다', () => 
     }
   });
 
-  it('악수에 답이 없으면 시간이 지나 실패한다 — 「켜는 중」에 붙박이지 않는다', async () => {
+  it('fails after the time passes when the handshake gets no answer, rather than sticking on "starting"', async () => {
     vi.useFakeTimers();
     try {
       const t = fakeTransport();
@@ -766,7 +766,7 @@ describe('ACP 클라이언트 — 답이 안 오면 언젠가 끝난다', () => 
     }
   });
 
-  it('내려받는 중에는 악수 시계가 다시 시작된다 — 첫 대화가 영영 안 열리던 자리다', async () => {
+  it('restarts the handshake clock while downloading, the spot where the first conversation never opened', async () => {
     /* Download progress is proof of life and restarts the handshake clock; the first `npx` fetch is large. */
     vi.useFakeTimers();
     try {
@@ -794,7 +794,7 @@ describe('ACP 클라이언트 — 답이 안 오면 언젠가 끝난다', () => 
     }
   });
 
-  it('내려받기가 멎으면 예전 그대로 시간이 지나 실패한다', async () => {
+  it('fails after the usual time when the download stalls', async () => {
     // The ceiling keeps its meaning: 45s with **no sign of life**. Extending it only while progress
     // arrives must not turn a genuinely stalled fetch into an endless wait.
     vi.useFakeTimers();
@@ -812,7 +812,7 @@ describe('ACP 클라이언트 — 답이 안 오면 언젠가 끝난다', () => 
     }
   });
 
-  it('대화 한 턴에는 시간을 안 준다 — 오래 걸리는 것이 정상인 일이다', async () => {
+  it('gives a conversation turn no time limit, since taking long is normal for it', async () => {
     vi.useFakeTimers();
     try {
       const t = fakeTransport();
@@ -827,7 +827,7 @@ describe('ACP 클라이언트 — 답이 안 오면 언젠가 끝난다', () => 
         },
       );
       await vi.advanceTimersByTimeAsync(10 * 60_000);
-      expect(settled, '오래 걸린다고 대화를 끊으면 안 된다').toBe(false);
+      expect(settled, 'cutting off the conversation because it takes long would be wrong').toBe(false);
       client.dispose();
     } finally {
       vi.useRealTimers();
@@ -835,8 +835,8 @@ describe('ACP 클라이언트 — 답이 안 오면 언젠가 끝난다', () => 
   });
 });
 
-describe('toPermissionRequest — 제목이 아니라 경로를 본다', () => {
-  it('구조화된 file_path 를 뽑고, 짝이 안 맞는 선택지는 버린다', () => {
+describe('toPermissionRequest: reads the path, not the title', () => {
+  it('extracts the structured file_path and drops options that do not pair up', () => {
     const parsed = toPermissionRequest({
       options: [
         { kind: 'allow_once', optionId: 'a', name: 'Allow' },
@@ -858,13 +858,13 @@ describe('toPermissionRequest — 제목이 아니라 경로를 본다', () => {
     expect(parsed.options).toEqual([{ optionId: 'a', kind: 'allow_once', name: 'Allow' }]);
   });
 
-  it('보존된 JSON-RPC 요청 id는 숫자 0도 유효하며 새 id로 바꾸지 않는다', () => {
+  it('treats a preserved JSON-RPC request id of 0 as valid and does not replace it with a new id', () => {
     const parsed = toPermissionRequest({ sessionId: 's-1' }, null, 0);
     expect(parsed.requestId).toBe(0);
     expect(parsed.sessionId).toBe('s-1');
   });
 
-  it('모양이 달라도 터지지 않는다 — 어댑터가 바뀌어도 대화가 죽지 않아야 한다', () => {
+  it('does not blow up on a different shape; the conversation must survive an adapter change', () => {
     expect(toPermissionRequest({})).toEqual({
       requestId: null,
       sessionId: null,
@@ -879,7 +879,7 @@ describe('toPermissionRequest — 제목이 아니라 경로를 본다', () => {
     });
   });
 
-  it('제목이 없으면 도구가 남긴 문장을 읽는다 — 서버가 스스로 묻는 자리다', () => {
+  it('reads the sentence the tool left when there is no title, the spot where the server asks itself', () => {
     /*
      * The vault server pauses a write with `elicitation/create`; `codex-acp` forwards it with no
      * `toolCall.title`, so the question is read from `toolCall.content[]`.
@@ -901,7 +901,7 @@ describe('toPermissionRequest — 제목이 아니라 경로를 본다', () => {
     expect(parsed.title).toBe('Create concept wire-probe. Apply this change to the vault?');
   });
 
-  it('제목이 있으면 제목이 이긴다 — 규약이 이름 붙인 자리다', () => {
+  it('lets the title win when there is one, the spot the convention names', () => {
     const parsed = toPermissionRequest({
       toolCall: {
         title: 'Write notes.md',

@@ -37,8 +37,8 @@ function collectSources(dir: string): string[] {
 
 const HANGUL = /[ᄀ-ᇿ㄰-㆏가-힯]/u;
 
-describe('CLI가 찍는 말은 한 언어로 쓴다', () => {
-  it('사용자에게 출력하는 파일에는 한글이 없다', () => {
+describe('what the CLI prints is written in one language', () => {
+  it('files that print to the user contain no Hangul', () => {
     const files = collectSources(CLI_SOURCE_ROOT);
     // A silent zero would make this gate pass forever if the walk ever broke.
     expect(files.length).toBeGreaterThan(30);
@@ -57,7 +57,7 @@ describe('CLI가 찍는 말은 한 언어로 쓴다', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('예외로 둔 파일은 실제로 한국어 문서를 읽는 데이터다', () => {
+  it('the excepted files are data that really read Korean documents', () => {
     // ⚠️ Without this the allowlist could quietly grow to cover a file that simply was not
     // translated, and the gate above would keep passing while the drift came back.
     for (const rel of KOREAN_MATCHER_DATA) {
@@ -70,7 +70,7 @@ describe('CLI가 찍는 말은 한 언어로 쓴다', () => {
     }
   });
 
-  it('한국어 문서를 읽는 매처는 사라진 게 아니라 mcp 로 옮겨갔다', () => {
+  it('the matcher that reads Korean documents did not vanish but moved to mcp', () => {
     // The loop above runs over an empty set; this locates the Korean matcher data where the CLI
     // re-exports it from, which the CLI-only scan cannot see.
     const hangulLines = readFileSync(KOREAN_MATCHER_MODULE, 'utf-8')

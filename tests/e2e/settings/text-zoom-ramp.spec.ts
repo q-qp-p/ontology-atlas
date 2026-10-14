@@ -103,8 +103,8 @@ const READ_BOXES = `(names) => names.map((name) => {
   return { name, width };
 })`;
 
-test.describe("브라우저 «글자만 확대»가 타입 램프에 닿는다", () => {
-  test("램프의 모든 단이 32px 루트에서 16px 루트의 정확히 두 배로 렌더된다", async ({
+test.describe("the browser's text-only zoom reaches the type ramp", () => {
+  test("every step of the ramp renders at exactly twice its size at a 32px root compared with a 16px root", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1512, height: 900 });
@@ -136,7 +136,7 @@ test.describe("브라우저 «글자만 확대»가 타입 램프에 닿는다",
     );
   });
 
-  test("계측기가 공회전하지 않는다 — 램프를 px 로 되돌리면 두 배 주장이 무너진다", async ({
+  test("the instrument does not spin idle: reverting the ramp to px breaks the doubling claim", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1512, height: 900 });
@@ -162,7 +162,7 @@ test.describe("브라우저 «글자만 확대»가 타입 램프에 닿는다",
     expect(restored[0]?.fontSize).toBe(25);
   });
 
-  test("읽기 칼럼은 자기 안의 글자와 함께 넓어지고, 크롬 기하는 제자리에 있다", async ({
+  test("the reading column widens with its text while the chrome geometry stays in place", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1512, height: 900 });
@@ -240,7 +240,7 @@ test.describe("브라우저 «글자만 확대»가 타입 램프에 닿는다",
     expect(after.get("--measure-doc-gutter")).toBe(DOC_COLUMN_GUTTER_PX);
   });
 
-  test("잘린 글자 탐지기가 실제로 문다 — 심어 넣은 절단을 찾아낸다", async ({ page }) => {
+  test("the clipped-text detector really bites: it finds a planted truncation", async ({ page }) => {
     await page.setViewportSize({ width: 1040, height: 900 });
     await openOntologyAudit(page);
     await expect(page.locator("main").first()).toBeVisible({ timeout: 30_000 });
@@ -265,21 +265,21 @@ test.describe("브라우저 «글자만 확대»가 타입 램프에 닿는다",
     const withDefect = (await page.evaluate(eval(CUT_TEXT))) as string[];
     expect(
       withDefect.some((entry) => entry.includes("planted cut text")),
-      "탐지기가 심어 넣은 절단을 못 봤다 — 위의 0 은 증거가 아니다",
+      "the detector missed the planted truncation, so the zero above is not evidence",
     ).toBe(true);
 
     await page.evaluate(plant("ellipsis"));
     const withEllipsis = (await page.evaluate(eval(CUT_TEXT))) as string[];
     expect(
       withEllipsis.some((entry) => entry.includes("planted cut text")),
-      "줄임표가 붙은 절단까지 위반으로 셌다 — 설계된 잘림을 결함으로 읽는다",
+      "a truncation with an ellipsis was counted as a violation, reading designed clipping as a defect",
     ).toBe(false);
 
     await page.evaluate(() => document.getElementById("atlas-cut-probe")?.remove());
     expect(await page.evaluate(eval(CUT_TEXT))).toEqual([]);
   });
 
-  test("실제 문서 본문이 200% 에서 두 배로 읽힌다 — 프로브가 아니라 화면에서", async ({ page }) => {
+  test("real document body text reads at double size at 200%, on the screen and not in a probe", async ({ page }) => {
     await page.setViewportSize({ width: 1512, height: 900 });
     await openOntologyAudit(page);
     await expect(page.locator("[data-docs-viewer]").first()).toBeVisible({ timeout: 30_000 });
@@ -307,7 +307,7 @@ test.describe("브라우저 «글자만 확대»가 타입 램프에 닿는다",
       });
 
     const before = await readBody();
-    expect(before, "/ko/docs/ 에서 본문 문단을 못 찾았다 — 측정 대상이 없다").not.toBeNull();
+    expect(before, "no body paragraph was found on /ko/docs/, so nothing to measure").not.toBeNull();
 
     await page.evaluate((root) => {
       document.documentElement.style.fontSize = `${root}px`;

@@ -19,8 +19,8 @@ interface LabelBox {
   maxY: number;
 }
 
-test.describe("지도 라벨 — 그려진 박스로 잰다", () => {
-  test("이름이 서로 겹치지 않는다", async ({ page }) => {
+test.describe("map labels are measured by their drawn boxes", () => {
+  test("names do not overlap each other", async ({ page }) => {
     await page.goto("/ko/topology/?e2e=1&guides=off");
     await page.waitForFunction(
       () => Boolean((window as unknown as { __atlasMap?: { labels?: unknown } }).__atlasMap?.labels),
@@ -40,7 +40,7 @@ test.describe("지도 라벨 — 그려진 박스로 잰다", () => {
     )) as LabelBox[];
 
     // Anti-idle: an empty or near-empty frame would pass every assertion below.
-    expect(labels.length, "라벨을 거의 못 그렸다 — 이 시험이 헛돈다").toBeGreaterThan(5);
+    expect(labels.length, "almost no labels were drawn, so this test spins idle").toBeGreaterThan(5);
 
     const overlaps: string[] = [];
     for (let i = 0; i < labels.length; i += 1) {
@@ -57,7 +57,7 @@ test.describe("지도 라벨 — 그려진 박스로 잰다", () => {
 
     expect(
       overlaps,
-      `지도에서 두 이름이 픽셀을 공유한다 — 읽을 수 없다:\n${overlaps.join("\n")}`,
+      `two names share pixels on the map and cannot be read:\n${overlaps.join("\n")}`,
     ).toEqual([]);
 
     /* The flat dial places names whole or not at all, so assert its own count of overlapping texts. */

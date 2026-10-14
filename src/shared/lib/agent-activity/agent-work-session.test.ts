@@ -25,11 +25,11 @@ function entry(overrides: Partial<AgentActivityEntry> & { at: string }): AgentAc
 const at = (msBeforeNow: number) => new Date(NOW - msBeforeNow).toISOString();
 
 describe("deriveAgentWorkSessions", () => {
-  it("빈 로그는 작업 0개", () => {
+  it("an empty log has zero tasks", () => {
     expect(deriveAgentWorkSessions([], NOW)).toEqual([]);
   });
 
-  it("실측 분포의 「작업 중 침묵」(최대 133.9초)은 한 작업으로 남는다", () => {
+  it("a measured mid-task silence (up to 133.9 seconds) stays one task", () => {
     const sessions = deriveAgentWorkSessions(
       [entry({ at: at(400_000) }), entry({ at: at(400_000 - 133_900) })],
       NOW,
@@ -38,7 +38,7 @@ describe("deriveAgentWorkSessions", () => {
     expect(sessions[0].entryCount).toBe(2);
   });
 
-  it("임계값을 1ms 넘긴 침묵은 작업을 가른다 (경계는 포함)", () => {
+  it("a silence 1 ms over the threshold splits tasks (the boundary is inclusive)", () => {
     const base = 3 * AGENT_TASK_IDLE_MS;
     const onEdge = deriveAgentWorkSessions(
       [entry({ at: at(base) }), entry({ at: at(base - AGENT_TASK_IDLE_MS) })],
@@ -52,7 +52,7 @@ describe("deriveAgentWorkSessions", () => {
     expect(pastEdge).toHaveLength(2);
   });
 
-  it("실측 로그(53줄 · 11분 40초 · 최대 침묵 329초)는 작업 2개가 된다", () => {
+  it("the measured log (53 lines, 11 min 40 s, longest silence 329 s) becomes two tasks", () => {
     const entries = [
       ...Array.from({ length: 20 }, (_, i) => entry({ at: at(700_000 - i * 2_000) })),
       // 329 s of silence.
@@ -62,7 +62,7 @@ describe("deriveAgentWorkSessions", () => {
     expect(sessions).toHaveLength(2);
   });
 
-  it("줄 순서가 뒤섞여 있어도 시간순으로 묶는다", () => {
+  it("groups by time even when line order is shuffled", () => {
     const sessions = deriveAgentWorkSessions(
       [entry({ at: at(1_000) }), entry({ at: at(600_000) }), entry({ at: at(2_000) })],
       NOW,
@@ -72,7 +72,7 @@ describe("deriveAgentWorkSessions", () => {
     expect(sessions[1].entryCount).toBe(2);
   });
 
-  it("갈래를 도구 이름으로 센다 — rename 은 삭제+추가가 아니라 편집이다", () => {
+  it("counts branches by tool name, so rename is an edit rather than a delete plus an add", () => {
     const [session] = deriveAgentWorkSessions(
       [
         entry({ at: at(4_000), tool: "add_relation" }),
@@ -85,7 +85,7 @@ describe("deriveAgentWorkSessions", () => {
     expect(session.counts).toEqual({ added: 1, edited: 1, removed: 2 });
   });
 
-  it("배치 한 줄은 요약문의 행 수만큼 센다", () => {
+  it("a batch line counts as many as the rows in its summary", () => {
     const [session] = deriveAgentWorkSessions(
       [entry({ at: at(1_000), tool: "add_concepts", target: "(batch)", summary: "add_concepts 46행 성공" })],
       NOW,
@@ -94,7 +94,7 @@ describe("deriveAgentWorkSessions", () => {
     expect(session.entryCount).toBe(1);
   });
 
-  it("요약 문구가 바뀌면 1로 떨어질 뿐 깨지지 않는다", () => {
+  it("when the summary wording changes the count falls to 1 instead of breaking", () => {
     expect(
       entryWeight({
         v: 1,
@@ -108,7 +108,7 @@ describe("deriveAgentWorkSessions", () => {
     ).toBe(1);
   });
 
-  it("마지막 대상은 배치가 뒤에 와도 지워지지 않는다", () => {
+  it("the last target survives even when a batch comes after it", () => {
     const [session] = deriveAgentWorkSessions(
       [
         entry({ at: at(3_000), target: "domains/community" }),
@@ -120,7 +120,7 @@ describe("deriveAgentWorkSessions", () => {
     expect(session.lastTool).toBe("add_relations");
   });
 
-  it("작업은 마지막으로 이름을 밝힌 에이전트를 기억한다 (null 이 이름을 지우지 않는다)", () => {
+  it("a task remembers the agent that last named itself (null does not erase the name)", () => {
     const [session] = deriveAgentWorkSessions(
       [
         entry({ at: at(3_000), agent: "codex" }),
@@ -133,7 +133,7 @@ describe("deriveAgentWorkSessions", () => {
     expect(session.agent).toBe("codex");
   });
 
-  it("이름을 한 번도 못 들은 작업의 agent 는 null 이다 (공백은 이름이 아니다)", () => {
+  it("a task that never heard a name has a null agent (whitespace is not a name)", () => {
     const [session] = deriveAgentWorkSessions(
       [entry({ at: at(2_000), agent: null }), entry({ at: at(1_000), agent: "  " })],
       NOW,
@@ -141,7 +141,7 @@ describe("deriveAgentWorkSessions", () => {
     expect(session.agent).toBeNull();
   });
 
-  it("나중 줄의 새 이름이 이긴다 — 한 폴더를 두 에이전트가 이어 쓰면 마지막 쪽", () => {
+  it("the newer name on a later line wins, so the last agent wins when two share a folder", () => {
     const [session] = deriveAgentWorkSessions(
       [entry({ at: at(3_000), agent: "claude-code" }), entry({ at: at(1_000), agent: "codex" })],
       NOW,
@@ -149,7 +149,7 @@ describe("deriveAgentWorkSessions", () => {
     expect(session.agent).toBe("codex");
   });
 
-  it("조용해진 지 임계값이 지나야 끝난 작업이다", () => {
+  it("a task is finished only once the quiet threshold has passed", () => {
     const running = deriveAgentWorkSessions([entry({ at: at(1_000) })], NOW);
     const finished = deriveAgentWorkSessions([entry({ at: at(AGENT_TASK_IDLE_MS + 1) })], NOW);
     expect(running[0].done).toBe(false);
@@ -158,7 +158,7 @@ describe("deriveAgentWorkSessions", () => {
     expect(activeSession(finished)).toBeNull();
   });
 
-  it("id 는 시작 시각으로 고정 — 앞에 줄이 늘어도 같은 작업은 같은 id", () => {
+  it("the id is fixed by start time, so the same task keeps its id when lines are added before it", () => {
     const first = deriveAgentWorkSessions([entry({ at: at(2_000) })], NOW);
     const grown = deriveAgentWorkSessions(
       [entry({ at: at(900_000) }), entry({ at: at(2_000) })],
@@ -169,7 +169,7 @@ describe("deriveAgentWorkSessions", () => {
 });
 
 describe("hasWrites", () => {
-  it("전부 0이면 거짓 — 「추가 0 · 편집 0 · 삭제 0」은 정보가 아니다", () => {
+  it("all zeros is false, since a zero-added, zero-edited, zero-deleted summary is not information", () => {
     expect(hasWrites({ added: 0, edited: 0, removed: 0 })).toBe(false);
     expect(hasWrites({ added: 0, edited: 0, removed: 1 })).toBe(true);
   });

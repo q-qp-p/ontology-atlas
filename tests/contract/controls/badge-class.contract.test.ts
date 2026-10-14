@@ -32,57 +32,57 @@ const SHAPES: BadgeShape[] = ["micro", "tag", "pill"];
 const RADIUS_STEPS = ["rounded-micro", "rounded-chip", "rounded-full"];
 const TYPE_STEPS = ["text-caption", "text-label"];
 
-describe("badgeClass — 정적 배지 값 층", () => {
+describe("badgeClass — static badge value layer", () => {
   const all = SHAPES.map((shape) => ({ shape, out: badgeClass({ shape }) }));
 
-  it("탐지기가 공회전하지 않는다 — 세 모양을 실제로 만든다", () => {
+  it("the detector does not idle — it really builds the three shapes", () => {
     expect(all).toHaveLength(3);
     for (const c of all) expect(c.out.length).toBeGreaterThan(20);
   });
 
-  it("모든 조합이 램프 안에서만 값을 낸다", () => {
+  it("every combination emits values only inside the ramp", () => {
     const offenders: string[] = [];
     for (const { shape, out } of all) {
       const label = shape;
       // Exactly one radius ramp step.
       const radii = RADIUS_STEPS.filter((r) => new RegExp(`\\b${r}\\b`).test(out));
-      if (radii.length !== 1) offenders.push(`${label}: 반경 스텝 ${radii.length}개`);
+      if (radii.length !== 1) offenders.push(`${label}: ${radii.length} radius steps`);
       // Exactly one type ramp step.
       const types = TYPE_STEPS.filter((t) => new RegExp(`\\b${t}\\b`).test(out));
-      if (types.length !== 1) offenders.push(`${label}: 타입 스텝 ${types.length}개`);
+      if (types.length !== 1) offenders.push(`${label}: ${types.length} type steps`);
       // Colours must be tokens — no raw hex, no Tailwind palette.
-      if (/#[0-9a-fA-F]{3,8}/.test(out)) offenders.push(`${label}: hex 리터럴`);
+      if (/#[0-9a-fA-F]{3,8}/.test(out)) offenders.push(`${label}: hex literal`);
       if (/\b(?:text|bg|border)-(?:white|black|slate|gray|zinc|red|amber|indigo)-\d/.test(out)) {
-        offenders.push(`${label}: Tailwind 팔레트`);
+        offenders.push(`${label}: Tailwind palette`);
       }
       // No arbitrary length values (px-[3px] and friends).
-      if (/\b(?:px|py|p|text|rounded)-\[[0-9.]/.test(out)) offenders.push(`${label}: 램프 밖 리터럴`);
+      if (/\b(?:px|py|p|text|rounded)-\[[0-9.]/.test(out)) offenders.push(`${label}: literal outside the ramp`);
     }
-    expect(offenders, "값 층이 램프 밖으로 샜다").toEqual([]);
+    expect(offenders, "the value layer leaked outside the ramp").toEqual([]);
   });
 
-  it("축이 조용히 늘지 않는다 — shape 3, 그리고 색·자간 축은 없다", () => {
+  it("axes do not grow silently — shape has 3, and there are no colour or tracking axes", () => {
     const source = readFileSync(path.join(ROOT, "src/shared/ui/badge-class.ts"), "utf8");
     const variants = source.slice(source.indexOf("variants: {"), source.indexOf("defaultVariants"));
     const axes = (variants.match(/^\s{4}[a-z]+: \{/gm) ?? []).map((s) => s.trim().replace(": {", ""));
-    expect(axes, "축이 늘거나 줄었다 — 「체계」 소집이 먼저다").toEqual(["shape"]);
+    expect(axes, "an axis was added or removed — convening the system council comes first").toEqual(["shape"]);
     const shapes = (variants.match(/^\s{6}[a-z]+:/gm) ?? []).length;
-    expect(shapes, "shape 가 3을 벗어났다").toBe(3);
+    expect(shapes, "shape left 3").toBe(3);
   });
 
-  it("색·자간을 값 층이 내지 않는다 — 실측에 다수파가 없어 일부러 뺀 축이다", () => {
+  it("the value layer emits no colour or tracking — those axes were left out on purpose because the measurement has no majority", () => {
     for (const { shape, out } of all) {
-      expect(out, `${shape}: 색이 값 층으로 들어왔다`).not.toMatch(/\b(?:bg|text)-\[color:/);
-      expect(out, `${shape}: 자간이 값 층으로 들어왔다`).not.toMatch(/tracking-\[/);
-      expect(out, `${shape}: 대문자 처리가 값 층으로 들어왔다`).not.toMatch(/uppercase/);
+      expect(out, `${shape}: colour entered the value layer`).not.toMatch(/\b(?:bg|text)-\[color:/);
+      expect(out, `${shape}: tracking entered the value layer`).not.toMatch(/tracking-\[/);
+      expect(out, `${shape}: upper-casing entered the value layer`).not.toMatch(/uppercase/);
     }
   });
 
-  it("기본값은 가장 조용한 모양이다 — tag", () => {
+  it("the default is the quietest shape — tag", () => {
     expect(badgeClass()).toBe(badgeClass({ shape: "tag" }));
   });
 
-  it("className 은 규격을 덮지 않고 자리잡기만 더한다", () => {
+  it("className adds placement only and does not override the spec", () => {
     const out = badgeClass({ shape: "pill", className: "ml-2 max-w-[12ch] truncate" });
     expect(out).toContain("rounded-full");
     expect(out).toContain("truncate");

@@ -130,43 +130,43 @@ async function measure(page: import("@playwright/test").Page) {
  */
 function assertGrid(m: Awaited<ReturnType<typeof measure>>, label: string) {
   const origin = m.originToken;
-  expect(Number.isFinite(origin), `${label}: 원점 토큰을 못 읽었다`).toBe(true);
+  expect(Number.isFinite(origin), `${label}: could not read the origin token`).toBe(true);
 
   for (const [name, x] of Object.entries(m.xs)) {
-    expect(x, `${label}: ${name} 의 x 를 못 읽었다`).not.toBeNull();
-    expect(x, `${label}: ${name} 이 원점(${origin}) 밖에 있다`).toBe(origin);
+    expect(x, `${label}: could not read x of ${name}`).not.toBeNull();
+    expect(x, `${label}: ${name} is outside the origin (${origin})`).toBe(origin);
   }
 
-  expect(m.bandRight, `${label}: 밴드 오른끝을 못 읽었다`).not.toBeNull();
+  expect(m.bandRight, `${label}: could not read the right end of the band`).not.toBeNull();
   expect(
     m.layoutWidth - m.bandRight!,
-    `${label}: 좌우 여백이 다르다 (왼 ${origin} · 스크롤바 ${m.scrollbar})`,
+    `${label}: left and right margins differ (left ${origin} · scrollbar ${m.scrollbar})`,
   ).toBe(origin);
 
-  expect(m.gnbActionsRight, `${label}: GNB 우측 그룹을 못 읽었다`).not.toBeNull();
-  expect(m.gnbActionsRight, `${label}: 상단 바 우측이 화면 끝과 안 맞는다`).toBe(
+  expect(m.gnbActionsRight, `${label}: could not read the right group of the GNB`).not.toBeNull();
+  expect(m.gnbActionsRight, `${label}: the right of the top bar does not meet the screen edge`).toBe(
     m.layoutWidth - origin,
   );
 
-  expect(m.overflowX, `${label}: 가로 오버플로`).toBe(0);
+  expect(m.overflowX, `${label}: horizontal overflow`).toBe(0);
 
   /**
    * Rendered stage width equals the token's computed value, or its track if narrower; values are
    * read from the browser, not copied.
    */
-  expect(m.stage, `${label}: 무대를 못 읽었다`).not.toBeNull();
+  expect(m.stage, `${label}: could not read the stage`).not.toBeNull();
   const stage = m.stage!;
-  expect(Number.isFinite(stage.maxWidthPx), `${label}: 무대 상한 토큰을 못 읽었다`).toBe(true);
+  expect(Number.isFinite(stage.maxWidthPx), `${label}: could not read the stage max-width token`).toBe(true);
   const expectedStageW = Math.round(Math.min(stage.maxWidthPx, stage.trackW));
   expect(
     Math.abs(stage.demoW - expectedStageW),
-    `${label}: 시연 무대 폭(${stage.demoW})이 토큰 계산값(${expectedStageW})과 다르다`,
+    `${label}: the demo stage width (${stage.demoW}) differs from the token-computed value (${expectedStageW})`,
   ).toBeLessThanOrEqual(1);
   /*
    * The head's ink starts where the column starts and the stage ends where the column ends; either
    * half alone would pass a centred section or a stage floating mid-column.
    */
-  expect(stage.headInkLeft, `${label}: 절 제목의 글자를 못 읽었다 — 이 시험이 헛돈다`).not.toBeNull();
+  expect(stage.headInkLeft, `${label}: could not read the section title ink, so this test spins idle`).not.toBeNull();
   expect(
     Math.abs(stage.headInkLeft! - stage.colLeft),
     `${label}: the demo section title (${stage.headInkLeft}) does not start at the origin (${stage.colLeft}). ` +
@@ -174,13 +174,13 @@ function assertGrid(m: Awaited<ReturnType<typeof measure>>, label: string) {
   ).toBeLessThanOrEqual(1);
   expect(
     Math.abs(stage.demoRight - stage.colRight),
-    `${label}: 시연 무대의 오른쪽(${stage.demoRight})이 컬럼 끝(${stage.colRight})에 닿지 않는다 — 비어 있는 오른쪽이 돌아왔다`,
+    `${label}: the right of the demo stage (${stage.demoRight}) does not reach the column end (${stage.colRight}); the empty right side is back`,
   ).toBeLessThanOrEqual(1);
 }
 
-test.describe("관문 다운로드의 그리드", () => {
+test.describe("gateway download grid", () => {
   for (const viewport of WIDTHS) {
-    test(`${viewport.width}×${viewport.height} — 세 원소가 같은 x 에 서고 좌우가 같다`, async ({
+    test(`${viewport.width}×${viewport.height}: the three elements share the same x and equal left and right edges`, async ({
       page,
     }) => {
       await page.setViewportSize(viewport);
@@ -197,7 +197,7 @@ test.describe("관문 다운로드의 그리드", () => {
   }
 
   /** Both directions are measured: widening grows the origin, narrowing returns it to the gutter. */
-  test("리사이즈하면 세 원소가 새 원점을 따라간다", async ({ page }) => {
+  test("after a resize the three elements follow the new origin", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await seedFirstRunSeen(page);
     // `load` plus an element wait — `networkidle` by definition never arrives at large
@@ -206,7 +206,7 @@ test.describe("관문 다운로드의 그리드", () => {
     await expect(page.getByTestId("gateway-facts")).toBeVisible({ timeout: 15_000 });
 
     const mounted = await measure(page);
-    assertGrid(mounted, "1440 (마운트)");
+    assertGrid(mounted, "1440 (mounted)");
 
     // Whether the width list actually moved the origin and the stage width at least once — see below.
     let sawOriginChange = false;
@@ -217,7 +217,7 @@ test.describe("관문 다운로드의 그리드", () => {
       // The derivation is coalesced through rAF; measure once the column has stopped moving.
       await waitForBoxStill(page.getByTestId("gateway-facts"));
       const m = await measure(page);
-      assertGrid(m, `${width} (리사이즈)`);
+      assertGrid(m, `${width} (resized)`);
       // Only record whether the width list moved the origin — the origin value itself
       // is never copied (the rule at the top). With a list that never moves the origin,
       // this test goes green while measuring nothing about following a resize.
@@ -235,18 +235,18 @@ test.describe("관문 다운로드의 그리드", () => {
     // when it happens.
     expect(
       sawOriginChange,
-      "폭 목록이 원점을 한 번도 바꾸지 못했다 — 이 시험은 지금 아무것도 지키지 않는다",
+      "the width list never changed the origin, so this test guards nothing now",
     ).toBe(true);
     // Idling guard for stage width: red if the stage stops growing at wide viewports.
     expect(
       sawStageChange,
-      "폭 목록이 무대 폭을 한 번도 바꾸지 못했다 — 넓은 폭 비례 성장이 죽었다",
+      "the width list never changed the stage width, so proportional growth at wide widths is dead",
     ).toBe(true);
   });
 
   for (const viewport of UNIFIED_ROUTE_VIEWPORTS) {
     for (const route of ["/ko/", "/ko/download/"]) {
-      test(`${viewport.width}×${viewport.height} ${route} — 시연 절이 두 주소 모두에 있다`, async ({
+      test(`${viewport.width}×${viewport.height} ${route}: the demo section is on both addresses`, async ({
         page,
       }) => {
         await page.setViewportSize(viewport);
@@ -260,7 +260,7 @@ test.describe("관문 다운로드의 그리드", () => {
         await demo.scrollIntoViewIfNeeded();
         await expect(
           demo,
-          `${route} 에 시연 절이 없다 — 두 주소는 같은 것을 보여줘야 한다`,
+          `${route} has no demo section; the two addresses must show the same thing`,
         ).toBeVisible({ timeout: 15_000 });
 
         // Unreachable even by scrolling, or clipped by an ancestor, is the same as absent.
@@ -279,8 +279,8 @@ test.describe("관문 다운로드의 그리드", () => {
           }
           return { clippedBy, height: Math.round(rect.height) };
         });
-        expect(cut.height, "시연 절의 높이가 0 이다").toBeGreaterThan(0);
-        expect(cut.clippedBy, `조상 컨테이너가 시연 절을 잘랐다: ${cut.clippedBy}`).toBeNull();
+        expect(cut.height, "the demo section height is 0").toBeGreaterThan(0);
+        expect(cut.clippedBy, `an ancestor container clipped the demo section: ${cut.clippedBy}`).toBeNull();
       });
     }
   }

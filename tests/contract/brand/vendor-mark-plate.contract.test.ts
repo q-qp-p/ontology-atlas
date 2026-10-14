@@ -27,7 +27,7 @@ function rgb(value: string): [number, number, number] | null {
 
 function tokenValue(name: string): string {
   const match = new RegExp(`${name}:\\s*([^;]+);`).exec(GLOBALS);
-  if (!match) throw new Error(`${name} 이 app/globals.css 에 없습니다`);
+  if (!match) throw new Error(`${name} is missing from app/globals.css`);
   return match[1].trim();
 }
 
@@ -44,12 +44,12 @@ function sourceFiles(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-describe('남의 제품 마크 판 — 예외를 예외로 유지한다', () => {
-  it('세 토큰이 실재한다', () => {
+describe('third-party product mark plate — the exception stays an exception', () => {
+  it('the three tokens exist', () => {
     for (const token of TOKENS) expect(tokenValue(token)).toBeTruthy();
   });
 
-  it('판도 잉크도 무채색이다 — 새 색상을 들이는 예외가 아니다', () => {
+  it('both plate and ink are neutral — this exception does not bring in a new colour', () => {
     /*
      * This exception is justified by "the dark-screen rule was inverted in one place",
      * not by "a new colour was introduced". The moment the value leaves neutral that
@@ -59,23 +59,23 @@ describe('남의 제품 마크 판 — 예외를 예외로 유지한다', () => 
      */
     for (const token of TOKENS) {
       const parsed = rgb(tokenValue(token));
-      expect(parsed, `${token} 의 값을 읽지 못했습니다`).not.toBeNull();
+      expect(parsed, `could not read the value of ${token}`).not.toBeNull();
       const [r, g, b] = parsed!;
       expect(
         Math.max(r, g, b) - Math.min(r, g, b),
-        `${token} 이 무채색이 아닙니다 — rgb(${r}, ${g}, ${b})`,
+        `${token} is not neutral — rgb(${r}, ${g}, ${b})`,
       ).toBeLessThanOrEqual(4);
     }
   });
 
-  it('판은 밝고 기본 잉크는 어둡다 — 그 대비가 이 예외의 존재 이유다', () => {
+  it('the plate is light and the default ink is dark — that contrast is why this exception exists', () => {
     const [pr] = rgb(tokenValue('--color-vendor-plate'))!;
     const [ir] = rgb(tokenValue('--color-vendor-mark-ink'))!;
-    expect(pr, '판이 밝지 않으면 검은 마크가 다시 안 보인다').toBeGreaterThan(200);
-    expect(ir, '기본 잉크가 어둡지 않으면 밝은 판 위에서 안 보인다').toBeLessThan(60);
+    expect(pr, 'if the plate is not light the black mark becomes invisible again').toBeGreaterThan(200);
+    expect(ir, 'if the default ink is not dark it is invisible on the light plate').toBeLessThan(60);
   });
 
-  it('판을 칠하는 곳은 한 파일뿐이다 — 소비자가 늘어도 그림은 하나다', () => {
+  it('the plate is painted in one file only — even with more consumers the picture is one', () => {
     const users = sourceFiles(join(ROOT, 'src'))
       .concat(sourceFiles(join(ROOT, 'app')))
       .filter((file) => {
@@ -93,7 +93,7 @@ describe('남의 제품 마크 판 — 예외를 예외로 유지한다', () => 
     expect(users.sort()).toEqual(['app/styles/tokens.css', 'src/shared/ui/marks/vendor-mark.tsx']);
   });
 
-  it('브랜드 색은 코드가 아니라 생성된 데이터에서 온다', () => {
+  it('brand colours come from generated data, not from code', () => {
     /*
      * Writing colours into the component makes this list live in two places from that
      * day, and the two diverge. Both the artwork and the colour come from one build
@@ -112,15 +112,15 @@ describe('남의 제품 마크 판 — 예외를 예외로 유지한다', () => 
       readFileSync(join(ROOT, 'src-tauri', 'src', 'acp-registry.json'), 'utf8'),
     ) as { agents: Array<{ id: string; brandInk: string | null }> };
     const colored = registry.agents.filter((a) => a.brandInk !== null);
-    expect(colored.length, '확인된 브랜드 색이 하나도 없습니다').toBeGreaterThan(0);
+    expect(colored.length, 'no confirmed brand colour at all').toBeGreaterThan(0);
     for (const agent of colored) {
-      expect(agent.brandInk, `${agent.id} 의 색이 #RRGGBB 가 아닙니다`).toMatch(
+      expect(agent.brandInk, `the colour of ${agent.id} is not #RRGGBB`).toMatch(
         /^#[0-9A-Fa-f]{6}$/,
       );
     }
     // Codex deliberately has no colour — the vendor asked that its mark not be
     // distributed.
     const codex = registry.agents.find((a) => a.id === 'codex-acp');
-    expect(codex?.brandInk, 'OpenAI 마크에 색을 붙이면 안 된다').toBeNull();
+    expect(codex?.brandInk, 'a colour must not be attached to the OpenAI mark').toBeNull();
   });
 });

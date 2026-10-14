@@ -73,7 +73,7 @@ afterEach(() => {
 });
 
 describe('LocalVaultProvider / useLocalVault', () => {
-  it('Provider 밖에서 useLocalVault() 를 호출하면 silent fallback 없이 즉시 throw 한다', () => {
+  it('throws immediately, with no silent fallback, when useLocalVault() is called outside the Provider', () => {
     // Suppress console error noise (React logs render errors) — it does not affect the assertion.
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     expect(() => render(<Consumer testId="lone" />)).toThrow(
@@ -82,7 +82,7 @@ describe('LocalVaultProvider / useLocalVault', () => {
     consoleSpy.mockRestore();
   });
 
-  it('여러 consumer 가 있어도 내부 훅(useLocalVaultInternal)은 정확히 한 번만 호출된다', () => {
+  it('calls the internal hook (useLocalVaultInternal) exactly once however many consumers there are', () => {
     internalMocks.useLocalVaultInternal.mockReturnValue(mockVaultValue({ status: 'loaded' }));
 
     render(
@@ -99,7 +99,7 @@ describe('LocalVaultProvider / useLocalVault', () => {
     expect(screen.getByTestId('c')).toHaveTextContent('loaded');
   });
 
-  it('모든 consumer 가 같은 상태 객체를 공유한다 — 리렌더에도 동일 값으로 동기화', () => {
+  it('shares one state object across all consumers, staying in sync on re-render', () => {
     internalMocks.useLocalVaultInternal.mockReturnValue(mockVaultValue({ status: 'permission-needed' }));
 
     render(

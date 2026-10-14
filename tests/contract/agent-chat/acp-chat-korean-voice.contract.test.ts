@@ -42,18 +42,18 @@ describe('the conversation panel speaks one Korean', () => {
     expect(PANEL_STRINGS.length).toBeGreaterThan(200);
   });
 
-  it('is 해요체 everywhere, so one surface never speaks in two voices', () => {
+  it('uses the haeyo register everywhere, so one surface never speaks in two voices', () => {
     const formal = PANEL_STRINGS.filter(({ text }) => FORMAL.test(text)).map(({ key }) => key);
     expect(
       formal,
-      `이 문장들만 합니다체로 남아 한 화면이 두 가지 말투를 씁니다:\n${formal.join('\n')}`,
+      `only these sentences stay in the hapnida register, so one screen speaks in two voices:\n${formal.join('\n')}`,
     ).toEqual([]);
   });
 
   for (const { borrowed, word, say } of BORROWED) {
     it(`says 「${say}」 rather than 「${borrowed}」`, () => {
       const hits = PANEL_STRINGS.filter(({ text }) => word.test(text)).map(({ key }) => key);
-      expect(hits, `한국어로 옮기지 않은 낱말이 남아 있습니다:\n${hits.join('\n')}`).toEqual([]);
+      expect(hits, `words left untranslated into Korean:\n${hits.join('\n')}`).toEqual([]);
     });
   }
 

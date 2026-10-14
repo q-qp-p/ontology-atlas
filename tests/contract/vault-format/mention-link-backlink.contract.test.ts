@@ -46,31 +46,31 @@ function writeMentionPair(editingSlug: string, targetSlug: string) {
   return link;
 }
 
-describe('멘션이 쓴 본문 링크를 에이전트가 역참조로 찾는다', () => {
+describe('an agent finds the body link a mention wrote through backlinks', () => {
   /**
    * The relative-path shape differs per folder layout (`../a/b.md`, `./b.md`,
    * `a/b.md`). Measuring one shape leaves the others quietly broken.
    */
   const layouts = [
-    { name: '다른 폴더', from: 'domains/src', to: 'capabilities/tgt' },
-    { name: '같은 폴더', from: 'capabilities/src', to: 'capabilities/tgt' },
-    { name: '루트에서 폴더로', from: 'ROOT-DOC', to: 'capabilities/tgt' },
-    { name: '깊은 폴더에서', from: 'guides/deep/src', to: 'capabilities/tgt' },
-    { name: '한글 슬러그', from: 'domains/src', to: 'capabilities/한글-대상' },
+    { name: 'a different folder', from: 'domains/src', to: 'capabilities/tgt' },
+    { name: 'the same folder', from: 'capabilities/src', to: 'capabilities/tgt' },
+    { name: 'from the root into a folder', from: 'ROOT-DOC', to: 'capabilities/tgt' },
+    { name: 'from a deep folder', from: 'guides/deep/src', to: 'capabilities/tgt' },
+    { name: 'a Hangul slug', from: 'domains/src', to: 'capabilities/한글-대상' },
   ] as const;
 
   for (const layout of layouts) {
-    it(`${layout.name} — 관계와 본문 링크가 모두 잡힌다`, () => {
+    it(`${layout.name}: both the relation and the body link are caught`, () => {
       const link = writeMentionPair(layout.from, layout.to);
       const matches = findBacklinks(root, layout.to);
       const hit = matches.find(
         (m: { slug: string }) => m.slug === layout.from,
       ) as { matchedKeys?: string[]; matchedInBody?: boolean } | undefined;
 
-      expect(hit, `${layout.from} 이 역참조에 없다 (링크: ${link})`).toBeTruthy();
+      expect(hit, `${layout.from} is not in the backlinks (link: ${link})`).toBeTruthy();
       if (!hit) return;
       // ① The fact — caught via the frontmatter relation
-      expect(hit.matchedKeys, `관계가 안 잡혔다 (링크: ${link})`).toContain('relates');
+      expect(hit.matchedKeys, `the relation was not caught (link: ${link})`).toContain('relates');
       // ② The path — also caught via the body link. If this is false the agent cannot
       //    see "mentioned in the prose" and loses the context a person wrote.
       expect(
@@ -86,7 +86,7 @@ describe('멘션이 쓴 본문 링크를 에이전트가 역참조로 찾는다'
    * really came from the body. The same document without the body link must have no
    * `matchedInBody`.
    */
-  it('계기가 살아 있다 — 본문 링크가 없으면 본문 히트도 없다', () => {
+  it('the instrument is alive: with no body link there is no body hit either', () => {
     writeNode('capabilities/tgt', `uid: ${UID}\nslug: capabilities/tgt\nkind: capability\ntitle: 타깃`);
     writeNode(
       'domains/src',
@@ -99,7 +99,7 @@ describe('멘션이 쓴 본문 링크를 에이전트가 역참조로 찾는다'
     expect(hit).toBeTruthy();
     if (!hit) return;
     expect(hit.matchedKeys).toContain('relates');
-    expect(hit.matchedInBody, '본문에 링크가 없는데 본문 히트가 났다 — 탐지가 헛돈다').toBeUndefined();
+    expect(hit.matchedInBody, 'a body hit appeared though the body has no link, so the detection spins idle').toBeUndefined();
   });
 
   /**
@@ -107,11 +107,11 @@ describe('멘션이 쓴 본문 링크를 에이전트가 역참조로 찾는다'
    * MCP's path-shaped needle is `/slug.md`, so a same-folder link written without
    * `./` does not match. Adding `./` today is the contract, not a coincidence.
    */
-  it('모든 배치에서 파일 이름 앞에 슬래시가 있다 — MCP 바늘의 전제', () => {
+  it('in every arrangement there is a slash before the file name, a premise of the MCP needle', () => {
     for (const layout of layouts) {
       const href = relativeDocPath(layout.from, layout.to);
       const tail = layout.to.split('/').pop();
-      expect(href, `${layout.name}: ${href} 에 "/${tail}.md" 가 없다`).toContain(`/${tail}.md`);
+      expect(href, `${layout.name}: "/${tail}.md" is not in ${href}`).toContain(`/${tail}.md`);
     }
   });
 });

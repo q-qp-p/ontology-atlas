@@ -22,7 +22,7 @@ const alphas = (page: import("@playwright/test").Page) =>
     };
   });
 
-test("선택 밖의 개념은 가라앉고, 이웃은 그대로다", async ({ page }) => {
+test("concepts outside the selection recede while neighbors stay as they are", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 1512, height: 900 });
   await seedFirstRunSeen(page);
@@ -30,22 +30,22 @@ test("선택 밖의 개념은 가라앉고, 이웃은 그대로다", async ({ pa
   await expect.poll(async () => (await alphas(page))?.selection, { timeout: 15_000 }).toBe("capability:exchange-request");
   await waitForMapStill(page, { what: "camera" });
   const restAlpha = await page.evaluate(() => Number(getComputedStyle(document.documentElement).getPropertyValue("--map-ego-rest-alpha")));
-  expect(restAlpha, "--map-ego-rest-alpha 토큰이 없다").toBeGreaterThan(0);
+  expect(restAlpha, "the --map-ego-rest-alpha token is missing").toBeGreaterThan(0);
   expect(restAlpha).toBeLessThan(1);
 
   await expect
     .poll(async () => (await alphas(page))?.siblings.map((v) => (v === null ? null : Math.round(v * 100) / 100)), {
       timeout: 15_000,
-      message: "선택 밖의 형제 개념이 가라앉지 않았다",
+      message: "a sibling concept outside the selection did not recede",
     })
     .toEqual([restAlpha, restAlpha, restAlpha]);
   // Ego members keep their tier alpha (a capability's can sit below 1 at some
   // zooms) and never sink: each stays well above the rest alpha.
   const after = (await alphas(page))!;
   for (const [name, value] of [["focus", after.focus], ["neighbour", after.neighbour], ["parent", after.parent]] as const) {
-    expect(value, `${name} 가 가라앉았다`).toBeGreaterThan(restAlpha + 0.3);
+    expect(value, `${name} receded`).toBeGreaterThan(restAlpha + 0.3);
   }
   await expect
-    .poll(async () => Math.round(((await alphas(page))?.otherDomain ?? 1) * 100) / 100, { timeout: 15_000, message: "다른 도메인이 가라앉지 않았다" })
+    .poll(async () => Math.round(((await alphas(page))?.otherDomain ?? 1) * 100) / 100, { timeout: 15_000, message: "the other domain did not recede" })
     .toBe(restAlpha);
 });

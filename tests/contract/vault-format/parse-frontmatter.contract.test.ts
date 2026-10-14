@@ -26,7 +26,7 @@ describe("frontmatter parser contract — 4 implementations agree", () => {
         });
       }
 
-      it("객체 메타키가 상속된 스키마 필드를 만들지 않는다", () => {
+      it("object meta keys do not create inherited schema fields", () => {
         const parsed = parse(
           "---\n__proto__:\n  kind: domain\n  title: Forged\nsafe: value\n---\n",
         );

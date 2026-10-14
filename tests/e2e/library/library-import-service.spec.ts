@@ -9,7 +9,7 @@ import { stubDirectoryPicker } from "../vault-picker-stub";
  * exists, the picker names services, and the first step says who keeps what comes back.
  */
 
-test("자료실에 서비스에서 가져오는 문이 있고, 전문 용어를 말하지 않으며, 웹에서는 못 누를 버튼 대신 무엇이 되었는지 말한다", async ({ page }) => {
+test("the library has a door for importing from a service, avoids jargon, and on the web says what happened instead of showing an unpressable button", async ({ page }) => {
   test.setTimeout(300_000);
   await page.setViewportSize({ width: 1512, height: 982 });
   await stubDirectoryPicker(page, { ...FIXTURE_VAULT });

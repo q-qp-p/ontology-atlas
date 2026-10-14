@@ -20,31 +20,31 @@ const read = (rel: string): string => readFileSync(join(repoRoot, rel), "utf8");
 
 const TONES = Object.keys(FOOTPRINT_TONE_TOKEN);
 
-describe("걸어온 길 톤 — 모든 소비처가 모든 톤을 안다", () => {
-  it("토큰 표와 폴백 표가 같은 톤을 가진다", () => {
+describe("walked-path tone: every consumer knows every tone", () => {
+  it("the token table and the fallback table hold the same tones", () => {
     expect(TONES.length).toBeGreaterThan(0);
     expect(read("src/widgets/ontology-map/ui/loop/use-topology-loop.ts")).toContain("useTopologyAppearanceEffects({");
     expect(Object.keys(FOOTPRINT_TONE_FALLBACK).sort()).toEqual([...TONES].sort());
   });
 
-  it("모든 톤이 실제로 정의된 CSS 토큰을 가리킨다", () => {
+  it("every tone points at a CSS token that is actually defined", () => {
     const css = readGlobalCss();
     for (const [tone, cssVar] of Object.entries(FOOTPRINT_TONE_TOKEN)) {
       expect(
         new RegExp(`${cssVar}:\\s*#[0-9a-fA-F]{6}`).test(css),
-        `${tone} 톤의 ${cssVar} 가 globals.css 에 없다`,
+        `tone ${tone}: ${cssVar} is missing from globals.css`,
       ).toBe(true);
     }
   });
 
-  it("폴백 값이 토큰 값과 바이트 단위로 같다", () => {
+  it("the fallback value is byte-identical to the token value", () => {
     const css = readGlobalCss();
     for (const [tone, cssVar] of Object.entries(FOOTPRINT_TONE_TOKEN)) {
       const hex = new RegExp(`${cssVar}:\\s*(#[0-9a-fA-F]{6})`).exec(css)![1];
       const rgb = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
       expect(
         [...FOOTPRINT_TONE_FALLBACK[tone as keyof typeof FOOTPRINT_TONE_FALLBACK]],
-        `${tone} 폴백이 ${cssVar} 와 다르다 — 토큰이 사라진 순간 다른 색이 나온다`,
+        `tone ${tone}: fallback differs from ${cssVar}, so a different color appears the moment the token disappears`,
       ).toEqual(rgb);
     }
   });
@@ -56,14 +56,14 @@ describe("걸어온 길 톤 — 모든 소비처가 모든 톤을 안다", () =>
   it.each([
     ["src/widgets/ontology-map/ui/loop/use-topology-appearance-effects.ts", "the map canvas"],
     ["src/widgets/app-settings-menu/ui/FootprintSettings.tsx", "the settings preview"],
-  ])("%s 는 공유 표로 톤을 읽는다", (rel) => {
+  ])("%s reads tones through the shared table", (rel) => {
     const source = read(rel);
-    expect(source, `${rel} 가 FOOTPRINT_TONE_TOKEN 을 쓰지 않는다`).toContain(
+    expect(source, `${rel} does not use FOOTPRINT_TONE_TOKEN`).toContain(
       "FOOTPRINT_TONE_TOKEN",
     );
     expect(
       /--color-footprint-trail(-indigo|-star)?['"]/.test(source),
-      `${rel} 가 톤 토큰 이름을 직접 적었다 — 표를 우회하면 다음 톤에서 또 갈라진다`,
+      `${rel} spells a tone token name directly, and bypassing the table diverges again at the next tone`,
     ).toBe(false);
   });
 });

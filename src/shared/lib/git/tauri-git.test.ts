@@ -58,7 +58,7 @@ describe('tauri git bridge', () => {
     expect(tauriApiMock.invoke).toHaveBeenCalledWith('git_status', { vaultPath: '/repo/vault' });
   });
 
-  it('invokes git_snapshot with push defaulting to false (신뢰 헌장 — 전송 opt-in)', async () => {
+  it('invokes git_snapshot with push defaulting to false (trust charter: transfer is opt-in)', async () => {
     tauriApiMock.runtimeAvailable = true;
     tauriApiMock.invoke.mockResolvedValue({ committed: true });
     await gitSnapshot('/v');
@@ -131,15 +131,15 @@ describe('tauri git bridge', () => {
   });
 });
 
-describe('gitInit · gitSetRemote (쓰기 — 사용자 클릭 뒤에만)', () => {
-  it('브리지가 없으면 둘 다 null — 웹에서 조용히 실패하지 않는다', async () => {
+describe('gitInit · gitSetRemote (writes only after a user click)', () => {
+  it('both are null without the bridge, so the web never fails silently', async () => {
     tauriApiMock.runtimeAvailable = false;
     expect(await gitInit('/v')).toBeNull();
     expect(await gitSetRemote('/v', 'git@github.com:me/repo.git')).toBeNull();
     expect(tauriApiMock.invoke).not.toHaveBeenCalled();
   });
 
-  it('Rust 커맨드 이름과 인자 모양을 고정한다', async () => {
+  it('pins the Rust command names and argument shapes', async () => {
     tauriApiMock.runtimeAvailable = true;
     tauriApiMock.invoke.mockResolvedValue({});
     await gitInit('/v');
@@ -151,7 +151,7 @@ describe('gitInit · gitSetRemote (쓰기 — 사용자 클릭 뒤에만)', () =
     });
   });
 
-  it('주소를 다듬거나 추측하지 않고 사용자 입력 그대로 넘긴다', async () => {
+  it('passes the input through as typed, without tidying or guessing the address', async () => {
     // Trust charter: we never suggest, correct, or auto-detect a remote URL.
     // Normalisation is `validate_remote_url`'s job in Rust; the bridge only
     // passes the value through.

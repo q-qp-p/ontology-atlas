@@ -28,13 +28,13 @@ describe("computeStarDustCount", () => {
 
 
 describe("buildRealmStarPoints", () => {
-  it("두 번 생성해도 동일하다 (seed 결정론)", () => {
+  it("generating twice gives the same result (seed determinism)", () => {
     const a = buildRealmStarPoints(800, 600, 40);
     const b = buildRealmStarPoints(800, 600, 40);
     expect(a).toEqual(b);
     expect(a).toHaveLength(40);
   });
-  it("깊이는 0.3/0.6 두 레이어, 알파는 ≤0.12(무채, 어지럽지 않게)", () => {
+  it("depth has two layers, 0.3 and 0.6, and alpha is at most 0.12 (achromatic, not noisy)", () => {
     const points = buildRealmStarPoints(800, 600, 40);
     for (const p of points) {
       expect([0.3, 0.6]).toContain(p.depth);
@@ -53,7 +53,7 @@ describe("buildRealmStarPoints", () => {
 
 /** depth is seeded too, so the same input yields the same dust. */
 describe("buildDustPoints depth determinism", () => {
-  it("두 번 생성해도 depth 까지 동일하고 범위 안이다", () => {
+  it("generating twice gives the same depth too, and it stays in range", () => {
     const a = buildDustPoints(800, 600, 24, 0.15, 0.45);
     const b = buildDustPoints(800, 600, 24, 0.15, 0.45);
     expect(a.map((pt) => pt.depth)).toEqual(b.map((pt) => pt.depth));

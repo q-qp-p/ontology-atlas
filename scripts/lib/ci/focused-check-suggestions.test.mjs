@@ -1761,7 +1761,7 @@ describe('focused check suggestions', () => {
     assert.match(output, /pnpm vault:validate/);
   });
 
-  it('관문의 판·크롬·원점을 고치면 그 격자 검사를 권한다', () => {
+  it('recommends the grid check when the gateway board, chrome or origin changes', () => {
     // Editing the gateway layout must suggest its grid check; a check the advisor cannot point at does
     // not exist.
     const grid = 'pnpm exec playwright test tests/e2e/gateway/download-gateway-grid.spec.ts';
@@ -1773,31 +1773,31 @@ describe('focused check suggestions', () => {
     ]) {
       assert.ok(
         suggestFocusedChecks([path]).commands.some((s) => s.command === grid),
-        `${path} 를 고쳤는데 관문 격자 검사를 안 권한다`,
+        `${path} changed but the gateway grid check is not recommended`,
       );
     }
     // Idling guard — a rule that attaches to any path is noise, not a rule.
     assert.ok(
       !suggestFocusedChecks(['src/views/home/ui/HomePage.tsx']).commands.some((s) => s.command === grid),
-      '관문과 무관한 화면에도 격자 검사를 권한다 — 규칙이 너무 넓다',
+      'the grid check is recommended for screens unrelated to the gateway; the rule is too broad',
     );
   });
 
-  it('문구 카탈로그를 고치면 능력 주장을 읽는 게이트도 권한다', () => {
+  it('recommends the capability-claim gate too when the copy catalog changes', () => {
     // Editing the message catalogue must also suggest the desktop gate that pins capability claims,
     // not only catalogue consistency.
     const commands = commandNames(suggestFocusedChecks(['messages/ko.json']));
-    assert.ok(commands.includes('pnpm test:i18n:messages'), '카탈로그 정합 검사를 안 권한다');
+    assert.ok(commands.includes('pnpm test:i18n:messages'), 'the catalog consistency check is not recommended');
     assert.ok(
       commands.includes('pnpm test:desktop:check'),
-      '문구를 고쳤는데 능력 주장을 읽는 게이트를 안 권한다',
+      'copy changed but the capability-claim gate is not recommended',
     );
     // Idling guard — a rule that attaches to any path is noise, not a rule.
     assert.ok(
       !suggestFocusedChecks(['src/views/home/ui/HomePage.tsx']).commands.some(
         (s) => s.command === 'pnpm test:desktop:check',
       ),
-      '문구와 무관한 화면에도 데스크톱 게이트를 권한다 — 규칙이 너무 넓다',
+      'the desktop gate is recommended for screens unrelated to copy; the rule is too broad',
     );
   });
 
@@ -1805,22 +1805,22 @@ describe('focused check suggestions', () => {
    * `tsconfig` decides the reach of type checking, not the advisor: vitest does not check types, and
    * `tsconfig.json` includes every .ts file, so test files need `tsc` too.
    */
-  it('타입 검사를 tsconfig 가 보는 곳 전부에 권한다 — 테스트 파일도 포함', () => {
+  it('recommends the type check for everything tsconfig covers, test files included', () => {
     const typecheck = (path) =>
       suggestFocusedChecks([path]).commands.some(
         (s) => s.command === 'pnpm typecheck',
       );
 
     assert.ok(typecheck('tests/contract/release/release-preflight.contract.test.ts'), 'tests/**');
-    assert.ok(typecheck('src/shared/lib/cn.test.ts'), 'src 의 테스트 파일');
+    assert.ok(typecheck('src/shared/lib/cn.test.ts'), 'a test file in src');
 
     // What already worked still works — confirming the reach was widened without narrowing.
-    assert.ok(typecheck('src/shared/lib/cn.ts'), 'src 의 제품 코드');
+    assert.ok(typecheck('src/shared/lib/cn.ts'), 'product code in src');
     assert.ok(typecheck('app/[locale]/agents/page.tsx'), 'app/**');
-    assert.ok(typecheck('tsconfig.json'), 'tsconfig 자신');
+    assert.ok(typecheck('tsconfig.json'), 'tsconfig itself');
   });
 
-  it('타입이 없는 파일에는 타입 검사를 권하지 않는다 — 넓히기만 한 게 아니다', () => {
+  it('does not recommend the type check for untyped files, so it is not merely widened', () => {
     const typecheck = (path) =>
       suggestFocusedChecks([path]).commands.some(
         (s) => s.command === 'pnpm typecheck',
@@ -1833,7 +1833,7 @@ describe('focused check suggestions', () => {
    * Do not use a readout as a gate: `dogfood:status` exits 1 on an immature graph, which would block
    * every vault-editing push for an unrelated reason.
    */
-  it('화면에 그려지는 마크다운에는 문구 게이트도 권한다', () => {
+  it('also recommends the copy gate for Markdown rendered on screen', () => {
     // The integrity check and the copy check measure different things: an em dash in vault prose
     // passes `vault:validate`.
     const prose = 'pnpm test:run tests/contract/copy/em-dash-ratchet.contract.test.ts';
@@ -1844,21 +1844,21 @@ describe('focused check suggestions', () => {
       'docs/CHANGELOG.md',
     ]) {
       const commands = domainCommands(suggestFocusedChecks([path]));
-      assert.ok(commands.includes(prose), `${path} 에 문구 게이트를 안 권한다`);
+      assert.ok(commands.includes(prose), `the copy gate is not recommended for ${path}`);
     }
     // Does not drag in the vault's non-markdown files.
     const other = commandNames(suggestFocusedChecks(['src/views/agents/ui/AgentsPage.tsx']));
-    assert.ok(!other.includes(prose), '관계없는 코드 변경에 문구 게이트를 권한다');
+    assert.ok(!other.includes(prose), 'the copy gate is recommended for an unrelated code change');
   });
 
-  it('볼트 변경에는 깨진 것만 말하는 검사를 권한다', () => {
+  it('recommends the check that reports only what is broken for vault changes', () => {
     const commands = commandNames(suggestFocusedChecks(['docs/ontology/README.md']));
-    assert.ok(commands.includes('pnpm vault:validate'), '무결성 검사를 안 권한다');
+    assert.ok(commands.includes('pnpm vault:validate'), 'the integrity check is not recommended');
     assert.ok(
       // `test:dogfood:status` (that script's unit tests) is a legitimate gate — it
       // measures whether the script runs correctly, not whether the graph is mature.
       !commands.includes('pnpm dogfood:status'),
-      '준비도 읽을거리를 게이트로 권한다 — 그것은 덜 여물어도 1 이다',
+      'readiness reading material is recommended as a gate; it still exits 1 even when less mature',
     );
   });
 });

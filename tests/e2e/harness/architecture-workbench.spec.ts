@@ -394,7 +394,7 @@ for (const locale of ['ko', 'en'] as const) {
   /* One test per locale rather than a loop inside one: Korean runs taller than English at the same
      size, so a failure has to name which build it is, and a `use`-prefixed fixture helper may not
      be called in a loop body (`react-hooks/rules-of-hooks` reads it as a React hook). */
-  test(`${locale}: 구조 사다리는 카드 폭을 쓰고, 층 판은 한 선에서 끝나며, 열 머리글이 면 위에 앉지 않는다`, async ({ page }) => {
+  test(`${locale}: the structure ladder uses the card width, the layer board ends on one line, and column headers do not sit on the surface`, async ({ page }) => {
     await page.setViewportSize({ width: 1512, height: 901 });
     await seedFirstRunSeen(page);
     await useDogfoodSample(page);

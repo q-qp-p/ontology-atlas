@@ -17,7 +17,7 @@ const CSS = readGlobalCss();
 
 function cssWeight(name: string): number {
   const m = CSS.match(new RegExp(`^\\s*--font-weight-${name}\\s*:\\s*(\\d+);`, 'm'));
-  if (!m) throw new Error(`--font-weight-${name} 이 app/globals.css 에 없다`);
+  if (!m) throw new Error(`--font-weight-${name} is missing from app/globals.css`);
   return Number(m[1]);
 }
 
@@ -63,21 +63,21 @@ function scanRepo(): Scan {
   return acc;
 }
 
-describe('그리기 표면의 타입 값 — 캔버스 · 인라인 SVG', () => {
+describe('type values on drawing surfaces: canvas and inline SVG', () => {
   const scan = scanRepo();
 
-  it('CSS 램프와 JS 거울이 같은 값이다', () => {
+  it('the CSS ramp and the JS mirror are the same value', () => {
     expect(FONT_WEIGHT.signature).toBe(cssWeight('signature'));
     expect(FONT_WEIGHT.emphasis).toBe(cssWeight('emphasis'));
     expect(FONT_WEIGHT.strong).toBe(cssWeight('strong'));
     expect(Object.keys(FONT_WEIGHT).sort()).toEqual(['emphasis', 'signature', 'strong']);
   });
 
-  it('스캔이 비어 있지 않다 — 공집합 위의 게이트는 게이트가 아니다', () => {
+  it('the scan is not empty, since a gate over an empty set is no gate', () => {
     expect(scan.files).toBeGreaterThan(200);
   });
 
-  it('캔버스 ctx.font 에 무게 리터럴이 없다 — FONT_WEIGHT 를 참조한다', () => {
+  it('canvas ctx.font has no weight literal and references FONT_WEIGHT', () => {
     expect(
       scan.canvasFontLiteral,
       'A canvas cannot read `var()`, so the value has to be copied, and a copied value\n' +
@@ -87,7 +87,7 @@ describe('그리기 표면의 타입 값 — 캔버스 · 인라인 SVG', () => 
     ).toEqual([]);
   });
 
-  it('인라인 SVG 에 fontSize/fontWeight 속성이 없다 — className 으로 준다', () => {
+  it('inline SVG has no fontSize/fontWeight attribute and gets it from className', () => {
     expect(
       scan.svgTypeAttr,
       'CSS font-size and font-weight apply to SVG `<text>` as well. Given as attributes,\n' +
@@ -97,7 +97,7 @@ describe('그리기 표면의 타입 값 — 캔버스 · 인라인 SVG', () => 
     ).toEqual([]);
   });
 
-  it('프로브 — 탐지기가 실제로 먹는다', () => {
+  it('probe: the detector really catches', () => {
     const probe = (body: string): Scan => {
       const acc: Scan = { files: 0, canvasFontLiteral: [], svgTypeAttr: [] };
       scanSource('probe.ts', body, acc);

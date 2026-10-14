@@ -80,19 +80,19 @@ const WARNING_PROBE = "export function probe() {\n  const unusedByProbe = 1;\n  
 /** A parser failure proves the same configured engine still reports blocking errors. */
 const ERROR_PROBE = "export const broken = ;\n";
 
-describe("lint 경고 래칫 — 상한이 실제로 물려 있는가", () => {
-  it("`pnpm lint` 가 경고 상한을 지고 있다 — 없으면 warn 룰은 게이트가 아니다", () => {
+describe("lint warning ratchet — is the cap really enforced", () => {
+  it("`pnpm lint` carries a warning cap — without it a warn rule is not a gate", () => {
     expect(
       capMatch,
       `The "lint" script in package.json has no --max-warnings (now: ${lintScript}).\n` +
         `Without a ceiling, a rule that only warns fails nothing.`,
     ).not.toBeNull();
     // In ESLint `-1` means unlimited — a cap that pretends to exist is worse than none.
-    expect(Number.isInteger(cap) && cap >= 0, `--max-warnings ${cap} 은 상한이 아니다`).toBe(true);
+    expect(Number.isInteger(cap) && cap >= 0, `--max-warnings ${cap} is not a cap`).toBe(true);
   });
 
-  it("`pnpm lint` 는 경고 하나도 허용하지 않는다", () => {
-    expect(cap, `경고 상한은 0 이어야 한다 (지금: ${cap})`).toBe(0);
+  it("`pnpm lint` allows not a single warning", () => {
+    expect(cap, `the warning cap must be 0 (now: ${cap})`).toBe(0);
   });
 
   it.each([
@@ -111,7 +111,7 @@ describe("lint 경고 래칫 — 상한이 실제로 물려 있는가", () => {
 
 });
 
-describe("CI 가 이 상한을 지나간다 — 안 물린 게이트는 주석이다", () => {
+describe("CI passes through this cap — an unenforced gate is a comment", () => {
   const workflowDir = path.join(REPO_ROOT, ".github/workflows");
   const workflows = readdirSync(workflowDir)
     .filter((name) => name.endsWith(".yml") || name.endsWith(".yaml"))
@@ -119,7 +119,7 @@ describe("CI 가 이 상한을 지나간다 — 안 물린 게이트는 주석�
 
   it("checks.yml invokes the exhaustive registry that contains `pnpm lint`", () => {
     const checks = workflows.find((workflow) => workflow.name === "checks.yml");
-    expect(checks, ".github/workflows/checks.yml 이 없다").toBeDefined();
+    expect(checks, ".github/workflows/checks.yml is missing").toBeDefined();
     expect(FULL_LANE_COMMANDS.gates).toContain("pnpm lint");
     expect(
       checks!.source.includes("node scripts/ci/run-ci-lane.mjs --lane=gates"),
@@ -127,7 +127,7 @@ describe("CI 가 이 상한을 지나간다 — 안 물린 게이트는 주석�
     ).toBe(true);
   });
 
-  it("어느 워크플로도 상한을 우회해 eslint 를 직접 부르지 않는다", () => {
+  it("no workflow bypasses the cap to call eslint directly", () => {
     // Invoking via `pnpm exec eslint` / `npx eslint` drops package.json's cap.
     const bypasses = workflows.flatMap((workflow) =>
       workflow.source
@@ -137,7 +137,7 @@ describe("CI 가 이 상한을 지나간다 — 안 물린 게이트는 주석�
     );
     expect(
       bypasses,
-      `상한 없이 eslint 를 직접 부르는 줄이 있다:\n${bypasses.join("\n")}`,
+      `there is a line that calls eslint directly without a cap:\n${bypasses.join("\n")}`,
     ).toEqual([]);
   });
 });

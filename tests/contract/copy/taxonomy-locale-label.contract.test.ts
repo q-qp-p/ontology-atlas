@@ -47,38 +47,38 @@ function collectSourceFiles(dir: string, acc: string[] = []): string[] {
   return acc;
 }
 
-describe("분류 라벨 — 두 어권을 다 갖고, 고르는 자리는 하나다", () => {
-  it("모든 카테고리 기본값이 한국어·영문 라벨을 다 갖는다", () => {
+describe("taxonomy labels — both language areas are present, and there is one place to choose", () => {
+  it("every category default has both a Korean and an English label", () => {
     expect(DEFAULT_CATEGORIES.length).toBeGreaterThan(0);
     for (const category of DEFAULT_CATEGORIES) {
       expect(category.label.trim(), `category ${category.id}`).not.toBe("");
       expect(
         category.labelEn?.trim(),
-        `category ${category.id} 에 영문 라벨이 없다 — 영문 화면에 한국어가 그대로 나간다`,
+        `category ${category.id} has no English label — Korean goes straight onto the English screen`,
       ).toBeTruthy();
       expect(
         HANGUL.test(category.labelEn ?? ""),
-        `category ${category.id} 의 labelEn 이 한국어다`,
+        `labelEn of category ${category.id} is Korean`,
       ).toBe(false);
     }
   });
 
-  it("모든 상태 기본값이 한국어·영문 라벨을 다 갖는다", () => {
+  it("every status default has both a Korean and an English label", () => {
     expect(DEFAULT_STATUSES.length).toBeGreaterThan(0);
     for (const status of DEFAULT_STATUSES) {
       expect(status.label.trim(), `status ${status.id}`).not.toBe("");
       expect(
         status.labelEn?.trim(),
-        `status ${status.id} 에 영문 라벨이 없다 — 영문 화면에 한국어가 그대로 나간다`,
+        `status ${status.id} has no English label — Korean goes straight onto the English screen`,
       ).toBeTruthy();
       expect(
         HANGUL.test(status.labelEn ?? ""),
-        `status ${status.id} 의 labelEn 이 한국어다`,
+        `labelEn of status ${status.id} is Korean`,
       ).toBe(false);
     }
   });
 
-  it("영문 로케일에서는 어떤 기본값도 한국어를 돌려주지 않는다", () => {
+  it("in the English locale no default returns Korean", () => {
     for (const entry of [...DEFAULT_CATEGORIES, ...DEFAULT_STATUSES]) {
       const en = pickTaxonomyLabel(entry, "en");
       expect(HANGUL.test(en ?? ""), `${entry.id} → "${en}"`).toBe(false);
@@ -98,7 +98,7 @@ describe("분류 라벨 — 두 어권을 다 갖고, 고르는 자리는 하나
     }
   });
 
-  it("호출부가 분류 항목의 `.label` 을 직접 읽지 않는다", () => {
+  it("call sites do not read the `.label` of a taxonomy entry directly", () => {
     const files = collectSourceFiles(SRC_DIR);
     expect(files.length).toBeGreaterThan(20);
 

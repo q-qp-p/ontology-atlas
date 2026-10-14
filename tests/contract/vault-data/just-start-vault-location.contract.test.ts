@@ -19,15 +19,15 @@ function rustParentDirBody(): string {
   return match[1];
 }
 
-describe('그냥 시작하기의 금고 위치 — 두 쪽이 같은 곳을 말해야 한다', () => {
-  it('러스트가 만드는 폴더와 화면이 읽어 주는 이름이 같다', () => {
+describe('vault location of just-start: both sides must name the same place', () => {
+  it('the folder Rust creates and the name the screen reads out are the same', () => {
     const body = rustParentDirBody();
     // The label is `~/<container>`; the Rust side joins the same container onto $HOME.
     const container = DEFAULT_VAULT_PARENT_LABEL.replace(/^~[/\\]/, '');
-    expect(container, '라벨이 홈 밑의 한 폴더를 가리키지 않는다').not.toContain('/');
+    expect(container, 'the label does not point at a single folder under home').not.toContain('/');
     expect(
       body.includes(`join("${container}")`),
-      `화면은 「${DEFAULT_VAULT_PARENT_LABEL}」이라 말하는데 러스트는 다른 곳을 만든다: ${body.trim()}`,
+      `the screen says "${DEFAULT_VAULT_PARENT_LABEL}" but Rust creates somewhere else: ${body.trim()}`,
     ).toBe(true);
   });
 
@@ -35,7 +35,7 @@ describe('그냥 시작하기의 금고 위치 — 두 쪽이 같은 곳을 말�
    * The door's own sentence is a third place naming the location; the container name derives from
    * the label and the protected folders from the list above.
    */
-  it('문 문구도 같은 곳을 말한다 — 만드는 폴더를 이름으로 대고, 보호된 폴더는 대지 않는다', () => {
+  it('the door wording names the same place too: it cites the folder it creates and never a protected folder', () => {
     const container = DEFAULT_VAULT_PARENT_LABEL.replace(/^~[/\\]/, '');
     const doors: string[] = [];
     const collect = (node: unknown, trail: string, locale: string, catalogue: Record<string, unknown>) => {
@@ -44,9 +44,9 @@ describe('그냥 시작하기의 금고 위치 — 두 쪽이 같은 곳을 말�
         const at = trail ? `${trail}.${key}` : key;
         if (key === 'justStartBody' && typeof value === 'string') {
           doors.push(`${locale}:${at}`);
-          expect(value, `${locale}:${at} 가 만드는 폴더(${container})를 말하지 않는다: ${value}`).toContain(container);
+          expect(value, `${locale}:${at} does not name the folder it creates (${container}): ${value}`).toContain(container);
           for (const protectedDir of TCC_PROTECTED) {
-            expect(value, `${locale}:${at} 가 만들지도 않는 ${protectedDir} 를 약속한다: ${value}`).not.toContain(protectedDir);
+            expect(value, `${locale}:${at} promises ${protectedDir}, which it does not even create: ${value}`).not.toContain(protectedDir);
           }
         } else {
           collect(value, at, locale, catalogue);
@@ -58,15 +58,15 @@ describe('그냥 시작하기의 금고 위치 — 두 쪽이 같은 곳을 말�
       collect(catalogue, '', locale, catalogue);
     }
     // The card and the launch chooser, in both languages. Zero would mean the scan saw nothing.
-    expect(doors.length, `검사한 문 문구: ${doors.join(', ')}`).toBeGreaterThanOrEqual(4);
+    expect(doors.length, `door wordings checked: ${doors.join(', ')}`).toBeGreaterThanOrEqual(4);
   });
 
-  it('macOS 가 보호하는 폴더 안에 만들지 않는다', () => {
+  it('does not create inside a folder macOS protects', () => {
     const body = rustParentDirBody();
     for (const protectedDir of TCC_PROTECTED) {
       expect(
         body.includes(`join("${protectedDir}")`),
-        `「결정 없이 시작」이 ${protectedDir} 를 건드리면 첫 화면이 권한 대화상자가 된다`,
+        `if "start without deciding" touches ${protectedDir}, the first screen becomes a permission dialog`,
       ).toBe(false);
       expect(DEFAULT_VAULT_PARENT_LABEL.split(/[/\\]/)).not.toContain(protectedDir);
     }

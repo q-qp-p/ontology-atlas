@@ -78,8 +78,8 @@ const SEED_VAULT: Record<string, string> = {
  * The gateway face is at `/` and the map at `/topology`; the map-alive check with a non-zero count
  * runs at the map's address.
  */
-test.describe("웹 스모크 ① 관문", () => {
-  test("`/` 가 얼굴로 뜬다 — 무엇인지 말하고, 받는 길과 보는 길을 함께 준다", async ({
+test.describe("web smoke 1: gateway", () => {
+  test("`/` shows as the front face, saying what it is and offering both the way to get it and the way to look", async ({
     page,
   }) => {
     await gotoSettled(page, "/ko/");
@@ -100,7 +100,7 @@ test.describe("웹 스모크 ① 관문", () => {
     await expect(page.getByTestId("download-back-to-map")).toHaveCount(0);
   });
 
-  test("`/topology` 가 실제 지도 + 읽을 수 있는 숫자로 뜬다", async ({ page }) => {
+  test("`/topology` shows a real map plus numbers that can be read", async ({ page }) => {
     await gotoSettled(page, "/ko/topology/");
 
     // The map exists as a canvas with real dimensions.
@@ -132,8 +132,8 @@ test.describe("웹 스모크 ① 관문", () => {
 
 // ── ② Fallback workbench — the folder is actually read ──────────────────────
 
-test.describe("웹 스모크 ② 차선 워크벤치", () => {
-  test("폴더를 고르면 웹이 그 폴더를 실제로 읽어 지도로 바꾼다", async ({ page }) => {
+test.describe("web smoke 2: fallback workbench", () => {
+  test("choosing a folder makes the web read it for real and turn it into a map", async ({ page }) => {
     await stubDirectoryPicker(page, SEED_VAULT);
     // The workbench is at the map address; `/` is the gateway.
     await gotoSettled(page, "/ko/topology/");
@@ -155,7 +155,7 @@ test.describe("웹 스모크 ② 차선 워크벤치", () => {
     await expect(index).toContainText("2 관계");
   });
 
-  test("폴더를 못 여는 브라우저는 약속 대신 이유와 갈 곳을 준다", async ({ page }) => {
+  test("a browser that cannot open folders gives a reason and a destination instead of a promise", async ({ page }) => {
     // Reproduce a browser without FSA. The app decides that capability by whether
     // `showDirectoryPicker` is **callable**, so deleting it is enough.
     await page.addInitScript(() => {
@@ -241,7 +241,7 @@ type DegradedSurface = {
 
 const DEGRADED_SURFACES: readonly DegradedSurface[] = [
   {
-    name: "회색지대 — 브라우저는 연결된 코드 폴더를 검사하지 못한다",
+    name: "gray zone: the browser cannot inspect a connected code folder",
     url: "/ko/library/",
     needsVault: true,
     open: async (page) => {
@@ -256,7 +256,7 @@ const DEGRADED_SURFACES: readonly DegradedSurface[] = [
     destination: "gray-area-get-app",
   },
   {
-    name: "기록(git) — 브라우저는 이 컴퓨터의 git 을 실행할 수 없다",
+    name: "history (git): the browser cannot run git on this computer",
     url: "/ko/git/?focus=main",
     card: "atlas-git-panel",
     reason: /브라우저는[\s\S]*권한이 없어요/,
@@ -265,7 +265,7 @@ const DEGRADED_SURFACES: readonly DegradedSurface[] = [
   {
     // Registering it on the web would promise nothing could keep: it keeps a clock and opens a headless
     // agent session while the person is away, which a browser tab cannot do.
-    name: "순회 — 브라우저는 자리를 비운 동안 시계를 지키거나 에이전트를 열 수 없다",
+    name: "rounds: the browser cannot keep a clock or launch an agent while you are away",
     url: "/ko/library/?tab=rounds",
     card: "library-rounds-app-required",
     reason: /설치한 앱만 할 수 있어요/,
@@ -274,7 +274,7 @@ const DEGRADED_SURFACES: readonly DegradedSurface[] = [
   {
     // Claims only that the browser cannot save the config automatically (it does not know the absolute
     // path); connecting works. Drawn only after a vault is open: with no vault there is no config.
-    name: "에이전트 연결 — 브라우저는 폴더의 절대 경로를 몰라 설정을 대신 저장하지 못한다",
+    name: "agent connection: the browser does not know the folder's absolute path and cannot save the setup for you",
     url: "/ko/topology/",
     open: async (page) => {
       // Open the vault first — that is what draws the settings panel holding this card.
@@ -293,7 +293,7 @@ const DEGRADED_SURFACES: readonly DegradedSurface[] = [
   {
     // Runtimes: a browser cannot launch programs on this computer, so the card states a reason. It must
     // also say a web user can attach an agent they started themselves (the MCP path).
-    name: "실행기 — 브라우저는 이 컴퓨터의 프로그램을 띄우지 못한다",
+    name: "runner: the browser cannot launch programs on this computer",
     url: "/ko/agents/",
     card: "app-settings-runtimes-web",
     reason: /브라우저는[\s\S]*권한이 없어요/,
@@ -305,7 +305,7 @@ const DEGRADED_SURFACES: readonly DegradedSurface[] = [
   {
     // Models: keeping a key needs an OS keychain and calling a runner needs a program on this computer;
     // the tab exists on the web and says so, with no sample rows for data it does not have.
-    name: "모델 — 브라우저는 키를 안전하게 보관하지 못한다",
+    name: "model: the browser cannot keep a key safely",
     url: "/ko/agents/?tab=models",
     card: "ai-connection-web-degraded",
     reason: /악성 코드[\s\S]*데스크톱 앱/,
@@ -314,7 +314,7 @@ const DEGRADED_SURFACES: readonly DegradedSurface[] = [
   {
     // Connectors: reading `~/.claude.json` needs a program on this computer and keeping a token needs an
     // OS keychain, but adding and removing work on the web, so the card must not call them unavailable.
-    name: "연결 도구 — 웹은 이미 등록된 MCP 서버를 찾아 주지 못한다",
+    name: "connectors: the web cannot find MCP servers that are already registered",
     url: "/ko/topology/",
     open: async (page) => {
       await page.getByTestId("first-run-starter-open").click();
@@ -341,7 +341,7 @@ const DEGRADED_SURFACES: readonly DegradedSurface[] = [
      * but a browser cannot start the tool that fetches, so the last step offers no press and says what
      * happened.
      */
-    name: "서비스에서 가져오기 — 브라우저는 문서를 받아 올 코딩 도구를 띄우지 못한다",
+    name: "import from a service: the browser cannot launch a coding tool to fetch documents",
     url: "/ko/topology/",
     open: async (page) => {
       await page.getByTestId("first-run-starter-open").click();
@@ -379,7 +379,7 @@ const DEGRADED_SURFACES: readonly DegradedSurface[] = [
      * With no folder open the Library is a single stage whose one control is the picker, so one press
      * opens it.
      */
-    name: "문서 찾기 — 브라우저는 연결해 둔 프로젝트 폴더까지 훑지 못한다",
+    name: "document search: the browser cannot scan the connected project folders",
     url: "/ko/library/",
     open: async (page) => {
       const picker = page.getByTestId("library-open-vault");
@@ -395,9 +395,9 @@ const DEGRADED_SURFACES: readonly DegradedSurface[] = [
   },
 ];
 
-test.describe("웹 스모크 ③ 정직한 강등", () => {
+test.describe("web smoke 3: honest downgrade", () => {
   for (const surface of DEGRADED_SURFACES) {
-    test(`${surface.name} — 이유와 갈 곳이 함께 있다`, async ({ page }) => {
+    test(`${surface.name}: the reason and a destination come together`, async ({ page }) => {
       if (surface.needsVault) await stubDirectoryPicker(page, SEED_VAULT);
       await gotoSettled(page, surface.url);
       await surface.open?.(page);
@@ -418,7 +418,7 @@ test.describe("웹 스모크 ③ 정직한 강등", () => {
       if (surface.destinationText) await expect(card).toHaveText(surface.destinationText);
       if (surface.alsoHereLink) {
         const link = page.getByTestId(surface.alsoHereLink.testId);
-        await expect(link, "이 화면에서도 되는 곳으로 갈 링크가 없다").toBeVisible();
+        await expect(link, "there is no link to a place that works on this screen").toBeVisible();
         await expect(link).toHaveAttribute("href", surface.alsoHereLink.href);
       }
       if (surface.alsoHereNamesSettingsSection) {
@@ -429,13 +429,13 @@ test.describe("웹 스모크 ③ 정직한 강등", () => {
         const quoted = [...(await card.innerText()).matchAll(/[「“]([^」”]+)[」”]/gu)].map((m) =>
           m[1].trim(),
         );
-        expect(quoted, "이 화면에서도 되는 곳을 이름으로 대야 한다").not.toEqual([]);
+        expect(quoted, "a place that works on this screen must be named").not.toEqual([]);
         const headings = (await page.getByRole("heading").allInnerTexts()).map((text) =>
           text.trim(),
         );
-        expect(headings.length, "이 화면의 제목을 못 읽었다 — 이 검사가 헛돈다").toBeGreaterThan(1);
+        expect(headings.length, "could not read the headings of this screen, so this check spins idle").toBeGreaterThan(1);
         for (const name of quoted) {
-          expect(headings, `카드가 가리킨 「${name}」 자리가 이 화면에 없다`).toContain(name);
+          expect(headings, `the place "${name}" the card points to is not on this screen`).toContain(name);
         }
       }
     });
@@ -445,7 +445,7 @@ test.describe("웹 스모크 ③ 정직한 강등", () => {
    * The absolute path is asked of the person and a runnable config is built on the spot. The guard
    * is that a half-filled config is never handed over.
    */
-  test("에이전트 연결 — 웹에서도 그 자리에서 붙는 설정을 만든다", async ({ page }) => {
+  test("agent connection: the web also produces a setup that attaches in place", async ({ page }) => {
     // This path lives in the destination's MCP Connect section and is drawn after a vault is open;
     // with no vault there is no config to build.
     await stubDirectoryPicker(page, SEED_VAULT);
@@ -502,14 +502,14 @@ test.describe("웹 스모크 ③ 정직한 강등", () => {
    * means the surface lacks the capability; `0/0` means it works and found nothing; the two must not
    * collapse.
    */
-  test("문서함이 웹에서는 스킬 사본 판정을 하지 않는다 — 없는 능력을 있는 척하지 않는다", async ({
+  test("the document box does not judge skill copies on the web, so it does not pretend to a capability it lacks", async ({
     page,
   }) => {
     await gotoSettled(page, "/ko/docs/?guides=off");
     await expect(page.locator("main#main")).toHaveAttribute("data-skill-parity", "-");
   });
 
-  test("다운로드 화면이 웹의 두 번째 일을 숨기지 않는다 (Windows 방문자)", async ({ page }) => {
+  test("the download screen does not hide the web's second job (Windows visitor)", async ({ page }) => {
     // A visitor on an OS with no app must not leave empty-handed: the Windows file button stands with the
     // unsigned marker at the point of download, and beside it is somewhere that works today.
     await gotoSettled(page, "/ko/download/");
@@ -529,7 +529,7 @@ test.describe("웹 스모크 ③ 정직한 강등", () => {
     await expect(web).toHaveAttribute("href", /\/ko\/topology\/?$/);
   });
 
-  test("설정의 키 자리는 에이전트 → 모델로 가고, 그곳이 브라우저에서 키를 받지 않는 이유를 말한다", async ({ page }) => {
+  test("the settings key slot goes to agents then models, which states why the browser takes no key", async ({ page }) => {
     // The workbench is at the map address; `/` is the gateway.
     await gotoSettled(page, "/ko/topology/");
 

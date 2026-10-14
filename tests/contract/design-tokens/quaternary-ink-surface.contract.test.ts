@@ -45,11 +45,11 @@ type Rgba = readonly number[];
 
 function cssToken(css: string, name: string): Rgba {
   const m = new RegExp(`${name}:\\s*([^;]+);`).exec(css);
-  if (!m) throw new Error(`globals.css 에 ${name} 이 없다`);
+  if (!m) throw new Error(`${name} is missing from globals.css`);
   const v = m[1].trim();
   if (v.startsWith("var(")) return cssToken(css, v.slice(4, -1).trim());
   const parsed = parseColor(v);
-  if (!parsed) throw new Error(`${name} 값(${v})을 색으로 못 읽는다`);
+  if (!parsed) throw new Error(`cannot read the value of ${name} (${v}) as a colour`);
   return parsed as Rgba;
 }
 
@@ -69,8 +69,8 @@ const a14 = cssToken(css, "--color-indigo-a14");
 const quaternary = cssToken(css, "--color-text-quaternary");
 const tertiary = cssToken(css, "--color-text-tertiary");
 
-describe("quaternary 잉크 라이선스 — 정지한 무채 바탕까지", () => {
-  it("라이선스 안: 맨 3단 + canvas/panel 위 overlay-1 에서 AA(4.5:1)", () => {
+describe("quaternary ink licence — down to the resting neutral backgrounds", () => {
+  it("inside the licence: AA (4.5:1) on the bare three steps + overlay-1 over canvas/panel", () => {
     const licensed: Record<string, Rgba> = {
       canvas,
       panel,
@@ -80,11 +80,11 @@ describe("quaternary 잉크 라이선스 — 정지한 무채 바탕까지", () 
     };
     for (const [name, bg] of Object.entries(licensed)) {
       const r = ratioOn(quaternary, bg);
-      expect(r, `quaternary 가 ${name} 위에서 ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+      expect(r, `quaternary on ${name} is ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
     }
   });
 
-  it("경계의 근거가 아직 실재한다 — 올라선 바탕에서는 실제로 AA 를 깬다", () => {
+  it("the basis of the boundary still exists — on raised backgrounds it really breaks AA", () => {
     /*
      * `/gate-probe`: no detector may idle on an empty set. The day this assertion turns
      * red is the day quaternary passes on raised surfaces too, and on that day this
@@ -98,7 +98,7 @@ describe("quaternary 잉크 라이선스 — 정지한 무채 바탕까지", () 
     expect(ratioOn(quaternary, stack(panel, a14))).toBeLessThan(4.5);
   });
 
-  it("처방이 성립한다 — tertiary 는 이번에 실측된 올라선 바탕 전부에서 AA", () => {
+  it("the prescription holds — tertiary is AA on every raised background measured this time", () => {
     /*
      * For "text on a raised background starts at tertiary" to be a prescription,
      * tertiary must actually clear those backgrounds. The three compositions the
@@ -114,11 +114,11 @@ describe("quaternary 잉크 라이선스 — 정지한 무채 바탕까지", () 
     };
     for (const [name, bg] of Object.entries(raised)) {
       const r = ratioOn(tertiary, bg);
-      expect(r, `tertiary 가 ${name} 위에서 ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+      expect(r, `tertiary on ${name} is ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
     }
   });
 
-  it("위계 간격이 남아 있다 — panel 위 tertiary/quaternary 스텝비 ≥ 1.06", () => {
+  it("the hierarchy gap remains — tertiary/quaternary step ratio on panel ≥ 1.06", () => {
     /*
      * The lowest tertiary/quaternary step ratio accepted on this ramp is 1.06 (the map panel ramp); below
      * it the hierarchy is dug into.
@@ -128,8 +128,8 @@ describe("quaternary 잉크 라이선스 — 정지한 무채 바탕까지", () 
   });
 });
 
-describe("실측으로 잡힌 자리가 되돌아가지 않는다 — 글로벌 검색", () => {
-  it("kbd·선택 행 자식들은 tertiary 다", () => {
+describe("spots caught by measurement do not go back — global search", () => {
+  it("kbd and selected-row children are tertiary", () => {
     /*
      * cmdk's selection travels every row, so the slug and status spans fall under the same rule as the
      * kbd and the selected row's kind chip.
@@ -142,12 +142,12 @@ describe("실측으로 잡힌 자리가 되돌아가지 않는다 — 글로벌 
       expect(kbd.classText).not.toContain("--color-text-quaternary");
     }
     const rows = search.filter((element) => element.classText.includes("aria-selected:bg-[color:var(--color-indigo-a14)]"));
-    expect(rows.length, "선택 행 문법이 사라졌다 — 이 단언의 대상을 다시 찾아라").toBeGreaterThan(0);
+    expect(rows.length, "the selected-row grammar disappeared — find the target of this assertion again").toBeGreaterThan(0);
     for (const row of rows) {
       const inside = search.filter((element) => element.start >= row.start && element.end <= row.end);
       expect(
         [row.literalText, ...inside.map((element) => element.classText)].join(" ").includes("--color-text-quaternary"),
-        "선택 행(indigo-a14 합성) 안에 quaternary 잉크가 되돌아왔다 — 4.39:1 로 AA 미달이다. tertiary 부터 쓴다.",
+        "quaternary ink came back inside a selected row (indigo-a14 composite) — 4.39:1 falls short of AA. Start with tertiary.",
       ).toBe(false);
     }
   });
@@ -179,12 +179,12 @@ describe("실측으로 잡힌 자리가 되돌아가지 않는다 — 글로벌 
   });
 });
 
-describe("실측으로 잡힌 자리가 되돌아가지 않는다 — 아키텍처 프로필 행", () => {
-  it("눌리는 프로필 행의 범위 설명은 tertiary 부터 쓴다", () => {
+describe("spots caught by measurement do not go back — architecture profile row", () => {
+  it("the scope description of a pressable profile row starts at tertiary", () => {
     const scopeLine = readJsx("src/views/architecture/ui/ArchitectureWorkbench.tsx").find(
       (element) => element.tag === "span" && /^\s*\{profile\.scopePaths\.join/.test(element.childText),
     );
-    expect(scopeLine, "프로필 범위 행을 못 찾았다 — 단언 대상을 다시 찾아라").toBeDefined();
+    expect(scopeLine, "could not find the profile scope row — find the assertion target again").toBeDefined();
     expect(scopeLine?.classText).toContain("--color-text-tertiary");
     expect(scopeLine?.classText).not.toContain("--color-text-quaternary");
   });

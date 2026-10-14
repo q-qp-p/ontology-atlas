@@ -88,7 +88,7 @@ describe('tauri secrets bridge', () => {
     });
   });
 
-  it('키 보유 상태가 바뀌면 한 번 알린다 — 듣는 표면이 새로고침 없이 살아나게', async () => {
+  it('notifies once when key-held state changes, so listening surfaces update without a refresh', async () => {
     // The key is entered on one surface (the settings sheet) and comes alive on another (the
     // map's right dock), so without a signal on save and delete the user has to reload.
     tauriApiMock.runtimeAvailable = true;

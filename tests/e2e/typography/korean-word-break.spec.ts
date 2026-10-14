@@ -75,7 +75,7 @@ async function scan(page: import("@playwright/test").Page): Promise<BreakScan> {
   });
 }
 
-test("한국어 문장이 단어 중간에서 끊기지 않는다", async ({ page }) => {
+test("Korean sentences do not break in the middle of a word", async ({ page }) => {
   test.setTimeout(300_000);
   await page.setViewportSize({ width: 1512, height: 900 });
   await seedFirstRunSeen(page);
@@ -102,11 +102,11 @@ test("한국어 문장이 단어 중간에서 끊기지 않는다", async ({ pag
     const result = await scan(page);
     wrappedTotal += result.wrappedTexts;
     for (const hit of result.midWord) {
-      offenders.push(`${route} 「${hit.text}」 (${hit.at}) · word-break=${hit.wordBreak} · 폭 ${hit.width}`);
+      offenders.push(`${route} "${hit.text}" (${hit.at}) · word-break=${hit.wordBreak} · width ${hit.width}`);
     }
   }
 
-  console.log(`[word-break] 여러 줄로 접힌 한국어 문장 ${wrappedTotal}개 · 단어 중간 끊김 ${offenders.length}건`);
+  console.log(`[word-break] wrapped Korean sentences ${wrappedTotal} · mid-word breaks ${offenders.length}`);
 
   /*
    * Idling guard: with no line break ever observed, "0 breaks" is not evidence.
@@ -117,11 +117,11 @@ test("한국어 문장이 단어 중간에서 끊기지 않는다", async ({ pag
    */
   expect(
     wrappedTotal,
-    `여러 줄로 접힌 한국어 문장을 하나도 못 봤다 — 이 스펙이 아무것도 재지 않았다`,
+    `no wrapped Korean sentence was seen, so this spec measured nothing`,
   ).toBeGreaterThan(0);
 
   expect(
     offenders,
-    `한국어가 단어 중간에서 끊겼다. 그 문단에 \`break-keep\` 을 붙여라:\n${offenders.join("\n")}`,
+    `Korean broke in the middle of a word. Add \`break-keep\` to that paragraph:\n${offenders.join("\n")}`,
   ).toEqual([]);
 });

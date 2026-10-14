@@ -70,11 +70,11 @@ function sectionReferences(bundle: Bundle): Array<{ key: string; name: string }>
 describe.each([
   ['ko', ko as unknown as Bundle],
   ['en', en as unknown as Bundle],
-])('설정 칸을 가리키는 안내 — %s', (_locale, bundle) => {
+])('guidance that points at a settings section: %s', (_locale, bundle) => {
   const names = sectionNames(bundle);
   const refs = sectionReferences(bundle);
 
-  it('설정 칸 이름 목록이 비어 있지 않다', () => {
+  it('the list of settings section names is not empty', () => {
     // If this is empty, every check below passes while measuring nothing.
     expect(names.size).toBeGreaterThan(5);
   });
@@ -84,11 +84,11 @@ describe.each([
    * disappearing entirely behind the other's number — the "a total covers the hole"
    * shape this repository has repeatedly hit with gates.
    */
-  it('두 표가 각각 비어 있지 않다 — 합계가 한쪽의 소실을 덮지 않는다', () => {
-    expect(sheetSectionNames(bundle).size, '시트 칸 이름이 0개다').toBeGreaterThan(5);
+  it('each of the two tables is non-empty, so a total cannot hide the loss of one', () => {
+    expect(sheetSectionNames(bundle).size, 'the sheet has 0 section names').toBeGreaterThan(5);
     expect(
       destinationSectionNames(bundle).size,
-      '목적지(에이전트 · MCP)의 절 제목이 0개다',
+      'the destination (Agents and MCP) has 0 section titles',
     ).toBeGreaterThan(1);
   });
 
@@ -98,22 +98,22 @@ describe.each([
    * measurement is 2 (the runtimes degradation card and the chat launch-failure
    * notice); if guidance is deleted, lower this line with it.
    */
-  it('가리키는 안내가 실제로 있다 — 없으면 본 검사가 헛돈다', () => {
+  it('the guidance that points really exists, otherwise the main check spins idle', () => {
     // One runtimes degradation card points at a destination section; lower this line if it is deleted.
     expect(refs.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('가리킨 칸이 전부 실재한다', () => {
+  it('every section pointed at really exists', () => {
     const missing = refs.filter((ref) => !names.has(ref.name));
     expect(
       missing.map((ref) => `${ref.key} → 「${ref.name}」`),
-      '없는 설정 칸을 가리키는 안내가 있다',
+      'there is guidance that points at a settings section that does not exist',
     ).toEqual([]);
   });
 });
 
-describe('두 언어가 같은 자리를 가리킨다', () => {
-  it('참조하는 번역 키가 같다 — 한쪽만 고치면 다른 쪽이 낡는다', () => {
+describe('both languages point at the same place', () => {
+  it('the referenced translation keys are the same, since fixing only one side leaves the other stale', () => {
     const keys = (bundle: Bundle) => sectionReferences(bundle).map((r) => r.key).sort();
     expect(keys(ko as unknown as Bundle)).toEqual(keys(en as unknown as Bundle));
   });
@@ -123,17 +123,17 @@ describe('두 언어가 같은 자리를 가리킨다', () => {
  * The set of `section.*` keys in messages must equal the set of items the menu renders, so a
  * translation left behind after removing a section is caught.
  */
-describe('section.* 키는 전부 실제로 그려지는 칸이다', () => {
+describe('every section.* key is a section that is really drawn', () => {
   const renderedItems = [...SETTINGS_SECTIONS];
 
-  it('items 추출이 헛돌지 않는다 — 0개면 아래 검사는 아무것도 안 잰다', () => {
+  it('the items extraction does not spin idle, since with 0 the checks below measure nothing', () => {
     expect(renderedItems.length).toBeGreaterThan(5);
   });
 
   it.each([
     ['ko', ko as unknown as Bundle],
     ['en', en as unknown as Bundle],
-  ])('%s 의 section.* 키 집합 == SETTINGS_SECTIONS', (_locale, bundle) => {
+  ])('the section.* key set of %s == SETTINGS_SECTIONS', (_locale, bundle) => {
     const nav = (bundle.nav as Bundle | undefined)?.settingsMenu as Bundle | undefined;
     const keys = Object.keys((nav?.section as Record<string, string>) ?? {}).sort();
     expect(keys).toEqual([...renderedItems].sort());

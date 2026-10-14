@@ -6,7 +6,7 @@ function doc(slug: string, frontmatter: Record<string, unknown> = {}): VaultShap
 }
 
 describe("snapshotVaultShape", () => {
-  it("사람이 부르는 이름을 쓴다 — 폴더 경로가 아니라", () => {
+  it("uses the human-facing name, not the folder path", () => {
     const snap = snapshotVaultShape(
       [{ slug: "capabilities/checkout", title: "Checkout", frontmatter: { kind: "capability", display_ko: "주문서 작성" } }],
       "ko",
@@ -18,7 +18,7 @@ describe("snapshotVaultShape", () => {
     });
   });
 
-  it("짧은 참조를 꼬리로 편다 — 단, 꼬리가 유일할 때만", () => {
+  it("expands a short reference into its tail, only when the tail is unique", () => {
     const snap = snapshotVaultShape([
       doc("domains/order", { kind: "domain" }),
       doc("capabilities/checkout", { kind: "capability", domain: "order" }),
@@ -26,7 +26,7 @@ describe("snapshotVaultShape", () => {
     expect(snap.parents.get("capabilities/checkout")).toBe("domains/order");
   });
 
-  it("꼬리가 모호하면 부모를 짓지 않는다 — 틀린 부모는 없는 부모보다 나쁘다", () => {
+  it("builds no parent when the tail is ambiguous, because a wrong parent is worse than none", () => {
     const snap = snapshotVaultShape([
       doc("domains/order", { kind: "domain" }),
       doc("elements/order", { kind: "element" }),
@@ -37,7 +37,7 @@ describe("snapshotVaultShape", () => {
 });
 
 describe("diffVaultShape", () => {
-  it("도메인이 생기고 사라진 것만 센다 — 역량은 세지 않는다", () => {
+  it("counts only domains that appeared and disappeared, not capabilities", () => {
     const prev = snapshotVaultShape([doc("domains/order", { kind: "domain" })]);
     const next = snapshotVaultShape([
       doc("domains/catalog", { kind: "domain" }),
@@ -48,7 +48,7 @@ describe("diffVaultShape", () => {
     expect(diff.domainsRemoved.map((n) => n.slug)).toEqual(["domains/order"]);
   });
 
-  it("브릿지 = 새 노드로 자식 둘 이상이 옮겨 붙은 것 (원장 2026-08-01)", () => {
+  it("a bridge is a new node that two or more children moved under (ledger 2026-08-01)", () => {
     const prev = snapshotVaultShape([
       doc("capabilities/payment-authorize", { kind: "capability" }),
       doc("capabilities/kakao-pay", { kind: "capability", belongs_to: "capabilities/payment-authorize" }),
@@ -66,7 +66,7 @@ describe("diffVaultShape", () => {
     ]);
   });
 
-  it("자식 하나만 옮겨 오면 브릿지가 아니다 — 그냥 부모가 바뀐 것", () => {
+  it("moving a single child is not a bridge, only a parent change", () => {
     const prev = snapshotVaultShape([
       doc("capabilities/a", { kind: "capability" }),
       doc("capabilities/child", { kind: "capability", belongs_to: "capabilities/a" }),
@@ -79,7 +79,7 @@ describe("diffVaultShape", () => {
     expect(diffVaultShape(prev, next).bridges).toEqual([]);
   });
 
-  it("자식들이 통째로 새로 태어난 것은 브릿지가 아니다 (재부모화가 없다)", () => {
+  it("children that are all newly created are not a bridge, since nothing was reparented", () => {
     const prev = snapshotVaultShape([doc("capabilities/a", { kind: "capability" })]);
     const next = snapshotVaultShape([
       doc("capabilities/a", { kind: "capability" }),
@@ -90,7 +90,7 @@ describe("diffVaultShape", () => {
     expect(diffVaultShape(prev, next).bridges).toEqual([]);
   });
 
-  it("배치로 태어난 도메인도 잡는다 — 활동 로그가 못 보던 자리", () => {
+  it("also catches domains created in a batch, a spot the activity log could not see", () => {
     const prev = snapshotVaultShape([]);
     const next = snapshotVaultShape([
       doc("domains/order", { kind: "domain" }),

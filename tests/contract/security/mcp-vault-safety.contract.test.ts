@@ -88,12 +88,12 @@ function makeVault(): string {
   return dir;
 }
 
-describe('MCP 이름 바꾸기 — 대소문자만 다른 이름은 같은 파일이다', () => {
+describe('MCP rename: names differing only in case are the same file', () => {
   /**
    * The upstream collision check is a string comparison, so a case-only rename looked like two names
    * while macOS saw one file; writing then deleting the old name deleted the new file.
    */
-  it('대소문자만 다른 이름 바꾸기는 **거절**하고, 파일은 그대로 남는다', () => {
+  it('a rename that differs only in case is **refused** and the file stays as it is', () => {
     const vault = mkdtempSync(join(tmpdir(), 'atlas-case-'));
     mkdirSync(join(vault, 'capabilities'), { recursive: true });
     writeFileSync(
@@ -109,36 +109,36 @@ describe('MCP 이름 바꾸기 — 대소문자만 다른 이름은 같은 파�
       overwrite: true,
     });
 
-    expect(result.isError, `거절되지 않았다: ${result.text.slice(0, 200)}`).toBe(true);
+    expect(result.isError, `was not refused: ${result.text.slice(0, 200)}`).toBe(true);
     expect(result.text).toMatch(/letter case/);
     // And above all — **the file must still be there.**
     expect(
       readdirSync(join(vault, 'capabilities')),
-      '문서가 사라졌다 — 이 검사가 막으려는 바로 그 일이다',
+      'the document is gone, which is exactly what this check is meant to prevent',
     ).toContain('Auth.md');
   }, 40_000);
 });
 
-describe('MCP 스캔 경계 — 열어 준 폴더만 읽는다', () => {
-  it('볼트 밖 경로는 거절한다 (실제 서버에 JSON-RPC 로 물어본다)', () => {
+describe('MCP scan boundary: reads only the folder it was opened on', () => {
+  it('a path outside the vault is refused (asks a real server over JSON-RPC)', () => {
     const vault = makeVault();
     const result = callTool(vault, 'analyze_repo_structure', { rootPath: OUTSIDE });
-    expect(result.isError, `«${OUTSIDE}» 를 훑는 것이 통과했다: ${result.text.slice(0, 200)}`).toBe(
+    expect(result.isError, `scanning «${OUTSIDE}» got through: ${result.text.slice(0, 200)}`).toBe(
       true,
     );
     // Why it was blocked must be human-readable — the agent decides what to do next from it.
     expect(result.text).toMatch(/inside the vault/);
   }, 40_000);
 
-  it('볼트 안은 그대로 통과한다 — 막는 것이 목적이 아니다', () => {
+  it('inside the vault passes as it is, since blocking is not the goal', () => {
     const vault = makeVault();
     const result = callTool(vault, 'analyze_repo_structure', { rootPath: vault });
-    expect(result.isError, `자기 볼트를 훑는 것이 막혔다: ${result.text.slice(0, 200)}`).toBe(false);
+    expect(result.isError, `scanning its own vault was blocked: ${result.text.slice(0, 200)}`).toBe(false);
   }, 40_000);
 
-  it('`repoRoot` 를 받는 검증 도구도 같은 경계를 본다', () => {
+  it('the validation tool that takes `repoRoot` sees the same boundary', () => {
     const vault = makeVault();
     const result = callTool(vault, 'validate_vault', { repoRoot: OUTSIDE });
-    expect(result.isError, `validate_vault 가 «${OUTSIDE}» 를 봤다`).toBe(true);
+    expect(result.isError, `validate_vault looked at «${OUTSIDE}»`).toBe(true);
   }, 40_000);
 });

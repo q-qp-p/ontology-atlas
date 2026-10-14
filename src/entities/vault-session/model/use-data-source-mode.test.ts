@@ -29,7 +29,7 @@ describe("useDataSourceMode", () => {
     mocks.vault.manifest = null;
   });
 
-  it("검증된 manifest를 보존한 transient loading은 local mode를 유지한다", () => {
+  it("keeps local mode for a transient loading that preserved a verified manifest", () => {
     mocks.vault.status = "loading";
     mocks.vault.manifest = manifest;
 
@@ -38,7 +38,7 @@ describe("useDataSourceMode", () => {
     expect(result.current).toBe("local");
   });
 
-  it("manifest 없는 첫 loading은 static sample을 유지한다", () => {
+  it("keeps the static sample for a first loading with no manifest", () => {
     mocks.vault.status = "loading";
 
     const { result } = renderHook(() => useDataSourceMode());
