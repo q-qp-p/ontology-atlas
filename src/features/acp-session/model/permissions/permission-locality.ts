@@ -1,4 +1,4 @@
-import { projectRootForVault } from './vault-mcp-server';
+import { projectRootForVault } from '../runtime-wiring/vault-mcp-server';
 
 /**
  * Is what the agent touches the person's own project, or somewhere else entirely? Every

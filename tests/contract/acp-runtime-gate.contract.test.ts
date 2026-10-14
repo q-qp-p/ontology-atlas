@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
   GATED_SESSION_MODE,
   isGuardedRuntime,
-} from '@/features/acp-session/model/runtime-gate';
+} from '@/features/acp-session/model/runtime-wiring/runtime-gate';
 
 import { readAcpRust } from '../helpers/read-acp-rust';
 

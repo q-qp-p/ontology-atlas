@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { PendingPermission, TaskBaselineCaptureResult } from '@/features/acp-session';
-import { keepToolOutput } from '@/features/acp-session/model/tool-output';
+import { keepToolOutput } from '@/features/acp-session/model/tool-calls/tool-output';
 import { useTaskMeaningReview } from './use-task-meaning-review';
 
 const hash = (value: string) => `sha256:${value.repeat(64)}`;

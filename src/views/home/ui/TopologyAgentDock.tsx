@@ -27,7 +27,7 @@ const VaultAgentPanel = dynamic(
 
 interface TopologyAgentDockProps {
   vaultAgentPrefill: VaultAgentPrefill | null;
-  chatSuggestions: import("@/features/acp-session/model/chat-suggestions").ChatSuggestion[];
+  chatSuggestions: import("@/features/acp-session/model/chat-suggestions/chat-suggestions").ChatSuggestion[];
   routeState: import("@/views/home/model/url-state").HomeRouteState;
   topologyCanvasFocus: Pick<ReturnType<typeof useTopologyCanvasFocus>, "chatKnownSlugs" | "chatKnownRelations" | "handleChatHoverSlug">;
   topologyAuthoring: Pick<ReturnType<typeof useTopologyAuthoring>, "edgePanelModel" | "selectedEdge" | "setAcpRelationPreview">;

@@ -3,7 +3,7 @@ import type {
   AcpEvent,
   AcpSessionStatus,
   PendingPermission,
-} from './use-acp-session';
+} from '../use-acp-session';
 
 type AcpTurnActivityState = 'planning' | 'editing' | 'verifying' | 'blocked';
 

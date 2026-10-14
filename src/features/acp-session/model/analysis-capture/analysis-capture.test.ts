@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { serializeAnalysisRecord } from '@/entities/analysis-record';
 import { analysisGraphDigest, analysisGraphFromInsight, buildAnalysisRun, type AnalysisCaptureContext } from './analysis-capture';
-import { architectureResultRows, fullBodyResultRows } from './tool-output-evidence';
-import { TOOL_OUTPUT_KEEP_CHARS, keepToolOutput } from './tool-output';
+import { architectureResultRows, fullBodyResultRows } from '../tool-calls/tool-output-evidence';
+import { TOOL_OUTPUT_KEEP_CHARS, keepToolOutput } from '../tool-calls/tool-output';
 import type { KnowledgeProjectInsight } from '@/entities/knowledge-graph';
-import { VAULT_MCP_SERVER_NAME } from './vault-mcp-server';
-import type { AcpEvent, AcpTurnCompletion } from './use-acp-session';
+import { VAULT_MCP_SERVER_NAME } from '../runtime-wiring/vault-mcp-server';
+import type { AcpEvent, AcpTurnCompletion } from '../use-acp-session';
 
 const slug = 'capabilities/refund';
 const frontmatter = { kind: 'capability', title: 'Refund' };

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { McpServerLaunch } from '@/shared/config';
 
-import { readAcpRust } from '../../../../tests/helpers/read-acp-rust';
+import { readAcpRust } from '../../../../../tests/helpers/read-acp-rust';
 
 import { GATED_SESSION_MODE, isGuardedRuntime, runtimeOwnsWriteGate } from './runtime-gate';
 import { vaultMcpServers } from './vault-mcp-server';

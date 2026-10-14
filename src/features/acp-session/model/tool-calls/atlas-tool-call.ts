@@ -1,6 +1,6 @@
 import { MCP_SERVER_NAME } from '@/shared/config';
 
-import { VAULT_MCP_SERVER_NAME } from './vault-mcp-server';
+import { VAULT_MCP_SERVER_NAME } from '../runtime-wiring/vault-mcp-server';
 
 export interface AtlasToolCall {
   name: string;

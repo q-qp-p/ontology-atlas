@@ -1,4 +1,4 @@
-import { parseAtlasToolCall } from './atlas-tool-call';
+import { parseAtlasToolCall } from '../tool-calls/atlas-tool-call';
 
 /**
  * Translates the Atlas read tool actually called by ACP into map state.

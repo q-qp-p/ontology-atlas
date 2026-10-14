@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AnalysisCaptureContext, AnalysisSaveState } from './analysis-capture';
-import type { AcpTurnStart, AcpTurnCompletion } from './use-acp-session';
+import type { AcpTurnStart, AcpTurnCompletion } from '../use-acp-session';
 
 const append = vi.hoisted(() => vi.fn());
 vi.mock('@/entities/analysis-record', async (original) => ({ ...await original<object>(), appendAnalysisRecord: append }));

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { AcpEvent, PendingPermission } from './use-acp-session';
+import type { AcpEvent, PendingPermission } from '../use-acp-session';
 import { deriveAcpTurnActivity, deriveAcpTurnToolActivity } from './acp-turn-activity';
 
 const known = new Set(['capabilities/reviewed-ontology-writing']);

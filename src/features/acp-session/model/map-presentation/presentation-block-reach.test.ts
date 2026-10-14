@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import ko from '../../../../messages/ko.json';
-import en from '../../../../messages/en.json';
+import ko from '../../../../../messages/ko.json';
+import en from '../../../../../messages/en.json';
 import { buildAcpPresentationTrace } from './presentation-trace';
-import type { AcpEvent } from './use-acp-session';
+import type { AcpEvent } from '../use-acp-session';
 
 /**
  * The blocked card may name only reasons the panel can reach: `intent_inactive` and

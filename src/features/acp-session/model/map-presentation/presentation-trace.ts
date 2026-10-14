@@ -1,6 +1,6 @@
-import { parseAtlasToolCall } from './atlas-tool-call';
+import { parseAtlasToolCall } from '../tool-calls/atlas-tool-call';
 import { linkSlugs } from './link-slugs';
-import type { AcpEvent, AcpSessionStatus } from './use-acp-session';
+import type { AcpEvent, AcpSessionStatus } from '../use-acp-session';
 
 export type AcpPresentationIntent = 'business-flow';
 type AcpPresentationQualification = 'cited' | 'limited';

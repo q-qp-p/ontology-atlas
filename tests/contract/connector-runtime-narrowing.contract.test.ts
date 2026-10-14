@@ -3,10 +3,10 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { connectorAcpServers } from '@/features/acp-session/model/connector-servers';
-import { runtimeCarriesConnectors } from '@/features/acp-session/model/runtime-gate';
+import { connectorAcpServers } from '@/features/acp-session/model/runtime-wiring/connector-servers';
+import { runtimeCarriesConnectors } from '@/features/acp-session/model/runtime-wiring/runtime-gate';
 import type { ConnectorRecord } from '@/shared/lib/connectors/connector-record';
-import { vaultMcpServers } from '@/features/acp-session/model/vault-mcp-server';
+import { vaultMcpServers } from '@/features/acp-session/model/runtime-wiring/vault-mcp-server';
 
 /**
  * A connector rides only a runtime measured to raise `session/request_permission` for an MCP
@@ -61,7 +61,7 @@ describe('connectors reach only a measured runtime', () => {
   it('decides from the table runtime-gate already keeps, not a second list', () => {
     // Two lists drift, and the one that drifts looser is the one a person meets.
     const source = readFileSync(
-      join(process.cwd(), 'src/features/acp-session/model/runtime-gate.ts'),
+      join(process.cwd(), 'src/features/acp-session/model/runtime-wiring/runtime-gate.ts'),
       'utf-8',
     );
     const sets = source.match(/new Set\(\[/g) ?? [];

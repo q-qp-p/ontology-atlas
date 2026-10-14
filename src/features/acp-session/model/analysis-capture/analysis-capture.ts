@@ -15,10 +15,10 @@ import { parseFrontmatter } from '@/shared/lib/vault-document/parse-frontmatter'
 import { getTauriVaultRootPath, inspectTauriProjectSource } from '@/shared/lib/vault-folder/tauri-vault-fs';
 import { resolveNodeAgentTarget, type KnowledgeProjectInsight } from '@/entities/knowledge-graph';
 
-import { parseAtlasToolCall } from './atlas-tool-call';
-import { presentationRelationKey, presentationRelationKeysForGraphEdge } from './presentation-trace';
-import { architectureResultRows, fullBodyResultRows } from './tool-output-evidence';
-import type { AcpTurnCompletion, AcpTurnStart } from './use-acp-session';
+import { parseAtlasToolCall } from '../tool-calls/atlas-tool-call';
+import { presentationRelationKey, presentationRelationKeysForGraphEdge } from '../map-presentation/presentation-trace';
+import { architectureResultRows, fullBodyResultRows } from '../tool-calls/tool-output-evidence';
+import type { AcpTurnCompletion, AcpTurnStart } from '../use-acp-session';
 
 export interface AnalysisGraphSnapshot {
   nodes: ReadonlyArray<{ id: string; title: string; kind: string; uid?: string | null }>;

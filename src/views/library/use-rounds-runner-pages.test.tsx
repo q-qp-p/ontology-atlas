@@ -32,7 +32,7 @@ vi.mock('@/entities/library-round', async (importOriginal) => ({
 vi.mock('@/entities/docs-vault', () => ({ buildLibraryModel: vi.fn(() => ({ sources: [], wikiPages: [], notCompiledCount: 0 })), isWikiPage: () => false }));
 vi.mock('@/features/acp-session', async () => ({
   VAULT_MCP_SERVER_NAME: 'atlas-vault',
-  atlasToolMode: (await import('@/features/acp-session/model/atlas-tool-policy')).atlasToolMode,
+  atlasToolMode: (await import('@/features/acp-session/model/permissions/atlas-tool-policy')).atlasToolMode,
   connectorAcpServers: () => [],
   isGuardedRuntime: () => true,
   runtimeOwnsWriteGate: () => true,

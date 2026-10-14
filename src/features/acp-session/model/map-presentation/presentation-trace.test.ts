@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { AcpEvent } from './use-acp-session';
+import type { AcpEvent } from '../use-acp-session';
 import {
   buildAcpPresentationTrace,
   presentationRelationKey,

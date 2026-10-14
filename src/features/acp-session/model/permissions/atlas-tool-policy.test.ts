@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import surface from '../../../../docs/.generated/mcp-surface.json';
+import surface from '../../../../../docs/.generated/mcp-surface.json';
 import { atlasToolMode } from './atlas-tool-policy';
 
 type SurfaceTool = { name: string; mode: 'read' | 'write' };
