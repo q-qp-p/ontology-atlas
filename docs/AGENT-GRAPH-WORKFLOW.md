@@ -135,10 +135,11 @@ When no coding task is known, start read-only:
 { "tool": "query_ontology", "arguments": { "operation": "health" } }
 ```
 
-Compact responses stay within 12,000 UTF-8 JSON bytes and return an exact
-`detail:"full"` follow-up when the complete manuals or graph packs are needed;
-the complete response is the default. Reviewed Markdown Evidence coordinates are
-checked only in their named current-source files; missing, ambiguous, stale,
+Compact responses keep `structuredContent` plus the handoff text within 12,000
+UTF-8 bytes and return an exact `detail:"full"` follow-up when the complete
+manuals or graph packs are needed; the complete response is the default.
+Reviewed Markdown Evidence coordinates are checked only in their named
+current-source files; missing, ambiguous, stale,
 unsafe or unrecorded coordinates return no exact target, and there is no
 repository symbol scan. `project` is mandatory when the vault has several
 projects. Task text is request-local, is not stored, and does not prove source

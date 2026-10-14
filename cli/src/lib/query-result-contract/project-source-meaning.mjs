@@ -225,11 +225,13 @@ function validMeaningRepairCore(value, projectSlug, contract, tailKeys, validTai
     || value.questionsNeedingReview.some((id) => !['abilities', 'evidence'].includes(id))
     || new Set(value.questionsNeedingReview).size !== value.questionsNeedingReview.length
     || !validTail(value)
-    || !isPlainObject(value.writePolicy)
-    || !hasExactKeys(value.writePolicy, ['humanApprovalRequired', 'automaticWrite', 'automaticFinalize'])
-    || value.writePolicy.humanApprovalRequired !== true
-    || value.writePolicy.automaticWrite !== false
-    || value.writePolicy.automaticFinalize !== false
+    || (tailKeys.includes('writePolicy') && !(
+      isPlainObject(value.writePolicy)
+      && hasExactKeys(value.writePolicy, ['humanApprovalRequired', 'automaticWrite', 'automaticFinalize'])
+      && value.writePolicy.humanApprovalRequired === true
+      && value.writePolicy.automaticWrite === false
+      && value.writePolicy.automaticFinalize === false
+    ))
   ) return false;
   if (value.status === 'blocked') {
     return hasNonEmptyString(value.blockedBy)
@@ -289,11 +291,12 @@ export function validMeaningRepair(value, projectSlug) {
 }
 
 export function validMeaningRepairCompact(value, projectSlug) {
+  const legacy = value?.contract === 'meaningRepairCompact:v1';
   return validMeaningRepairCore(
     value,
     projectSlug,
-    'meaningRepairCompact:v1',
-    ['firstStep', 'omitted', 'writePolicy'],
+    legacy ? 'meaningRepairCompact:v1' : 'meaningRepairCompact:v2',
+    legacy ? ['firstStep', 'omitted', 'writePolicy'] : ['firstStep', 'omitted'],
     (repair) => isPlainObject(repair.omitted)
       && hasExactKeys(repair.omitted, ['steps', 'stopConditions', 'recovery'])
       && Array.isArray(repair.omitted.steps)
