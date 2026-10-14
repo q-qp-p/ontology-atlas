@@ -12,7 +12,7 @@ function node(name: string, kind?: string, slug = `capabilities/${name}`): Vault
 }
 
 describe('diffVaultManifest', () => {
-  it('첫 mount 와 동일 → added/modified 모두 빈 배열', () => {
+  it('matches the first mount: added and modified are both empty', () => {
     const prev = new Map<string, number | null>([
       ['capabilities/foo', 1000],
       ['domains/bar', 2000],
@@ -24,7 +24,7 @@ describe('diffVaultManifest', () => {
     });
   });
 
-  it('prev 에 없는 slug → added', () => {
+  it('marks a slug missing from prev as added', () => {
     const prev = new Map<string, number | null>([['capabilities/foo', 1000]]);
     const current = new Map<string, number | null>([
       ['capabilities/foo', 1000],
@@ -35,7 +35,7 @@ describe('diffVaultManifest', () => {
     expect(result.modified).toEqual([]);
   });
 
-  it('mtime 증가 → modified', () => {
+  it('marks a mtime increase as modified', () => {
     const prev = new Map<string, number | null>([
       ['capabilities/foo', 1000],
     ]);
@@ -47,7 +47,7 @@ describe('diffVaultManifest', () => {
     expect(result.modified).toEqual(['capabilities/foo']);
   });
 
-  it('mtime 감소 / 동일 → modified 아님 (단조 증가만 인지)', () => {
+  it('ignores a mtime decrease or equal mtime; only monotonic increase counts', () => {
     const prev = new Map<string, number | null>([
       ['capabilities/foo', 2000],
       ['capabilities/bar', 1000],
@@ -59,7 +59,7 @@ describe('diffVaultManifest', () => {
     expect(diffVaultManifest(prev, current).modified).toEqual([]);
   });
 
-  it('prev mtime null → modified 비교 skip (static manifest)', () => {
+  it('skips the modified comparison when the prev mtime is null (static manifest)', () => {
     const prev = new Map<string, number | null>([
       ['capabilities/foo', null],
     ]);
@@ -69,7 +69,7 @@ describe('diffVaultManifest', () => {
     expect(diffVaultManifest(prev, current).modified).toEqual([]);
   });
 
-  it('current mtime null → modified 비교 skip', () => {
+  it('skips the modified comparison when the current mtime is null', () => {
     const prev = new Map<string, number | null>([
       ['capabilities/foo', 1000],
     ]);
@@ -79,7 +79,7 @@ describe('diffVaultManifest', () => {
     expect(diffVaultManifest(prev, current).modified).toEqual([]);
   });
 
-  it('added + modified 동시 — 분리해서 반환', () => {
+  it('returns added and modified apart when both occur at once', () => {
     const prev = new Map<string, number | null>([
       ['capabilities/foo', 1000],
       ['capabilities/bar', 2000],
@@ -98,7 +98,7 @@ describe('diffVaultManifest', () => {
     expect(result.modified).toEqual(['capabilities/foo']);
   });
 
-  it('removed slug 는 의도적으로 무시', () => {
+  it('deliberately ignores removed slugs', () => {
     const prev = new Map<string, number | null>([
       ['capabilities/foo', 1000],
       ['capabilities/bar', 2000],
@@ -111,7 +111,7 @@ describe('diffVaultManifest', () => {
     expect(result.modified).toEqual([]);
   });
 
-  it('빈 prev (첫 polling 후 두 번째) → 모든 current 는 already-known, added 0', () => {
+  it('treats every current entry as already known for an empty prev (second poll after the first), so added is 0', () => {
     // Real callers invoke this after the first-mount baseline. An empty prev is a theoretical case,
     // but it specifies that every slug is classified as added — the caller protects the baseline.
     const prev = new Map<string, number | null>();
@@ -125,7 +125,7 @@ describe('diffVaultManifest', () => {
 });
 
 describe('toVaultDiffNode', () => {
-  it('display_<locale> 이 있으면 그 이름을 쓴다 — 폴더 경로도 슬러그도 아니다', () => {
+  it('uses the display_<locale> name when present, not the folder path or the slug', () => {
     const result = toVaultDiffNode(
       {
         slug: 'capabilities/payment-authorization',
@@ -147,7 +147,7 @@ describe('toVaultDiffNode', () => {
     expect(result.name).not.toContain('payment-authorization');
   });
 
-  it('display_<locale> 이 없으면 title — 그래도 슬러그는 안 쓴다', () => {
+  it('falls back to title when display_<locale> is missing, still never the slug', () => {
     expect(
       toVaultDiffNode(
         {
@@ -160,7 +160,7 @@ describe('toVaultDiffNode', () => {
     ).toBe('환불');
   });
 
-  it('최후 수단이라도 폴더 경로는 붙지 않는다 — 슬러그의 마지막 조각만', () => {
+  it('never prefixes the folder path, even as a last resort; only the last slug segment', () => {
     // A hand-written `.md` with neither title nor display_*. A name cannot be invented, but the
     // developer folder name `capabilities/` never reaches the screen under any circumstance.
     const result = toVaultDiffNode({ slug: 'capabilities/orphan' }, 'ko');
@@ -168,7 +168,7 @@ describe('toVaultDiffNode', () => {
     expect(result.name).not.toContain('/');
   });
 
-  it('frontmatter 에 kind 가 없으면 undefined — 지어내지 않는다', () => {
+  it('leaves kind undefined when frontmatter has none, rather than inventing one', () => {
     expect(toVaultDiffNode({ slug: 'notes/memo', title: '메모' }, 'ko').kind).toBeUndefined();
     expect(
       toVaultDiffNode({ slug: 'notes/memo', title: '메모', frontmatter: { kind: '  ' } }, 'ko').kind,
@@ -177,11 +177,11 @@ describe('toVaultDiffNode', () => {
 });
 
 describe('planVaultDiffToasts', () => {
-  it('변화가 없으면 toast 계획도 비어 있다', () => {
+  it('keeps the toast plan empty when nothing changed', () => {
     expect(planVaultDiffToasts({ added: [], modified: [] })).toEqual([]);
   });
 
-  it('added 와 modified 를 노드 + variant 구조로 변환한다', () => {
+  it('converts added and modified into a node plus variant structure', () => {
     const added = node('new', 'capability');
     const modified = node('existing', 'domain', 'domains/existing');
     expect(planVaultDiffToasts({ added: [added], modified: [modified] })).toEqual([
@@ -190,7 +190,7 @@ describe('planVaultDiffToasts', () => {
     ]);
   });
 
-  it('preview 를 넘으면 한 장으로 접고, 합계가 아니라 세 갈래로 센다', () => {
+  it('folds into one card past the preview and counts three branches, not a total', () => {
     expect(
       planVaultDiffToasts(
         {
@@ -216,7 +216,7 @@ describe('planVaultDiffToasts', () => {
    * "3 capabilities · 12 elements added" beats "15 added" — a digest that states only a count leaves
    * the user looking at a number without knowing what grew.
    */
-  it('다이제스트는 종류별로 센다 — 많은 순, 동수면 이름 순', () => {
+  it('counts the digest by kind, most first and by name on a tie', () => {
     const [digest] = planVaultDiffToasts(
       {
         added: [
@@ -241,7 +241,7 @@ describe('planVaultDiffToasts', () => {
     });
   });
 
-  it('kind 를 못 얻은 몫은 지어내지 않고 마지막 한 행으로 모은다', () => {
+  it('gathers the share with no kind into one last row instead of inventing a kind', () => {
     const [digest] = planVaultDiffToasts(
       {
         added: [node('a', 'capability'), node('b'), node('c'), node('d', 'capability')],
@@ -255,7 +255,7 @@ describe('planVaultDiffToasts', () => {
     });
   });
 
-  it('삭제가 섞이면 개수가 작아도 다이제스트로 간다 — 지워진 문서는 이름을 읽을 곳이 없다', () => {
+  it('goes to the digest when deletions mix in even with a small count, since a removed document has no name to read', () => {
     expect(
       planVaultDiffToasts({ added: [node('a', 'capability')], modified: [], removed: 1 }, 3),
     ).toEqual([
@@ -271,7 +271,7 @@ describe('planVaultDiffToasts', () => {
     ]);
   });
 
-  it('삭제만 있어도 보고한다 — 종전엔 이 버스트가 통째로 침묵했다', () => {
+  it('reports a deletion-only burst too, which used to stay silent entirely', () => {
     expect(planVaultDiffToasts({ added: [], modified: [], removed: 3 })).toEqual([
       {
         kind: 'digest',
@@ -285,7 +285,7 @@ describe('planVaultDiffToasts', () => {
     ]);
   });
 
-  it('preview limit 0 이면 한 건이라도 다이제스트로 접는다', () => {
+  it('folds even a single entry into the digest when the preview limit is 0', () => {
     const plan = planVaultDiffToasts(
       { added: [node('a', 'capability')], modified: [node('b', 'domain')] },
       0,

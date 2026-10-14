@@ -355,8 +355,8 @@ describe('pre-prompt task baseline', () => {
   });
 });
 
-describe('세션 하나 — 겹쳐 불러도 프로세스는 하나', () => {
-  it('띄우는 중에 또 부르면 두 번째는 아무것도 안 한다', async () => {
+describe('one session: overlapping calls still make one process', () => {
+  it('does nothing on the second call made while starting', async () => {
     const { result } = renderHook(() =>
       useAcpSession({ runtimeId: 'claude-acp', vaultRoot: '/vault' }),
     );
@@ -372,7 +372,7 @@ describe('세션 하나 — 겹쳐 불러도 프로세스는 하나', () => {
 
     expect(
       bridge.starts,
-      '띄우는 중에 또 띄우면 어댑터가 둘이 되고, 세션 번호와 줄이 어긋난다',
+      'a second start during startup makes two adapters and the session number and lines drift apart',
     ).toBe(1);
 
     /*
@@ -386,7 +386,7 @@ describe('세션 하나 — 겹쳐 불러도 프로세스는 하나', () => {
     });
   });
 
-  it('띄우는 도중에 닫으면 그 프로세스를 스스로 끈다 — 유령을 안 남긴다', async () => {
+  it('kills the process itself when closed mid-startup, leaving no ghost', async () => {
     /*
      * A test caught this one first too. `stop()` cleans up something that does not exist yet and
      * returns, after which `start()` runs on and **creates the process and client anyway** — the
@@ -405,10 +405,10 @@ describe('세션 하나 — 겹쳐 불러도 프로세스는 하나', () => {
       await first;
     });
 
-    expect(bridge.stopped, '띄우던 것을 안 끄면 닫은 뒤에도 어댑터가 돈다').toContain('acp-1');
+    expect(bridge.stopped, 'not stopping what was starting leaves the adapter running after close').toContain('acp-1');
   });
 
-  it('띄우기가 실패하면 잠금이 풀린다 — 다시는 못 띄우는 상태로 남지 않는다', async () => {
+  it('releases the lock when starting fails, so it is not left unable to start again', async () => {
     const { result } = renderHook(() =>
       useAcpSession({ runtimeId: 'claude-acp', vaultRoot: '/vault' }),
     );
@@ -427,7 +427,7 @@ describe('세션 하나 — 겹쳐 불러도 프로세스는 하나', () => {
     // After cleanup it must be startable again.
     const second = result.current.start();
     await waitFor(() =>
-      expect(bridge.starts, '정리 뒤에 다시 못 띄우면 대화를 새로 열 수 없다').toBe(2),
+      expect(bridge.starts, 'failing to start again after cleanup means a conversation cannot be reopened').toBe(2),
     );
     await act(async () => {
       bridge.release?.();
@@ -436,7 +436,7 @@ describe('세션 하나 — 겹쳐 불러도 프로세스는 하나', () => {
     });
   });
 
-  it('이전 세션의 늦은 종료 이벤트가 새 세션을 끝내지 않는다', async () => {
+  it('does not let a late exit event of the previous session end the new session', async () => {
     const { result } = renderHook(() =>
       useAcpSession({ runtimeId: 'claude-acp', vaultRoot: '/vault' }),
     );
@@ -458,7 +458,7 @@ describe('세션 하나 — 겹쳐 불러도 프로세스는 하나', () => {
     expect(result.current.status).toBe('ready');
 
     act(() => oldExit?.());
-    expect(result.current.status, '끝난 이전 세션이 새 세션을 exited로 바꿨다').toBe('ready');
+    expect(result.current.status, 'a finished previous session turned the new session into exited').toBe('ready');
 
     await act(async () => {
       await result.current.send('새 세션은 살아 있어야 해');
@@ -471,8 +471,8 @@ describe('세션 하나 — 겹쳐 불러도 프로세스는 하나', () => {
   });
 });
 
-describe('진단 — 모아 두되 평소에는 안 보여 준다', () => {
-  it('진짜 단서는 모으고, npm 경고 같은 소음은 안 모은다', async () => {
+describe('diagnostics: collected, but not shown normally', () => {
+  it('collects real clues and not noise like npm warnings', async () => {
     const { result } = renderHook(() =>
       useAcpSession({ runtimeId: 'claude-acp', vaultRoot: '/vault' }),
     );
@@ -500,8 +500,8 @@ describe('진단 — 모아 두되 평소에는 안 보여 준다', () => {
   });
 });
 
-describe('볼트 서버 — 꽂았을 때만 꽂혔다고 말한다', () => {
-  it('서버를 넘기면 session/new 가 그것을 싣고, 지시문도 그렇게 말한다', async () => {
+describe('vault server: says it is plugged in only when it is', () => {
+  it('has session/new carry the server and the instructions say so too', async () => {
     const { result } = renderHook(() =>
       useAcpSession({
         runtimeId: 'claude-acp',
@@ -517,7 +517,7 @@ describe('볼트 서버 — 꽂았을 때만 꽂혔다고 말한다', () => {
     });
 
     const call = bridge.sent.find((m) => m.method === 'session/new');
-    expect(call, 'session/new 자체가 안 나갔다').toBeTruthy();
+    expect(call, 'session/new was never sent').toBeTruthy();
     const params = call?.params as Record<string, unknown>;
     expect(params.mcpServers).toEqual([
       { name: 'atlas-vault', command: '/app/ontology-atlas-mcp', args: [] },
@@ -547,7 +547,7 @@ describe('볼트 서버 — 꽂았을 때만 꽂혔다고 말한다', () => {
     });
   });
 
-  it('서버가 없으면 **연결됐다고 말하지 않는다** — 없는 도구를 찾게 두지 않는다', async () => {
+  it('**does not claim it is connected** without a server, so nobody hunts for a missing tool', async () => {
     const { result } = renderHook(() =>
       useAcpSession({ runtimeId: 'claude-acp', vaultRoot: '/vault' }),
     );
@@ -573,7 +573,7 @@ describe('볼트 서버 — 꽂았을 때만 꽂혔다고 말한다', () => {
     });
   });
 
-  it('외부 연결 도구만 실려도 볼트 서버가 있다고 말하지 않는다', async () => {
+  it('does not claim a vault server exists when only externally connected tools are carried', async () => {
     /*
      * `hasVaultMcp` must mean our vault server is present, not that the array is non-empty;
      * external connectors alone must not make the session claim it or auto-allow `atlas-vault`.
@@ -618,7 +618,7 @@ describe('볼트 서버 — 꽂았을 때만 꽂혔다고 말한다', () => {
     });
   });
 
-  it('볼트 항목과 외부 연결 도구가 함께 실리면 볼트는 여전히 볼트다', async () => {
+  it('stays the vault when vault entries and externally connected tools are carried together', async () => {
     const { result } = renderHook(() =>
       useAcpSession({
         runtimeId: 'claude-acp',
@@ -652,8 +652,8 @@ describe('볼트 서버 — 꽂았을 때만 꽂혔다고 말한다', () => {
   });
 });
 
-describe('Codex 권한 바닥 — 대화가 준비되기 전에 read-only를 건다', () => {
-  it('새 세션마다 read-only 모드를 적용하고 실패하면 ready가 되지 않는다', async () => {
+describe('Codex permission floor: applies read-only before the conversation is ready', () => {
+  it('applies read-only mode on every new session and does not become ready on failure', async () => {
     const { result } = renderHook(() =>
       useAcpSession({ runtimeId: 'codex-acp', vaultRoot: '/vault' }),
     );
@@ -676,8 +676,8 @@ describe('Codex 권한 바닥 — 대화가 준비되기 전에 read-only를 건
   });
 });
 
-describe('이어받은 대화 — 규칙이 달라지지 않는다', () => {
-  it('session/load 에도 새 대화와 같은 지시가 실린다', async () => {
+describe('resumed conversation: the rules do not change', () => {
+  it('carries the same instructions on session/load as on a new conversation', async () => {
     /* A resumed conversation must get the same instructions as a new one. */
     const { result } = renderHook(() =>
       useAcpSession({
@@ -709,7 +709,7 @@ describe('이어받은 대화 — 규칙이 달라지지 않는다', () => {
     const meta = (load?.params as Record<string, unknown>)?._meta as
       | { systemPrompt?: { append?: string } }
       | undefined;
-    expect(meta?.systemPrompt?.append, '이어받은 대화에 지시가 안 실렸다').toContain('`why`');
+    expect(meta?.systemPrompt?.append, 'the resumed conversation did not carry the instructions').toContain('`why`');
 
     await act(async () => {
       await result.current.stop();
@@ -717,7 +717,7 @@ describe('이어받은 대화 — 규칙이 달라지지 않는다', () => {
   });
 });
 
-describe('세션 지시문 — 실측으로 얻은 네 줄이 실제로 실린다', () => {
+describe('session instructions: the four measured lines are actually carried', () => {
   /** Pins that the four instructions go out with the session, not their wording. */
   it("carries the screen's own paragraph after the handoff, and the handoff still goes out whole", async () => {
     const { result } = renderHook(() =>
@@ -741,7 +741,7 @@ describe('세션 지시문 — 실측으로 얻은 네 줄이 실제로 실린�
     expect(prompt.endsWith('PROBE-APPENDIX: cite as [[src:sources/<file>#l<line>]].')).toBe(true);
   });
 
-  it('순서 · 중복 확인 · 애매하면 묻기 · 손으로 읽지 않기 가 전부 실린다', async () => {
+  it('carries all of order, duplicate check, ask when ambiguous, and no hand reading', async () => {
     const { result } = renderHook(() =>
       useAcpSession({
         runtimeId: 'claude-acp',
@@ -763,27 +763,27 @@ describe('세션 지시문 — 실측으로 얻은 네 줄이 실제로 실린�
     const prompt = meta?.systemPrompt?.append ?? '';
 
     // ① do not bypass the tools
-    expect(prompt, '손으로 훑지 말라는 지시가 없다').toMatch(/Do not shell out/);
+    expect(prompt, 'the instruction not to scan by hand is missing').toMatch(/Do not shell out/);
     // ② the order
-    expect(prompt, '작업 순서가 없다').toMatch(/Work in this order/);
+    expect(prompt, 'the work order is missing').toMatch(/Work in this order/);
     // ③ look before creating
-    expect(prompt, '중복을 먼저 찾으라는 지시가 없다').toMatch(/similar_nodes|find_evidence/);
+    expect(prompt, 'the instruction to look for duplicates first is missing').toMatch(/similar_nodes|find_evidence/);
     // Map navigation must lead to an exact read tool call, not inferred answer sentences.
-    expect(prompt, '지도 검색과 경로 요청이 exact read tool로 이어지지 않는다').toMatch(
+    expect(prompt, 'map search and path requests do not lead to the exact read tool').toMatch(
       /get_concept.*find_path.*move and highlight the map/i,
     );
     // ④ If ambiguous, ask — the line changed most in actual measurement
-    expect(prompt, '애매할 때 묻지 않고 만들게 된다').toMatch(/Ask first/);
+    expect(prompt, 'it would create instead of asking when ambiguous').toMatch(/Ask first/);
     /*
      * The answer language is named outright from the interface language, since a turn started by
      * a button has only this app's English text. What the person types still wins.
      */
-    expect(prompt, '한국어 화면인데 답할 언어를 정해 주지 않는다').toMatch(/Answer in Korean/);
-    expect(prompt, '사람이 쓴 언어가 화면 언어를 못 이긴다').toMatch(/write to you in another language, follow theirs/);
-    expect(prompt, '버튼으로 시작한 턴이라는 사정이 빠졌다').toMatch(/arrived from a button/);
+    expect(prompt, 'a Korean screen does not set the language to answer in').toMatch(/Answer in Korean/);
+    expect(prompt, 'a language the person wrote in does not beat the screen language').toMatch(/write to you in another language, follow theirs/);
+    expect(prompt, 'the fact that the turn started from a button is missing').toMatch(/arrived from a button/);
     // Compiler declarations and map lines are different censuses; merging them makes two counts
     // look contradictory.
-    expect(prompt, 'MCP 선언 수와 지도 선 수를 같은 관계 수로 말하게 된다').toMatch(
+    expect(prompt, 'the MCP declared count and the map line count would be called the same relation count').toMatch(
       /relationCensus.*graph\.edges.*compiled frontmatter relation declarations.*deduplicated normalized typed edges.*not the current view filter/i,
     );
 
@@ -793,8 +793,8 @@ describe('세션 지시문 — 실측으로 얻은 네 줄이 실제로 실린�
   });
 });
 
-describe('관문을 못 세웠으면 화면이 말한다', () => {
-  it('`gate-off:` 로 온 알림은 접어 두지 않고 대화에 남는다', async () => {
+describe('when the gate could not be set up, the screen says so', () => {
+  it('keeps a notice that came as `gate-off:` in the conversation instead of folding it', async () => {
     /*
      * A failure building the isolated config falls back to the user's global config, which skips
      * permission requests, so the screen must say the gate is off.
@@ -818,7 +818,7 @@ describe('관문을 못 세웠으면 화면이 말한다', () => {
     await waitFor(() =>
       expect(
         result.current.events.some((e) => e.kind === 'notice' && e.text === 'gate-off'),
-        '관문이 없다는 사실이 화면에 안 나온다',
+        'the fact that there is no gate does not show on the screen',
       ).toBe(true),
     );
     // The remaining diagnostics stay folded — mixed into the conversation they are noise.
@@ -855,8 +855,8 @@ describe('a tool call reaching its end', () => {
   });
 });
 
-describe('도구 입력 refinement — 실제 Claude ACP 순서', () => {
-  it('status 없는 tool_call_update가 뒤늦게 보낸 rawInput을 기존 도구 행에 합친다', async () => {
+describe('tool input refinement: the real Claude ACP order', () => {
+  it('merges a rawInput sent late by a tool_call_update without status into the existing tool row', async () => {
     const { result } = renderHook(() =>
       useAcpSession({ runtimeId: 'claude-acp', vaultRoot: '/vault' }),
     );
@@ -917,8 +917,8 @@ describe('도구 입력 refinement — 실제 Claude ACP 순서', () => {
   });
 });
 
-describe('권한 카드 — 겹친 요청도 하나씩, 둘 다 답을 받는다', () => {
-  it.each(['completed', 'failed'] as const)('구조화된 현재-turn writer chain의 %s terminal receipt를 같은 명시 identity로 남긴다', async (terminal) => {
+describe('permission card: overlapping requests also go one at a time, and both get an answer', () => {
+  it.each(['completed', 'failed'] as const)('leaves the terminal receipt %s of a structured current-turn writer chain with the same explicit identity', async (terminal) => {
     bridge.holdPrompt = true;
     const receipts: AcpWorkReceipt[] = [];
     const { result } = renderHook(() => useAcpSession({ runtimeId: 'codex-acp', vaultRoot: '/vault', mcpServers: [{ name: 'atlas-vault' }], onWorkReceipt: (receipt) => receipts.push(receipt) }));
@@ -960,7 +960,7 @@ describe('권한 카드 — 겹친 요청도 하나씩, 둘 다 답을 받는다
     await act(async () => { await result.current.stop(); });
   });
 
-  it('온톨로지 요청에 실제 turn, generation, JSON-RPC id와 구조화되지 않은 non-goal 상태를 묶는다', async () => {
+  it('binds the real turn, generation, JSON-RPC id and an unstructured non-goal state to an ontology request', async () => {
     bridge.holdPrompt = true;
     const receipts: AcpWorkReceipt[] = [];
     const { result } = renderHook(() => useAcpSession({ runtimeId: 'claude-acp', vaultRoot: '/vault', mcpServers: [{ name: 'atlas-vault' }], onWorkReceipt: (receipt) => receipts.push(receipt) }));
@@ -1007,7 +1007,7 @@ describe('권한 카드 — 겹친 요청도 하나씩, 둘 다 답을 받는다
     await act(async () => { await result.current.stop(); });
   });
 
-  it('두 번째 요청이 첫 카드를 덮어쓰지 않고, 두 JSON-RPC id 모두 답장이 나간다', async () => {
+  it('does not let the second request overwrite the first card, and both JSON-RPC ids get a reply', async () => {
     /*
      * With a single resolver slot a second concurrent `session/request_permission` replaced the
      * first card's resolver and left its id unanswered.

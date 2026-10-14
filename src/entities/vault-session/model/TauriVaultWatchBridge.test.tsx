@@ -54,7 +54,7 @@ afterEach(() => {
 });
 
 describe('TauriVaultWatchBridge', () => {
-  it('웹(비-Tauri) 런타임에서는 no-op — 파일워처를 켜지 않는다 (5초 폴링 fallback 이 커버)', () => {
+  it('is a no-op on the web (non-Tauri) runtime and leaves the file watcher off; the 5-second polling fallback covers it', () => {
     localVaultMocks.useLocalVault.mockReturnValue({
       status: 'loaded',
       handle: fakeHandle(),
@@ -68,7 +68,7 @@ describe('TauriVaultWatchBridge', () => {
     expect(tauriMocks.listen).not.toHaveBeenCalled();
   });
 
-  it('Tauri 런타임 + loaded 상태면 파일워처를 켜고 vault-changed 이벤트를 구독한다', async () => {
+  it('starts the file watcher and subscribes to vault-changed events on the Tauri runtime when loaded', async () => {
     tauriFsMocks.isTauriVaultRuntime.mockReturnValue(true);
     tauriFsMocks.getTauriVaultRootPath.mockReturnValue('/Users/me/vault');
     tauriMocks.invoke.mockResolvedValue(undefined);
@@ -154,7 +154,7 @@ describe('TauriVaultWatchBridge', () => {
     expect(firstSync).not.toHaveBeenCalled();
   });
 
-  it('invoke 가 실패해도(권한 거부 등) throw 하지 않는다 — 폴링 fallback 이 계속 커버해야 한다', async () => {
+  it('does not throw when invoke fails (permission denied and the like); the polling fallback must keep covering', async () => {
     tauriFsMocks.isTauriVaultRuntime.mockReturnValue(true);
     tauriFsMocks.getTauriVaultRootPath.mockReturnValue('/Users/me/vault');
     tauriMocks.invoke.mockRejectedValue(new Error('permission denied'));

@@ -6,20 +6,20 @@ import {
   isMissingFolderError,
 } from './classify-vault-access-error';
 
-describe('금고 접근 실패 분류 — OS 가 막은 것과 폴더가 깨진 것은 다른 말이 필요하다', () => {
-  it('macOS 보호 폴더 거부를 알아본다', () => {
+describe('vault access failure classification: what the OS blocked and a broken folder need different wording', () => {
+  it('recognizes a macOS protected-folder denial', () => {
     // What `std::io::Error::to_string()` produces for a TCC refusal.
     expect(classifyVaultAccessError('Operation not permitted (os error 1)')).toBe(
       'permission-denied',
     );
   });
 
-  it('평범한 권한 거부도 같은 처방을 받는다', () => {
+  it('gives a plain permission denial the same remedy', () => {
     // EACCES reaches the person the same way and the remedy has the same shape.
     expect(classifyVaultAccessError('Permission denied (os error 13)')).toBe('permission-denied');
   });
 
-  it('대소문자와 Error 객체를 가리지 않는다', () => {
+  it('ignores letter case and whether it is an Error object', () => {
     expect(classifyVaultAccessError('OPERATION NOT PERMITTED')).toBe('permission-denied');
     expect(classifyVaultAccessError(new Error('Permission denied (os error 13)'))).toBe(
       'permission-denied',
@@ -31,7 +31,7 @@ describe('금고 접근 실패 분류 — OS 가 막은 것과 폴더가 깨진 
    * Settings to fix a folder that is simply gone — a wrong instruction is worse than a vague one,
    * because they will follow it and find nothing.
    */
-  it('다른 실패를 권한 문제로 몰지 않는다', () => {
+  it('does not blame other failures on permissions', () => {
     for (const other of [
       'No such file or directory (os error 2)',
       'Is a directory (os error 21)',
@@ -40,19 +40,19 @@ describe('금고 접근 실패 분류 — OS 가 막은 것과 폴더가 깨진 
       null,
       undefined,
     ]) {
-      expect(classifyVaultAccessError(other), `「${String(other)}」를 권한 문제로 몰았다`).toBe(
+      expect(classifyVaultAccessError(other), `"${String(other)}" was blamed on permissions`).toBe(
         'unknown',
       );
     }
   });
 
-  it('사람이 알아보는 이름으로 폴더를 부른다', () => {
+  it('names the folder with a name a person recognizes', () => {
     // The sentence should point at something recognisable, not at a path read character by character.
     expect(deniedFolderName('/Users/dana/Downloads/my-vault')).toBe('my-vault');
     expect(deniedFolderName('/Users/dana/Downloads/my-vault/')).toBe('my-vault');
   });
 
-  it('폴더가 사라진 실패를 두 런타임의 말 모두에서 알아본다', () => {
+  it('recognizes a vanished folder in the wording of both runtimes', () => {
     const notFound = new Error(
       'A requested file or directory could not be found at the time an operation was processed.',
     );
@@ -62,7 +62,7 @@ describe('금고 접근 실패 분류 — OS 가 막은 것과 폴더가 깨진 
     expect(isMissingFolderError(new Error('NotFoundError: the entry was removed'))).toBe(true);
   });
 
-  it('사라진 것이 아닌 실패를 사라졌다고 말하지 않는다', () => {
+  it('does not call a failure that is not a vanished folder a vanished one', () => {
     for (const other of [
       'Operation not permitted (os error 1)',
       'Permission denied (os error 13)',
@@ -71,11 +71,11 @@ describe('금고 접근 실패 분류 — OS 가 막은 것과 폴더가 깨진 
       null,
       undefined,
     ]) {
-      expect(isMissingFolderError(other), `「${String(other)}」를 사라진 폴더로 몰았다`).toBe(false);
+      expect(isMissingFolderError(other), `"${String(other)}" was blamed on a vanished folder`).toBe(false);
     }
   });
 
-  it('부를 이름이 없으면 지어내지 않는다', () => {
+  it('invents no name when there is nothing to call it', () => {
     // Copy that says "allow access to " is worse than copy that never promised a name.
     for (const nothing of [null, undefined, '', '   ', '/']) {
       expect(deniedFolderName(nothing)).toBeNull();

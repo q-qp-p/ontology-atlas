@@ -66,7 +66,7 @@ function heartbeat(overrides: Partial<AgentActivityStatus> = {}): AgentActivityS
 }
 
 describe('deriveAgentWorkProjection', () => {
-  it('fresh heartbeat 는 실제 live 단계·목표·대상을 이긴다', () => {
+  it('lets a fresh heartbeat win over the actual live step, goal and target', () => {
     expect(deriveAgentWorkProjection(heartbeat(), [session()], NOW)).toMatchObject({
       mode: 'live',
       agentName: 'Codex',
@@ -77,7 +77,7 @@ describe('deriveAgentWorkProjection', () => {
     });
   });
 
-  it('인앱 ACP 이벤트는 다음 sidecar 폴링을 기다리지 않고 현재 상태를 이긴다', () => {
+  it('lets an in-app ACP event win over the current state without waiting for the next sidecar poll', () => {
     expect(
       deriveAgentWorkProjection(heartbeat(), [session()], NOW, {
         rawAgentName: 'codex-acp',
@@ -98,7 +98,7 @@ describe('deriveAgentWorkProjection', () => {
     });
   });
 
-  it('heartbeat 없이 최근 쓰기만 있으면 작업 중이라고 단정하지 않는다', () => {
+  it('does not assert work in progress when there is only a recent write and no heartbeat', () => {
     expect(deriveAgentWorkProjection(null, [session()], NOW)).toMatchObject({
       mode: 'recent-write',
       agentName: 'Codex',
@@ -107,7 +107,7 @@ describe('deriveAgentWorkProjection', () => {
     });
   });
 
-  it('조용해진 작업은 completed 로 남긴다', () => {
+  it('leaves work that went quiet as completed', () => {
     expect(deriveAgentWorkProjection(null, [session({ done: true })], NOW)).toMatchObject({
       mode: 'completed',
       agentName: 'Codex',

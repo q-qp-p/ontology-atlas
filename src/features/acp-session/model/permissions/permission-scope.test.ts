@@ -12,8 +12,8 @@ const withTargets = (targets: unknown[]) => [
   },
 ];
 
-describe('계속 허용의 범위 — 어댑터가 말한 것만 말한다', () => {
-  it('도구 단위 허용이면 그 도구 이름을 준다 (실측 모양)', () => {
+describe('scope of always-allow: says only what the adapter said', () => {
+  it('gives the tool name for a tool-level allow (measured shape)', () => {
     const scope = permissionScope(
       withTargets([{ type: 'tool', toolName: 'mcp__atlas-vault__add_concept' }]),
     );
@@ -21,7 +21,7 @@ describe('계속 허용의 범위 — 어댑터가 말한 것만 말한다', () 
     expect(scope.names).toEqual(['mcp__atlas-vault__add_concept']);
   });
 
-  it('폴더 단위 허용이면 그 폴더를 준다', () => {
+  it('gives the folder for a folder-level allow', () => {
     const scope = permissionScope(
       withTargets([{ type: 'directory', path: '/Users/me/work' }]),
     );
@@ -29,7 +29,7 @@ describe('계속 허용의 범위 — 어댑터가 말한 것만 말한다', () 
     expect(scope.names).toEqual(['/Users/me/work']);
   });
 
-  it('여러 개면 전부 준다 — 하나만 보여 주면 나머지는 몰래 허용된다', () => {
+  it('gives all of them when there are several, since showing one would let the rest be allowed in secret', () => {
     const scope = permissionScope(
       withTargets([
         { type: 'tool', toolName: 'a' },
@@ -39,7 +39,7 @@ describe('계속 허용의 범위 — 어댑터가 말한 것만 말한다', () 
     expect(scope.names).toEqual(['a', 'b']);
   });
 
-  it('종류가 섞이면 **모른다고 한다** — 한 문장으로 정직하게 못 적는다', () => {
+  it('**says it does not know** when kinds are mixed, since one sentence cannot honestly state it', () => {
     const scope = permissionScope(
       withTargets([
         { type: 'tool', toolName: 'a' },
@@ -49,7 +49,7 @@ describe('계속 허용의 범위 — 어댑터가 말한 것만 말한다', () 
     expect(scope.kind).toBe('unknown');
   });
 
-  it('어댑터가 아무것도 안 주면 아무것도 단정하지 않는다', () => {
+  it('asserts nothing when the adapter gives nothing', () => {
     expect(permissionScope(withTargets([])).kind).toBe('unknown');
     expect(
       permissionScope([{ optionId: 'always', kind: 'allow_always' }]).kind,
@@ -57,12 +57,12 @@ describe('계속 허용의 범위 — 어댑터가 말한 것만 말한다', () 
     expect(permissionScope([]).kind).toBe('unknown');
   });
 
-  it('모르는 종류는 조용히 삼키지 않는다 — 모른다고 한다', () => {
+  it('does not swallow an unknown kind quietly; it says it does not know', () => {
     const scope = permissionScope(withTargets([{ type: 'something-new', id: 'x' }]));
     expect(scope.kind).toBe('unknown');
   });
 
-  it('아는 것 **옆에** 모르는 것이 있어도 모른다고 한다', () => {
+  it('says it does not know even when an unknown sits **next to** a known one', () => {
     // Without this case, deleting the "never swallow silently" rule would go unnoticed (with only
     // unknowns present the result is empty either way — verified with a probe). Swallowing lets
     // something alongside be allowed while the card says "only this tool".
@@ -75,7 +75,7 @@ describe('계속 허용의 범위 — 어댑터가 말한 것만 말한다', () 
     expect(scope.kind).toBe('unknown');
   });
 
-  it('「계속 허용」이 아닌 선택지의 `_meta` 는 안 본다', () => {
+  it('does not look at the `_meta` of an option that is not "always allow"', () => {
     const scope = permissionScope([
       {
         optionId: 'allow',
@@ -86,7 +86,7 @@ describe('계속 허용의 범위 — 어댑터가 말한 것만 말한다', () 
     expect(scope.kind).toBe('unknown');
   });
 
-  it('모양이 깨져도 죽지 않는다 — 권한 카드가 안 뜨면 대화가 멈춘다', () => {
+  it('does not die when the shape is broken, since a missing permission card stalls the conversation', () => {
     expect(permissionScope(null as never).kind).toBe('unknown');
     expect(permissionScope([null, 'x', 7] as never).kind).toBe('unknown');
   });

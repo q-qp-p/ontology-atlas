@@ -97,7 +97,7 @@ afterEach(() => {
 });
 
 describe('VaultDiffToaster', () => {
-  it('첫 로드는 baseline 만 저장하고 토스트를 띄우지 않는다 (false-positive 방지)', () => {
+  it('saves only a baseline on the first load and raises no toast (false-positive guard)', () => {
     localVaultMocks.useLocalVault.mockReturnValue({
       status: 'loaded',
       manifest: manifestWith([{ slug: 'a', mtime: 1000 }]),
@@ -109,7 +109,7 @@ describe('VaultDiffToaster', () => {
     expect(toastMocks.show).not.toHaveBeenCalled();
   });
 
-  it('두 번째 load 에 새 slug 가 등장하면 added 토스트를 띄운다', () => {
+  it('raises an added toast when a new slug appears on the second load', () => {
     localVaultMocks.useLocalVault.mockReturnValue({
       status: 'loaded',
       manifest: manifestWith([{ slug: 'a', mtime: 1000 }]),
@@ -131,7 +131,7 @@ describe('VaultDiffToaster', () => {
     expect(toastMocks.show).toHaveBeenCalledWith('추가 — b', 'info');
   });
 
-  it('mtime 만 증가한 기존 slug 는 modified(success) 토스트를 띄운다', () => {
+  it('raises a modified (success) toast for an existing slug whose mtime alone increased', () => {
     localVaultMocks.useLocalVault.mockReturnValue({
       status: 'loaded',
       manifest: manifestWith([{ slug: 'a', mtime: 1000 }]),
@@ -149,7 +149,7 @@ describe('VaultDiffToaster', () => {
     expect(toastMocks.show).toHaveBeenCalledWith('편집 — a', 'success');
   });
 
-  it('status 가 loaded 가 아니면(loading/permission-needed 등) diff 판정을 하지 않는다', () => {
+  it('makes no diff judgement unless status is loaded (loading, permission-needed, and so on)', () => {
     localVaultMocks.useLocalVault.mockReturnValue({
       status: 'loading',
       manifest: manifestWith([{ slug: 'a', mtime: 1000 }]),
@@ -165,14 +165,14 @@ describe('VaultDiffToaster', () => {
     expect(toastMocks.show).not.toHaveBeenCalled();
   });
 
-  it('manifest 가 null 이면 안전하게 아무 것도 하지 않는다', () => {
+  it('does nothing safely when the manifest is null', () => {
     localVaultMocks.useLocalVault.mockReturnValue({ status: 'loaded', manifest: null, consumeSelfWrittenSlugs: () => new Set() });
 
     expect(() => render(<VaultDiffToaster />)).not.toThrow();
     expect(toastMocks.show).not.toHaveBeenCalled();
   });
 
-  it('앱 자신이 쓴 slug 는 diff 토스트에서 제외된다 (부트스트랩 4연발 마찰)', () => {
+  it('excludes slugs the app wrote itself from diff toasts (the four-toast bootstrap friction)', () => {
     localVaultMocks.useLocalVault.mockReturnValue({
       status: 'loaded',
       manifest: manifestWith([{ slug: 'a', mtime: 1000 }]),
@@ -198,7 +198,7 @@ describe('VaultDiffToaster', () => {
     expect(toastMocks.show).toHaveBeenCalledWith('추가 — d', 'info');
   });
 
-  it('자체 기록은 한 번만 소비하고, 같은 slug의 뒤 외부 편집과 다른 추가는 남긴다', () => {
+  it('consumes a self-write record once and keeps a later external edit of the same slug and other additions', () => {
     let suppressOwn = false;
     const consumeSelfWrittenSlugs = () => {
       const consumed = suppressOwn ? new Set(['wiki/answer']) : new Set<string>();
@@ -266,7 +266,7 @@ describe('VaultDiffToaster', () => {
     expect(toastMocks.show).toHaveBeenCalledWith('역량 편집 — 에이전트 환경 진단', 'success');
   });
 
-  it('자체 쓰기 예약은 빈 diff에서 살아남고, 해당 파일 도착 때만 한 번 소비된다', () => {
+  it('keeps a self-write reservation through an empty diff and consumes it once, only when that file arrives', () => {
     const pending = new Set(['wiki/native-create']);
     const consumeSelfWrittenSlugs = (observed: ReadonlySet<string>) => {
       const consumed = new Set<string>();
@@ -321,7 +321,7 @@ describe('VaultDiffToaster', () => {
     expect(toastMocks.show).toHaveBeenLastCalledWith('편집 — native-create', 'success');
   });
 
-  describe('문구 계약 — 슬러그가 아니라 종류 + 사람 이름', () => {
+  describe('contract for the wording: kind plus a human name, not the slug', () => {
     function burst(second: TestDoc[], first: TestDoc[] = [{ slug: 'seed', mtime: 1 }]) {
       localVaultMocks.useLocalVault.mockReturnValue({
         status: 'loaded',
@@ -348,7 +348,7 @@ describe('VaultDiffToaster', () => {
       },
     };
 
-    it('종류를 평문으로, 이름은 display_<locale> 로 — 폴더 경로도 슬러그도 안 나간다', () => {
+    it('names the kind in plain words and the name by display_<locale>, so neither folder path nor slug appears', () => {
       burst([paymentAuthorization]);
 
       expect(lastMessage()).toBe('역량 추가 — 결제 승인');
@@ -357,7 +357,7 @@ describe('VaultDiffToaster', () => {
       expect(lastMessage()).not.toContain('/');
     });
 
-    it('편집도 종류를 말한다 — 「편집됨」만으로는 무엇이 바뀐지 알 수 없다', () => {
+    it('says the kind for edits too, since "Edited" alone does not tell what changed', () => {
       const before: TestDoc = { ...paymentAuthorization, mtime: 1000 };
       localVaultMocks.useLocalVault.mockReturnValue({
         status: 'loaded',
@@ -375,7 +375,7 @@ describe('VaultDiffToaster', () => {
       expect(lastMessage()).toBe('역량 편집 — 결제 승인');
     });
 
-    it('다이제스트도 종류별로 센다 — 「15개 추가」가 아니라 「역량 3 · 요소 12 추가」', () => {
+    it('counts the digest by kind too: "capability 3, element 12 added", not "15 added"', () => {
       const many: TestDoc[] = [
         ...Array.from({ length: 3 }, (_, i) => ({
           slug: `capabilities/c${i}`,
@@ -397,7 +397,7 @@ describe('VaultDiffToaster', () => {
       expect(lastMessage()).not.toContain('elements/');
     });
 
-    it('kind 를 못 얻으면 종류를 지어내지 않는다 — 단건은 종류 없이, 묶음은 「그 외 N」', () => {
+    it('does not invent a kind when none is found: a single entry has no kind, a group reads "N other"', () => {
       burst([{ slug: 'notes/memo', mtime: 2000, title: '회의 메모' }]);
       expect(lastMessage()).toBe('추가 — 회의 메모');
 

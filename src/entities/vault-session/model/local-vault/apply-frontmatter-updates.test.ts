@@ -3,7 +3,7 @@ import { applyFrontmatterUpdates } from '@/entities/docs-vault';
 import { VaultConflictError, assertExpectedMtime } from './vault-identity-guards';
 
 describe('applyFrontmatterUpdates', () => {
-  it('기존 key 교체', () => {
+  it('replaces an existing key', () => {
     const raw = `---\nname: Old\ncategory: foo\n---\n\n# Title\n본문`;
     const result = applyFrontmatterUpdates(raw, { name: 'New' });
     expect(result).toBe(
@@ -11,7 +11,7 @@ describe('applyFrontmatterUpdates', () => {
     );
   });
 
-  it('없는 key append', () => {
+  it('appends a missing key', () => {
     const raw = `---\nname: A\n---\n\n본문`;
     const result = applyFrontmatterUpdates(raw, { status: 'active' });
     expect(result).toContain('status: active');
@@ -19,14 +19,14 @@ describe('applyFrontmatterUpdates', () => {
     expect(result).toContain('\n\n본문');
   });
 
-  it('null 은 key 제거', () => {
+  it('removes a key for null', () => {
     const raw = `---\nname: A\ntmp: xxx\n---\n\n본문`;
     const result = applyFrontmatterUpdates(raw, { tmp: null });
     expect(result).not.toContain('tmp:');
     expect(result).toContain('name: A');
   });
 
-  it('블록 스타일 배열을 교체하면 옛 항목 줄이 남지 않는다', () => {
+  it('leaves no old item lines when a block-style array is replaced', () => {
     const raw = `---\nkind: domain\ncapabilities:\n  - capabilities/a\n  - capabilities/b\ntitle: T\n---\n\n본문`;
     const result = applyFrontmatterUpdates(raw, {
       capabilities: ['capabilities/a', 'capabilities/c'],
@@ -36,13 +36,13 @@ describe('applyFrontmatterUpdates', () => {
     );
   });
 
-  it('블록 스타일 배열을 지우면 항목 줄까지 사라진다', () => {
+  it('removes the item lines too when a block-style array is deleted', () => {
     const raw = `---\nkind: domain\ncapabilities:\n  - capabilities/a\ntitle: T\n---\n\n본문`;
     const result = applyFrontmatterUpdates(raw, { capabilities: null });
     expect(result).toBe(`---\nkind: domain\ntitle: T\n---\n\n본문`);
   });
 
-  it('건드리지 않은 키의 블록 값은 그대로 둔다', () => {
+  it('keeps the block value of an untouched key as is', () => {
     const raw = `---\nkind: domain\ncapabilities:\n  - capabilities/a\ntitle: Old\n---\n\n본문`;
     const result = applyFrontmatterUpdates(raw, { title: 'New' });
     expect(result).toBe(
@@ -50,7 +50,7 @@ describe('applyFrontmatterUpdates', () => {
     );
   });
 
-  it('블록 객체의 자식 키를 최상위 키로 오인하지 않는다', () => {
+  it('does not mistake a child key of a block object for a top-level key', () => {
     const raw = `---\nkind: domain\nmeta:\n  title: nested\ntitle: Old\n---\n\n본문`;
     const result = applyFrontmatterUpdates(raw, { title: 'New' });
     expect(result).toBe(
@@ -58,7 +58,7 @@ describe('applyFrontmatterUpdates', () => {
     );
   });
 
-  it('배열 serialize', () => {
+  it('serializes arrays', () => {
     const raw = `---\nname: A\n---\n\n본문`;
     const result = applyFrontmatterUpdates(raw, {
       tags: ['alpha', 'beta'],
@@ -66,7 +66,7 @@ describe('applyFrontmatterUpdates', () => {
     expect(result).toContain('tags: [alpha, beta]');
   });
 
-  it('숫자 / 불리언', () => {
+  it('handles numbers and booleans', () => {
     const raw = `---\nname: A\n---`;
     const result = applyFrontmatterUpdates(raw, {
       positionX: 12.5,
@@ -78,7 +78,7 @@ describe('applyFrontmatterUpdates', () => {
     expect(result).toContain('isHub: true');
   });
 
-  it('inline 1-depth 객체 (canvasPosition 등)', () => {
+  it('handles an inline 1-depth object (canvasPosition and the like)', () => {
     const raw = `---\nname: A\n---\n\n본문`;
     const result = applyFrontmatterUpdates(raw, {
       canvasPosition: { x: 100, y: 200 },
@@ -87,7 +87,7 @@ describe('applyFrontmatterUpdates', () => {
     expect(result).toContain('name: A');
   });
 
-  it('객체 갱신 — 기존 inline 객체 교체', () => {
+  it('updates an object by replacing the existing inline object', () => {
     const raw = `---\nname: A\ncanvasPosition: { x: 1, y: 2 }\n---\n\n본문`;
     const result = applyFrontmatterUpdates(raw, {
       canvasPosition: { x: 50, y: 60 },
@@ -96,7 +96,7 @@ describe('applyFrontmatterUpdates', () => {
     expect(result).not.toContain('x: 1, y: 2');
   });
 
-  it('frontmatter 없던 문서에 새로 추가', () => {
+  it('adds frontmatter to a document that had none', () => {
     const raw = `# Title\n\n본문`;
     const result = applyFrontmatterUpdates(raw, {
       name: 'Added',
@@ -106,7 +106,7 @@ describe('applyFrontmatterUpdates', () => {
     expect(result).toContain('# Title');
   });
 
-  it('공백 포함 문자열은 따옴표', () => {
+  it('quotes a string containing spaces', () => {
     const raw = `---\nname: A\n---`;
     const result = applyFrontmatterUpdates(raw, {
       description: '줄띄우기 있는 문장',
@@ -115,7 +115,7 @@ describe('applyFrontmatterUpdates', () => {
     // In practice a space is fine — `needsQuote` covers only leading/trailing spaces and special characters.
   });
 
-  it('본문 영향 없음', () => {
+  it('leaves the body untouched', () => {
     const raw = `---\nname: A\n---\n\n# Title\n\n본문\n\n## 섹션\n내용`;
     const result = applyFrontmatterUpdates(raw, { status: 'x' });
     expect(result).toContain('# Title');
@@ -125,15 +125,15 @@ describe('applyFrontmatterUpdates', () => {
 });
 
 describe('assertExpectedMtime', () => {
-  it('expectedMtime 이 없으면 기존 호출자 호환을 위해 검증을 건너뛴다', () => {
+  it('skips verification without expectedMtime to stay compatible with existing callers', () => {
     expect(() => assertExpectedMtime('doc', undefined, 2000)).not.toThrow();
   });
 
-  it('mtime 이 같으면 통과한다', () => {
+  it('passes when mtime matches', () => {
     expect(() => assertExpectedMtime('doc', 2000, 2000)).not.toThrow();
   });
 
-  it('mtime 이 다르면 VaultConflictError 로 silent overwrite 를 막는다', () => {
+  it('blocks a silent overwrite with VaultConflictError when mtime differs', () => {
     expect(() => assertExpectedMtime('doc', 1000, 2000)).toThrow(
       VaultConflictError,
     );

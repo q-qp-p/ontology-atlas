@@ -20,13 +20,13 @@ function Reader() {
   return <span data-testid="reader">{source}</span>;
 }
 
-describe('useSampleSource — 공유 반응 스토어', () => {
+describe('useSampleSource: shared reactive store', () => {
   afterEach(() => {
     // Isolate the next test — reset the store and localStorage to the default (storefront).
     writeSampleSourcePreference('storefront');
   });
 
-  it('한 소비자의 setSource 가 독립된 다른 소비자에게 즉시 전파된다', () => {
+  it('propagates setSource from one consumer to other independent consumers at once', () => {
     render(
       <>
         <Writer />
@@ -43,7 +43,7 @@ describe('useSampleSource — 공유 반응 스토어', () => {
     expect(screen.getByTestId('reader')).toHaveTextContent('dogfood');
   });
 
-  it('스토어 직접 write 도 마운트된 소비자에게 반영된다', () => {
+  it('reflects a direct store write to mounted consumers too', () => {
     render(<Reader />);
     expect(screen.getByTestId('reader')).toHaveTextContent('storefront');
     act(() => {

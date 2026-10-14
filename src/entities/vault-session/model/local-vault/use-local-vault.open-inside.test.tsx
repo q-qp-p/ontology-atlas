@@ -70,8 +70,8 @@ beforeEach(() => {
   mocks.putRecords = [];
 });
 
-describe('폴더 열기 — 프로젝트를 고른 사람은 그 안의 지도를 기대한다', () => {
-  it('프로젝트 안에 지도가 있으면 그 지도를 금고로 등록하고, 바꿔 열었다고 알린다', async () => {
+describe('opening a folder: a person who picked a project expects the map inside it', () => {
+  it('registers the map inside a project as the vault and says it opened a different folder', async () => {
     mocks.listings['/Users/dana/my-product/atlas'] = MAP_FILES;
     const { result } = renderHook(() => useLocalVaultInternal());
 
@@ -82,7 +82,7 @@ describe('폴더 열기 — 프로젝트를 고른 사람은 그 안의 지도�
     // The handle built for the vault is the folder inside, not the one the picker returned.
     expect(
       mocks.createdHandles,
-      '리다이렉트를 계산하고도 고른 폴더를 그대로 열었다',
+      'opened the picked folder as is even after computing the redirect',
     ).toContain('/Users/dana/my-product/atlas');
     // ⚠️ Registration matters as much as opening: whatever lands here is what reopens next session
     // and what later writes are relative to.
@@ -92,12 +92,12 @@ describe('폴더 열기 — 프로젝트를 고른 사람은 그 안의 지도�
     await waitFor(() =>
       expect(
         result.current.openedInsidePickedFolder,
-        '말없이 딴 폴더를 열면 제품이 시킨 대로 안 한 것이다',
+        'silently opening another folder would not do what the product was told',
       ).toBe('/Users/dana/my-product'),
     );
   });
 
-  it('안에 지도가 없으면 고른 폴더를 그대로 열고, 알림도 없다', async () => {
+  it('opens the picked folder as is and gives no notice when there is no map inside', async () => {
     // No `atlas` listing at all — the picked folder is the vault on its own terms.
     const { result } = renderHook(() => useLocalVaultInternal());
 
@@ -108,11 +108,11 @@ describe('폴더 열기 — 프로젝트를 고른 사람은 그 안의 지도�
     expect(mocks.createdHandles).not.toContain('/Users/dana/my-product/atlas');
     expect(
       result.current.openedInsidePickedFolder,
-      '바꿔 열지도 않았는데 바꿨다고 말하면 그 알림을 아무도 안 믿게 된다',
+      'saying it opened another folder when it did not would leave nobody trusting that notice',
     ).toBeNull();
   });
 
-  it('이름만 같은 소스 폴더로는 바꿔 열지 않는다', async () => {
+  it('does not switch to a source folder that merely shares the name', async () => {
     mocks.listings['/Users/dana/my-product/atlas'] = ['index.ts', 'render.ts'];
     const { result } = renderHook(() => useLocalVaultInternal());
 
@@ -122,12 +122,12 @@ describe('폴더 열기 — 프로젝트를 고른 사람은 그 안의 지도�
 
     expect(
       mocks.createdHandles,
-      '소스 폴더를 금고로 열면 텅 빈 지도가 뜨고, 사람은 이유를 알 길이 없다',
+      'opening a source folder as a vault shows an empty map and nobody can tell why',
     ).not.toContain('/Users/dana/my-product/atlas');
     expect(result.current.openedInsidePickedFolder).toBeNull();
   });
 
-  it('취소한 피커는 아무것도 등록하지 않는다', async () => {
+  it('registers nothing for a cancelled picker', async () => {
     mocks.pickedPath = null;
     const { result } = renderHook(() => useLocalVaultInternal());
 
@@ -135,7 +135,7 @@ describe('폴더 열기 — 프로젝트를 고른 사람은 그 안의 지도�
       await result.current.open();
     });
 
-    expect(mocks.putRecords, '아무도 고르지 않은 폴더를 금고로 기억했다').toHaveLength(0);
+    expect(mocks.putRecords, 'remembered as a vault a folder nobody picked').toHaveLength(0);
     expect(result.current.openedInsidePickedFolder).toBeNull();
   });
 });

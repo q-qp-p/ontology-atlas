@@ -8,12 +8,12 @@ const RPC_ERROR =
 
 const agent = (text: string) => ({ kind: 'agent' as const, id: 'a', text });
 
-describe('오류 되풀이 — 같은 실패를 두 번 말하지 않는다', () => {
-  it('실측한 그 쌍을 되풀이로 본다', () => {
+describe('error repetition: the same failure is not said twice', () => {
+  it('treats the measured pair as an echo', () => {
     expect(isErrorEcho(AGENT_ECHO, RPC_ERROR)).toBe(true);
   });
 
-  it('마지막 한 줄을 지운다 — 카드가 이미 같은 말을 사람 말로 하고 있다', () => {
+  it('removes the last line, since the card already says the same in human words', () => {
     const events = [
       { kind: 'user' as const, id: 'u', text: '물어봄' },
       agent(AGENT_ECHO),
@@ -21,24 +21,24 @@ describe('오류 되풀이 — 같은 실패를 두 번 말하지 않는다', ()
     expect(withoutErrorEcho(events, RPC_ERROR)).toEqual([events[0]]);
   });
 
-  it('진짜 답변은 지우지 않는다', () => {
+  it('does not remove a genuine answer', () => {
     const events = [agent('내 프로젝트 노드는 예시 영역을 담고 있어요.')];
     expect(withoutErrorEcho(events, RPC_ERROR)).toEqual(events);
   });
 
-  it('오류가 없으면 아무것도 안 지운다', () => {
+  it('removes nothing when there is no error', () => {
     const events = [agent(AGENT_ECHO)];
     expect(withoutErrorEcho(events, null)).toEqual(events);
   });
 
-  it('짧은 한 마디는 우연히 포함돼도 지우지 않는다', () => {
+  it('does not remove a short remark even if it happens to be contained', () => {
     // `Error` is contained in any error text. Starting to erase what the agent said for that reason is
     // not echo removal but censorship.
     expect(isErrorEcho('Error', RPC_ERROR)).toBe(false);
     expect(isErrorEcho('authenticate', RPC_ERROR)).toBe(false);
   });
 
-  it('마지막이 에이전트 말이 아니면 건드리지 않는다', () => {
+  it('leaves it alone when the last event is not words from the agent', () => {
     const events = [
       agent(AGENT_ECHO),
       { kind: 'user' as const, id: 'u', text: '다시 해줘' },
@@ -46,7 +46,7 @@ describe('오류 되풀이 — 같은 실패를 두 번 말하지 않는다', ()
     expect(withoutErrorEcho(events, RPC_ERROR)).toEqual(events);
   });
 
-  it('가운데 있는 옛 오류 메아리는 남긴다 — 그때는 그게 그 순간의 말이었다', () => {
+  it('keeps an old error echo in the middle, since it was the words of that moment then', () => {
     const events = [
       agent(AGENT_ECHO),
       { kind: 'user' as const, id: 'u', text: '다시' },
@@ -55,11 +55,11 @@ describe('오류 되풀이 — 같은 실패를 두 번 말하지 않는다', ()
     expect(withoutErrorEcho(events, RPC_ERROR)).toEqual(events);
   });
 
-  it('줄바꿈과 공백 차이에 흔들리지 않는다 — 어댑터마다 감싸는 폭이 다르다', () => {
+  it('is not shaken by line-break and whitespace differences, since adapters wrap at different widths', () => {
     expect(isErrorEcho(`Failed to authenticate:\n  OAuth session expired and could not be refreshed`, RPC_ERROR)).toBe(true);
   });
 
-  it('빈 목록과 이상한 값은 그대로 통과한다', () => {
+  it('passes an empty list and odd values through unchanged', () => {
     expect(withoutErrorEcho([], RPC_ERROR)).toEqual([]);
     expect(isErrorEcho(undefined, RPC_ERROR)).toBe(false);
     expect(isErrorEcho(AGENT_ECHO, undefined)).toBe(false);

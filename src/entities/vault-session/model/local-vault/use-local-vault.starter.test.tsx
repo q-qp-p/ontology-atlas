@@ -137,8 +137,8 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe('useLocalVaultInternal — 만드는 문의 시작 파일은 여는 일의 일부다', () => {
-  it('빈 폴더에 시작 파일을 쓰고 나서야 처음 보여 준다', async () => {
+describe('useLocalVaultInternal: the starter files of a created vault are part of opening it', () => {
+  it('shows an empty folder for the first time only after writing the starter files', async () => {
     const { hook, frames } = await mountHook();
 
     let result: Awaited<ReturnType<typeof hook.result.current.openRecent>> | undefined;
@@ -171,7 +171,7 @@ describe('useLocalVaultInternal — 만드는 문의 시작 파일은 여는 일
     expect(frames.filter(([status, docs]) => status === 'loaded' && docs === 0)).toEqual([]);
   });
 
-  it('고른 모양만 쓴다 — 위키만이면 지도 시작 노드는 없다', async () => {
+  it('writes only the chosen shape; a wiki-only choice has no map starter node', async () => {
     const { hook } = await mountHook();
 
     await act(async () => {
@@ -182,7 +182,7 @@ describe('useLocalVaultInternal — 만드는 문의 시작 파일은 여는 일
     expect(written()).not.toContain('project.md');
   });
 
-  it('시작 파일은 화면 언어로 쓴다', async () => {
+  it('writes the starter files in the screen language', async () => {
     const { hook } = await mountHook();
 
     await act(async () => {
@@ -192,7 +192,7 @@ describe('useLocalVaultInternal — 만드는 문의 시작 파일은 여는 일
     expect(disk.files.get('project.md')).toMatch(/\p{Script=Hangul}/u);
   });
 
-  it('문서가 이미 있는 폴더에는 아무것도 쓰지 않는다', async () => {
+  it('writes nothing to a folder that already has documents', async () => {
     disk.files.set('notes.md', '# Notes\n');
     const { hook } = await mountHook();
 
@@ -205,7 +205,7 @@ describe('useLocalVaultInternal — 만드는 문의 시작 파일은 여는 일
     expect(written()).toEqual(['notes.md']);
   });
 
-  it('요청이 없으면 빈 폴더라도 쓰지 않는다', async () => {
+  it('writes nothing to an empty folder when not requested', async () => {
     const { hook } = await mountHook();
 
     await act(async () => {
@@ -216,7 +216,7 @@ describe('useLocalVaultInternal — 만드는 문의 시작 파일은 여는 일
     expect(written()).toEqual([]);
   });
 
-  it('쓰기 권한이 거절되면 폴더는 열고, 시작 파일을 못 쓴 까닭을 돌려준다', async () => {
+  it('opens the folder when write permission is refused and returns why the starter files could not be written', async () => {
     store.verifyHandlePermission.mockResolvedValue('denied');
     const { hook } = await mountHook();
 
