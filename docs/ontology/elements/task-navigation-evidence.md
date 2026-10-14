@@ -6,7 +6,7 @@ title: Task navigation evidence
 display_en: Task navigation evidence
 display_ko: 작업 탐색 근거
 domain: domains/agent-access
-path: mcp/src/task-navigation-evidence.mjs
+path: mcp/src/agent-brief/task-navigation-evidence.mjs
 created_by: "agent:claude-code"
 ---
 

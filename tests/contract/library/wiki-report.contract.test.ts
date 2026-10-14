@@ -20,8 +20,8 @@ import { aggregateWikiFindings as aggregateBridged } from '@/shared/lib/library/
 import {
   validateWikiFolder as validateFolderMcp,
   validateWikiPage as validatePageMcp,
-} from '../../../mcp/src/wiki-schema.mjs';
-import { aggregateWikiFindings as aggregateMcp } from '../../../mcp/src/wiki-report.mjs';
+} from '../../../mcp/src/library/wiki-schema.mjs';
+import { aggregateWikiFindings as aggregateMcp } from '../../../mcp/src/library/wiki-report.mjs';
 
 /**
  * One folder, three surfaces, one enumeration: the `wiki-validate --json` command, the
@@ -138,7 +138,7 @@ describe('the structural check — the CLI, the MCP validators and the app enume
     expect(aggregateBridged).toBe(aggregateMcp);
     const bridge = resolve(__dirname, '../../../src/shared/lib/library/wiki-report.mjs');
     const { readFileSync } = await import('node:fs');
-    expect(readFileSync(bridge, 'utf8')).toContain('export * from "../../../../mcp/src/wiki-report.mjs"');
+    expect(readFileSync(bridge, 'utf8')).toContain('export * from "../../../../mcp/src/library/wiki-report.mjs"');
   });
 
   it('groups and rows are ordered deterministically, whatever order the pages arrive in', () => {

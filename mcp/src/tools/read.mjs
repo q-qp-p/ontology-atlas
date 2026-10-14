@@ -8,19 +8,19 @@ import {
   COMPETENCY_ANSWERS_GUIDE_EN,
   CONSTRUCTION_CARD_EN,
   CONSTRUCTION_GUIDE_TOPICS,
-} from '../construction-card.mjs';
-import { CONSTRUCTION_LIFECYCLE_EN } from '../construction-lifecycle.mjs';
+} from '../construction/construction-card.mjs';
+import { CONSTRUCTION_LIFECYCLE_EN } from '../construction/construction-lifecycle.mjs';
 import {
   CONSTRUCTION_RULES_EN,
   META_MODEL_RULES_EN,
-} from '../construction-rules.mjs';
-import { scoreEvidence } from '../evidence-rank.mjs';
+} from '../construction/construction-rules.mjs';
+import { scoreEvidence } from '../evidence-search/evidence-rank.mjs';
 import {
   buildFindEvidenceZeroHitsGrowthHint,
   buildFindPathGrowthHint,
   buildQueryConceptsZeroRowsGrowthHint,
   findNearTitleMatches,
-} from '../growth-hint.mjs';
+} from '../ontology-engine/growth-hint.mjs';
 import { NODE_KIND_VALUES } from '../ontology-engine.mjs';
 import { parseFilter } from '../query.mjs';
 import { nodeUidIssue } from '../schema.mjs';
@@ -53,8 +53,8 @@ import {
   requireOptionalPositiveInteger,
   requireOptionalRelationTypeArray,
 } from '../server/validate.mjs';
-import { namesHiddenOrCredentialFile, readStableFile } from '../source-evidence.mjs';
-import { READ_SOURCE_MAX_FILE_BYTES, readSourceText } from '../source-text.mjs';
+import { namesHiddenOrCredentialFile, readStableFile } from '../evidence-search/source-evidence.mjs';
+import { READ_SOURCE_MAX_FILE_BYTES, readSourceText } from '../library/source-text.mjs';
 import {
   suppressLibraryKindIssues,
   suppressParentedExpectedFieldIssues,

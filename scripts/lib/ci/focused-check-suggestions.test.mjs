@@ -412,12 +412,12 @@ describe('focused check suggestions', () => {
 
   it('discovers a new MCP source and sibling test without a hand-maintained allowlist', () => {
     const result = suggestFocusedChecks([
-      'mcp/src/task-navigation-evidence.mjs',
-      'mcp/src/task-navigation-evidence.test.mjs',
+      'mcp/src/agent-brief/task-navigation-evidence.mjs',
+      'mcp/src/agent-brief/task-navigation-evidence.test.mjs',
     ]);
 
     assert.deepEqual(domainCommands(result), [
-      'pnpm exec node --test mcp/src/task-navigation-evidence.test.mjs',
+      'pnpm exec node --test mcp/src/agent-brief/task-navigation-evidence.test.mjs',
       'pnpm test:mcp:unit',
       'pnpm vault:validate',
     ]);
@@ -426,15 +426,15 @@ describe('focused check suggestions', () => {
 
   it('suggests lifecycle, qualification, and meaning tests for ontology construction drift', () => {
     const result = suggestFocusedChecks([
-      'mcp/src/construction-lifecycle.mjs',
-      'mcp/src/construction-qualification.mjs',
-      'mcp/src/meaning-evaluation.mjs',
+      'mcp/src/construction/construction-lifecycle.mjs',
+      'mcp/src/construction/construction-qualification.mjs',
+      'mcp/src/meaning/meaning-evaluation.mjs',
     ]);
 
     assert.deepEqual(domainCommands(result), [
-      'pnpm exec node --test mcp/src/construction-lifecycle.test.mjs',
-      'pnpm exec node --test mcp/src/construction-qualification.test.mjs',
-      'pnpm exec node --test mcp/src/meaning-evaluation.test.mjs',
+      'pnpm exec node --test mcp/src/construction/construction-lifecycle.test.mjs',
+      'pnpm exec node --test mcp/src/construction/construction-qualification.test.mjs',
+      'pnpm exec node --test mcp/src/meaning/meaning-evaluation.test.mjs',
       'pnpm test:mcp:unit',
       'pnpm integration:mcp:repo-analysis',
       'pnpm vault:validate',
@@ -445,11 +445,11 @@ describe('focused check suggestions', () => {
   it('suggests the source-hidden fixture contract for fixture or test changes', () => {
     const result = suggestFocusedChecks([
       'tests/fixtures/source-hidden-field-trial/v1.json',
-      'mcp/src/source-hidden-field-trial.test.mjs',
+      'mcp/src/meaning/source-hidden-field-trial.test.mjs',
     ]);
 
     assert.deepEqual(domainCommands(result), [
-      'pnpm exec node --test mcp/src/source-hidden-field-trial.test.mjs',
+      'pnpm exec node --test mcp/src/meaning/source-hidden-field-trial.test.mjs',
       'pnpm test:mcp:unit',
       'pnpm vault:validate',
     ]);
@@ -557,7 +557,7 @@ describe('focused check suggestions', () => {
 
   it('routes architecture changes through the cross-surface gate and rendered workflow', () => {
     const result = suggestFocusedChecks([
-      'mcp/src/architecture-profile.mjs',
+      'mcp/src/architecture/architecture-profile.mjs',
       'cli/src/commands/repo-analysis/architecture.mjs',
       'src/views/architecture/ui/ArchitectureWorkbench.tsx',
     ]);
@@ -568,7 +568,7 @@ describe('focused check suggestions', () => {
       'pnpm test:architecture',
       'pnpm exec playwright test tests/e2e/harness/architecture-workbench.spec.ts',
       'pnpm test:contracts',
-      'pnpm exec node --test mcp/src/architecture-profile.test.mjs',
+      'pnpm exec node --test mcp/src/architecture/architecture-profile.test.mjs',
       'pnpm test:mcp:unit',
       'pnpm integration:mcp:repo-analysis',
       'pnpm typecheck',
@@ -645,7 +645,7 @@ describe('focused check suggestions', () => {
 
     assert.deepEqual(domainCommands(result), [
       'pnpm exec node --test mcp/src/infer-imports/go-imports.test.mjs',
-      'pnpm exec node --test mcp/src/confined-source-fs.test.mjs',
+      'pnpm exec node --test mcp/src/infer-imports/confined-source-fs.test.mjs',
       'pnpm test:mcp:unit',
       'pnpm integration:mcp:repo-analysis',
       'pnpm vault:validate',
@@ -1252,13 +1252,13 @@ describe('focused check suggestions', () => {
     assert.equal(result.commands.filter((item) => item.importGraph).length, 1);
 
     // MCP code joins the Vitest rows when a suite or contract reaches it.
-    const mcp = suggestFocusedChecks(['mcp/src/architecture-profile.mjs']).commands.filter((item) => item.importGraph);
-    assert.match(mcp[0].command, /^pnpm exec vitest related .* mcp\/src\/architecture-profile\.mjs$/);
+    const mcp = suggestFocusedChecks(['mcp/src/architecture/architecture-profile.mjs']).commands.filter((item) => item.importGraph);
+    assert.match(mcp[0].command, /^pnpm exec vitest related .* mcp\/src\/architecture\/architecture-profile\.mjs$/);
     assert.ok(mcp[1].command.split(' ').includes('tests/contract/harness/architecture-profile.contract.test.ts'));
-    assert.deepEqual(mcp[1].paths, ['mcp/src/architecture-profile.mjs']);
+    assert.deepEqual(mcp[1].paths, ['mcp/src/architecture/architecture-profile.mjs']);
 
     // A deleted file is gone from Vitest's graph; the suites still importing it run by name.
-    const deleted = suggestFocusedChecks([], { deletedPaths: ['mcp/src/architecture-profile.mjs'] }).commands;
+    const deleted = suggestFocusedChecks([], { deletedPaths: ['mcp/src/architecture/architecture-profile.mjs'] }).commands;
     const stale = 'src/views/architecture/model/analysis-architecture-record.test.ts';
     assert.ok(deleted.some((item) => item.importGraph && item.command.split(' ').includes(stale)));
   });

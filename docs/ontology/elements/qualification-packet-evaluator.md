@@ -6,7 +6,7 @@ title: Qualification packet evaluator
 display_en: Qualification packet evaluator
 display_ko: 자격 패킷 평가기
 domain: domains/code-evidence
-path: mcp/src/construction-qualification.mjs
+path: mcp/src/construction/construction-qualification.mjs
 created_by: "agent:claude-code"
 ---
 

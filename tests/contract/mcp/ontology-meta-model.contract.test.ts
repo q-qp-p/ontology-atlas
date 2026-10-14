@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   META_MODEL_RULES_EN as MCP_META_MODEL_RULES_EN,
-} from "../../../mcp/src/construction-rules.mjs";
+} from "../../../mcp/src/construction/construction-rules.mjs";
 import {
   ONTOLOGY_META_MODEL_REFERENCE as MCP_META_MODEL_REFERENCE,
   VAULT_KINDS as MCP_VAULT_KINDS,

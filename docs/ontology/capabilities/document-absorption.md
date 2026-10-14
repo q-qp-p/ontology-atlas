@@ -7,7 +7,7 @@ display_en: Document absorption
 display_ko: 문서 흡수
 domain: domains/meaning-layer
 elements: []
-path: mcp/src/absorb.mjs
+path: mcp/src/vault/absorb.mjs
 created_by: "agent:claude-code"
 dependencies: [elements/vault-kind-schema]
 relation_notes: { elements/vault-kind-schema: "You asked me to turn imports I actually witnessed into dependencies: the import scan shows absorb.mjs importing schema.mjs, its only internal import." }

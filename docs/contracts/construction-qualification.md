@@ -5,16 +5,16 @@ status: current
 area: ontology-model
 stores: "nothing; an input contract of analyze_repo_structure"
 contract_version: 1
-enforced_by: [mcp/src/construction-qualification.mjs, mcp/src/construction-lifecycle.mjs]
+enforced_by: [mcp/src/construction/construction-qualification.mjs, mcp/src/construction/construction-lifecycle.mjs]
 ---
 
 # Ontology Construction Qualification v1
 
 > Status: executable public input contract for the existing
 > `analyze_repo_structure` MCP tool. The evaluator is implemented by
-> [`mcp/src/construction-qualification.mjs`](../../mcp/src/construction-qualification.mjs)
+> [`mcp/src/construction/construction-qualification.mjs`](../../mcp/src/construction/construction-qualification.mjs)
 > and the write-eligibility lifecycle by
-> [`mcp/src/construction-lifecycle.mjs`](../../mcp/src/construction-lifecycle.mjs).
+> [`mcp/src/construction/construction-lifecycle.mjs`](../../mcp/src/construction/construction-lifecycle.mjs).
 > It adds no vault kind, frontmatter field, new MCP tool, or UI surface.
 
 ## Why this exists
@@ -186,7 +186,7 @@ Run the representative contracts on the repository's required Node version:
 
 ```bash
 node --version # v24.x
-node --test mcp/src/construction-qualification.test.mjs mcp/src/construction-lifecycle.test.mjs
+node --test mcp/src/construction/construction-qualification.test.mjs mcp/src/construction/construction-lifecycle.test.mjs
 ```
 
 The fixture and integration round trip are contract specimens, not evidence that

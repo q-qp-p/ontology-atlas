@@ -1,7 +1,7 @@
 import {
   getSavedConstellation,
   listSavedConstellations,
-} from '../constellations.mjs';
+} from '../library/constellations.mjs';
 import { nodeUidIssue } from '../schema.mjs';
 import { VAULT_ROOT } from '../server/runtime.mjs';
 import {

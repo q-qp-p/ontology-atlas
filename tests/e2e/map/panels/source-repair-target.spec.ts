@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
-import { buildProjectSourceGraphHash } from "../../../../mcp/src/project-source-graph-hash.mjs";
-import { buildProjectSourceReceipt } from "../../../../mcp/src/project-source-mint.mjs";
+import { buildProjectSourceGraphHash } from "../../../../mcp/src/project-source/project-source-graph-hash.mjs";
+import { buildProjectSourceReceipt } from "../../../../mcp/src/project-source/project-source-mint.mjs";
 import { installDesktopRailRuntime, mountDesktopVault } from "../../desktop-rail-arrival-harness";
 
 const documents = [

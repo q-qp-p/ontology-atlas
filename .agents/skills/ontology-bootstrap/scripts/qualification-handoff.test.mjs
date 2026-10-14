@@ -20,8 +20,8 @@ import {
   CONSTRUCTION_QUALIFICATION_INPUT_SCHEMA,
   CONSTRUCTION_QUALITY_AXES,
   evaluateConstructionQualification,
-} from '../../../../mcp/src/construction-qualification.mjs';
-import { constructionPlanDigest, proposalCoverageRefs } from '../../../../mcp/src/construction-lifecycle.mjs';
+} from '../../../../mcp/src/construction/construction-qualification.mjs';
+import { constructionPlanDigest, proposalCoverageRefs } from '../../../../mcp/src/construction/construction-lifecycle.mjs';
 
 const execFileAsync = promisify(execFile);
 const SCRIPT = new URL('./qualification-handoff.mjs', import.meta.url).pathname;

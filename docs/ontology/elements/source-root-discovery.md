@@ -6,7 +6,7 @@ title: Source root discovery
 display_en: Source root discovery
 display_ko: 소스 루트 탐색
 domain: domains/code-evidence
-path: mcp/src/project-source-discovery.mjs
+path: mcp/src/project-source/project-source-discovery.mjs
 created_by: "agent:claude-code"
 ---
 

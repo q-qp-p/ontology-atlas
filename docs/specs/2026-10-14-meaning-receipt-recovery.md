@@ -28,9 +28,9 @@ control of its acceptance. This serves the repeated evidence-and-review loop in
 
 Current-behavior references below describe the pre-change baseline `5d6536330`.
 
-- `mcp/src/project-meaning-receipt.mjs:436` parses the current answers, then sends
+- `mcp/src/project-meaning/project-meaning-receipt.mjs:436` parses the current answers, then sends
   a whole-body digest mismatch through `invalidAssessment`, just like a parser failure.
-- `mcp/src/meaning-assessment.mjs:376` maps malformed input to `invalid`,
+- `mcp/src/meaning/meaning-assessment.mjs:376` maps malformed input to `invalid`,
   `assessment_input_invalid`, and `repair_assessment_input` before source checks.
 - `mcp/src/tools/graph.mjs:413` describes every competency reevaluation as a graph
   change; `mcp/src/tools/graph.mjs:416` calls the assessment malformed.
@@ -119,12 +119,12 @@ CLI/MCP diagnostics are English. No screen copy changes or unused catalogue keys
 
 ## Acceptance criteria
 
-1. Given a valid finalized project and parseable body edit, when source is current, then assessment is `review_required` with `competency_body_changed` and `reevaluate_competency`, preserving source currentness. Probe: `mcp/src/project-meaning-receipt.test.mjs`, including an edit outside competency answers.
-2. Given that edit and a well-formed witness inventory plus stale, unavailable, unmeasured, or invalid source, when assessed, then the existing source remedy wins; after current source is supplied, changed-body review appears. Missing or malformed inventory retains its existing invalid classification. Probe: `mcp/src/project-meaning-receipt.test.mjs`.
-3. Given malformed answers or corrupt/unsafe/future receipt state, when read, then assessment stays invalid; a missing receipt keeps existing authored/not-authored behavior. Probe: receipt tests and `mcp/src/meaning-not-authored.test.mjs`.
-4. Given changed-body review, when health, workspace, full brief, and compact brief read it, then typed status/gap/action agree and health explains document review without claiming malformed input or graph-only change. Probe: the stdio recovery case in `mcp/src/project-meaning-restart.test.mjs`, including CLI response validation, and `mcp/src/meaning-hint-coverage.test.mjs`; inspect copy without pinning prose.
-5. Given an old receipt and edited body, when diagnostics run, then no document, sidecar, approval, or receipt changes and no body/private source coordinates leak. Probe: `mcp/src/project-meaning-receipt.test.mjs`.
-6. Given reviewed answers and existing write authority, when validation, complete compile, current source, and explicit finalization succeed, then a fresh reader derives the new receipt while partial answers remain non-current. Probe: `mcp/src/project-meaning-restart.test.mjs`.
+1. Given a valid finalized project and parseable body edit, when source is current, then assessment is `review_required` with `competency_body_changed` and `reevaluate_competency`, preserving source currentness. Probe: `mcp/src/project-meaning/project-meaning-receipt.test.mjs`, including an edit outside competency answers.
+2. Given that edit and a well-formed witness inventory plus stale, unavailable, unmeasured, or invalid source, when assessed, then the existing source remedy wins; after current source is supplied, changed-body review appears. Missing or malformed inventory retains its existing invalid classification. Probe: `mcp/src/project-meaning/project-meaning-receipt.test.mjs`.
+3. Given malformed answers or corrupt/unsafe/future receipt state, when read, then assessment stays invalid; a missing receipt keeps existing authored/not-authored behavior. Probe: receipt tests and `mcp/src/meaning/meaning-not-authored.test.mjs`.
+4. Given changed-body review, when health, workspace, full brief, and compact brief read it, then typed status/gap/action agree and health explains document review without claiming malformed input or graph-only change. Probe: the stdio recovery case in `mcp/src/project-meaning/project-meaning-restart.test.mjs`, including CLI response validation, and `mcp/src/tools/meaning-hint-coverage.test.mjs`; inspect copy without pinning prose.
+5. Given an old receipt and edited body, when diagnostics run, then no document, sidecar, approval, or receipt changes and no body/private source coordinates leak. Probe: `mcp/src/project-meaning/project-meaning-receipt.test.mjs`.
+6. Given reviewed answers and existing write authority, when validation, complete compile, current source, and explicit finalization succeed, then a fresh reader derives the new receipt while partial answers remain non-current. Probe: `mcp/src/project-meaning/project-meaning-restart.test.mjs`.
 7. Given the observed dogfood vault, when the lead repeats the source-current read through source and bundled MCP/CLI, then edited valid answers get the review remedy rather than input repair; preserve evidence of remaining gaps. Recovery proof: session installed-app remeasurement, `pnpm dogfood:health`, and full/compact `agent_brief` readback.
 
 ## Risks

@@ -10,7 +10,7 @@ import {
   appendActivityEntry,
   buildActivityEntry,
   resolveAgentName,
-} from '../activity-log.mjs';
+} from '../vault/activity-log.mjs';
 import { server } from './instance.mjs';
 import { VAULT_ROOT } from './runtime.mjs';
 

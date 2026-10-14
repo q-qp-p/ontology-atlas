@@ -6,4 +6,4 @@
  * the receipt minting. Keep the module free of React, path aliases and filesystem
  * imports; an analysis is a diagnostic record, not a kind.
  */
-export * from '../../../../mcp/src/analysis-record.mts';
+export * from '../../../../mcp/src/analysis-history/analysis-record.mts';

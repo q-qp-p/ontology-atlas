@@ -29,11 +29,11 @@ import {
 } from "./ontology-engine.mjs";
 import { GRAPH_ARRAY_KEYS } from "./vault/relation-refs.mjs";
 import { loadVaultDocs } from "./vault/documents.mjs";
-import { analysisRecordFileName, serializeAnalysisRecord } from './analysis-record.mts';
-import { buildProjectSourceGraphHash } from "./project-source-graph-hash.mjs";
-import { renderProjectCompetencyMarkdown } from "./project-meaning-receipt.mjs";
+import { analysisRecordFileName, serializeAnalysisRecord } from './analysis-history/analysis-record.mts';
+import { buildProjectSourceGraphHash } from "./project-source/project-source-graph-hash.mjs";
+import { renderProjectCompetencyMarkdown } from "./project-meaning/project-meaning-receipt.mjs";
 import { defaultBody } from "./schema.mjs";
-import { proposalCoverageRefs } from "./construction-lifecycle.mjs";
+import { proposalCoverageRefs } from "./construction/construction-lifecycle.mjs";
 import {
   formatNoTestMatchMessage,
   formatTestFilterSuffix,

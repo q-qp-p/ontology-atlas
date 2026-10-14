@@ -217,7 +217,7 @@ function resolveDocumentSlug(
  * The body half, read from the same raw text the frontmatter came out of.
  *
  * Message text is composed here rather than imported, because the two sides of
- * this port write for different readers: `mcp/src/construction-rules.mjs`
+ * this port write for different readers: `mcp/src/construction/construction-rules.mjs`
  * answers an agent mid-write and names the tool call that repairs it, while this
  * validator's messages sit beside the Korean ones this file has always spoken to
  * the person reading a screen. What the parity contract holds is the *judgement*

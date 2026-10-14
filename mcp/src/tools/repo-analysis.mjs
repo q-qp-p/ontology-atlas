@@ -9,15 +9,15 @@ import {
   buildArchitectureBrief,
   buildArchitectureMeasuredStamp,
   findArchitectureProfiles,
-} from '../architecture-profile.mjs';
+} from '../architecture/architecture-profile.mjs';
 import { inferImports } from '../infer-imports.mjs';
 import { buildImportImpactFocus } from '../infer-imports/import-impact-focus.mjs';
-import { inspectProjectSource } from '../project-source-inspection.mjs';
-import { composeSourceDigest, readSourceEvidence, validateSourceReadSelectors } from '../source-evidence.mjs';
+import { inspectProjectSource } from '../project-source/project-source-inspection.mjs';
+import { composeSourceDigest, readSourceEvidence, validateSourceReadSelectors } from '../evidence-search/source-evidence.mjs';
 import {
   buildNextImportRelationReview,
   reconcileImportEdges,
-} from '../reconcile-imports.mjs';
+} from '../drift/reconcile-imports.mjs';
 import { SERVER_VERSION } from '../server-version.mjs';
 import {
   COMPILED_ONTOLOGY_CACHE,

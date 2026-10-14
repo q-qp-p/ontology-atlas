@@ -6,7 +6,7 @@
 import {
   buildAbsorptionPlan,
   buildSlimPointer,
-} from '../absorb.mjs';
+} from '../vault/absorb.mjs';
 import { parseFrontmatter } from '../parser.mjs';
 import {
   CREATED_BY_KEY,
@@ -49,7 +49,7 @@ import {
 const ABSORB_BACKUP_SUFFIX = '.pre-absorb.bak';
 
 // Mirrors the write path of cli/src/commands/local-vault/absorb.mjs. The plan logic lives in
-// mcp/src/absorb.mjs, kept in lock-step with cli/src/lib/mcp-bridge/absorb.mjs by
+// mcp/src/vault/absorb.mjs, kept in lock-step with cli/src/lib/mcp-bridge/absorb.mjs by
 // tests/contract/vault-format/absorb.contract.test.ts.
 /**
  * `review_state: human_decides` on the file `absorb_document` was pointed at.

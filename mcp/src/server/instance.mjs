@@ -5,7 +5,7 @@
  */
 
 import { SERVER_VERSION } from '../server-version.mjs';
-import { buildToolInventorySection } from '../tool-inventory.mjs';
+import { buildToolInventorySection } from './tool-inventory.mjs';
 import {
   SERVER_INSTRUCTIONS_TEMPLATE,
   TOOL_INVENTORY_PLACEHOLDER,

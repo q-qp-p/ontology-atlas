@@ -360,7 +360,7 @@ mod tests {
 
     #[test]
     /// Codex is gated only by the measured combination the app owns: adapter pin,
-    /// isolated config, forced session mode and consent in `mcp/src/write-consent.mjs`.
+    /// isolated config, forced session mode and consent in `mcp/src/server/write-consent.mjs`.
     fn a_gate_is_the_measured_combination_the_app_owns() {
         let base = std::env::temp_dir().join(format!("atlas-doctor-h-{}", std::process::id()));
 

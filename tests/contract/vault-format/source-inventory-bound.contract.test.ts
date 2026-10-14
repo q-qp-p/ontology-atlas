@@ -6,13 +6,13 @@ import { describe, expect, it } from 'vitest';
 const repoRoot = resolve(__dirname, '../../..');
 const rustSource = readFileSync(resolve(repoRoot, 'src-tauri/src/project_source/mod.rs'), 'utf8');
 const mcpSource = readFileSync(
-  resolve(repoRoot, 'mcp/src/project-source-inspection.mjs'),
+  resolve(repoRoot, 'mcp/src/project-source/project-source-inspection.mjs'),
   'utf8',
 );
 
 function mcpConstant(name: string): string {
   const match = new RegExp(`^const ${name} = (.+);$`, 'm').exec(mcpSource);
-  expect(match, `${name} is not declared in mcp/src/project-source-inspection.mjs`).toBeTruthy();
+  expect(match, `${name} is not declared in mcp/src/project-source/project-source-inspection.mjs`).toBeTruthy();
   return match![1]!.trim();
 }
 

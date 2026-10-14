@@ -6,7 +6,7 @@ title: Source witness claims
 display_en: Source witness claims
 display_ko: 소스 증거 주장
 domain: domains/code-evidence
-path: mcp/src/project-source-witnesses.mjs
+path: mcp/src/project-source/project-source-witnesses.mjs
 created_by: "agent:claude-code"
 ---
 

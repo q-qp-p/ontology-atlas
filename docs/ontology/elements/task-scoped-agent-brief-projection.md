@@ -6,7 +6,7 @@ title: Task-scoped agent brief projection
 display_ko: 작업별 에이전트 브리핑
 display_en: Task-scoped agent brief projection
 domain: domains/agent-access
-path: mcp/src/agent-brief-compact.mjs
+path: mcp/src/agent-brief/agent-brief-compact.mjs
 created_by: "agent:codex"
 ---
 
@@ -16,17 +16,17 @@ Task-scoped agent brief projection is the read-side implementation that turns on
 
 ## Evidence
 
-- `mcp/src/agent-brief-compact.mjs`
+- `mcp/src/agent-brief/agent-brief-compact.mjs`
 - `mcp/src/tools/graph.mjs`
 - `mcp/package.json`
 - `cli/src/commands/diagnosis/agent-brief.mjs`
-- `mcp/src/agent-brief-compact.test.mjs`
+- `mcp/src/agent-brief/agent-brief-compact.test.mjs`
 - `mcp/src/integration.test.mjs`
 - `cli/src/integration.test.mjs`
-- Primary implementation: `mcp/src/agent-brief-compact.mjs#buildCompactAgentBrief`
+- Primary implementation: `mcp/src/agent-brief/agent-brief-compact.mjs#buildCompactAgentBrief`
 - Supporting implementation: `mcp/src/tools/graph.mjs#queryOntologyTool`
-- Focused test: `mcp/src/task-navigation-evidence.test.mjs#resolves reviewed JavaScript functions and named tests without source snippets`
-- Focused test: `mcp/src/agent-brief-compact.test.mjs#routes by persisted responsibility and boundaries instead of noun overlap`
+- Focused test: `mcp/src/agent-brief/task-navigation-evidence.test.mjs#resolves reviewed JavaScript functions and named tests without source snippets`
+- Focused test: `mcp/src/agent-brief/agent-brief-compact.test.mjs#routes by persisted responsibility and boundaries instead of noun overlap`
 
 ## Includes
 

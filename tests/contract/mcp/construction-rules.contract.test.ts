@@ -7,13 +7,13 @@ import {
   ELEMENT_NAMING_RULE_BATCH_EN,
   ELEMENT_NAMING_RULE_EN,
   denseParentActionMessage,
-} from "../../../mcp/src/construction-rules.mjs";
+} from "../../../mcp/src/construction/construction-rules.mjs";
 import { NODE_ELIGIBILITY_GATE } from "../../../mcp/src/schema.mjs";
 
 /**
  * The "text is authoritative" gate for the construction rules.
  *
- * The header of `mcp/src/construction-rules.mjs` names this file itself, saying
+ * The header of `mcp/src/construction/construction-rules.mjs` names this file itself, saying
  * *"until this gate exists, this file is a proposal, not the source of truth"*.
  * That was accurate — the four strings had zero consumers for a while, and a
  * sentence nobody reads is not a spec.
@@ -67,7 +67,7 @@ describe("construction spec text reaches the place the LLM reads", () => {
 
   it("really imports the three constants", () => {
     expect(SERVER_SOURCE).toMatch(
-      /import \{[\s\S]*?CONSTRUCTION_RULES_EN[\s\S]*?\} from '\.\.?\/construction-rules\.mjs';/,
+      /import \{[\s\S]*?CONSTRUCTION_RULES_EN[\s\S]*?\} from '\.\.\/construction\/construction-rules\.mjs';/,
     );
   });
 });
@@ -101,7 +101,7 @@ describe("value source: numbers come from schema.mjs", () => {
     // literal reference in the source — comparing only numbers passes even when the
     // same value was hard-coded by coincidence.
     const source = readFileSync(
-      resolve(__dirname, "../../../mcp/src/construction-rules.mjs"),
+      resolve(__dirname, "../../../mcp/src/construction/construction-rules.mjs"),
       "utf-8",
     );
     expect(source).toContain(

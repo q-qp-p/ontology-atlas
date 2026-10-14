@@ -91,7 +91,7 @@ function packageManifest(dir) {
 }
 
 /**
- * `mcp/src/analysis-record.mts` is imported directly and relies on Node's type
+ * `mcp/src/analysis-history/analysis-record.mts` is imported directly and relies on Node's type
  * stripping, unflagged only from Node 23.6. A host supplies its own Node, so the
  * one typed module is compiled to `.mjs` for the bundle and its importer is
  * pointed at the stripped name. Nothing else in the server is TypeScript.
@@ -112,7 +112,7 @@ function stripTypedModule(stageServerDir) {
       '--moduleResolution',
       'nodenext',
       '--outDir',
-      path.join(stageServerDir, 'src'),
+      path.join(stageServerDir, path.dirname(TYPED_MODULE)),
     ],
     { cwd: ROOT, encoding: 'utf8' },
   );
@@ -124,10 +124,10 @@ function stripTypedModule(stageServerDir) {
   rmSync(path.join(stageServerDir, TYPED_MODULE), { force: true });
 
   // The importer must follow. It is the only file that names the typed module.
-  const importer = path.join(stageServerDir, 'src', 'analysis-records.mjs');
+  const importer = path.join(stageServerDir, 'src', 'analysis-history', 'analysis-records.mjs');
   const before = readFileSync(importer, 'utf8');
   const after = before.replaceAll('./analysis-record.mts', './analysis-record.mjs');
-  if (after === before) fail('src/analysis-records.mjs no longer imports the typed module — update this build');
+  if (after === before) fail('src/analysis-history/analysis-records.mjs no longer imports the typed module — update this build');
   writeFileSync(importer, after);
 }
 

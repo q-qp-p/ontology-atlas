@@ -1,5 +1,5 @@
 // `ontology-atlas wiki-validate [vault]`: judges `wiki/` pages against ONTOLOGY-ATLAS-SPEC section
-// 11 with `mcp/src/wiki-schema.mjs`. Exit 0 when answered, 1 when a page does not fit, 2 when
+// 11 with `mcp/src/library/wiki-schema.mjs`. Exit 0 when answered, 1 when a page does not fit, 2 when
 // unreadable.
 
 import { readdirSync, readFileSync } from 'node:fs';

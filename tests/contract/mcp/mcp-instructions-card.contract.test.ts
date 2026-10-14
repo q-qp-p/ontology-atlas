@@ -3,13 +3,13 @@ import { describe, expect, it } from "vitest";
 import {
   CONSTRUCTION_CARD_EN,
   CONSTRUCTION_CARD_MAX_CHARS,
-} from "../../../mcp/src/construction-card.mjs";
+} from "../../../mcp/src/construction/construction-card.mjs";
 import {
   SERVER_INSTRUCTIONS_TEMPLATE,
   TOOL_INVENTORY_PLACEHOLDER,
 } from "../../../mcp/src/server/instructions.mjs";
 import { TOOLS_FOR_LIST } from "../../../mcp/src/server/registry.mjs";
-import { buildToolInventorySection } from "../../../mcp/src/tool-inventory.mjs";
+import { buildToolInventorySection } from "../../../mcp/src/server/tool-inventory.mjs";
 
 /**
  * **A host may keep only the first 2,048 characters of `instructions`.**

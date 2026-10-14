@@ -186,7 +186,7 @@ function view(
 
 /**
  * Mint a receipt. The implementation lives in
- * `mcp/src/project-source-mint.mjs` and is shared verbatim: the app, the
+ * `mcp/src/project-source/project-source-mint.mjs` and is shared verbatim: the app, the
  * CLI, and every MCP agent can now all mint one, and a receipt that means
  * different things depending on who wrote it is worse than no receipt.
  */

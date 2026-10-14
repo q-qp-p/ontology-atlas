@@ -1,6 +1,6 @@
 /**
  * One table of raw sources, run through **both** readers that split them into citable
- * units: `mcp/src/source-text.mjs` (the MCP server's `read_source`) and
+ * units: `mcp/src/library/source-text.mjs` (the MCP server's `read_source`) and
  * `src/shared/lib/library/source-passage.ts` (the twin the Library pane reads a passage with).
  *
  * A wiki fact cites `[[src:sources/<file>#<anchor>]]`. If the two readers disagree by one

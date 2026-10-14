@@ -4,7 +4,7 @@
  * freshness a maintenance plan is judged against.
  */
 
-import { loadOntologyAtlasIgnore } from '../ontology-atlas-ignore.mjs';
+import { loadOntologyAtlasIgnore } from '../vault/ontology-atlas-ignore.mjs';
 import { queryCompiledOntology } from '../ontology-engine.mjs';
 import {
   COMPILED_ONTOLOGY_CACHE,

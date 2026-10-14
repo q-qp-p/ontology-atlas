@@ -7,7 +7,7 @@ display_en: Architecture conformance
 display_ko: 아키텍처 준수 검사
 domain: domains/code-evidence
 elements: [elements/architecture-record-receipt]
-path: mcp/src/architecture-profile.mjs
+path: mcp/src/architecture/architecture-profile.mjs
 created_by: "agent:claude-code"
 dependencies: [capabilities/import-dependency-inference]
 relation_notes: { elements/architecture-record-receipt: You asked for element nodes named by role under the capability that uses them; keeping one dated receipt per measurement is this role., capabilities/import-dependency-inference: "You asked me to name where the witness is: `inspectArchitectureTool` in mcp/src/tools/repo-analysis.mjs calls `inferImports(target, { maxFiles })` and passes that exact result into `buildArchitectureBrief`, so the import scan's output is what every conformance verdict is measured against." }
@@ -24,4 +24,4 @@ Sets the architecture rules a person reviewed and wrote down beside the imports 
 - Enforcing the rules or blocking a change.
 
 ## Uncertainty
-- Read from `mcp/src/architecture-profile.mjs` and the `inspect_architecture` description; no profile exists in this vault yet, so the capability was never run here, and the app-side architecture screen under `src/views/architecture/` was listed but not opened.
+- Read from `mcp/src/architecture/architecture-profile.mjs` and the `inspect_architecture` description; no profile exists in this vault yet, so the capability was never run here, and the app-side architecture screen under `src/views/architecture/` was listed but not opened.

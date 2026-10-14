@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FSD_PROFILE_FRONTMATTER } from '../../../../tests/fixtures/architecture-profile-cases.mjs';
-import { buildArchitectureBrief, parseArchitectureProfile } from '../../../../mcp/src/architecture-profile.mjs';
+import { buildArchitectureBrief, parseArchitectureProfile } from '../../../../mcp/src/architecture/architecture-profile.mjs';
 import { analysisDigest, analysisTextDigest, type AnalysisRun } from '@/entities/analysis-record';
 import { architectureRecordFromAnalysis } from './analysis-architecture-record';
 

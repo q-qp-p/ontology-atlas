@@ -218,7 +218,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Capability quantifier integrity
 
-**Run**: `node scripts/ci/run-focused-node-test.mjs --test-name-pattern "bounded-evidence omissions" mcp/src/meaning-evaluation.test.mjs`
+**Run**: `node scripts/ci/run-focused-node-test.mjs --test-name-pattern "bounded-evidence omissions" mcp/src/meaning/meaning-evaluation.test.mjs`
 **Proves**: Capability quantifier claims never omit their bounding evidence.
 **Escalate**: `pnpm test:mcp:unit`, then source/bundle MCP parity and a four-phase source-hidden field trial
 
@@ -244,7 +244,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Claim-local semantic evidence
 
-**Run**: `node scripts/ci/run-focused-node-test.mjs --test-name-pattern "every selected safe section|mixed README policy boundaries|selected deprecated ability prose|mixed selected instructions|over-bound policy split|line-scoped review unit|ordinary prose overlap" mcp/src/analyze.test.mjs mcp/src/analyze-adversarial.test.mjs mcp/src/meaning-evaluation.test.mjs`
+**Run**: `node scripts/ci/run-focused-node-test.mjs --test-name-pattern "every selected safe section|mixed README policy boundaries|selected deprecated ability prose|mixed selected instructions|over-bound policy split|line-scoped review unit|ordinary prose overlap" mcp/src/analyze.test.mjs mcp/src/analyze-adversarial.test.mjs mcp/src/meaning/meaning-evaluation.test.mjs`
 **Proves**: Selected evidence stays claim-local: safe sections share evidence and ordinary prose is not falsely linked.
 **Escalate**: `pnpm test:mcp:unit`, then verify source MCP and replay a fresh field trial
 
@@ -355,7 +355,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Compact task-claim routing
 
-**Run**: `node scripts/ci/run-focused-node-test.mjs --test-name-pattern "persisted responsibility|task boundaries|claim boundaries" mcp/src/agent-brief-compact.test.mjs mcp/src/integration.test.mjs`
+**Run**: `node scripts/ci/run-focused-node-test.mjs --test-name-pattern "persisted responsibility|task boundaries|claim boundaries" mcp/src/agent-brief/agent-brief-compact.test.mjs mcp/src/integration.test.mjs`
 **Proves**: Compact `agent_brief` honors Definition/Includes/Excludes polarity and refuses conflicts, unsupported claims, and ties.
 **Escalate**: `pnpm test:mcp:unit`, then `pnpm integration:mcp` and a source-hidden replay before a product claim
 
@@ -538,13 +538,13 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Exact task-navigation truth
 
-**Run**: `node --test mcp/src/task-navigation-evidence.test.mjs && node --test cli/src/lib/query-result-contract/agent-brief/agent-brief-compact.test.mjs`
+**Run**: `node --test mcp/src/agent-brief/task-navigation-evidence.test.mjs && node --test cli/src/lib/query-result-contract/agent-brief/agent-brief-compact.test.mjs`
 **Proves**: Compact agent_brief truth fields stay exact, probing source-currentness, the 12,000-byte cap, and stop_on_match independently.
 **Escalate**: `pnpm test:mcp:unit`, then current-source MCP/CLI integration and a prospective field trial
 
 ### First-pass construction completion
 
-**Run**: `node scripts/ci/run-focused-node-test.mjs --test-name-pattern "unfinished-scope project exclusion|redundant domain edge" mcp/src/construction-lifecycle.test.mjs mcp/src/ontology-engine.test.mjs`
+**Run**: `node scripts/ci/run-focused-node-test.mjs --test-name-pattern "unfinished-scope project exclusion|redundant domain edge" mcp/src/construction/construction-lifecycle.test.mjs mcp/src/ontology-engine.test.mjs`
 **Proves**: An unfinished-scope project stays excluded and a redundant domain edge stays rejected during first-pass construction.
 **Escalate**: none
 
@@ -783,7 +783,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 ### MCP core units
 
 **Run**: `pnpm test:mcp:unit`
-**Proves**: Every mcp/src/*.test.mjs and mcp/src/infer-imports/*.test.mjs unit suite (excluding integration) passes; suites are discovered by glob, not a hand-kept list.
+**Proves**: Every mcp/src/*.test.mjs and mcp/src/*/*.test.mjs unit suite (excluding integration) passes; suites are discovered by glob, not a hand-kept list.
 **Escalate**: `pnpm integration:mcp:readme` for the readme-flow integration suite
 **Fix**: Run the direct sibling `pnpm exec node --test mcp/src/<name>.test.mjs` first when `pnpm checks:changed` names one.
 
@@ -956,7 +956,7 @@ before commit `5eb3ba9ff`, and its decisions are in the ledger.
 
 ### Project source witness parity
 
-**Run**: `node --test mcp/src/project-meaning-evidence.test.mjs mcp/src/project-meaning-inventory.test.mjs mcp/src/project-source-connect.test.mjs && pnpm exec vitest run src/views/home/lib/project-source/project-source-witnesses.test.ts tests/contract/analysis/project-source-connect.contract.test.ts`
+**Run**: `node --test mcp/src/project-meaning/project-meaning-evidence.test.mjs mcp/src/project-meaning/project-meaning-inventory.test.mjs mcp/src/project-source/project-source-connect.test.mjs && pnpm exec vitest run src/views/home/lib/project-source/project-source-witnesses.test.ts tests/contract/analysis/project-source-connect.contract.test.ts`
 **Proves**: A literal repository-root path stays rejected beside valid sibling evidence, keeping unsafe source-witness paths red.
 **Escalate**: none
 

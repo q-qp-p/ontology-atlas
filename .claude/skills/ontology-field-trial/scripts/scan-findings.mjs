@@ -11,10 +11,10 @@ import { fileURLToPath } from 'node:url';
 function findRepositoryRoot() {
   let here = dirname(fileURLToPath(import.meta.url));
   while (here !== dirname(here)) {
-    if (existsSync(join(here, 'mcp', 'src', 'meaning-findings.mjs'))) return here;
+    if (existsSync(join(here, 'mcp', 'src', 'meaning', 'meaning-findings.mjs'))) return here;
     here = dirname(here);
   }
-  throw new Error('could not find mcp/src/meaning-findings.mjs above this script');
+  throw new Error('could not find mcp/src/meaning/meaning-findings.mjs above this script');
 }
 
 const repository = findRepositoryRoot();
@@ -22,7 +22,7 @@ const {
   dependencyWitnessFinding,
   meaningFindings,
   starterExampleFindings,
-} = await import(join(repository, 'mcp', 'src', 'meaning-findings.mjs'));
+} = await import(join(repository, 'mcp', 'src', 'meaning', 'meaning-findings.mjs'));
 const { parseFrontmatter } = await import(join(repository, 'mcp', 'src', 'parser.mjs'));
 
 const [vaultArg, repoRootArg] = process.argv.slice(2);

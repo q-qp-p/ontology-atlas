@@ -1,5 +1,5 @@
 /**
- * Browser copy of `mcp/src/meaning-findings.mjs`; kept in step by
+ * Browser copy of `mcp/src/meaning/meaning-findings.mjs`; kept in step by
  * `tests/contract/analysis/meaning-findings-parity.contract.test.ts`. `folder-only-evidence` is absent: no
  * filesystem.
  */

@@ -1,6 +1,6 @@
-import { hasCapabilityImplementationEvidence } from '../capability-evidence.mjs';
-import { refMatchesOntologyAtlasIgnore } from '../ontology-atlas-ignore.mjs';
-import { extractUncertaintyReads, orderUncertaintyReads } from '../uncertainty-reads.mjs';
+import { hasCapabilityImplementationEvidence } from './capability-evidence.mjs';
+import { refMatchesOntologyAtlasIgnore } from '../vault/ontology-atlas-ignore.mjs';
+import { extractUncertaintyReads, orderUncertaintyReads } from '../meaning/uncertainty-reads.mjs';
 import {
   edgeSortKey,
   formatPathEdge,

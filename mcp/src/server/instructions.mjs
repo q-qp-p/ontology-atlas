@@ -7,12 +7,12 @@
  * truncating host drops stays reachable through `connection_info({guide})`.
  */
 
-import { CONSTRUCTION_CARD_EN } from '../construction-card.mjs';
-import { CONSTRUCTION_LIFECYCLE_EN } from '../construction-lifecycle.mjs';
+import { CONSTRUCTION_CARD_EN } from '../construction/construction-card.mjs';
+import { CONSTRUCTION_LIFECYCLE_EN } from '../construction/construction-lifecycle.mjs';
 import {
   CONSTRUCTION_RULES_EN,
   META_MODEL_RULES_EN,
-} from '../construction-rules.mjs';
+} from '../construction/construction-rules.mjs';
 import {
   QUERY_ONTOLOGY_OPERATION_UNION,
   QUERY_PLAN_TARGET_OPERATION_UNION,

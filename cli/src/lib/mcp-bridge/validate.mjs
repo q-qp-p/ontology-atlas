@@ -15,8 +15,8 @@ export const rawSourceKindIssues = validate.rawSourceKindIssues;
  * The folder-evidence finding needs a repository root, so `validate` runs it over the whole vault, as
  * `validate_vault` does, from this one implementation.
  */
-/** @type {typeof import('../../../../mcp/src/meaning-findings.mjs')} */
-const meaningFindings = await loadMcpModule('meaning-findings.mjs');
+/** @type {typeof import('../../../../mcp/src/meaning/meaning-findings.mjs')} */
+const meaningFindings = await loadMcpModule('meaning/meaning-findings.mjs');
 export const folderOnlyEvidenceFinding = meaningFindings.folderOnlyEvidenceFinding;
 export const dependencyWitnessFinding = meaningFindings.dependencyWitnessFinding;
 export const starterExampleFindings = meaningFindings.starterExampleFindings;

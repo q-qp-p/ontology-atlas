@@ -6,7 +6,7 @@ title: Source remedy map
 display_en: Source remedy map
 display_ko: 소스 수정 매핑
 domain: domains/code-evidence
-path: mcp/src/project-source-remedy.mjs
+path: mcp/src/project-source/project-source-remedy.mjs
 created_by: "agent:claude-code"
 ---
 

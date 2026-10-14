@@ -9,7 +9,7 @@ import {
 } from './value-checks.mjs';
 
 const MAINTENANCE_ACTION_SEVERITIES = new Set(['fail', 'warn', 'info']);
-/** The gap kinds `mcp/src/uncertainty-reads.mjs` classifies, in its own order. */
+/** The gap kinds `mcp/src/meaning/uncertainty-reads.mjs` classifies, in its own order. */
 const NEXT_READ_KINDS = new Set([
   'unread-range',
   'unread-file',
