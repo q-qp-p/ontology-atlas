@@ -155,7 +155,7 @@ export interface NodeShapeDrawState {
     /**
      * W6 agent visibility — true for the single node matching the current
        * agent heartbeat's `focus.ontologySlug` (resolved upstream by
-       * `views/home/lib/resolve-agent-focus-node.ts`), only while that
+       * `views/home/lib/agent/resolve-agent-focus-node.ts`), only while that
        * heartbeat is fresh (`hasFreshHeartbeat`, `topology-frame-draw.ts`'s
        * caller nulls the id otherwise). Draws a static amber hairline ring — the
        * SAME `amberHub` signal tone as the hub ring / project hexagon, never a

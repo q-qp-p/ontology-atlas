@@ -9,7 +9,7 @@ import {
 import {
   classifyTopologyRelationQuality,
   type TopologyRelationQualityBreakdown,
-} from "./topology-analysis";
+} from "../topology-analysis";
 
 /**
  * Node facts shared by the canvas popover and the significance line, which project it without

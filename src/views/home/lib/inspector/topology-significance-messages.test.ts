@@ -1,7 +1,7 @@
 import { createTranslator } from "next-intl";
 import { describe, expect, it } from "vitest";
-import enMessages from "../../../../messages/en.json";
-import koMessages from "../../../../messages/ko.json";
+import enMessages from "../../../../../messages/en.json";
+import koMessages from "../../../../../messages/ko.json";
 
 /**
  * Catches ICU syntax errors and en/ko branch drift in `topology.significance.*` before next-intl

@@ -1,8 +1,8 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import type { FootprintTrailEntry } from "../lib/footprint-trail";
-import { PAST_WALK_MIN_ENTRIES } from "../lib/past-trail-record";
+import type { FootprintTrailEntry } from "../lib/trail/footprint-trail";
+import { PAST_WALK_MIN_ENTRIES } from "../lib/trail/past-trail-record";
 import { usePastTrails, type UsePastTrailsArgs } from "./use-past-trails";
 
 vi.mock("next-intl", () => ({

@@ -4,9 +4,9 @@ import { copyText } from "@/shared/lib/clipboard/copy-text";
 import { COPY_FEEDBACK_RESET_MS } from "@/shared/lib/clipboard/use-copy-feedback";
 import type { OntologyMapEdge, OntologyMapNode } from "@/widgets/ontology-map";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { resolveTopologyNodeTitle } from "../lib/resolve-topology-node-title";
+import { resolveTopologyNodeTitle } from "../lib/map-canvas/resolve-topology-node-title";
 import { computeTopologyShortestPath, formatTopologyPathAgentPacket } from "../lib/topology-analysis";
-import { canCopyTopologyPathPacket, resolveTopologyPathChipState } from "../lib/topology-path-chip-state";
+import { canCopyTopologyPathPacket, resolveTopologyPathChipState } from "../lib/map-canvas/topology-path-chip-state";
 import { buildContainmentParentMap, deriveDeeplinkAncestorExpansion } from "./url-state";
 
 type Translate = (key: string, values?: Record<string, string | number>) => string;

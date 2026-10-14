@@ -8,7 +8,7 @@ import { readFirstRunStarterDismissed, writeFirstRunStarterDismissed } from "@/f
 import { useSurfaceSwap } from "@/shared/lib/render-timing/use-presence";
 import { VAULT_START_STEPS_DISMISSED_KEY } from "@/widgets/topology-controls";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
-import { resolveContextualIndexState } from "../lib/resolve-contextual-index-state";
+import { resolveContextualIndexState } from "../lib/index-panel/resolve-contextual-index-state";
 import { useIndexSelectionOverride } from "./use-index-selection-override";
 
 interface Options {

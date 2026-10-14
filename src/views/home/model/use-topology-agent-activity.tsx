@@ -8,7 +8,7 @@ import { type AgentLiveWorkInput } from "@/features/agent-activity";
 import { useVaultConnectors } from "@/features/mcp-connectors";
 import { createVaultAcpWorkReceiptStore, type AcpWorkReceipt, type AcpWorkReceiptStore } from "@/shared/lib/meaning-transition/acp-work-receipt";
 import { useCallback, useMemo, useRef } from "react";
-import { acpHeartbeatAgentName, buildAcpTurnHeartbeat, createVaultAcpHeartbeatStore, type AcpHeartbeatStore } from "../lib/acp-agent-heartbeat";
+import { acpHeartbeatAgentName, buildAcpTurnHeartbeat, createVaultAcpHeartbeatStore, type AcpHeartbeatStore } from "../lib/agent/acp-agent-heartbeat";
 
 interface Options {
   topologyAuthoring: Pick<ReturnType<typeof useTopologyAuthoring>, "agentServer" | "acpTurnActivityFrame" | "setAcpTurnActivityFrame">;
@@ -59,7 +59,7 @@ export function useTopologyAgentActivity({ topologyVaultReadModel, acpRuntimeCon
     vaultConnectors.connectors,
   ]);
 
-  // Registers the runtime's name for `created_by`; see `lib/acp-agent-heartbeat.ts`.
+  // Registers the runtime's name for `created_by`; see `lib/agent/acp-agent-heartbeat.ts`.
   const acpHeartbeatStore = useMemo<AcpHeartbeatStore | null>(
     () =>
       vault.status === "loaded" && vault.handle

@@ -13,7 +13,7 @@ import { useToast } from "@/shared/ui";
 import type { DialLabels } from "@/widgets/ontology-map";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { countProjectRelationsWithinGraph, resolveTopologyOverlayState, resolveTopologyRenderState } from "../lib/topology-render-state";
+import { countProjectRelationsWithinGraph, resolveTopologyOverlayState, resolveTopologyRenderState } from "../lib/map-canvas/topology-render-state";
 import { selectTopologyNodeRouteState } from "./url-state";
 import { useTopologyIndexReadModel } from "./use-topology-index-read-model";
 import { useTopologyPathLens } from "./use-topology-path-lens";

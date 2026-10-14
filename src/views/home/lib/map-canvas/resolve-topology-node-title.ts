@@ -1,6 +1,6 @@
 import type { KnowledgeGraphNode } from "@/entities/knowledge-graph";
 import { projectDisplayName, type Project } from "@/entities/project";
-import { resolveTopologySelectedOntologyNode } from "./resolve-topology-selected-node";
+import { resolveTopologySelectedOntologyNode } from "../selection/resolve-topology-selected-node";
 
 /**
  * A slug's readable name, only when it resolves in this vault. null is the information: falling

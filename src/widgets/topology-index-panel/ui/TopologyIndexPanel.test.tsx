@@ -124,7 +124,7 @@ function buildFixtureTree() {
 describe("TopologyIndexPanel", () => {
   /*
    * One badge column, one meaning: the row's number is the map node's mark, counted from the same
-   * domain census for every kind (`views/home/lib/map-adapter.ts`).
+   * domain census for every kind (`views/home/lib/map-canvas/map-adapter.ts`).
    */
   it("a project row counts everything below it, the same number its node carries", () => {
     const census = new Map([

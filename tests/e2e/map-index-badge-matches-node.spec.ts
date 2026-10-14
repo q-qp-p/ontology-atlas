@@ -7,7 +7,7 @@ import { waitForMapStill } from "./settle";
  *
  * The number at the right of an INDEX row is the same mark the map draws inside a
  * node, and the map counts every kind from the domain census
- * (`views/home/lib/map-adapter.ts`). The row consulted that census for domain rows
+ * (`views/home/lib/map-canvas/map-adapter.ts`). The row consulted that census for domain rows
  * only, so a project row fell through to its number of direct children. Measured on
  * the sample folder at 1512×982: the project said **3** in the INDEX while its own
  * node on the canvas said **16**, and the three domain rows agreed at 5, 7 and 4.

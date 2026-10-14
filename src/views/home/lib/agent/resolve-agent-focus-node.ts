@@ -1,6 +1,6 @@
 import type { KnowledgeGraphNode } from "@/entities/knowledge-graph";
 import { translateOntologyDeeplinkToTopologyParam } from "@/entities/knowledge-graph";
-import { resolveTopologySelectedOntologyNode } from "./resolve-topology-selected-node";
+import { resolveTopologySelectedOntologyNode } from "../selection/resolve-topology-selected-node";
 
 /**
  * Resolves a heartbeat's `focus.ontologySlug` (a vault slug) to the map node id the render engine

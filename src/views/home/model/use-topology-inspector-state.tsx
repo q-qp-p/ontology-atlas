@@ -18,7 +18,7 @@ import { useRetainedDatasheetModel } from "./use-retained-datasheet-model";
 interface Options {
   setExpandAllActive: React.Dispatch<React.SetStateAction<boolean>>;
   setRouteState: (updater: Partial<import("@/views/home/model/url-state").HomeRouteState> | ((current: import("@/views/home/model/url-state").HomeRouteState) => import("@/views/home/model/url-state").HomeRouteState), options?: import("@/views/home/model/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
-  nodeFocus: import("@/views/home/lib/topology-node-focus").TopologyNodeFocusModel | null;
+  nodeFocus: import("@/views/home/lib/inspector/topology-node-focus").TopologyNodeFocusModel | null;
   v2DatasheetModel: { slug: string; nodeId: string; title: string; sourceTitle: string | null; kind: string; domain: { id: string; title: string; } | null; powered: boolean; updatedAtLabel: string | null; metric: { contains: number; usedBy: number; dependsOn: number; belongsTo: number; evidence: number; }; groups: import("@/widgets/ontology-map/ui/detail-panel/map-datasheet").V2ConnectionGroupsView; evidence: { rows: import("@/widgets/ontology-map/ui/detail-panel/map-datasheet").V2EvidenceRow[]; total: number; }; codeLocations: string[]; handoffText: string; documentHref: string | null; mentionDocumentHref: string | null; meaningEditHref: string; lastEditSubject: { kind: import("@/shared/lib/edit-provenance/last-edit-subject").LastEditSubjectKind; ageLabel: string; } | null; mtimeConflict: boolean; } | null;
   analysisMode: import("@/views/home/model/url-state").TopologyAnalysisMode;
   selectedSlug: string | null;

@@ -24,9 +24,9 @@ import { morphName, runMorph } from "@/shared/motion/shared-element";
 import { OntologyMapClusterHoverCard, OntologyMapContextMenu, OntologyMapDetailPanel, OntologyMapEdgeHoverCard, OntologyMapEdgePanel } from "@/widgets/ontology-map";
 import { ProjectDrawer } from "@/widgets/project-drawer";
 import { useTranslations } from "next-intl";
-import { normalizeKindLabelKey } from "../lib/topology-node-significance";
-import { returnFocusIfDropped } from "../lib/topology-focus-return";
-import { resolveNodeVaultRef } from "../lib/topology-node-edit";
+import { normalizeKindLabelKey } from "../lib/inspector/topology-node-significance";
+import { returnFocusIfDropped } from "../lib/keyboard/topology-focus-return";
+import { resolveNodeVaultRef } from "../lib/authoring/topology-node-edit";
 
 
 interface TopologyInspectorSurfacesProps {

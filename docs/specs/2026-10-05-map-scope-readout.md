@@ -34,7 +34,7 @@ paths below refer to that snapshot if the implementation removes a file.
 - `src/features/first-run-starter/ui/SampleNodeHint.tsx:12-33` shows the click
   instruction and document-origin claim visible in both captures.
 - `src/views/home/model/use-topology-graph-projection.ts:82-127` substitutes a
-  generated graph for `?synth`; `src/views/home/lib/synth-vault.ts:248-252`
+  generated graph for `?synth`; `src/views/home/lib/synth-vault/synth-vault.ts:248-252`
   supplies its generic domain labels. These are not actual ontology names.
 - `samples/storefront/domains/*.md:4-6` supplies the captured nine named domains.
   The captured storefront contains 125 concepts; no naming repair is needed.

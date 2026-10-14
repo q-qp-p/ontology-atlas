@@ -6,7 +6,7 @@ import {
 } from "@/entities/knowledge-graph";
 import type { OntologyMapEdge, OntologyMapNode } from "@/widgets/ontology-map";
 import { computeSubtreeWeights } from "./subtree-weights";
-import { classifyTopologyRelationQuality } from "./topology-analysis";
+import { classifyTopologyRelationQuality } from "../topology-analysis";
 
 const RENDERABLE_KINDS = new Set(["project", "domain", "capability", "element"]);
 

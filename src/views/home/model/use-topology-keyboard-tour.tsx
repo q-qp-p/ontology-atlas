@@ -14,9 +14,9 @@ import { useClaimShellKey } from "@/shared/lib/keyboard/shell-key-claims";
 import { derivedHook } from "@/shared/lib/derived-hook";
 import { useTypingShortcuts } from "@/shared/lib/keyboard/use-typing-shortcut";
 import { useCallback, useEffect, useEffectEvent, useRef } from "react";
-import { shouldSuppressGlobalShortcuts } from "../lib/blocking-surface";
-import { resolveTourAnchorNodeId } from "../lib/resolve-tour-anchor-node";
-import { resolveTopologyEscLadderAction } from "../lib/topology-esc-ladder";
+import { shouldSuppressGlobalShortcuts } from "../lib/keyboard/blocking-surface";
+import { resolveTourAnchorNodeId } from "../lib/keyboard/resolve-tour-anchor-node";
+import { resolveTopologyEscLadderAction } from "../lib/keyboard/topology-esc-ladder";
 import { useFocusReturnOnClose } from "./use-focus-return-on-close";
 
 const CANVAS_RETURN = ["ontology-map-canvas"] as const;

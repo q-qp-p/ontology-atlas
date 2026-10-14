@@ -11,7 +11,7 @@ import type { ChatSuggestion } from "@/features/acp-session";
 import { type AcpMapIntent } from "@/widgets/acp-chat-panel";
 import { useCallback, useMemo } from "react";
 import { useLatestRef } from "@/shared/lib/use-latest-ref";
-import { restoreTopologyFocusAfterDatasheetClose } from "../lib/topology-focus-return";
+import { restoreTopologyFocusAfterDatasheetClose } from "../lib/keyboard/topology-focus-return";
 import { resolveTopologyNodeClickRouteState, selectTopologyPathRouteState } from "./url-state";
 
 interface Options {

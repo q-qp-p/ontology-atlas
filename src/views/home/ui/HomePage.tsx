@@ -58,7 +58,7 @@ import { useGuidedTourAutoStartReady } from "@/features/guided-tour";
 import { AppSettingsMenu } from "@/widgets/app-settings-menu";
 import { refreshIndexDependentTokens } from "@/widgets/ontology-map";
 import { type IndexPanelState } from "@/widgets/topology-index-panel";
-import { buildNavRailContextHrefs } from "../lib/nav-rail-context-hrefs";
+import { buildNavRailContextHrefs } from "../lib/selection/nav-rail-context-hrefs";
 import { useFootprintTrail } from "../model/use-footprint-trail";
 import { usePastTrails } from "../model/use-past-trails";
 import { TopologyBlockingOverlays } from "./TopologyBlockingOverlays";

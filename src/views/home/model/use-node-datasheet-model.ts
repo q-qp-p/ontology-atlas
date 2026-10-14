@@ -14,11 +14,11 @@ import { buildDocsVaultHref } from "@/entities/docs-vault";
 import type { AgentActivityStatus } from "@/entities/vault-session";
 import { computeEditAge } from "@/shared/lib/edit-provenance/edit-age";
 import type { LastEditSubjectKind } from "@/shared/lib/edit-provenance/last-edit-subject";
-import { computeUpdatedAgo } from "../lib/format-updated-ago";
-import { hasNodeMtimeConflict, resolveNodeLastEditSubject } from "../lib/resolve-node-edit-subject";
-import { buildTopologyOntologyDrawerModel } from "../lib/topology-ontology-drawer";
-import { buildTopologyNodeFocus, type TopologyNodeFocusModel } from "../lib/topology-node-focus";
-import { buildNodeSignificance, type NodeSignificanceModel } from "../lib/topology-node-significance";
+import { computeUpdatedAgo } from "../lib/inspector/format-updated-ago";
+import { hasNodeMtimeConflict, resolveNodeLastEditSubject } from "../lib/inspector/resolve-node-edit-subject";
+import { buildTopologyOntologyDrawerModel } from "../lib/inspector/topology-ontology-drawer";
+import { buildTopologyNodeFocus, type TopologyNodeFocusModel } from "../lib/inspector/topology-node-focus";
+import { buildNodeSignificance, type NodeSignificanceModel } from "../lib/inspector/topology-node-significance";
 import {
   buildV2ConnectionGroups,
   buildV2Connections,

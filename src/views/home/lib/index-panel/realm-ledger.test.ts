@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { underCollation } from "../../../../tests/helpers/under-collation";
+import { underCollation } from "../../../../../tests/helpers/under-collation";
 import type { KnowledgeGraphEdge, KnowledgeGraphNode } from "@/entities/knowledge-graph";
 import { buildOntologyTree } from "@/entities/knowledge-graph/lib/ontology-tree";
 import {

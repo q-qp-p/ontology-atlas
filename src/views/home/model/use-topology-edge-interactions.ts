@@ -4,9 +4,9 @@ import { buildTopologyMeaningEditorEdgeHref, edgeAuthoredByFromNode, meaningEdit
 import { useHeldValue } from "@/shared/lib/render-timing/use-presence";
 import type { HoverAvoidRect } from "@/widgets/ontology-map";
 import { useCallback, useMemo, useState } from "react";
-import { edgeSentenceValues, normalizeEdgeSentenceKey } from "../lib/edge-sentence";
-import { computeUpdatedAgo } from "../lib/format-updated-ago";
-import { resolveTopologyNodeEditTarget } from "../lib/topology-node-edit";
+import { edgeSentenceValues, normalizeEdgeSentenceKey } from "../lib/authoring/edge-sentence";
+import { computeUpdatedAgo } from "../lib/inspector/format-updated-ago";
+import { resolveTopologyNodeEditTarget } from "../lib/authoring/topology-node-edit";
 
 export interface SelectedTopologyEdge {
   sourceId: string;

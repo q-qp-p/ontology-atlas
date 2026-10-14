@@ -13,7 +13,7 @@ import { analysisGraphFromInsight, useAnalysisCapture } from "@/features/acp-ses
 import { investigationCaptureContext } from './gray-area/investigation-context';
 import { useRouter } from "@/i18n/navigation";
 import { useCallback, useMemo, useState } from "react";
-import { edgeSentenceValues, normalizeEdgeSentenceKey } from "../lib/edge-sentence";
+import { edgeSentenceValues, normalizeEdgeSentenceKey } from "../lib/authoring/edge-sentence";
 import { selectTopologyPathRouteState } from "./url-state";
 import { useTaskReviewBaseline } from "./use-task-review-baseline";
 

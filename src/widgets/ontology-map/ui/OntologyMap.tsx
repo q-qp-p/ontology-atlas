@@ -56,7 +56,7 @@ export interface OntologyMapNode {
    */
   createdBy?: string;
   /** Living-map drift — the dusty decision derived from vault mtime
-   *  (`views/home/lib/topology-dusty.ts`). true renders through the existing stale
+   *  (`views/home/lib/map-canvas/topology-dusty.ts`). true renders through the existing stale
    *  channel (dash plus the opaque stale token). Omitted means fresh. */
   stale?: boolean;
   fullDegree: number;

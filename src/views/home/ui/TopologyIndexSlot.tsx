@@ -16,7 +16,7 @@ import type { useTopologyVaultReadModel } from "../model/use-topology-vault-read
 import { useState, type ReactNode } from "react";
 import { filterTreeExcludeKind } from "@/entities/knowledge-graph";
 import { useVaultLoadProgress } from "@/entities/vault-session";
-import { focusWhenReady } from "../lib/topology-focus-return";
+import { focusWhenReady } from "../lib/keyboard/topology-focus-return";
 import { TopologyIndexPanel, TopologyIndexTab, TopologyRealmLedger } from "@/widgets/topology-index-panel";
 
 

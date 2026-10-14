@@ -39,7 +39,7 @@ Retired paths below are historical evidence, not current implementation owners.
   strands. Their dissent records unnamed contributing capabilities and missing
   exploration affordances. The owner now rejects this presentation.
 - `src/widgets/ontology-map/ui/OntologyMap.tsx:55-90` defines four renderable
-  kinds and typed edges. `src/views/home/lib/map-adapter.ts:98-107` sets the
+  kinds and typed edges. `src/views/home/lib/map-canvas/map-adapter.ts:98-107` sets the
   containment display kind but preserves original relation direction.
 - `src/entities/knowledge-graph/model/types.ts:27-63` retains localized names,
   document availability, and typed facts. The convenience helper at

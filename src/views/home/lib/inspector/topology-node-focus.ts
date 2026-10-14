@@ -3,7 +3,7 @@ import {
   classifyTopologyRelationQuality,
   type TopologyRelationQuality,
   type TopologyRelationQualityBreakdown,
-} from "./topology-analysis";
+} from "../topology-analysis";
 import type { TopologyOntologyDrawerModel } from "./topology-ontology-drawer";
 
 interface TopologyNodeFocusConnection {

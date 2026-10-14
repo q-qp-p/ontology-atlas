@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { focusWhenReady } from "../lib/topology-focus-return";
+import { focusWhenReady } from "../lib/keyboard/topology-focus-return";
 
 /**
  * When `open` turns false, focus returns to the first existing `testIds` element if it was stranded

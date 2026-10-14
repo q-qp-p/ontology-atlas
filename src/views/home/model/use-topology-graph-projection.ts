@@ -1,9 +1,9 @@
 import type { KnowledgeProjectInsight } from "@/entities/knowledge-graph";
 import type { Project } from "@/entities/project";
 import { useMemo, useState } from "react";
-import { buildOntologyMapGraph } from "../lib/map-adapter";
-import { resolveCanvasSelectedSlug } from "../lib/resolve-canvas-selection";
-import { clampSynthSize, type SynthShape, synthesizeEvidenceStates, synthesizeVaultGraph } from "../lib/synth-vault";
+import { buildOntologyMapGraph } from "../lib/map-canvas/map-adapter";
+import { resolveCanvasSelectedSlug } from "../lib/selection/resolve-canvas-selection";
+import { clampSynthSize, type SynthShape, synthesizeEvidenceStates, synthesizeVaultGraph } from "../lib/synth-vault/synth-vault";
 import type { MapEvidence } from "./use-map-evidence-states";
 import { resolveRealmNodeId } from "./url-state";
 

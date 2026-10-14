@@ -70,7 +70,7 @@ export function useTopologyExplorationLenses({ routeState, setRouteState, topolo
   // The canvas wants a node id; project deep links send a bare slug, so projects resolve through
   // the same rule. Without a node the bare slug is kept and the canvas drops it to "nothing
   // selected". A selection confirmed to exist
-  // (`../lib/resolve-canvas-selection.ts`): `canvasSelectedSlug` holds the raw slug while
+  // (`../lib/selection/resolve-canvas-selection.ts`): `canvasSelectedSlug` holds the raw slug while
   // undecided, so anything that writes a permanent record, like the first-visit hint, reads this.
   const drawerProject = selectedProject;
 
