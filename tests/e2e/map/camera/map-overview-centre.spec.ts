@@ -10,7 +10,7 @@ import { waitForBoxStill, waitForDomeEntered, waitForMapSettled, waitForMapStill
  * convert through the canvas box.
  */
 
-/** The app's window floor, its opening window, and a full-HD browser window. */
+/** The app's window floor and its opening window: the two sizes the installed app is read at. */
 const SIZES = [
   { width: 1040, height: 720 },
   { width: 1512, height: 949 },
@@ -18,13 +18,10 @@ const SIZES = [
 ] as const;
 /** Half a node's rim: past it a person sees the drawing sit to one side. */
 const TOLERANCE = 4;
-/** The Flat dial's hub may sit this far above or below the free map's middle (decision bdeff3ae). */
-const VERTICAL_TOLERANCE = 8;
-/** Air between the tool row and the outer ring's top: the ring's caption plus 24 px. Windows under
- * 880 px tall keep no band under the tool row (`base-responsive.css`), so there the 24 px alone. */
-const TOOLBAR_AIR = 40;
-const SHORT_WINDOW_TOOLBAR_AIR = 24;
-const SHORT_WINDOW_PX = 880;
+const HUB_VERTICAL_TOLERANCE = 8;
+const RING_CAPTION_AND_AIR_BELOW_TOOL_ROW = 40;
+const AIR_BELOW_TOOL_ROW_IN_WINDOWS_WITHOUT_A_BAND = 24;
+const WINDOW_HEIGHT_WITH_A_BAND_UNDER_TOOL_ROW = 880;
 const RAIL = ["topology-fit-control", "topology-tour-button", "topology-shortcuts-help-button", "topology-replay-growth"];
 
 interface Frame {
@@ -134,8 +131,8 @@ function check(frame: Frame, where: string, { chromeLine }: { chromeLine: boolea
     const vertical = frame.hubY - (frame.freeTop + frame.freeBottom) / 2;
     const air = frame.ringTop - frame.toolbarBottom;
     console.log(`[centre] ${where} hub=${frame.hubY.toFixed(1)} free=[${frame.freeTop.toFixed(1)}, ${frame.freeBottom.toFixed(1)}] vertical=${vertical.toFixed(1)} toolbarAir=${air.toFixed(1)}`);
-    if (Math.abs(vertical) > VERTICAL_TOLERANCE) failures.push(`${where}: the hub stands ${vertical.toFixed(1)}px from the free map's middle`);
-    const needed = frame.viewportHeight < SHORT_WINDOW_PX ? SHORT_WINDOW_TOOLBAR_AIR : TOOLBAR_AIR;
+    if (Math.abs(vertical) > HUB_VERTICAL_TOLERANCE) failures.push(`${where}: the hub stands ${vertical.toFixed(1)}px from the free map's middle`);
+    const needed = frame.viewportHeight < WINDOW_HEIGHT_WITH_A_BAND_UNDER_TOOL_ROW ? AIR_BELOW_TOOL_ROW_IN_WINDOWS_WITHOUT_A_BAND : RING_CAPTION_AND_AIR_BELOW_TOOL_ROW;
     if (air < needed) failures.push(`${where}: the outer ring's top stands ${air.toFixed(1)}px below the tool row, under ${needed}px`);
   }
   const { width, height, cssWidth, cssHeight, dpr } = frame.backing;
