@@ -26,15 +26,7 @@ const REPO_ROOT = join(import.meta.dirname, "..", "..", "..");
 
 /** Screens wearing this frame — an `mx-auto` document column in the shell's scroll slot with an `h1` as the first content. */
 /** Screens using the form/edit column: the same top spacing as the list screens, only narrower. */
-const FORM_MEMBERS = [
-  "src/views/project-editor/ui/ProjectEditorPage.tsx",
-  /*
-   * Agents and MCP are text-and-settings screens: a row read across gets worse the wider it is, so they
-   * use the 960 centred column. The frame file records the rule so the next screen decides by it.
-   */
-  // `McpPage` is not listed: it is the Agents page's second tab body, drawn inside that page's frame.
-  "src/views/agents/ui/AgentsPage.tsx",
-] as const;
+const FORM_MEMBERS = ["src/views/project-editor/ui/ProjectEditorPage.tsx"] as const;
 
 /** Screens that must own their horizontal inset (safe-area) — only the top spacing follows the spec. */
 const TOP_PAD_MEMBERS = ["src/views/project-detail/ui/ProjectDetailPage.tsx"] as const;
@@ -42,6 +34,8 @@ const TOP_PAD_MEMBERS = ["src/views/project-detail/ui/ProjectDetailPage.tsx"] as
 const MEMBERS = [
   "src/views/project-selector/ui/ProjectSelectorPage.tsx",
   "src/views/ontology-insights/ui/OntologyInsightsPage.tsx",
+  // Rows that would read too long across 1520 split into `PAGE_TWO_TRACK` instead of a narrower column.
+  "src/views/agents/ui/AgentsPage.tsx",
 ] as const;
 
 const read = (relative: string) => readFileSync(join(REPO_ROOT, relative), "utf8");
@@ -115,7 +109,7 @@ describe("page frame spec", () => {
     }
   });
 
-  it("all three member screens wear this frame", () => {
+  it("every member screen wears this frame", () => {
     // The floor exists so an empty list cannot pass as a green run; it is not a claim about how many
     // screens the wide frame deserves.
     expect(MEMBERS.length, "with no members this whole test idles").toBeGreaterThan(1);
@@ -179,7 +173,7 @@ describe("page frame — second column and top margin (2026-08-11)", () => {
     expect(PAGE_FRAME_FORM).toContain("max-w-[960px]");
     expect(PAGE_FRAME_FORM).not.toContain("--page-max");
     // The floor exists so an empty list cannot pass as a green run.
-    expect(FORM_MEMBERS.length, "with no form members this idles").toBeGreaterThanOrEqual(2);
+    expect(FORM_MEMBERS.length, "with no form members this idles").toBeGreaterThan(0);
     for (const member of FORM_MEMBERS) {
       const source = read(member);
       expect(source, `${member} does not use PAGE_FRAME_FORM`).toContain("PAGE_FRAME_FORM");

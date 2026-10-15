@@ -36,11 +36,11 @@ conversation.
 
 **On the web**: The screen still appears, but states why it can't do what the browser can't (launching programs on this computer) along with the reason. It's not "Connection unavailable" — MCP is **attached to the folder**, not the screen, so web users are also connected. That row names the place: the MCP tab on the same strip, one press away, so the sentence carries no link (the settings sheet, which has no strip, still does).
 
-The page wears `PAGE_FRAME_FORM`, and the frame carries the desktop bottom breath itself.
+The page wears `PAGE_FRAME`, as Projects and Automations do, so the title stays put when moving between them; the frame carries the desktop bottom breath itself. From 1536px `PAGE_TWO_TRACK` puts the tool rows in a 2fr track and the setup shelf in a 1fr track beside them; the Models and MCP tabs keep the first track's width. Below 1536px the tracks stack.
 
 The folder's own MCP connection and the connectors live in the MCP tab. This tab keeps the runner list, the connection checks, the app-only install and repair, and opening a conversation.
 
-Only the tools Atlas confirmed on this machine are listed inline. The rest open in a dialog with a search field and a scrolling list — the same dialog primitives the connector dialog uses, so setting up a coding tool and attaching an MCP server feel like one product.
+The tools that can open a chat here are listed inline even before they are ready: the mark is dimmed and the last slot holds the state (install needed, sign-in needed) until "Check again" finds the tool ready, when the slot cross-fades to Open chat and the mark returns to full ink. Each tool is named once, so these do not repeat on the shelf. The rest open in a dialog with a search field and a scrolling list — the same dialog primitives the connector dialog uses, so setting up a coding tool and attaching an MCP server feel like one product.
 
 Coding-tool mode lists exclude presets that bypass the permission checkpoint,
 including Codex's workspace-write preset. Codex starts in read-only mode; the
