@@ -388,6 +388,11 @@
     pointer-events: none;
   }
 
+  .map-chrome-recede-out {
+    animation: overlayFadeOut var(--motion-base) var(--motion-ease-exit) both;
+    pointer-events: none;
+  }
+
   /* rank2 — detail panel exit symmetry. Only entry (`topologyChromeIn`) existed; React unmounts immediately on close, reading as "pops out." Reverse trajectory of entry (opacity 1→0 + translateY 0→3px + scale 1→0.98) is created shorter than chrome-in (≈120ms, 2/3 of panel duration), then presence gate unmounts. Constitution compliance — no blur/glow, scale is reverse playback of entry syntax (not hover scale).
      transform-origin folds to same variable as entry (clicked node direction).
      prefers-reduced-motion instantly vanishes via base layer global rule below. */

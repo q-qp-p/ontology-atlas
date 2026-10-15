@@ -507,6 +507,11 @@ export function focusLeashPx(
   return { x: Math.max(0, freeHalfX - FOCUS_LEASH_EDGE_PAD_PX), y: Math.max(0, freeHalfY - FOCUS_LEASH_EDGE_PAD_PX) };
 }
 
+/** The leash `computeFocusCameraTarget` aims inside, so the physics holds the same box. */
+export function focusTargetLeashPx(tokens: SafeInsetTokens, viewportWidth: number, viewportHeight: number): FocusLeashPx {
+  return focusLeashPx(viewportWidth, viewportHeight, readSafeInsets(tokens, viewportWidth, viewportHeight));
+}
+
 /** The leash in world units at `scale`: the screen leash, never tighter than the token. */
 export function focusLeashWorld(leashPx: number, scale: number, tokenMargin: number): number {
   const floor = Number.isFinite(tokenMargin) ? tokenMargin : 0;
