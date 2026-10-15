@@ -1,4 +1,9 @@
-import { DOC_COLUMN_GUTTER_PX, PROSE_MEASURE_REM } from "@/shared/ui/tokens/reading-measure";
+import {
+  DOC_COLUMN_GUTTER_PX,
+  PROSE_MEASURE_REM,
+  PROSE_MEASURE_WIDE_REM,
+  WIDE_READING_MIN_VIEWPORT_PX,
+} from "@/shared/ui/tokens/reading-measure";
 
 import { escapeHtml } from "../persistence";
 
@@ -43,6 +48,7 @@ body {
   line-height: 1.65;
 }
 [data-docs-viewer] { max-width: calc(${PROSE_MEASURE_REM.toFixed(4)}rem + ${2 * DOC_COLUMN_GUTTER_PX}px); margin: 0 auto; }
+@media (min-width: ${WIDE_READING_MIN_VIEWPORT_PX}px) { [data-docs-viewer] { max-width: calc(${PROSE_MEASURE_WIDE_REM.toFixed(4)}rem + ${2 * DOC_COLUMN_GUTTER_PX}px); } }
 [data-docs-viewer] h1 { font-size: 1.625rem; font-weight: 600; color: ${t.textPrimary}; margin-top: 0; margin-bottom: 24px; }
 [data-docs-viewer] h2 { font-size: 1.125rem; font-weight: 600; color: ${t.textPrimary}; margin: 32px 0 12px; }
 [data-docs-viewer] h3 { font-size: 0.9375rem; font-weight: 600; color: ${t.textPrimary}; margin: 20px 0 8px; }

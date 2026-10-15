@@ -8,17 +8,18 @@
 /** Mirrors `--measure-prose-steps`; change both together. */
 export const PROSE_MEASURE_STEPS = 66;
 
+/** Mirrors the `min-width: 1536px` band in `base-responsive.css`; change both together. */
+export const PROSE_MEASURE_STEPS_WIDE = 78;
+
+export const WIDE_READING_MIN_VIEWPORT_PX = 1536;
+
 /**
  * Advance of `0` in Pretendard Variable, in `em`, measured in the built export.
  * Mirrors `--measure-zero-advance`: `ch` is font-relative and a box cannot be.
  */
 export const PROSE_ZERO_ADVANCE_EM = 0.5957;
 
-/**
- * The `--text-reading` size at the default 16px root (`docs/DECISIONS.md`, "The reading column
- * is worth more of its pane than the measure was buying"). A root-size assumption: for the
- * column on screen call `docColumnPxAtRoot` with the live root size.
- */
+/** `--text-reading` at the default root; on screen call `docColumnPxAtRoot` with the live root. */
 export const DOC_BODY_FONT_PX = 16;
 
 /** The side inset a document column pairs with (`px-6 md:px-10` at md and above). */
@@ -26,6 +27,8 @@ export const DOC_COLUMN_GUTTER_PX = 40;
 
 /** The measure in rem (66 × 0.5957), for consumers that can express a length in `rem`. */
 export const PROSE_MEASURE_REM = PROSE_MEASURE_STEPS * PROSE_ZERO_ADVANCE_EM;
+
+export const PROSE_MEASURE_WIDE_REM = PROSE_MEASURE_STEPS_WIDE * PROSE_ZERO_ADVANCE_EM;
 
 /**
  * Not exported: gates assert the line cap as a ratio, because `1ch` depends on the rendering
