@@ -84,8 +84,8 @@ function run(model: DialModel, over: Partial<FlowMarksInput> & { focusId?: strin
   const scale = over.scale ?? 0.5;
   const toScreen = (x: number, y: number) => ({ x: x + 500, y: y + 400 });
   const input: FlowMarksInput = {
-    model, scene, tokens: TOKENS, inks: resolveDialInks(MAP, TOKENS), attention: resolveDialAttention(model, null, over.focusId ?? null), previous: null,
-    inkMix: 1, chordPresence: 1, scale, labelScale: 1, viewportWidth: 1000, viewportHeight: 800, freeRect: WIDE,
+    model, scene, tokens: TOKENS, inks: resolveDialInks(MAP, TOKENS), attention: resolveDialAttention(model, null, over.focusId ?? null), inkAttention: resolveDialAttention(model, null, over.focusId ?? null), previous: null,
+    inkMix: 1, chordPresence: 1, scale, viewportWidth: 1000, viewportHeight: 800, freeRect: WIDE,
     nodeScreen: (id) => { const p = scene.positions.get(id); return p ? toScreen(p.x, p.y) : null; }, toScreen,
     endRadiusPx: (id) => (model.domainById.has(id) ? 12 : 4), appearOf: () => 1,
     measureText: (text) => text.length * 6, occupied: [], chords: [], resolution: { entered: null, resolved: false, endpointSlide: 0 },
@@ -140,34 +140,42 @@ describe("buildFlowMarks", () => {
     expect(input.chords.map((c) => [c.sourceDomain, c.targetDomain])).toEqual([["d3", "d0"], ["d0", "d3"]]);
   });
 
-  it("puts focus numbers near the partner end, drops them on collision, and never forces them", () => {
+  it("counts a focus once per far end, 6 px beside that end's name, and only where it has a name and room", () => {
     const model = modelOf([["d0c0", "d3c0"], ["d0c1", "d3c0"], ["d3c1", "d0c0"]]);
-    const { out, input } = run(model, { focusId: "d3" });
-    const d0 = input.nodeScreen("d0")!;
-    const d3 = input.nodeScreen("d3")!;
-    expect(out.numerals.map((n) => n.text).sort()).toEqual(["1", "2"]);
-    for (const n of out.numerals) expect(Math.hypot(n.x - d0.x, n.y - d0.y)).toBeLessThan(Math.hypot(n.x - d3.x, n.y - d3.y));
-    expect(run(model, { focusId: "d3", occupied: [WIDE] }).out.numerals).toHaveLength(0);
+    const d0 = run(model).input.nodeScreen("d0")!;
+    const name: Box = { minX: d0.x + 14, maxX: d0.x + 74, minY: d0.y - 6, maxY: d0.y + 6 };
+    const nameBoxes = new Map([["d0", name]]);
+    const { out } = run(model, { focusId: "d3", nameBoxes });
+    expect(out.strips.every((s) => s.gapT0 === s.gapT1)).toBe(true);
+    expect(out.numerals.map((n) => n.text)).toEqual(["→1 ←2"]);
+    const [n] = out.numerals;
+    expect(n!.box.minX + 2).toBeCloseTo(name.maxX + 6);
+    expect(n!.halo).toBe(true);
+    expect(n!.parts!.map((p) => out.inks[p.ink])).toEqual([resolveDialInks(MAP, TOKENS).needs, resolveDialInks(MAP, TOKENS).usedBy]);
+    expect(run(model, { focusId: "d3" }).out.numerals).toHaveLength(0);
+    expect(run(model, { focusId: "d3", nameBoxes, occupied: [WIDE] }).out.numerals).toHaveLength(0);
   });
 
-  it("sets a focus number beside its stroke when every slot on the stroke is taken", () => {
-    const model = modelOf([["d0c0", "d3c0"], ["d0c1", "d3c0"], ["d3c1", "d0c0"]]);
-    const first = run(model, { focusId: "d3" }).out;
-    const at = (s: (typeof first.strips)[number], t: number) => {
-      const u = 1 - t;
-      return { x: u * u * s.ax + 2 * u * t * s.cx + t * t * s.bx, y: u * u * s.ay + 2 * u * t * s.cy + t * t * s.by };
-    };
-    const blocked: Box[] = [];
-    for (const s of first.strips) {
-      for (let k = 0; k <= 20; k += 1) {
-        const p = at(s, k / 20);
-        blocked.push({ minX: p.x - 4, maxX: p.x + 4, minY: p.y - 4, maxY: p.y + 4 });
-      }
+  it("keeps focus counts at least 24 px apart", () => {
+    const model = modelOf([["d0c0", "d3c0"], ["d1c0", "d3c0"], ["d2c0", "d3c0"], ["d4c0", "d3c0"], ["d5c0", "d3c0"]]);
+    const box: Box = { minX: 480, maxX: 520, minY: 395, maxY: 405 };
+    const nameBoxes = new Map(["d0", "d1", "d2", "d4", "d5"].map((id) => [id, box]));
+    const { out } = run(model, { focusId: "d3", nameBoxes });
+    expect(out.numerals.length).toBeGreaterThan(0);
+    expect(out.numerals.length).toBeLessThan(5);
+    const centre = (b: Box) => ({ x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 });
+    for (const [i, a] of out.numerals.entries()) {
+      for (const b of out.numerals.slice(i + 1)) expect(near(centre(a.box), centre(b.box), 24)).toBe(false);
     }
-    const { out } = run(model, { focusId: "d3", occupied: [...blocked] });
-    expect(out.numerals.map((n) => n.text).sort()).toEqual(["1", "2"]);
-    for (const n of out.numerals) expect(blocked.some((b) => overlap(b, n.box))).toBe(false);
-    for (const s of out.strips) expect([s.gapT0, s.gapT1]).toEqual([0, 0]);
+  });
+
+  it("folds a capability without a drawn name into its domain", () => {
+    const model = modelOf([["d0c0", "d3c0"], ["d0c1", "d3c0"]]);
+    const resolution = { entered: "d0", resolved: true, endpointSlide: 1 };
+    const keys = (named: ReadonlySet<string> | undefined) => run(model, { focusId: "d3", resolution, named }).result.links.map((l) => l.key).sort();
+    expect(keys(undefined)).toEqual(["d0c0\0d3", "d0c1\0d3"]);
+    expect(keys(new Set(["d0c0"]))).toEqual(["d0\0d3", "d0c0\0d3"]);
+    expect(keys(new Set())).toEqual(["d0\0d3"]);
   });
 
   it("keeps rest numbers within clamp(0.6 × domains on screen, 4, 9), counts ≥ 2, off occupied boxes", () => {
@@ -233,6 +241,16 @@ describe("buildFlowMarks", () => {
     expect(input.chords.map((c) => [c.sourceDomain, c.targetDomain]).sort()).toEqual([["d0", "d1"], ["d1", "d0"]]);
     const outward = input.chords.find((c) => c.sourceDomain === "d0")!;
     expect(Math.hypot(outward.a.x - chip.x, outward.a.y - chip.y)).toBeLessThan(Math.hypot(outward.b.x - chip.x, outward.b.y - chip.y));
+  });
+
+  it("leaves one stub per far end under a selection, carrying every count to it", () => {
+    const model = modelOf([["d0c0", "d1c0"], ["d0c1", "d1c0"], ["d1c1", "d0c0"]]);
+    const free = { minX: 350, minY: 20, maxX: 650, maxY: 300 };
+    const resolution = { entered: "d0", resolved: true, endpointSlide: 1 };
+    const named = new Set(["d0c0", "d0c1"]);
+    const { result } = run(model, { freeRect: free, viewportWidth: 4000, viewportHeight: 4000, focusId: "d0", resolution, named, measureText: (text) => text.length * 3 });
+    expect(result.links.map((l) => l.key).sort()).toEqual(["d0c0\0d1", "d0c1\0d1"]);
+    expect(result.stubs.map((st) => st.text)).toEqual(["Domain 1 →2 ←1"]);
   });
 
   it("fans stubs at least stub-gap-deg apart", () => {

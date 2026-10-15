@@ -7,7 +7,7 @@
 import type { OntologyMapTokens } from "../tokens/read-map-tokens";
 import { hexPoints } from "./node-shapes";
 import { arrowHead, taperedCurve } from "./tapered-arrow";
-import { scaledLabelFont } from "./labels";
+import { labelFontAt } from "./labels";
 import {
   TERRITORY_GEOMETRY,
   placeTerritoryCluster,
@@ -23,12 +23,12 @@ export type TerritoryEvidenceState = "current" | "stale" | "unknown";
 
 /** Fonts per text role — the map's own label fonts at the view's fixed sizes. */
 export const TERRITORY_FONTS: Record<TerritoryTextRole, string> = {
-  project: scaledLabelFont("project", TERRITORY_GEOMETRY.projectFontPx / 15),
-  domain: scaledLabelFont("domain", TERRITORY_GEOMETRY.domainFontPx / 10),
-  domainStats: scaledLabelFont("element", TERRITORY_GEOMETRY.domainStatsFontPx / 9.5),
-  capability: scaledLabelFont("capability", TERRITORY_GEOMETRY.capabilityFontPx / 10.5),
-  element: scaledLabelFont("element", 1),
-  chip: scaledLabelFont("capability", TERRITORY_GEOMETRY.chipFontPx / 10.5),
+  project: labelFontAt("project", TERRITORY_GEOMETRY.projectFontPx),
+  domain: labelFontAt("domain", TERRITORY_GEOMETRY.domainFontPx),
+  domainStats: labelFontAt("element", TERRITORY_GEOMETRY.domainStatsFontPx),
+  capability: labelFontAt("capability", TERRITORY_GEOMETRY.capabilityFontPx),
+  element: labelFontAt("element", 9.5),
+  chip: labelFontAt("capability", TERRITORY_GEOMETRY.chipFontPx),
 };
 
 /** The `--map-territory-*` family (`app/globals.css`), read once per frame like every map token. */

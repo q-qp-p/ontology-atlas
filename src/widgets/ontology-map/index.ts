@@ -11,6 +11,7 @@ export type { HexBoardLabels } from './ui/OntologyHexBoardMap';
 export type { HexPlacementRecord } from './model/board/hex-board';
 export type { DialLabels, DialMemory } from './dial/types';
 export { capabilityTierRead } from './dial/placement';
+export { adoptBodyLabelFont } from './render/labels';
 export type { FlatRingMemoryStore } from './ui/loop/topology-loop-contract';
 export type { OntologyMapNode, OntologyMapEdge, } from './ui/OntologyMap';
 export { OntologyMapDetailPanel } from './ui/OntologyMapDetailPanel';

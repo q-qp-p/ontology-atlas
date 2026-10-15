@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { HITTABLE_MIN_TIER_ALPHA } from "../model/visibility/tier-visibility";
 import {
@@ -8,6 +8,11 @@ import {
   resolveLabelBaselineY,
   resolveFlippedLabelBaselineY,
   scaledLabelFontSize,
+  scaledLabelFont,
+  numeralFont,
+  tabularWidth,
+  adoptBodyLabelFont,
+  labelFontFamily,
   LABEL_NODE_CLEARANCE,
   LABEL_NODE_OUTLINE_ALLOWANCE,
   LABEL_HALO_PX,
@@ -320,5 +325,34 @@ describe("label halo", () => {
   it("puts the glyph back in its own ink after the stroke", () => {
     const style = paint().find((c) => c.op === "fillText")?.args.at(-1) as Record<string, unknown>;
     expect(style.fillStyle).toBe("#d");
+  });
+});
+
+describe("label type", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("sets every kind on the locked ramp and the weight ladder, domain above capability", () => {
+    const sizeOf = (kind: "project" | "domain" | "capability" | "element") => scaledLabelFontSize(kind, 1);
+    expect([sizeOf("project"), sizeOf("domain"), sizeOf("capability"), sizeOf("element")]).toEqual([16, 12.5, 11, 9.5]);
+    expect(["project", "domain", "capability", "element"].map((k) => scaledLabelFont(k as "domain", 1).split(" ")[0])).toEqual(["650", "560", "510", "400"]);
+    expect(numeralFont()).toMatch(/^650 11px /);
+  });
+
+  it("gives every digit the widest digit's advance", () => {
+    const measure = (text: string) => (text === "1" ? 5 : text === "0" ? 7 : 6);
+    expect(tabularWidth("10", "f", measure)).toBe(14);
+    expect(tabularWidth("→1", "f", measure)).toBe(13);
+  });
+
+  it("draws in the body's typeface once its faces are ready, and in the system stack before", async () => {
+    let ready!: () => void;
+    vi.stubGlobal("getComputedStyle", () => ({ fontFamily: "pretendard, sans-serif" }));
+    Object.defineProperty(document, "fonts", { configurable: true, value: { status: "loading", ready: new Promise<void>((r) => (ready = r)) } });
+    expect(labelFontFamily()).toMatch(/apple-system/);
+    const adopted = adoptBodyLabelFont();
+    ready();
+    expect(await adopted).toBe(true);
+    expect(labelFontFamily()).toBe("pretendard, sans-serif");
+    expect(await adoptBodyLabelFont()).toBe(false);
   });
 });

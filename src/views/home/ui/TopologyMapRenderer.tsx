@@ -23,12 +23,13 @@ import {
   MapLayoutMorphOverlay,
   OntologyMap,
   PLAIN_TIER_REVEAL,
+  adoptBodyLabelFont,
   capabilityTierRead,
   conceptDegrees,
   containmentParents,
   predictMapLayoutTarget,
 } from "@/widgets/ontology-map";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useVaultLoadProgress } from "@/entities/vault-session";
 import { useFlatRingMemory } from "../model/map-canvas/use-flat-ring-memory";
 import { readHexRelief } from "@/shared/lib/preferences/appearance-preferences";
@@ -117,6 +118,20 @@ export interface TopologyMapRendererProps {
   impactLensActive: boolean;
 }
 
+function useBodyLabelFont(): boolean {
+  const [adopted, setAdopted] = useState(false);
+  useEffect(() => {
+    let live = true;
+    void adoptBodyLabelFont().then((changed) => {
+      if (live && changed) setAdopted(true);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
+  return adopted;
+}
+
 export function TopologyMapRenderer({
   localGraphRoot, mapEntryTicket, expandAllActive, mapAssemblesOnOpen, combinedFitToken, growthReplayToken, setGrowthReplaying,
   topologyRelayoutToken, setTopologyVisibleCount, footprintVisitedIds, footprintLensActiveRef,
@@ -156,6 +171,8 @@ export function TopologyMapRenderer({
   const mapEvidence = topologyGraphProjection.synthEvidence ?? measuredMapEvidence;
   const missingStructureDocuments = useMemo(() => new Set(ontologyInsight?.nodes.filter(node => node.hasOwnDocument === false).map(node => node.id)), [ontologyInsight]);
   const evidenceStates = mapEvidence.availability === "measured" ? mapEvidence.states : null;
+  const labelFontAdopted = useBodyLabelFont();
+  const dialLabelsInFont = useMemo(() => (labelFontAdopted && dialLabels ? { ...dialLabels } : dialLabels), [dialLabels, labelFontAdopted]);
   const [hiddenDependencyCount, setHiddenDependencyCount] = useState(0);
   const territoryStats = useTerritoryDomainStats();
   const [hexFailed, setHexFailed] = useState(false);
@@ -269,7 +286,7 @@ export function TopologyMapRenderer({
             nodes={nodes}
             edges={edges}
             flatRingMemory={flatRingMemory}
-            dialLabels={dialLabels}
+            dialLabels={dialLabelsInFont}
             evidenceStates={evidenceStates}
             impactLens={impactLensActive}
             loadProgress={arriving ? loadProgress : null}
