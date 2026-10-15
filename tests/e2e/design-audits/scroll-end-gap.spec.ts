@@ -239,16 +239,16 @@ async function measure(page: import("@playwright/test").Page): Promise<Measured>
     const slotRect = slot.getBoundingClientRect();
     const pageMax = getComputedStyle(document.documentElement).getPropertyValue("--page-max").trim();
     const widths = [pageMax, formWidth].filter(Boolean);
-    // The frame is the root or the column on its first-child chain; the reserve is the chain's bottom padding.
-    const chain = [root, root?.firstElementChild, root?.firstElementChild?.firstElementChild]
-      .flatMap((el) => (el ? [getComputedStyle(el)] : []));
-    const frameAt = chain.findIndex((style) => widths.includes(style.maxWidth));
-    const reserve = chain.slice(0, frameAt + 1).reduce((sum, style) => sum + (Number.parseFloat(style.paddingBottom) || 0), 0);
+    // The frame is the first shown element at a frame width; the reserve is its own bottom padding.
+    const frame = root
+      ? [root, ...root.querySelectorAll("*")].find((el) => widths.includes(getComputedStyle(el).maxWidth) && el.checkVisibility())
+      : undefined;
+    const frameStyle = frame ? getComputedStyle(frame) : null;
     return {
       slot: true,
-      framed: frameAt >= 0,
-      frameWidth: frameAt >= 0 ? chain[frameAt].maxWidth : "",
-      rootPaddingBottom: frameAt >= 0 ? Math.round(reserve) : 0,
+      framed: frameStyle !== null,
+      frameWidth: frameStyle?.maxWidth ?? "",
+      rootPaddingBottom: frameStyle ? Math.round(Number.parseFloat(frameStyle.paddingBottom) || 0) : 0,
       scrollable: slot.scrollHeight > slot.clientHeight + 1,
       rootHeight: Math.round(root?.getBoundingClientRect().height ?? 0),
       scrollHeight: Math.round(slot.scrollHeight),
