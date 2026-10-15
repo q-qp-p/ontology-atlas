@@ -123,6 +123,13 @@ describe("buildLabelMarks", () => {
     expect(run({ lines: hatched }).texts.some((t) => t.role === "project")).toBe(false);
   });
 
+  it("finds the project name a slot between strands when every side of the hub is crossed", () => {
+    const cross = [[{ x: -200, y: 0 }, { x: 200, y: 0 }], [{ x: 0, y: -200 }, { x: 0, y: 200 }]];
+    const project = run({ lines: cross }).texts.find((t) => t.role === "project");
+    expect(project).toBeDefined();
+    expect(crossesBox(cross, project!.box)).toBe(false);
+  });
+
   it("keeps domain names clear of the hub", () => {
     const { texts } = run();
     for (const t of texts.filter((x) => x.role === "domain" || x.role === "units")) {

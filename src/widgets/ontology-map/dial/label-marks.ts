@@ -76,6 +76,7 @@ const NAME_GAP_PX = 5;
 const DISC_GAP_PX = 4;
 const HUB_CLEAR_PX = 14;
 const NAME_STEPS_PX = [0, 9, 18];
+const HUB_NAME_STEPS_PX = [...NAME_STEPS_PX, 27, 36];
 const REST_REACH_PX = 48;
 const RING_OFFSETS = [0, 0.18, -0.18, 0.36, -0.36, 0.6, -0.6, 0.9, -0.9];
 const CIRCLE_SLOTS = 36;
@@ -333,12 +334,19 @@ function projectName(ctx: Ctx): Box | null {
   const fontPx = scaledLabelFontSize("project", ls);
   const width = input.measureText(model.projectLabel, font);
   const gap = fontPx * 0.95;
-  const tries: [number, number, CanvasTextAlign][] = NAME_STEPS_PX.flatMap((step): [number, number, CanvasTextAlign][] => [
-    [hub.x, hub.y + hub.r + gap + step, "center"],
-    [hub.x, hub.y - hub.r - gap - step, "center"],
-    [hub.x + hub.r + 6 + step, hub.y, "left"],
-    [hub.x - hub.r - 6 - step, hub.y, "right"],
-  ]);
+  const tries: [number, number, CanvasTextAlign][] = [
+    ...NAME_STEPS_PX.flatMap((step): [number, number, CanvasTextAlign][] => [
+      [hub.x, hub.y + hub.r + gap + step, "center"],
+      [hub.x, hub.y - hub.r - gap - step, "center"],
+      [hub.x + hub.r + 6 + step, hub.y, "left"],
+      [hub.x - hub.r - 6 - step, hub.y, "right"],
+    ]),
+    ...HUB_NAME_STEPS_PX.flatMap((step) => BETWEEN_STRANDS.map((a): [number, number, CanvasTextAlign] => {
+      const c = Math.cos(a);
+      const r = hub.r + step + (Math.abs(c) > SIDE_COS ? 6 : gap);
+      return [hub.x + c * r, hub.y + Math.sin(a) * (hub.r + gap + step), c > SIDE_COS ? "left" : c < -SIDE_COS ? "right" : "center"];
+    })),
+  ];
   const boxes = tries.map(([x, y, align]) => textBox(width, x, y, align, fontPx, 3));
   const atRest = [circleBox(hub, 3), ...[...ctx.rest.chips.values()].map((c) => circleBox(c, 2)), ...[...ctx.rest.discs.values()].map((d) => circleBox(d, 1))];
   const pick = pickOnce(ctx, "project", boxes, (box) => inside(box, input.freeRect) && !ctx.texts.some((o) => overlaps(o, box)) && !atRest.some((o) => overlaps(o, box)) && !crossesBox(input.lines, box));
