@@ -115,7 +115,7 @@ export function AcpRuntimeSettings({
      * as the ways on. No icon tile, which `EmptyState` would indent apart from the actions.
      */
     return (
-      <div data-testid="app-settings-runtimes-web" className="grid min-w-0 gap-3">
+      <div data-testid="app-settings-runtimes-web" className={embedded ? `${PAGE_TWO_TRACK} gap-3` : 'grid min-w-0 gap-3'}>
         <EmptyState
           tone="solid"
           /* The quiet next-step card surface; the surface-vocabulary ratchet refuses a new combination. */
@@ -162,7 +162,7 @@ export function AcpRuntimeSettings({
             id="app-settings-runtimes-web-tools-heading"
             label={t('webToolsHeading', { count: APP_CODING_TOOLS.length })}
           />
-          <ul className="mt-1.5 grid min-w-0 grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-3 xl:grid-cols-4">
+          <ul className={cn('mt-1.5 grid min-w-0 grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-3 xl:grid-cols-4', embedded && '2xl:grid-cols-2')}>
             {APP_CODING_TOOLS.map((tool) => (
               <li
                 key={tool.id}
@@ -170,7 +170,7 @@ export function AcpRuntimeSettings({
                 className="flex min-w-0 items-center gap-2.5"
               >
                 {/* Stepped back like the desktop shelf's marks, so they do not outweigh the press above. */}
-                <span className="flex shrink-0 opacity-60">
+                <span className="flex shrink-0 opacity-55">
                   <ProductMark icon={tool.icon} ink={tool.brandInk} monogram={tool.name} />
                 </span>
                 <span className="min-w-0 truncate text-body text-[color:var(--color-text-secondary)]">
@@ -318,13 +318,13 @@ export function AcpRuntimeSettings({
            * Named while the scan runs and counted once it answers, so the heading that holds the
            * re-scan press (a guided-tour anchor) exists from the start.
            */
-          <SettingsGroup label={t('heading')} trailing={recheck}>
+          <SettingsGroup label={t(embedded ? 'pageHeading' : 'heading')} trailing={recheck}>
             <SettingsRow label={t('checking')} control={null} testId="app-settings-runtimes-loading" />
           </SettingsGroup>
         ) : (
           /* Name · hint · action, the order the MCP tab's own group heading uses. */
           <SettingsGroup
-            label={t('readyHeading', { count: ready.length })}
+            label={t(embedded ? 'pageReadyHeading' : 'readyHeading', { count: ready.length })}
             trailing={
               <>
                 {diskHint}
@@ -334,7 +334,7 @@ export function AcpRuntimeSettings({
           >
             {listed.length === 0 ? (
               /* "The install guides are in the list below" only when there is a list below. */
-              <SettingsRow label={t('noneReady')} caption={embedded ? undefined : t(others.length > 0 ? 'noneReadyCaption' : 'noneReadyCaptionNoList')} control={null} icon={embedded ? null : undefined} />
+              <SettingsRow label={t('noneReady')} caption={embedded ? undefined : t(others.length > 0 ? 'noneReadyCaption' : 'noneReadyCaptionNoList')} control={null} />
             ) : (
               listed.map((runtime) => (
                 <RuntimeRow
@@ -617,7 +617,7 @@ function ShelfTile({
             'group w-full gap-2.5 bg-[color:var(--color-overlay-1)] py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-indigo-focus-ring)]',
         })}
       >
-        <span className="flex shrink-0 opacity-70 grayscale transition-[opacity,filter] duration-[var(--motion-fast)] ease-[var(--motion-ease)] group-hover:opacity-100 group-hover:grayscale-0 group-focus-visible:opacity-100 group-focus-visible:grayscale-0 motion-reduce:transition-none">
+        <span className="flex shrink-0 opacity-55 transition-opacity duration-[var(--motion-fast)] ease-[var(--motion-ease)] group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none">
           <ProductMark icon={mark.icon} ink={mark.ink} monogram={runtime.label} />
         </span>
         <span className="min-w-0 flex-1">
@@ -762,7 +762,7 @@ function RuntimeRow({
       className={cn(
         'min-w-0',
         page && '[&_[data-vendor-mark]]:transition-opacity [&_[data-vendor-mark]]:duration-[var(--motion-settle)] [&_[data-vendor-mark]]:ease-[var(--motion-ease)]',
-        page && !isUsable && '[&_[data-vendor-mark]]:opacity-40',
+        page && !isUsable && '[&_[data-vendor-mark]]:opacity-55',
       )}
       data-runtime-row-state={page ? runtime.state : undefined}
     >

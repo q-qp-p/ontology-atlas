@@ -7,6 +7,8 @@ export const PAGE_FRAME_FORM =
 export const PAGE_TWO_TRACK =
   "grid min-w-0 2xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] 2xl:items-start 2xl:gap-x-10" as const;
 
+export const PAGE_TRACK_CAP = "max-w-[960px] 2xl:max-w-none" as const;
+
 export const PAGE_COLUMN_STAGE =
   "mx-auto w-full max-w-[var(--measure-stage-column)]" as const;
 

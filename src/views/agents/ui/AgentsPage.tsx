@@ -12,7 +12,7 @@ import { queueAgentChatIntent } from '@/shared/lib/agent-chat/agent-chat-intent'
 import { isAcpBridgeAvailable } from '@/shared/lib/agent-chat/tauri-acp';
 import { useSwapHeight } from '@/shared/lib/render-timing/use-presence';
 import { TermHint } from '@/shared/ui/hints/term-hint';
-import { PAGE_FRAME, PAGE_HEADER_ROW, PAGE_LEDE, PAGE_TITLE, PAGE_TITLE_ROW, PAGE_TWO_TRACK } from '@/shared/ui/tokens/page-frame';
+import { PAGE_FRAME, PAGE_HEADER_ROW, PAGE_LEDE, PAGE_TITLE, PAGE_TITLE_ROW, PAGE_TRACK_CAP } from '@/shared/ui/tokens/page-frame';
 
 import { AGENTS_TAB_PARAM, buildAgentsTabHref, parseAgentsTab, type AgentsTab } from '../lib/agents-tab-state';
 
@@ -110,7 +110,7 @@ export function AgentsPage({
               : t('ledeWeb')}
       </p>
 
-      <nav className="mt-5" data-testid="agents-tabs">
+      <nav className={`mt-5 ${PAGE_TRACK_CAP}`} data-testid="agents-tabs">
         <TabBar
           idPrefix="agents"
           ariaLabel={t('workspace.aria')}
@@ -138,23 +138,19 @@ export function AgentsPage({
         id={`agents-tabpanel-${tab}`}
         aria-labelledby={`agents-tab-${tab}`}
         data-testid="agents-tabpanel"
-        className="mt-5 min-w-0"
+        className={`mt-5 min-w-0 ${PAGE_TRACK_CAP}`}
       >
         {tab === 'agents' ? (
           /* No sr-only heading: the tool group inside already shows this name visibly. */
           <section className="min-w-0" aria-label={t('runtimesHeading')}>
             <AcpRuntimeSettings embedded onOpenChat={openChatOnMap} />
           </section>
+        ) : tab === 'models' ? (
+          <section className="min-w-0" aria-label={t('workspace.models')}>
+            <ModelConnections />
+          </section>
         ) : (
-          <div className={PAGE_TWO_TRACK}>
-            {tab === 'models' ? (
-              <section className="min-w-0" aria-label={t('workspace.models')}>
-                <ModelConnections />
-              </section>
-            ) : (
-              children
-            )}
-          </div>
+          children
         )}
       </div>
     </main>

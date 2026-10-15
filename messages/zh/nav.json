@@ -133,6 +133,8 @@
       "recheck": "重新检查",
       "checking": "查找中…",
       "readyHeading": "这台电脑上的工具 · 已确认 {count} 个",
+      "pageHeading": "可以对话的工具",
+      "pageReadyHeading": "可以对话的工具 · 已就绪 {count} 个",
       "heading": "这台电脑上的工具",
       "othersTileLabel": "{name} · {state}",
       "noneReady": "暂未发现",

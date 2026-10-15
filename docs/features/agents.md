@@ -36,7 +36,7 @@ conversation.
 
 **On the web**: The screen still appears, but states why it can't do what the browser can't (launching programs on this computer) along with the reason. It's not "Connection unavailable" — MCP is **attached to the folder**, not the screen, so web users are also connected. That row names the place: the MCP tab on the same strip, one press away, so the sentence carries no link (the settings sheet, which has no strip, still does).
 
-The page wears `PAGE_FRAME`, as Projects and Automations do, so the title stays put when moving between them; the frame carries the desktop bottom breath itself. From 1536px `PAGE_TWO_TRACK` puts the tool rows in a 2fr track and the setup shelf in a 1fr track beside them; the Models and MCP tabs keep the first track's width. Below 1536px the tracks stack.
+The page wears `PAGE_FRAME`, as Projects and Automations do, so the title stays put when moving between them; the frame carries the desktop bottom breath itself. Below 1536px the tab strip and its panel stop at 960px under the title (`PAGE_TRACK_CAP`), so no row reads across the whole window. From 1536px `PAGE_TWO_TRACK` splits each tab 2fr/1fr: the tool rows beside the setup shelf, the model rows beside the sent log, and the folder's MCP rows beside the connectors. The web's Agents card stands beside the tool marks; its Models card spans the frame with its text held at the lede's measure.
 
 The folder's own MCP connection and the connectors live in the MCP tab. This tab keeps the runner list, the connection checks, the app-only install and repair, and opening a conversation.
 

@@ -133,6 +133,8 @@
       "recheck": "Check again",
       "checking": "Looking…",
       "readyHeading": "Tools on this computer · {count} confirmed",
+      "pageHeading": "Tools you can chat with",
+      "pageReadyHeading": "Tools you can chat with · {count} ready",
       "heading": "Tools on this computer",
       "othersTileLabel": "{name} · {state}",
       "noneReady": "Nothing found yet",
