@@ -126,6 +126,8 @@ export interface PointerHandlerRefs {
   pinchRef?: Ref<{ dist: number; midX: number; midY: number } | null>;
   pinchWheelRef?: Ref<PinchWheelStream>;
   onSelect?: (slug: string) => void;
+  /** The flat map's zoom to a node: a double-click, as Enter on the canvas. */
+  onFlyToNode?: (slug: string) => void;
   /** P3b — a click at a point with no node hit that is close to an edge. */
   onSelectEdge?: (edge: { sourceId: string; targetId: string; relationType: string; declaredBySlug: string | null }) => void;
   /**

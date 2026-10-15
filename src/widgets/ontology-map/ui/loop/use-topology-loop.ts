@@ -171,7 +171,7 @@ export function useTopologyLoop(args: UseTopologyLoopArgs): UseTopologyLoopResul
     dampingRef, cameraAngularFreqRef, overviewScaleRef, hasInitializedRef, fittedDataSourceKeyRef,
     drawnFarTRef, initialFitTokensRef, lastProcessedSpotlightFitTokenRef, pendingSpotlightFitRef,
     runSpotlightFitRef, reframeViewportRef, viewportCameraTrackedRef, initialRelayoutTokenRef, panelInsetsRef,
-    overviewFitRef,
+    overviewFitRef, flatSelectionCameraRef,
   } = useTopologyCameraState({
     constellationFocusId,
     relayoutToken,
@@ -485,6 +485,7 @@ export function useTopologyLoop(args: UseTopologyLoopArgs): UseTopologyLoopResul
     selectedEdgeRef,
     domeFocusPendingRef,
     reframeViewportRef,
+    flatSelectionCameraRef,
   });
   useTopologyLayoutCommands({
     relayoutToken,
@@ -503,7 +504,7 @@ export function useTopologyLoop(args: UseTopologyLoopArgs): UseTopologyLoopResul
     homingActiveRef,
         revealToken,
     });
-    useTopologyFocusNavigation({
+    const { flyToNode } = useTopologyFocusNavigation({
         lastFocusedSlugRef,
         focusedSlug,
         egoRevealBatchesRef,
@@ -532,6 +533,8 @@ export function useTopologyLoop(args: UseTopologyLoopArgs): UseTopologyLoopResul
     clusteredIdsRef,
     mapLensKindRef,
     spotlightIdsRef,
+    flatSelectionCameraRef,
+    lastTapRef,
   });
   useTopologyRealmTransition({
     realmRootId,
@@ -920,6 +923,7 @@ export function useTopologyLoop(args: UseTopologyLoopArgs): UseTopologyLoopResul
     onWalkDeadEnd,
     runOverviewFit,
     beginCameraTween,
+    flyToNode,
   });
   useTopologyMapInstrumentation({
     scene: {

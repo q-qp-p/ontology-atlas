@@ -30,7 +30,7 @@ export function createPointerReleaseHandlers(
     navigationSpeedRef, worldRef, cameraRef, cameraTargetRef, dampingRef, cameraAngularFreqRef,
     pointerMachineRef, dragHistoryRef, canvasRef, focusedSlugRef, reducedMotionRef, simRef, heatRef,
     nodeDragRef, dragStartPosRef, overviewScaleRef, activeTouchesRef, pinchRef, selectedEdgeRef,
-    clusterChipsRef, lastTapRef, tierRevealRef, onSelect, onSelectEdge, onPaneClick,
+    clusterChipsRef, lastTapRef, tierRevealRef, onSelect, onFlyToNode, onSelectEdge, onPaneClick,
     onToggleCluster, onExpandEgoNeighbors, onExpandClusterBatch, noteUserCameraGesture,
     domeInteractive, clearEdgeHover, clearClusterHover,
   } = ctx;
@@ -199,7 +199,9 @@ export function createPointerReleaseHandlers(
         if (chip && onToggleCluster) {
           onToggleCluster(nodeId);
           clearClusterHover();
+          return;
         }
+        onFlyToNode?.(nodeId);
         return;
       }
       lastTapRef.current = { nodeId, at: now, x: clickPoint?.x, y: clickPoint?.y };
