@@ -70,7 +70,7 @@ External design references are principles, not assets: no third-party screenshot
 
 Overview first, zoom and filter, details on demand (`docs/design/topology-focus-and-scale.md`).
 
-- **Click is ego focus plus a compact popover, never a fullscreen modal.** The node and its direct neighbours stay at full opacity and the rest dims through the world's focus-state derivation (the source graph is not mutated). A content-sized `OntologyMapDetailPanel` anchors near the node and lists connected nodes as ego-walk targets; `FullDetailA1` is an explicit action inside it.
+- **Click is ego focus plus a compact popover, never a fullscreen modal.** The node and its direct neighbours stay at full opacity and the rest dims through the world's focus-state derivation (the source graph is not mutated). A content-sized `OntologyMapDetailPanel` docks at the map's right inset (`selected-inspector-aligns-to-right-inset`), where it is a camera obstacle so the selected mark stays in view, and lists connected nodes as ego-walk targets; `FullDetailA1` is an explicit action inside it.
 - **The default view is an overview**: project, domain and hub nodes at level 0, members on demand (semantic zoom). Never drop a 2-3k-node hairball on the person. A node-count capacity claim needs canvas-2D measurements at the stated viewport and interaction.
 - **The canvas has no DOM.** Agents see it through `window.__atlasMap` (`?e2e=1` gate: typed node coordinates, camera, selection, cluster-chip claims; `map-testability`). Canvas 2D cannot read CSS variables: `src/widgets/ontology-map/tokens/read-map-tokens.ts` parses and caches them once.
 
@@ -243,7 +243,7 @@ The OS preference is the only switch. The global kill rule (`animation-duration:
 
 Thirteen primitives; durations and easings come from `--motion-*`, `MOTION` and `STAGGER` only, and each CSS lives in its own `app/styles/motion-*.css` part inside `@layer base` with its reduced equivalent. Every use names what it explains: causality, identity, origin, state progression or order established once.
 
-- **Shared-element morph** (`runMorph`; `view-transition-engine`), **staggered entrance** (`useStaggerOnce`: once per session per vault and list), **count-up** (`useCountUp`, aria-hidden beside an sr-only final value), **relation reveal** (source to target), **continuous state** (`WorkStatus`), **expand and collapse** (`RowDisclosure`; `details-adoption-ratchet`), **progress to done** (`WorkProgress`: `scaleX`, never width).
+- **Shared-element morph** (`runMorph`: one object on `SPRING.surface`, never two copies, and no transition under reduced motion; `view-transition-engine`), **staggered entrance** (`useStaggerOnce`: once per session per vault and list), **count-up** (`useCountUp`, aria-hidden beside an sr-only final value), **relation reveal** (source to target), **continuous state** (`WorkStatus`), **expand and collapse** (`RowDisclosure`; `details-adoption-ratchet`), **progress to done** (`WorkProgress`: `scaleX`, never width).
 - **Press**: detached shapes, `Button`, `ChromeTile`, `ChromeChip` and the `Select` trigger travel `active:translate-y-px`; flush shapes (row, link, segment, card) press with a surface or ink step and no travel. **Hover** changes ink, surface or border, never position (`hover-presence-ratchet`). **Toggle and checkbox draw** (`DrawnCheck`). **Selection indicator** (`useSlidingIndicator`: one per group on the `control` spring; `tab-adoption-ratchet`). **Success and failure** (`useCopyFeedback`, `FeedbackGlyph`): a successful `reject_once` answer reads as done, never danger; only icon-only controls shake; every result is also announced in a `role="status"` region. **Direction**: pages crossfade with no travel; popovers grow from their trigger; docks share one reflow grammar (`agentDockReflowStyle()`); drawers slide from their edge; modals rise; each leaves the way it came.
 
 ### Signature motion
@@ -278,7 +278,7 @@ The pixel mascot is the one shipping identity (contract `docs/design/brand.md`; 
 
 This list is the single canonical source. `.claude/rules/forbidden.md` carries a resident subset and `.claude/rules/design.md` points here. Each item ends with a `dont:` key matched by slug in `tests/contract/agent-instructions/design-donts-parity.contract.test.ts`: rewrite the sentence freely, never the key.
 
-- Clicking a topology node opens a fullscreen or full-bleed detail modal. The default is ego focus plus a compact popover anchored to the node; full detail is opt-in from inside that popover. <!--dont:node-click-fullscreen-modal-->
+- Clicking a topology node opens a fullscreen or full-bleed detail modal. The default is ego focus plus a compact panel docked at the map's right inset; full detail is opt-in from inside that panel. <!--dont:node-click-fullscreen-modal-->
 - Floating-box soup: unrelated panels, popovers, HUD, minimap and cards at equal visual weight. <!--dont:floating-box-soup-->
 - Stacked popovers, or a popover over a modal, without closing or dimming the previous surface. <!--dont:stacked-popover-->
 - A blocking composer or modal without a dim, scrim or suppressed parent interaction. <!--dont:modal-without-dim-->
