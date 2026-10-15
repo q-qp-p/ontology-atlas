@@ -1,4 +1,7 @@
+import { tierNameAlpha } from "../morph/tier-assembly";
 import { scaledLabelFont, scaledLabelFontSize } from "../render/labels";
+import { dialChipRadiusPx, dialDiscRadiusPx } from "./frame/marks";
+import { mixOver } from "./ink";
 import type { Box, DialAttention, DialCluster, DialEvidenceView, DialLabels, DialMarks, DialModel, DialScene, DialTokens, Point, TextMark } from "./types";
 
 export type MeasureText = (text: string, font: string) => number;
@@ -65,6 +68,8 @@ export interface LabelMarksInput {
 }
 
 const SIDE_COS = 0.4;
+const SHOWN_ALPHA = 0.02;
+const CAPS_DRAWN_ALPHA = 0.02;
 const NAME_GAP_PX = 5;
 const DISC_GAP_PX = 4;
 const HUB_CLEAR_PX = 14;
@@ -221,11 +226,83 @@ function receded(attn: DialAttention, domainId: string): boolean {
   return attn.domainId !== null && attn.domainId !== domainId && !attn.partnerDomains.has(domainId);
 }
 
+interface Rest {
+  chips: Map<string, Circle>;
+  discs: Map<string, Circle>;
+  alpha: Map<string, number>;
+}
+
+function travelled(cur: Point, from: Point, end: Point, endFrom: Point): number {
+  const dx = end.x - endFrom.x;
+  const dy = end.y - endFrom.y;
+  const len2 = dx * dx + dy * dy;
+  if (len2 < 1e-6) return 1;
+  const t = ((cur.x - from.x) * dx + (cur.y - from.y) * dy) / len2;
+  return t <= 0 ? 0 : t >= 1 ? 1 : t;
+}
+
+function nameAlpha(grown: number, moved: number): number {
+  return tierNameAlpha(Math.min(grown, moved));
+}
+
+function restOf(input: LabelMarksInput): Rest {
+  const { scene, tokens } = input;
+  const centre = input.hub ?? input.toScreen(0, 0);
+  const maxItems = Math.max(1, ...scene.clusters.map((c) => c.items.length));
+  const capsDrawn = input.capAlpha > CAPS_DRAWN_ALPHA;
+  const rest: Rest = { chips: new Map(), discs: new Map(), alpha: new Map() };
+  for (const c of scene.clusters) {
+    const end = input.toScreen(c.chip.x, c.chip.y);
+    const r = dialChipRadiusPx(tokens, c.items.length, maxItems);
+    rest.chips.set(c.domainId, { x: end.x, y: end.y, r });
+    const cur = input.chips.get(c.domainId);
+    const grown = cur ? Math.min(1, cur.r / Math.max(1e-6, r)) : 0;
+    const moved = cur ? travelled(cur, centre, end, centre) : 0;
+    rest.alpha.set(c.domainId, nameAlpha(grown, moved));
+    if (!capsDrawn) continue;
+    for (const it of c.items) {
+      const p = input.toScreen(it.x, it.y);
+      const d = input.discs.get(it.id);
+      if (!d && grown > 0) continue;
+      rest.discs.set(it.id, { x: p.x, y: p.y, r: d && grown > 0 ? d.r / grown : dialDiscRadiusPx(tokens, input.scale, it.elementIds.length) });
+      rest.alpha.set(it.id, d && cur ? nameAlpha(grown, Math.min(moved, travelled(d, cur, p, end))) : 0);
+    }
+  }
+  return rest;
+}
+
+const holds = new WeakMap<DialScene, { key: string; picks: Map<string, number> }>();
+
+function holdOf(input: LabelMarksInput): Map<string, number> {
+  const o = input.toScreen(0, 0);
+  const f = input.freeRect;
+  const caps = input.capAlpha > 0.5 ? 2 : input.capAlpha > 0.3 ? 1 : 0;
+  const key = `${[o.x, o.y, input.scale * 1000, f.minX, f.minY, f.maxX, f.maxY].map(Math.round).join(",")}|${input.attention.key}|${caps}|${input.ledgerIds.size}|${input.labels ? 1 : 0}`;
+  let hold = holds.get(input.scene);
+  if (!hold || hold.key !== key) {
+    hold = { key, picks: new Map() };
+    holds.set(input.scene, hold);
+  }
+  return hold.picks;
+}
+
 interface Ctx {
   input: LabelMarksInput;
   out: LabelMarksOut;
   texts: Box[];
   marks: Box[];
+  rest: Rest;
+  held: Map<string, number>;
+}
+
+function fade(ctx: Ctx, color: string, alpha: number): number {
+  return ctx.input.ink(alpha >= 1 ? color : mixOver(color, ctx.input.inks.halo, alpha));
+}
+
+function pickOnce<T>(ctx: Ctx, key: string, tries: readonly T[], ok: (t: T) => boolean): number {
+  const kept = ctx.held.get(key);
+  if (kept !== undefined && kept < tries.length && ok(tries[kept]!)) return kept;
+  return tries.findIndex(ok);
 }
 
 function free(ctx: Ctx, box: Box): boolean {
@@ -254,26 +331,28 @@ function projectName(ctx: Ctx): void {
     [hub.x - hub.r - 6 - step, hub.y, "right"],
   ]);
   const boxes = tries.map(([x, y, align]) => textBox(width, x, y, align, fontPx, 3));
-  const pick = boxes.findIndex((box) => free(ctx, box) && !crossesBox(input.lines, box));
+  const pick = pickOnce(ctx, "project", boxes, (box) => free(ctx, box) && !crossesBox(input.lines, box));
   if (pick < 0) return;
   const [x, y, align] = tries[pick]!;
   const box = boxes[pick]!;
-  ctx.out.texts.push({ id: model.projectId, role: "project", text: model.projectLabel, x, y, align, font, ink: input.ink(input.inks.project), box, parts: null });
   claim(ctx, box);
+  const alpha = Math.min(1, ...[...ctx.rest.chips].filter(([, c]) => inside(circleBox(c, 0), input.freeRect)).map(([id]) => ctx.rest.alpha.get(id) ?? 0));
+  if (!(alpha > SHOWN_ALPHA)) return;
+  ctx.out.texts.push({ id: model.projectId, role: "project", text: model.projectLabel, x, y, align, font, ink: fade(ctx, input.inks.project, alpha), box, parts: null });
+  ctx.held.set("project", pick);
 }
 
 function clusterOrder(input: LabelMarksInput): DialCluster[] {
   const attended = input.attention.domainId;
-  return input.scene.clusters
-    .filter((c) => input.chips.has(c.domainId))
+  return [...input.scene.clusters]
     .sort((x, y) => Number(y.domainId === attended) - Number(x.domainId === attended) || x.step - y.step || y.items.length - x.items.length || (x.domainId < y.domainId ? -1 : 1));
 }
 
-function nameReach(input: LabelMarksInput, cluster: DialCluster, chip: Circle): number {
+function nameReach(ctx: Ctx, cluster: DialCluster, chip: Circle): number {
   let reach = chip.r + NAME_GAP_PX;
-  if (input.capAlpha <= 0.3) return reach;
+  if (ctx.input.capAlpha <= 0.3) return reach;
   for (const item of cluster.items) {
-    const d = input.discs.get(item.id);
+    const d = ctx.rest.discs.get(item.id);
     if (d) reach = Math.max(reach, Math.hypot(d.x - chip.x, d.y - chip.y) + d.r + DISC_GAP_PX);
   }
   return reach;
@@ -284,39 +363,39 @@ function domainNames(ctx: Ctx): void {
   const { attention: attn, inks } = input;
   const centre = input.hub ?? input.toScreen(0, 0);
   for (const cluster of clusterOrder(input)) {
-    const chip = input.chips.get(cluster.domainId)!;
-    const block = domainLabelBlock(cluster.domainId, input.model, input.labels, input.evidence, input.measureText, input.tokens);
-    const reach = nameReach(input, cluster, chip);
+    const id = cluster.domainId;
+    const chip = ctx.rest.chips.get(id)!;
+    const block = domainLabelBlock(id, input.model, input.labels, input.evidence, input.measureText, input.tokens);
+    const reach = nameReach(ctx, cluster, chip);
     const angles = nameCandidates(Math.atan2(chip.y - centre.y, chip.x - centre.x));
     const plans = NAME_STEPS_PX.flatMap((step) => angles.map((a) => placeBlock(block, a, chip.x + Math.cos(a) * (reach + step), chip.y + Math.sin(a) * (reach + step))));
-    let chosen: PlacedBlock | null = null;
-    let withUnits = false;
-    for (let pass = 0; pass < 3 && !chosen; pass += 1) {
-      for (const plan of plans) {
-        if (pass === 0 && plan.unitsBox && free(ctx, plan.box) && !crossesBox(input.lines, plan.box)) {
-          chosen = plan;
-          withUnits = true;
-        } else if (pass === 1 && free(ctx, plan.nameBox) && !crossesBox(input.lines, plan.nameBox)) chosen = plan;
-        else if (pass === 2 && free(ctx, plan.nameBox)) chosen = plan;
-        if (chosen) break;
-      }
+    const tries = plans.flatMap((plan) => [{ plan, units: true }, { plan, units: false }]);
+    let pick = -1;
+    for (let pass = 0; pass < 3 && pick < 0; pass += 1) {
+      pick = pickOnce(ctx, `domain:${id}`, tries, (t) =>
+        pass === 0 ? t.units && t.plan.unitsBox !== null && free(ctx, t.plan.box) && !crossesBox(input.lines, t.plan.box)
+        : !t.units && free(ctx, t.plan.nameBox) && (pass === 2 || !crossesBox(input.lines, t.plan.nameBox)));
     }
-    if (!chosen) continue;
-    const id = cluster.domainId;
+    if (pick < 0) continue;
+    const { plan, units } = tries[pick]!;
+    const withUnits = units && plan.unitsBox !== null && plan.block.units !== null;
+    const alpha = ctx.rest.alpha.get(id) ?? 0;
+    const shown = alpha > SHOWN_ALPHA && input.chips.has(id);
+    claim(ctx, plan.nameBox);
+    if (withUnits) claim(ctx, plan.unitsBox!);
+    if (!shown) continue;
+    ctx.held.set(`domain:${id}`, pick);
     const dim = receded(attn, id);
-    const nameInk = input.ink(dim ? inks.domainReceded : attn.domainId === id ? inks.domainAttended : inks.domain);
-    const plan = chosen;
+    const nameInk = fade(ctx, dim ? inks.domainReceded : attn.domainId === id ? inks.domainAttended : inks.domain, alpha);
     plan.block.lines.forEach((line, i) => {
       ctx.out.texts.push({ id, role: "domain", text: line, x: plan.x, y: plan.lineYs[i]!, align: plan.align, font: plan.block.nameFont, ink: nameInk, box: plan.lineBoxes[i]!, parts: null });
     });
-    claim(ctx, plan.nameBox);
-    if (!withUnits || !plan.unitsBox || plan.block.units === null) continue;
-    const unitsInk = input.ink(dim ? inks.domainReceded : inks.units);
+    if (!withUnits) continue;
+    const unitsInk = fade(ctx, dim ? inks.domainReceded : inks.units, alpha);
     const parts = plan.block.stale
-      ? [{ text: plan.block.units, ink: unitsInk }, { text: plan.block.stale, ink: input.ink(dim ? inks.domainReceded : inks.stale) }]
+      ? [{ text: plan.block.units!, ink: unitsInk }, { text: plan.block.stale, ink: fade(ctx, dim ? inks.domainReceded : inks.stale, alpha) }]
       : null;
-    ctx.out.texts.push({ id, role: "units", text: plan.block.units + (plan.block.stale ?? ""), x: plan.x, y: plan.unitsY, align: plan.align, font: plan.block.unitsFont, ink: unitsInk, box: plan.unitsBox, parts });
-    claim(ctx, plan.unitsBox);
+    ctx.out.texts.push({ id, role: "units", text: plan.block.units + (plan.block.stale ?? ""), x: plan.x, y: plan.unitsY, align: plan.align, font: plan.block.unitsFont, ink: unitsInk, box: plan.unitsBox!, parts });
   }
 }
 
@@ -331,19 +410,22 @@ function ringLabels(ctx: Ctx): void {
   for (const ring of scene.rings) {
     const text = labels.ring(ring.min, ring.max);
     const width = input.measureText(text, font);
-    for (const da of RING_TRIES) {
+    const tries = RING_TRIES.map((da) => {
       const a = scene.axisAngle + da;
       const ca = Math.cos(a);
       const sa = Math.sin(a);
       const align: CanvasTextAlign = ca < -0.3 ? "right" : ca > 0.3 ? "left" : "center";
       const x = centre.x + ca * ring.radius * input.scale + (align === "right" ? -4 : align === "left" ? 4 : 0);
       const y = centre.y + sa * ring.radius * input.scale - fontPx * 0.9;
-      const box = textBox(width, x, y, align, fontPx, 2);
-      if (!free(ctx, box) || crossesBox(input.lines, box)) continue;
-      ctx.out.extraTexts.push({ id: null, role: "ring", text, x, y, align, font, ink: input.ink(input.inks.ring), box, parts: null, halo: input.ink(input.inks.halo) });
-      claim(ctx, box);
-      break;
-    }
+      return { x, y, align, box: textBox(width, x, y, align, fontPx, 2) };
+    });
+    const key = `ring:${ring.step}`;
+    const pick = pickOnce(ctx, key, tries, (t) => free(ctx, t.box) && !crossesBox(input.lines, t.box));
+    if (pick < 0) continue;
+    const { x, y, align, box } = tries[pick]!;
+    ctx.out.extraTexts.push({ id: null, role: "ring", text, x, y, align, font, ink: input.ink(input.inks.ring), box, parts: null, halo: input.ink(input.inks.halo) });
+    ctx.held.set(key, pick);
+    claim(ctx, box);
   }
 }
 
@@ -359,13 +441,13 @@ function orphanCaption(ctx: Ctx): void {
   const text = labels.orphans(scene.orphans.ids.length);
   const width = input.measureText(text, font);
   const tries: [number, number, CanvasTextAlign][] = [[c.x + rr + 8, c.y, "left"], [c.x - rr - 8, c.y, "right"], [c.x, c.y + rr + fontPx, "center"], [c.x, c.y - rr - fontPx, "center"]];
-  for (const [x, y, align] of tries) {
-    const box = textBox(width, x, y, align, fontPx, 2);
-    if (!free(ctx, box)) continue;
-    ctx.out.texts.push({ id: null, role: "orphans", text, x, y, align, font, ink: input.ink(input.inks.orphans), box, parts: null });
-    claim(ctx, box);
-    return;
-  }
+  const boxes = tries.map(([x, y, align]) => textBox(width, x, y, align, fontPx, 2));
+  const pick = pickOnce(ctx, "orphans", boxes, (box) => free(ctx, box));
+  if (pick < 0) return;
+  const [x, y, align] = tries[pick]!;
+  ctx.out.texts.push({ id: null, role: "orphans", text, x, y, align, font, ink: input.ink(input.inks.orphans), box: boxes[pick]!, parts: null });
+  ctx.held.set("orphans", pick);
+  claim(ctx, boxes[pick]!);
 }
 
 export interface NameTry { x: number; y: number; align: CanvasTextAlign; box: Box }
@@ -391,11 +473,10 @@ function capabilityNames(ctx: Ctx): void {
   const fontPx = scaledLabelFontSize("capability", ls);
   const items: { id: string; disc: Circle; prio: number }[] = [];
   for (const cluster of input.scene.clusters) {
-    if (!input.chips.has(cluster.domainId)) continue;
     const own = attn.domainId === cluster.domainId && attn.capabilityId === null;
     for (const item of cluster.items) {
       if (item.direct || input.ledgerIds.has(item.id)) continue;
-      const disc = input.discs.get(item.id);
+      const disc = ctx.rest.discs.get(item.id);
       if (!disc || !model.capabilityById.has(item.id)) continue;
       const lit = attn.capabilityId === item.id || attn.needsCaps.has(item.id) || attn.usedByCaps.has(item.id) || attn.relatesCaps.has(item.id);
       if ((attn.domainId && !own && !lit) || (egoOnly && !lit)) continue;
@@ -405,11 +486,16 @@ function capabilityNames(ctx: Ctx): void {
   items.sort((x, y) => y.prio - x.prio || (x.id < y.id ? -1 : 1));
   for (const { id, disc: d } of items) {
     const label = model.capabilityById.get(id)!.label;
-    const pick = capabilityNameTries(d, input.measureText(label, font), fontPx).find((t) => free(ctx, t.box) && !crossesBox(input.lines, t.box));
-    if (!pick) continue;
-    const ink = input.ink(attn.needsCaps.has(id) ? inks.needs : attn.usedByCaps.has(id) ? inks.usedBy : inks.capability);
-    ctx.out.texts.push({ id, role: "capability", text: label, x: pick.x, y: pick.y, align: pick.align, font, ink, box: pick.box, parts: null });
+    const tries = capabilityNameTries(d, input.measureText(label, font), fontPx);
+    const index = pickOnce(ctx, `cap:${id}`, tries, (t) => free(ctx, t.box) && !crossesBox(input.lines, t.box));
+    if (index < 0) continue;
+    const pick = tries[index]!;
     claim(ctx, pick.box);
+    const alpha = ctx.rest.alpha.get(id) ?? 0;
+    if (!(alpha > SHOWN_ALPHA) || !input.discs.has(id)) continue;
+    ctx.held.set(`cap:${id}`, index);
+    const ink = fade(ctx, attn.needsCaps.has(id) ? inks.needs : attn.usedByCaps.has(id) ? inks.usedBy : inks.capability, alpha);
+    ctx.out.texts.push({ id, role: "capability", text: label, x: pick.x, y: pick.y, align: pick.align, font, ink, box: pick.box, parts: null });
   }
 }
 
@@ -420,7 +506,7 @@ function elementNames(ctx: Ctx): void {
   const font = scaledLabelFont("element", ls);
   const fontPx = scaledLabelFontSize("element", ls);
   for (const cluster of input.scene.clusters) {
-    if (!input.chips.has(cluster.domainId)) continue;
+    if (!input.chips.has(cluster.domainId) || (ctx.rest.alpha.get(cluster.domainId) ?? 0) < 1) continue;
     if (input.attention.domainId && input.attention.domainId !== cluster.domainId) continue;
     for (const item of cluster.items) {
       if (item.elementPitch * input.scale < input.tokens.elementName) continue;
@@ -439,11 +525,12 @@ function elementNames(ctx: Ctx): void {
 }
 
 export function buildLabelMarks(input: LabelMarksInput, out: LabelMarksOut): void {
-  const marks: Box[] = [...input.occupied];
-  if (input.hub) marks.push(circleBox(input.hub, 1));
-  for (const c of input.chips.values()) marks.push(circleBox(c, 1));
-  for (const d of input.discs.values()) marks.push(circleBox(d, 1));
-  const ctx: Ctx = { input, out, texts: [], marks };
+  const rest = restOf(input);
+  const marks: Box[] = [];
+  if (input.hub) marks.push(circleBox(input.hub, 3));
+  for (const c of rest.chips.values()) marks.push(circleBox(c, 2));
+  for (const d of rest.discs.values()) marks.push(circleBox(d, 1));
+  const ctx: Ctx = { input, out, texts: [], marks, rest, held: holdOf(input) };
   projectName(ctx);
   if (input.hub) marks.push(circleBox(input.hub, HUB_CLEAR_PX));
   domainNames(ctx);
