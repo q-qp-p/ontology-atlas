@@ -19,13 +19,10 @@ const SIZES = [
 /** Half a node's rim: past it a person sees the drawing sit to one side. */
 const TOLERANCE = 4;
 const HUB_VERTICAL_TOLERANCE = 8;
-const RING_CAPTION_AND_AIR_BELOW_TOOL_ROW = 40;
-const AIR_BELOW_TOOL_ROW_IN_WINDOWS_WITHOUT_A_BAND = 24;
-const WINDOW_HEIGHT_WITH_A_BAND_UNDER_TOOL_ROW = 880;
+const RING_CAPTION_INSIDE_FREE_MAP = 24;
 const RAIL = ["topology-fit-control", "topology-tour-button", "topology-shortcuts-help-button", "topology-replay-growth"];
 
 interface Frame {
-  viewportHeight: number;
   freeLeft: number;
   freeRight: number;
   drawnLeft: number;
@@ -81,7 +78,6 @@ async function measure(page: Page): Promise<Frame> {
       .map(shown)
       .filter((box): box is DOMRect => box !== null);
     return {
-      viewportHeight: window.innerHeight,
       freeLeft: (index ?? tab)?.right ?? canvas.left,
       freeRight: rail.length > 0 ? Math.min(...rail.map((box) => box.left)) : canvas.right,
       drawnLeft: Math.min(...lefts),
@@ -130,10 +126,10 @@ function check(frame: Frame, where: string, { chromeLine }: { chromeLine: boolea
   if (frame.hubY !== null && frame.ringTop !== null && frame.freeTop !== null && frame.freeBottom !== null) {
     const vertical = frame.hubY - (frame.freeTop + frame.freeBottom) / 2;
     const air = frame.ringTop - frame.toolbarBottom;
-    console.log(`[centre] ${where} hub=${frame.hubY.toFixed(1)} free=[${frame.freeTop.toFixed(1)}, ${frame.freeBottom.toFixed(1)}] vertical=${vertical.toFixed(1)} toolbarAir=${air.toFixed(1)}`);
+    const inside = frame.ringTop - frame.freeTop;
+    console.log(`[centre] ${where} hub=${frame.hubY.toFixed(1)} free=[${frame.freeTop.toFixed(1)}, ${frame.freeBottom.toFixed(1)}] vertical=${vertical.toFixed(1)} toolbarAir=${air.toFixed(1)} ringInside=${inside.toFixed(1)}`);
     if (Math.abs(vertical) > HUB_VERTICAL_TOLERANCE) failures.push(`${where}: the hub stands ${vertical.toFixed(1)}px from the free map's middle`);
-    const needed = frame.viewportHeight < WINDOW_HEIGHT_WITH_A_BAND_UNDER_TOOL_ROW ? AIR_BELOW_TOOL_ROW_IN_WINDOWS_WITHOUT_A_BAND : RING_CAPTION_AND_AIR_BELOW_TOOL_ROW;
-    if (air < needed) failures.push(`${where}: the outer ring's top stands ${air.toFixed(1)}px below the tool row, under ${needed}px`);
+    if (inside < RING_CAPTION_INSIDE_FREE_MAP) failures.push(`${where}: the outer ring's top stands ${inside.toFixed(1)}px inside the free map's top, under ${RING_CAPTION_INSIDE_FREE_MAP}px`);
   }
   const { width, height, cssWidth, cssHeight, dpr } = frame.backing;
   if (Math.abs(width - Math.round(cssWidth * dpr)) > 1 || Math.abs(height - Math.round(cssHeight * dpr)) > 1) {
