@@ -1,11 +1,13 @@
-import { scaledLabelFont, scaledLabelFontSize } from "../render/labels";
+import { LABEL_OFFSET, scaledLabelFont, scaledLabelFontSize } from "../render/labels";
 import { domainLabelBlock, sideOf, type MeasureText } from "./label-marks";
 import type { Box, DialLabels, DialModel, DialScene, DialTokens, Pad } from "./types";
 
 const NAME_GAP_PX = 5;
 const ORPHAN_GAP_PX = 8;
 const EDGE_SHARE = 0.01;
-const CAMERA_LABEL_ALLOWANCE_SHARE = 0.068;
+const CAMERA_SPINE_NAME_ALLOWANCE_PX = Math.max(...Object.values(LABEL_OFFSET)) + 4;
+const OPENING_WINDOW_FIT_HEIGHT_PX = 949 - 148 - 96 - CAMERA_SPINE_NAME_ALLOWANCE_PX;
+const CAMERA_LABEL_ALLOWANCE_SHARE = (2 * CAMERA_SPINE_NAME_ALLOWANCE_PX) / (OPENING_WINDOW_FIT_HEIGHT_PX - CAMERA_SPINE_NAME_ALLOWANCE_PX);
 
 type Side = keyof Pad;
 

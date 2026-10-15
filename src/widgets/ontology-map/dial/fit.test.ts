@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { scaledLabelFontSize } from "../render/labels";
+import { computeOverviewCameraTarget } from "../ui/camera/topology-camera-math";
 import { createMeasureText, dialOverviewBounds, dialOverviewPad } from "./fit";
 import type { DialCluster, DialLabels, DialModel, DialScene, DialTokens } from "./types";
 
@@ -99,6 +100,20 @@ describe("dialOverviewBounds and dialOverviewPad", () => {
     expect(box.minY).toBeLessThan(-400);
     const oneSide = fixture(["Top", "R", "Bottom", "L"], [360, 300, 300, 300]);
     expect(dialOverviewBounds({ ...oneSide.scene, rings } as unknown as DialScene).maxY).toBe(360);
+  });
+
+  it("lands the hub on the free map's middle through the overview camera, from the window floor to full HD", () => {
+    const { scene } = fixture(["Top", "R", "Bottom", "L"]);
+    const box = dialOverviewBounds({ ...scene, rings } as unknown as DialScene);
+    const offset = (width: number, height: number, top: number, bottom: number) => {
+      const tokens = { cameraScaleMax: 10, cameraScaleMin: 0.01, cameraSmallGraphScaleMax: 10, overviewEntryRatio: 0.95, safeInsetLeft: 388, safeInsetRight: 60, safeInsetTop: top, safeInsetBottom: bottom };
+      const target = computeOverviewCameraTarget(box, width, height, tokens);
+      return height / 2 - target.ty * target.tscale - (top + height - bottom) / 2;
+    };
+    expect(Math.abs(offset(1512, 949, 148, 96))).toBeLessThan(1);
+    for (const [w, h, top, bottom] of [[1040, 720, 164, 72], [1280, 800, 112, 72], [1920, 1080, 148, 96]] as const) {
+      expect(Math.abs(offset(w, h, top, bottom))).toBeLessThanOrEqual(8);
+    }
   });
 
   it("falls back to the content extent before any ring exists", () => {

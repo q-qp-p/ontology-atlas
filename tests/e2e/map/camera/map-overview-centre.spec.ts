@@ -10,21 +10,35 @@ import { waitForBoxStill, waitForDomeEntered, waitForMapSettled, waitForMapStill
  * convert through the canvas box.
  */
 
-/** The app's window floor and its opening window: the two sizes the installed app is read at. */
+/** The app's window floor, its opening window, and a full-HD browser window. */
 const SIZES = [
   { width: 1040, height: 720 },
   { width: 1512, height: 949 },
+  { width: 1920, height: 1080 },
 ] as const;
 /** Half a node's rim: past it a person sees the drawing sit to one side. */
 const TOLERANCE = 4;
+/** The Flat dial's hub may sit this far above or below the free map's middle (decision bdeff3ae). */
+const VERTICAL_TOLERANCE = 8;
+/** Air between the tool row and the outer ring's top: the ring's caption plus 24 px. Windows under
+ * 880 px tall keep no band under the tool row (`base-responsive.css`), so there the 24 px alone. */
+const TOOLBAR_AIR = 40;
+const SHORT_WINDOW_TOOLBAR_AIR = 24;
+const SHORT_WINDOW_PX = 880;
 const RAIL = ["topology-fit-control", "topology-tour-button", "topology-shortcuts-help-button", "topology-replay-growth"];
 
 interface Frame {
+  viewportHeight: number;
   freeLeft: number;
   freeRight: number;
   drawnLeft: number;
   drawnRight: number;
   drawn: number;
+  hubY: number | null;
+  ringTop: number | null;
+  freeTop: number | null;
+  freeBottom: number | null;
+  toolbarBottom: number;
   backing: { width: number; height: number; cssWidth: number; cssHeight: number; dpr: number };
   indexTop: number | null;
   indexLeftInset: number | null;
@@ -70,12 +84,18 @@ async function measure(page: Page): Promise<Frame> {
       .map(shown)
       .filter((box): box is DOMRect => box !== null);
     return {
+      viewportHeight: window.innerHeight,
       freeLeft: (index ?? tab)?.right ?? canvas.left,
       freeRight: rail.length > 0 ? Math.min(...rail.map((box) => box.left)) : canvas.right,
       drawnLeft: Math.min(...lefts),
       drawnRight: Math.max(...rights),
       // Unreadable radius tokens would turn every offset into NaN, which no bound rejects.
       drawn: drawn.every((node) => radius(node.kind) > 0) ? drawn.length : 0,
+      hubY: hub ? canvas.top + hub.y * stretch : null,
+      ringTop: hub ? canvas.top + (hub.y - ring) * stretch : null,
+      freeTop: hub && dial?.owns ? canvas.top + dial.freeRect.minY * stretch : null,
+      freeBottom: hub && dial?.owns ? canvas.top + dial.freeRect.maxY * stretch : null,
+      toolbarBottom: Math.max(...toolbarTiles.map((box) => box.bottom)),
       backing: {
         width: canvasElement.width,
         height: canvasElement.height,
@@ -109,6 +129,14 @@ function check(frame: Frame, where: string, { chromeLine }: { chromeLine: boolea
   }
   if (Math.abs(offset) > TOLERANCE) {
     failures.push(`${where}: the drawing's centre is ${offset.toFixed(1)}px from the free map's centre`);
+  }
+  if (frame.hubY !== null && frame.ringTop !== null && frame.freeTop !== null && frame.freeBottom !== null) {
+    const vertical = frame.hubY - (frame.freeTop + frame.freeBottom) / 2;
+    const air = frame.ringTop - frame.toolbarBottom;
+    console.log(`[centre] ${where} hub=${frame.hubY.toFixed(1)} free=[${frame.freeTop.toFixed(1)}, ${frame.freeBottom.toFixed(1)}] vertical=${vertical.toFixed(1)} toolbarAir=${air.toFixed(1)}`);
+    if (Math.abs(vertical) > VERTICAL_TOLERANCE) failures.push(`${where}: the hub stands ${vertical.toFixed(1)}px from the free map's middle`);
+    const needed = frame.viewportHeight < SHORT_WINDOW_PX ? SHORT_WINDOW_TOOLBAR_AIR : TOOLBAR_AIR;
+    if (air < needed) failures.push(`${where}: the outer ring's top stands ${air.toFixed(1)}px below the tool row, under ${needed}px`);
   }
   const { width, height, cssWidth, cssHeight, dpr } = frame.backing;
   if (Math.abs(width - Math.round(cssWidth * dpr)) > 1 || Math.abs(height - Math.round(cssHeight * dpr)) > 1) {
