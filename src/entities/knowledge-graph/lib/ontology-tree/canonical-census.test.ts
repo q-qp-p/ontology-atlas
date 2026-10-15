@@ -22,9 +22,12 @@ describe("computeCanonicalCensus", () => {
     node("doc", "document"),
     node("readme", "vault-readme"),
   ];
-  const edges = [{ id: "1", from: "p", to: "d", type: "contains" }] as KnowledgeGraphEdge[];
+  const edges = [
+    { id: "1", from: "p", to: "d", type: "contains" },
+    { id: "2", from: "c", to: "doc", type: "depends_on" },
+  ] as KnowledgeGraphEdge[];
 
-  it("counts the four kinds the map draws, not the document or the reader sentinel", () => {
+  it("counts the four kinds the map draws and only the relations between them", () => {
     expect(computeCanonicalCensus(nodes, edges)).toEqual({ conceptCount: 4, relationCount: 1 });
   });
 

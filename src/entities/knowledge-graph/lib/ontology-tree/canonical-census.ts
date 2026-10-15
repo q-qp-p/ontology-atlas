@@ -21,8 +21,9 @@ export function computeCanonicalCensus(
   nodes: readonly KnowledgeGraphNode[],
   edges: readonly KnowledgeGraphEdge[],
 ): CanonicalCensus {
+  const concepts = new Set(nodes.filter(isMapConcept).map((node) => node.id));
   return {
-    conceptCount: nodes.filter(isMapConcept).length,
-    relationCount: edges.length,
+    conceptCount: concepts.size,
+    relationCount: edges.filter((edge) => concepts.has(edge.from) && concepts.has(edge.to)).length,
   };
 }
