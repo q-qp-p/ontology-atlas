@@ -10,8 +10,10 @@ import {
   PAIRED_TRAIL_ROOM_MAX,
   PLANE_INSET_Y,
   RULE_SENTENCE_ROW_H,
+  SUMMARY_FONT_PX,
   SUMMARY_LINES,
 } from './geometry';
+import { captionLineRoom, splitLinesByWidthAt } from '../../model/summary-lines';
 import type { ArchitectureSketchProps, FlowAxis } from './types';
 
 const BOX_W = 148;
@@ -78,12 +80,14 @@ export function solveSketchFrame({
   boxWidth,
   restWidth,
   restHeight,
+  roleSummary,
 }: {
   graph: ArchitectureSketchProps['graph'];
   ledgers: ArchitectureSketchProps['ledgers'];
   boxWidth: number;
   restWidth: number;
   restHeight: number;
+  roleSummary: ArchitectureSketchProps['roleSummary'];
 }) {
   /* One height for every box: mixed heights read as two kinds of thing, and the lane arithmetic assumes one. */
   const hasLedger = graph.boxes.some((box) => ledgers[box.id] !== undefined);
@@ -154,21 +158,28 @@ export function solveSketchFrame({
   /* No receipt and no measured crossing: one empty state for the column. Partial receipts keep per-role faces. */
   const observationEmpty =
     splitsEvidence && !hasLedger && !graph.edges.some((edge) => edge.kind === 'traffic');
-  /* Trail ground goes to an observation-side skip, and is held while the column is empty so a landing record moves no face. */
-  const observationNeedsLane =
-    observationEmpty ||
-    graph.edges.some((edge) => edge.kind === 'traffic' && edge.columnSpan > 1);
-  const pairedGroundSpare =
+  const groundSpare = (trailLane: number) =>
     usesPairedDown && boxWidth > 0
-      ? Math.max(
-          0,
-          boxWidth -
-            PAIRED_FIXED_W -
-            PAIRED_SIDE_ROOM_MIN -
-            (observationNeedsLane ? PAIRED_TRAIL_ROOM_MAX : PAIRED_SIDE_ROOM_MIN),
-        )
+      ? Math.max(0, boxWidth - PAIRED_FIXED_W - PAIRED_SIDE_ROOM_MIN - trailLane)
       : 0;
-  const pairedContractW = Math.min(PAIRED_CONTRACT_W_MAX, PAIRED_CONTRACT_W + pairedGroundSpare);
+  const contractWAt = (trailLane: number) =>
+    Math.min(PAIRED_CONTRACT_W_MAX, PAIRED_CONTRACT_W + groundSpare(trailLane));
+  /* The skip lane is held, empty or observed, wherever it cuts no description that fits without it. */
+  const heldW = contractWAt(PAIRED_TRAIL_ROOM_MAX);
+  const freeW = contractWAt(PAIRED_SIDE_ROOM_MIN);
+  const laneLines = usesTightLadder ? 1 : SUMMARY_LINES;
+  const cutAt = (width: number, text: string) =>
+    splitLinesByWidthAt(text, captionLineRoom(width), laneLines, SUMMARY_FONT_PX).at(-1)?.endsWith('…') ?? false;
+  const holdsSkipLane =
+    heldW === freeW ||
+    graph.boxes.every((box) => {
+      const text = roleSummary(box.id);
+      return text === null || cutAt(freeW, text) || !cutAt(heldW, text);
+    });
+  const observationNeedsLane =
+    holdsSkipLane || graph.edges.some((edge) => edge.kind === 'traffic' && edge.columnSpan > 1);
+  const pairedGroundSpare = groundSpare(observationNeedsLane ? PAIRED_TRAIL_ROOM_MAX : PAIRED_SIDE_ROOM_MIN);
+  const pairedContractW = contractWAt(observationNeedsLane ? PAIRED_TRAIL_ROOM_MAX : PAIRED_SIDE_ROOM_MIN);
   /* The face takes its share first, then the gutter; both capped. */
   const pairedGutterW = Math.min(
     PAIRED_GUTTER_W_MAX,
@@ -277,5 +288,6 @@ export function solveSketchFrame({
     planeHeadRoom,
     pairedHeaderH,
     saysRuleOnce: usesPairedDown && saysRuleOnce,
+    holdsSkipLane: usesPairedDown && observationNeedsLane,
   };
 }

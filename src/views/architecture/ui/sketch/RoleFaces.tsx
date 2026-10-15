@@ -6,11 +6,10 @@ import type { ArchitectureGraph as Graph } from '../../model/graph-layout';
 import type { RoleLedger } from '../../model/role-ledger';
 import { balanceLinesByWidthAt, captionLineRoom, splitLinesByWidthAt } from '../../model/summary-lines';
 import { ConnectionPort } from './ConnectionPort';
-import { SUMMARY_LINES } from './geometry';
+import { SUMMARY_FONT_PX, SUMMARY_LINES } from './geometry';
 import { EDGE_STROKE, RECEDED_ROLE_OPACITY } from './ink';
 import type { ArchitectureSketchProps, ArrivalPhase, FlowAxis, Placed } from './types';
 
-const SUMMARY_FONT_PX = 11;
 /** One sentence line to the next, in SVG units: the `--leading-label` pair of `text-label`. */
 const SUMMARY_LEADING = 16;
 const SPLIT_SUMMARY_FONT_PX = 12.5;

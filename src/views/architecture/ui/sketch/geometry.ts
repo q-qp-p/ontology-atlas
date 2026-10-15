@@ -3,6 +3,8 @@ export const OBSERVATION_LANE_GAP = 48;
 const SKIP_LANE_STEP = 14;
 /** Caption lines per role sentence; every face is a rectangle, so each line gets captionLineRoom's straight room. */
 export const SUMMARY_LINES = 2;
+/** The size a role's description steps down to before any line is cut (`text-label`). */
+export const SUMMARY_FONT_PX = 11;
 export const PAD_X = 28;
 /* The dual evidence ladder: contract face, comparison gutter, observation face. */
 export const PAIRED_CONTRACT_W = 280;

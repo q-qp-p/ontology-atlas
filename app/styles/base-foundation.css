@@ -493,6 +493,21 @@
   );
 }
 
+[data-architecture-arrival='whole'] :is(
+    .architecture-arrive-plane,
+    .architecture-arrive-face,
+    .architecture-arrive-draw,
+    .architecture-arrive-climb,
+    .architecture-arrive-mark
+  ) {
+  animation: panelCrossfadeIn var(--motion-fast) var(--motion-ease) backwards;
+  stroke-dasharray: none;
+}
+
+[data-architecture-arrival='whole'] .architecture-empty-panel-out {
+  animation-duration: var(--motion-fast);
+}
+
 /*
  * A local, truthful progress line for the Architecture observation lane. It exists only while an
  * ACP turn is actually active; it never loops over a stored receipt or an idle contract. The text

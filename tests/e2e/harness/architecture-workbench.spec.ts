@@ -388,6 +388,11 @@ test('the ladder tightens its rows rather than hiding the seventh role at 1280x8
   await expect(graph).toHaveAttribute('data-evidence-layout', 'paired-ladder');
   await expect(graph).toHaveAttribute('data-ladder-density', 'tight');
   await expect(page.getByTestId('architecture-canvas-hidden-below')).toHaveCount(0);
+  await expect(graph).toHaveAttribute('data-skip-lane', 'free');
+  const cut = await page
+    .locator('[data-testid^="architecture-box-line-"]')
+    .evaluateAll((lines) => lines.filter((line) => (line.textContent ?? '').trimEnd().endsWith('…')).length);
+  expect(cut, 'held, the skip lane would cut 4 of 7 descriptions; free, the empty ladder cuts 1').toBeLessThanOrEqual(1);
 
   const outside = await page.evaluate(() => {
     const scroller = document

@@ -127,12 +127,14 @@ export function ArchitectureSketch({
     planeHeadRoom,
     pairedHeaderH,
     saysRuleOnce,
+    holdsSkipLane,
   } = solveSketchFrame({
     graph,
     ledgers,
     boxWidth,
     restWidth,
     restHeight,
+    roleSummary,
   });
 
   /* Hover answers locally; only selection dims the graph. */
@@ -223,24 +225,28 @@ export function ArchitectureSketch({
     graph.boxes.some((box) => ledgers[box.id] !== undefined) ||
     graph.edges.some((edge) => edge.kind === 'traffic');
   const knownEmpty = observationKnown && !hasObservation && usesPairedDown && axisWidth > 0;
-  const [seen, setSeen] = useState({ profileKey, knownEmpty });
+  const frameKey = `${contractBoxW}:${pairedGutterW}:${layoutLeadRoom}`;
+  const [seen, setSeen] = useState({ profileKey, knownEmpty, frameKey });
   const [arriving, setArriving] = useState(false);
+  const [arrivesWhole, setArrivesWhole] = useState(false);
   const [arrived, setArrived] = useState(false);
-  if (seen.profileKey !== profileKey || seen.knownEmpty !== knownEmpty) {
-    setSeen({ profileKey, knownEmpty });
-    /* Choosing another profile that already has a record is a switch, not a landing. */
-    const arrives =
-      seen.profileKey === profileKey &&
-      seen.knownEmpty &&
-      hasObservation &&
-      usesPairedDown &&
-      axisWidth > 0;
-    setArriving(arrives);
-    if (arrives) setArrived(true);
+  if (seen.profileKey !== profileKey || seen.knownEmpty !== knownEmpty || seen.frameKey !== frameKey) {
+    setSeen({ profileKey, knownEmpty, frameKey });
+    if (seen.profileKey !== profileKey || seen.knownEmpty !== knownEmpty) {
+      /* Choosing another profile that already has a record is a switch, not a landing. */
+      const arrives =
+        seen.profileKey === profileKey && seen.knownEmpty && hasObservation && usesPairedDown && axisWidth > 0;
+      setArriving(arrives);
+      /* A skip claiming a lane the empty ladder could not hold moves faces: one crossfade. */
+      setArrivesWhole(arrives && seen.frameKey !== frameKey);
+      if (arrives) setArrived(true);
+    }
   }
   const arrival = arriving ? 'arriving' : arrived ? 'arrived' : 'rest';
   const arrivalWindowMs = Math.ceil(
-    (MOTION.base.duration + Math.max(0, ranks - 1) * STAGGER + MOTION.settle.duration) * 1000,
+    (arrivesWhole
+      ? MOTION.fast.duration
+      : MOTION.base.duration + Math.max(0, ranks - 1) * STAGGER + MOTION.settle.duration) * 1000,
   );
   useEffect(() => {
     if (!arriving) return undefined;
@@ -542,6 +548,7 @@ export function ArchitectureSketch({
           className="relative shrink-0"
           style={{ width, height }}
           data-architecture-layout-ready={axisWidth > 0 ? 'true' : 'false'}
+          data-architecture-arrival={arriving ? (arrivesWhole ? 'whole' : 'staged') : undefined}
         >
         <svg
           viewBox={`0 0 ${width} ${height}`}
@@ -556,6 +563,7 @@ export function ArchitectureSketch({
           data-box-width-mode={usesRoomyBoxes ? 'roomy' : 'compact'}
           data-evidence-layout={usesPairedDown ? 'paired-ladder' : splitsEvidence ? 'split' : 'combined'}
           data-ladder-density={usesPairedDown ? ladderDensity : undefined}
+          data-skip-lane={usesPairedDown ? (holdsSkipLane ? 'held' : 'free') : undefined}
           data-architecture-layout-ready={axisWidth > 0 ? 'true' : 'false'}
           className="block"
         >

@@ -154,25 +154,7 @@ describe('the role ledger', () => {
 
 describe('the evidence split plane', () => {
   it('uses the selected dual evidence ladder when seven roles fit as paired downward rows', () => {
-    const geometry: Record<string, number> = {
-      clientWidth: 1200,
-      scrollWidth: 1200,
-      clientHeight: 700,
-      scrollHeight: 700,
-    };
-    const originals = Object.fromEntries(
-      Object.keys(geometry).map((key) => [
-        key,
-        Object.getOwnPropertyDescriptor(HTMLElement.prototype, key),
-      ]),
-    );
-    try {
-      for (const [key, value] of Object.entries(geometry)) {
-        Object.defineProperty(HTMLElement.prototype, key, {
-          configurable: true,
-          get: () => value,
-        });
-      }
+    withGeometry({ clientWidth: 1200, scrollWidth: 1200, clientHeight: 700, scrollHeight: 700 }, () => {
       const { container } = draw({}, new Set(), [], FSD_PROFILE_FRONTMATTER);
       const graph = screen.getByTestId('architecture-graph');
       expect(graph).toHaveAttribute('data-architecture-axis', 'down');
@@ -243,12 +225,7 @@ describe('the evidence split plane', () => {
       const hitAreas = [...container.querySelectorAll('[data-architecture-role-hit-area="true"]')];
       expect(hitAreas).toHaveLength(7);
       expect(hitAreas.every((area) => area.getAttribute('width') === '424')).toBe(true);
-    } finally {
-      for (const [key, descriptor] of Object.entries(originals)) {
-        if (descriptor) Object.defineProperty(HTMLElement.prototype, key, descriptor);
-        else delete (HTMLElement.prototype as unknown as Record<string, unknown>)[key];
-      }
-    }
+    });
   });
 
   it('seats the inspect action in the empty column and gives it up when a receipt lands', () => {
@@ -308,27 +285,58 @@ describe('the evidence split plane', () => {
     });
   });
 
+  const CLEAN: RoleLedger = { state: 'clean', violated: 0, outgoing: 1, sampleLimited: false, importsOut: 12 };
+  const FSD_ROLES = ['routing', 'app', 'views', 'widgets', 'features', 'entities', 'shared'];
+  const LONG_VIEWS = 'Every screen a person can open is one module here, and it composes the layers below it into the page.';
+  const frameOf = () => {
+    const face = document.querySelector('[data-testid="architecture-graph-box-routing"] .architecture-canvas-node')!;
+    const panel = screen.queryByTestId('architecture-observation-empty');
+    const observed = screen.queryByTestId('architecture-observation-box-routing');
+    return {
+      contract: [face.getAttribute('x'), face.getAttribute('width')],
+      column: panel
+        ? [parseFloat(panel.style.left), parseFloat(panel.style.width)]
+        : [Number(observed?.getAttribute('x')), Number(observed?.getAttribute('width'))],
+      lane: screen.getByTestId('architecture-graph').getAttribute('data-skip-lane'),
+      cut: [...document.querySelectorAll('[data-testid^="architecture-box-line-"]')].filter((line) =>
+        (line.textContent ?? '').trimEnd().endsWith('…'),
+      ).length,
+    };
+  };
+
+  it.each([
+    ['no traffic', 1200, []],
+    ['adjacent imports only', 1200, [{ fromRole: 'routing', toRole: 'app', count: 12 }]],
+    ['no traffic, lane left free', 900, []],
+  ] as const)('a record with %s lands at %ipx without moving a face', (_, width, traffic) => {
+    withGeometry({ clientWidth: width, scrollWidth: width, clientHeight: 700, scrollHeight: 700 }, () => {
+      const extra = { profileKey: 'web', roleSummary: (id: string) => (id === 'views' ? LONG_VIEWS : null) };
+      const ledgers = Object.fromEntries(FSD_ROLES.map((role) => [role, CLEAN]));
+      const { rerender } = render(sketch({}, new Set(), [], FSD_PROFILE_FRONTMATTER, null, extra));
+      const empty = frameOf();
+      rerender(sketch(ledgers, new Set(), traffic, FSD_PROFILE_FRONTMATTER, null, extra));
+      expect(frameOf()).toEqual(empty);
+      expect(document.querySelector('[data-architecture-arrival]')).toHaveAttribute('data-architecture-arrival', 'staged');
+    });
+  });
+
+  it('leaves the skip lane free where holding it would cut a description, and a skip that claims it lands whole', () => {
+    withGeometry({ clientWidth: 900, scrollWidth: 900, clientHeight: 700, scrollHeight: 700 }, () => {
+      const extra = { profileKey: 'web', roleSummary: (id: string) => (id === 'views' ? LONG_VIEWS : null) };
+      const { rerender } = render(sketch({}, new Set(), [], FSD_PROFILE_FRONTMATTER, null, extra));
+      const empty = frameOf();
+      expect(empty.lane).toBe('free');
+      expect(empty.cut).toBe(0);
+      const ledgers = Object.fromEntries(FSD_ROLES.map((role) => [role, CLEAN]));
+      rerender(sketch(ledgers, new Set(), [{ fromRole: 'views', toRole: 'shared', count: 5 }], FSD_PROFILE_FRONTMATTER, null, extra));
+      expect(frameOf().lane).toBe('held');
+      expect(document.querySelector('[data-architecture-arrival]')).toHaveAttribute('data-architecture-arrival', 'whole');
+    });
+  });
+
   /* With a receipt the ladder has a face and a mark per role, and the delta heading returns with its hover limit. */
   it('draws the per-role faces and the delta heading once every role carries a receipt', () => {
-    const geometry: Record<string, number> = {
-      clientWidth: 1200,
-      scrollWidth: 1200,
-      clientHeight: 700,
-      scrollHeight: 700,
-    };
-    const originals = Object.fromEntries(
-      Object.keys(geometry).map((key) => [
-        key,
-        Object.getOwnPropertyDescriptor(HTMLElement.prototype, key),
-      ]),
-    );
-    try {
-      for (const [key, value] of Object.entries(geometry)) {
-        Object.defineProperty(HTMLElement.prototype, key, {
-          configurable: true,
-          get: () => value,
-        });
-      }
+    withGeometry({ clientWidth: 1200, scrollWidth: 1200, clientHeight: 700, scrollHeight: 700 }, () => {
       const receipt: RoleLedger = {
         state: 'clean',
         violated: 0,
@@ -345,12 +353,7 @@ describe('the evidence split plane', () => {
       expect(screen.getByTestId('architecture-delta-heading').querySelector('title')).toHaveTextContent(
         "Each mark says what that role's own outgoing imports did.",
       );
-    } finally {
-      for (const [key, descriptor] of Object.entries(originals)) {
-        if (descriptor) Object.defineProperty(HTMLElement.prototype, key, descriptor);
-        else delete (HTMLElement.prototype as unknown as Record<string, unknown>)[key];
-      }
-    }
+    });
   });
 
   /* An across chain at 1920 cut every role sentence; the ladder rows win whenever the canvas is tall enough. */
@@ -462,25 +465,7 @@ describe('the evidence split plane', () => {
 
   it('expands into aligned contract and observation lanes only when the full role set fits', () => {
     /* Too short for four paired rows (16 + 20 + 4×72 + 3×24 = 396), so the across chain is honest. */
-    const geometry: Record<string, number> = {
-      clientWidth: 1600,
-      scrollWidth: 1600,
-      clientHeight: 360,
-      scrollHeight: 360,
-    };
-    const originals = Object.fromEntries(
-      Object.keys(geometry).map((key) => [
-        key,
-        Object.getOwnPropertyDescriptor(HTMLElement.prototype, key),
-      ]),
-    );
-    try {
-      for (const [key, value] of Object.entries(geometry)) {
-        Object.defineProperty(HTMLElement.prototype, key, {
-          configurable: true,
-          get: () => value,
-        });
-      }
+    withGeometry({ clientWidth: 1600, scrollWidth: 1600, clientHeight: 360, scrollHeight: 360 }, () => {
       const { container } = draw();
       const graph = screen.getByTestId('architecture-graph');
       expect(graph).toHaveAttribute('data-box-width-mode', 'roomy');
@@ -512,12 +497,7 @@ describe('the evidence split plane', () => {
       );
       expect(screen.queryByTestId('architecture-role-observation-domain')).toBeNull();
       expect(container.querySelector('[data-testid="architecture-graph-run"]')).toBeNull();
-    } finally {
-      for (const [key, descriptor] of Object.entries(originals)) {
-        if (descriptor) Object.defineProperty(HTMLElement.prototype, key, descriptor);
-        else delete (HTMLElement.prototype as unknown as Record<string, unknown>)[key];
-      }
-    }
+    });
   });
 
   it('keeps a split observation card to its import count while the gutter carries status', () => {
@@ -552,25 +532,7 @@ describe('the evidence split plane', () => {
   });
 
   it('draws reviewed permission and matching observed traffic on distinct compact tracks', () => {
-    const geometry: Record<string, number> = {
-      clientWidth: 400,
-      scrollWidth: 400,
-      clientHeight: 700,
-      scrollHeight: 700,
-    };
-    const originals = Object.fromEntries(
-      Object.keys(geometry).map((key) => [
-        key,
-        Object.getOwnPropertyDescriptor(HTMLElement.prototype, key),
-      ]),
-    );
-    try {
-      for (const [key, value] of Object.entries(geometry)) {
-        Object.defineProperty(HTMLElement.prototype, key, {
-          configurable: true,
-          get: () => value,
-        });
-      }
+    withGeometry({ clientWidth: 400, scrollWidth: 400, clientHeight: 700, scrollHeight: 700 }, () => {
       const { container } = draw({}, new Set(), OBSERVED_TRAFFIC);
       const rule = container.querySelector<SVGPathElement>(
         '[data-edge-kind="permitted"][data-edge-from="adapter"][data-edge-to="application"]',
@@ -595,12 +557,7 @@ describe('the evidence split plane', () => {
           '[data-edge-sentence-kind="traffic"][data-edge-sentence="drawn"]',
         ),
       ).not.toBeNull();
-    } finally {
-      for (const [key, descriptor] of Object.entries(originals)) {
-        if (descriptor) Object.defineProperty(HTMLElement.prototype, key, descriptor);
-        else delete (HTMLElement.prototype as unknown as Record<string, unknown>)[key];
-      }
-    }
+    });
   });
 
   it('keeps a violated edge and arrowhead red while shared ports remain indigo', () => {
