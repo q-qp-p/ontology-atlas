@@ -12,6 +12,7 @@ import { selectWikiPages } from '@/entities/docs-vault';
 import { useRouter } from '@/i18n/navigation';
 import { useLibraryIndexSegment, writeLibraryIndexSegment } from '@/shared/lib/preferences/appearance-preferences';
 import { selectOpenVaultHandle } from '@/shared/lib/vault-folder/select-open-vault-handle';
+import { useViewportBelow } from '@/shared/lib/use-viewport-below';
 import { RouteLoadingFallback, TabBar } from '@/shared/ui';
 import { SegmentedControl } from '@/shared/ui/fields/segmented-control';
 
@@ -108,6 +109,16 @@ export function LibraryWorkspace() {
     query.set('ontologyView', next);
     router.push(`/library/?${query}${window.location.hash}`, { scroll: false });
   };
+  // Beside the tabs from md; below it the four tabs need the whole header, so the switch takes a row.
+  const viewsInOwnRow = useViewportBelow(768);
+  const ontologyViews = (
+    <SegmentedControl<OntologyView> value={ontologyView} onChange={selectOntologyView}
+      ariaLabel={t('workspace.ontologyViews')} size="lg" testId="library-ontology-views"
+      options={[
+        { value: 'documents', label: t('workspace.conceptDocuments'), testId: 'library-ontology-documents' },
+        { value: 'sets', label: t('workspace.conceptSets'), testId: 'library-ontology-sets' },
+      ]} />
+  );
 
   return (
     <div data-testid="library-workspace" className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
@@ -148,6 +159,12 @@ export function LibraryWorkspace() {
             },
           ]}
         />
+        {tab === 'ontology' && !viewsInOwnRow ? (
+          <div className="flex min-h-[var(--control-h-lg)] shrink-0 items-center gap-3 self-end pl-1">
+            <span aria-hidden className="h-5 w-px bg-[color:var(--color-divider)]" />
+            {ontologyViews}
+          </div>
+        ) : null}
         <div ref={setToolsHost} data-testid="library-strip-tools" className="ml-auto flex min-h-[var(--control-h-lg)] shrink-0 items-center gap-1 self-end pr-3" />
       </header>
       <div
@@ -161,14 +178,9 @@ export function LibraryWorkspace() {
       >
         {tab === 'ontology' ? (
           <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-            <div className="flex shrink-0 items-center border-b border-[color:var(--color-divider)] px-4 py-2">
-              <SegmentedControl<OntologyView> value={ontologyView} onChange={selectOntologyView}
-                ariaLabel={t('workspace.ontologyViews')} size="md" testId="library-ontology-views"
-                options={[
-                  { value: 'documents', label: t('workspace.conceptDocuments'), testId: 'library-ontology-documents' },
-                  { value: 'sets', label: t('workspace.conceptSets'), testId: 'library-ontology-sets' },
-                ]} />
-            </div>
+            {viewsInOwnRow ? (
+              <div className="flex shrink-0 items-center border-b border-[color:var(--color-divider)] px-4 py-2">{ontologyViews}</div>
+            ) : null}
             <div key={ontologyView} className={`flex min-h-0 flex-1 ${styles.panel}`}>
               {ontologyView === 'sets'
                 ? <LibraryConstellations handle={handle} documents={vault.manifest?.docs ?? []} />

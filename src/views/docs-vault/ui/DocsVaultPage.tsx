@@ -99,6 +99,7 @@ function DocsVaultContent({
   const [sourceTreeOpen, setSourceTreeOpen] = useState(false);
   const [docListCollapsed, setDocListCollapsedState] = useState(readStoredListCollapsed);
   const [docListToggled, setDocListToggled] = useState(false);
+  const [treeToolsHost, setTreeToolsHost] = useState<HTMLDivElement | null>(null);
   const docListPresence = usePanelPresence(!docListCollapsed);
   const docListLeaving = docListToggled && docListCollapsed && docListPresence.mounted;
   const toggleDocListCollapsed = useCallback(() => {
@@ -306,7 +307,7 @@ function DocsVaultContent({
       onFire: () => setPaletteQuery(''),
     },
   ]);
-  const { outlineHeadings, showOutlineRail, handleHeadingNavigate } = useDocOutline({
+  const { outlineHeadings, showOutlineRail, handleHeadingNavigate, bodyHasTitle } = useDocOutline({
     selectedDoc,
     staticHeadings,
     setActiveHeadingSlug,
@@ -351,6 +352,10 @@ function DocsVaultContent({
     void openLocalVault();
   }, [source, isDesktopRuntime, handleSourceChange, openLocalVault]);
 
+  const columnTitle = selectedDoc && !showDesktopWelcome && !bodyHasTitle ? selectedDocDisplayTitle : null;
+  const headerTreeTools =
+    documentScope === 'ontology' && !legacyDocumentMode && !docListCollapsed && !showDesktopWelcome;
+
   // One neutral frame until source and restored manifest settle, so the static manifest
   // never paints as the installed app's data.
   if (!vaultScopeSettled || legacyRedirectToLibrary) return <RouteLoadingFallback />;
@@ -391,6 +396,8 @@ function DocsVaultContent({
         handleSelect={handleSelect}
         handleCloseDocTab={handleCloseDocTab}
         setPaletteQuery={setPaletteQuery}
+        treeToolsHostRef={headerTreeTools ? setTreeToolsHost : undefined}
+        showPageHeading={columnTitle === null}
       />
       </div>
       <DocsVaultAuditModal
@@ -506,32 +513,35 @@ function DocsVaultContent({
           docListLeaving={docListLeaving}
           docListToggled={docListToggled}
         >
-          <DocsSidebarBody
-            reviewQueue={reviewQueue}
-            pinnedSlugs={collectionPinnedSlugs}
-            recentSlugs={collectionRecentSlugs}
-            selectedSlug={selectedSlug}
-            docsBySlug={docsBySlug}
-            activeTag={activeTag}
-            manifest={collectionManifest}
-            collection={docCollection}
-            collectionCounts={collectionCounts}
-            showCollectionChooser={documentScope !== 'ontology'}
-            showCreateDocument={!legacyDocumentMode}
-            visibleDocSlugs={collectionDocSlugs}
-            onSelect={handleSelectFromSidebar}
-            onCollectionChange={handleCollectionChange}
-            onTogglePin={handleTogglePin}
-            onTagSelect={setActiveTag}
-            // In the read-only sample the `+` opens a folder, the path that makes creating possible.
-            onCreateNewDoc={canEditCurrent ? handleOpenNewDocDialog : handleVaultPillSwap}
-            canCreateNewDoc={canEditCurrent}
-            sort={treeSort}
-            group={treeGroup}
-            onSortChange={handleTreeSortChange}
-            onGroupChange={handleTreeGroupChange}
-            agentFiles={documentScope === 'ontology' ? null : agentFiles}
-          />
+          {(placement) => (
+            <DocsSidebarBody
+              reviewQueue={reviewQueue}
+              pinnedSlugs={collectionPinnedSlugs}
+              recentSlugs={collectionRecentSlugs}
+              selectedSlug={selectedSlug}
+              docsBySlug={docsBySlug}
+              activeTag={activeTag}
+              manifest={collectionManifest}
+              collection={docCollection}
+              collectionCounts={collectionCounts}
+              showCollectionChooser={documentScope !== 'ontology'}
+              showCreateDocument={!legacyDocumentMode}
+              visibleDocSlugs={collectionDocSlugs}
+              onSelect={handleSelectFromSidebar}
+              onCollectionChange={handleCollectionChange}
+              onTogglePin={handleTogglePin}
+              onTagSelect={setActiveTag}
+              // In the read-only sample the `+` opens a folder, the path that makes creating possible.
+              onCreateNewDoc={canEditCurrent ? handleOpenNewDocDialog : handleVaultPillSwap}
+              canCreateNewDoc={canEditCurrent}
+              sort={treeSort}
+              group={treeGroup}
+              onSortChange={handleTreeSortChange}
+              onGroupChange={handleTreeGroupChange}
+              agentFiles={documentScope === 'ontology' ? null : agentFiles}
+              toolsHost={placement === 'pane' && headerTreeTools ? treeToolsHost : null}
+            />
+          )}
         </DocsVaultSidebar>
 
         <main
@@ -550,6 +560,7 @@ function DocsVaultContent({
           {selectedDoc ? (
             <DocsVaultDocumentPane
               selectedDoc={selectedDoc}
+              columnTitle={columnTitle}
               editing={editing}
               setEditing={setEditing}
               showSampleWelcomeNote={showSampleWelcomeNote}

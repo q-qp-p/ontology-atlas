@@ -18,7 +18,7 @@ async function openCheckout(page: Page) {
   });
 }
 
-test("the file's rename and delete doors stand beside its address and open product dialogs", async ({
+test("the file's rename and delete doors stand beside its name and open product dialogs", async ({
   page,
 }) => {
   const nativeDialogs: string[] = [];
@@ -46,6 +46,7 @@ test("the file's rename and delete doors stand beside its address and open produ
     };
     return {
       path: measure("docs-editor-path"),
+      title: measure("docs-reading-title"),
       rename: measure("docs-file-rename"),
       remove: measure("docs-file-delete"),
     };
@@ -53,13 +54,14 @@ test("the file's rename and delete doors stand beside its address and open produ
   console.log("[docs-file-actions/geometry]", JSON.stringify(geometry));
   expect(geometry.rename, "the rename door is on the page").not.toBeNull();
   expect(geometry.remove, "the delete door is on the page").not.toBeNull();
+  // The column's title names the file when the body has none; otherwise the address does.
+  const name = geometry.title ?? geometry.path!;
   for (const door of [geometry.rename!, geometry.remove!]) {
     expect(door.onTop, "the door is what a press at its centre reaches").toBe(true);
-    expect(Math.min(door.width, door.height), "WCAG 2.5.8 floor").toBeGreaterThanOrEqual(24);
-    // Beside the address: after its right edge, and on its line.
-    expect(door.left).toBeGreaterThanOrEqual(geometry.path!.right);
-    expect(door.top).toBeLessThan(geometry.path!.bottom);
-    expect(door.bottom).toBeGreaterThan(geometry.path!.top);
+    expect(Math.min(door.width, door.height), "the chrome icon tile").toBe(36);
+    expect(door.left).toBeGreaterThanOrEqual(name.right);
+    expect(door.top).toBeLessThan(name.bottom);
+    expect(door.bottom).toBeGreaterThan(name.top);
   }
 
   await page.getByTestId("docs-file-rename").click();
