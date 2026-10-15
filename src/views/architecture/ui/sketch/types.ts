@@ -1,3 +1,7 @@
+import type { ReactNode } from 'react';
+
+export type ArrivalPhase = 'rest' | 'arriving' | 'arrived';
+
 import type { SentenceEdge } from '../../model/edge-sentences';
 import type { ArchitectureGraph as Graph, GraphBoxShape } from '../../model/graph-layout';
 import type { RoleLedger } from '../../model/role-ledger';
@@ -56,6 +60,11 @@ export interface ArchitectureSketchProps {
   /** The single empty state in both measured columns before any inspection. */
   observationEmptyTitle: string;
   observationEmptyBody: string;
+  observationEmptyAction?: ReactNode;
+  onObservationEmptyActionSeated?: (seated: boolean) => void;
+  /** False while receipts are still being read. */
+  observationKnown?: boolean;
+  lowerOnlyRuleLabel: string;
   hiddenRightLabel: (count: number) => string;
   hiddenLeftLabel: (count: number) => string;
   hiddenAboveLabel: (count: number) => string;

@@ -112,7 +112,7 @@ test('keyboard opens, closes, restores focus, and reopens the selected role', as
   await waitForBoxStill(page.getByTestId('architecture-graph'));
   await waitForBoxStill(page.getByTestId('architecture-graph-box-application'));
   const selectedFit = await page.getByTestId('architecture-graph').evaluate((svg) => {
-    const viewport = svg.parentElement!.getBoundingClientRect();
+    const viewport = svg.closest('[data-testid="architecture-canvas-scroller"]')!.getBoundingClientRect();
     const boxes = [...svg.querySelectorAll('[data-testid^="architecture-graph-box-"]')];
     return {
       hidden: boxes.filter((box) => {
@@ -215,7 +215,7 @@ test('a chain is never cut in silence — it turns, or it says what is hidden', 
     /* Whatever is out of view may pan, but it must be counted on screen and reachable. */
     const hidden = await page.evaluate(() => {
       const svg = document.querySelector('[data-testid="architecture-graph"]');
-      const canvas = svg?.parentElement?.getBoundingClientRect();
+      const canvas = svg?.closest('[data-testid="architecture-canvas-scroller"]')?.getBoundingClientRect();
       if (!canvas) return 0;
       /* A box, not a pixel: a canvas one rounding pixel short of its drawing hides nothing, and a
          count that says "0 more below" would be noise. What must never be silent is a whole role
@@ -266,7 +266,7 @@ test('a chain is never cut in silence — it turns, or it says what is hidden', 
     const gaps = await page
       .locator('[data-testid="architecture-graph"]')
       .evaluate((svg) => {
-        const scroller = svg.parentElement as HTMLElement;
+        const scroller = svg.closest('[data-testid="architecture-canvas-scroller"]') as HTMLElement;
         const s = scroller.getBoundingClientRect();
         const v = svg.getBoundingClientRect();
         return { left: v.left - s.left, right: s.right - v.right };
@@ -372,8 +372,8 @@ test('the ladder tightens its rows rather than hiding the seventh role at 1280x8
 
   const outside = await page.evaluate(() => {
     const scroller = document
-      .querySelector('[data-testid="architecture-graph"]')!
-      .parentElement!.getBoundingClientRect();
+      .querySelector('[data-testid="architecture-canvas-scroller"]')!
+      .getBoundingClientRect();
     const out: string[] = [];
     for (const box of document.querySelectorAll('[data-testid^="architecture-graph-box-"]')) {
       const at = box.getBoundingClientRect();
@@ -394,7 +394,7 @@ for (const locale of ['ko', 'en'] as const) {
   /* One test per locale rather than a loop inside one: Korean runs taller than English at the same
      size, so a failure has to name which build it is, and a `use`-prefixed fixture helper may not
      be called in a loop body (`react-hooks/rules-of-hooks` reads it as a React hook). */
-  test(`${locale}: the structure ladder uses the card width, the layer board ends on one line, and column headers do not sit on the surface`, async ({ page }) => {
+  test(`${locale}: the structure ladder uses the card width, draws no band before a scan, and column headers do not sit on the surface`, async ({ page }) => {
     await page.setViewportSize({ width: 1512, height: 901 });
     await seedFirstRunSeen(page);
     await useDogfoodSample(page);
@@ -404,10 +404,10 @@ for (const locale of ['ko', 'en'] as const) {
     /* The sketch sizes itself from its container, so a rect read before that settles reports the
        SVG's pre-layout scale — measured at 0.245 of the final one. */
     await page.waitForFunction(() => {
-      const w = document.querySelector('[data-testid^="architecture-layer-plane-"]')?.getBoundingClientRect().width ?? 0;
-      const prev = (window as unknown as { __planeW?: number }).__planeW;
-      (window as unknown as { __planeW?: number }).__planeW = w;
-      return w > 400 && prev === w;
+      const w = document.querySelector('[data-testid="architecture-graph-box-views"]')?.getBoundingClientRect().width ?? 0;
+      const prev = (window as unknown as { __faceW?: number }).__faceW;
+      (window as unknown as { __faceW?: number }).__faceW = w;
+      return w > 300 && prev === w;
     }, undefined, { timeout: 20_000, polling: 120 });
 
     const measured = await page.evaluate(() => {
@@ -425,18 +425,24 @@ for (const locale of ['ko', 'en'] as const) {
          122, S8): the ladder held its faces whatever the card's width and cut all seven. */
       const truncated = [...document.querySelectorAll('[data-testid^="architecture-box-line-"]')]
         .filter((node) => (node.textContent ?? '').trimEnd().endsWith('…')).length;
-      const panel = empties[0]?.querySelector('rect')?.getBoundingClientRect() ?? null;
-      const lines = [...(empties[0]?.querySelectorAll('tspan') ?? [])].map((line) => line.getBoundingClientRect());
+      const panel = empties[0]?.getBoundingClientRect() ?? null;
+      const lines = [
+        ...(empties[0]?.querySelectorAll(
+          '[data-testid="architecture-observation-empty-title"], [data-testid="architecture-observation-empty-line"]',
+        ) ?? []),
+      ].map((line) => line.getBoundingClientRect());
       const sentences = [
-        ...document.querySelectorAll('[data-edge-sentence-kind="permitted"][data-edge-sentence="drawn"]'),
+        ...document.querySelectorAll(
+          '[data-edge-sentence-kind="permitted"][data-edge-sentence="drawn"], [data-testid="architecture-lower-only-sentence"]',
+        ),
       ].map((sentence) => sentence.getBoundingClientRect());
       const headingBottom = Math.max(...headings.map((h) => h.getBoundingClientRect().bottom));
       /* The drawing is the reviewed faces plus the one empty column beside them. */
       const left = Math.min(...boxes.map((b) => b.left), panel?.left ?? Infinity);
       const right = Math.max(...boxes.map((b) => b.right), panel?.right ?? -Infinity);
       return {
-        planeRightEdges: [...new Set(planes.map((p) => round(p.right)))],
-        planeLeftEdges: [...new Set(planes.map((p) => round(p.left)))],
+        planes: planes.length,
+        ruleSaidOnce: document.querySelectorAll('[data-testid="architecture-lower-only-sentence"]').length,
         bandRatio: (right - left) / card.width,
         offCentre: round((left + right) / 2 - (card.left + card.right) / 2),
         emptyStates: empties.length,
@@ -458,9 +464,9 @@ for (const locale of ['ko', 'en'] as const) {
       };
     });
 
-    // One end line for the whole stack; the stagger that carries depth stays on the other side.
-    expect(measured.planeRightEdges, `${locale}: layer planes end ragged`).toHaveLength(1);
-    expect(measured.planeLeftEdges.length, `${locale}: the depth stagger is gone`).toBe(7);
+    // Before a scan: no band, and the lower-only rule said once.
+    expect(measured.planes, `${locale}: a band stands before anything was observed`).toBe(0);
+    expect(measured.ruleSaidOnce, `${locale}: the lower-only rule is not said once`).toBe(1);
     // The band was 0.60 of the card before the reserve was made conditional.
     expect(measured.bandRatio, `${locale}: the drawing gave the card back`).toBeGreaterThan(0.65);
     expect(measured.truncated, `${locale}: role sentences are cut again`).toBe(0);

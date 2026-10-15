@@ -176,6 +176,8 @@ test('a measured profile separates each role contract and receipt, whole chain o
             return out;
           })(),
           sentencesDrawn: document.querySelectorAll('[data-edge-sentence="drawn"]').length,
+          trafficStrokesDrawn: document.querySelectorAll('path[data-edge-drawn="true"][data-edge-kind="traffic"]').length,
+          ruleSaidOnce: document.querySelectorAll('[data-testid="architecture-lower-only-sentence"]').length,
         };
       });
 
@@ -189,9 +191,11 @@ test('a measured profile separates each role contract and receipt, whole chain o
       );
       /* And no role box sits below the fold: the whole chain is one screen. */
       expect(measured.belowFold, where).toBeLessThanOrEqual(1);
-      /* Direction B: the strokes say their sentences, and none of them touches anything. */
+      /* Every measured stroke says its count, the rules share one sentence, and none touches anything. */
       expect(measured.sentenceOffenders, `${where} ${measured.sentenceOffenders.join('\n')}`).toEqual([]);
-      expect(measured.sentencesDrawn, where).toBeGreaterThanOrEqual(6);
+      expect(measured.trafficStrokesDrawn, where).toBeGreaterThanOrEqual(3);
+      expect(measured.sentencesDrawn, where).toBe(measured.trafficStrokesDrawn);
+      expect(measured.ruleSaidOnce, where).toBe(1);
       expect(measured.evidenceLayout, where).toBe('paired-ladder');
     }
 
@@ -431,7 +435,7 @@ test('choosing a role does not turn the chain, and the chosen box is in view', a
     expect(await axisOf(), `choosing ${role} turned the chain`).toBe('down');
     const seen = await page.evaluate((id) => {
       const box = document.querySelector(`[data-testid="architecture-graph-box-${id}"]`)!.getBoundingClientRect();
-      const scroller = document.querySelector('[data-testid="architecture-graph"]')!.parentElement!.getBoundingClientRect();
+      const scroller = document.querySelector('[data-testid="architecture-canvas-scroller"]')!.getBoundingClientRect();
       return box.left >= scroller.left - 1 && box.right <= scroller.right + 1 && box.top >= scroller.top - 1 && box.bottom <= scroller.bottom + 1;
     }, role);
     expect(seen, `${role} is chosen but not in view`).toBe(true);

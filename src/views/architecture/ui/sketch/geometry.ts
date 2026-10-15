@@ -15,12 +15,7 @@ export const PAIRED_SIDE_ROOM_MIN = 48;
 export const PAIRED_TRAIL_ROOM_MAX = 360;
 /** Air the narrow ladder keeps between its face and the canvas edge on each side. */
 export const NARROW_LADDER_EDGE = 16;
-/*
- * Import direction drawn as depth: one sheared column of layer planes, each role's faces on its
- * own plane, so a permitted edge runs down and a violation climbs. The step per layer in SVG units
- * is also the shear, `PLANE_STEP / rowPitch`, so adjacent planes meet on one continuous line.
- */
-export const PLANE_STEP = 14;
+export const RULE_SENTENCE_ROW_H = 16;
 /* A 3px ledge stops short of the adjacent rule's sentence rectangle on both ladder densities. */
 export const PLANE_INSET_Y = 3;
 /** How far past the lane a skip swings, and how much deeper each further rank pushes it. */

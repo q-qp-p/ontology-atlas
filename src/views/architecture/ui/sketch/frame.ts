@@ -9,7 +9,7 @@ import {
   PAIRED_SIDE_ROOM_MIN,
   PAIRED_TRAIL_ROOM_MAX,
   PLANE_INSET_Y,
-  PLANE_STEP,
+  RULE_SENTENCE_ROW_H,
   SUMMARY_LINES,
 } from './geometry';
 import type { ArchitectureSketchProps, FlowAxis } from './types';
@@ -63,8 +63,7 @@ const PAIRED_ROW_GAP_TIGHT = 22;
 const PAIRED_PAD_Y_TIGHT = 4;
 const BOX_H_PAIRED_TIGHT = 58;
 const PAIRED_PAD_Y = 8;
-/** How much plane stays visible beyond the outermost face, so a role sits *on* its layer. */
-const PLANE_EDGE = 16;
+const PLANE_EDGE = 20;
 /* Head room so the top plane's lit edge does not read as a rule under the lane headings. */
 const PLANE_HEAD_ROOM = 8;
 const PAIRED_FIXED_W =
@@ -96,16 +95,20 @@ export function solveSketchFrame({
   const axisWidth = restWidth > 0 ? restWidth : boxWidth;
   /* The ladder's height includes the plane head room and ledge, or a canvas 11px short would choose rows it must scroll. */
   const planeVerticalRoom = ranks > 1 ? PLANE_HEAD_ROOM + PLANE_INSET_Y : 0;
+  /* Under `lower-only` the six rules say one thing, said once under the contract heading. */
+  const saysRuleOnce =
+    graph.policy === 'lower-only' && graph.edges.some((edge) => edge.kind === 'permitted');
+  const pairedHeaderH = PAIRED_HEADER_H + (saysRuleOnce ? RULE_SENTENCE_ROW_H : 0);
   const pairedNaturalH =
     PAIRED_PAD_Y * 2 +
-    PAIRED_HEADER_H +
+    pairedHeaderH +
     ranks * BOX_H +
     (ranks - 1) * PAIRED_ROW_GAP +
     planeVerticalRoom;
   /* One summary line per row: faces and connectors yield before any role is hidden. */
   const pairedTightH =
     PAIRED_PAD_Y_TIGHT * 2 +
-    PAIRED_HEADER_H +
+    pairedHeaderH +
     ranks * BOX_H_PAIRED_TIGHT +
     (ranks - 1) * PAIRED_ROW_GAP_TIGHT +
     planeVerticalRoom;
@@ -237,20 +240,12 @@ export function solveSketchFrame({
       ? contractBoxW + pairedGutterW
       : 0;
 
-  /* Planes are drawn only on the comparison ladder, which has side room (`PLANE_EDGE` + drift + lean) to give; the narrow ladder and across chain do not. */
-  const usesLayerPlanes = usesPairedDown && ranks > 1;
-  const planeRowPitch = boxH + rowGap;
-  const planeH = boxH + PLANE_INSET_Y * 2;
-  /** How far a single plane's top edge overhangs its bottom edge: the shear, once. */
-  const planeLean = usesLayerPlanes ? (PLANE_STEP * planeH) / planeRowPitch : 0;
-  /** Deepest plane to nearest, in x. The stack's whole horizontal travel. */
-  const planeDrift = usesLayerPlanes ? (ranks - 1) * PLANE_STEP : 0;
-  const planeRoom = usesLayerPlanes
-    ? Math.ceil(PLANE_EDGE + planeDrift + planeLean)
-    : 0;
-  /** Trailing-side room: planes share one right edge, so it owes `PLANE_EDGE` and the lean, not the drift. */
-  const planeTrailRoom = usesLayerPlanes ? Math.ceil(PLANE_EDGE + planeLean) : 0;
-  const planeHeadRoom = usesLayerPlanes ? PLANE_HEAD_ROOM : 0;
+  /* Bands join what was observed; their room is held before, so a landing record moves no face. */
+  const reservesPlaneRoom = usesPairedDown && ranks > 1;
+  const usesLayerPlanes = reservesPlaneRoom && !observationEmpty;
+  const planeRoom = reservesPlaneRoom ? PLANE_EDGE : 0;
+  const planeTrailRoom = planeRoom;
+  const planeHeadRoom = reservesPlaneRoom ? PLANE_HEAD_ROOM : 0;
   return {
     ranks,
     lanes,
@@ -277,10 +272,10 @@ export function solveSketchFrame({
     colGap,
     observationOffset,
     usesLayerPlanes,
-    planeLean,
-    planeDrift,
     planeRoom,
     planeTrailRoom,
     planeHeadRoom,
+    pairedHeaderH,
+    saysRuleOnce: usesPairedDown && saysRuleOnce,
   };
 }
