@@ -6,25 +6,36 @@ import { waitForBoxStill, waitForDomeEntered, waitForMapSettled, waitForMapStill
 
 /**
  * The overview's centre must match the free map's centre (INDEX right edge to rail left edge)
- * and the chrome stands on one line. Drawn positions convert through the canvas's own box so
- * the entry fade's scale shows up.
+ * and the chrome stands on one line; the Flat dial's drawing is its outer ring. Positions
+ * convert through the canvas box.
  */
 
 /** The app's window floor and its opening window: the two sizes the installed app is read at. */
 const SIZES = [
   { width: 1040, height: 720 },
   { width: 1512, height: 949 },
+  { width: 1920, height: 1080 },
 ] as const;
 /** Half a node's rim: past it a person sees the drawing sit to one side. */
 const TOLERANCE = 4;
+const HUB_VERTICAL_TOLERANCE = 8;
+const RING_CAPTION_AND_AIR_BELOW_TOOL_ROW = 40;
+const AIR_BELOW_TOOL_ROW_IN_WINDOWS_WITHOUT_A_BAND = 24;
+const WINDOW_HEIGHT_WITH_A_BAND_UNDER_TOOL_ROW = 880;
 const RAIL = ["topology-fit-control", "topology-tour-button", "topology-shortcuts-help-button", "topology-replay-growth"];
 
 interface Frame {
+  viewportHeight: number;
   freeLeft: number;
   freeRight: number;
   drawnLeft: number;
   drawnRight: number;
   drawn: number;
+  hubY: number | null;
+  ringTop: number | null;
+  freeTop: number | null;
+  freeBottom: number | null;
+  toolbarBottom: number;
   backing: { width: number; height: number; cssWidth: number; cssHeight: number; dpr: number };
   indexTop: number | null;
   indexLeftInset: number | null;
@@ -60,19 +71,28 @@ async function measure(page: Page): Promise<Frame> {
     // different kinds (a drawn hub capability against a domain, in the fixture vault).
     const root = getComputedStyle(document.documentElement);
     const radius = (kind: string) => Number(root.getPropertyValue(`--map-radius-${kind}`)) * camera.scale;
-    const lefts = drawn.map((node) => canvas.left + (node.x - radius(node.kind)) * stretch);
-    const rights = drawn.map((node) => canvas.left + (node.x + radius(node.kind)) * stretch);
+    const dial = probe.dial?.();
+    const ring = dial?.owns ? Math.max(0, ...dial.rings.map((r) => r.radius)) * camera.scale : 0;
+    const hub = ring > 0 ? drawn.find((node) => node.kind === "project") : undefined;
+    const lefts = hub ? [canvas.left + (hub.x - ring) * stretch] : drawn.map((node) => canvas.left + (node.x - radius(node.kind)) * stretch);
+    const rights = hub ? [canvas.left + (hub.x + ring) * stretch] : drawn.map((node) => canvas.left + (node.x + radius(node.kind)) * stretch);
     const toolbar = document.querySelector('[data-testid="topology-top-toolbar"]')!;
     const toolbarTiles = [...toolbar.querySelectorAll("button")]
       .map(shown)
       .filter((box): box is DOMRect => box !== null);
     return {
+      viewportHeight: window.innerHeight,
       freeLeft: (index ?? tab)?.right ?? canvas.left,
       freeRight: rail.length > 0 ? Math.min(...rail.map((box) => box.left)) : canvas.right,
       drawnLeft: Math.min(...lefts),
       drawnRight: Math.max(...rights),
       // Unreadable radius tokens would turn every offset into NaN, which no bound rejects.
       drawn: drawn.every((node) => radius(node.kind) > 0) ? drawn.length : 0,
+      hubY: hub ? canvas.top + hub.y * stretch : null,
+      ringTop: hub ? canvas.top + (hub.y - ring) * stretch : null,
+      freeTop: hub && dial?.owns ? canvas.top + dial.freeRect.minY * stretch : null,
+      freeBottom: hub && dial?.owns ? canvas.top + dial.freeRect.maxY * stretch : null,
+      toolbarBottom: Math.max(...toolbarTiles.map((box) => box.bottom)),
       backing: {
         width: canvasElement.width,
         height: canvasElement.height,
@@ -107,6 +127,14 @@ function check(frame: Frame, where: string, { chromeLine }: { chromeLine: boolea
   if (Math.abs(offset) > TOLERANCE) {
     failures.push(`${where}: the drawing's centre is ${offset.toFixed(1)}px from the free map's centre`);
   }
+  if (frame.hubY !== null && frame.ringTop !== null && frame.freeTop !== null && frame.freeBottom !== null) {
+    const vertical = frame.hubY - (frame.freeTop + frame.freeBottom) / 2;
+    const air = frame.ringTop - frame.toolbarBottom;
+    console.log(`[centre] ${where} hub=${frame.hubY.toFixed(1)} free=[${frame.freeTop.toFixed(1)}, ${frame.freeBottom.toFixed(1)}] vertical=${vertical.toFixed(1)} toolbarAir=${air.toFixed(1)}`);
+    if (Math.abs(vertical) > HUB_VERTICAL_TOLERANCE) failures.push(`${where}: the hub stands ${vertical.toFixed(1)}px from the free map's middle`);
+    const needed = frame.viewportHeight < WINDOW_HEIGHT_WITH_A_BAND_UNDER_TOOL_ROW ? AIR_BELOW_TOOL_ROW_IN_WINDOWS_WITHOUT_A_BAND : RING_CAPTION_AND_AIR_BELOW_TOOL_ROW;
+    if (air < needed) failures.push(`${where}: the outer ring's top stands ${air.toFixed(1)}px below the tool row, under ${needed}px`);
+  }
   const { width, height, cssWidth, cssHeight, dpr } = frame.backing;
   if (Math.abs(width - Math.round(cssWidth * dpr)) > 1 || Math.abs(height - Math.round(cssHeight * dpr)) > 1) {
     failures.push(`${where}: the bitmap is ${width}x${height} for a ${cssWidth}x${cssHeight} canvas at ${dpr}x`);
@@ -121,6 +149,14 @@ function check(frame: Frame, where: string, { chromeLine }: { chromeLine: boolea
     }
   }
   return failures;
+}
+
+async function waitForDialArrived(page: Page) {
+  await page.waitForFunction(() => {
+    const dial = window.__atlasMap?.dial?.();
+    return !dial || (dial.owns && dial.domainAppear >= 1);
+  }, undefined, { polling: "raf", timeout: 30_000 });
+  await waitForMapStill(page);
 }
 
 async function pressFit(page: Page) {
@@ -143,6 +179,7 @@ test("the overview stands in the middle of the free map, on one chrome line, wit
       });
       await page.evaluate(() => document.fonts.ready);
       await waitForMapSettled(page);
+      await waitForDialArrived(page);
       const where = `${size.width}x${size.height} index=${index}`;
       failures.push(...check(await measure(page), `${where} entry`, { chromeLine: index === "expanded" }));
       // The fit tile frames the same drawing, not a second frame.
