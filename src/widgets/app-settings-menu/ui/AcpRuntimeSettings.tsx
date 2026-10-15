@@ -21,7 +21,7 @@ import { AGENT_CLIENTS } from '@/entities/vault-session';
 import { RowStateBadge } from '@/features/docs-vault-local';
 import { requestAgentChat } from '@/shared/lib/agent-chat/agent-chat-intent';
 import { usePanelPresence, useSurfaceSwap } from '@/shared/lib/render-timing/use-presence';
-import { PAGE_TWO_TRACK } from '@/shared/ui/tokens/page-frame';
+import { PAGE_TRACK_CAP, PAGE_TWO_TRACK } from '@/shared/ui/tokens/page-frame';
 
 import {
   DETAIL_TOGGLE_CHIP,
@@ -212,6 +212,7 @@ export function AcpRuntimeSettings({
   /* `contents` keeps the sheet's single grid; the page splits rows and shelf into two tracks. */
   const track = embedded ? 'grid min-w-0 content-start gap-3' : 'contents';
   const shelfColumns = embedded ? ' 2xl:grid-cols-2' : '';
+  const hasShelf = runtimes !== null && others.length > 0;
 
   // The setup window's door, on the first shelf group's heading; emphasised when nothing is confirmed.
   const searchChip = (
@@ -271,7 +272,10 @@ export function AcpRuntimeSettings({
     ) : null;
 
   return (
-    <div className={embedded ? `${PAGE_TWO_TRACK} gap-3` : 'grid min-w-0 gap-3'} data-testid="app-settings-runtimes">
+    <div
+      className={!embedded ? 'grid min-w-0 gap-3' : hasShelf ? `${PAGE_TWO_TRACK} gap-3` : `grid min-w-0 gap-3 ${PAGE_TRACK_CAP}`}
+      data-testid="app-settings-runtimes"
+    >
       <div className={track}>
         {/*
           One row above the list: in the sheet the intro line, and the guard note naming the tools
@@ -356,7 +360,7 @@ export function AcpRuntimeSettings({
         ) : null}
       </div>
 
-      {runtimes !== null && others.length > 0 ? (
+      {hasShelf ? (
         /*
          * The other tools: a shelf of marks sorted by next step (sign-in, then installs, then
          * the undetectable group), each opening the searchable setup `Dialog` at its tool, the

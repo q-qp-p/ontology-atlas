@@ -52,9 +52,9 @@ describe("page frame spec", () => {
     expect(PAGE_HEADER_ROW).toBe("flex flex-wrap items-start justify-between gap-x-4 gap-y-2");
     expect(PAGE_TITLE_ROW).toBe("flex flex-wrap items-baseline gap-x-3 gap-y-1");
     expect(PAGE_TWO_TRACK).toBe(
-      "grid min-w-0 2xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] 2xl:items-start 2xl:gap-x-10",
+      "grid min-w-0 max-w-[960px] 2xl:max-w-none 2xl:grid-cols-[minmax(0,960px)_minmax(0,1fr)] 2xl:items-start 2xl:gap-x-10",
     );
-    expect(PAGE_TRACK_CAP).toBe("max-w-[960px] 2xl:max-w-none");
+    expect(PAGE_TRACK_CAP).toBe("max-w-[960px]");
   });
 
   it("the tracks split where the wide reading band starts", () => {
@@ -62,7 +62,7 @@ describe("page frame spec", () => {
     const twoXl = /--breakpoint-2xl:\s*([\d.]+)rem/.exec(tailwindTheme)?.[1];
     expect(readGlobalCss(), "a local `--breakpoint-2xl` would move the split off the band").not.toMatch(/--breakpoint-2xl:/);
     expect(Number(twoXl) * 16, "Tailwind `2xl` is no longer the 1536px band").toBe(WIDE_READING_MIN_VIEWPORT_PX);
-    for (const spec of [PAGE_TWO_TRACK, PAGE_TRACK_CAP]) expect(spec).toMatch(/(^|\s)2xl:/);
+    expect(PAGE_TWO_TRACK).toMatch(/(^|\s)2xl:grid-cols-/);
   });
 
   it("the max width points at an existing token — it is not written in two places", () => {
@@ -183,7 +183,9 @@ describe("page frame — second column and top margin (2026-08-11)", () => {
       "",
     );
     expect(width(PAGE_COLUMN_FORM), "could not read the width from the row column").toBe(width(PAGE_FRAME_FORM));
-    expect(width(PAGE_TRACK_CAP), "the narrow-window track cap is the form width").toBe(width(PAGE_FRAME_FORM));
+    expect(width(PAGE_TRACK_CAP), "the work track cap is the form width").toBe(width(PAGE_FRAME_FORM));
+    const trackWidths = [...PAGE_TWO_TRACK.matchAll(/\d+px/g)].map((hit) => `max-w-[${hit[0]}]`);
+    expect(trackWidths, "the split's work track is the same cap").toEqual([width(PAGE_FRAME_FORM), width(PAGE_FRAME_FORM)]);
   });
 
   it("the form column is narrow and decides the width in one place only", () => {

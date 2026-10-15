@@ -138,7 +138,7 @@ export function AgentsPage({
         id={`agents-tabpanel-${tab}`}
         aria-labelledby={`agents-tab-${tab}`}
         data-testid="agents-tabpanel"
-        className={`mt-5 min-w-0 ${PAGE_TRACK_CAP}`}
+        className="mt-5 min-w-0"
       >
         {tab === 'agents' ? (
           /* No sr-only heading: the tool group inside already shows this name visibly. */

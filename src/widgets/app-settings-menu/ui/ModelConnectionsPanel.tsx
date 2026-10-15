@@ -60,7 +60,7 @@ import {
 import { useAiConnection, type AiConnectionState } from '../model/use-ai-connection';
 import { ArmedChip, SettingsGroupHeading } from './settings-primitives';
 import { TermHint } from '@/shared/ui/hints/term-hint';
-import { PAGE_TWO_TRACK } from '@/shared/ui/tokens/page-frame';
+import { PAGE_TRACK_CAP, PAGE_TWO_TRACK } from '@/shared/ui/tokens/page-frame';
 import type { GlossaryTerm } from '@/shared/config/term-glossary';
 
 /**
@@ -194,7 +194,7 @@ export function ModelConnectionsPanel({
      * sample rows: a key or runner drawn here would be data this browser does not have.
      */
     return (
-      <div className="grid min-w-0 content-start gap-3" data-testid="ai-connection-view">
+      <div className={`grid min-w-0 content-start gap-3 ${PAGE_TRACK_CAP}`} data-testid="ai-connection-view">
         <div data-testid="ai-connection-web-degraded">
           <EmptyState
             tone="solid"

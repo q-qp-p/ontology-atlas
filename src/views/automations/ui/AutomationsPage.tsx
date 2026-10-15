@@ -166,11 +166,11 @@ export function AutomationsPage({
           </Button> : null}
         </div>
 
-        <section id={`automations-tabpanel-${lane}`} role="tabpanel" aria-labelledby={`automations-tab-${lane}`} className={`flex min-w-0 flex-1 flex-col gap-5 ${PAGE_TRACK_CAP}`}>
+        <section id={`automations-tabpanel-${lane}`} role="tabpanel" aria-labelledby={`automations-tab-${lane}`} className="flex min-w-0 flex-1 flex-col gap-5">
           {state === "loading" ? (
-            <div role="status" aria-busy="true"><EmptyState title={t("loadingTitle")} skeleton tone="solid" /></div>
+            <div role="status" aria-busy="true" className={PAGE_TRACK_CAP}><EmptyState title={t("loadingTitle")} skeleton tone="solid" /></div>
           ) : state === "malformed" || state === "unavailable" ? (
-            <EmptyState title={t(`${state}Title`)} description={t(`${state}Description`)} icon={<TriangleAlert />} tone="solid"
+            <EmptyState title={t(`${state}Title`)} description={t(`${state}Description`)} icon={<TriangleAlert />} tone="solid" className={PAGE_TRACK_CAP}
               action={<Button variant="outline" onClick={() => void runner?.refresh()} className="atlas-touch-floor atlas-touch-floor-wide">{t("retry")}</Button>} />
           ) : (
             <div className={`${PAGE_TWO_TRACK} gap-8`}>
