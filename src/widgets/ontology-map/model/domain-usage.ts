@@ -1,6 +1,11 @@
-import { readContainmentTree, rollDomainDependencies, type TreeInputEdge, type TreeInputNode } from "./containment-tree";
-
-const DRAWN_KINDS: ReadonlySet<string> = new Set(["project", "domain", "capability", "element"]);
+import {
+  readContainmentTree,
+  rollDirectedDomainFlows,
+  rollDomainDependencies,
+  rollRelatesDomainPairs,
+  type TreeInputEdge,
+  type TreeInputNode,
+} from "./containment-tree";
 
 export interface DomainUsageRow {
   domainId: string;
@@ -13,25 +18,28 @@ export interface DomainUsage {
   needs: DomainUsageRow[];
 }
 
+/** Reads one domain's partners from the same directed flows the dial draws between domains. */
 export function readDomainUsage(
-  nodes: readonly { id: string; label: string; kind: string }[],
+  nodes: readonly TreeInputNode[],
   edges: readonly TreeInputEdge[],
   domainId: string,
 ): DomainUsage | null {
-  const drawn = nodes.filter((node): node is TreeInputNode => DRAWN_KINDS.has(node.kind));
-  const tree = readContainmentTree(drawn, edges);
+  const tree = readContainmentTree(nodes, edges);
   const labelOf = new Map(tree.domains.map((domain) => [domain.id, domain.label] as const));
   if (!labelOf.has(domainId)) return null;
-  const usedBy = new Map<string, number>();
-  const needs = new Map<string, number>();
-  for (const dep of rollDomainDependencies(tree, edges)) {
-    if (dep.fromDomain === dep.toDomain) continue;
-    if (dep.toDomain === domainId) usedBy.set(dep.fromDomain, (usedBy.get(dep.fromDomain) ?? 0) + 1);
-    if (dep.fromDomain === domainId) needs.set(dep.toDomain, (needs.get(dep.toDomain) ?? 0) + 1);
+  const flows = rollDirectedDomainFlows(rollDomainDependencies(tree, edges), rollRelatesDomainPairs(tree, edges));
+  const usedBy: DomainUsageRow[] = [];
+  const needs: DomainUsageRow[] = [];
+  for (const flow of flows) {
+    if (flow.a !== domainId && flow.b !== domainId) continue;
+    const partner = flow.a === domainId ? flow.b : flow.a;
+    const outgoing = flow.a === domainId ? flow.ab : flow.ba;
+    const incoming = flow.a === domainId ? flow.ba : flow.ab;
+    const label = labelOf.get(partner) ?? partner;
+    if (incoming > 0) usedBy.push({ domainId: partner, label, links: incoming });
+    if (outgoing > 0) needs.push({ domainId: partner, label, links: outgoing });
   }
-  const rows = (tally: Map<string, number>): DomainUsageRow[] =>
-    [...tally]
-      .map(([id, links]) => ({ domainId: id, label: labelOf.get(id) ?? id, links }))
-      .sort((a, b) => b.links - a.links || (a.label < b.label ? -1 : a.label > b.label ? 1 : 0));
-  return { usedBy: rows(usedBy), needs: rows(needs) };
+  const byWeight = (a: DomainUsageRow, b: DomainUsageRow) =>
+    b.links - a.links || (a.label < b.label ? -1 : a.label > b.label ? 1 : 0);
+  return { usedBy: usedBy.sort(byWeight), needs: needs.sort(byWeight) };
 }
