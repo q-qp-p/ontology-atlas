@@ -65,6 +65,8 @@ export interface LabelMarksInput {
   freeRect: Box;
   ledgerIds: ReadonlySet<string>;
   elementLabel(id: string): string | null;
+  hubRest?: Circle | null;
+  hubLines?: readonly (string | null)[];
 }
 
 const SIDE_COS = 0.4;
@@ -223,6 +225,8 @@ function nameCandidates(outward: number): number[] {
   return [outward, Math.PI / 2, 0, Math.PI, -Math.PI / 2, outward + Math.PI / 4, outward - Math.PI / 4];
 }
 
+const BETWEEN_STRANDS = Array.from({ length: 16 }, (_, i) => ((i + 1) * Math.PI) / 8);
+
 function receded(attn: DialAttention, domainId: string): boolean {
   return attn.domainId !== null && attn.domainId !== domainId && !attn.partnerDomains.has(domainId);
 }
@@ -319,11 +323,11 @@ function claim(ctx: Ctx, box: Box): void {
   ctx.input.occupied.push(box);
 }
 
-function projectName(ctx: Ctx): void {
+function projectName(ctx: Ctx): Box | null {
   const { input } = ctx;
   const { model } = input;
-  const hub = input.hub;
-  if (!model.projectId || !model.projectLabel || !hub) return;
+  const hub = input.hubRest ?? input.hub;
+  if (!model.projectId || !model.projectLabel || !hub) return null;
   const ls = input.tokens.labelScale;
   const font = scaledLabelFont("project", ls);
   const fontPx = scaledLabelFontSize("project", ls);
@@ -336,15 +340,42 @@ function projectName(ctx: Ctx): void {
     [hub.x - hub.r - 6 - step, hub.y, "right"],
   ]);
   const boxes = tries.map(([x, y, align]) => textBox(width, x, y, align, fontPx, 3));
-  const pick = pickOnce(ctx, "project", boxes, (box) => free(ctx, box) && !crossesBox(input.lines, box));
-  if (pick < 0) return;
+  const atRest = [circleBox(hub, 3), ...[...ctx.rest.chips.values()].map((c) => circleBox(c, 2)), ...[...ctx.rest.discs.values()].map((d) => circleBox(d, 1))];
+  const pick = pickOnce(ctx, "project", boxes, (box) => inside(box, input.freeRect) && !ctx.texts.some((o) => overlaps(o, box)) && !atRest.some((o) => overlaps(o, box)) && !crossesBox(input.lines, box));
+  if (pick < 0) return null;
   const [x, y, align] = tries[pick]!;
   const box = boxes[pick]!;
   claim(ctx, box);
   const alpha = Math.min(1, ...[...ctx.rest.chips].filter(([, c]) => inside(circleBox(c, 0), input.freeRect)).map(([id]) => ctx.rest.alpha.get(id) ?? 0));
-  if (!(alpha > SHOWN_ALPHA)) return;
+  if (!(alpha > SHOWN_ALPHA)) return box;
   ctx.out.texts.push({ id: model.projectId, role: "project", text: model.projectLabel, x, y, align, font, ink: fade(ctx, input.inks.project, alpha), box, parts: null });
   ctx.held.set("project", pick);
+  return box;
+}
+
+const HUB_LINE_GAP_PX = 6;
+
+function hubCaptions(ctx: Ctx, name: Box | null): void {
+  const hub = ctx.input.hubRest ?? ctx.input.hub;
+  const texts = ctx.input.hubLines ?? [];
+  if (!hub) return;
+  const ls = ctx.input.tokens.labelScale;
+  const font = scaledLabelFont("element", ls);
+  const size = scaledLabelFontSize("element", ls);
+  let top = Math.max(hub.y + hub.r, name?.maxY ?? -Infinity);
+  for (const text of texts) {
+    if (text === null) continue;
+    const half = ctx.input.measureText(text, font) / 2;
+    let y = top + HUB_LINE_GAP_PX + size / 2;
+    let box = { minX: hub.x - half, maxX: hub.x + half, minY: y - size / 2, maxY: y + size / 2 };
+    for (let k = 0; k < 4 && ctx.texts.some((o) => overlaps(o, box)); k += 1) {
+      y += size + HUB_LINE_GAP_PX;
+      box = { ...box, minY: y - size / 2, maxY: y + size / 2 };
+    }
+    ctx.out.texts.push({ id: null, role: "units", text, x: hub.x, y, align: "center", font, ink: ctx.input.ink(ctx.input.inks.units), box, parts: null });
+    claim(ctx, box);
+    top = box.maxY;
+  }
 }
 
 function clusterOrder(input: LabelMarksInput): DialCluster[] {
@@ -375,13 +406,16 @@ function domainNames(ctx: Ctx): void {
     const reach = nameReach(ctx, cluster, chip);
     const angles = nameCandidates(Math.atan2(chip.y - centre.y, chip.x - centre.x));
     const chipInside = inside({ minX: chip.x - chip.r, minY: chip.y - chip.r, maxX: chip.x + chip.r, maxY: chip.y + chip.r }, input.freeRect);
-    const plans = NAME_STEPS_PX.flatMap((step) => angles.map((a) => placeBlock(block, a, chip.x + Math.cos(a) * (reach + step), chip.y + Math.sin(a) * (reach + step))));
-    const tries = plans.flatMap((plan) => [{ plan, units: true }, { plan, units: false }]);
+    const around = (as: readonly number[]) => NAME_STEPS_PX.flatMap((step) => as.map((a) => placeBlock(block, a, chip.x + Math.cos(a) * (reach + step), chip.y + Math.sin(a) * (reach + step))));
+    const tries = [
+      ...around(angles).flatMap((plan) => [{ plan, units: true, between: false }, { plan, units: false, between: false }]),
+      ...around(BETWEEN_STRANDS.map((a) => angles[0]! + a)).map((plan) => ({ plan, units: false, between: true })),
+    ];
     let pick = -1;
     for (let pass = 0; pass < (chipInside ? 3 : 2) && pick < 0; pass += 1) {
       pick = pickOnce(ctx, `domain:${id}`, tries, (t) =>
         pass === 0 ? t.units && t.plan.unitsBox !== null && free(ctx, t.plan.box) && !crossesBox(input.lines, t.plan.box)
-        : !t.units && free(ctx, t.plan.nameBox) && (pass === 2 || !crossesBox(input.lines, t.plan.nameBox)));
+        : !t.units && (pass === 1 || !t.between) && free(ctx, t.plan.nameBox) && (pass === 2 || !crossesBox(input.lines, t.plan.nameBox)));
     }
     if (pick < 0) continue;
     const { plan, units } = tries[pick]!;
@@ -538,7 +572,7 @@ export function buildLabelMarks(input: LabelMarksInput, out: LabelMarksOut): voi
   for (const c of rest.chips.values()) marks.push(circleBox(c, 2));
   for (const d of rest.discs.values()) marks.push(circleBox(d, 1));
   const ctx: Ctx = { input, out, texts: [], marks, rest, held: holdOf(input) };
-  projectName(ctx);
+  hubCaptions(ctx, projectName(ctx));
   if (input.hub) marks.push(circleBox(input.hub, HUB_CLEAR_PX));
   domainNames(ctx);
   ringLabels(ctx);

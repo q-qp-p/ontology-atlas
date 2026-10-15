@@ -165,7 +165,7 @@ export interface DialOwnershipInput {
 }
 export interface DialFrameInput {
   ctx: CanvasRenderingContext2D; dial: DialWorld; worldKey: object;
-  nodeScreen(id: string): Point | null; toScreen(x: number, y: number): Point; scale: number; labelScale: number; zoomRatio: number;
+  nodeScreen(id: string): Point | null; toScreen(x: number, y: number): Point; scale: number; zoomRatio: number;
   viewportWidth: number; viewportHeight: number; freeRect: Box;
   mapTokens: import("../tokens/read-map-tokens").OntologyMapTokens; dialTokens: DialTokens; labels: DialLabels | null; evidence: ReadonlyMap<string, DialEvidence> | null;
   hoveredNodeId: string | null; focusedNodeId: string | null; agentFocusNodeId: string | null;

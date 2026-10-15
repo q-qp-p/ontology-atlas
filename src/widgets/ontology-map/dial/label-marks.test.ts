@@ -147,6 +147,15 @@ describe("buildLabelMarks", () => {
     expect(texts.some((t) => t.id === "d0" && t.role === "domain")).toBe(true);
   });
 
+  it("finds a side between strands when a strand leaves the chip toward every preferred side", () => {
+    const chip = fixture(["Payments", "Catalog", "Shipping", "Accounts"], 0).scene.clusterByDomain.get("d0")!.chip;
+    const outward = Math.atan2(chip.y, chip.x);
+    const preferred = [outward, Math.PI / 2, 0, Math.PI, -Math.PI / 2, outward + Math.PI / 4, outward - Math.PI / 4];
+    const lines: Point[][] = preferred.map((a) => [chip, { x: chip.x + Math.cos(a) * 200, y: chip.y + Math.sin(a) * 200 }]);
+    const name = run({ lines }).texts.find((t) => t.id === "d0" && t.role === "domain")!;
+    expect(crossesBox(lines, name.box)).toBe(false);
+  });
+
   it("keeps the name over a line only when every candidate crosses one, units yielding first", () => {
     const lines: Point[][] = [];
     for (let y = -460; y <= -200; y += 6) lines.push([{ x: -300, y }, { x: 300, y }]);

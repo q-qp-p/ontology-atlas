@@ -8,6 +8,7 @@ import type { DialProbe } from "../../../../src/widgets/ontology-map/dial/types"
 
 const VIEWPORT = { width: 1512, height: 982 };
 const TOLERANCE_PX = 0.5;
+const CAPTION_MOVE_PX = 4;
 const ASSEMBLY_MS = 1_120;
 const FRAME_MS = 17;
 const FOCUS_MS = 120;
@@ -39,6 +40,7 @@ interface Sample {
   inks: string[];
   numerals: string[];
   names: string[];
+  hubLines: Record<string, [number, number]>;
 }
 
 interface SamplerWindow {
@@ -74,7 +76,7 @@ async function installSampler(page: Page, options: { probe: boolean }): Promise<
           const capOf: Record<string, string> = {};
           for (const n of nodes) if (n.kind === "domain" && !n.hidden && (n.alpha ?? 1) > 0) chips[n.id] = [n.x, n.y];
           if (d === null) {
-            w.__dialSampler.frames.push({ t: performance.now(), at: time, state: "unowned", held: 0, appear: 0, inkMix: 0, zoom: 0, scale: camera.scale, hub: project ? [project.x, project.y] : null, chips, discs: {}, capOf, steps: {}, ring: {}, strips: 0, inks: [], numerals: [], names: [] });
+            w.__dialSampler.frames.push({ t: performance.now(), at: time, state: "unowned", held: 0, appear: 0, inkMix: 0, zoom: 0, scale: camera.scale, hub: project ? [project.x, project.y] : null, chips, discs: {}, capOf, steps: {}, ring: {}, strips: 0, inks: [], numerals: [], names: [], hubLines: {} });
             return;
           }
           const steps: Record<string, number> = {};
@@ -105,6 +107,7 @@ async function installSampler(page: Page, options: { probe: boolean }): Promise<
             inks: d.strips.map((s) => `${s.flowKey}|${s.ink}|${s.role}`),
             numerals: d.numerals.map((n) => `${n.flowKey}|${n.text}`),
             names: d.texts.filter((t) => t.role === "domain" && t.id !== null).map((t) => t.id!),
+            hubLines: Object.fromEntries(d.texts.filter((t) => t.role === "units" && t.id === null && project).map((t) => [t.text, [(t.box.minX + t.box.maxX) / 2 - project!.x, (t.box.minY + t.box.maxY) / 2 - project!.y]])),
           });
         });
       });
@@ -196,7 +199,11 @@ function assemblyVerdict(all: Sample[]) {
     return !a || !b || Math.hypot(a[0] - b[0], a[1] - b[1]) > TOLERANCE_PX;
   });
   const chordsEarly = live.filter((f) => f.appear < CHORD_APPEAR && f.strips > 0).length;
-  return { frames: live.length, spanMs: Math.round(last.t - first.t), chipDrop, discDrop, offSlot, chordsEarly };
+  const captionMove = Math.max(0, ...Object.entries(last.hubLines).flatMap(([text, at]) => live.map((f) => {
+    const was = f.hubLines[text];
+    return was ? Math.hypot(was[0] - at[0], was[1] - at[1]) : 0;
+  })));
+  return { frames: live.length, spanMs: Math.round(last.t - first.t), chipDrop, discDrop, offSlot, chordsEarly, captionMove: +captionMove.toFixed(1) };
 }
 
 test("the sample's first open assembles outward, chords wait for their domains, then the map sleeps", async ({ page }) => {
@@ -211,6 +218,7 @@ test("the sample's first open assembles outward, chords wait for their domains, 
   expect.soft(verdict.chipDrop, "a chip moved toward the hub").toBe(0);
   expect.soft(verdict.discDrop, "a disc moved toward its chip").toBe(0);
   expect.soft(verdict.offSlot, `chips off their slot ${ASSEMBLY_MS} ms after the first`).toEqual([]);
+  expect.soft(verdict.captionMove, "px a hub caption moves during the arrival").toBeLessThanOrEqual(CAPTION_MOVE_PX);
   expect.soft(verdict.chordsEarly, `frames with chords while domains appear below ${CHORD_APPEAR}`).toBe(0);
   expect.soft(quiet, "frames in 1.5 s after the assembly").toBe(0);
 });
@@ -227,6 +235,7 @@ test("synth 2,000's first open assembles outward with every disc at its slot, th
   expect.soft(verdict.chipDrop, "a chip moved toward the hub").toBe(0);
   expect.soft(verdict.discDrop, "a disc moved toward its chip").toBe(0);
   expect.soft(verdict.offSlot, `chips off their slot ${ASSEMBLY_MS} ms after the first`).toEqual([]);
+  expect.soft(verdict.captionMove, "px a hub caption moves during the arrival").toBeLessThanOrEqual(CAPTION_MOVE_PX);
   expect.soft(quiet, "frames in 1.5 s after the assembly").toBe(0);
 });
 

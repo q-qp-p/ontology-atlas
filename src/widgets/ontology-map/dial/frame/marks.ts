@@ -5,6 +5,7 @@ import { crossfadeInk, inkIndex, mixOver, type DialInks } from "../ink";
 import { buildLabelMarks, capabilityNameTries, overlaps, type Circle, type ExtraTextMark, type LabelInks, type MeasureText, type NameTry } from "../label-marks";
 import type { DialDisclosure } from "./disclosure";
 import { buildLedger, countLeaderCrossings, ledgerWanted, namesFitInPlace, type LedgerPlan } from "../ledger";
+import { dialChipRadiusPx, dialDiscRadiusPx } from "../tokens";
 import type {
   Box,
   DialAttention,
@@ -56,6 +57,7 @@ export interface DialMarksInput {
   agentFocusNodeId: string | null;
   selectionPulse: { nodeId: string; scaleFactor: number; alpha: number } | null;
   hubCount: string | null;
+  hubLines?: readonly (string | null)[];
   disclosure: DialDisclosureInput;
 }
 
@@ -78,7 +80,6 @@ const ALPHA_STEPS = 8;
 const DRAWN_ALPHA = 0.5;
 const PLATE_INSET_PITCH = 0.3;
 const PLATE_RIM_SHARE = 0.42;
-const RING_INK_SHARE = 0.55;
 const DISC_APPEAR_FLOOR = 0.6;
 const DIRECT_SQUARE_SHARE = 0.85;
 const ELEMENT_HALF_SHARE = 0.22;
@@ -90,16 +91,6 @@ const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v
 
 export function emptyDialFrameMarks(): DialFrameMarks {
   return { inks: [], strips: [], discs: [], squares: [], ticks: [], rails: [], glyphs: [], texts: [], numerals: [], leaders: [], plates: [], extraTexts: [] };
-}
-
-export function dialDiscRadiusPx(tokens: DialTokens, scale: number, elements: number): number {
-  const pitchPx = tokens.pitch * scale;
-  const base = clamp(pitchPx * tokens.discPitchShare, tokens.discMinPx, tokens.discMaxPx);
-  return Math.min(pitchPx * tokens.discCapShare, base * (0.8 + 0.2 * Math.min(3, Math.sqrt(elements))));
-}
-
-export function dialChipRadiusPx(tokens: DialTokens, items: number, maxItems: number): number {
-  return tokens.chipMinPx + (tokens.chipMaxPx - tokens.chipMinPx) * Math.sqrt(items / Math.max(1, maxItems));
 }
 
 export function dialHubRadiusPx(tokens: DialTokens, mapTokens: Pick<OntologyMapTokens, "radiusProject">, scale: number): number {
@@ -322,7 +313,7 @@ export function buildDialMarks(input: DialMarksInput, out: DialFrameMarks): Dial
 
   if (scene.rings.length > 0) {
     const centre = input.toScreen(0, 0);
-    const ringInk = ink(mixOver(inks.rail, inks.bg, RING_INK_SHARE));
+    const ringInk = ink(inks.ring);
     for (const ring of scene.rings) out.rails.push({ ink: ringInk, cx: centre.x, cy: centre.y, r: ring.radius * s, a0: 0, a1: Math.PI * 2 });
   }
 
@@ -345,6 +336,7 @@ export function buildDialMarks(input: DialMarksInput, out: DialFrameMarks): Dial
   const labelInput = {
     model, scene, labels: input.labels, evidence: input.evidence, attention: attn, tokens, inks: labelInks(inks), ink, measureText: input.measureText,
     scale: s, toScreen: input.toScreen, hub, chips, discs, capAlpha, lines, freeRect: input.freeRect, elementLabel: input.elementLabel,
+    hubRest: hub ? { x: hub.x, y: hub.y, r: dialHubRadiusPx(tokens, map, s) } : null, hubLines: input.hubLines,
   };
   const labelOccupied = [...occupied];
   buildLabelMarks({ ...labelInput, occupied: labelOccupied, ledgerIds: new Set<string>() }, out);
@@ -443,7 +435,7 @@ export function buildDialMarks(input: DialMarksInput, out: DialFrameMarks): Dial
   let drawnElements = 0;
   let elementSquares = 0;
   if (capsDrawn) {
-    const fill = ink(mixOver(map.nodeFillCapability, inks.bg, capAlpha));
+    const fill = ink(mixOver(inks.capabilityFill, inks.bg, capAlpha));
     const rimRest = mixOver(inks.capabilityRim, inks.bg, capAlpha);
     const rimDim = mixOver(inks.capabilityReceded, inks.bg, capAlpha);
     const squareFill = ink(mixOver(map.nodeFillElement, inks.bg, capAlpha));
@@ -552,7 +544,7 @@ export function buildDialMarks(input: DialMarksInput, out: DialFrameMarks): Dial
     out.glyphs.push({
       id: c.domainId, kind: "domain", x: chip.x, y: chip.y, r: chip.r,
       egoState: attended && hov.selected && hov.capabilityId === null ? "center" : dimmed ? "dim" : "normal",
-      fill: dimmed ? map.nodeFillDim : null, stroke: dimmed ? map.nodeStrokeDim : attended ? map.indigoBright : null,
+      fill: dimmed ? map.nodeFillDim : inks.domainFill, stroke: dimmed ? map.nodeStrokeDim : attended ? map.indigoBright : inks.domainRim,
       hovered: input.hoveredNodeId === c.domainId, agentFocus: input.agentFocusNodeId === c.domainId,
       selectionPulse: pulseOf(c.domainId), count: null, stalePip: stale > 0,
     });
@@ -565,7 +557,7 @@ export function buildDialMarks(input: DialMarksInput, out: DialFrameMarks): Dial
     const r = Math.max(d.r, tokens.discGlyphPx);
     out.glyphs.push({
       id, kind: "capability", x: d.x, y: d.y, r, egoState,
-      fill: null, stroke, hovered: input.hoveredNodeId === id, agentFocus: input.agentFocusNodeId === id,
+      fill: inks.capabilityFill, stroke: stroke ?? inks.capabilityRim, hovered: input.hoveredNodeId === id, agentFocus: input.agentFocusNodeId === id,
       selectionPulse: pulseOf(id), count: null, stalePip: evidence?.measured === true && evidence.stateOf(id) === "stale",
     });
     picks.push({ id, x: d.x, y: d.y, r });

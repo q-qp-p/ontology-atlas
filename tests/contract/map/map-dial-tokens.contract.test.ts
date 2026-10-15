@@ -71,6 +71,14 @@ describe("map dial tokens", () => {
     }
   });
 
+  it("sets every map name kind on the locked type ramp at the shipped label scale", () => {
+    const ramp = ["caption", "label", "body", "body-lg", "title", "display", "hero"].map((step) => Number(new RegExp(`--text-${step}:\\s*([\\d.]+)rem`).exec(css)?.[1]) * 16);
+    expect(ramp).toEqual([9.5, 11, 12.5, 14, 16, 23, 30]);
+    for (const kind of ["project", "domain", "capability", "element"] as const) {
+      expect(ramp, `${kind} at --map-dial-label-scale ${t.labelScale}`).toContain(scaledLabelFontSize(kind, t.labelScale));
+    }
+  });
+
   it("keeps the floors", () => {
     expect(rest(1)).toBeGreaterThanOrEqual(1);
   });

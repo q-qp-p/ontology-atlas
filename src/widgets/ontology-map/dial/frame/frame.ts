@@ -5,7 +5,6 @@ import { resolveDialDisclosure, smoothstep } from "./disclosure";
 import { createMeasureText } from "../fit";
 import { inkIndex, resolveDialInks, type DialInks } from "../ink";
 import { dialPlacementLine, dialPlacementOf, type DialPlacementState } from "../placement";
-import { scaledLabelFont, scaledLabelFontSize } from "../../render/labels";
 import { buildDialMarks, emptyDialFrameMarks, type DialFrameMarks, type DialMarksResult } from "./marks";
 import { paintDialMarks } from "./paint";
 import type {
@@ -160,19 +159,18 @@ export function paintDialFrame(input: DialFrameInput): DialFrameResult {
   const disclosure = resolveDialDisclosure(model, scene, camera, input.freeRect, attention, input.dialTokens);
   const evidence = evidenceOf(model, input.evidence);
   resetMarks(pool);
+  const placement = dialPlacementOf(input.dial);
+  const placementText = dialPlacementLine(placement.state, placement.progress, input.labels);
+  const evidenceText = evidence !== null && !evidence.measured ? input.labels?.evidenceUnmeasured?.() ?? null : null;
   const built = buildDialMarks({
     model, scene, tokens: input.dialTokens, mapTokens: input.mapTokens, inks: inksOf(input), labels: input.labels,
     evidence, attention, inkAttention, previous, inkMix, chordPresence,
     scale: input.scale, zoomRatio: input.zoomRatio, viewportWidth: input.viewportWidth, viewportHeight: input.viewportHeight,
     freeRect: input.freeRect, nodeScreen: input.nodeScreen, toScreen: input.toScreen, appearOf: input.appearOf, measureText,
     elementLabel: input.elementLabel, hoveredNodeId: input.hoveredNodeId, agentFocusNodeId: input.agentFocusNodeId,
-    selectionPulse: input.selectionPulse, hubCount: input.hubCount, disclosure,
+    selectionPulse: input.selectionPulse, hubCount: input.hubCount, hubLines: [placementText, evidenceText], disclosure,
   }, pool);
   crossfadeNumerals(pool, input.worldKey, input.now, input.reducedMotion);
-  const placement = dialPlacementOf(input.dial);
-  const placementText = dialPlacementLine(placement.state, placement.progress, input.labels);
-  const evidenceText = evidence !== null && !evidence.measured ? input.labels?.evidenceUnmeasured?.() ?? null : null;
-  pushHubLines(input, inksOf(input), [placementText, evidenceText]);
   paintDialMarks(input.ctx, pool, input.mapTokens, { now: input.now, reducedMotion: input.reducedMotion, numeralHaloPx: input.dialTokens.numeralHaloPx });
   markFocusPainted(input.worldKey, performance.now());
 
@@ -193,41 +191,14 @@ export function paintDialFrame(input: DialFrameInput): DialFrameResult {
   return result;
 }
 
-const LINE_GAP_PX = 6;
-
-function pushHubLines(input: DialFrameInput, inks: DialInks, lines: readonly (string | null)[]): void {
-  const projectId = input.dial.model.projectId;
-  if (projectId === null) return;
-  const hub = input.nodeScreen(projectId) ?? input.toScreen(0, 0);
-  let top = hub.y;
-  for (const glyph of pool.glyphs) if (glyph.id === projectId) top = Math.max(top, glyph.y + glyph.r);
-  for (const t of pool.texts) if (t.role === "project") top = Math.max(top, t.box.maxY);
-  const font = scaledLabelFont("element", input.dialTokens.labelScale);
-  const size = scaledLabelFontSize("element", input.dialTokens.labelScale);
-  const taken = [...pool.texts, ...pool.extraTexts].map((t) => t.box);
-  for (const text of lines) {
-    if (text === null) continue;
-    const width = measureText(text, font);
-    let y = top + LINE_GAP_PX + size / 2;
-    let box = { minX: hub.x - width / 2, maxX: hub.x + width / 2, minY: y - size / 2, maxY: y + size / 2 };
-    for (let k = 0; k < 4 && taken.some((o) => o.minX < box.maxX && o.maxX > box.minX && o.minY < box.maxY && o.maxY > box.minY); k += 1) {
-      y += size + LINE_GAP_PX;
-      box = { ...box, minY: y - size / 2, maxY: y + size / 2 };
-    }
-    pool.texts.push({ id: null, role: "units", text, x: hub.x, y, align: "center", font, ink: inkIndex(pool, inks.units), box, parts: null });
-    taken.push(box);
-    top = box.maxY;
-  }
-}
-
 type NumeralMark = DialFrameMarks["numerals"][number];
-interface Figure { text: string; parts: string[] | null; inks: string[] }
+interface Figure { text: string; parts: string[] | null; inks: string[]; width: number }
 interface NumeralMemo { now: Figure; was: Figure | null; since: number }
 
 const numeralMemos = new WeakMap<object, Map<string, NumeralMemo>>();
 
 function figureOf(marks: Pick<DialFrameMarks, "inks">, n: NumeralMark): Figure {
-  return { text: n.text, parts: n.parts?.map((p) => p.text) ?? null, inks: (n.parts ?? [n]).map((p) => marks.inks[p.ink]!) };
+  return { text: n.text, parts: n.parts?.map((p) => p.text) ?? null, inks: (n.parts ?? [n]).map((p) => marks.inks[p.ink]!), width: n.box.maxX - n.box.minX };
 }
 
 export function crossfadeNumerals(marks: DialFrameMarks, worldKey: object, now: number, reducedMotion: boolean): void {
@@ -257,7 +228,7 @@ export function crossfadeNumerals(marks: DialFrameMarks, worldKey: object, now: 
     const was = memo.was;
     if (!was) continue;
     fading.push({
-      ...n, text: was.text, halo: false, alpha: 1 - t, ink: inkIndex(marks, was.inks[0]!),
+      ...n, text: was.text, halo: false, alpha: 1 - t, ink: inkIndex(marks, was.inks[0]!), box: { ...n.box, minX: n.x - was.width / 2, maxX: n.x + was.width / 2 },
       parts: was.parts?.map((text, i) => ({ text, ink: inkIndex(marks, was.inks[i] ?? was.inks[0]!) })) ?? null,
     });
   }

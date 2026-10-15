@@ -11,8 +11,6 @@ import {
   scaledLabelFont,
   numeralFont,
   tabularWidth,
-  adoptBodyLabelFont,
-  labelFontFamily,
   LABEL_NODE_CLEARANCE,
   LABEL_NODE_OUTLINE_ALLOWANCE,
   LABEL_HALO_PX,
@@ -344,15 +342,39 @@ describe("label type", () => {
     expect(tabularWidth("→1", "f", measure)).toBe(13);
   });
 
-  it("draws in the body's typeface once its faces are ready, and in the system stack before", async () => {
-    let ready!: () => void;
-    vi.stubGlobal("getComputedStyle", () => ({ fontFamily: "pretendard, sans-serif" }));
-    Object.defineProperty(document, "fonts", { configurable: true, value: { status: "loading", ready: new Promise<void>((r) => (ready = r)) } });
-    expect(labelFontFamily()).toMatch(/apple-system/);
-    const adopted = adoptBodyLabelFont();
-    ready();
-    expect(await adopted).toBe(true);
-    expect(labelFontFamily()).toBe("pretendard, sans-serif");
-    expect(await adoptBodyLabelFont()).toBe(false);
+  it("adopts the page's family only once every ladder weight has loaded, and keeps the system stack before", async () => {
+    vi.resetModules();
+    const loaded = new Set<string>();
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    vi.stubGlobal("getComputedStyle", () => ({ getPropertyValue: (name: string) => (name === "--font-sans" ? " pretendard, sans-serif " : "") }));
+    Object.defineProperty(document, "fonts", {
+      configurable: true,
+      value: {
+        status: "loaded",
+        load: async (face: string) => {
+          await gate;
+          loaded.add(face);
+          return [];
+        },
+        check: (face: string) => loaded.has(face),
+      },
+    });
+    const labels = await import("./labels");
+    expect(labels.labelFontFamily()).toMatch(/apple-system/);
+    expect(labels.scaledLabelFont("domain", 1)).toMatch(/apple-system/);
+    release();
+    expect(await labels.adoptBodyLabelFont()).toBe(true);
+    expect([...loaded].sort()).toEqual(["400 12px pretendard, sans-serif", "510 12px pretendard, sans-serif", "560 12px pretendard, sans-serif", "650 12px pretendard, sans-serif"]);
+    expect(labels.labelFontFamily()).toBe("pretendard, sans-serif");
+  });
+
+  it("keeps the system stack when a weight never loads", async () => {
+    vi.resetModules();
+    vi.stubGlobal("getComputedStyle", () => ({ getPropertyValue: () => "pretendard, sans-serif" }));
+    Object.defineProperty(document, "fonts", { configurable: true, value: { status: "loaded", load: async () => [], check: () => false } });
+    const labels = await import("./labels");
+    expect(await labels.adoptBodyLabelFont()).toBe(false);
+    expect(labels.labelFontFamily()).toMatch(/apple-system/);
   });
 });

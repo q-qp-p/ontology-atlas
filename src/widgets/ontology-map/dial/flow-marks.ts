@@ -1,4 +1,5 @@
 import { NUMERAL_FONT_PX, numeralFont, scaledLabelFont, scaledLabelFontSize, tabularWidth } from "../render/labels";
+import { placeFarNumerals, stubText, type FarCount } from "./far-counts";
 import { crossfadeInk, inkIndex, mixOver, type DialInks } from "./ink";
 import type { DialResolution } from "./frame/disclosure";
 import { crossesBox } from "./label-marks";
@@ -50,8 +51,6 @@ const FREE_SLACK_PX = 6;
 const HUB_CLEAR_PX = 66;
 const STUB_SHORT = 0.74;
 const CHORD_SAMPLES = 12;
-const FAR_GAP_PX = 6;
-const NUMERAL_SPACING_PX = 24;
 
 export function restFlowWidth(tokens: DialTokens, count: number): number {
   return Math.min(tokens.flowRestMax, tokens.flowRestBase + tokens.flowRestGain * Math.log2(1 + count));
@@ -251,33 +250,50 @@ function stubLength(tokens: DialTokens, free: Box): number {
   return Math.max(tokens.stubMinPx, Math.min(tokens.stubMaxPx, tokens.stubFreeShare * Math.min(free.maxX - free.minX, free.maxY - free.minY)));
 }
 
-export function stubText(name: string, needs: number, used: number): string {
-  return [name, needs > 0 ? `→${needs}` : null, used > 0 ? `←${used}` : null].filter((p) => p !== null).join(" ");
-}
-
 interface Stub {
   link: DialLink;
   near: End;
   nearId: string;
   farId: string;
+  farP: Point;
   angle: number;
   presence: number;
   counts?: { needs: number; used: number };
 }
 
-function mergeAttendedStubs(model: DialModel, attn: DialAttention, stubs: readonly Stub[]): Stub[] {
-  if (!attn.domainId) return [...stubs];
+function mergeAttendedStubs(model: DialModel, attn: DialAttention, stubs: readonly Stub[], chip: End | null): Stub[] {
+  if (!attn.domainId || !chip) return [...stubs];
   const mine = mineOf(model, attn);
-  const totals = new Map<string, { needs: number; used: number }>();
-  return stubs.map((st) => {
-    if (!st.link.attended || !mine(st.nearId)) return st;
-    const nearIsU = st.nearId === st.link.u;
-    const counts = totals.get(st.farId) ?? { needs: 0, used: 0 };
-    counts.needs += nearIsU ? st.link.uv : st.link.vu;
-    counts.used += nearIsU ? st.link.vu : st.link.uv;
-    totals.set(st.farId, counts);
-    return { ...st, counts };
-  });
+  const byFar = new Map<string, Stub[]>();
+  const out: Stub[] = [];
+  for (const st of stubs) {
+    if (!st.link.attended || !mine(st.nearId)) {
+      out.push(st);
+      continue;
+    }
+    const list = byFar.get(st.farId);
+    if (list) list.push(st);
+    else byFar.set(st.farId, [st]);
+  }
+  for (const [farId, list] of byFar) {
+    if (list.length === 1) {
+      out.push(list[0]!);
+      continue;
+    }
+    const counts = { needs: 0, used: 0 };
+    for (const st of list) {
+      const nearIsU = st.nearId === st.link.u;
+      counts.needs += nearIsU ? st.link.uv : st.link.vu;
+      counts.used += nearIsU ? st.link.vu : st.link.uv;
+    }
+    const lead = list.reduce((a, b) => (b.link.total > a.link.total || (b.link.total === a.link.total && b.link.key < a.link.key) ? b : a));
+    const farP = lead.farP;
+    out.push({
+      link: lead.link, near: chip, nearId: attn.domainId, farId, farP, presence: Math.max(...list.map((st) => st.presence)), counts,
+      angle: Math.atan2(farP.y - chip.p.y, farP.x - chip.p.x),
+    });
+  }
+  return out;
 }
 
 export function fanAngles(angles: readonly number[], gapDeg: number): number[] {
@@ -367,18 +383,15 @@ function paintStubs(input: FlowMarksInput, out: FlowMarks, stubs: Stub[], result
   const nameFont = scaledLabelFont("capability", tokens.labelScale);
   const nameFontPx = scaledLabelFontSize("capability", tokens.labelScale);
   const accepted: StubPlan[] = [];
-  const merged = new Set<string>();
   const hits = (plan: StubPlan, box: Box) => segmentHitsBox(plan.start.x, plan.start.y, plan.end.x, plan.end.y, grown(box, STUB_LINE_PAD_PX));
   for (const plan of planStubs(input, stubs, nameFont, nameFontPx)) {
     const { st, start, end, cos, sin, needs, used, box } = plan;
-    if (st.counts && merged.has(st.farId)) continue;
     if (!inside(box, input.freeRect) || input.occupied.some((o) => overlaps(o, box))) continue;
     if (crossesBox(chordLines, grown(box, STUB_LINE_PAD_PX))) continue;
     if (!st.link.attended && (chordLines.some((line) => stubCrossesLine(plan, line)) || accepted.some((other) => stubCrossesLine(plan, [other.start, other.end])))) continue;
     if (accepted.some((other) => hits(other, box) || hits(plan, other.box))) continue;
     if (input.avoidTexts?.some((t) => hits(plan, t))) continue;
     accepted.push(plan);
-    if (st.counts) merged.add(st.farId);
     input.occupied.push(box);
     const needsInk = mixOver(strokeInk(inks, model, input.inkAttention, st.link, st.nearId, false), inks.bg, st.presence);
     const usedInk = mixOver(strokeInk(inks, model, input.inkAttention, st.link, st.farId, false), inks.bg, st.presence);
@@ -498,7 +511,7 @@ export function buildFlowMarks(input: FlowMarksInput, out: FlowMarks): FlowMarks
       if (l.relatesOnly) continue;
       const near = ina ? a : b;
       const far = ina ? b : a;
-      stubs.push({ link: l, near, nearId: ina ? l.u : l.v, farId: ina ? l.v : l.u, angle: Math.atan2(far.p.y - near.p.y, far.p.x - near.p.x), presence });
+      stubs.push({ link: l, near, nearId: ina ? l.u : l.v, farId: ina ? l.v : l.u, farP: far.p, angle: Math.atan2(far.p.y - near.p.y, far.p.x - near.p.x), presence });
       continue;
     }
     toDraw.push({ l, a, b, presence });
@@ -510,7 +523,8 @@ export function buildFlowMarks(input: FlowMarksInput, out: FlowMarks): FlowMarks
   });
   toDraw.sort((x, y) => Number(x.l.attended) - Number(y.l.attended) || x.l.total - y.l.total || (x.l.key < y.l.key ? -1 : 1));
   placeFarNumerals(input, out, farCounts(input, toDraw));
-  paintStubs(input, out, mergeAttendedStubs(model, attn, stubs), result, chordLines);
+  const focusChip = attn.domainId ? endOf(attn.domainId) : null;
+  paintStubs(input, out, mergeAttendedStubs(model, attn, stubs, focusChip && within(focusChip.p) ? focusChip : null), result, chordLines);
   for (const { l, a, b, presence } of toDraw) {
     drawLink(input, out, l, a, b, presence, hub, maxTotal, numberKeep.has(l.key));
     result.drawn.push(l.key);
@@ -542,13 +556,6 @@ function controlOf(input: FlowMarksInput, l: DialLink, a: End, b: End, hub: Poin
   return routeControl(a.p, b.p, hub, pivot, sameRing);
 }
 
-interface FarCount {
-  needs: number;
-  used: number;
-  needsInk: string;
-  usedInk: string;
-}
-
 function linkInk(input: FlowMarksInput, l: DialLink, from: string, numeral: boolean, presence: number): string {
   const { model, inks } = input;
   const now = strokeInk(inks, model, input.inkAttention, l, from, numeral);
@@ -556,18 +563,21 @@ function linkInk(input: FlowMarksInput, l: DialLink, from: string, numeral: bool
   return mixOver(crossfadeInk(was, now, input.inkMix), inks.bg, presence);
 }
 
-function farCounts(input: FlowMarksInput, toDraw: readonly { l: DialLink; presence: number }[]): Map<string, FarCount> {
+function farCounts(input: FlowMarksInput, toDraw: readonly { l: DialLink; a: End; b: End; presence: number }[]): Map<string, FarCount> {
   const { model, attention: attn } = input;
   const far = new Map<string, FarCount>();
   if (!attn.domainId) return far;
   const mine = mineOf(model, attn);
-  for (const { l, presence } of toDraw) {
+  for (const { l, a, b, presence } of toDraw) {
     if (!l.attended || l.relatesOnly) continue;
     const mineIsU = mine(l.u);
     const meId = mineIsU ? l.u : l.v;
     const themId = mineIsU ? l.v : l.u;
     if (!model.domainById.has(themId)) continue;
-    const count = far.get(themId) ?? { needs: 0, used: 0, needsInk: linkInk(input, l, meId, true, presence), usedInk: linkInk(input, l, themId, true, presence) };
+    const count = far.get(themId) ?? {
+      needs: 0, used: 0, needsInk: linkInk(input, l, meId, true, presence), usedInk: linkInk(input, l, themId, true, presence),
+      chip: mineIsU ? b : a, toward: (mineIsU ? a : b).p,
+    };
     count.needs += mineIsU ? l.uv : l.vu;
     count.used += mineIsU ? l.vu : l.uv;
     far.set(themId, count);
@@ -633,43 +643,6 @@ function drawFanLink(input: FlowMarksInput, out: FlowMarks, attn: DialAttention,
     ink: mixOver(strokeInk(inks, model, attn, l, rest.from, false), inks.bg, share), headStart: rest.twoWay, headEnd: true,
     trimStart: rest.trimStart, trimEnd: rest.trimEnd, dashed: false, numeral: null, numeralInk: inks.numeral, slots: [],
   });
-}
-
-function placeFarNumerals(input: FlowMarksInput, out: FlowMarks, far: ReadonlyMap<string, FarCount>): void {
-  const font = numeralFont();
-  const h = NUMERAL_FONT_PX;
-  const centres = out.numerals.map((n) => ({ x: (n.box.minX + n.box.maxX) / 2, y: (n.box.minY + n.box.maxY) / 2 }));
-  const order = [...far].sort((x, y) => y[1].needs + y[1].used - (x[1].needs + x[1].used) || (x[0] < y[0] ? -1 : 1));
-  for (const [id, count] of order) {
-    const name = input.nameBoxes?.get(id);
-    if (!name) continue;
-    const parts: { text: string; ink: string }[] = [];
-    if (count.needs > 0) parts.push({ text: `→${count.needs}`, ink: count.needsInk });
-    if (count.used > 0) parts.push({ text: `${parts.length > 0 ? " " : ""}←${count.used}`, ink: count.usedInk });
-    if (parts.length === 0) continue;
-    const text = parts.map((p) => p.text).join("");
-    const w = tabularWidth(text, font, input.measureText);
-    const cx = (name.minX + name.maxX) / 2;
-    const cy = (name.minY + name.maxY) / 2;
-    const tries = [
-      { x: name.maxX + FAR_GAP_PX + w / 2, y: cy },
-      { x: name.minX - FAR_GAP_PX - w / 2, y: cy },
-      { x: cx, y: name.maxY + FAR_GAP_PX + h / 2 },
-      { x: cx, y: name.minY - FAR_GAP_PX - h / 2 },
-    ];
-    for (const p of tries) {
-      const box = { minX: p.x - w / 2 - 2, maxX: p.x + w / 2 + 2, minY: p.y - h / 2 - 2, maxY: p.y + h / 2 + 2 };
-      if (!inside(box, input.freeRect) || input.occupied.some((o) => overlaps(o, box))) continue;
-      if (centres.some((c) => Math.hypot(c.x - p.x, c.y - p.y) < NUMERAL_SPACING_PX)) continue;
-      input.occupied.push(box);
-      centres.push(p);
-      out.numerals.push({
-        flowKey: `far\0${id}`, text, x: p.x, y: p.y + 0.5, ink: inkIndex(out, parts[0]!.ink), halo: true, font, box,
-        parts: parts.map((part) => ({ text: part.text, ink: inkIndex(out, part.ink) })),
-      });
-      break;
-    }
-  }
 }
 
 function restStroke(tokens: DialTokens, l: DialLink, a: End, b: End): { p0: Point; p1: Point; from: string; twoWay: boolean; trimStart: number; trimEnd: number } {

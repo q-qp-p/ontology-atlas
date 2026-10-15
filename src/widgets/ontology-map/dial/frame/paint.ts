@@ -4,7 +4,7 @@ import { draw as drawNodeShape, type NodeShapeTokens } from "../../render/node-s
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import { mixOver } from "../ink";
 import type { DialFrameMarks } from "./marks";
-import type { DialKind, GlyphMark, StripMark, TextMark } from "../types";
+import type { Box, DialKind, GlyphMark, StripMark, TextMark } from "../types";
 
 export interface DialPaintOptions {
   now: number;
@@ -14,7 +14,6 @@ export interface DialPaintOptions {
 
 const STRIP_STEPS = 22;
 const GAP_EDGE = 0.01;
-const RING_DASH = [2, 5];
 const RELATES_DASH = [2, 3];
 const UNKNOWN_DASH = [2, 2];
 const TEXT_HALO_PX = 3;
@@ -200,14 +199,38 @@ function tabularText(ctx: CanvasRenderingContext2D, parts: readonly { text: stri
   }
 }
 
+export function knockoutRects(boxes: readonly Box[]): { x: number; y: number; w: number; h: number }[] {
+  const cells = boxes.map((b) => ({ x0: Math.floor(b.minX), y0: Math.floor(b.minY), x1: Math.ceil(b.maxX), y1: Math.ceil(b.maxY) })).filter((c) => c.x1 > c.x0 && c.y1 > c.y0);
+  const xs = [...new Set(cells.flatMap((c) => [c.x0, c.x1]))].sort((a, b) => a - b);
+  const out: { x: number; y: number; w: number; h: number }[] = [];
+  let open = new Map<string, { x: number; y: number; w: number; h: number }>();
+  for (let i = 0; i < xs.length - 1; i += 1) {
+    const left = xs[i]!;
+    const right = xs[i + 1]!;
+    const spans = cells.filter((c) => c.x0 <= left && c.x1 >= right).map((c) => [c.y0, c.y1] as const).sort((a, b) => a[0] - b[0]);
+    const merged: [number, number][] = [];
+    for (const [y0, y1] of spans) {
+      const last = merged[merged.length - 1];
+      if (last && y0 <= last[1]) last[1] = Math.max(last[1], y1);
+      else merged.push([y0, y1]);
+    }
+    const next = new Map<string, { x: number; y: number; w: number; h: number }>();
+    for (const [y0, y1] of merged) {
+      const key = `${y0}|${y1}`;
+      const run = open.get(key);
+      if (run) run.w = right - run.x;
+      else out.push({ x: left, y: y0, w: right - left, h: y1 - y0 });
+      next.set(key, run ?? out[out.length - 1]!);
+    }
+    open = next;
+  }
+  return out;
+}
+
 function knockout(ctx: CanvasRenderingContext2D, marks: DialFrameMarks): void {
   ctx.beginPath();
   ctx.rect(-1e5, -1e5, 2e5, 2e5);
-  for (const b of [...marks.texts, ...marks.extraTexts, ...marks.numerals].map((m) => m.box)) {
-    const x0 = Math.floor(b.minX);
-    const y0 = Math.floor(b.minY);
-    ctx.rect(x0, y0, Math.ceil(b.maxX) - x0, Math.ceil(b.maxY) - y0);
-  }
+  for (const r of knockoutRects([...marks.texts, ...marks.extraTexts, ...marks.numerals].map((m) => m.box))) ctx.rect(r.x, r.y, r.w, r.h);
   ctx.clip("evenodd");
 }
 
@@ -233,7 +256,6 @@ export function paintDialMarks(ctx: CanvasRenderingContext2D, marks: DialFrameMa
     ctx.save();
     knockout(ctx, marks);
     ctx.lineWidth = 1;
-    ctx.setLineDash(RING_DASH);
     for (const rails of groupBy(marks.rails, (r) => String(r.ink)).values()) {
       ctx.beginPath();
       for (const r of rails) {

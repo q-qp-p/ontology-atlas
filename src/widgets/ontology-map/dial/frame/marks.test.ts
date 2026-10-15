@@ -14,7 +14,8 @@ import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import { buildDialModel, dialEvidenceView, resolveDialAttention } from "../dial-model";
 import { mixOver, resolveDialInks } from "../ink";
 import { pickDial } from "../pick";
-import { buildDialMarks, dialChipRadiusPx, dialDiscRadiusPx, dialHubRadiusPx, emptyDialFrameMarks, type DialDisclosureInput, type DialMarksInput } from "./marks";
+import { dialChipRadiusPx, dialDiscRadiusPx } from "../tokens";
+import { buildDialMarks, dialHubRadiusPx, emptyDialFrameMarks, type DialDisclosureInput, type DialMarksInput } from "./marks";
 import { resolveDialDisclosure } from "./disclosure";
 import { resolveDialTokens } from "../tokens";
 import type { DialCluster, DialEvidence, DialItem, DialLabels, DialModel, DialScene, Point } from "../types";
@@ -216,7 +217,7 @@ describe("buildDialMarks", () => {
     const quiet = model.domains.map((d) => d.id).find((id) => id !== "d0" && !partners.has(id))!;
     expect(run({ focusId: "d0" }).out.glyphs.find((g) => g.id === quiet)!.egoState).toBe("dim");
     const brushed = run({ focusId: "d0", brushId: quiet }).out.glyphs.find((g) => g.id === quiet)!;
-    expect(brushed).toMatchObject({ hovered: true, egoState: "normal", fill: null });
+    expect(brushed).toMatchObject({ hovered: true, egoState: "normal", fill: run().out.glyphs.find((g) => g.id === quiet)!.fill });
   });
 
   it("shows the ledger only when in-place names leave some unnamed below reach-cap", () => {
