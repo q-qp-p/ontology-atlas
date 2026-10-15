@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { DIAL_TOKEN_SPECS, resolveDialTokens } from "@/widgets/ontology-map/dial/tokens";
+import { DIAL_INK_SPECS, DIAL_TOKEN_SPECS, resolveDialTokens } from "@/widgets/ontology-map/dial/tokens";
 import { scaledLabelFontSize } from "@/widgets/ontology-map/render/labels";
 
 import { readGlobalCss } from "../../../scripts/lib/design/global-css.mjs";
@@ -11,17 +11,38 @@ for (const m of css.matchAll(/(--map-dial-[a-z0-9-]+)\s*:\s*([^;]+);/g)) declare
 const panelInk = /--map-panel-text-primary\s*:\s*([^;]+);/.exec(css)?.[1] ?? "";
 const t = resolveDialTokens((v) => (v === "--map-panel-text-primary" ? panelInk : declared.get(v) ?? "0"));
 
+const channel = (v: number) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+const luminance = (hex: string) => {
+  const [r, g, b] = [1, 3, 5].map((i) => channel(parseInt(hex.slice(i, i + 2), 16) / 255));
+  return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+};
+const contrast = (a: string, b: string) => {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi! + 0.05) / (lo! + 0.05);
+};
 const width = (base: number, gain: number, max: number, count: number) => Math.min(max, base + gain * Math.log2(1 + count));
 const rest = (n: number) => width(t.flowRestBase, t.flowRestGain, t.flowRestMax, n);
 const focus = (n: number) => width(t.flowFocusBase, t.flowFocusGain, t.flowFocusMax, n);
 
 describe("map dial tokens", () => {
   it("declares exactly the names the reader reads", () => {
-    expect([...declared.keys()].sort()).toEqual(DIAL_TOKEN_SPECS.map((s) => s.cssVar).sort());
+    expect([...declared.keys()].sort()).toEqual([...DIAL_TOKEN_SPECS, ...DIAL_INK_SPECS].map((s) => s.cssVar).sort());
   });
 
   it("keeps every value finite", () => {
-    for (const value of declared.values()) expect(Number.isFinite(Number(value))).toBe(true);
+    for (const { cssVar } of DIAL_TOKEN_SPECS) expect(Number.isFinite(Number(declared.get(cssVar)))).toBe(true);
+  });
+
+  it("steps the mark strokes domain > capability > element, rings on the main axis, each over 3:1 on the ground", () => {
+    const ground = /--map-canvas-bg-near\s*:\s*([^;]+);/.exec(css)?.[1]?.trim() ?? "";
+    for (const { cssVar } of DIAL_INK_SPECS) expect(declared.get(cssVar)).toMatch(/^#[0-9a-f]{6}$/);
+    const c = (ink: string) => contrast(ink, ground);
+    expect(c(t.strokeDomain)).toBeGreaterThan(c(t.strokeCapability) + 1);
+    expect(c(t.strokeCapability)).toBeGreaterThan(c(t.strokeElement) + 1);
+    expect(c(t.strokeElement)).toBeGreaterThanOrEqual(3);
+    expect(c(t.ring)).toBeGreaterThanOrEqual(3);
+    expect(c(t.fillDomain)).toBeGreaterThan(c(t.fillCapability));
+    expect(c(t.fillCapability)).toBeGreaterThan(1.1);
   });
 
   it("keeps ordered pairs ordered", () => {

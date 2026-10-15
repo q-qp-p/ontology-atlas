@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildLabelMarks, crossesBox, domainLabelBlock, overlaps, wrapDialName, type Circle, type LabelMarksInput, type LabelMarksOut } from "./label-marks";
 import type { Box, DialAttention, DialCluster, DialItem, DialLabels, DialModel, DialRing, DialScene, DialTokens, Point } from "./types";
 
-const TOKENS = { nameMaxPx: 160, labelScale: 1.1, pitch: 34, capName: 22, elementName: 26 } as DialTokens;
+const TOKENS = { nameMaxPx: 160, labelScale: 1.1, pitch: 34, capName: 22, elementName: 26, chipMinPx: 12, chipMaxPx: 12, discMinPx: 4, discMaxPx: 4, discPitchShare: 0.2, discCapShare: 1 } as DialTokens;
 const LABELS: DialLabels = {
   units: (c, e) => `${c} capabilities · ${e} elements`,
   stale: (n) => `${n} stale`,
@@ -55,14 +55,15 @@ interface Run extends Partial<LabelMarksInput> { names?: string[]; caps?: number
 function run({ names = ["Payments", "Catalog", "Shipping", "Accounts"], caps = 0, ...over }: Run = {}) {
   const { model, scene } = fixture(names, caps);
   const inks: string[] = [];
-  const chips = new Map<string, Circle>(scene.clusters.map((c) => [c.domainId, { ...c.chip, r: 12 }]));
+  const toScreen = over.toScreen ?? ((x: number, y: number) => ({ x, y }));
+  const chips = new Map<string, Circle>(scene.clusters.map((c) => [c.domainId, { ...toScreen(c.chip.x, c.chip.y), r: 12 }]));
   const discs = new Map<string, Circle>();
-  for (const c of scene.clusters) for (const it of c.items) discs.set(it.id, { x: it.x, y: it.y, r: 4 });
+  for (const c of scene.clusters) for (const it of c.items) discs.set(it.id, { ...toScreen(it.x, it.y), r: 4 });
   const input: LabelMarksInput = {
     model, scene, labels: LABELS, evidence: null, attention: REST, tokens: TOKENS,
     inks: { project: "#1", domain: "#2", domainReceded: "#3", domainAttended: "#4", units: "#5", stale: "#6", capability: "#7", needs: "#8", usedBy: "#9", orphans: "#a", ring: "#b", element: "#c", halo: "#d" },
     ink: (c) => { const i = inks.indexOf(c); return i >= 0 ? i : inks.push(c) - 1; },
-    measureText: measure, scale: 1, toScreen: (x, y) => ({ x, y }),
+    measureText: measure, scale: 1, toScreen,
     hub: { x: 0, y: 0, r: 20 }, chips, discs, capAlpha: caps > 0 ? 1 : 0, lines: [], occupied: [], freeRect: WIDE, ledgerIds: new Set(),
     elementLabel: (id) => `el ${id}`,
     ...over,
@@ -163,6 +164,13 @@ describe("buildLabelMarks", () => {
     expect(texts.some((t) => t.id === "d0" && t.role === "units")).toBe(false);
   });
 
+  it("lets a line cross a domain name only when the free rect holds the domain's whole mark", () => {
+    const lines: Point[][] = [];
+    for (let y = -460; y <= -200; y += 6) lines.push([{ x: -300, y }, { x: 300, y }]);
+    const { texts } = run({ lines, freeRect: { minX: -1000, minY: -300, maxX: 1000, maxY: 1000 } });
+    expect(texts.some((t) => t.id === "d0")).toBe(false);
+  });
+
   it("drops every text whose box leaves the free rect", () => {
     const freeRect = { minX: -1000, minY: -250, maxX: 1000, maxY: 1000 };
     const { all } = run({ freeRect });
@@ -250,6 +258,23 @@ describe("buildLabelMarks", () => {
     expect(run({ caps: 2 }).extraTexts.some((t) => t.role === "element")).toBe(false);
     const zoomed = run({ caps: 2, scale: 3, toScreen: (x, y) => ({ x: x * 3, y: y * 3 }), names: ["Payments"] });
     expect(zoomed.extraTexts.some((t) => t.role === "element")).toBe(true);
+  });
+
+  it("keeps names unseen until their chip has travelled 90% of its path, then shows them where they rest", () => {
+    const partway = (share: number) => new Map<string, Circle>(fixture(["Payments", "Catalog", "Shipping", "Accounts"]).scene.clusters.map((c) => [c.domainId, { x: c.chip.x * share, y: c.chip.y * share, r: 12 * share }]));
+    const rest = run().texts.filter((t) => t.role === "project" || t.role === "domain");
+    expect(run({ chips: partway(0.5) }).texts.filter((t) => t.role === "project" || t.role === "domain")).toEqual([]);
+    const late = run({ chips: partway(0.97) }).texts.filter((t) => t.role === "project" || t.role === "domain");
+    expect(late.map((t) => [t.text, t.box])).toEqual(rest.map((t) => [t.text, t.box]));
+  });
+
+  it("holds a shown name where it first stood while that place stays clear", () => {
+    const { model, scene } = fixture(["Payments", "Catalog", "Shipping", "Accounts"]);
+    const beside = [{ x: 40, y: -200 }, { x: 40, y: 200 }];
+    const first = run({ model, scene, lines: [beside] }).texts.find((t) => t.role === "project")!;
+    const fresh = run().texts.find((t) => t.role === "project")!;
+    expect(first.box).not.toEqual(fresh.box);
+    expect(run({ model, scene }).texts.find((t) => t.role === "project")!.box).toEqual(first.box);
   });
 
   it("places no two texts over each other with capabilities shown", () => {
