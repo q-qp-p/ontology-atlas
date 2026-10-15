@@ -15,18 +15,14 @@ export function useDocOutline({
   setActiveHeadingSlug: (slug: string | null) => void;
 }) {
   const reducedMotion = usePrefersReducedMotion();
-  // Bundled headings come from the lazily loaded map; a local manifest has them inline.
-  const docHeadings = useMemo(
-    () =>
+  const outlineHeadings = useMemo(() => {
+    // Bundled headings come from the lazily loaded map; a local manifest has them inline.
+    const docHeadings =
       selectedDoc && selectedDoc.headings.length > 0
         ? selectedDoc.headings
         : selectedDoc
           ? (staticHeadings?.[selectedDoc.slug] ?? [])
-          : [],
-    [selectedDoc, staticHeadings],
-  );
-  const bodyHasTitle = docHeadings.some((h) => h.depth === 1);
-  const outlineHeadings = useMemo(() => {
+          : [];
     const headings = docHeadings.filter((h) => h.depth >= 2 && h.depth <= 3);
     const totals = new Map<string, number>();
     for (const heading of headings) {
@@ -42,7 +38,7 @@ export function useDocOutline({
         occurrence,
       };
     });
-  }, [docHeadings]);
+  }, [selectedDoc, staticHeadings]);
   const showOutlineRail = shouldShowOutlineRail(outlineHeadings.length);
   const handleHeadingNavigate = useCallback(
     (slug: string) => {
@@ -63,5 +59,5 @@ export function useDocOutline({
     },
     [reducedMotion, setActiveHeadingSlug],
   );
-  return { outlineHeadings, showOutlineRail, handleHeadingNavigate, bodyHasTitle };
+  return { outlineHeadings, showOutlineRail, handleHeadingNavigate };
 }

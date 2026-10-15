@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useState } from 'react';
+import { Suspense, useCallback, useMemo, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { Link } from '@/i18n/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -12,6 +12,7 @@ import { OntologyStarterCta } from '@/features/docs-vault-local';
 import { recentVaultRowKey } from '@/features/vault-switch';
 import { buildOntologyDeeplinkForDoc } from '@/entities/docs-vault';
 import { useDocumentTitle } from '@/shared/lib/public-pages/use-document-title';
+import { firstHeading, parseFrontmatter } from '@/shared/lib/vault-document/parse-frontmatter';
 import { resolveLocaleDisplayName } from '@/shared/lib/locale-text/locale-display-name';
 import { getTauriVaultRootPath } from '@/shared/lib/vault-folder/tauri-vault-fs';
 import { useClaimShellKey } from '@/shared/lib/keyboard/shell-key-claims';
@@ -307,7 +308,7 @@ function DocsVaultContent({
       onFire: () => setPaletteQuery(''),
     },
   ]);
-  const { outlineHeadings, showOutlineRail, handleHeadingNavigate, bodyHasTitle } = useDocOutline({
+  const { outlineHeadings, showOutlineRail, handleHeadingNavigate } = useDocOutline({
     selectedDoc,
     staticHeadings,
     setActiveHeadingSlug,
@@ -352,7 +353,21 @@ function DocsVaultContent({
     void openLocalVault();
   }, [source, isDesktopRuntime, handleSourceChange, openLocalVault]);
 
-  const columnTitle = selectedDoc && !showDesktopWelcome && !bodyHasTitle ? selectedDocDisplayTitle : null;
+  const [paintedBody, setPaintedBody] = useState<{ doc: string; titled: boolean } | null>(null);
+  const paintedDoc = selectedDoc ? `${source}:${selectedDoc.slug}` : null;
+  const reportPaintedBody = useCallback((doc: string, body: string | null) => {
+    const titled = body !== null && firstHeading(body) !== null;
+    setPaintedBody((previous) => (previous?.doc === doc && previous.titled === titled ? previous : { doc, titled }));
+  }, []);
+  const bundledBodyBeforePaint = selectedDoc && source !== 'local' ? staticVault.content[selectedDoc.slug] : undefined;
+  const bundledBodyTitled = useMemo(
+    () => (bundledBodyBeforePaint === undefined ? undefined : firstHeading(parseFrontmatter(bundledBodyBeforePaint).body) !== null),
+    [bundledBodyBeforePaint],
+  );
+  const titledBeforeBodyPaints =
+    source === 'local' && selectedDoc ? selectedDoc.headings.some((heading) => heading.depth === 1) : bundledBodyTitled;
+  const bodyTitled = paintedBody?.doc === paintedDoc ? paintedBody.titled : titledBeforeBodyPaints;
+  const columnTitle = selectedDoc && !showDesktopWelcome && bodyTitled === false ? selectedDocDisplayTitle : null;
   const headerTreeTools =
     documentScope === 'ontology' && !legacyDocumentMode && !docListCollapsed && !showDesktopWelcome;
 
@@ -561,6 +576,7 @@ function DocsVaultContent({
             <DocsVaultDocumentPane
               selectedDoc={selectedDoc}
               columnTitle={columnTitle}
+              onBodyPainted={reportPaintedBody}
               editing={editing}
               setEditing={setEditing}
               showSampleWelcomeNote={showSampleWelcomeNote}

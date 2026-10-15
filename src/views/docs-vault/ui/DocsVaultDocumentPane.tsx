@@ -43,6 +43,7 @@ function splitVaultSlugPath(slug: string): { dir: string; name: string } {
 export function DocsVaultDocumentPane({
   selectedDoc,
   columnTitle,
+  onBodyPainted,
   editing,
   setEditing,
   showSampleWelcomeNote,
@@ -83,6 +84,7 @@ export function DocsVaultDocumentPane({
 }: {
   selectedDoc: VaultManifest['docs'][number];
   columnTitle: string | null;
+  onBodyPainted: (doc: string, body: string | null) => void;
   editing: boolean;
   setEditing: Dispatch<SetStateAction<boolean>>;
   showSampleWelcomeNote: boolean;
@@ -230,7 +232,7 @@ export function DocsVaultDocumentPane({
         >
           <header
             data-testid="docs-reading-head"
-            className={cn("mx-auto max-w-[var(--measure-doc-column)] px-6 pt-4 md:px-10", editing && "pb-4")}
+            className={cn("mx-auto max-w-[var(--measure-doc-column)] px-6 pt-3 md:px-10", editing && "pb-4")}
           >
             {columnTitle ? (
               <>
@@ -246,7 +248,7 @@ export function DocsVaultDocumentPane({
                 </div>
               </>
             ) : (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                 {filePath}
                 {headControls}
               </div>
@@ -308,6 +310,7 @@ export function DocsVaultDocumentPane({
                 <DocsVaultViewer
                   key={`${source}:${selectedDoc.slug}`}
                   doc={selectedDoc}
+                  onBodyPainted={(body) => onBodyPainted(`${source}:${selectedDoc.slug}`, body)}
                   compactTop
                   vaultSlugs={vaultSlugs}
                   onNavigate={handleSelect}
