@@ -5,15 +5,14 @@ import {
   useEffect,
   type RefObject
 } from "react";
-import type { CameraTarget } from "../../engine/camera";
+import { clampPointToPanBounds, type CameraAxes, type CameraTarget } from "../../engine/camera";
 import type { CameraTweenEase } from "../../model/camera/camera-easing";
 import {
-  IDLE_FLAT_SELECTION_CAMERA,
-  flatDeselectCamera,
-  recordFlight,
-  recordNudge,
+  deselectCamera,
+  recordSelectionCamera,
   selectionNudgeTarget,
-  type FlatSelectionCamera
+  type SelectionCamera,
+  type SelectionSource
 } from "../../model/camera/flat-selection-camera";
 import { commitDomeEntrySweep } from "../../model/dome-view/frame";
 import type { DomeRuntime } from "../../model/dome-view/runtime";
@@ -21,7 +20,7 @@ import { isPathTargetPick, type TopologyMapLensKind } from "../../model/visibili
 import {
   type RealmTransitionState
 } from "../../model/realm/realm-transition";
-import { computeFocusCameraTarget, computeOverviewCameraTarget, focusTargetLeashPx, type FocusLeashPx } from "./topology-camera-math";
+import { computeFocusCameraTarget, computeOverviewCameraTarget, focusPanBounds, focusTargetLeashPx, type FocusLeashPx } from "./topology-camera-math";
 import {
   overviewBoundsFor
 } from "./topology-overview-fit";
@@ -41,15 +40,13 @@ export function liveDialFocusFrame(world: TopologyWorld, focusId: string): DialF
   }
 }
 
-/** A selection this soon after a committed tap on the same node came from that click. */
-const CLICK_SELECTION_WINDOW_MS = 1000;
-
 interface Dependencies {
   lastFocusedSlugRef: RefObject<string | null>;
   focusedSlug: string | null;
   egoRevealBatchesRef: RefObject<number>;
   selectionPulseRef: RefObject<{ nodeId: string; startAtMs: number; } | null>;
   cameraTargetRef: RefObject<CameraTarget>;
+  cameraRef: RefObject<CameraAxes>;
   constellationFocusId: string | null;
   cameraGestureRevisionRef: RefObject<number>;
   userDrivenCameraRef: RefObject<boolean>;
@@ -73,8 +70,8 @@ interface Dependencies {
   clusteredIdsRef: RefObject<ReadonlySet<string>>;
   mapLensKindRef: RefObject<TopologyMapLensKind>;
   spotlightIdsRef: RefObject<ReadonlySet<string> | null>;
-  flatSelectionCameraRef: RefObject<FlatSelectionCamera>;
-  lastTapRef: RefObject<{ nodeId: string; at: number; } | null>;
+  selectionCameraRef: RefObject<SelectionCamera | null>;
+  selectionSourceRef: RefObject<{ slug: string; source: SelectionSource; } | null>;
 }
 
 function leashFor(width: number, height: number, tokens: OntologyMapTokens): FocusLeashPx {
@@ -87,6 +84,7 @@ export function useTopologyFocusNavigation({
   focusedSlug,
   egoRevealBatchesRef,
   selectionPulseRef, cameraTargetRef,
+  cameraRef,
   constellationFocusId,
   cameraGestureRevisionRef,
   userDrivenCameraRef,
@@ -110,8 +108,8 @@ export function useTopologyFocusNavigation({
   clusteredIdsRef,
   mapLensKindRef,
   spotlightIdsRef,
-  flatSelectionCameraRef,
-  lastTapRef,
+  selectionCameraRef,
+  selectionSourceRef,
 }: Dependencies) {
 
   const moveCamera = useCallback((target: CameraTarget, tokens: OntologyMapTokens, ease?: CameraTweenEase) => {
@@ -138,13 +136,17 @@ export function useTopologyFocusNavigation({
       overviewBoundsFor(overviewFitRef.current, world, raw, expandedParentsRef.current, clusteredIdsRef.current),
       liveDialFocusFrame(world, slug));
     if (!target) return;
-    flatSelectionCameraRef.current = recordFlight(flatSelectionCameraRef.current, slug, cameraTargetRef.current);
+    selectionCameraRef.current = recordSelectionCamera(selectionCameraRef.current, {
+      slug, framed: true, current: cameraTargetRef.current, landed: target, gesture: cameraGestureRevisionRef.current,
+    });
     focusLeashPxRef.current = leashFor(width, height, tokens);
     moveCamera(target, raw);
-  }, [cameraTargetRef, cameraTokens, clusteredIdsRef, expandedParentsRef, flatSelectionCameraRef, focusLeashPxRef, moveCamera, overviewFitRef, overviewScaleRef, realmTransitionRef, view3dRef, viewportRef, worldRef]);
+  }, [cameraGestureRevisionRef, cameraTargetRef, cameraTokens, clusteredIdsRef, expandedParentsRef, selectionCameraRef, focusLeashPxRef, moveCamera, overviewFitRef, overviewScaleRef, realmTransitionRef, view3dRef, viewportRef, worldRef]);
 
   useEffect(() => {
     if (lastFocusedSlugRef.current === focusedSlug) return;
+    const releasedSlug = lastFocusedSlugRef.current;
+    const releasedLeash = focusLeashPxRef.current;
     lastFocusedSlugRef.current = focusedSlug;
     // A new focus starts from the top-ranked neighbours again, discarding
     // batches opened by chip clicks.
@@ -174,31 +176,43 @@ export function useTopologyFocusNavigation({
 
     const realmActive = realmTransitionRef.current.phase !== "idle";
     const realmData = realmDataRef.current;
-    const tap = lastTapRef.current;
-    const clicked =
-      focusedSlug !== null && tap !== null && tap.nodeId === focusedSlug && performance.now() - tap.at < CLICK_SELECTION_WINDOW_MS;
+    const pending = selectionSourceRef.current;
+    selectionSourceRef.current = null;
+    const source = focusedSlug !== null && pending?.slug === focusedSlug ? pending.source : null;
     // The panel this selection opens enters the DOM after this effect, so it is measured a frame later.
     const raf = requestAnimationFrame(() => {
       const tokens = readOntologyMapTokensOrNull() ?? effectTokens;
-      const memory = flatSelectionCameraRef.current;
+      const memory = selectionCameraRef.current;
+      const gesture = cameraGestureRevisionRef.current;
       const pathPick = focusedSlug !== null && isPathTargetPick(mapLensKindRef.current, focusedSlug, spotlightIdsRef.current);
 
       if (!realmActive && focusedSlug === null) {
-        flatSelectionCameraRef.current = IDLE_FLAT_SELECTION_CAMERA;
+        selectionCameraRef.current = null;
         focusLeashPxRef.current = null;
-        const back = flatDeselectCamera(memory, cameraTargetRef.current);
-        if (back.kind === "return") moveCamera(back.target, tokens, memory.flight === null ? "spring" : undefined);
+        const back = deselectCamera(memory, cameraTargetRef.current, gesture, userDrivenCameraRef.current);
+        if (back.kind === "return") moveCamera(back.target, tokens, memory?.framed ? undefined : "spring");
+        // The released leash must not carry on a pan it was holding short, nor pull back its stretch.
+        const anchor = releasedSlug === null ? undefined : world.nodeById.get(releasedSlug);
+        const held = cameraTargetRef.current;
+        if (back.kind === "stay" && anchor && releasedLeash && held.tscale > overviewScaleRef.current) {
+          const bounds = focusPanBounds(anchor, releasedLeash, held.tscale, cameraTokens(tokens).cameraFocusPanMargin);
+          const edge = clampPointToPanBounds(held.tx, held.ty, bounds);
+          const seen = cameraRef.current;
+          const between = (value: number, a: number, b: number) => Math.min(Math.max(a, b), Math.max(Math.min(a, b), value));
+          cameraTargetRef.current = { tx: between(seen.x.value, edge.x, held.tx), ty: between(seen.y.value, edge.y, held.ty), tscale: held.tscale };
+        }
         if (back.kind !== "overview") return;
       }
+      // A double-click already framed this node.
+      if (!realmActive && focusedSlug !== null && memory?.slug === focusedSlug && memory.framed) return;
 
-      if (!realmActive && clicked && !pathPick && focusedSlug !== null) {
-        if (memory.flight?.slug === focusedSlug) return;
+      if (!realmActive && source === "canvas-click" && !pathPick && focusedSlug !== null) {
         const node = world.nodeById.get(focusedSlug);
         const measured = cameraTokens(tokens);
         const current = cameraTargetRef.current;
         const nudge = node ? selectionNudgeTarget(current, node, width, { left: measured.safeInsetLeft, right: measured.safeInsetRight }) : null;
         const landed = nudge ?? current;
-        flatSelectionCameraRef.current = nudge ? recordNudge(memory, focusedSlug, current, nudge) : { ...memory, clicked: focusedSlug };
+        selectionCameraRef.current = recordSelectionCamera(memory, { slug: focusedSlug, framed: false, current, landed, gesture });
         const leash = leashFor(width, height, measured);
         focusLeashPxRef.current = node
           ? { x: Math.max(leash.x, Math.abs(node.x - landed.tx) * landed.tscale + 1), y: Math.max(leash.y, Math.abs(node.y - landed.ty) * landed.tscale + 1) }
@@ -234,12 +248,15 @@ export function useTopologyFocusNavigation({
                 world.nodes.length)
             : computeFocusCameraTarget(world, focusTokens, width, height, focusedSlug, overviewEntryScale, realmMembers, overviewBounds, realmActive || focusedSlug === null ? undefined : liveDialFocusFrame(world, focusedSlug));
       }
-      flatSelectionCameraRef.current = IDLE_FLAT_SELECTION_CAMERA;
+      selectionCameraRef.current =
+        target !== null && focusedSlug !== null && !realmActive
+          ? recordSelectionCamera(memory, { slug: focusedSlug, framed: true, current: cameraTargetRef.current, landed: target, gesture })
+          : null;
       if (!target) return;
       moveCamera(target, tokens);
     });
     return () => cancelAnimationFrame(raf);
-  }, [focusedSlug, beginCameraTween, cameraTokens, constellationFocusId, lastFocusedSlugRef, egoRevealBatchesRef, selectionPulseRef, view3dRef, realmTransitionRef, domeRuntimeRef, worldRef, viewportRef, overviewScaleRef, realmDataRef, cameraTargetRef, cameraGestureRevisionRef, userDrivenCameraRef, dampingRef, cameraAngularFreqRef, lastActiveMsRef, focusedSlugRef, canvasRef, expandedParentsRef, focusLeashPxRef, overviewFitRef, clusteredIdsRef, mapLensKindRef, spotlightIdsRef, flatSelectionCameraRef, lastTapRef, moveCamera]);
+  }, [focusedSlug, beginCameraTween, cameraTokens, constellationFocusId, lastFocusedSlugRef, egoRevealBatchesRef, selectionPulseRef, view3dRef, realmTransitionRef, domeRuntimeRef, worldRef, viewportRef, overviewScaleRef, realmDataRef, cameraTargetRef, cameraGestureRevisionRef, userDrivenCameraRef, dampingRef, cameraAngularFreqRef, lastActiveMsRef, focusedSlugRef, canvasRef, expandedParentsRef, focusLeashPxRef, overviewFitRef, clusteredIdsRef, mapLensKindRef, spotlightIdsRef, selectionCameraRef, selectionSourceRef, cameraRef, moveCamera]);
 
   return { flyToNode };
 }

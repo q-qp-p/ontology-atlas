@@ -28,6 +28,7 @@ import { keyboardZoomIntent } from "../../interaction/keyboard-zoom";
 import { createPinchWheelStream } from "../../interaction/wheel";
 import { type PointerMachineState } from "../../interaction/pointer-state-machine";
 import { type CameraTween, type ZoomEase } from "../../model/camera/camera-easing";
+import type { SelectionSource } from "../../model/camera/flat-selection-camera";
 import type { ClusterChip } from "../../model/layout/density-gate";
 import { commitDomeEntrySweep } from "../../model/dome-view/frame";
 import type { DomeRuntime } from "../../model/dome-view/runtime";
@@ -89,7 +90,7 @@ interface Dependencies {
   tierRevealRef: RefObject<TierRevealConfig>;
     pathEdgeIdsRef: RefObject<ReadonlySet<string> | null>;
   visitedTrailRef: RefObject<readonly string[]>;
-  onSelect: ((slug: string) => void) | undefined;
+  onSelect: ((slug: string, source: SelectionSource) => void) | undefined;
   onSelectEdge: ((edge: { sourceId: string; targetId: string; relationType: string; declaredBySlug: string | null; }) => void) | undefined;
   onHoverEdge: ((edge: { sourceId: string; targetId: string; relationType: string; declaredBySlug: string | null; } | null, position: { x: number; y: number; avoid: readonly HoverAvoidRect[]; } | null) => void) | undefined;
   onPaneClick: (() => void) | undefined;
@@ -513,7 +514,7 @@ export function useTopologyInput({
 
     const target = world.nodeById.get(nextId);
     if (!target) return;
-    onSelect?.(nextId);
+    onSelect?.(nextId, "arrow");
 
     /*
      * The camera only follows, and only when the focus is about to leave the free area; recentring on

@@ -16,6 +16,7 @@ import type { TierRevealConfig } from "../model/visibility/tier-visibility";
 import type { TopologyMapLensKind } from "../model/visibility/path-lens";
 import type { ClusterBarLabels } from "../render/cluster-chips";
 import type { DomeViewKind } from "../model/dome-view/types";
+import type { SelectionSource } from "../model/camera/flat-selection-camera";
 import { DEFAULT_EXPAND, DEFAULT_MAP_ARRANGEMENT, DEFAULT_MAP_NAVIGATION_SPEED } from "@/shared/lib/preferences/appearance-preferences";
 import type { CanvasBackground, ExpandPreference, FootprintPreference, GlyphSet, MapArrangement, MapNavigationSpeed } from "@/shared/lib/preferences/appearance-preferences";
 import { controlClass } from '@/shared/ui/control-class';
@@ -156,7 +157,7 @@ export interface OntologyMapProps {
    * behavior identical.
    */
   emphasizedNeighborSlug?: string | null;
-  onSelect?: (slug: string) => void;
+  onSelect?: (slug: string, source: SelectionSource) => void;
   /** An arrow key was pressed with nowhere to go in that direction. The page decides the copy. */
   onWalkDeadEnd?: ((point: { x: number; y: number;
     } | null) => void) | null;

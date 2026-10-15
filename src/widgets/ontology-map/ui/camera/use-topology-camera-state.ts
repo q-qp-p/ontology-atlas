@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import type { CameraAxes, CameraTarget } from "../../engine/camera";
 import { type CameraTween, type ZoomEase } from "../../model/camera/camera-easing";
-import { IDLE_FLAT_SELECTION_CAMERA, type FlatSelectionCamera } from "../../model/camera/flat-selection-camera";
+import type { SelectionCamera } from "../../model/camera/flat-selection-camera";
 import {
   type ViewportReframeMotion
 } from "./use-topology-viewport-lifecycle";
@@ -118,7 +118,7 @@ export function useTopologyCameraState({
    */
   const overviewFitRef = useRef(overviewFit);
 
-  const flatSelectionCameraRef = useRef<FlatSelectionCamera>(IDLE_FLAT_SELECTION_CAMERA);
+  const selectionCameraRef = useRef<SelectionCamera | null>(null);
 
   return {
     cameraRef, cameraTargetRef, constellationCameraRef,
@@ -126,6 +126,6 @@ export function useTopologyCameraState({
     dampingRef, cameraAngularFreqRef, overviewScaleRef, hasInitializedRef, fittedDataSourceKeyRef,
     drawnFarTRef, initialFitTokensRef, lastProcessedSpotlightFitTokenRef, pendingSpotlightFitRef,
     runSpotlightFitRef, reframeViewportRef, viewportCameraTrackedRef, initialRelayoutTokenRef, panelInsetsRef,
-    overviewFitRef, flatSelectionCameraRef,
+    overviewFitRef, selectionCameraRef,
   };
 }
