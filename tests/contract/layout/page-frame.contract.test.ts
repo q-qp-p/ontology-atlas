@@ -36,6 +36,7 @@ const MEMBERS = [
   "src/views/ontology-insights/ui/OntologyInsightsPage.tsx",
   // Rows that would read too long across 1520 split into `PAGE_TWO_TRACK` instead of a narrower column.
   "src/views/agents/ui/AgentsPage.tsx",
+  "src/views/automations/ui/AutomationsPage.tsx",
 ] as const;
 
 const read = (relative: string) => readFileSync(join(REPO_ROOT, relative), "utf8");
