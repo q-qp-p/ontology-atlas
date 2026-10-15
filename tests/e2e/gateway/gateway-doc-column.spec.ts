@@ -40,14 +40,15 @@ for (const route of ROUTES) {
   }
 }
 
-test("changelog entry titles never start with the date separator", async ({ page }) => {
+test("changelog entries list date then version on one line each, never a stray separator", async ({ page }) => {
   await page.setViewportSize({ width: 1512, height: 900 });
   await page.goto("/ko/changelog/?guides=off", { waitUntil: "domcontentloaded" });
-  const titles = await page
-    .locator('[data-testid^="entry-nav-"] span.line-clamp-2')
-    .allTextContents();
-  expect(titles.length, "found no entry titles; the check would idle").toBeGreaterThan(3);
-  expect(titles.filter((title) => /^[\s·—–-]/u.test(title))).toEqual([]);
+  const entries = page.locator('[data-testid^="entry-nav-"]');
+  const lines = await entries.allTextContents();
+  expect(lines.length, "found no entries; the check would idle").toBeGreaterThan(3);
+  expect(lines.filter((line) => !/^\d{4}-\d{2}-\d{2} · [^\s·—–-]/u.test(line))).toEqual([]);
+  const heights = await entries.evaluateAll((links) => links.map((a) => Math.round(a.getBoundingClientRect().height)));
+  expect(new Set(heights).size, `entry heights ${heights.join(",")}`).toBe(1);
 });
 
 /* The table of contents starts on the brand's line at every width. */

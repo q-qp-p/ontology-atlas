@@ -131,6 +131,13 @@ describe('extractEntries', () => {
     const [entry] = extractEntries('## 2026-09-24 · v1.2.5: the map remembers its camera\nbody');
     expect(entry?.date).toBe('2026-09-24');
     expect(entry?.title).toBe('v1.2.5: the map remembers its camera');
+    expect(entry?.version).toBe('v1.2.5');
+  });
+
+  it('reads the release tag or Unreleased that leads a title, and nothing from a plain title', () => {
+    expect(extractEntries('## 2026-10-15 · Unreleased: since the last tag\n')[0]?.version).toBe('Unreleased');
+    expect(extractEntries('## 2026-09-24 · v1.2.5-rc.1: a candidate\n')[0]?.version).toBe('v1.2.5-rc.1');
+    expect(extractEntries('## 2026-08-30 · The download hero splits\n')[0]?.version).toBeNull();
   });
 
   it('splits the date from the title', () => {

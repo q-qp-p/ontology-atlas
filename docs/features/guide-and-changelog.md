@@ -20,9 +20,12 @@ changing what those pages show or how they are built.
   `/guide/[segment]` address. An unknown segment shows the first chapter and
   says that it substituted one.
 - **Read what changed recently.** `/changelog` renders the most recent
-  sections of `docs/CHANGELOG.md` with a list of entries to jump between, and
-  says how many older sections it folded; the full history stays in the
-  repository.
+  sections of `docs/CHANGELOG.md` with a list of entries to jump between, one
+  line each (date and release), and says how many older sections it folded;
+  an entry's title is read once, in its heading. The full history stays in
+  the repository.
+- **Read at book size.** Guide and changelog body text is `--text-reading`
+  (16px) at `--leading-prose`, under a `--text-hero` page title.
 
 ## Where it lives
 
