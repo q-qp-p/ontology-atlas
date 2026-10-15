@@ -162,6 +162,15 @@ describe("buildLabelMarks", () => {
     expect(texts.some((t) => t.id === "d0")).toBe(false);
   });
 
+  it("rests no disc of a domain whose footprint lies away from the free rect", () => {
+    const callsWith = (freeRect: Box) => {
+      let calls = 0;
+      run({ caps: 12, freeRect, toScreen: (x, y) => { calls += 1; return { x, y }; } });
+      return calls;
+    };
+    expect(callsWith(WIDE) - callsWith({ minX: -100, minY: -500, maxX: 100, maxY: -250 })).toBe(3 * 12);
+  });
+
   it("drops every text whose box leaves the free rect", () => {
     const freeRect = { minX: -1000, minY: -250, maxX: 1000, maxY: 1000 };
     const { all } = run({ freeRect });

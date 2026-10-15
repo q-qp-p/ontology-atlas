@@ -74,6 +74,7 @@ const NAME_GAP_PX = 5;
 const DISC_GAP_PX = 4;
 const HUB_CLEAR_PX = 14;
 const NAME_STEPS_PX = [0, 9, 18];
+const REST_REACH_PX = 48;
 const RING_OFFSETS = [0, 0.18, -0.18, 0.36, -0.36, 0.6, -0.6, 0.9, -0.9];
 const CIRCLE_SLOTS = 36;
 const RING_TRIES = [
@@ -230,6 +231,7 @@ interface Rest {
   chips: Map<string, Circle>;
   discs: Map<string, Circle>;
   alpha: Map<string, number>;
+  away: Set<string>;
 }
 
 function travelled(cur: Point, from: Point, end: Point, endFrom: Point): number {
@@ -250,7 +252,8 @@ function restOf(input: LabelMarksInput): Rest {
   const centre = input.hub ?? input.toScreen(0, 0);
   const maxItems = Math.max(1, ...scene.clusters.map((c) => c.items.length));
   const capsDrawn = input.capAlpha > CAPS_DRAWN_ALPHA;
-  const rest: Rest = { chips: new Map(), discs: new Map(), alpha: new Map() };
+  const f = input.freeRect;
+  const rest: Rest = { chips: new Map(), discs: new Map(), alpha: new Map(), away: new Set() };
   for (const c of scene.clusters) {
     const end = input.toScreen(c.chip.x, c.chip.y);
     const r = dialChipRadiusPx(tokens, c.items.length, maxItems);
@@ -259,7 +262,9 @@ function restOf(input: LabelMarksInput): Rest {
     const grown = cur ? Math.min(1, cur.r / Math.max(1e-6, r)) : 0;
     const moved = cur ? travelled(cur, centre, end, centre) : 0;
     rest.alpha.set(c.domainId, nameAlpha(grown, moved));
-    if (!capsDrawn) continue;
+    const reach = c.footprint * input.scale + REST_REACH_PX;
+    if (end.x + reach < f.minX || end.x - reach > f.maxX || end.y + reach < f.minY || end.y - reach > f.maxY) rest.away.add(c.domainId);
+    if (!capsDrawn || rest.away.has(c.domainId)) continue;
     for (const it of c.items) {
       const p = input.toScreen(it.x, it.y);
       const d = input.discs.get(it.id);
@@ -364,6 +369,7 @@ function domainNames(ctx: Ctx): void {
   const centre = input.hub ?? input.toScreen(0, 0);
   for (const cluster of clusterOrder(input)) {
     const id = cluster.domainId;
+    if (ctx.rest.away.has(id)) continue;
     const chip = ctx.rest.chips.get(id)!;
     const block = domainLabelBlock(id, input.model, input.labels, input.evidence, input.measureText, input.tokens);
     const reach = nameReach(ctx, cluster, chip);
