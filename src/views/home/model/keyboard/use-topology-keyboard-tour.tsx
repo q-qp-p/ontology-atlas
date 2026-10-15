@@ -11,6 +11,7 @@ import { type ProjectImpactMode } from "@/entities/project";
 import { useFirstRunSampleModeSettled } from "@/features/first-run-starter";
 import { canAutoStartGuidedTour, readGuideAutoStart, readGuidedTourStatus, resolveAnchorRect, useGuidedTour, useGuidedTourAutoStartReady, useRegisterGuideReplay, watchGuidedTourAutoStartCancel, type TourAnchor } from "@/features/guided-tour";
 import { useClaimShellKey } from "@/shared/lib/keyboard/shell-key-claims";
+import { useView3d } from "@/shared/lib/preferences/appearance-preferences";
 import { derivedHook } from "@/shared/lib/derived-hook";
 import { useTypingShortcuts } from "@/shared/lib/keyboard/use-typing-shortcut";
 import { useCallback, useEffect, useEffectEvent, useRef } from "react";
@@ -91,6 +92,7 @@ export function useTopologyKeyboardTour({
     setSelectedRelationActive, setNodePopoverDismissed
   } = topologyCanvasFocus;
   const { nodePopoverVisible } = topologyInspectorState;
+  const view3d = useView3d();
   const { handleExitRealm } = topologyRouteControls;
   const { routedConstellation, setActiveConstellation } = topologyExplorationLenses;
   const { agentDockOpen } = topologyAgentOrchestration;
@@ -197,7 +199,7 @@ export function useTopologyKeyboardTour({
       fullDetailOpen,
       selectedRelationActive,
       hasSelection: canvasSelectedSlug != null,
-      nodePopoverOpen: nodePopoverVisible,
+      nodePopoverOpen: view3d && nodePopoverVisible,
       hasLocalGraphRoot: localGraphRoot !== null,
     });
     // Inside a realm, Escape returns to the whole map before anything else.

@@ -622,7 +622,7 @@ export function OntologyMap(props: OntologyMapProps) {
     role={canvasLabel ? "group" : undefined} aria-label={canvasLabel} tabIndex={canvasLabel ? 0 : undefined}
     // `cursor-grab` must be a class, not an inline style: an inline default is erased by `style.cursor
     // = ""` when a drag ends, while the class restores `grab` by cascade.
-    className="cursor-grab outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--color-indigo-focus-ring)] data-[keyboard-focus=true]:outline-2 data-[keyboard-focus=true]:outline-solid data-[keyboard-focus=true]:-outline-offset-2 data-[keyboard-focus=true]:outline-[color:var(--color-indigo-focus-ring)]" style={{
+    className="cursor-grab outline-none data-[keyboard-focus=true]:outline-2 data-[keyboard-focus=true]:outline-solid data-[keyboard-focus=true]:-outline-offset-2 data-[keyboard-focus=true]:outline-[color:var(--color-indigo-focus-ring)]" style={{
             display: "block",
             width: "100%",
             height: "100%",
@@ -633,7 +633,10 @@ export function OntologyMap(props: OntologyMapProps) {
         }} onPointerDown={(event) => {
             delete event.currentTarget.dataset.keyboardFocus;
             handlePointerDown(event);
-        }} onBlur={(event) => { delete event.currentTarget.dataset.keyboardFocus; }} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerCancel} onPointerLeave={handlePointerLeave} onContextMenu={handleContextMenu}
+        }}
+    // Decided once, as focus arrives: a key pressed on a canvas a click focused must not draw the frame.
+    onFocus={(event) => { if (event.currentTarget.matches(":focus-visible")) event.currentTarget.dataset.keyboardFocus = "true"; }}
+    onBlur={(event) => { delete event.currentTarget.dataset.keyboardFocus; }} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerCancel} onPointerLeave={handlePointerLeave} onContextMenu={handleContextMenu}
     onKeyDown={handleKeyDown}/>
       {/* The S4 orbit "expand" button — anchored to canvas coordinates (the loop
                   refreshes the transform every frame). Hidden by default; shown only when the

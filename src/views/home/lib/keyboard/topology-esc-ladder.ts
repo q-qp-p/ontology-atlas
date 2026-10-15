@@ -32,8 +32,7 @@ export interface TopologyEscLadderInput {
   selectedRelationActive: boolean;
   hasSelection: boolean;
   /**
-   * Escape#1 closes only the popover and keeps ego focus; Escape#2 then deselects.
-   * False for a selected project or a dismissed popover, which deselect in one press.
+   * The 3D dome only: Escape#1 folds the popover, keeping ego focus; Escape#2 deselects.
    */
   nodePopoverOpen: boolean;
   hasLocalGraphRoot: boolean;
