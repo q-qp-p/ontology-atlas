@@ -379,7 +379,7 @@
    * header, meta bar and outline rail all derive from it. Spent at `--text-reading`, 66 steps give
    * 629px (86 Latin characters, 46 Hangul).
    */
-  --measure-prose-steps: 66;
+  --measure-prose-steps: 66; /* 78 from 1536px */
   /*
    * Advance of the digit `0` in Pretendard Variable, in `em`. **Measured**, not chosen:
    * `"0".repeat(100)` in the built export divided by 100 gives 9.531px at the 16px root.

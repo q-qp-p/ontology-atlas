@@ -26,12 +26,20 @@ export function useOutlineRailFit(): {
     rootProbeRef.current?.remove();
     rootProbeRef.current = null;
     if (!node) return;
+    // A hidden probe wearing the column token follows text zoom and the wide-window measure.
+    const columnProbe = document.createElement("span");
+    columnProbe.setAttribute("aria-hidden", "true");
+    columnProbe.dataset.atlasRootSizeProbe = "";
+    columnProbe.style.cssText =
+      "position:absolute;left:0;top:0;width:var(--measure-doc-column);height:1rem;visibility:hidden;pointer-events:none";
+    document.body.appendChild(columnProbe);
+    rootProbeRef.current = columnProbe;
     const apply = () => {
-      // The column is rem-derived and moves with text-only zoom, so the pane and the column are
-      // read at the same moment.
+      // An unlaid-out probe (test renderer) falls back to the root-derived column.
+      const rendered = columnProbe.getBoundingClientRect().width;
       const next = resolveOutlineRailFit(
         node.getBoundingClientRect().width,
-        docColumnPxAtRoot(rootFontPx()),
+        rendered > 0 ? rendered : docColumnPxAtRoot(rootFontPx()),
       );
       setFit((current) => (current === next ? current : next));
     };
@@ -39,16 +47,7 @@ export function useOutlineRailFit(): {
     if (typeof ResizeObserver === "undefined") return;
     const observer = new ResizeObserver(apply);
     observer.observe(node);
-    // A hidden 1rem probe on `document.body` catches font-size changes the pane width cannot show;
-    // outside React's tree and the accessibility tree.
-    const rootProbe = document.createElement("span");
-    rootProbe.setAttribute("aria-hidden", "true");
-    rootProbe.dataset.atlasRootSizeProbe = "";
-    rootProbe.style.cssText =
-      "position:absolute;left:0;top:0;width:1rem;height:1rem;visibility:hidden;pointer-events:none";
-    document.body.appendChild(rootProbe);
-    observer.observe(rootProbe);
-    rootProbeRef.current = rootProbe;
+    observer.observe(columnProbe);
     observerRef.current = observer;
   }, []);
 
