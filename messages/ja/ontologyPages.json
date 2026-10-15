@@ -506,7 +506,8 @@
         "dated": "ソース日付を比較済み・意味は未検証",
         "unknown": "ソースの現在の状態は未確認"
       },
-      "declarationCompact": "宣言{count}件",
+      "declarationsInView": "この図で{count}件",
+      "declarationPage": "{from}–{to} / {total}",
       "documentTitle": "分析 · Ontology Atlas",
       "findConnection": "関係を検索",
       "findCapability": "能力を検索",

@@ -506,7 +506,8 @@
         "dated": "소스 날짜 비교됨 · 의미는 미검증",
         "unknown": "이 주장의 소스 상태 미확인"
       },
-      "declarationCompact": "선언 {count}개",
+      "declarationsInView": "이 그림에서 {count}개",
+      "declarationPage": "{from}–{to} / {total}",
       "documentTitle": "분석 · Ontology Atlas",
       "findConnection": "연결 찾기",
       "findCapability": "역량 찾기",

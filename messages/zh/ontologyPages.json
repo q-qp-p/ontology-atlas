@@ -506,7 +506,8 @@
         "dated": "已比较源码日期，含义未验证",
         "unknown": "尚未检查源码当前状态"
       },
-      "declarationCompact": "{count} 条声明",
+      "declarationsInView": "此图中 {count} 条",
+      "declarationPage": "{from}–{to} / {total}",
       "documentTitle": "分析 · Ontology Atlas",
       "findConnection": "查找关系",
       "findCapability": "查找能力",

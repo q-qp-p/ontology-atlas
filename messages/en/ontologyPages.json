@@ -506,7 +506,8 @@
         "dated": "Source dates compared; meaning unverified",
         "unknown": "Source currentness not checked"
       },
-      "declarationCompact": "{count} declarations",
+      "declarationsInView": "{count} in this drawing",
+      "declarationPage": "{from}–{to} / {total}",
       "documentTitle": "Analysis · Ontology Atlas",
       "findConnection": "Search connections",
       "findCapability": "Search capabilities",

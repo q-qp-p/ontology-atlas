@@ -18,7 +18,8 @@ import { filterAnalysisItems, visibleAnalysisItems } from '../../lib/analysis-se
 import { buildAnalysisModel, type AnalysisClaim } from '../../lib/analysis-model';
 import { PairRail } from './PairRail';
 import { AnalysisListSearch } from './AnalysisListSearch';
-import { DependencyDiagram } from './DependencyDiagram';
+import { DependencyDiagram, declarationNumeral } from './DependencyDiagram';
+import { orderDeclarations } from './declaration-layout';
 import { ImplementationDiagram } from './ImplementationDiagram';
 import styles from './analysis.module.css';
 
@@ -47,7 +48,8 @@ export function AnalysisWorkspace({ agentReady, onInspect, active, nodes, edges,
   const pendingEdgeFocus = useRef(Boolean(initialEdge && model.pairs.some(item => item.edges.some(edge => edge.id === initialEdge))));
   const [onlyGaps, setOnlyGaps] = useState(initialQuestion === 'evidence' && !initialClaim);
   const pair = model.pairs.find(candidate => candidate.id === pairId) ?? model.pairs[0] ?? null;
-  const edge = pair?.edges.find(candidate => candidate.id === edgeId) ?? pair?.edges[0] ?? null;
+  const declarations = useMemo(() => pair ? orderDeclarations(pair.edges) : [], [pair]);
+  const edge = pair?.edges.find(candidate => candidate.id === edgeId) ?? declarations[0] ?? null;
   const candidates = onlyGaps ? model.gaps : model.claims;
   const filteredClaims = useMemo(() => filterAnalysisItems(candidates, claimQuery, item => [name(item.node), item.node.title]), [candidates, claimQuery]);
   const claim = candidates.find(candidate => candidate.node.id === claimId) ?? candidates[0] ?? null;
@@ -63,6 +65,7 @@ export function AnalysisWorkspace({ agentReady, onInspect, active, nodes, edges,
   const missingSelection = Boolean(initialClaim && !model.claims.some(item => item.node.id === initialClaim) || initialEdge && !model.pairs.some(item => item.edges.some(candidate => candidate.id === initialEdge)));
   const project = model.projects.length === 1 ? model.projects[0] : null;
   const scopeName = project ? name(project) : mode === 'local' && vault.handle ? vault.handle.name : t('scopeAll');
+  const selectionKey = evidenceQuestion ? `claim:${claim?.node.id ?? ''}` : `edge:${edge?.id ?? ''}`;
   const visibleClaims = visibleAnalysisItems(filteredClaims, claimLimit, claim?.node.id ?? null, item => item.node.id);
   useLayoutEffect(() => {
     if (!evidenceQuestion && pendingEdgeFocus.current) {
@@ -115,13 +118,12 @@ export function AnalysisWorkspace({ agentReady, onInspect, active, nodes, edges,
         <Disclosure summary={t('countBasis')}><p className="text-body leading-prose text-[color:var(--color-text-secondary)]">{t('countDetails', { total: model.dependencyCount, cross: model.crossCount, internal: model.internal, unassigned: model.unassigned })}</p><p className="mt-3 text-body leading-prose text-[color:var(--color-text-secondary)]">{t('inspectionBasis', { inspected: model.inspected, total: model.claims.length })}</p><div className="mt-3 flex flex-wrap gap-3">{relationTypes.map(row => <span key={row.type} className="text-label text-[color:var(--color-text-tertiary)]">{relationLabel(row.type)} · {row.count}</span>)}</div></Disclosure>
       </div>
       <aside className={styles.inspector} data-testid="analysis-evidence">
-        <div className={styles.evidenceHeading}><p className="text-label text-[color:var(--color-text-tertiary)]">{t('evidenceChain')}</p><h3 className="mt-2 text-title font-[var(--font-weight-strong)]">{!evidenceQuestion && edge ? name(model.byId.get(edge.from)!) : claim ? name(claim.node) : t('noClaim')}</h3>{!evidenceQuestion && edge ? <p className="mt-1 text-body text-[color:var(--color-text-secondary)]">→ {name(model.byId.get(edge.to)!)}</p> : null}<p data-testid="analysis-source-status" className="mt-3 text-label text-[color:var(--color-text-tertiary)]">{sourceCaption}</p>{mode === 'local' ? <SourceDateRecovery status={source.status} onChoose={source.chooseSourceFolder} onRetry={source.retry} /> : null}</div>
-        {!evidenceQuestion && edge ? <>
+        <div className={styles.evidenceHeading}><div key={selectionKey} className="insights-disclosure-in"><p className="text-label text-[color:var(--color-text-tertiary)]">{!evidenceQuestion && edge ? <><span className="font-mono">{declarationNumeral(declarations.findIndex(candidate => candidate.id === edge.id))}</span> · </> : null}{t('evidenceChain')}</p><h3 className="mt-2 text-title font-[var(--font-weight-strong)]">{!evidenceQuestion && edge ? name(model.byId.get(edge.from)!) : claim ? name(claim.node) : t('noClaim')}</h3>{!evidenceQuestion && edge ? <p className="mt-1 text-body text-[color:var(--color-text-secondary)]">→ {name(model.byId.get(edge.to)!)}</p> : null}</div><p data-testid="analysis-source-status" className="mt-3 text-pretty text-body text-[color:var(--color-text-tertiary)]">{sourceCaption}</p>{mode === 'local' ? <SourceDateRecovery status={source.status} onChoose={source.chooseSourceFolder} onRetry={source.retry} /> : null}</div>
+        {!evidenceQuestion && edge ? <div key={selectionKey} className="insights-disclosure-in">
           <div className={styles.documentStep}>{declaringDocs.map(doc => <div key={doc.slug}><Link href={href(doc.slug)} className={controlClass({ hoverSurface: 'lift', shape: 'card', size: 'lg', tone: 'accent', className: 'atlas-touch-floor w-full justify-between' })}>{t('openDeclaration')}</Link><p className="mt-2 break-all text-label text-[color:var(--color-text-tertiary)]">{doc.path}</p></div>)}{!declaringDocs.length ? <p className="text-body">{t('documentMissing')}</p> : null}</div>
           <div className={styles.evidenceStep}><span className={styles.stepLabel}>{t('why')}</span><p className="mt-2 text-body leading-prose">{edge.label || t('rationaleShort')}</p>{!edge.label ? <p className="mt-2 text-label text-[color:var(--color-text-tertiary)]">{t('readBeforeRelying')}</p> : null}</div>
           <div className={styles.evidenceStep}><span className={styles.stepLabel}>{t('implementation')}</span>{implementationClaim?.roles.length ? implementationClaim.roles.slice(0, 3).map(role => <p key={role.id} className="mt-2 flex items-center gap-2 text-body"><OntologyMapKindGlyph kind="element" size={14} />{name(role)}</p>) : <p className="mt-2 text-body text-[color:var(--color-text-secondary)]">{implementationClaim?.paths[0] ?? t('anchorMissing')}</p>}{implementationClaim && implementationClaim.roles.length > 3 ? <p className="mt-2 text-label text-[color:var(--color-text-tertiary)]">{t('moreRoles', { count: implementationClaim.roles.length - 3 })}</p> : null}{implementationClaim ? <Button variant="ghost" size="sm" className="atlas-touch-floor mt-2" data-testid="analysis-open-implementation" onClick={inspectImplementation}>{t('inspectImplementation')}</Button> : null}</div>
-
-        </> : claim ? <><ClaimEvidence claim={claim} href={href} local={mode === 'local'} /><p className="mt-4 text-body text-[color:var(--color-text-secondary)]">{t(`sourceClaim.${source.evidence?.missing.has(claim.node.id) ? 'missing' : source.evidence?.stale.has(claim.node.id) ? 'moved' : source.evidence?.current.has(claim.node.id) ? 'dated' : 'unknown'}`)}</p>{source.evidence?.rows.filter(row => row.id === claim.node.id).flatMap(row => [...row.gone, ...row.moved.map(file => `${file.path} · ${file.changedAt}`)]).map(path => <p key={path} className="mt-2 break-all text-label text-[color:var(--color-text-tertiary)]">{path}</p>)}</> : null}
+        </div> : claim ? <><ClaimEvidence claim={claim} href={href} local={mode === 'local'} /><p className="mt-4 text-body text-[color:var(--color-text-secondary)]">{t(`sourceClaim.${source.evidence?.missing.has(claim.node.id) ? 'missing' : source.evidence?.stale.has(claim.node.id) ? 'moved' : source.evidence?.current.has(claim.node.id) ? 'dated' : 'unknown'}`)}</p>{source.evidence?.rows.filter(row => row.id === claim.node.id).flatMap(row => [...row.gone, ...row.moved.map(file => `${file.path} · ${file.changedAt}`)]).map(path => <p key={path} className="mt-2 break-all text-label text-[color:var(--color-text-tertiary)]">{path}</p>)}</> : null}
         {selectedNodes.length ? <div className={styles.inspectAction}>
           {mode === 'local' && inspection.runnable && agentReady ? <Button data-testid="analysis-inspect-selected" variant="outline" size="sm" className="atlas-touch-floor" onClick={() => onInspect(inspection.text)}>{t('inspectSelected')}</Button> : null}
           <CopyAgentTextButton key={inspection.text} testId="analysis-copy-selected" compact label={t(mode === 'static' ? 'copySampleFact' : 'copySelectedCheck')} copiedLabel={t('copiedSelected')} text={inspection.text} />
