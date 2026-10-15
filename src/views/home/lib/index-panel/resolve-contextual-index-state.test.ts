@@ -4,6 +4,9 @@ import { resolveContextualIndexState } from "./resolve-contextual-index-state";
 const resting = {
   baseState: "expanded" as const,
   meaningEditorOpen: false,
+  selectionActive: false,
+  selectionManualExpand: false,
+  selectionKeepsIndex: false,
   graphEmpty: false,
   emptyManualExpand: false,
   agentDockOpen: false,
@@ -29,6 +32,16 @@ describe("resolveContextualIndexState", () => {
         agentDockOpen: false,
       }),
     ).toBe("collapsed");
+  });
+
+  it("folds for a selection outside wide Flat, and keeps INDEX for a selection on wide Flat", () => {
+    expect(resolveContextualIndexState({ ...resting, selectionActive: true })).toBe("collapsed");
+    expect(
+      resolveContextualIndexState({ ...resting, selectionActive: true, selectionManualExpand: true }),
+    ).toBe("expanded");
+    expect(
+      resolveContextualIndexState({ ...resting, selectionActive: true, selectionKeepsIndex: true }),
+    ).toBe("expanded");
   });
 
   it("keeps the empty-graph and editor demotions", () => {

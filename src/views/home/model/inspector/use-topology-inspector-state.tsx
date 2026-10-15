@@ -212,7 +212,6 @@ export function useTopologyInspectorState({
       : selectedSlug
         ? "compact-focus"
         : "visible";
-  // Never a selection: a click must not re-lay out the toolbar.
   const topologyUtilityChromeCompact = reviewUsesSheet || agentDockRequestedOpen;
   // See `search-lane-density.ts` for the measured band.
   const searchLaneCrowded = isSearchLaneCrowded({
