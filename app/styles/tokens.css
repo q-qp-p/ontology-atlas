@@ -22,11 +22,10 @@
   /* Text */
   --color-text-primary: #f7f8f8;
   --color-text-secondary: #d0d6e0;
-  --color-text-tertiary: #8a8f98;
+  --color-text-tertiary: #9a9fa8;
   /*
-   * Minimum luminance above 4.5:1 on elevated (#828282 gives 4.54), keeping the gap to tertiary. Valid
-   * on static achromatic backgrounds up to overlay-1; above that use tertiary. Gates:
-   * `tests/contract/design-tokens/quaternary-ink-surface.contract.test.ts`, `tests/e2e/design-audits/a11y-open-surfaces.spec.ts`.
+   * Ink for 12.5 px and up only, on backgrounds up to overlay-1 (4.5:1); smaller or raised text uses
+   * tertiary (7:1). Gate: `tests/contract/design-tokens/quaternary-ink-surface.contract.test.ts`.
    */
   --color-text-quaternary: #82828a;
   /*

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 import ts from "typescript";
@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import { composite, contrastRatio, parseColor } from "../../../scripts/lib/design/contrast.mjs";
 import { readGlobalCss } from '../../../scripts/lib/design/global-css.mjs';
 import { classNameOf, readClassSource, stringsOf } from "../lib/jsx-class-source";
+import { judgeRatchet } from "../lib/ratchet-base";
 
 /**
  * Quaternary ink is licensed only up to static neutral backgrounds (the three base steps plus a single
@@ -187,5 +188,54 @@ describe("spots caught by measurement do not go back — architecture profile ro
     expect(scopeLine, "could not find the profile scope row — find the assertion target again").toBeDefined();
     expect(scopeLine?.classText).toContain("--color-text-tertiary");
     expect(scopeLine?.classText).not.toContain("--color-text-quaternary");
+  });
+});
+
+describe("quaternary ink is a 12.5 px and up ink — small-text ratchet", () => {
+  const FALLBACK_CEILING = 467;
+  const QUATERNARY = /text-\[color:var\(--color-text-quaternary\)\]/;
+  const SMALL =
+    /(?<![\w-])text-(?:caption|label)(?![\w-])|text-\[(?:9\.5|10|10\.5|11)px\]|text-\[length:var\(--[\w-]*(?:label|caption)[\w-]*\)\]/;
+
+  const walk = (dir: string, out: string[] = []): string[] => {
+    if (!existsSync(dir)) return out;
+    for (const name of readdirSync(dir)) {
+      const p = join(dir, name);
+      if (statSync(p).isDirectory()) {
+        if (name !== "node_modules" && name !== ".next") walk(p, out);
+      } else if (/\.tsx$/.test(name) && !/\.(test|spec)\./.test(name)) out.push(p);
+    }
+    return out;
+  };
+
+  const count = (text: string, rel = "probe.tsx") =>
+    readJsx(rel, text).filter((fact) => QUATERNARY.test(fact.classText) && SMALL.test(fact.classText)).length;
+
+  const census = (root: string) => {
+    let total = 0;
+    for (const dir of ["src", "app"]) {
+      for (const file of walk(join(root, dir))) total += count(readFileSync(file, "utf8"), file);
+    }
+    return total;
+  };
+
+  it("probe: a quaternary ink on a caption or label step is counted", () => {
+    const small = '<span className="text-caption text-[color:var(--color-text-quaternary)]" />';
+    const body = '<span className="text-body text-[color:var(--color-text-quaternary)]" />';
+    expect(count(`export const A = () => ${small};`)).toBe(1);
+    expect(count(`export const A = () => ${body};`)).toBe(0);
+  });
+
+  it("does not grow", () => {
+    const verdict = judgeRatchet({
+      gate: "quaternary-small-text",
+      measure: (root) => census(root),
+      reads: ["src", "app"],
+      fallback: FALLBACK_CEILING,
+    });
+    expect(
+      verdict.current,
+      `Quaternary ink on caption or label text reached ${verdict.current}, over ${verdict.ceiling}.\n${verdict.explain}\nText at 11 px and below starts at tertiary (7:1).`,
+    ).toBeLessThanOrEqual(verdict.ceiling);
   });
 });
