@@ -40,15 +40,31 @@ for (const route of ROUTES) {
   }
 }
 
-test("changelog entries list date then version on one line each, never a stray separator", async ({ page }) => {
+test("changelog entries list version then title on one line each, the full title on hover, no date", async ({ page }) => {
   await page.setViewportSize({ width: 1512, height: 900 });
   await page.goto("/ko/changelog/?guides=off", { waitUntil: "domcontentloaded" });
   const entries = page.locator('[data-testid^="entry-nav-"]');
-  const lines = await entries.allTextContents();
-  expect(lines.length, "found no entries; the check would idle").toBeGreaterThan(3);
-  expect(lines.filter((line) => !/^\d{4}-\d{2}-\d{2} · [^\s·—–-]/u.test(line))).toEqual([]);
-  const heights = await entries.evaluateAll((links) => links.map((a) => Math.round(a.getBoundingClientRect().height)));
-  expect(new Set(heights).size, `entry heights ${heights.join(",")}`).toBe(1);
+  const rows = await entries.evaluateAll((links) =>
+    links.map((a) => {
+      const subject = a.lastElementChild as HTMLElement;
+      return {
+        text: (a.textContent ?? "").trim(),
+        version: a.children.length > 1 ? (a.firstElementChild?.textContent ?? "") : null,
+        title: a.getAttribute("title") ?? "",
+        subject: subject.textContent ?? "",
+        height: Math.round(a.getBoundingClientRect().height),
+        top: Math.round(a.getBoundingClientRect().top),
+      };
+    }),
+  );
+  expect(rows.length, "found no entries; the check would idle").toBeGreaterThan(3);
+  expect(rows.filter((row) => /^\d{4}-\d{2}-\d{2}/u.test(row.text) || /^[\s·—–:-]/u.test(row.subject))).toEqual([]);
+  expect(rows.filter((row) => row.text !== (row.version ? `${row.version} ${row.subject}` : row.subject))).toEqual([]);
+  expect(rows.filter((row) => row.version !== null).length, "no entry carried a version").toBeGreaterThan(0);
+  expect(rows.filter((row) => row.title !== row.subject)).toEqual([]);
+  expect(new Set(rows.map((row) => row.height)).size, `entry heights ${rows.map((row) => row.height).join(",")}`).toBe(1);
+  const pitches = new Set(rows.slice(1).map((row, i) => row.top - rows[i]!.top));
+  expect([...pitches], "one pitch down the list").toHaveLength(1);
 });
 
 /* The table of contents starts on the brand's line at every width. */

@@ -559,7 +559,7 @@ function GuideChapterPicker({ activeSegment }: { activeSegment?: string }) {
 }
 
 /**
- * The changelog's entry list, date first. Anchors, not routes: the changelog is one flow, and
+ * The changelog's entry list, version then title; the date stays in the entry. Anchors, not routes: the changelog is one flow, and
  * `<a href="#…">` gives back, shareable addresses and no-JS behaviour for free.
  */
 function EntrySidebar({ entries }: { entries: DocEntry[] }) {
@@ -580,12 +580,14 @@ function EntrySidebar({ entries }: { entries: DocEntry[] }) {
             <li key={entry.id}>
               <a
                 href={`#${entry.id}`}
-                aria-label={normalizeHeadingKey(entry.heading)}
+                title={entry.subject}
                 data-testid={`entry-nav-${entry.id}`}
-                className={controlClass({ shape: "row", size: "sm", className: "block truncate font-mono leading-label text-[color:var(--color-text-tertiary)] hover:bg-[color:var(--color-elevated)]" })}
+                className={controlClass({ shape: "row", size: "sm", className: "gap-2 text-[color:var(--color-text-tertiary)] hover:bg-[color:var(--color-elevated)]" })}
               >
-                {entry.date ? <span className="text-[color:var(--color-text-quaternary)]">{`${entry.date} · `}</span> : null}
-                {entry.version ?? entry.title}
+                {entry.version ? (
+                  <span className="shrink-0 font-mono text-[color:var(--color-text-quaternary)]">{entry.version}</span>
+                ) : null}{' '}
+                <span className="min-w-0 truncate">{entry.subject}</span>
               </a>
             </li>
           ))}
