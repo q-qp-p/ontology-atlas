@@ -468,7 +468,7 @@ function DomainGroup(props: RowProps) {
         {told ? <path data-role-connection="told" d={topPath} /> : <path data-role-connection-empty="told" data-empty d={topPath} />}
       </svg>
       <div className={styles.domainHeading} data-domain-heading>
-        <h4 className={styles.domainName}>{area.title}</h4>
+        <h3 className={styles.domainName}>{area.title}</h3>
         {/* The domain's purpose makes a zero readable ("this area does X and nothing checks it"); the full sentence stays
            in the text reading. */}
         {area.purpose ? <p className={styles.domainPurpose} title={area.purpose}>{area.purpose}</p> : null}
@@ -491,7 +491,7 @@ function TextDomainRow(props: RowProps) {
   return (
     <section className={styles.textRow} data-testid={`harness-text-domain-${area.slug}`}>
       <div className="min-w-0">
-        <h4 className="break-words text-body-lg font-[var(--font-weight-emphasis)] text-[color:var(--color-text-primary)]">{area.title}</h4>
+        <h3 className="break-words text-body-lg font-[var(--font-weight-emphasis)] text-[color:var(--color-text-primary)]">{area.title}</h3>
         <p className="mt-1 break-words text-label text-[color:var(--color-text-tertiary)]">{area.purpose}</p>
       </div>
       {(['told', 'gated', 'watched'] as const).map((column) => <RoleChip key={column} {...props} column={column} />)}
@@ -515,7 +515,7 @@ function CollectionEvidence({ selection, evidence, drift, contentId, onClose }: 
   return (
     <div id={contentId} className="flex min-h-0 min-w-0 flex-1 flex-col" data-testid="harness-collection-evidence" data-collection-kind={selection.kind}>
       <div className="sticky top-0 z-10 flex flex-none items-start justify-between gap-4 border-b border-[color:var(--color-divider)] bg-[color:var(--color-elevated)] px-4 py-3">
-        <div className="min-w-0"><p className="text-label text-[color:var(--color-text-quaternary)]">{t('collection.eyebrow')}</p><h4 id={headingId} className="mt-1 break-words text-title font-[var(--font-weight-strong)] text-[color:var(--color-text-primary)]">{title}</h4></div>
+        <div className="min-w-0"><p className="text-label text-[color:var(--color-text-quaternary)]">{t('collection.eyebrow')}</p><h3 id={headingId} className="mt-1 break-words text-title font-[var(--font-weight-strong)] text-[color:var(--color-text-primary)]">{title}</h3></div>
         <Button variant="ghost" size="sm" onClick={onClose}>{t('close')}</Button>
       </div>
       <div tabIndex={0} role="region" aria-labelledby={headingId} className="min-h-0 flex-1 overflow-y-auto px-4 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color:var(--color-indigo-focus-ring)]" data-testid="harness-collection-scroll-body">
@@ -560,7 +560,7 @@ function RoleEvidence({ area, column, evidence, contentId, onClose }: { area: Ar
       <div className="sticky top-0 z-10 flex flex-none items-start justify-between gap-4 border-b border-[color:var(--color-divider)] bg-[color:var(--color-elevated)] px-4 py-3">
         <div className="min-w-0">
           <p className="text-label text-[color:var(--color-text-quaternary)]">{t(`role.${column}`)}</p>
-          <h4 id={headingId} className="mt-1 text-title font-[var(--font-weight-strong)] text-[color:var(--color-text-primary)]">{area.title}</h4>
+          <h3 id={headingId} className="mt-1 text-title font-[var(--font-weight-strong)] text-[color:var(--color-text-primary)]">{area.title}</h3>
         </div>
         <Button variant="ghost" size="sm" onClick={onClose}>{t('close')}</Button>
       </div>

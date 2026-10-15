@@ -718,7 +718,7 @@ test.describe("harness tab", () => {
       await expect(textMode).toBeFocused();
       const textRows = overview.locator('[data-testid^="harness-text-domain-"]');
       await expect(textRows).toHaveCount(8);
-      expect(await textRows.evaluateAll((rows) => rows.map((row) => ({ name: row.querySelector('h4')?.textContent, roles: [...row.querySelectorAll<HTMLElement>('[data-role]')].map((role) => ({ role: role.dataset.role, count: role.textContent?.match(/\d+/)?.[0] })) })))).toEqual(diagramFacts);
+      expect(await textRows.evaluateAll((rows) => rows.map((row) => ({ name: row.querySelector('h3')?.textContent, roles: [...row.querySelectorAll<HTMLElement>('[data-role]')].map((role) => ({ role: role.dataset.role, count: role.textContent?.match(/\d+/)?.[0] })) })))).toEqual(diagramFacts);
       const trigger = textRows.first().locator('[data-role][data-state="filled"]').first();
       await trigger.click();
       const surface = reducedPage.getByTestId('harness-role-popup');

@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 for (const subject of [
-  { tab: 'library', panel: 'library-tab', destination: '/en/library/' },
-  { tab: 'harness', panel: 'harness-tab', destination: '/en/architecture/?view=guides' },
+  { tab: 'library', panel: 'library-tab', destination: '/en/library/', back: 3 },
+  { tab: 'harness', panel: 'harness-tab', destination: '/en/architecture/?view=guides', back: 4 },
 ]) {
   test(`${subject.tab} examples reveal setup by keyboard and keep the next step reversible`, async ({ page }) => {
     await page.setViewportSize({ width: 1040, height: 720 });
@@ -32,7 +32,7 @@ for (const subject of [
     await selected.press('Space');
     await expect(selected).toHaveAttribute('aria-expanded', 'true');
     await expect(next).toBeVisible();
-    for (let step = 0; step < 6 && !(await next.evaluate(node => node === document.activeElement)); step += 1) await page.keyboard.press('Shift+Tab');
+    for (let step = 0; step < subject.back; step += 1) await page.keyboard.press('Shift+Tab');
     await expect(next).toBeFocused();
     await page.keyboard.press('Enter');
     await expect.poll(() => new URL(page.url()).pathname + new URL(page.url()).search).toBe(subject.destination);

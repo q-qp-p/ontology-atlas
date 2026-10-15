@@ -35,12 +35,16 @@ export function lineTotal(core: BriefCore, line: BriefLine): number | null {
     case 'harness-mirror-drift':
       return core.headline;
     case 'wiki-stale-pages':
-    case 'wiki-disagreements':
     case 'wiki-orphan-pages':
-    case 'wiki-dangling-links':
       return core.headline;
+    case 'ontology-evidence-moved':
+    case 'ontology-evidence-missing':
+    case 'ontology-evidence-folder-only':
+    case 'ontology-evidence-unchecked':
+    case 'ontology-agent-unreviewed':
+      return core.core === 'ontology' ? core.headline : null;
     default:
-      return core.core === 'ontology' && line.id !== 'ontology-changed-since' ? core.headline : null;
+      return null;
   }
 }
 
