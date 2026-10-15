@@ -8,7 +8,7 @@ routes: [/topology]
 
 # Flat dial
 
-At the overview, Flat is a dial (`src/widgets/ontology-map/dial/`). The project sits at the centre. Each domain stands on a ring by how many other domains depend on it: 32 or more, 16–31, 8–15, 4–7, 2–3 and 0–1, innermost the most depended on. A ring's range is written on its circle wherever a slot clear of lines and names is left. Around a ring, coupled domains are neighbours. A domain is drawn as its area; its capabilities appear around its chip once they have room on screen, and their elements after them. Names are whole or absent, never cut with "…". The decision is record `88b537fc` (2026-10-02).
+At the overview, Flat is a dial (`src/widgets/ontology-map/dial/`). The project sits at the centre. Each domain stands on a ring by how many other domains depend on it: 32 or more, 16–31, 8–15, 4–7, 2–3 and 0–1, innermost the most depended on. A ring's range is written on its circle wherever a slot clear of lines and names is left. Around a ring, coupled domains are neighbours. A domain is drawn as its area; its capabilities appear around its chip once they have room on screen, and their elements after them. Names are whole or absent, never cut with "…", drawn in the body typeface on the type ramp (project 16, domain 12.5, capability 11, element and ring captions 9.5, counts 11 with tabular figures), and every name and count stands on a cut-out of the ground, so rings and lines stop at its edge. The decision is record `88b537fc` (2026-10-02).
 
 The bottom corner has one passive scope line, without a generic legend or click invitation.
 Its count comes from graph membership, not visible marks or zoom: a full map shows its total,
@@ -21,15 +21,15 @@ are not authored ontology data. The frame meter remains opt-in.
 
 A line between two domains counts the `depends_on` relations (a concept's `dependencies` or `depends_on`) whose ends resolve to those two domains: a domain is itself, a capability its domain, an element its capability's domain or the domain that holds it. The count is per direction and equals what `query_ontology({operation:"domain_matrix", types:["depends_on"]})` reports for that pair (`tests/contract/analysis/domain-flow-parity.contract.test.ts`). Lines are counted aggregates, never bundles of individual relations. A pair joined only by `relates` draws a quiet line with no number.
 
-Links are counted between the deepest drawn ends: at the overview from domain to domain, and once a domain's capabilities are drawn, from capability to capability inside it. At rest at most 40 lines show (each end's strongest first, then the strongest of the rest, at most 6 per end once more than 12 ends show); the hidden ones still count in `__atlasMap.dial().budget`. The strongest few carry their number.
+Links are counted between the deepest drawn ends: at the overview from domain to domain, and once a domain's capabilities are drawn, from capability to capability inside it. An end must also carry a drawn name: a capability without one folds into its domain. At rest at most 40 lines show (each end's strongest first, then the strongest of the rest, at most 6 per end once more than 12 ends show); the hidden ones still count in `__atlasMap.dial().budget`. The strongest few carry their number.
 
 ## Focus
 
-Hovering or selecting a domain splits its lines by direction: **needs** (what it depends on) in indigo, **used by** (what depends on it) in the selected-edge ink, everything else receding to an opaque mix toward the canvas. Selecting a capability keeps only it, its needs and used-by capabilities, their chips and the hub. The inks crossfade over `--motion-fast` (at once with reduced motion), then one light runs per attended direction ([`light.md`](light.md)).
+Hovering changes ink only: every resting name and count keeps its place, the hovered mark's own name shows in the domain ink, and its links to the rest show as thin lines without numbers. Selecting a domain splits its lines by direction: **needs** (what it depends on) in indigo, **used by** (what depends on it) in the selected-edge ink, everything else receding to an opaque mix toward the canvas. Each named far domain then carries one count, 6 px beside its name in the stub's grammar (`→4 ←3`), never within 24 px of another count; lines to named capabilities stay thin and unnumbered. Selecting a capability keeps only it, its needs and used-by capabilities, their chips and the hub. The inks crossfade over `--motion-fast`, and a count that appears or changes fades in place over the same step (at once with reduced motion), then one light runs per attended direction ([`light.md`](light.md)).
 
 ## Zoom
 
-Detail follows screen room, not zoom history: the same camera scale gives the same marks. When one end of a line leaves the free map (the viewport less the open panels), the line ends in a named stub such as `Payments →3 ←2`. Zoomed into a domain whose capabilities cannot all be named in place, a **ledger** lists them whole in one column beside it, joined to their discs by leaders that never cross; past its capacity it ends with `+N more`. Ledger rows, discs, chips and the hub are pick targets; lines are not, so Flat at the overview has no edge pick or edge hover card (a realm keeps them).
+Detail follows screen room, not zoom history: the same camera scale gives the same marks. When one end of a line leaves the free map (the viewport less the open panels), the line ends in a named stub such as `Payments →3 ←2`; under a selection one stub per far end carries all of its counts. Zoomed into a domain whose capabilities cannot all be named in place, a **ledger** lists them whole in one column beside it, joined to their discs by leaders that never cross; past its capacity it ends with `+N more`. Ledger rows, discs, chips and the hub are pick targets; lines are not, so Flat at the overview has no edge pick or edge hover card (a realm keeps them).
 
 ## Lenses and realms
 
@@ -41,7 +41,7 @@ Ring radii, each domain's angle and each domain's capability order are remembere
 
 ## Evidence
 
-Evidence rims show only where evidence is measured: stale is amber, unknown is dashed, and a domain's units line adds "N stale".
+Evidence rims show where evidence is measured: stale is amber, unknown is dashed, and a domain's units line adds "N stale". When nothing was measured, every capability rim is dashed as unknown and a caption under the hub reads "Evidence not measured"; while the history is still being read, neither shows.
 
 ## Performance bars
 

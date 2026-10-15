@@ -1,4 +1,5 @@
 import { lerpColorHex } from "../../render/grid";
+import { TABULAR_DIGITS } from "../../render/labels";
 import { draw as drawNodeShape, type NodeShapeTokens } from "../../render/node-shapes";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
 import { mixOver } from "../ink";
@@ -157,28 +158,57 @@ function paintGlyph(ctx: CanvasRenderingContext2D, g: GlyphMark, map: OntologyMa
   }
 }
 
-function paintText(ctx: CanvasRenderingContext2D, t: Omit<TextMark, "role">, inks: readonly string[], halo: string | null): void {
+function paintText(ctx: CanvasRenderingContext2D, t: Omit<TextMark, "role">, inks: readonly string[], halo: string): void {
   ctx.font = t.font;
   ctx.textBaseline = "middle";
+  ctx.strokeStyle = halo;
   if (!t.parts) {
     ctx.textAlign = t.align;
-    if (halo) {
-      ctx.strokeStyle = halo;
-      ctx.strokeText(t.text, t.x, t.y);
-    }
+    ctx.strokeText(t.text, t.x, t.y);
     ctx.fillStyle = inks[t.ink]!;
     ctx.fillText(t.text, t.x, t.y);
     return;
   }
   const widths = t.parts.map((p) => ctx.measureText(p.text).width);
   const total = widths.reduce((a, b) => a + b, 0);
-  let x = t.align === "center" ? t.x - total / 2 : t.align === "right" || t.align === "end" ? t.x - total : t.x;
+  const left = t.align === "center" ? t.x - total / 2 : t.align === "right" || t.align === "end" ? t.x - total : t.x;
+  const xs = widths.map((_, i) => left + widths.slice(0, i).reduce((a, b) => a + b, 0));
   ctx.textAlign = "left";
+  t.parts.forEach((p, i) => ctx.strokeText(p.text, xs[i]!, t.y));
   t.parts.forEach((p, i) => {
     ctx.fillStyle = inks[p.ink]!;
-    ctx.fillText(p.text, x, t.y);
-    x += widths[i]!;
+    ctx.fillText(p.text, xs[i]!, t.y);
   });
+}
+
+const digitCells = new Map<string, number>();
+
+function tabularText(ctx: CanvasRenderingContext2D, parts: readonly { text: string; ink: string }[], x: number, y: number, mode: "stroke" | "fill"): void {
+  let cell = digitCells.get(ctx.font);
+  if (cell === undefined) digitCells.set(ctx.font, (cell = Math.max(...[...TABULAR_DIGITS].map((d) => ctx.measureText(d).width))));
+  const advance = (ch: string) => (TABULAR_DIGITS.includes(ch) ? cell! : ctx.measureText(ch).width);
+  let cursor = x - parts.reduce((sum, p) => sum + [...p.text].reduce((w, ch) => w + advance(ch), 0), 0) / 2;
+  ctx.textAlign = "center";
+  for (const p of parts) {
+    if (mode === "fill") ctx.fillStyle = p.ink;
+    for (const ch of p.text) {
+      const w = advance(ch);
+      if (mode === "fill") ctx.fillText(ch, cursor + w / 2, y);
+      else ctx.strokeText(ch, cursor + w / 2, y);
+      cursor += w;
+    }
+  }
+}
+
+function knockout(ctx: CanvasRenderingContext2D, marks: DialFrameMarks): void {
+  ctx.beginPath();
+  ctx.rect(-1e5, -1e5, 2e5, 2e5);
+  for (const b of [...marks.texts, ...marks.extraTexts, ...marks.numerals].map((m) => m.box)) {
+    const x0 = Math.floor(b.minX);
+    const y0 = Math.floor(b.minY);
+    ctx.rect(x0, y0, Math.ceil(b.maxX) - x0, Math.ceil(b.maxY) - y0);
+  }
+  ctx.clip("evenodd");
 }
 
 export function paintDialMarks(ctx: CanvasRenderingContext2D, marks: DialFrameMarks, map: OntologyMapTokens, options: DialPaintOptions): void {
@@ -201,6 +231,7 @@ export function paintDialMarks(ctx: CanvasRenderingContext2D, marks: DialFrameMa
 
   if (marks.rails.length > 0) {
     ctx.save();
+    knockout(ctx, marks);
     ctx.lineWidth = 1;
     ctx.setLineDash(RING_DASH);
     for (const rails of groupBy(marks.rails, (r) => String(r.ink)).values()) {
@@ -287,20 +318,23 @@ export function paintDialMarks(ctx: CanvasRenderingContext2D, marks: DialFrameMa
 
   ctx.lineJoin = "round";
   ctx.lineWidth = TEXT_HALO_PX;
-  for (const t of marks.texts) paintText(ctx, t, inks, null);
-  for (const t of marks.extraTexts) paintText(ctx, t, inks, t.halo === null ? null : inks[t.halo]!);
+  for (const t of marks.texts) paintText(ctx, t, inks, ground);
+  for (const t of marks.extraTexts) paintText(ctx, t, inks, t.halo === null ? ground : inks[t.halo]!);
 
-  ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.lineWidth = options.numeralHaloPx;
-  for (const n of marks.numerals) {
+  ctx.strokeStyle = ground;
+  const figures = marks.numerals.map((n) => (n.parts ?? [n]).map((p) => ({ text: p.text, ink: inks[p.ink]! })));
+  marks.numerals.forEach((n, i) => {
+    if (!n.halo) return;
     ctx.font = n.font;
-    if (n.halo) {
-      ctx.strokeStyle = ground;
-      ctx.strokeText(n.text, n.x, n.y);
-    }
-    ctx.fillStyle = inks[n.ink]!;
-    ctx.fillText(n.text, n.x, n.y);
-  }
+    tabularText(ctx, figures[i]!, n.x, n.y, "stroke");
+  });
+  marks.numerals.forEach((n, i) => {
+    ctx.font = n.font;
+    ctx.globalAlpha = n.alpha ?? 1;
+    tabularText(ctx, figures[i]!, n.x, n.y, "fill");
+  });
+  ctx.globalAlpha = 1;
   ctx.restore();
 }

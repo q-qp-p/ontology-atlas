@@ -14,6 +14,7 @@ import { buildDialModel, resolveDialAttention } from "../dial-model";
 import {
   clearDialFrame,
   countCrossings,
+  crossfadeNumerals,
   describeLastDialFrame,
   dialFrameSummary,
   dialChordPresence,
@@ -26,6 +27,7 @@ import {
   paintDialFrame,
   sampleStrips } from "./frame";
 import { layoutDial } from "../layout";
+import { emptyDialFrameMarks } from "./marks";
 import { circularDomainOrder } from "../order";
 import { resolveDialTokens } from "../tokens";
 import type { DialFrameInput, DialLabels, DialModel, DialOwnershipInput, Point } from "../types";
@@ -150,6 +152,38 @@ describe("focus clock", () => {
         expect(focusInkMix(key, onD2, 700, false).previous).toBeNull();
     });
 });
+describe("count crossfade", () => {
+    const box = { minX: 0, minY: 0, maxX: 10, maxY: 10 };
+    const frameWith = (text: string) => {
+        const marks = emptyDialFrameMarks();
+        marks.inks.push("#aaaaaa");
+        marks.numerals.push({ flowKey: "far\0d1", text, x: 5, y: 5, ink: 0, halo: true, font: "650 11px x", box, parts: null });
+        return marks;
+    };
+    const shown = (marks: ReturnType<typeof frameWith>) => marks.numerals.map((n) => [n.text, n.alpha ?? 1]);
+    it("fades a new count in and crossfades a changed one in place over 120 ms", () => {
+        const key = {};
+        expect(shown(withFade(frameWith("←9"), key, 0))).toEqual([["←9", 1]]);
+        expect(shown(withFade(frameWith("←9"), key, 500))).toEqual([["←9", 1]]);
+        expect(shown(withFade(frameWith("←7"), key, 1000))).toEqual([["←7", 0], ["←9", 1]]);
+        expect(shown(withFade(frameWith("←7"), key, 1060))).toEqual([["←7", 0.5], ["←9", 0.5]]);
+        expect(shown(withFade(frameWith("←7"), key, 1120))).toEqual([["←7", 1]]);
+        const empty = emptyDialFrameMarks();
+        crossfadeNumerals(empty, key, 1200, false);
+        expect(shown(withFade(frameWith("←7"), key, 1300))).toEqual([["←7", 0]]);
+        expect(shown(withFade(frameWith("←7"), key, 1360))).toEqual([["←7", 0.5]]);
+    });
+    it("swaps at once under reduced motion", () => {
+        const key = {};
+        withFade(frameWith("←9"), key, 0, true);
+        expect(shown(withFade(frameWith("←7"), key, 10, true))).toEqual([["←7", 1]]);
+    });
+    function withFade(marks: ReturnType<typeof frameWith>, key: object, now: number, reduced = false) {
+        crossfadeNumerals(marks, key, now, reduced);
+        return marks;
+    }
+});
+
 describe("focus on a new world", () => {
     it("keeps an unchanged focus settled: the ink stays mixed and nothing crossfades", () => {
         const model = modelOf();

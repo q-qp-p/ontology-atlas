@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { DIAL_INK_SPECS, DIAL_TOKEN_SPECS, resolveDialTokens } from "@/widgets/ontology-map/dial/tokens";
+import { scaledLabelFontSize } from "@/widgets/ontology-map/render/labels";
 
 import { readGlobalCss } from "../../../scripts/lib/design/global-css.mjs";
 
@@ -111,6 +112,6 @@ describe("map dial tokens", () => {
   });
 
   it("draws domain names at least 11 px", () => {
-    expect(t.labelScale * 10).toBeGreaterThanOrEqual(11);
+    expect(scaledLabelFontSize("domain", t.labelScale)).toBeGreaterThanOrEqual(11);
   });
 });
