@@ -525,8 +525,7 @@ export function ProjectDetailPage({
                 ariaLabel={t("inlineDescriptionAria")}
                 placeholder={t("inlineDescriptionPlaceholder")}
                 dataTestId="project-detail-description"
-                // The overview prose's own box, so hero and card words share both edges.
-                className="mt-2.5 max-w-prose break-keep text-body-lg leading-body-lg text-pretty text-[color:var(--color-text-secondary)]"
+                className="mt-2.5 max-w-[var(--measure-prose)] break-keep text-body-lg leading-body-lg text-pretty text-[color:var(--color-text-secondary)]"
               />
             </div>
             <div

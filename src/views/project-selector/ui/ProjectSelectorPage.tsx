@@ -1,11 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { findProjectDocInList } from "@/entities/docs-vault";
-import { buildProjectOntologyMetrics } from "@/entities/knowledge-graph";
-import { useOntologyInsight } from "@/features/vault-ontology";
 import { MOTION, OVERLAY_RISE, OVERLAY_RISE_REDUCED, OVERLAY_SETTLED } from "@/shared/motion";
 import { SPRING } from "@/shared/motion/spring";
 import { usePrefersReducedMotion } from "@/shared/lib/render-timing/use-prefers-reduced-motion";
@@ -17,6 +15,7 @@ import { Copy, Plus } from "lucide-react";
 import { useDocumentTitle } from "@/shared/lib/public-pages/use-document-title";
 import { useCopyFeedback } from "@/shared/lib/clipboard/use-copy-feedback";
 import { OntologyMapKindGlyph } from "@/shared/ui";
+import { MAP_KIND_GLYPH_SIZE } from "@/shared/ui/ontology-node/map-kind-glyph";
 import { ICON_SIZE } from "@/shared/ui/tokens/icon-size";
 import { controlClass } from "@/shared/ui/control-class";
 import { PAGE_FRAME, PAGE_HEADER_ROW, PAGE_LEDE, PAGE_TITLE, PAGE_TITLE_ROW } from "@/shared/ui/tokens/page-frame";
@@ -34,20 +33,22 @@ function formatAgo(ago: RecentActivityAgo, t: SelectorTranslator) {
   return t("activityAgoDaysAgo", { days: ago.days });
 }
 
-/** Shared by the project cards and the next-project tile. */
+let lastShownSlugs: ReadonlySet<string> | null = null;
+
 const TILE_SPRING = {
   type: "spring",
   stiffness: SPRING.surface.stiffness,
   damping: 2 * SPRING.surface.dampingRatio * Math.sqrt(SPRING.surface.stiffness),
 } as const;
 
+/** Shared by the project cards and the next-project tile. */
 const TILE_SURFACE =
   "rounded-card border bg-[color:var(--color-panel)] shadow-[inset_0_1px_0_var(--color-overlay-1)]";
 
 export function ProjectSelectorPage() {
   const t = useTranslations("projectPages.selector");
   useDocumentTitle(t("documentTitle"));
-  const { projects } = useProjects();
+  const { projects, loaded } = useProjects();
   const docs = useVaultDocs();
   useLocalVault();
   const dataSourceMode = useDataSourceMode();
@@ -56,9 +57,14 @@ export function ProjectSelectorPage() {
     [dataSourceMode],
   );
   useNavRailSettingsSlot(navRailSettingsSlot);
-  const { insight } = useOntologyInsight();
   const reducedMotion = usePrefersReducedMotion();
-  const [firstSlugs] = useState<ReadonlySet<string>>(() => new Set(projects.map((project) => project.slug)));
+  const ready = loaded && dataSourceMode === "local";
+  const [firstSlugs, setFirstSlugs] = useState<ReadonlySet<string> | null>(null);
+  const setKey = projects.map((project) => project.slug).join("\n");
+  if (ready && firstSlugs === null) setFirstSlugs(lastShownSlugs ?? new Set(projects.map((project) => project.slug)));
+  useEffect(() => {
+    if (ready) lastShownSlugs = new Set(setKey.split("\n"));
+  }, [ready, setKey]);
   const riseStart = reducedMotion ? OVERLAY_RISE_REDUCED : OVERLAY_RISE;
   const riseTransition = reducedMotion ? MOTION.fast : MOTION.base;
 
@@ -102,14 +108,13 @@ export function ProjectSelectorPage() {
                     <motion.li
                       key={project.slug}
                       className="flex min-w-0"
-                      initial={!firstSlugs.has(project.slug) ? riseStart : false}
+                      initial={firstSlugs !== null && !firstSlugs.has(project.slug) ? riseStart : false}
                       animate={OVERLAY_SETTLED}
                       transition={riseTransition}
                     >
                       <ProjectCard
                         project={project}
                         description={resolveAuthoredDescription(doc, project)}
-                        census={insight ? buildProjectOntologyMetrics(insight.nodes, insight.edges, project.slug) : null}
                         t={t}
                       />
                     </motion.li>
@@ -118,15 +123,16 @@ export function ProjectSelectorPage() {
                 {/* Alone on its row, the tile spans it. */}
                 <motion.li
                   layout={reducedMotion ? false : "position"}
+                  layoutDependency={setKey}
                   transition={TILE_SPRING}
                   className={`flex min-w-0 ${projects.length % 2 === 0 ? "md:col-span-2" : ""}`}
                 >
-                  <NextProjectTile t={t} />
+                  <NextProjectTile t={t} hasProjects />
                 </motion.li>
               </ul>
             ) : (
               <div className="mt-7 flex">
-                <NextProjectTile t={t} description={t("emptyStateDesc")} />
+                <NextProjectTile t={t} description={t("emptyStateDesc")} hasProjects={false} />
               </div>
             )}
           </div>
@@ -136,17 +142,7 @@ export function ProjectSelectorPage() {
   );
 }
 
-function ProjectCard({
-  project,
-  description,
-  census,
-  t,
-}: {
-  project: Project;
-  description: string | null;
-  census: ReturnType<typeof buildProjectOntologyMetrics> | null;
-  t: SelectorTranslator;
-}) {
+function ProjectCard({ project, description, t }: { project: Project; description: string | null; t: SelectorTranslator }) {
   const locale = useLocale();
   const name = projectDisplayName(project, locale);
   const detailHref = getProjectRuntimeDetailHref(project.slug);
@@ -179,24 +175,11 @@ function ProjectCard({
           </h2>
         </div>
         {/* No reserved lines: the row stretches cards and pins footers. The clamp is a last resort. */}
-        <p className="mt-2.5 line-clamp-4 max-w-prose text-body-lg leading-body-lg text-[color:var(--color-text-secondary)]">
+        <p className="mt-2.5 line-clamp-4 text-body-lg leading-body-lg text-[color:var(--color-text-secondary)]">
           {description ?? (
             <span className="text-[color:var(--color-text-tertiary)]">{t("cardDescriptionFallback")}</span>
           )}
         </p>
-        {census ? (
-          <p
-            data-testid="project-selector-card-census"
-            className="mt-2.5 text-label tabular-nums text-[color:var(--color-text-tertiary)]"
-          >
-            {t("cardCensus", {
-              domains: census.domains,
-              capabilities: census.capabilities,
-              elements: census.elements,
-              relations: census.relations,
-            })}
-          </p>
-        ) : null}
       </div>
       <div className="flex min-w-0 flex-wrap items-center gap-2 border-t border-[color:var(--color-divider)] px-[var(--card-pad)] py-3">
         <span className="mr-auto text-label text-[color:var(--color-text-tertiary)]">
@@ -227,7 +210,7 @@ function ProjectCard({
  * The page's one way to add a project: the form or a request to paste into an agent, side by
  * side in the card's grammar, two lines deep so a neighbouring card does not stretch.
  */
-function NextProjectTile({ t, description }: { t: SelectorTranslator; description?: string }) {
+function NextProjectTile({ t, description, hasProjects }: { t: SelectorTranslator; description?: string; hasProjects: boolean }) {
   const copy = useCopyFeedback();
   const copyLabel =
     copy.state === "copied" ? t("nextSlotCopied") : copy.state === "failed" ? t("nextSlotCopyError") : t("nextSlotCopy");
@@ -243,8 +226,8 @@ function NextProjectTile({ t, description }: { t: SelectorTranslator; descriptio
     >
       <div className="flex min-w-0 flex-1 flex-col p-[var(--card-pad)]">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span aria-hidden className="flex w-[15px] shrink-0 justify-center text-[color:var(--color-text-tertiary)]">
-            <Plus size={ICON_SIZE.md} />
+          <span aria-hidden className="flex shrink-0 text-[color:var(--color-text-tertiary)]">
+            <Plus size={MAP_KIND_GLYPH_SIZE} />
           </span>
           <h2
             id="project-selector-next-slot-title"
@@ -273,7 +256,7 @@ function NextProjectTile({ t, description }: { t: SelectorTranslator; descriptio
             <Link
               href={newProjectHref}
               data-testid="project-selector-new-cta"
-              className={controlClass({ shape: "chip", size: "md", tone: "secondary" })}
+              className={controlClass({ shape: "chip", size: "md", tone: hasProjects ? "secondary" : "accent" })}
             >
               {t("ctaNewProject")}
             </Link>

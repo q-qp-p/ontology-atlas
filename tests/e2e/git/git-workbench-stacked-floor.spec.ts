@@ -19,7 +19,11 @@ const STEPS = Array.from({ length: 11 }, (_, i) => ({
 
 test("at the minimum app window (1040x720), the stacked document reading pane keeps a height and presses down", async ({ page }) => {
   await page.setViewportSize({ width: 1040, height: 720 });
-  await installDesktopRailRuntime(page, {}, undefined, { commits: STEPS });
+  const changes = [
+    { path: "domains/order.md", status: "modified", kind: "domain", slug: "domains/order", renamedFrom: null },
+    { path: "domains/billing.md", status: "modified", kind: "domain", slug: "domains/billing", renamedFrom: null },
+  ];
+  await installDesktopRailRuntime(page, {}, undefined, { commits: STEPS, gitStatus: { changedCount: 2, changes } });
   await mountDesktopVault(page);
   await page.getByTestId("app-nav-rail-item-git").click();
   await expect(page.getByTestId("atlas-git-history-item")).toHaveCount(10, { timeout: 60_000 });
@@ -29,14 +33,15 @@ test("at the minimum app window (1040x720), the stacked document reading pane ke
   const height = await evidence.evaluate((el) => el.getBoundingClientRect().height);
   expect(height, "the stacked reader collapsed to nothing").toBeGreaterThan(200);
 
-  const chip = page.getByTestId("atlas-git-pending-pane");
+  const chip = page.getByTestId("atlas-git-change-row").first();
   await chip.scrollIntoViewIfNeeded();
   const hit = await chip.evaluate((el) => {
     const box = el.getBoundingClientRect();
     const top = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
     return { onTop: !!top && el.contains(top), topId: top?.getAttribute("data-testid") ?? top?.tagName ?? null };
   });
-  expect(hit.onTop, `the changed document pane is covered by ${hit.topId}`).toBe(true);
+  expect(hit.onTop, `a change chip is covered by ${hit.topId}`).toBe(true);
+  await chip.click({ timeout: 5_000 });
 
   // The step just picked wins the window it was picked in: its headline starts above the fold
   // without scrolling the page (round-two review: an uncapped list pushed it below 720).

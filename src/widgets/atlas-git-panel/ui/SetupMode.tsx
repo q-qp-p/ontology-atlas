@@ -35,49 +35,26 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * The destination headline. `inColumn` drops the full-width divider to match the column;
- * `trailing` is state at the right; `showScope` says the recording scope here, which the
- * workbench says in its dock.
+ * The workbench headline: one title-size h1 beside the location, the way the Library workbench
+ * names itself. `trailing` is state at the right; `showScope` says the recording scope here,
+ * which the workbench says in its dock.
  */
 export function PageHeader({
   t,
-  inColumn = false,
   showScope = true,
   trailing,
 }: {
   t: Translator;
-  inColumn?: boolean;
   showScope?: boolean;
   trailing?: React.ReactNode;
 }) {
   return (
-    <header
-      className={cn(
-        "flex shrink-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5",
-        inColumn ? "pb-1" : "border-b border-[color:var(--color-border-soft)] px-5 pt-1 pb-4",
-      )}
-    >
+    <header className="flex shrink-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5 pb-1">
       <div className="flex min-w-0 flex-col gap-1.5">
-        {/* Ramp utilities only: an arbitrary-length token raises the size but keeps the smaller step's
-            leading. The display step matches every destination's h1; the pane's selection headline
-            outranks it with `text-hero`. */}
-        {inColumn ? (
-          <>
-            <h1 className="sr-only">{t("title")}</h1>
-            <p
-              aria-hidden
-              className="flex items-center gap-2 text-title leading-title font-[var(--font-weight-signature)] text-[color:var(--color-text-primary)]"
-            >
-              <HistoryIcon size={ICON_SIZE.lg} aria-hidden className="text-[color:var(--color-indigo-text-soft)]" />
-              {t("title")}
-            </p>
-          </>
-        ) : (
-          <h1 className={cn("flex items-center gap-2", PAGE_TITLE)}>
-            <HistoryIcon size={ICON_SIZE.lg} aria-hidden className="text-[color:var(--color-indigo-text-soft)]" />
-            {t("title")}
-          </h1>
-        )}
+        <h1 className="flex items-center gap-2 text-title leading-title font-[var(--font-weight-signature)] text-[color:var(--color-text-primary)]">
+          <HistoryIcon size={ICON_SIZE.lg} aria-hidden className="text-[color:var(--color-indigo-text-soft)]" />
+          {t("title")}
+        </h1>
         {/* The scope notice stands here: nothing outside the folder is touched. */}
         {showScope ? (
           <p className="flex items-center gap-1.5 text-label leading-prose text-[color:var(--color-text-quaternary)]">

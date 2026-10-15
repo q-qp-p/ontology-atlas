@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/shared/lib/cn";
+import { useSwapHeight } from "@/shared/lib/render-timing/use-presence";
 import { useRovingRadioGroup } from "@/shared/lib/keyboard/use-roving-radio-group";
 import { OntologyMapKindGlyph } from "@/shared/ui/ontology-node/map-kind-glyph";
 import { controlClass, Disclosure } from "@/shared/ui";
@@ -73,11 +74,21 @@ export function PendingDocumentPane({
     onChange: (path) => setSelectedPath(path),
   });
 
+  const showChips = all.length > 1;
+  const { hostRef: headerRef, capture: captureHeaderHeight } = useSwapHeight(showChips);
+  // Adjusted during render: the previous height is only measurable before the chips mount or leave.
+  const [seenChips, setSeenChips] = useState(showChips);
+  if (showChips !== seenChips) {
+    captureHeaderHeight();
+    setSeenChips(showChips);
+  }
+
   return (
     <div data-testid="atlas-git-pending-pane" className="flex min-h-0 flex-1 flex-col">
       <header
+        ref={headerRef}
         data-testid="atlas-git-change-groups"
-        className="flex flex-none flex-col gap-3 border-b border-[color:var(--color-divider)] px-4 py-4"
+        className="flex flex-none flex-col gap-3 overflow-hidden border-b border-[color:var(--color-divider)] px-4 py-4"
       >
         <p className="flex flex-wrap items-baseline gap-x-2 text-label text-[color:var(--color-text-secondary)]">
           <span>{summary}</span>
@@ -87,8 +98,8 @@ export function PendingDocumentPane({
             </span>
           ) : null}
         </p>
-        {all.length > 1 ? (
-          <div {...group.groupProps} aria-label={t("changedDocsAria")} className="flex flex-wrap gap-1.5">
+        {showChips ? (
+          <div {...group.groupProps} aria-label={t("changedDocsAria")} className="git-fade-in flex flex-wrap gap-1.5">
             {all.map((doc, index) => (
               <button
                 key={doc.entry.path}

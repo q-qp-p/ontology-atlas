@@ -463,7 +463,7 @@ export function DesktopBody({
         under one top bar (title, location, actions) and a divider.
       */}
       <div className="flex flex-none flex-wrap items-center gap-x-3 gap-y-2 border-b border-[color:var(--color-divider)] px-1 pb-3">
-        <PageHeader t={t} inColumn showScope={false} />
+        <PageHeader t={t} showScope={false} />
         <div className="ml-auto flex min-w-0 items-center gap-3">{locationLine}</div>
       </div>
       <RemoteResultLine notice={remoteActionNotice} error={remoteActionError} />

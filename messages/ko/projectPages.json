@@ -10,7 +10,6 @@
     "activityAgoYesterday": "어제",
     "activityAgoDaysAgo": "{days}일 전",
     "cardUpdatedPrefix": "최근 갱신",
-    "cardCensus": "{domains} 도메인 · {capabilities} 역량 · {elements} 요소 · 관계 {relations}",
     "cardDescriptionFallback": "설명이 아직 없는 프로젝트예요.",
     "cardDetailAriaLabel": "{name} 상세로 가기",
     "footDetail": "상세 보기",

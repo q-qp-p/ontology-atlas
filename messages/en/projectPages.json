@@ -10,7 +10,6 @@
     "activityAgoYesterday": "Yesterday",
     "activityAgoDaysAgo": "{days}d ago",
     "cardUpdatedPrefix": "Last updated",
-    "cardCensus": "{domains} domains · {capabilities} capabilities · {elements} elements · {relations} relations",
     "cardDescriptionFallback": "This project doesn't have a description yet.",
     "cardDetailAriaLabel": "Open {name} details",
     "footDetail": "View details",
