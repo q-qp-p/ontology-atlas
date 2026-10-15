@@ -186,11 +186,15 @@ describe("spots caught by measurement do not go back — architecture profile ro
 
 describe("quaternary ink is a 12.5 px and up ink — small-text ratchet", () => {
   // Blind to a size inherited from a parent, a step named in another file, and dynamic tones.
-  const FALLBACK_CEILING = 543;
+  const FALLBACK_CEILING = 524;
   const QUATERNARY = /text-\[color:var\(--color-text-quaternary\)\]/;
   const STEP = /(?<![\w-])text-(?:caption|label)(?![\w-])|text-\[length:var\(--[\w-]*(?:label|caption)[\w-]*\)\]/;
   const ARBITRARY = /text-\[(\d*\.?\d+)(px|rem)\]/g;
-  const SMALL_CONTROL_SIZES = new Set(["xs", "sm", "md"]);
+  const TEXT_SIZES = ["xs", "sm", "md"];
+  const SMALL_CONTROL: Record<string, string[]> = {
+    chip: TEXT_SIZES, pill: TEXT_SIZES, tile: TEXT_SIZES, link: TEXT_SIZES, segment: TEXT_SIZES,
+    row: ["xs", "sm"], card: ["xs", "sm"], icon: [],
+  };
 
   const isSmall = (text: string) =>
     STEP.test(text) ||
@@ -236,10 +240,10 @@ describe("quaternary ink is a 12.5 px and up ink — small-text ratchet", () => 
             const init = prop && ts.isPropertyAssignment(prop) ? prop.initializer : undefined;
             return init && ts.isStringLiteralLike(init) ? init.text : undefined;
           };
-          const size = lit("size");
-          if (lit("tone") === "muted" && (size === undefined ? !arg.properties.some((p) => propName(p) === "size") : SMALL_CONTROL_SIZES.has(size))) {
-            total += 1;
-          }
+          const absent = (name: string) => !arg.properties.some((p) => propName(p) === name);
+          const shape = absent("shape") ? "chip" : lit("shape");
+          const size = absent("size") ? "md" : lit("size");
+          if (lit("tone") === "muted" && shape && size && SMALL_CONTROL[shape]?.includes(size)) total += 1;
         }
       }
       ts.forEachChild(node, visit);
@@ -272,6 +276,21 @@ describe("quaternary ink is a 12.5 px and up ink — small-text ratchet", () => 
         "controlClass muted at a small size",
         'export const c = controlClass({ shape: "chip", size: "sm", tone: "muted" });',
         'export const c = controlClass({ shape: "chip", size: "lg", tone: "muted" });',
+      ],
+      [
+        "split class list",
+        'export const A = () => <span className={cn("text-caption", "text-[color:var(--color-text-quaternary)]")} />;',
+        'export const A = () => <span className={cn("text-body", "text-[color:var(--color-text-quaternary)]")} />;',
+      ],
+      [
+        "arbitrary px size",
+        'export const A = () => <span className="text-[10px] text-[color:var(--color-text-quaternary)]" />;',
+        'export const A = () => <span className="text-[12px] text-[color:var(--color-text-quaternary)]" />;',
+      ],
+      [
+        "controlClass icon has no text",
+        'export const c = controlClass({ shape: "card", size: "sm", tone: "muted" });',
+        'export const c = controlClass({ shape: "icon", tone: "muted", size: "sm" });',
       ],
       [
         "arbitrary rem size",
