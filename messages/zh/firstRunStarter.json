@@ -34,7 +34,8 @@
     "conceptUnit": "个概念",
     "scopeFull": "完整地图 · {count, number} 个概念",
     "scopePartial": "当前范围 · {shown, number} / 共 {total, number} 个概念",
-    "synthetic": "性能测试用合成数据 · {count, number} 个概念"
+    "synthetic": "性能测试用合成数据 · {count, number} 个概念",
+    "selection": "{name} · {count, number} 个概念"
   },
   "plainModeCta": "切换到通俗视图",
   "reopenLabel": "重新打开起步指南",

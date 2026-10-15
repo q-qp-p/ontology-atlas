@@ -2,10 +2,11 @@
 
 import { useTranslations } from "next-intl";
 
-export function TopologyScopeReadout({ total, members, synthetic }: {
+export function TopologyScopeReadout({ total, members, synthetic, selection = null }: {
   total: number | null;
   members: number | null;
   synthetic: boolean;
+  selection?: { name: string; count: number } | null;
 }) {
   const t = useTranslations("firstRunStarter.readout");
   if (total === null || total <= 0 || (!synthetic && (members === null || members <= 0 || members > total))) return null;
@@ -17,7 +18,9 @@ export function TopologyScopeReadout({ total, members, synthetic }: {
       data-synthetic={synthetic ? "true" : "false"}
       className="pointer-events-none hidden text-label tabular-nums text-[color:var(--color-text-tertiary)] md:block"
     >
-      {synthetic ? t("synthetic", { count: total }) : members === total
+      {synthetic ? t("synthetic", { count: total }) : selection
+        ? selection.count > 0 ? t("selection", { name: selection.name, count: selection.count }) : selection.name
+        : members === total
         ? t("scopeFull", { count: total }) : t("scopePartial", { shown: members!, total })}
     </div>
   );

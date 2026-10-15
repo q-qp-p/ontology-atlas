@@ -13,7 +13,6 @@ const node = (id: string, kind: string): KnowledgeGraphNode => ({
   lastApprovedBy: "",
 });
 
-/** Surfaces agree only while every count is the whole derivation, without re-adding `project` or filtering kinds. */
 describe("computeCanonicalCensus", () => {
   const nodes = [
     node("p", "project"),
@@ -25,8 +24,8 @@ describe("computeCanonicalCensus", () => {
   ];
   const edges = [{ id: "1", from: "p", to: "d", type: "contains" }] as KnowledgeGraphEdge[];
 
-  it("counts project and document but excludes the reader sentinel", () => {
-    expect(computeCanonicalCensus(nodes, edges)).toEqual({ conceptCount: 5, relationCount: 1 });
+  it("counts the four kinds the map draws, not the document or the reader sentinel", () => {
+    expect(computeCanonicalCensus(nodes, edges)).toEqual({ conceptCount: 4, relationCount: 1 });
   });
 
   it("returns zeros for an empty graph", () => {
