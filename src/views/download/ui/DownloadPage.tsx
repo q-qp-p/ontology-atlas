@@ -28,6 +28,7 @@ import {
   windowsAsset,
 } from '../lib/release-state';
 import { useStageGraph } from '../lib/use-stage-graph';
+import { useOpensLine } from '../lib/use-opens-line';
 import { GatewayFx } from './GatewayFx';
 import { HeroAtlas } from './HeroAtlas';
 import { ScreensStage } from './ScreensStage';
@@ -197,6 +198,8 @@ function HeroSection({
     return () => cancelAnimationFrame(id);
   }, []);
   const [typing, setTyping] = useState({ typed: 0, total: 0 });
+  const [webCta, setWebCta] = useState<HTMLAnchorElement | null>(null);
+  const webOpensLine = useOpensLine(webCta);
   const onTyping = useCallback((typed: number, total: number) => {
     setTyping((prev) => (prev.typed === typed && prev.total === total ? prev : { typed, total }));
   }, []);
@@ -327,9 +330,15 @@ function HeroSection({
             {/* The browser route is always open. */}
             {fileWins ? (
               <Link
+                ref={setWebCta}
                 href="/topology"
                 data-testid="gateway-hero-web-cta"
-                className={cn(buttonVariants({ variant: 'ghost', size: 'lg' }), 'px-4 sm:px-6', HERO_CTA_WRAP)}
+                className={cn(
+                  buttonVariants({ variant: 'ghost', size: 'lg' }),
+                  // Opening a line, the text starts at the column edge; the margin keeps the wrap decision.
+                  webOpensLine ? 'mr-8 px-0 sm:mr-12' : 'px-4 sm:px-6',
+                  HERO_CTA_WRAP,
+                )}
               >
                 {t('heroPlaygroundCta')}
               </Link>
