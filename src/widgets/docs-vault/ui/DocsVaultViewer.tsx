@@ -8,7 +8,7 @@ import remarkGfm from 'remark-gfm';
 import { useTranslations } from 'next-intl';
 import { ExternalLink, Hash } from 'lucide-react';
 import { ICON_SIZE } from '@/shared/ui/tokens/icon-size';
-import { PROSE_MEASURE_REM } from '@/shared/ui/tokens/reading-measure';
+import { PROSE_MEASURE_REM, PROSE_MEASURE_WIDE_REM, WIDE_READING_MIN_VIEWPORT_PX } from '@/shared/ui/tokens/reading-measure';
 import {
   buildDocsVaultHref,
   type VaultDoc,
@@ -640,7 +640,7 @@ const HEADING_CLASS = {
  * Next `sizes` hint for body images, in rem so it follows the root font size like the prose measure
  * (`app/globals.css`); unparsable units fall back to 100vw.
  */
-const IMAGE_SIZES = `(max-width: 768px) 100vw, ${PROSE_MEASURE_REM.toFixed(4)}rem`;
+const IMAGE_SIZES = `(max-width: 768px) 100vw, (min-width: ${WIDE_READING_MIN_VIEWPORT_PX}px) ${PROSE_MEASURE_WIDE_REM.toFixed(4)}rem, ${PROSE_MEASURE_REM.toFixed(4)}rem`;
 
 /**
  * Line-length cap on prose elements only (paragraphs, lists, quotes); headings, tables, code and

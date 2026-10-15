@@ -6,7 +6,10 @@ import {
   DOC_COLUMN_PX,
   PROSE_MEASURE_PX,
   PROSE_MEASURE_STEPS,
+  PROSE_MEASURE_STEPS_WIDE,
+  PROSE_MEASURE_WIDE_REM,
   PROSE_ZERO_ADVANCE_EM,
+  WIDE_READING_MIN_VIEWPORT_PX,
 } from '../../../src/shared/ui/tokens/reading-measure';
 
 import { seedFirstRunSeen } from '../first-run-seed';
@@ -287,18 +290,9 @@ test('the docs and Library body applies the measure inside its column', async ({
 });
 
 /**
- * ⚠️ **The one hand-written font metric, gated.**
- *
- * `--measure-prose` is `ch` and therefore font-relative; `--measure-doc-column` is a box and
- * therefore cannot be, so the column is derived by converting the measure once at
- * `--text-body-lg` using `--measure-zero-advance` — the advance of the digit `0`, measured
- * rather than chosen. That constant is the only place the shipped font's metrics are written
- * down instead of asked for, and `src/shared/ui/tokens/reading-measure.ts` mirrors the whole
- * derivation for the three consumers that cannot read a CSS variable.
- *
- * This test asks the browser for all of it: that the ratio still describes the font, that the
- * rendered token matches the mirror, and that the derived column really is the measure plus two
- * gutters. Any one of the four numbers drifting fails here.
+ * `--measure-zero-advance` is the one hand-written font metric; the column derives from it and
+ * `reading-measure.ts` mirrors the derivation. The browser checks the ratio, the mirror and the
+ * column here.
  */
 test('the derived column, the measured advance and the JS mirror all still agree', async ({
   page,
@@ -416,4 +410,60 @@ test('instrument probe — a planted wider measure reads out of band and the shi
   expect(restored[0].measureRaw).toBe(shipped[0].measureRaw);
   expect(restored[0].latinChars).toBeLessThanOrEqual(MAX_CHARS_PER_MEASURE);
   expect(restored[0].latinChars).toBeGreaterThanOrEqual(MIN_CHARS_PER_MEASURE);
+});
+
+/* Both sides of the 1536px band edge. */
+test('a wide window spends the wide measure and the column follows it; one pixel under, it does not', async ({
+  page,
+}) => {
+  const wideMeasurePx = PROSE_MEASURE_WIDE_REM * DOC_BODY_FONT_PX;
+  const wideColumnPx = wideMeasurePx + 2 * DOC_COLUMN_GUTTER_PX;
+  const readColumn = () =>
+    page.evaluate(() => {
+      const lengthOf = (value: string) => {
+        const probe = document.createElement('div');
+        probe.style.cssText = `position:fixed;left:-99999px;top:0;width:${value};transition:none;font-size:16px`;
+        document.body.append(probe);
+        const width = probe.getBoundingClientRect().width;
+        probe.remove();
+        return width;
+      };
+      const article = document.querySelector('[data-docs-viewer]');
+      const paragraph = article
+        ? [...article.querySelectorAll('p')].find((element) => (element.textContent ?? '').trim().length > 80)
+        : null;
+      const style = paragraph ? getComputedStyle(paragraph) : null;
+      return {
+        steps: Number(getComputedStyle(document.documentElement).getPropertyValue('--measure-prose-steps').trim()),
+        columnPx: lengthOf('var(--measure-doc-column)'),
+        contentPx:
+          paragraph && style
+            ? paragraph.getBoundingClientRect().width -
+              Number.parseFloat(style.paddingLeft) -
+              Number.parseFloat(style.paddingRight)
+            : null,
+      };
+    });
+
+  await page.setViewportSize({ width: WIDE_READING_MIN_VIEWPORT_PX, height: 1080 });
+  await openOntologyAudit(page);
+  await assertShippedFontIsRendering(page);
+  const wide = await readColumn();
+  expect(wide.steps, 'the wide band did not apply at its own first pixel').toBe(PROSE_MEASURE_STEPS_WIDE);
+  expect(
+    wide.columnPx,
+    `the rendered wide --measure-doc-column is ${wide.columnPx.toFixed(1)}px but reading-measure.ts says ${wideColumnPx.toFixed(1)}px`,
+  ).toBeCloseTo(wideColumnPx, 0);
+  expect(wide.columnPx - 2 * DOC_COLUMN_GUTTER_PX).toBeCloseTo(wideMeasurePx, 0);
+  expect(wide.contentPx, 'no docs body paragraph was rendered to measure').not.toBeNull();
+  expect(
+    wide.contentPx!,
+    `a docs body paragraph runs ${wide.contentPx!.toFixed(1)}px inside a ${(wide.columnPx - 2 * DOC_COLUMN_GUTTER_PX).toFixed(1)}px content box on the wide band — the line and the box have drifted apart`,
+  ).toBeCloseTo(wide.columnPx - 2 * DOC_COLUMN_GUTTER_PX, 0);
+
+  await page.setViewportSize({ width: WIDE_READING_MIN_VIEWPORT_PX - 1, height: 1080 });
+  const narrow = await readColumn();
+  expect(narrow.steps, 'the wide band leaked one pixel under its edge').toBe(PROSE_MEASURE_STEPS);
+  expect(narrow.columnPx).toBeCloseTo(DOC_COLUMN_PX, 0);
+  expect(wideColumnPx - DOC_COLUMN_PX, 'the wide band buys nothing').toBeGreaterThan(80);
 });
