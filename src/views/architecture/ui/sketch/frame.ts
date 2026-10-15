@@ -154,10 +154,10 @@ export function solveSketchFrame({
   /* No receipt and no measured crossing: one empty state for the column. Partial receipts keep per-role faces. */
   const observationEmpty =
     splitsEvidence && !hasLedger && !graph.edges.some((edge) => edge.kind === 'traffic');
-  /* Trail ground is reserved only when the profile declares an observation-side skip, as `contractNeedsLane` does for the lead. */
-  const observationNeedsLane = graph.edges.some(
-    (edge) => edge.kind === 'traffic' && edge.columnSpan > 1,
-  );
+  /* Trail ground goes to an observation-side skip, and is held while the column is empty so a landing record moves no face. */
+  const observationNeedsLane =
+    observationEmpty ||
+    graph.edges.some((edge) => edge.kind === 'traffic' && edge.columnSpan > 1);
   const pairedGroundSpare =
     usesPairedDown && boxWidth > 0
       ? Math.max(

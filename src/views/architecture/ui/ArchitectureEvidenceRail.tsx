@@ -47,7 +47,7 @@ export function ArchitectureEvidenceRail({
   compact?: boolean;
 }) {
   return (
-    <div className={cn('basis-full overflow-hidden rounded-panel border border-[color:var(--color-overlay-3)] bg-[color:var(--color-overlay-1)] shadow-[inset_0_1px_0_var(--color-overlay-2)] md:max-w-[26.25rem] md:flex-[0_1_auto] md:basis-auto', compact ? 'min-w-max' : 'min-w-0')}>
+    <div className={cn('basis-full overflow-hidden rounded-panel border border-[color:var(--color-overlay-3)] bg-[color:var(--color-overlay-1)] shadow-[inset_0_1px_0_var(--color-overlay-2)] md:max-w-[var(--architecture-evidence-rail-max)] md:flex-[0_1_auto] md:basis-auto', compact ? 'min-w-max' : 'min-w-0')}>
       <RowButton
         ref={buttonRef}
         size="lg"

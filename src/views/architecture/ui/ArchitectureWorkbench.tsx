@@ -301,7 +301,8 @@ export function ArchitectureWorkbench({
   const chosenAgentKind = chosenAgent && chosenAgent.slug === selected?.slug ? chosenAgent.kind : null;
   const requestedAgentKind: ArchitectureAgentTaskKind = chosenAgentKind ?? primaryAgentKind;
   const [taskMenuOpen, setTaskMenuOpen] = useState(false);
-  const [emptyActionSeated, setEmptyActionSeated] = useState(false);
+  /* Null until the canvas knows whether the empty column carries the action; the toolbar waits outlined. */
+  const [emptyActionSeated, setEmptyActionSeated] = useState<boolean | null>(null);
   const taskMenuRef = useRef<HTMLDivElement>(null);
   const taskMenuTriggerRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -686,7 +687,7 @@ export function ArchitectureWorkbench({
               >
                 {/* Primary once a receipt exists; until then the empty column carries the task. */}
                 <Button
-                  variant={record === null && emptyActionSeated ? 'outline' : 'primary'}
+                  variant={record === null && emptyActionSeated !== false ? 'outline' : 'primary'}
                   size="md"
                   className="atlas-touch-floor rounded-r-none"
                   disabled={agentRoute === 'checking' || copyState === 'pending'}

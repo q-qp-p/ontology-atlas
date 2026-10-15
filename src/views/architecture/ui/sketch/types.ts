@@ -61,9 +61,12 @@ export interface ArchitectureSketchProps {
   observationEmptyTitle: string;
   observationEmptyBody: string;
   observationEmptyAction?: ReactNode;
-  onObservationEmptyActionSeated?: (seated: boolean) => void;
+  /** Null until the canvas is measured and receipts are read. */
+  onObservationEmptyActionSeated?: (seated: boolean | null) => void;
   /** False while receipts are still being read. */
   observationKnown?: boolean;
+  /** The arrival plays only when this profile's own column goes from empty to observed. */
+  profileKey?: string;
   lowerOnlyRuleLabel: string;
   hiddenRightLabel: (count: number) => string;
   hiddenLeftLabel: (count: number) => string;

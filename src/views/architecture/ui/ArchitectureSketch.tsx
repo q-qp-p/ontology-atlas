@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { listboxBottomIsHidden as endIsHidden, listboxTopIsHidden as startIsHidden } from '@/shared/ui/fields/select-growth';
 
@@ -79,6 +79,7 @@ export function ArchitectureSketch({
   observationEmptyAction = null,
   onObservationEmptyActionSeated,
   observationKnown = true,
+  profileKey = '',
   lowerOnlyRuleLabel,
   hiddenRightLabel,
   hiddenLeftLabel,
@@ -222,12 +223,18 @@ export function ArchitectureSketch({
     graph.boxes.some((box) => ledgers[box.id] !== undefined) ||
     graph.edges.some((edge) => edge.kind === 'traffic');
   const knownEmpty = observationKnown && !hasObservation && usesPairedDown && axisWidth > 0;
-  const [wasKnownEmpty, setWasKnownEmpty] = useState(knownEmpty);
+  const [seen, setSeen] = useState({ profileKey, knownEmpty });
   const [arriving, setArriving] = useState(false);
   const [arrived, setArrived] = useState(false);
-  if (wasKnownEmpty !== knownEmpty) {
-    setWasKnownEmpty(knownEmpty);
-    const arrives = !knownEmpty && hasObservation && usesPairedDown && axisWidth > 0;
+  if (seen.profileKey !== profileKey || seen.knownEmpty !== knownEmpty) {
+    setSeen({ profileKey, knownEmpty });
+    /* Choosing another profile that already has a record is a switch, not a landing. */
+    const arrives =
+      seen.profileKey === profileKey &&
+      seen.knownEmpty &&
+      hasObservation &&
+      usesPairedDown &&
+      axisWidth > 0;
     setArriving(arrives);
     if (arrives) setArrived(true);
   }
@@ -253,10 +260,14 @@ export function ArchitectureSketch({
     shownColumn ? `${shownColumn.x}:${shownColumn.y}:${shownColumn.width}:${shownColumn.height}` : null,
   );
   const columnPresence = usePanelPresence(shownColumn !== null);
-  const actionSeated = shownColumn !== null && observationEmptyAction !== null;
-  useEffect(() => {
+  const columnShown = shownColumn !== null || (arriving && columnPresence.exiting);
+  /* Settled before paint, so the toolbar and the column never both wear the primary. */
+  const actionSeated =
+    observationKnown && axisWidth > 0 ? shownColumn !== null && observationEmptyAction !== null : null;
+  useLayoutEffect(() => {
     onObservationEmptyActionSeated?.(actionSeated);
   }, [actionSeated, onObservationEmptyActionSeated]);
+  useLayoutEffect(() => () => onObservationEmptyActionSeated?.(false), [onObservationEmptyActionSeated]);
 
   /* A canvas that scrolls must say so: macOS hides its overlay scrollbar. Read on the node itself through a callback ref, since an effect fires while the ref is null. */
   const [covered, setCovered] = useState<{
@@ -674,7 +685,7 @@ export function ArchitectureSketch({
           visibleEdges={visibleEdges}
         />
         </svg>
-        {columnPresence.mounted && columnPanel ? (
+        {columnPresence.mounted && columnShown && columnPanel ? (
           <ObservationEmptyColumn
             panel={columnPanel}
             title={observationEmptyTitle}

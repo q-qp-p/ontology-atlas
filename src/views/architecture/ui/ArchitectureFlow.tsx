@@ -89,7 +89,7 @@ export function ArchitectureFlow({
   observationEmptyTitle: string;
   observationEmptyBody: string;
   observationEmptyAction?: ReactNode;
-  onObservationEmptyActionSeated?: (seated: boolean) => void;
+  onObservationEmptyActionSeated?: (seated: boolean | null) => void;
   observationKnown?: boolean;
   lowerOnlyRuleLabel: string;
   /** The chosen role, owned by the page so the canvas and the detail can sit in different rows. */
@@ -168,6 +168,7 @@ export function ArchitectureFlow({
           observationEmptyAction={observationEmptyAction}
           onObservationEmptyActionSeated={onObservationEmptyActionSeated}
           observationKnown={observationKnown}
+          profileKey={profile.slug}
           lowerOnlyRuleLabel={lowerOnlyRuleLabel}
           moduleCountLabel={moduleCountLabel}
           conceptCountLabel={conceptCountLabel}

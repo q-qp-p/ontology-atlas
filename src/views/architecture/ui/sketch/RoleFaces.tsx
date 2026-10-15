@@ -272,10 +272,11 @@ export function RoleFaces({
               className="architecture-canvas-node architecture-node-face"
               data-node-selected={isSelected ? 'true' : 'false'}
             />
-            {usesPairedDown && contractPortEdges.some((edge) => edge.columnSpan > 1 && (edge.from === box.id || edge.to === box.id)) ? (
+            {/* A side port marks where a skip leaves; its head arrives bare. */}
+            {usesPairedDown && contractPortEdges.some((edge) => edge.columnSpan > 1 && edge.from === box.id) ? (
               <ConnectionPort {...portProps('contract', at, contractBoxW, boxH)} direction="outgoing" side="left" />
             ) : null}
-            {/* The ladder's spine meets both faces bare, keeping 18px of clear line. */}
+            {/* The spine meets both faces bare: 18px of clear line on roomy rows, 16 on tight. */}
             {contractOutgoing.length > 0 && !usesPairedDown ? (
               <ConnectionPort {...portProps('contract', at, contractBoxW, boxH)} direction="outgoing" />
             ) : null}
@@ -459,7 +460,7 @@ export function RoleFaces({
                   data-testid={`architecture-observation-box-${box.id}`}
                   data-observation-state={ledger?.state ?? 'missing'}
                 />
-                {usesPairedDown && visibleEdges.some((edge) => edge.kind === 'traffic' && edge.columnSpan > 1 && (edge.from === box.id || edge.to === box.id)) ? (
+                {usesPairedDown && visibleEdges.some((edge) => edge.kind === 'traffic' && edge.columnSpan > 1 && edge.from === box.id) ? (
                   <ConnectionPort {...portProps('observation', observedAt, observationBoxW, observationBoxH)} direction="outgoing" side="right" />
                 ) : null}
                 {observationOutgoing.length > 0 && !usesPairedDown ? (

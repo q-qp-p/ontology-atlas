@@ -91,6 +91,8 @@ export function PairedLaneHeadings({
           y={laneHeadingY + RULE_SENTENCE_ROW_H}
           textAnchor="middle"
           data-testid="architecture-lower-only-sentence"
+          data-edge-sentence="drawn"
+          data-edge-sentence-kind="rule"
           className="fill-[color:var(--color-text-tertiary)] text-label"
         >
           {ruleSentence}

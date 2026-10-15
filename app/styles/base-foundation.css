@@ -314,6 +314,7 @@
      chosen; both ends are tokens so the raise can never become a one-off brightness. */
   --architecture-plane-climb-halo: 0.34;
   --architecture-plane-climb-halo-raised: 0.7;
+  --architecture-evidence-rail-max: 420px;
 }
 
 .architecture-canvas-ground {
