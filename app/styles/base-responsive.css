@@ -468,6 +468,10 @@
     .gateway-hero-caption {
       transition-duration: var(--motion-fast) !important;
     }
+
+    .gateway-hero-caption[data-hero-caption-source="chain"] {
+      transition: none !important;
+    }
   }
 
   /*
