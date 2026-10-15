@@ -191,7 +191,7 @@ describe("ProjectSelectorPage", () => {
 
   it("agrees in number with the count it labels", () => {
     renderPage();
-    const header = screen.getByRole("main").textContent ?? "";
+    const header = document.querySelector("main header")?.textContent ?? "";
     expect(screen.getByTestId("project-selector-count")).toHaveTextContent(/^1 sample project$/);
     expect(header).not.toContain("domain");
     expect(header).not.toContain("1 CONCEPTS");

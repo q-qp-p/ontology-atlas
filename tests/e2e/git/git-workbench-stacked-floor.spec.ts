@@ -29,15 +29,14 @@ test("at the minimum app window (1040x720), the stacked document reading pane ke
   const height = await evidence.evaluate((el) => el.getBoundingClientRect().height);
   expect(height, "the stacked reader collapsed to nothing").toBeGreaterThan(200);
 
-  const chip = page.getByTestId("atlas-git-change-row").first();
+  const chip = page.getByTestId("atlas-git-pending-pane");
   await chip.scrollIntoViewIfNeeded();
   const hit = await chip.evaluate((el) => {
     const box = el.getBoundingClientRect();
     const top = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
     return { onTop: !!top && el.contains(top), topId: top?.getAttribute("data-testid") ?? top?.tagName ?? null };
   });
-  expect(hit.onTop, `a change chip is covered by ${hit.topId}`).toBe(true);
-  await chip.click({ timeout: 5_000 });
+  expect(hit.onTop, `the changed document pane is covered by ${hit.topId}`).toBe(true);
 
   // The step just picked wins the window it was picked in: its headline starts above the fold
   // without scrolling the page (round-two review: an uncapped list pushed it below 720).

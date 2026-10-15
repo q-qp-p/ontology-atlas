@@ -1,13 +1,19 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { findProjectDocInList } from "@/entities/docs-vault";
+import { buildProjectOntologyMetrics } from "@/entities/knowledge-graph";
+import { useOntologyInsight } from "@/features/vault-ontology";
+import { MOTION, OVERLAY_RISE, OVERLAY_RISE_REDUCED, OVERLAY_SETTLED } from "@/shared/motion";
+import { SPRING } from "@/shared/motion/spring";
+import { usePrefersReducedMotion } from "@/shared/lib/render-timing/use-prefers-reduced-motion";
 import { getProjectRuntimeDetailHref, getTopologyProjectNodeHref, projectDisplayName, type Project } from "@/entities/project";
 import { OpenVaultCta } from "@/features/docs-vault-local";
 import { useDataSourceMode, VaultSourceHydrationBoundary, useLocalVault } from "@/entities/vault-session";
 import { Link } from "@/i18n/navigation";
-import { Copy } from "lucide-react";
+import { Copy, Plus } from "lucide-react";
 import { useDocumentTitle } from "@/shared/lib/public-pages/use-document-title";
 import { useCopyFeedback } from "@/shared/lib/clipboard/use-copy-feedback";
 import { OntologyMapKindGlyph } from "@/shared/ui";
@@ -29,6 +35,12 @@ function formatAgo(ago: RecentActivityAgo, t: SelectorTranslator) {
 }
 
 /** Shared by the project cards and the next-project tile. */
+const TILE_SPRING = {
+  type: "spring",
+  stiffness: SPRING.surface.stiffness,
+  damping: 2 * SPRING.surface.dampingRatio * Math.sqrt(SPRING.surface.stiffness),
+} as const;
+
 const TILE_SURFACE =
   "rounded-card border bg-[color:var(--color-panel)] shadow-[inset_0_1px_0_var(--color-overlay-1)]";
 
@@ -44,6 +56,11 @@ export function ProjectSelectorPage() {
     [dataSourceMode],
   );
   useNavRailSettingsSlot(navRailSettingsSlot);
+  const { insight } = useOntologyInsight();
+  const reducedMotion = usePrefersReducedMotion();
+  const [firstSlugs] = useState<ReadonlySet<string>>(() => new Set(projects.map((project) => project.slug)));
+  const riseStart = reducedMotion ? OVERLAY_RISE_REDUCED : OVERLAY_RISE;
+  const riseTransition = reducedMotion ? MOTION.fast : MOTION.base;
 
   return (
     <VaultSourceHydrationBoundary>
@@ -82,15 +99,30 @@ export function ProjectSelectorPage() {
                 {projects.map((project) => {
                   const doc = findProjectDocInList(docs, project.slug);
                   return (
-                    <li key={project.slug} className="flex min-w-0">
-                      <ProjectCard project={project} description={resolveAuthoredDescription(doc, project)} t={t} />
-                    </li>
+                    <motion.li
+                      key={project.slug}
+                      className="flex min-w-0"
+                      initial={!firstSlugs.has(project.slug) ? riseStart : false}
+                      animate={OVERLAY_SETTLED}
+                      transition={riseTransition}
+                    >
+                      <ProjectCard
+                        project={project}
+                        description={resolveAuthoredDescription(doc, project)}
+                        census={insight ? buildProjectOntologyMetrics(insight.nodes, insight.edges, project.slug) : null}
+                        t={t}
+                      />
+                    </motion.li>
                   );
                 })}
                 {/* Alone on its row, the tile spans it. */}
-                <li className={`flex min-w-0 ${projects.length % 2 === 0 ? "md:col-span-2" : ""}`}>
+                <motion.li
+                  layout={reducedMotion ? false : "position"}
+                  transition={TILE_SPRING}
+                  className={`flex min-w-0 ${projects.length % 2 === 0 ? "md:col-span-2" : ""}`}
+                >
                   <NextProjectTile t={t} />
-                </li>
+                </motion.li>
               </ul>
             ) : (
               <div className="mt-7 flex">
@@ -104,7 +136,17 @@ export function ProjectSelectorPage() {
   );
 }
 
-function ProjectCard({ project, description, t }: { project: Project; description: string | null; t: SelectorTranslator }) {
+function ProjectCard({
+  project,
+  description,
+  census,
+  t,
+}: {
+  project: Project;
+  description: string | null;
+  census: ReturnType<typeof buildProjectOntologyMetrics> | null;
+  t: SelectorTranslator;
+}) {
   const locale = useLocale();
   const name = projectDisplayName(project, locale);
   const detailHref = getProjectRuntimeDetailHref(project.slug);
@@ -137,11 +179,24 @@ function ProjectCard({ project, description, t }: { project: Project; descriptio
           </h2>
         </div>
         {/* No reserved lines: the row stretches cards and pins footers. The clamp is a last resort. */}
-        <p className="mt-2.5 line-clamp-4 text-body-lg leading-body-lg text-[color:var(--color-text-secondary)]">
+        <p className="mt-2.5 line-clamp-4 max-w-prose text-body-lg leading-body-lg text-[color:var(--color-text-secondary)]">
           {description ?? (
             <span className="text-[color:var(--color-text-tertiary)]">{t("cardDescriptionFallback")}</span>
           )}
         </p>
+        {census ? (
+          <p
+            data-testid="project-selector-card-census"
+            className="mt-2.5 text-label tabular-nums text-[color:var(--color-text-tertiary)]"
+          >
+            {t("cardCensus", {
+              domains: census.domains,
+              capabilities: census.capabilities,
+              elements: census.elements,
+              relations: census.relations,
+            })}
+          </p>
+        ) : null}
       </div>
       <div className="flex min-w-0 flex-wrap items-center gap-2 border-t border-[color:var(--color-divider)] px-[var(--card-pad)] py-3">
         <span className="mr-auto text-label text-[color:var(--color-text-tertiary)]">
@@ -187,12 +242,17 @@ function NextProjectTile({ t, description }: { t: SelectorTranslator; descriptio
       className="@container/next-slot flex w-full min-w-0 flex-col rounded-card border border-dashed border-[color:var(--color-border-soft)] bg-[color:var(--color-overlay-1)]"
     >
       <div className="flex min-w-0 flex-1 flex-col p-[var(--card-pad)]">
-        <h2
-          id="project-selector-next-slot-title"
-          className="text-title font-[var(--font-weight-strong)] tracking-[var(--tracking-card)] text-[color:var(--color-text-secondary)]"
-        >
-          {t("nextSlotTitle")}
-        </h2>
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span aria-hidden className="flex w-[15px] shrink-0 justify-center text-[color:var(--color-text-tertiary)]">
+            <Plus size={ICON_SIZE.md} />
+          </span>
+          <h2
+            id="project-selector-next-slot-title"
+            className="min-w-0 flex-1 text-title font-[var(--font-weight-strong)] tracking-[var(--tracking-card)] text-[color:var(--color-text-secondary)]"
+          >
+            {t("nextSlotTitle")}
+          </h2>
+        </div>
         {description ? (
           <p className="mt-2.5 max-w-[calc(var(--measure-doc-column)-2*var(--measure-doc-gutter))] text-pretty text-body-lg leading-body-lg text-[color:var(--color-text-secondary)]">
             {description}
@@ -213,7 +273,7 @@ function NextProjectTile({ t, description }: { t: SelectorTranslator; descriptio
             <Link
               href={newProjectHref}
               data-testid="project-selector-new-cta"
-              className={controlClass({ shape: "chip", size: "md", tone: "accent" })}
+              className={controlClass({ shape: "chip", size: "md", tone: "secondary" })}
             >
               {t("ctaNewProject")}
             </Link>

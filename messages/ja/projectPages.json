@@ -10,6 +10,7 @@
     "activityAgoYesterday": "昨日",
     "activityAgoDaysAgo": "{days}日前",
     "cardUpdatedPrefix": "最終更新",
+    "cardCensus": "{domains}ドメイン · {capabilities}ケイパビリティ · {elements}要素 · 関係{relations}",
     "cardDescriptionFallback": "このプロジェクトにはまだ説明がありません。",
     "cardDetailAriaLabel": "{name}の詳細を開く",
     "footDetail": "詳細を見る",

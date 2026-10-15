@@ -61,10 +61,23 @@ export function PageHeader({
         {/* Ramp utilities only: an arbitrary-length token raises the size but keeps the smaller step's
             leading. The display step matches every destination's h1; the pane's selection headline
             outranks it with `text-hero`. */}
-        <h1 className={cn("flex items-center gap-2", PAGE_TITLE)}>
-          <HistoryIcon size={ICON_SIZE.lg} aria-hidden className="text-[color:var(--color-indigo-text-soft)]" />
-          {t("title")}
-        </h1>
+        {inColumn ? (
+          <>
+            <h1 className="sr-only">{t("title")}</h1>
+            <p
+              aria-hidden
+              className="flex items-center gap-2 text-title leading-title font-[var(--font-weight-signature)] text-[color:var(--color-text-primary)]"
+            >
+              <HistoryIcon size={ICON_SIZE.lg} aria-hidden className="text-[color:var(--color-indigo-text-soft)]" />
+              {t("title")}
+            </p>
+          </>
+        ) : (
+          <h1 className={cn("flex items-center gap-2", PAGE_TITLE)}>
+            <HistoryIcon size={ICON_SIZE.lg} aria-hidden className="text-[color:var(--color-indigo-text-soft)]" />
+            {t("title")}
+          </h1>
+        )}
         {/* The scope notice stands here: nothing outside the folder is touched. */}
         {showScope ? (
           <p className="flex items-center gap-1.5 text-label leading-prose text-[color:var(--color-text-quaternary)]">

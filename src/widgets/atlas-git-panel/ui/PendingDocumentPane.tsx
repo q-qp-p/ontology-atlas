@@ -87,7 +87,7 @@ export function PendingDocumentPane({
             </span>
           ) : null}
         </p>
-        {all.length > 0 ? (
+        {all.length > 1 ? (
           <div {...group.groupProps} aria-label={t("changedDocsAria")} className="flex flex-wrap gap-1.5">
             {all.map((doc, index) => (
               <button

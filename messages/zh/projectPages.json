@@ -10,6 +10,7 @@
     "activityAgoYesterday": "昨天",
     "activityAgoDaysAgo": "{days} 天前",
     "cardUpdatedPrefix": "最后更新",
+    "cardCensus": "{domains} 个领域 · {capabilities} 项能力 · {elements} 个元素 · {relations} 条关系",
     "cardDescriptionFallback": "此项目还没有描述。",
     "cardDetailAriaLabel": "打开 {name} 详情",
     "footDetail": "查看详情",
