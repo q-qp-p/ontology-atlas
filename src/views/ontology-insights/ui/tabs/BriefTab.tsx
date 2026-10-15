@@ -4,7 +4,6 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
-import { CensusSubStat } from '@/shared/ui/status/census-tile';
 import { controlClass } from '@/shared/ui/control-class';
 import { Button } from '@/shared/ui';
 import { RowDisclosure } from '@/shared/ui/controls/row-disclosure';
@@ -14,13 +13,13 @@ import { buildDriftHandoff } from '../../lib/brief/drift-handoff';
 import { HiddenCountLine } from '@/shared/ui/status/hidden-count-line';
 import type { SinceRow } from '../../lib/brief/since-list';
 import { cn } from '@/shared/lib/cn';
-import { useCountUp } from '@/shared/lib/render-timing/use-count-up';
 import { useDelayedVisible } from '@/shared/lib/render-timing/use-presence';
 import { usePrefersReducedMotion } from '@/shared/lib/render-timing/use-prefers-reduced-motion';
 import { parseInsightsTabHref, type InsightsTab } from '../../lib/insights-tab-state';
 import type { BriefCore, BriefLine, BriefLineDetail, BriefState } from '../../lib/brief/brief-model';
 import { briefRows, type BriefRow } from '../../lib/brief/brief-rows';
 import type { InsightsBrief } from '../../lib/brief/use-insights-brief';
+import { INSIGHTS_HEADLINE } from './insights-headline';
 import { BRIEF_TWO_COLUMN, INSIGHTS_LIST_ROW, insightsTwoColumnCell } from '../parts/insights-list';
 
 /** Where each line opens: the screen that lists the named things, never a second copy of that list here. */
@@ -61,14 +60,6 @@ const CORE_NEXT_HREF: Record<BriefCore['core'], string> = {
   wiki: '/library/',
   harness: '/architecture/',
   agent: '/agents/',
-};
-
-/** The three column names each core speaks in; the model's slots are positional. */
-const COLUMNS: Record<BriefCore['core'], readonly [string, string, string]> = {
-  ontology: ['current', 'stale', 'unknown'],
-  wiki: ['current', 'stale', 'unknown'],
-  harness: ['told', 'gated', 'watched'],
-  agent: ['reads', 'writes', 'agents'],
 };
 
 /**
@@ -124,7 +115,7 @@ function BriefHeadline({ totals, counting }: { totals: InsightsBrief['totals']; 
       data-testid="brief-headline"
       data-brief-headline-state={totals ? (counting ? 'recounting' : 'settled') : 'counting'}
       aria-busy={counting || undefined}
-      className="min-w-0 text-hero font-[var(--font-weight-signature)] tracking-[var(--tracking-card)] text-[color:var(--color-text-primary)]"
+      className={cn('min-w-0', INSIGHTS_HEADLINE)}
     >
       {totals ? (
         <span key="settled" className="insights-disclosure-in block">
@@ -221,8 +212,6 @@ export function BriefTab({
         </div>
         <p className="mt-2 text-body text-[color:var(--color-text-tertiary)]">{t('sinceGloss')}</p>
       </div>
-      {/* One band of counts, then one list of lines: equal cards left most of the first screen blank. */}
-      <BriefBand cores={cores} />
       <BriefLineList
         rows={briefRows(cores, { namedSince: brief.since.map((row) => row.kind), sinceCounting: brief.sinceTotal === null })}
         details={brief.details}
@@ -235,90 +224,6 @@ export function BriefTab({
         <BriefSinceList rows={brief.since} total={brief.sinceTotal} soleKind={brief.sinceKind} nowMs={brief.nowMs} counting={counting} />
       ) : null}
     </section>
-  );
-}
-
-/** The four cores as one band. A core that cannot count shows the unknown mark; the list below carries its sentence and door. */
-function BriefBand({ cores }: { cores: readonly BriefCore[] }) {
-  const t = useTranslations('ontologyPages.insights.brief');
-  return (
-    <div
-      data-testid="brief-band"
-      // The rounded box is the ordinary panel; the divider colour lives on the grid inside, or the surface-vocabulary ratchet fails.
-      className="overflow-hidden rounded-panel border border-[color:var(--color-border-soft)] bg-[color:var(--color-panel)]"
-    >
-      <div
-        // A container query, not a viewport one: at the app's 1040 floor the slot is 896px.
-        className="grid grid-cols-2 gap-px bg-[color:var(--color-divider)] @min-[960px]/insights:grid-cols-4"
-      >
-      {cores.map((core) => {
-        const [c1, c2, c3] = COLUMNS[core.core];
-        const measured = core.availability === 'measured';
-        // Nothing to count and nothing arriving: the ring, whose reason the list row gives.
-        const unknowable = core.availability === 'no-source' || core.availability === 'app-only' || core.availability === 'unreadable';
-        const unit = t(`unit.${core.core}`);
-        return (
-          <div
-            key={core.core}
-            data-testid={`brief-core-${core.core}`}
-            data-brief-availability={core.availability}
-            className="flex min-w-0 flex-col gap-1 bg-[color:var(--color-panel)] px-[var(--card-pad)] py-4"
-          >
-            <span className="min-w-0 break-keep text-body font-[var(--font-weight-signature)] text-[color:var(--color-text-secondary)]">
-              {t(`core.${core.core}`)}
-            </span>
-            {/* The magnitude is the cell's answer, at the title step in primary ink under the name.
-               A core with no magnitude keeps the row's height so four cells share one baseline. */}
-            <span className="flex min-h-[var(--leading-title)] items-baseline gap-1.5">
-              {core.headline != null ? (
-                <BandNumber value={core.headline} unit={unit} />
-              ) : unknowable ? (
-                // The title step like its peers' numerals, so the band reads as four answers of one weight.
-                <UnknownMark label={t('col.unknown')} testId={`brief-core-state-${core.core}`} word={t('col.unknown')} />
-              ) : (
-                <span className="text-body text-[color:var(--color-text-tertiary)]" data-testid={`brief-core-state-${core.core}`}>
-                  {t(`bandState.${core.availability}`)}
-                </span>
-              )}
-            </span>
-            {/* The band carries magnitudes only; the reason and its door are said once, in the list. */}
-            {measured ? (
-              <div className="flex flex-wrap gap-x-4 gap-y-1" data-testid="brief-core-columns">
-                <CensusSubStat label={t(`col.${c1}`)} value={core.current ?? 0} />
-                <CensusSubStat label={t(`col.${c2}`)} value={core.stale ?? 0} tone={core.stale ? 'warning' : 'numeral'} />
-                <CensusSubStat label={t(`col.${c3}`)} value={core.unknown ?? 0} />
-              </div>
-            ) : null}
-          </div>
-        );
-      })}
-      </div>
-    </div>
-  );
-}
-
-/** The band's "unknown" value: the list's hollow ring and one word at the magnitude's step. */
-function UnknownMark({ label, word, testId }: { label: string; word: string; testId: string }) {
-  return (
-    <span className="inline-flex items-center gap-2 text-title font-[var(--font-weight-strong)] text-[color:var(--color-text-tertiary)]" data-testid={testId}>
-      <span aria-hidden="true" className="size-2.5 shrink-0 rounded-full border border-[color:var(--color-text-tertiary)]" />
-      <span aria-hidden="true">{word}</span>
-      <span className="sr-only">{label}</span>
-    </span>
-  );
-}
-
-/** Counted up on arrival and down when a visit is marked. */
-function BandNumber({ value, unit }: { value: number; unit: string }) {
-  const shown = useCountUp(value, 400, { animateChanges: true });
-  return (
-    <>
-      <span className="font-mono text-title font-[var(--font-weight-strong)] tabular-nums text-[color:var(--color-text-primary)]" aria-hidden="true">
-        {shown}
-      </span>
-      {unit ? <span className="text-label text-[color:var(--color-text-tertiary)]" aria-hidden="true">{unit}</span> : null}
-      <span className="sr-only">{unit ? `${value} ${unit}` : value}</span>
-    </>
   );
 }
 

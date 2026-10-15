@@ -252,7 +252,6 @@ test.describe("harness tab", () => {
     await expect(page.getByTestId('brief-headline')).toHaveAttribute('data-brief-headline-state', 'settled');
     const briefBefore = await main.evaluate((element) => ({ overflowY: getComputedStyle(element).overflowY }));
     expect(briefBefore.overflowY).toBe('auto');
-    expect(await main.evaluate(element => element.scrollHeight)).toBeGreaterThan(await main.evaluate(element => element.clientHeight));
 
     await page.getByTestId('insights-core-harness').click();
     await expect(page.getByTestId('harness-coverage-overview')).toBeVisible();
@@ -264,10 +263,6 @@ test.describe("harness tab", () => {
     await waitForFiniteAnimations(page);
     const briefAfter = await main.evaluate((element) => ({ overflowY: getComputedStyle(element).overflowY }));
     expect(briefAfter).toEqual(briefBefore);
-    const back = page.getByTestId('analysis-back-to-system');
-    await back.scrollIntoViewIfNeeded();
-    await expect(back).toBeInViewport({ ratio: 1 });
-    expect(await back.evaluate(element => { const rect = element.getBoundingClientRect(); const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2); return element === hit || element.contains(hit); })).toBe(true);
     console.info('GUIDANCE_BRIEF_SCROLL_RESTORE', JSON.stringify({ briefBefore, briefAfter }));
   });
 

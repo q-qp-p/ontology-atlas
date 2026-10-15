@@ -156,8 +156,10 @@ describe("FlowTab", () => {
     const { rerender } = render(
       <FlowTab labels={labels} request={REQUEST} hasGraph hasOwnFolder canLaunchAgent onPrefill={vi.fn()} />,
     );
-    expect(screen.getByText(REQUEST)).toBeInTheDocument();
     expect(screen.getByTestId("flow-copy")).toBeInTheDocument();
+    expect(screen.getByTestId("flow-request-open")).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(screen.getByTestId("flow-request-open"));
+    expect(screen.getByText(REQUEST)).toBeInTheDocument();
 
     rerender(<FlowTab labels={labels} request={REQUEST} hasGraph hasOwnFolder canLaunchAgent={false} />);
     expect(
@@ -170,7 +172,7 @@ describe("FlowTab", () => {
     render(
       <FlowTab labels={labels} request={REQUEST} versions={saved ? [version()] : []} hasGraph hasOwnFolder canLaunchAgent={false} />,
     );
-    if (saved) fireEvent.click(screen.getByTestId("flow-request-open"));
+    fireEvent.click(screen.getByTestId("flow-request-open"));
 
     const region = screen.getByRole("region", { name: labels.requestLabel });
     expect(region).toHaveAttribute("tabindex", "0");
@@ -201,6 +203,7 @@ describe("FlowTab on the built-in sample", () => {
       />,
     );
 
+    fireEvent.click(screen.getByTestId("flow-request-open"));
     expect(screen.getByText(REQUEST)).toBeInTheDocument();
     expect(
       screen.queryByTestId("flow-prefill"),
