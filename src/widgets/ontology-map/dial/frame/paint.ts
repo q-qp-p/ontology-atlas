@@ -14,7 +14,6 @@ export interface DialPaintOptions {
 
 const STRIP_STEPS = 22;
 const GAP_EDGE = 0.01;
-const RING_DASH = [2, 5];
 const RELATES_DASH = [2, 3];
 const UNKNOWN_DASH = [2, 2];
 const TEXT_HALO_PX = 3;
@@ -257,7 +256,6 @@ export function paintDialMarks(ctx: CanvasRenderingContext2D, marks: DialFrameMa
     ctx.save();
     knockout(ctx, marks);
     ctx.lineWidth = 1;
-    ctx.setLineDash(RING_DASH);
     for (const rails of groupBy(marks.rails, (r) => String(r.ink)).values()) {
       ctx.beginPath();
       for (const r of rails) {

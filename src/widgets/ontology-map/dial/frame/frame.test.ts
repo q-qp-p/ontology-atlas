@@ -66,7 +66,7 @@ function recordingContext(): CanvasRenderingContext2D {
         },
     }) as unknown as CanvasRenderingContext2D;
 }
-function modelOf(): DialModel {
+function modelOf(links = true): DialModel {
     const nodes: TreeInputNode[] = [{ id: "p", label: "Project", kind: "project" }];
     const edges: TreeInputEdge[] = [];
     const contains = (s: string, t: string) => edges.push({ source: s, target: t, kind: "contains", relationType: "contains" });
@@ -78,9 +78,9 @@ function modelOf(): DialModel {
             contains(`d${d}`, `d${d}c${c}`);
         }
     }
-    for (let d = 0; d < 5; d += 1)
+    for (let d = 0; d < 5 && links; d += 1)
         edges.push({ source: `d${d}c0`, target: `d${(d + 1) % 5}c1`, kind: "depends", relationType: "depends_on" });
-    edges.push({ source: "d1c2", target: "d0c3", kind: "depends", relationType: "depends_on" }, { source: "d2c2", target: "d0c3", kind: "depends", relationType: "depends_on" });
+    if (links) edges.push({ source: "d1c2", target: "d0c3", kind: "depends", relationType: "depends_on" }, { source: "d2c2", target: "d0c3", kind: "depends", relationType: "depends_on" });
     const tree = readContainmentTree(nodes, edges);
     const dependencies = rollDomainDependencies(tree, edges);
     return buildDialModel({ tree, dependencies, flows: rollDirectedDomainFlows(dependencies, rollRelatesDomainPairs(tree, edges)) });
@@ -223,6 +223,19 @@ describe("frame registry", () => {
         expect(lastDialFrame()).toBeNull();
         expect(dialLightFrame()).toBeNull();
         expect(describeLastDialFrame(W, H)).toBeNull();
+    });
+    it("keeps the unmeasured-evidence caption where it rests while the project name fades in", () => {
+        const model = modelOf(false);
+        const labels = { ...LABELS, evidenceUnmeasured: () => "Evidence not measured" };
+        const caption = (appear: number) => {
+            const freeRect = { minX: W / 2 - 60, maxX: W / 2 + 60, minY: 8, maxY: H - 8 };
+            const r = paintDialFrame(frameInput(model, { labels, evidence: new Map(), freeRect, appearOf: (id) => (id.startsWith("d") && !id.includes("c") ? appear : 1) }));
+            return { y: r.marks.texts.find((t) => t.text === "Evidence not measured")!.y, named: r.marks.texts.some((t) => t.role === "project") };
+        };
+        const before = caption(0.05);
+        const after = caption(1);
+        expect([before.named, after.named]).toEqual([false, true]);
+        expect(before.y).toBe(after.y);
     });
     it("describes the last frame with rings, disclosure, budget and placement", () => {
         const model = modelOf();

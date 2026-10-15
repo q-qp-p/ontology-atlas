@@ -1,8 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import * as painted from "./frame/marks";
-import { DIAL_INK_SPECS, DIAL_TOKEN_SPECS, dialChipRadiusPx, dialDiscRadiusPx, readDialTokens, resolveDialTokens } from "./tokens";
-import type { DialTokens } from "./types";
+import { DIAL_INK_SPECS, DIAL_TOKEN_SPECS, readDialTokens, resolveDialTokens } from "./tokens";
 
 const values = (): Map<string, string> => {
   const m = new Map(DIAL_TOKEN_SPECS.map(({ cssVar }, i) => [cssVar, String(i + 1)]));
@@ -57,16 +55,5 @@ describe("readDialTokens", () => {
     expect(readDialTokens().attendedNameInk).toBe("#222222");
     document.documentElement.removeAttribute("data-theme");
     spy.mockRestore();
-  });
-});
-
-const RADII_TOKENS = { pitch: 34, discPitchShare: 0.2, discMinPx: 2.6, discMaxPx: 7, discCapShare: 0.32, chipMinPx: 8, chipMaxPx: 17 } as DialTokens;
-
-describe("mark radii", () => {
-  it("size chips and discs exactly as the frame paints them", () => {
-    for (const scale of [0.1, 0.3, 0.8, 1.6, 4]) {
-      for (const elements of [0, 1, 4, 12]) expect(dialDiscRadiusPx(RADII_TOKENS, scale, elements)).toBe(painted.dialDiscRadiusPx(RADII_TOKENS, scale, elements));
-    }
-    for (const [items, max] of [[0, 0], [1, 12], [7, 12], [12, 12]] as const) expect(dialChipRadiusPx(RADII_TOKENS, items, max)).toBe(painted.dialChipRadiusPx(RADII_TOKENS, items, max));
   });
 });

@@ -41,7 +41,7 @@ Ring radii, each domain's angle and each domain's capability order are remembere
 
 ## Evidence
 
-Evidence rims show where evidence is measured: stale is amber, unknown is dashed, and a domain's units line adds "N stale". When nothing was measured, every capability rim is dashed as unknown and a caption under the hub reads "Evidence not measured"; while the history is still being read, neither shows.
+Evidence rims show where evidence is measured: stale is amber, unknown is dashed, and a domain's units line adds "N stale". When nothing was measured, every capability rim is dashed as unknown and a caption under the hub reads "Evidence not measured", placed below where the project name rests so it stays put while the name fades in; while the history is still being read, neither shows. The rings themselves are solid in `--map-dial-ring`, so a dashed line on the dial always means unknown evidence or a `relates` link.
 
 ## Performance bars
 
