@@ -221,13 +221,13 @@ function pushHubLines(input: DialFrameInput, inks: DialInks, lines: readonly (st
 }
 
 type NumeralMark = DialFrameMarks["numerals"][number];
-interface Figure { text: string; parts: string[] | null; inks: string[] }
+interface Figure { text: string; parts: string[] | null; inks: string[]; width: number }
 interface NumeralMemo { now: Figure; was: Figure | null; since: number }
 
 const numeralMemos = new WeakMap<object, Map<string, NumeralMemo>>();
 
 function figureOf(marks: Pick<DialFrameMarks, "inks">, n: NumeralMark): Figure {
-  return { text: n.text, parts: n.parts?.map((p) => p.text) ?? null, inks: (n.parts ?? [n]).map((p) => marks.inks[p.ink]!) };
+  return { text: n.text, parts: n.parts?.map((p) => p.text) ?? null, inks: (n.parts ?? [n]).map((p) => marks.inks[p.ink]!), width: n.box.maxX - n.box.minX };
 }
 
 export function crossfadeNumerals(marks: DialFrameMarks, worldKey: object, now: number, reducedMotion: boolean): void {
@@ -257,7 +257,7 @@ export function crossfadeNumerals(marks: DialFrameMarks, worldKey: object, now: 
     const was = memo.was;
     if (!was) continue;
     fading.push({
-      ...n, text: was.text, halo: false, alpha: 1 - t, ink: inkIndex(marks, was.inks[0]!),
+      ...n, text: was.text, halo: false, alpha: 1 - t, ink: inkIndex(marks, was.inks[0]!), box: { ...n.box, minX: n.x - was.width / 2, maxX: n.x + was.width / 2 },
       parts: was.parts?.map((text, i) => ({ text, ink: inkIndex(marks, was.inks[i] ?? was.inks[0]!) })) ?? null,
     });
   }

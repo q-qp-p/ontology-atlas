@@ -156,13 +156,34 @@ describe("buildFlowMarks", () => {
     expect(run(model, { focusId: "d3", nameBoxes, occupied: [WIDE] }).out.numerals).toHaveLength(0);
   });
 
+  it("names a far domain whose name is not drawn in its count, beside its chip", () => {
+    const model = modelOf([["d0c0", "d3c0"], ["d0c1", "d3c0"], ["d3c1", "d0c0"]]);
+    const { out, input } = run(model, { focusId: "d3" });
+    const label = out.texts.find((t) => t.id === "d0" && t.role === "stub")!;
+    expect(label.text).toBe(stubText("Domain 0", 1, 2));
+    expect(out.numerals).toHaveLength(0);
+    const chip = input.nodeScreen("d0")!;
+    const centre = { x: (label.box.minX + label.box.maxX) / 2, y: (label.box.minY + label.box.maxY) / 2 };
+    expect(Math.hypot(centre.x - chip.x, centre.y - chip.y)).toBeLessThan(12 + 6 + (label.box.maxX - label.box.minX) / 2 + 1);
+  });
+
+  it("puts a named far domain's count along its strand when every slot beside the name is taken", () => {
+    const model = modelOf([["d0c0", "d3c0"], ["d0c1", "d3c0"], ["d3c1", "d0c0"]]);
+    const chip = run(model).input.nodeScreen("d0")!;
+    const name: Box = { minX: chip.x - 30, maxX: chip.x + 30, minY: chip.y - 120, maxY: chip.y - 108 };
+    const around: Box = { minX: name.minX - 80, maxX: name.maxX + 80, minY: name.minY - 40, maxY: name.maxY + 40 };
+    const { out } = run(model, { focusId: "d3", nameBoxes: new Map([["d0", name]]), occupied: [around] });
+    expect(out.numerals.map((n) => n.text)).toEqual(["→1 ←2"]);
+    const [n] = out.numerals;
+    expect(Math.hypot(n!.x - chip.x, n!.y - chip.y)).toBeLessThan(12 + 6 + (n!.box.maxX - n!.box.minX) / 2 + 1);
+  });
+
   it("keeps focus counts at least 24 px apart", () => {
     const model = modelOf([["d0c0", "d3c0"], ["d1c0", "d3c0"], ["d2c0", "d3c0"], ["d4c0", "d3c0"], ["d5c0", "d3c0"]]);
     const box: Box = { minX: 480, maxX: 520, minY: 395, maxY: 405 };
     const nameBoxes = new Map(["d0", "d1", "d2", "d4", "d5"].map((id) => [id, box]));
     const { out } = run(model, { focusId: "d3", nameBoxes });
-    expect(out.numerals.length).toBeGreaterThan(0);
-    expect(out.numerals.length).toBeLessThan(5);
+    expect(out.numerals).toHaveLength(5);
     const centre = (b: Box) => ({ x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 });
     for (const [i, a] of out.numerals.entries()) {
       for (const b of out.numerals.slice(i + 1)) expect(near(centre(a.box), centre(b.box), 24)).toBe(false);
@@ -248,9 +269,25 @@ describe("buildFlowMarks", () => {
     const free = { minX: 350, minY: 20, maxX: 650, maxY: 300 };
     const resolution = { entered: "d0", resolved: true, endpointSlide: 1 };
     const named = new Set(["d0c0", "d0c1"]);
-    const { result } = run(model, { freeRect: free, viewportWidth: 4000, viewportHeight: 4000, focusId: "d0", resolution, named, measureText: (text) => text.length * 3 });
+    const { result, out, input } = run(model, { freeRect: free, viewportWidth: 4000, viewportHeight: 4000, focusId: "d0", resolution, named, measureText: (text) => text.length * 3 });
     expect(result.links.map((l) => l.key).sort()).toEqual(["d0c0\0d1", "d0c1\0d1"]);
     expect(result.stubs.map((st) => st.text)).toEqual(["Domain 1 →2 ←1"]);
+    const chip = input.nodeScreen("d0")!;
+    const stubs = out.strips.filter((st) => st.role === "stub");
+    expect(stubs).toHaveLength(2);
+    const reach = 12 + 4 + TOKENS.flowSplitPx;
+    for (const st of stubs) expect(Math.min(Math.hypot(st.ax - chip.x, st.ay - chip.y), Math.hypot(st.bx - chip.x, st.by - chip.y))).toBeLessThan(reach);
+  });
+
+  it("keeps a stub on its own near end when it is the only one to that far end", () => {
+    const model = modelOf([["d0c0", "d1c0"]]);
+    const free = { minX: 350, minY: 20, maxX: 650, maxY: 300 };
+    const resolution = { entered: "d0", resolved: true, endpointSlide: 1 };
+    const { result, out, input } = run(model, { freeRect: free, viewportWidth: 4000, viewportHeight: 4000, focusId: "d0", resolution, named: new Set(["d0c0", "d0c1"]), measureText: (text) => text.length * 3 });
+    expect(result.stubs.map((st) => st.text)).toEqual(["Domain 1 →1"]);
+    const cap = input.nodeScreen("d0c0")!;
+    const [st] = out.strips.filter((s) => s.role === "stub");
+    expect(Math.hypot(st!.ax - cap.x, st!.ay - cap.y)).toBeLessThan(4 + 4 + 1);
   });
 
   it("fans stubs at least stub-gap-deg apart", () => {

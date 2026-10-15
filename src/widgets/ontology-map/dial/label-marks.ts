@@ -217,6 +217,8 @@ function nameCandidates(outward: number): number[] {
   return [outward, Math.PI / 2, 0, Math.PI, -Math.PI / 2, outward + Math.PI / 4, outward - Math.PI / 4];
 }
 
+const BETWEEN_STRANDS = Array.from({ length: 16 }, (_, i) => ((i + 1) * Math.PI) / 8);
+
 function receded(attn: DialAttention, domainId: string): boolean {
   return attn.domainId !== null && attn.domainId !== domainId && !attn.partnerDomains.has(domainId);
 }
@@ -288,11 +290,13 @@ function domainNames(ctx: Ctx): void {
     const block = domainLabelBlock(cluster.domainId, input.model, input.labels, input.evidence, input.measureText, input.tokens);
     const reach = nameReach(input, cluster, chip);
     const angles = nameCandidates(Math.atan2(chip.y - centre.y, chip.x - centre.x));
-    const plans = NAME_STEPS_PX.flatMap((step) => angles.map((a) => placeBlock(block, a, chip.x + Math.cos(a) * (reach + step), chip.y + Math.sin(a) * (reach + step))));
+    const around = (as: readonly number[]) => NAME_STEPS_PX.flatMap((step) => as.map((a) => placeBlock(block, a, chip.x + Math.cos(a) * (reach + step), chip.y + Math.sin(a) * (reach + step))));
+    const plans = around(angles);
+    const between = around(BETWEEN_STRANDS.map((a) => angles[0]! + a));
     let chosen: PlacedBlock | null = null;
     let withUnits = false;
     for (let pass = 0; pass < 3 && !chosen; pass += 1) {
-      for (const plan of plans) {
+      for (const plan of pass === 1 ? [...plans, ...between] : plans) {
         if (pass === 0 && plan.unitsBox && free(ctx, plan.box) && !crossesBox(input.lines, plan.box)) {
           chosen = plan;
           withUnits = true;

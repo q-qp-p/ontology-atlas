@@ -260,24 +260,45 @@ interface Stub {
   near: End;
   nearId: string;
   farId: string;
+  farP: Point;
   angle: number;
   presence: number;
   counts?: { needs: number; used: number };
 }
 
-function mergeAttendedStubs(model: DialModel, attn: DialAttention, stubs: readonly Stub[]): Stub[] {
-  if (!attn.domainId) return [...stubs];
+function mergeAttendedStubs(model: DialModel, attn: DialAttention, stubs: readonly Stub[], chip: End | null): Stub[] {
+  if (!attn.domainId || !chip) return [...stubs];
   const mine = mineOf(model, attn);
-  const totals = new Map<string, { needs: number; used: number }>();
-  return stubs.map((st) => {
-    if (!st.link.attended || !mine(st.nearId)) return st;
-    const nearIsU = st.nearId === st.link.u;
-    const counts = totals.get(st.farId) ?? { needs: 0, used: 0 };
-    counts.needs += nearIsU ? st.link.uv : st.link.vu;
-    counts.used += nearIsU ? st.link.vu : st.link.uv;
-    totals.set(st.farId, counts);
-    return { ...st, counts };
-  });
+  const byFar = new Map<string, Stub[]>();
+  const out: Stub[] = [];
+  for (const st of stubs) {
+    if (!st.link.attended || !mine(st.nearId)) {
+      out.push(st);
+      continue;
+    }
+    const list = byFar.get(st.farId);
+    if (list) list.push(st);
+    else byFar.set(st.farId, [st]);
+  }
+  for (const [farId, list] of byFar) {
+    if (list.length === 1) {
+      out.push(list[0]!);
+      continue;
+    }
+    const counts = { needs: 0, used: 0 };
+    for (const st of list) {
+      const nearIsU = st.nearId === st.link.u;
+      counts.needs += nearIsU ? st.link.uv : st.link.vu;
+      counts.used += nearIsU ? st.link.vu : st.link.uv;
+    }
+    const lead = list.reduce((a, b) => (b.link.total > a.link.total || (b.link.total === a.link.total && b.link.key < a.link.key) ? b : a));
+    const farP = lead.farP;
+    out.push({
+      link: lead.link, near: chip, nearId: attn.domainId, farId, farP, presence: Math.max(...list.map((st) => st.presence)), counts,
+      angle: Math.atan2(farP.y - chip.p.y, farP.x - chip.p.x),
+    });
+  }
+  return out;
 }
 
 export function fanAngles(angles: readonly number[], gapDeg: number): number[] {
@@ -367,18 +388,15 @@ function paintStubs(input: FlowMarksInput, out: FlowMarks, stubs: Stub[], result
   const nameFont = scaledLabelFont("capability", tokens.labelScale);
   const nameFontPx = scaledLabelFontSize("capability", tokens.labelScale);
   const accepted: StubPlan[] = [];
-  const merged = new Set<string>();
   const hits = (plan: StubPlan, box: Box) => segmentHitsBox(plan.start.x, plan.start.y, plan.end.x, plan.end.y, grown(box, STUB_LINE_PAD_PX));
   for (const plan of planStubs(input, stubs, nameFont, nameFontPx)) {
     const { st, start, end, cos, sin, needs, used, box } = plan;
-    if (st.counts && merged.has(st.farId)) continue;
     if (!inside(box, input.freeRect) || input.occupied.some((o) => overlaps(o, box))) continue;
     if (crossesBox(chordLines, grown(box, STUB_LINE_PAD_PX))) continue;
     if (!st.link.attended && (chordLines.some((line) => stubCrossesLine(plan, line)) || accepted.some((other) => stubCrossesLine(plan, [other.start, other.end])))) continue;
     if (accepted.some((other) => hits(other, box) || hits(plan, other.box))) continue;
     if (input.avoidTexts?.some((t) => hits(plan, t))) continue;
     accepted.push(plan);
-    if (st.counts) merged.add(st.farId);
     input.occupied.push(box);
     const needsInk = mixOver(strokeInk(inks, model, input.inkAttention, st.link, st.nearId, false), inks.bg, st.presence);
     const usedInk = mixOver(strokeInk(inks, model, input.inkAttention, st.link, st.farId, false), inks.bg, st.presence);
@@ -498,7 +516,7 @@ export function buildFlowMarks(input: FlowMarksInput, out: FlowMarks): FlowMarks
       if (l.relatesOnly) continue;
       const near = ina ? a : b;
       const far = ina ? b : a;
-      stubs.push({ link: l, near, nearId: ina ? l.u : l.v, farId: ina ? l.v : l.u, angle: Math.atan2(far.p.y - near.p.y, far.p.x - near.p.x), presence });
+      stubs.push({ link: l, near, nearId: ina ? l.u : l.v, farId: ina ? l.v : l.u, farP: far.p, angle: Math.atan2(far.p.y - near.p.y, far.p.x - near.p.x), presence });
       continue;
     }
     toDraw.push({ l, a, b, presence });
@@ -510,7 +528,8 @@ export function buildFlowMarks(input: FlowMarksInput, out: FlowMarks): FlowMarks
   });
   toDraw.sort((x, y) => Number(x.l.attended) - Number(y.l.attended) || x.l.total - y.l.total || (x.l.key < y.l.key ? -1 : 1));
   placeFarNumerals(input, out, farCounts(input, toDraw));
-  paintStubs(input, out, mergeAttendedStubs(model, attn, stubs), result, chordLines);
+  const focusChip = attn.domainId ? endOf(attn.domainId) : null;
+  paintStubs(input, out, mergeAttendedStubs(model, attn, stubs, focusChip && within(focusChip.p) ? focusChip : null), result, chordLines);
   for (const { l, a, b, presence } of toDraw) {
     drawLink(input, out, l, a, b, presence, hub, maxTotal, numberKeep.has(l.key));
     result.drawn.push(l.key);
@@ -547,6 +566,8 @@ interface FarCount {
   used: number;
   needsInk: string;
   usedInk: string;
+  chip: End;
+  toward: Point;
 }
 
 function linkInk(input: FlowMarksInput, l: DialLink, from: string, numeral: boolean, presence: number): string {
@@ -556,18 +577,21 @@ function linkInk(input: FlowMarksInput, l: DialLink, from: string, numeral: bool
   return mixOver(crossfadeInk(was, now, input.inkMix), inks.bg, presence);
 }
 
-function farCounts(input: FlowMarksInput, toDraw: readonly { l: DialLink; presence: number }[]): Map<string, FarCount> {
+function farCounts(input: FlowMarksInput, toDraw: readonly { l: DialLink; a: End; b: End; presence: number }[]): Map<string, FarCount> {
   const { model, attention: attn } = input;
   const far = new Map<string, FarCount>();
   if (!attn.domainId) return far;
   const mine = mineOf(model, attn);
-  for (const { l, presence } of toDraw) {
+  for (const { l, a, b, presence } of toDraw) {
     if (!l.attended || l.relatesOnly) continue;
     const mineIsU = mine(l.u);
     const meId = mineIsU ? l.u : l.v;
     const themId = mineIsU ? l.v : l.u;
     if (!model.domainById.has(themId)) continue;
-    const count = far.get(themId) ?? { needs: 0, used: 0, needsInk: linkInk(input, l, meId, true, presence), usedInk: linkInk(input, l, themId, true, presence) };
+    const count = far.get(themId) ?? {
+      needs: 0, used: 0, needsInk: linkInk(input, l, meId, true, presence), usedInk: linkInk(input, l, themId, true, presence),
+      chip: mineIsU ? b : a, toward: (mineIsU ? a : b).p,
+    };
     count.needs += mineIsU ? l.uv : l.vu;
     count.used += mineIsU ? l.vu : l.uv;
     far.set(themId, count);
@@ -635,18 +659,38 @@ function drawFanLink(input: FlowMarksInput, out: FlowMarks, attn: DialAttention,
   });
 }
 
+function besideChip(count: FarCount, w: number, h: number): Point[] {
+  const { p, r } = count.chip;
+  const dx = count.toward.x - p.x;
+  const dy = count.toward.y - p.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const ux = dx / len;
+  const uy = dy / len;
+  const along = r + FAR_GAP_PX + (Math.abs(ux) * w + Math.abs(uy) * h) / 2;
+  return [
+    { x: p.x + ux * along, y: p.y + uy * along },
+    { x: p.x + r + FAR_GAP_PX + w / 2, y: p.y },
+    { x: p.x - r - FAR_GAP_PX - w / 2, y: p.y },
+    { x: p.x, y: p.y + r + FAR_GAP_PX + h / 2 },
+    { x: p.x, y: p.y - r - FAR_GAP_PX - h / 2 },
+  ];
+}
+
 function placeFarNumerals(input: FlowMarksInput, out: FlowMarks, far: ReadonlyMap<string, FarCount>): void {
   const font = numeralFont();
   const h = NUMERAL_FONT_PX;
   const centres = out.numerals.map((n) => ({ x: (n.box.minX + n.box.maxX) / 2, y: (n.box.minY + n.box.maxY) / 2 }));
   const order = [...far].sort((x, y) => y[1].needs + y[1].used - (x[1].needs + x[1].used) || (x[0] < y[0] ? -1 : 1));
   for (const [id, count] of order) {
-    const name = input.nameBoxes?.get(id);
-    if (!name) continue;
     const parts: { text: string; ink: string }[] = [];
     if (count.needs > 0) parts.push({ text: `→${count.needs}`, ink: count.needsInk });
     if (count.used > 0) parts.push({ text: `${parts.length > 0 ? " " : ""}←${count.used}`, ink: count.usedInk });
     if (parts.length === 0) continue;
+    const name = input.nameBoxes?.get(id);
+    if (!name) {
+      placeNamedCount(input, out, id, count);
+      continue;
+    }
     const text = parts.map((p) => p.text).join("");
     const w = tabularWidth(text, font, input.measureText);
     const cx = (name.minX + name.maxX) / 2;
@@ -656,6 +700,7 @@ function placeFarNumerals(input: FlowMarksInput, out: FlowMarks, far: ReadonlyMa
       { x: name.minX - FAR_GAP_PX - w / 2, y: cy },
       { x: cx, y: name.maxY + FAR_GAP_PX + h / 2 },
       { x: cx, y: name.minY - FAR_GAP_PX - h / 2 },
+      ...besideChip(count, w + 4, h + 4),
     ];
     for (const p of tries) {
       const box = { minX: p.x - w / 2 - 2, maxX: p.x + w / 2 + 2, minY: p.y - h / 2 - 2, maxY: p.y + h / 2 + 2 };
@@ -669,6 +714,27 @@ function placeFarNumerals(input: FlowMarksInput, out: FlowMarks, far: ReadonlyMa
       });
       break;
     }
+  }
+}
+
+function placeNamedCount(input: FlowMarksInput, out: FlowMarks, id: string, count: FarCount): void {
+  const { tokens, inks, model } = input;
+  const font = scaledLabelFont("capability", tokens.labelScale);
+  const px = scaledLabelFontSize("capability", tokens.labelScale);
+  const label = model.domainById.get(id)?.label ?? id;
+  const text = stubText(label, count.needs, count.used);
+  const w = input.measureText(text, font);
+  const h = px * 1.4;
+  for (const p of besideChip(count, w + 4, h)) {
+    const box = { minX: p.x - w / 2 - 2, maxX: p.x + w / 2 + 2, minY: p.y - h / 2, maxY: p.y + h / 2 };
+    if (!inside(box, input.freeRect) || input.occupied.some((o) => overlaps(o, box))) continue;
+    input.occupied.push(box);
+    const nameInk = inkIndex(out, inks.domainLabelAttended);
+    const parts: { text: string; ink: number }[] = [{ text: label, ink: nameInk }];
+    if (count.needs > 0) parts.push({ text: ` →${count.needs}`, ink: inkIndex(out, count.needsInk) });
+    if (count.used > 0) parts.push({ text: ` ←${count.used}`, ink: inkIndex(out, count.usedInk) });
+    out.texts.push({ id, role: "stub", text, x: p.x - w / 2, y: p.y, align: "left", font, ink: nameInk, box, parts });
+    return;
   }
 }
 

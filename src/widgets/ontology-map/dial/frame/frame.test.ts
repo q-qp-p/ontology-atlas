@@ -154,10 +154,10 @@ describe("focus clock", () => {
 });
 describe("count crossfade", () => {
     const box = { minX: 0, minY: 0, maxX: 10, maxY: 10 };
-    const frameWith = (text: string) => {
+    const frameWith = (text: string, width = 10) => {
         const marks = emptyDialFrameMarks();
         marks.inks.push("#aaaaaa");
-        marks.numerals.push({ flowKey: "far\0d1", text, x: 5, y: 5, ink: 0, halo: true, font: "650 11px x", box, parts: null });
+        marks.numerals.push({ flowKey: "far\0d1", text, x: 5, y: 5, ink: 0, halo: true, font: "650 11px x", box: { ...box, minX: 5 - width / 2, maxX: 5 + width / 2 }, parts: null });
         return marks;
     };
     const shown = (marks: ReturnType<typeof frameWith>) => marks.numerals.map((n) => [n.text, n.alpha ?? 1]);
@@ -172,6 +172,12 @@ describe("count crossfade", () => {
         crossfadeNumerals(empty, key, 1200, false);
         expect(shown(withFade(frameWith("←7"), key, 1300))).toEqual([["←7", 0]]);
         expect(shown(withFade(frameWith("←7"), key, 1360))).toEqual([["←7", 0.5]]);
+    });
+    it("gives the fading figure a box of its own width where the count stands", () => {
+        const key = {};
+        withFade(frameWith("→4 ←3", 40), key, 0);
+        const fading = withFade(frameWith("←9", 16), key, 1000).numerals.find((n) => n.text === "→4 ←3")!;
+        expect(fading.box).toEqual({ minX: -15, minY: 0, maxX: 25, maxY: 10 });
     });
     it("swaps at once under reduced motion", () => {
         const key = {};

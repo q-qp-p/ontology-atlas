@@ -16,7 +16,7 @@ import { mixOver, resolveDialInks } from "../ink";
 import { layoutDial } from "../layout";
 import { buildDialMarks, emptyDialFrameMarks, type DialMarksInput } from "./marks";
 import { circularDomainOrder } from "../order";
-import { paintDialMarks } from "./paint";
+import { knockoutRects, paintDialMarks } from "./paint";
 import { resolveDialDisclosure } from "./disclosure";
 import { resolveDialTokens } from "../tokens";
 import type { DialLabels, DialModel } from "../types";
@@ -160,13 +160,31 @@ describe("paintDialMarks", () => {
     expect(ringArc).toBeGreaterThan(firstStroke);
   });
 
+  it("knocks overlapping and repeated boxes out once, so no overlap is drawn back in", () => {
+    const name = { minX: 20, minY: 20, maxX: 80, maxY: 40 };
+    const units = { minX: 30.4, minY: 36, maxX: 70, maxY: 56 };
+    const count = { minX: 20, minY: 70, maxX: 80, maxY: 80 };
+    const rects = knockoutRects([name, units, count, { ...count }]);
+    const cover = (x: number, y: number) => rects.filter((r) => x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h).length;
+    for (let x = 0; x < 100; x += 1) {
+      for (let y = 0; y < 100; y += 1) {
+        const inside = [name, units, count].some((b) => x >= Math.floor(b.minX) && x < Math.ceil(b.maxX) && y >= Math.floor(b.minY) && y < Math.ceil(b.maxY));
+        expect(cover(x + 0.5, y + 0.5)).toBe(inside ? 1 : 0);
+      }
+    }
+  });
+
   it("stops the rings at every name and count box, and strokes every name in the ground", () => {
     const { calls, marks } = frame(big, "d0", 1);
     const clip = calls.findIndex((c) => c.name === "clip");
     expect(calls[clip]!.args).toEqual(["evenodd"]);
     const opened = calls.slice(0, clip).findLastIndex((c) => c.name === "beginPath");
-    const boxes = marks.texts.length + marks.extraTexts.length + marks.numerals.length;
-    expect(calls.slice(opened, clip).filter((c) => c.name === "rect")).toHaveLength(1 + boxes);
+    const rects = calls.slice(opened, clip).filter((c) => c.name === "rect").slice(1).map((c) => c.args as number[]);
+    for (const m of [...marks.texts, ...marks.extraTexts, ...marks.numerals]) {
+      const cx = (m.box.minX + m.box.maxX) / 2;
+      const cy = (m.box.minY + m.box.maxY) / 2;
+      expect(rects.filter(([x, y, w, h]) => cx >= x! && cx < x! + w! && cy >= y! && cy < y! + h!)).toHaveLength(1);
+    }
     expect(calls.findIndex((c, i) => i > clip && c.name === "arc")).toBeGreaterThan(clip);
     const ground = mixOver(MAP.canvasBgNear, MAP.canvasBgNear);
     for (const t of marks.texts.filter((m) => m.parts === null)) {
