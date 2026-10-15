@@ -155,6 +155,13 @@ describe("buildLabelMarks", () => {
     expect(texts.some((t) => t.id === "d0" && t.role === "units")).toBe(false);
   });
 
+  it("lets a line cross a domain name only when the free rect holds the domain's whole mark", () => {
+    const lines: Point[][] = [];
+    for (let y = -460; y <= -200; y += 6) lines.push([{ x: -300, y }, { x: 300, y }]);
+    const { texts } = run({ lines, freeRect: { minX: -1000, minY: -300, maxX: 1000, maxY: 1000 } });
+    expect(texts.some((t) => t.id === "d0")).toBe(false);
+  });
+
   it("drops every text whose box leaves the free rect", () => {
     const freeRect = { minX: -1000, minY: -250, maxX: 1000, maxY: 1000 };
     const { all } = run({ freeRect });

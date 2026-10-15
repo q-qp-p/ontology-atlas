@@ -368,10 +368,11 @@ function domainNames(ctx: Ctx): void {
     const block = domainLabelBlock(id, input.model, input.labels, input.evidence, input.measureText, input.tokens);
     const reach = nameReach(ctx, cluster, chip);
     const angles = nameCandidates(Math.atan2(chip.y - centre.y, chip.x - centre.x));
+    const chipInside = inside({ minX: chip.x - chip.r, minY: chip.y - chip.r, maxX: chip.x + chip.r, maxY: chip.y + chip.r }, input.freeRect);
     const plans = NAME_STEPS_PX.flatMap((step) => angles.map((a) => placeBlock(block, a, chip.x + Math.cos(a) * (reach + step), chip.y + Math.sin(a) * (reach + step))));
     const tries = plans.flatMap((plan) => [{ plan, units: true }, { plan, units: false }]);
     let pick = -1;
-    for (let pass = 0; pass < 3 && pick < 0; pass += 1) {
+    for (let pass = 0; pass < (chipInside ? 3 : 2) && pick < 0; pass += 1) {
       pick = pickOnce(ctx, `domain:${id}`, tries, (t) =>
         pass === 0 ? t.units && t.plan.unitsBox !== null && free(ctx, t.plan.box) && !crossesBox(input.lines, t.plan.box)
         : !t.units && free(ctx, t.plan.nameBox) && (pass === 2 || !crossesBox(input.lines, t.plan.nameBox)));
