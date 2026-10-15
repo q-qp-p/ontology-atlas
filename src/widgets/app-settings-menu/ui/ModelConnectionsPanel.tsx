@@ -1318,14 +1318,9 @@ function AuditSection({
   const t = useTranslations('agents.models');
   const hasLog = !error && Boolean(vaultRootPath) && total !== null && total > 0;
   return (
-    <section
-      aria-label={t('auditTitle')}
-      className="min-w-0 border-t border-[color:var(--color-divider)] pt-4"
-      data-testid="ai-audit-tail"
-    >
-      {/* One line carries the section's name and its fact ("N transfers Atlas sent · all recorded
-          in this folder"), so the name is not said twice above the sentence that contains it. */}
-      <div className="flex min-h-8 flex-wrap items-center justify-between gap-x-3 gap-y-2">
+    <section aria-labelledby="ai-audit-title" className="min-w-0" data-testid="ai-audit-tail">
+      <SettingsGroupHeading id="ai-audit-title" label={t('auditTitle')} />
+      <div className="mt-1.5 flex min-h-8 flex-wrap items-center justify-between gap-x-3 gap-y-2">
         {!vaultRootPath ? (
           <p className="text-body text-[color:var(--color-text-tertiary)]" data-testid="ai-audit-no-vault">
             {t('auditNoVault')}
