@@ -30,7 +30,8 @@ test("even a short selection inspector pushes the camera into the real free area
     window.sessionStorage.setItem("demo:first-run-starter-dismissed:v1", "1");
   });
   await page.goto(
-    "/en/topology/?e2e=1&guides=off&p=element%3Acart-session&open=capability%3Acart%2Cdomain%3Aorder%2Cproject%3Astorefront",
+    // INDEX folded: the free area is the canvas left of the inspector.
+    "/en/topology/?e2e=1&guides=off&index=collapsed&p=element%3Acart-session&open=capability%3Acart%2Cdomain%3Aorder%2Cproject%3Astorefront",
     { waitUntil: "domcontentloaded" },
   );
 

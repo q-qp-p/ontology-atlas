@@ -31,7 +31,7 @@ interface Options {
   topologyCanvasFocus: Pick<ReturnType<typeof useTopologyCanvasFocus>, "nodePopoverDismissed" | "nodePopoverPositionerRef" | "lastCanvasPointerRef">;
 }
 export function useTopologyIndexPresentation({
-  v2DatasheetModel, analysisMode, setRouteState, routeState, meaningEditorIntent, indexState,
+  v2DatasheetModel, analysisMode, setRouteState, routeState, meaningEditorIntent,
   topologyCanvasFocus, topologyRouteControls, topologyVaultReadModel, homeWorkbenchController,
   topologyAuthoring
 }: Options) {
@@ -46,7 +46,6 @@ export function useTopologyIndexPresentation({
   // ledger is exempt as a realm's only exit.
   const topologySelectionActive = (Boolean(v2DatasheetModel) && !nodePopoverDismissed) || selectedEdge !== null;
   const {
-    manualExpand: indexManualExpandDuringSelection,
     markManualExpand: markIndexManualExpandDuringSelection,
     beginExpandedSelection: beginExpandedIndexSelection,
   } = useIndexSelectionOverride(topologySelectionActive);
@@ -119,10 +118,6 @@ export function useTopologyIndexPresentation({
   const renderedIndexState = resolveContextualIndexState({
     baseState: baseRenderedIndexState,
     meaningEditorOpen: Boolean(meaningEditorIntent),
-    selectionActive: topologySelectionActive,
-    // `?index=expanded` is an explicit deep-link contract that redirects carry.
-    selectionManualExpand:
-      indexManualExpandDuringSelection || indexState === "expanded",
     graphEmpty: topologyGraphEmpty,
     emptyManualExpand: indexManualExpandWhileEmpty,
     agentDockOpen: agentDockRequestedOpen,

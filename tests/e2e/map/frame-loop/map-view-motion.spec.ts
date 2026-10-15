@@ -55,7 +55,7 @@ test("a view switch never shows a frame without a picture of the map", async ({ 
         expect(frames.at(-1)).toEqual({ views: [to], overlay: null });
     }
 });
-test("closing the inspector lands the utility lane in place, on the toolbar's one clock", async ({ page }) => {
+test("the utility lane recedes and returns in place while the inspector opens and closes, on the toolbar's one clock", async ({ page }) => {
     const transition = await page.evaluate(() => {
         const cs = getComputedStyle(document.querySelector('[data-testid="topology-top-toolbar"]')!);
         const list = (value: string) => value.match(/[a-z-]+\([^)]*\)|[^,\s][^,]*/g)?.map((part) => part.trim()) ?? [];
@@ -78,9 +78,11 @@ test("closing the inspector lands the utility lane in place, on the toolbar's on
         const target = map.nodes().find((n) => n.kind === "domain" && !n.hidden && n.x > 520 && n.x < 1000)!;
         return { x: canvas.x + target.x, y: canvas.y + target.y };
     });
+    const resting = await page.getByTestId("topology-utility-action-lane").boundingBox();
     await page.mouse.click(node.x, node.y);
     await expect(page.getByTestId("map-detail-panel")).toBeVisible();
-    await expect(page.getByTestId("topology-utility-action-lane")).toHaveCount(0);
+    await expect(page.getByTestId("topology-utility-action-lane")).toHaveAttribute("inert", "");
+    expect(await page.getByTestId("topology-utility-action-lane").boundingBox(), "the lane moved when the inspector opened").toEqual(resting);
     const lane = page.evaluate(() => new Promise<number[]>((resolve) => {
         const xs: number[] = [];
         const start = performance.now();

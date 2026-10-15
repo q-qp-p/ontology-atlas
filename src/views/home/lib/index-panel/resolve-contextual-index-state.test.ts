@@ -4,8 +4,6 @@ import { resolveContextualIndexState } from "./resolve-contextual-index-state";
 const resting = {
   baseState: "expanded" as const,
   meaningEditorOpen: false,
-  selectionActive: false,
-  selectionManualExpand: false,
   graphEmpty: false,
   emptyManualExpand: false,
   agentDockOpen: false,
@@ -33,20 +31,10 @@ describe("resolveContextualIndexState", () => {
     ).toBe("collapsed");
   });
 
-  it("preserves the existing selection, empty-graph, and editor demotions", () => {
+  it("keeps the empty-graph and editor demotions", () => {
     expect(
       resolveContextualIndexState({ ...resting, meaningEditorOpen: true }),
     ).toBe("collapsed");
-    expect(
-      resolveContextualIndexState({ ...resting, selectionActive: true }),
-    ).toBe("collapsed");
-    expect(
-      resolveContextualIndexState({
-        ...resting,
-        selectionActive: true,
-        selectionManualExpand: true,
-      }),
-    ).toBe("expanded");
     expect(
       resolveContextualIndexState({ ...resting, graphEmpty: true }),
     ).toBe("collapsed");
