@@ -237,14 +237,18 @@ async function measure(page: import("@playwright/test").Page): Promise<Measured>
     });
 
     const slotRect = slot.getBoundingClientRect();
-    const rootStyle = root ? getComputedStyle(root) : null;
     const pageMax = getComputedStyle(document.documentElement).getPropertyValue("--page-max").trim();
     const widths = [pageMax, formWidth].filter(Boolean);
+    // The frame is the root or the column on its first-child chain; the reserve is the chain's bottom padding.
+    const chain = [root, root?.firstElementChild, root?.firstElementChild?.firstElementChild]
+      .flatMap((el) => (el ? [getComputedStyle(el)] : []));
+    const frameAt = chain.findIndex((style) => widths.includes(style.maxWidth));
+    const reserve = chain.slice(0, frameAt + 1).reduce((sum, style) => sum + (Number.parseFloat(style.paddingBottom) || 0), 0);
     return {
       slot: true,
-      framed: Boolean(rootStyle && widths.includes(rootStyle.maxWidth)),
-      frameWidth: rootStyle && widths.includes(rootStyle.maxWidth) ? rootStyle.maxWidth : "",
-      rootPaddingBottom: rootStyle ? Math.round(Number.parseFloat(rootStyle.paddingBottom) || 0) : 0,
+      framed: frameAt >= 0,
+      frameWidth: frameAt >= 0 ? chain[frameAt].maxWidth : "",
+      rootPaddingBottom: frameAt >= 0 ? Math.round(reserve) : 0,
       scrollable: slot.scrollHeight > slot.clientHeight + 1,
       rootHeight: Math.round(root?.getBoundingClientRect().height ?? 0),
       scrollHeight: Math.round(slot.scrollHeight),
@@ -358,11 +362,7 @@ for (const vp of VIEWPORTS) {
         `${vp.label}: no route wearing the page frame was found, so check (4) ran on nothing. ` +
           `Either the frame is gone (then the contract changed) or the --page-max detection is stale.`,
         ).toBeGreaterThan(1);
-      /*
-       * The frame that must be seen is the 960 form column: assert the width itself, not only the
-       * count, so a detector that knows only `--page-max` fails. The wide-frame members
-       * (`/ko/projects/`, `/ko/ontology/insights/`) are not reached: their root is not the slot child.
-       */
+      // Assert the 960 width itself, not only the count, so a detector that knows only `--page-max` fails.
       expect(
         [...framedWidths],
         `${vp.label}: the 960 form frame was never measured, so the width discrimination knows only the old frame`,
