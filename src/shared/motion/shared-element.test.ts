@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { morphName, morphTargetProps, runMorph } from "./shared-element";
+import { SPRING, springEasing, springSettleMs } from "./spring";
 
 type Update = () => void;
 
@@ -46,6 +47,17 @@ describe("runMorph", () => {
     expect(update).toHaveBeenCalledTimes(1);
   });
 
+  it("runs the update directly under reduced motion, leaving the surface fade alone", () => {
+    const { start } = installTransition();
+    carrier(morphName("concept", "a"));
+    const matchMedia = vi.spyOn(window, "matchMedia").mockReturnValue({ matches: true } as MediaQueryList);
+    const update = vi.fn();
+    expect(runMorph(update, [morphName("concept", "a")])).toBe("direct");
+    expect(start).not.toHaveBeenCalled();
+    expect(update).toHaveBeenCalledTimes(1);
+    matchMedia.mockRestore();
+  });
+
   it("runs the update directly when no source carries the name", () => {
     const { start } = installTransition();
     const update = vi.fn();
@@ -65,6 +77,9 @@ describe("runMorph", () => {
     }, [name])).toBe("transition");
     expect(source.style.viewTransitionName).toBe(name);
     expect(document.documentElement.classList.contains("morph-transition")).toBe(true);
+    const root = document.documentElement.style;
+    expect(root.getPropertyValue("--morph-travel-easing")).toBe(springEasing(SPRING.surface));
+    expect(root.getPropertyValue("--morph-travel-duration")).toBe(`${springSettleMs(SPRING.surface)}ms`);
 
     calls[0]!();
     expect(source.style.viewTransitionName).toBe("");
@@ -75,5 +90,6 @@ describe("runMorph", () => {
     await Promise.resolve();
     expect(target!.style.viewTransitionName).toBe("");
     expect(document.documentElement.classList.contains("morph-transition")).toBe(false);
+    expect(root.getPropertyValue("--morph-travel-duration")).toBe("");
   });
 });

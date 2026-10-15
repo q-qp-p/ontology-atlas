@@ -1,7 +1,9 @@
 import { flushSync } from "react-dom";
+import { SPRING, springEasing, springSettleMs } from "./spring";
 
 const MORPH_ATTRIBUTE = "data-morph-name";
 const MORPH_CLASS = "morph-transition";
+const TRAVEL = { easing: "--morph-travel-easing", duration: "--morph-travel-duration" } as const;
 
 interface MorphHandle {
   finished?: Promise<unknown>;
@@ -30,6 +32,7 @@ export function morphTargetProps(name: string): { [MORPH_ATTRIBUTE]: string } {
 
 function viewTransitionApi(): StartViewTransition | null {
   if (typeof document === "undefined") return null;
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return null;
   const candidate = (document as unknown as { startViewTransition?: unknown }).startViewTransition;
   return typeof candidate === "function" ? (candidate as StartViewTransition).bind(document) : null;
 }
@@ -68,6 +71,8 @@ export function runMorph(update: () => void, names: readonly string[]): "transit
     named.length = 0;
   };
   root.classList.add(MORPH_CLASS);
+  root.style.setProperty(TRAVEL.easing, springEasing(SPRING.surface));
+  root.style.setProperty(TRAVEL.duration, `${springSettleMs(SPRING.surface)}ms`);
   for (const source of sources) nameElement(source.element, source.name);
   const sourceSet = new Set<Element>(sources.map((source) => source.element));
   const handle = start(() => {
@@ -80,7 +85,10 @@ export function runMorph(update: () => void, names: readonly string[]): "transit
   });
   const end = () => {
     release();
-    if (own === generation) root.classList.remove(MORPH_CLASS);
+    if (own !== generation) return;
+    root.classList.remove(MORPH_CLASS);
+    root.style.removeProperty(TRAVEL.easing);
+    root.style.removeProperty(TRAVEL.duration);
   };
   for (const promise of [handle?.ready, handle?.updateCallbackDone]) {
     promise?.catch(() => undefined);
