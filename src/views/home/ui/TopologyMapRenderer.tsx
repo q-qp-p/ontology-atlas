@@ -171,6 +171,7 @@ export function TopologyMapRenderer({
   const mapEvidence = topologyGraphProjection.synthEvidence ?? measuredMapEvidence;
   const missingStructureDocuments = useMemo(() => new Set(ontologyInsight?.nodes.filter(node => node.hasOwnDocument === false).map(node => node.id)), [ontologyInsight]);
   const evidenceStates = mapEvidence.availability === "measured" ? mapEvidence.states : null;
+  const dialEvidence = mapEvidence.availability === "reading" ? null : mapEvidence.states;
   const labelFontAdopted = useBodyLabelFont();
   const dialLabelsInFont = useMemo(() => (labelFontAdopted && dialLabels ? { ...dialLabels } : dialLabels), [dialLabels, labelFontAdopted]);
   const [hiddenDependencyCount, setHiddenDependencyCount] = useState(0);
@@ -287,7 +288,7 @@ export function TopologyMapRenderer({
             edges={edges}
             flatRingMemory={flatRingMemory}
             dialLabels={dialLabelsInFont}
-            evidenceStates={evidenceStates}
+            evidenceStates={dialEvidence}
             impactLens={impactLensActive}
             loadProgress={arriving ? loadProgress : null}
             placingTierRead={placingTierRead}
