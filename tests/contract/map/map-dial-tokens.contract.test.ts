@@ -72,7 +72,6 @@ describe("map dial tokens", () => {
 
   it("keeps the floors", () => {
     expect(rest(1)).toBeGreaterThanOrEqual(1);
-    expect(t.numeralSize).toBeGreaterThanOrEqual(9.5);
   });
 
   it("hands capabilities over before their elements", () => {

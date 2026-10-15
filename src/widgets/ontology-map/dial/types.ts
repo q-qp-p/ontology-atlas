@@ -26,7 +26,6 @@ export interface DialTokens {
   flowHeadGain: number;
   flowTrimStartPx: number;
   flowTrimEndPx: number;
-  numeralSize: number;
   numeralHaloPx: number;
   numeralGapPx: number;
   restNumbersShare: number;

@@ -319,7 +319,7 @@ function projectName(ctx: Ctx): void {
   const { model } = input;
   const hub = input.hub;
   if (!model.projectId || !model.projectLabel || !hub) return;
-  const ls = input.tokens.labelScale * 0.9;
+  const ls = input.tokens.labelScale;
   const font = scaledLabelFont("project", ls);
   const fontPx = scaledLabelFontSize("project", ls);
   const width = input.measureText(model.projectLabel, font);

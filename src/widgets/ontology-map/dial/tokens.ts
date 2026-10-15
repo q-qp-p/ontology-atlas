@@ -19,7 +19,6 @@ export const DIAL_TOKEN_SPECS: readonly { key: NumericKey; cssVar: string }[] = 
   { key: "flowHeadGain", cssVar: "--map-dial-flow-head-gain" },
   { key: "flowTrimStartPx", cssVar: "--map-dial-flow-trim-start-px" },
   { key: "flowTrimEndPx", cssVar: "--map-dial-flow-trim-end-px" },
-  { key: "numeralSize", cssVar: "--map-dial-numeral-size" },
   { key: "numeralHaloPx", cssVar: "--map-dial-numeral-halo-px" },
   { key: "numeralGapPx", cssVar: "--map-dial-numeral-gap-px" },
   { key: "restNumbersShare", cssVar: "--map-dial-rest-numbers-share" },
