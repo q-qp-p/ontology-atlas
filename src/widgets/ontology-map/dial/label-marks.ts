@@ -324,17 +324,18 @@ function claim(ctx: Ctx, box: Box): void {
   ctx.input.occupied.push(box);
 }
 
-function projectName(ctx: Ctx): Box | null {
+function projectName(ctx: Ctx): void {
   const { input } = ctx;
   const { model } = input;
   const hub = input.hubRest ?? input.hub;
-  if (!model.projectId || !model.projectLabel || !hub) return null;
+  if (!hub) return;
+  if (!model.projectId || !model.projectLabel) return hubCaptions(ctx, hub, null);
   const ls = input.tokens.labelScale;
   const font = scaledLabelFont("project", ls);
   const fontPx = scaledLabelFontSize("project", ls);
   const width = input.measureText(model.projectLabel, font);
   const gap = fontPx * 0.95;
-  const tries: [number, number, CanvasTextAlign][] = [
+  const around: [number, number, CanvasTextAlign][] = [
     ...NAME_STEPS_PX.flatMap((step): [number, number, CanvasTextAlign][] => [
       [hub.x, hub.y + hub.r + gap + step, "center"],
       [hub.x, hub.y - hub.r - gap - step, "center"],
@@ -347,26 +348,27 @@ function projectName(ctx: Ctx): Box | null {
       return [hub.x + c * r, hub.y + Math.sin(a) * (hub.r + gap + step), c > SIDE_COS ? "left" : c < -SIDE_COS ? "right" : "center"];
     })),
   ];
-  const boxes = tries.map(([x, y, align]) => textBox(width, x, y, align, fontPx, 3));
   const atRest = [circleBox(hub, 3), ...[...ctx.rest.chips.values()].map((c) => circleBox(c, 2)), ...[...ctx.rest.discs.values()].map((d) => circleBox(d, 1))];
-  const pick = pickOnce(ctx, "project", boxes, (box) => inside(box, input.freeRect) && !ctx.texts.some((o) => overlaps(o, box)) && !atRest.some((o) => overlaps(o, box)) && !crossesBox(input.lines, box));
-  if (pick < 0) return null;
+  const clear = (box: Box) => inside(box, input.freeRect) && !ctx.texts.some((o) => overlaps(o, box)) && !atRest.some((o) => overlaps(o, box));
+  const under = around.findIndex(([x, y, align]) => align === "center" && y > hub.y && clear(textBox(width, x, y, align, fontPx, 3)));
+  const tries = under < 0 ? around : [around[under]!, ...around.filter((_, i) => i !== under)];
+  const boxes = tries.map(([x, y, align]) => textBox(width, x, y, align, fontPx, 3));
+  hubCaptions(ctx, hub, under < 0 ? null : boxes[0]!);
+  const pick = pickOnce(ctx, "project", boxes, (box) => clear(box) && !crossesBox(input.lines, box));
+  if (pick < 0) return;
   const [x, y, align] = tries[pick]!;
   const box = boxes[pick]!;
   claim(ctx, box);
   const alpha = Math.min(1, ...[...ctx.rest.chips].filter(([, c]) => inside(circleBox(c, 0), input.freeRect)).map(([id]) => ctx.rest.alpha.get(id) ?? 0));
-  if (!(alpha > SHOWN_ALPHA)) return box;
+  if (!(alpha > SHOWN_ALPHA)) return;
   ctx.out.texts.push({ id: model.projectId, role: "project", text: model.projectLabel, x, y, align, font, ink: fade(ctx, input.inks.project, alpha), box, parts: null });
   ctx.held.set("project", pick);
-  return box;
 }
 
 const HUB_LINE_GAP_PX = 6;
 
-function hubCaptions(ctx: Ctx, name: Box | null): void {
-  const hub = ctx.input.hubRest ?? ctx.input.hub;
+function hubCaptions(ctx: Ctx, hub: Circle, name: Box | null): void {
   const texts = ctx.input.hubLines ?? [];
-  if (!hub) return;
   const ls = ctx.input.tokens.labelScale;
   const font = scaledLabelFont("element", ls);
   const size = scaledLabelFontSize("element", ls);
@@ -580,7 +582,7 @@ export function buildLabelMarks(input: LabelMarksInput, out: LabelMarksOut): voi
   for (const c of rest.chips.values()) marks.push(circleBox(c, 2));
   for (const d of rest.discs.values()) marks.push(circleBox(d, 1));
   const ctx: Ctx = { input, out, texts: [], marks, rest, held: holdOf(input) };
-  hubCaptions(ctx, projectName(ctx));
+  projectName(ctx);
   if (input.hub) marks.push(circleBox(input.hub, HUB_CLEAR_PX));
   domainNames(ctx);
   ringLabels(ctx);

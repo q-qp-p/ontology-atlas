@@ -130,6 +130,16 @@ describe("buildLabelMarks", () => {
     expect(crossesBox(cross, project!.box)).toBe(false);
   });
 
+  it("keeps the hub caption still while strands arrive and moves the name off it instead", () => {
+    const caption = (lines: Point[][]) => run({ lines, hubLines: ["Evidence not measured"] }).texts;
+    const bare = caption([]);
+    const crossed = caption([[{ x: 0, y: 30 }, { x: 0, y: 200 }]]);
+    const at = (texts: typeof bare) => texts.find((t) => t.text === "Evidence not measured")!.box;
+    expect(at(crossed)).toEqual(at(bare));
+    expect(bare.find((t) => t.role === "project")!.box.maxY).toBeLessThanOrEqual(at(bare).minY);
+    expect(overlapCount(crossed)).toBe(0);
+  });
+
   it("keeps domain names clear of the hub", () => {
     const { texts } = run();
     for (const t of texts.filter((x) => x.role === "domain" || x.role === "units")) {
@@ -286,8 +296,8 @@ describe("buildLabelMarks", () => {
 
   it("holds a shown name where it first stood while that place stays clear", () => {
     const { model, scene } = fixture(["Payments", "Catalog", "Shipping", "Accounts"]);
-    const beside = [{ x: 40, y: -200 }, { x: 40, y: 200 }];
-    const first = run({ model, scene, lines: [beside] }).texts.find((t) => t.role === "project")!;
+    const under = [{ x: 0, y: 30 }, { x: 0, y: 200 }];
+    const first = run({ model, scene, lines: [under] }).texts.find((t) => t.role === "project")!;
     const fresh = run().texts.find((t) => t.role === "project")!;
     expect(first.box).not.toEqual(fresh.box);
     expect(run({ model, scene }).texts.find((t) => t.role === "project")!.box).toEqual(first.box);
