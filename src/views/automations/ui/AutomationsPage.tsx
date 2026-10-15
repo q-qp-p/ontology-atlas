@@ -19,7 +19,7 @@ import { SPRING, springEasing, springSettleMs } from "@/shared/motion/spring";
 import { ICON_SIZE } from "@/shared/ui/tokens/icon-size";
 import { Button, buttonVariants, EmptyState, TabBar, useToast } from "@/shared/ui";
 
-import { PAGE_FRAME, PAGE_HEADER_ROW, PAGE_LEDE, PAGE_TITLE, PAGE_TITLE_ROW, PAGE_TWO_TRACK } from "@/shared/ui/tokens/page-frame";
+import { PAGE_FRAME, PAGE_HEADER_ROW, PAGE_LEDE, PAGE_TITLE, PAGE_TITLE_ROW, PAGE_TRACK_CAP, PAGE_TWO_TRACK } from "@/shared/ui/tokens/page-frame";
 import { AutomationScheduleRow } from "./AutomationScheduleRow";
 import { AutomationGhostRow, AutomationLaneFacts, AutomationLaneIntro, AutomationListPanel } from "./AutomationListFrame";
 import listStyles from "./automation-list-frame.module.css";
@@ -153,7 +153,7 @@ export function AutomationsPage({
           </div>
         </header>
 
-        <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[color:var(--color-divider)] pb-3">
+        <div className={`flex flex-wrap items-end justify-between gap-3 border-b border-[color:var(--color-divider)] pb-3 ${PAGE_TRACK_CAP}`}>
           <TabBar ariaLabel={t("tabsAria")} activeKey={lane} onSelect={(key) => selectLane(key as AutomationLane)}
             idPrefix="automations" testId="automations-tabs" placement="header"
             items={[
@@ -166,7 +166,7 @@ export function AutomationsPage({
           </Button> : null}
         </div>
 
-        <section id={`automations-tabpanel-${lane}`} role="tabpanel" aria-labelledby={`automations-tab-${lane}`} className="flex min-w-0 flex-1 flex-col gap-5">
+        <section id={`automations-tabpanel-${lane}`} role="tabpanel" aria-labelledby={`automations-tab-${lane}`} className={`flex min-w-0 flex-1 flex-col gap-5 ${PAGE_TRACK_CAP}`}>
           {state === "loading" ? (
             <div role="status" aria-busy="true"><EmptyState title={t("loadingTitle")} skeleton tone="solid" /></div>
           ) : state === "malformed" || state === "unavailable" ? (

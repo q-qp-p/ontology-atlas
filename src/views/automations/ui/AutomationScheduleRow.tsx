@@ -80,8 +80,8 @@ export function AutomationScheduleRow({ round, runner, expanded, onToggle, onEdi
           changed={runner.changedSinceAllowed.has(round.id)} sentenceId={allowSentenceId} />
       ) : null}
 
-      {/* pl-11 = the row's px-4 + the w-4 icon slot + gap-3: detail text starts on the name's line. */}
-      <RowDisclosure id={detailId} open={expanded} className="pb-5 pl-11 pr-4">
+      {/* The row's inset, then the w-4 icon slot and gap-3: detail text starts on the name's line. */}
+      <RowDisclosure id={detailId} open={expanded} className="pb-5 pl-[calc(var(--card-pad)+1.75rem)] pr-[var(--card-pad)]">
         <div className="space-y-5 border-t border-[color:var(--color-divider)] pt-4">
         {'query' in round && round.query ? <p className="break-words text-body text-[color:var(--color-text-secondary)]"><span className="text-[color:var(--color-text-tertiary)]">{t('scopeLabel')} · </span>{round.query}</p> : null}
         <AutomationRunHistory entries={entries} unrecorded={unrecorded} />
