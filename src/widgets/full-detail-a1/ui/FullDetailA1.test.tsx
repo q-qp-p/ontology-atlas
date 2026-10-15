@@ -56,6 +56,7 @@ const messages = {
       directLinks: "직접 연결 {count}",
       domainCount: "도메인 {count}곳",
       domainLinks: "링크 {count}개",
+      emptyGroup: "{title} 없음",
     },
     reach: {
       domainsHiddenRoute: koMessages.fullDetailA1.reach.domainsHiddenRoute,
@@ -235,7 +236,7 @@ describe("FullDetailA1", () => {
     const { container } = renderFullDetailWithContainer();
     expect(container.querySelector('[data-fulldetail-group="used-by"]')).not.toBeNull();
     expect(container.querySelector('[data-fulldetail-group="depends-on"]')).toBeNull();
-    expect(container.querySelector('[data-fulldetail-empty-groups]')?.textContent).toBe("이 노드가 기대는 곳 0 · 속한 곳 0");
+    expect(container.querySelector('[data-fulldetail-empty-groups]')?.textContent).toBe("이 노드가 기대는 곳 없음·속한 곳 없음");
     expect(container.querySelector('[data-fulldetail-metric]')).toBeNull();
   });
 
@@ -246,7 +247,8 @@ describe("FullDetailA1", () => {
     };
     const { container, onSelectNode } = renderFullDetailWithContainer({ groups });
     const card = container.querySelector('[data-fulldetail-group="used-by"]')!;
-    expect(card.querySelector('[data-fulldetail-group-total="used-by"]')?.textContent).toBe("1");
+    expect(card.querySelector('[data-fulldetail-group-total="used-by"]')?.textContent).toBe("도메인 1곳");
+    expect(within(card as HTMLElement).getByRole("button", { name: /Domain B/ })).toHaveAccessibleName("Domain B, 링크 9개");
     expect(card.querySelector('[data-fulldetail-direct-links="used-by"]')?.textContent).toBe("직접 연결 1");
     fireEvent.click(within(card as HTMLElement).getByText("Domain B"));
     expect(onSelectNode).toHaveBeenCalledWith("domain:b");

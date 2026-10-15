@@ -19,7 +19,8 @@
     "freshDotTitle": "최근 갱신",
     "directLinks": "직접 연결 {count, number}",
     "domainCount": "도메인 {count, number}곳",
-    "domainLinks": "이 도메인과 잇는 링크 {count, number}개"
+    "domainLinks": "이 도메인과 잇는 링크 {count, number}개",
+    "emptyGroup": "{title} 없음"
   },
   "reach": {
     "leadIn": "이 개념에서",

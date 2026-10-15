@@ -251,11 +251,11 @@ export function FullDetailA1({
         ) : null}
       </nav>
 
-      <header className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2 2xl:-ml-8.5">
-        <span className="mt-1">
+      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2 min-[1308px]:-ml-8.5 min-[1308px]:grid-cols-[auto_minmax(0,1fr)_auto]">
+        <span className="col-start-1 row-start-1 self-center min-[1308px]:mt-1 min-[1308px]:self-start">
           <OntologyMapKindGlyph kind={node.kind} size={22} />
         </span>
-        <div className="min-w-0 flex-1">
+        <div className="col-span-2 row-start-2 min-w-0 min-[1308px]:col-span-1 min-[1308px]:col-start-2 min-[1308px]:row-start-1">
           <h1
             ref={headingRef}
             tabIndex={-1}
@@ -306,7 +306,7 @@ export function FullDetailA1({
           ) : null}
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="col-start-2 row-start-1 flex shrink-0 items-center gap-1 justify-self-end min-[1308px]:col-start-3">
           <button
             type="button"
             onClick={handleCopyLink}
@@ -409,6 +409,7 @@ export function FullDetailA1({
           directLinks: (count) => t("groups.directLinks", { count }),
           domainCount: (count) => t("groups.domainCount", { count }),
           domainLinks: (count) => t("groups.domainLinks", { count }),
+          emptyGroup: (title) => t("groups.emptyGroup", { title }),
         }}
       />
 

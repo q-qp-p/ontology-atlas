@@ -19,7 +19,8 @@
     "freshDotTitle": "最近更新",
     "directLinks": "直接连接 {count, number}",
     "domainCount": "{count, number} 个领域",
-    "domainLinks": "与此领域的链接 {count, number} 条"
+    "domainLinks": "与此领域的链接 {count, number} 条",
+    "emptyGroup": "{title}：无"
   },
   "reach": {
     "leadIn": "从此概念出发，",

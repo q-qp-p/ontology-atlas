@@ -19,7 +19,8 @@
     "freshDotTitle": "Recently updated",
     "directLinks": "Direct links {count, number}",
     "domainCount": "{count, plural, one {# domain} other {# domains}}",
-    "domainLinks": "{count, plural, one {# link} other {# links}} with this domain"
+    "domainLinks": "{count, plural, one {# link} other {# links}} with this domain",
+    "emptyGroup": "{title}: none"
   },
   "reach": {
     "leadIn": "From this concept,",

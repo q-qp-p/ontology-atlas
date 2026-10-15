@@ -30,6 +30,7 @@ export interface FullDetailA1GroupsLabels {
   directLinks: (count: number) => string;
   domainCount: (count: number) => string;
   domainLinks: (count: number) => string;
+  emptyGroup: (title: string) => string;
 }
 
 const ROW_CLASS = controlClass({ shape: "chip", className: "flex min-w-0 gap-2 border-transparent px-1.5 py-1 text-left text-body text-[color:var(--map-panel-text-secondary)] hover:border-[color:var(--map-panel-text-quaternary)] hover:text-[color:var(--map-panel-text-primary)]" });
@@ -76,7 +77,10 @@ function DomainRow({
       <OntologyMapTraceMark containment={false} />
       <OntologyMapKindGlyph kind="domain" size={14} />
       <span className="min-w-0 flex-1 truncate">{link.title}</span>
-      <span title={linksTitle} className={COUNT_CLASS}>{link.links}</span>
+      <span title={linksTitle} className={COUNT_CLASS}>
+        <span aria-hidden="true">{link.links}</span>
+        <span className="sr-only">{`, ${linksTitle}`}</span>
+      </span>
     </button>
   );
 }
@@ -90,6 +94,7 @@ function GroupCard({
   twoColumn,
   onSelectNode,
   dataGroup,
+  className,
 }: {
   title: string;
   caption: string;
@@ -99,6 +104,7 @@ function GroupCard({
   twoColumn?: boolean;
   onSelectNode: (id: string) => void;
   dataGroup: string;
+  className?: string;
 }) {
   const rows = view.rows.map((row) => (
     <Row key={row.id} row={row} onSelectNode={onSelectNode} freshDotTitle={labels.freshDotTitle} />
@@ -106,7 +112,7 @@ function GroupCard({
   return (
     <section
       data-fulldetail-group={dataGroup}
-      className="w-full self-start rounded-card border border-[color:var(--map-panel-border)] bg-[color:var(--map-panel-surface)] p-[var(--card-pad)]"
+      className={`w-full rounded-card border border-[color:var(--map-panel-border)] bg-[color:var(--map-panel-surface)] p-[var(--card-pad)] ${className ?? ""}`}
     >
       <div className="mb-2 flex items-baseline gap-2">
         <span className="text-body font-[var(--font-weight-signature)] tracking-[var(--tracking-title)] text-[color:var(--map-panel-text-primary)]">
@@ -115,13 +121,18 @@ function GroupCard({
         <span className="min-w-0 truncate text-label leading-label text-[color:var(--map-panel-text-secondary)]">
           {caption}
         </span>
-        <span
-          data-fulldetail-group-total={dataGroup}
-          title={domains ? labels.domainCount(domains.length) : undefined}
-          className="ml-auto font-mono text-body text-[color:var(--engraved-numeral-face)] [text-shadow:var(--engraved-numeral-text-shadow)]"
-        >
-          {domains ? domains.length : view.total}
-        </span>
+        {domains ? (
+          <span data-fulldetail-group-total={dataGroup} className="ml-auto shrink-0 text-label leading-label tabular-nums text-[color:var(--map-panel-text-secondary)]">
+            {labels.domainCount(domains.length)}
+          </span>
+        ) : (
+          <span
+            data-fulldetail-group-total={dataGroup}
+            className="ml-auto font-mono text-body text-[color:var(--engraved-numeral-face)] [text-shadow:var(--engraved-numeral-text-shadow)]"
+          >
+            {view.total}
+          </span>
+        )}
       </div>
       {domains ? (
         <>
@@ -165,42 +176,45 @@ export function FullDetailA1GroupsPanel({
     ...side.filter((group) => !filled.includes(group)),
   ];
   return (
-    <div
-      className={[
-        "grid gap-[22px] md:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]",
-        className ?? "",
-      ].join(" ")}
-    >
-      {containsFilled ? (
-        <GroupCard
-          dataGroup="contains"
-          title={labels.containsTitle}
-          caption={labels.containsCaption}
-          view={groups.contains}
-          labels={labels}
-          twoColumn
-          onSelectNode={onSelectNode}
-        />
-      ) : null}
-      <div className="flex flex-col gap-4">
-        {filled.map((group) => (
+    <div className={className}>
+      <div className="grid gap-[22px] md:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        {containsFilled ? (
           <GroupCard
-            key={group.dataGroup}
-            dataGroup={group.dataGroup}
-            title={group.title}
-            caption={group.caption}
-            view={group.view}
-            domains={group.domains}
+            dataGroup="contains"
+            title={labels.containsTitle}
+            caption={labels.containsCaption}
+            view={groups.contains}
             labels={labels}
+            twoColumn
             onSelectNode={onSelectNode}
           />
-        ))}
-        {empty.length > 0 ? (
-          <p data-fulldetail-empty-groups className="text-label leading-label tabular-nums text-[color:var(--map-panel-text-tertiary)]">
-            {empty.map((group) => `${group.title} 0`).join(" · ")}
-          </p>
         ) : null}
+        <div className="flex flex-col gap-4">
+          {filled.map((group, index) => (
+            <GroupCard
+              key={group.dataGroup}
+              dataGroup={group.dataGroup}
+              title={group.title}
+              caption={group.caption}
+              view={group.view}
+              domains={group.domains}
+              labels={labels}
+              onSelectNode={onSelectNode}
+              className={index === filled.length - 1 ? "flex-1" : undefined}
+            />
+          ))}
+        </div>
       </div>
+      {empty.length > 0 ? (
+        <p data-fulldetail-empty-groups className="mt-3 flex flex-wrap gap-x-2 text-label leading-label text-[color:var(--map-panel-text-tertiary)]">
+          {empty.map((group, index) => (
+            <span key={group.title} className="flex gap-x-2">
+              {index > 0 ? <span aria-hidden="true">·</span> : null}
+              {labels.emptyGroup(group.title)}
+            </span>
+          ))}
+        </p>
+      ) : null}
     </div>
   );
 }
