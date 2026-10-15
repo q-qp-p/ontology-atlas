@@ -920,7 +920,7 @@
       "columnTime": "Time",
       "columnRound": "Round",
       "columnOutcome": "Outcome",
-      "ghostTime": "--:--",
+      "ghostTime": "––:––",
       "ghostAria": "Where the first pass will land"
     },
     "sheet": {

@@ -920,7 +920,7 @@
       "columnTime": "時刻",
       "columnRound": "点検",
       "columnOutcome": "結果",
-      "ghostTime": "--:--",
+      "ghostTime": "––:––",
       "ghostAria": "最初の実行が入る場所"
     },
     "sheet": {

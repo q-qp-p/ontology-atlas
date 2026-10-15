@@ -920,7 +920,7 @@
       "columnTime": "시각",
       "columnRound": "점검",
       "columnOutcome": "결과",
-      "ghostTime": "--:--",
+      "ghostTime": "––:––",
       "ghostAria": "첫 실행이 들어올 자리"
     },
     "sheet": {

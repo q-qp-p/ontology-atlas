@@ -238,7 +238,7 @@ export function DocsVaultDocumentPane({
                 <div className="mt-1 flex flex-wrap items-start gap-x-4 gap-y-2">
                   <h1
                     data-testid="docs-reading-title"
-                    className="min-w-0 flex-1 break-keep py-1 text-display leading-display font-[var(--font-weight-strong)] text-[color:var(--color-text-primary)]"
+                    className="min-w-0 flex-1 py-1 text-display leading-display font-[var(--font-weight-strong)] text-[color:var(--color-text-primary)]"
                   >
                     {columnTitle}
                   </h1>

@@ -920,7 +920,7 @@
       "columnTime": "时间",
       "columnRound": "巡检",
       "columnOutcome": "结果",
-      "ghostTime": "--:--",
+      "ghostTime": "––:––",
       "ghostAria": "第一次运行会出现在这里"
     },
     "sheet": {
