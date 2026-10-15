@@ -12,7 +12,6 @@ import { selectWikiPages } from '@/entities/docs-vault';
 import { useRouter } from '@/i18n/navigation';
 import { useLibraryIndexSegment, writeLibraryIndexSegment } from '@/shared/lib/preferences/appearance-preferences';
 import { selectOpenVaultHandle } from '@/shared/lib/vault-folder/select-open-vault-handle';
-import { useViewportBelow } from '@/shared/lib/use-viewport-below';
 import { RouteLoadingFallback, TabBar } from '@/shared/ui';
 import { SegmentedControl } from '@/shared/ui/fields/segmented-control';
 
@@ -109,7 +108,30 @@ export function LibraryWorkspace() {
     query.set('ontologyView', next);
     router.push(`/library/?${query}${window.location.hash}`, { scroll: false });
   };
-  const viewsInOwnRow = useViewportBelow(768);
+  const headerRef = useRef<HTMLElement | null>(null);
+  const viewsBesideTabsRef = useRef<HTMLDivElement | null>(null);
+  const viewsBesideTabsWidth = useRef(0);
+  const [tabsNeedTheWholeHeader, setTabsNeedTheWholeHeader] = useState(false);
+  useLayoutEffect(() => {
+    const header = headerRef.current;
+    const tabs = header?.querySelector<HTMLElement>('[role="tablist"]');
+    if (!header || !tabs || tab !== 'ontology') return;
+    const place = () => {
+      const beside = viewsBesideTabsRef.current;
+      if (beside) {
+        viewsBesideTabsWidth.current = beside.offsetWidth;
+        if (tabs.scrollWidth > tabs.clientWidth + 0.5) setTabsNeedTheWholeHeader(true);
+        return;
+      }
+      const room = header.clientWidth - tabs.scrollWidth - (toolsHost?.offsetWidth ?? 0);
+      if (room >= viewsBesideTabsWidth.current) setTabsNeedTheWholeHeader(false);
+    };
+    place();
+    const observer = new ResizeObserver(place);
+    observer.observe(header);
+    observer.observe(tabs);
+    return () => observer.disconnect();
+  }, [tab, tabsNeedTheWholeHeader, toolsHost]);
   const ontologyViews = (
     <SegmentedControl<OntologyView> value={ontologyView} onChange={selectOntologyView}
       ariaLabel={t('workspace.ontologyViews')} size="lg" testId="library-ontology-views"
@@ -121,7 +143,7 @@ export function LibraryWorkspace() {
 
   return (
     <div data-testid="library-workspace" className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
-      <header className="topology-ui-scale flex h-14 shrink-0 items-stretch border-b border-[color:var(--color-divider)] bg-[color:var(--color-panel)] px-0">
+      <header ref={headerRef} className="topology-ui-scale flex h-14 shrink-0 items-stretch border-b border-[color:var(--color-divider)] bg-[color:var(--color-panel)] px-0">
         <TabBar
           ariaLabel={t('workspace.aria')}
           activeKey={tab}
@@ -158,8 +180,8 @@ export function LibraryWorkspace() {
             },
           ]}
         />
-        {tab === 'ontology' && !viewsInOwnRow ? (
-          <div className="flex min-h-[var(--control-h-lg)] shrink-0 items-center gap-3 self-end pl-1">
+        {tab === 'ontology' && !tabsNeedTheWholeHeader ? (
+          <div ref={viewsBesideTabsRef} className="flex min-h-[var(--control-h-lg)] shrink-0 items-center gap-3 self-end pl-1">
             <span aria-hidden className="h-5 w-px bg-[color:var(--color-divider)]" />
             {ontologyViews}
           </div>
@@ -177,7 +199,7 @@ export function LibraryWorkspace() {
       >
         {tab === 'ontology' ? (
           <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-            {viewsInOwnRow ? (
+            {tabsNeedTheWholeHeader ? (
               <div className="flex shrink-0 items-center border-b border-[color:var(--color-divider)] px-4 py-2">{ontologyViews}</div>
             ) : null}
             <div key={ontologyView} className={`flex min-h-0 flex-1 ${styles.panel}`}>
