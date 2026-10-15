@@ -1,15 +1,7 @@
 import type { CameraTarget } from "../../engine/camera";
 
-/** Where a selection came from. A click on the map selects in place; every other source frames the node. */
-export type SelectionSource =
-  | "canvas-click"
-  | "canvas-dblclick"
-  | "keyboard"
-  | "search"
-  | "index"
-  | "panel-link"
-  | "deep-link"
-  | "arrow";
+/** A selection made on the canvas. Only a click selects in place; the rest, and any selection from outside the canvas, frame the node. */
+export type SelectionSource = "canvas-click" | "canvas-dblclick" | "arrow";
 
 /**
  * The camera a flat selection moved from (`restore`) and settled on (`landed`), with the reader's
