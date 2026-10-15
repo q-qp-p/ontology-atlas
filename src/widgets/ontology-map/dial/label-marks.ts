@@ -526,7 +526,7 @@ function elementNames(ctx: Ctx): void {
 
 export function buildLabelMarks(input: LabelMarksInput, out: LabelMarksOut): void {
   const rest = restOf(input);
-  const marks: Box[] = [];
+  const marks: Box[] = [...input.occupied];
   if (input.hub) marks.push(circleBox(input.hub, 3));
   for (const c of rest.chips.values()) marks.push(circleBox(c, 2));
   for (const d of rest.discs.values()) marks.push(circleBox(d, 1));
