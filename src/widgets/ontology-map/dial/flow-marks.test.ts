@@ -11,7 +11,8 @@ import {
 } from "../model/containment-tree";
 import type { OntologyMapTokens } from "../tokens/read-map-tokens";
 import { buildDialModel, resolveDialAttention } from "./dial-model";
-import { buildFlowMarks, fanAngles, flowHeadSize, focusFlowWidth, rampedFocusWidth, rampedRestWidth, restFlowWidth, stubText, type FlowMarksInput } from "./flow-marks";
+import { stubText } from "./far-counts";
+import { buildFlowMarks, fanAngles, flowHeadSize, focusFlowWidth, rampedFocusWidth, rampedRestWidth, restFlowWidth, type FlowMarksInput } from "./flow-marks";
 import { crossfadeInk, mixOver, resolveDialInks } from "./ink";
 import { countCrossings, sampleStrips } from "./frame/frame";
 import { resolveDialTokens } from "./tokens";
