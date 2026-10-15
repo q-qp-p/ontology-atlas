@@ -38,7 +38,6 @@ import { countIn } from "./parts/rounds/landing";
  */
 const EMPTY_ENTRIES: RoundPassEntry[] = [];
 const EMPTY_ROUNDS: RoundRecord[] = [];
-/** The rounds count each folder last showed here, so a first round saved in Automations lands on return. */
 const settledRoundsByFolder = new WeakMap<object, number>();
 const DOCUMENT_AUTOMATIONS_HREF = withQuery(DESTINATION_HREF.automations, { kind: "documents" });
 

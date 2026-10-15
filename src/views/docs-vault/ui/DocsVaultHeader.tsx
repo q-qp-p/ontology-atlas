@@ -79,9 +79,7 @@ export function DocsVaultHeader({
   handleSelect: (slug: string, query?: string) => void;
   handleCloseDocTab: (slug: string) => void;
   setPaletteQuery: Dispatch<SetStateAction<string | null>>;
-  /** Present while the document list is open in the Library: the list's own buttons render here. */
   treeToolsHostRef?: (element: HTMLDivElement | null) => void;
-  /** False while the reading column draws the document title as the page's h1. */
   showPageHeading: boolean;
 }) {
   const t = useTranslations('docsVault');

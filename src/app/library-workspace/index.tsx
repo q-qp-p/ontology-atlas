@@ -109,7 +109,6 @@ export function LibraryWorkspace() {
     query.set('ontologyView', next);
     router.push(`/library/?${query}${window.location.hash}`, { scroll: false });
   };
-  // Beside the tabs from md; below it the four tabs need the whole header, so the switch takes a row.
   const viewsInOwnRow = useViewportBelow(768);
   const ontologyViews = (
     <SegmentedControl<OntologyView> value={ontologyView} onChange={selectOntologyView}

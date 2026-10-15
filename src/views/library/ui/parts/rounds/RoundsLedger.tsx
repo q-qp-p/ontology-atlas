@@ -61,13 +61,9 @@ const OUTCOME_BADGE: Record<Exclude<RoundPassOutcome, "asleep" | "held">, string
 
 const ENTER = "motion-safe:animate-[atlasStatusIn_var(--motion-settle)_var(--motion-ease)_both]";
 
-/** Time, axis dot and pass: every ledger row, the one still waiting included. */
 export const LEDGER_ROW = "grid grid-cols-[3.5rem_1rem_minmax(0,1fr)] items-start gap-x-3";
 
-/**
- * The row a pass will land in, before it has run: quaternary while no round exists, primary once one
- * does. `landed` replays that change on the render a round first appears.
- */
+/** The row a pass will land in: a ghost before any round exists. */
 export function LedgerWaitingRow({ time, ink, landed = false, testId, label, children }: {
   time: string;
   ink: "ghost" | "live";
@@ -205,7 +201,6 @@ export function RoundsLedger({
   /** The first due time, for the empty line. */
   nextDueLabel: string | null;
   allPaused: boolean;
-  /** True on the render after the first round appeared on this screen. */
   landed?: boolean;
 }) {
   const t = useTranslations("library.rounds");

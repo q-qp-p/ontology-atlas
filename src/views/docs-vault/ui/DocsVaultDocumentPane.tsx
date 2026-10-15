@@ -82,7 +82,6 @@ export function DocsVaultDocumentPane({
   staticVault,
 }: {
   selectedDoc: VaultManifest['docs'][number];
-  /** The page's h1; null when the body's own markdown H1 names the document. */
   columnTitle: string | null;
   editing: boolean;
   setEditing: Dispatch<SetStateAction<boolean>>;
@@ -229,7 +228,6 @@ export function DocsVaultDocumentPane({
           }
           backToTop={!editing ? backToTop : null}
         >
-          {/* The column's own head: where the file lives, its name, and how it is shown. */}
           <header
             data-testid="docs-reading-head"
             className={cn("mx-auto max-w-[var(--measure-doc-column)] px-6 pt-4 md:px-10", editing && "pb-4")}

@@ -81,7 +81,6 @@ export interface DocsSidebarBodyProps {
    * nothing is converted or repaired.
    */
   agentFiles?: AgentFilesUiModel | null;
-  /** Where the filter, order and new-document buttons render when the header strip hosts them. */
   toolsHost?: HTMLElement | null;
 }
 
@@ -287,7 +286,6 @@ export function DocsSidebarBody({
     ontology: <Waypoints size={ICON_SIZE.md} className="flex-none" aria-hidden />,
   };
   const searchExpanded = searchOpen || Boolean(treeQuery);
-  // One `flex-none` cluster, so the collection well gives way when the row narrows.
   const treeTools = (
     <div data-testid="docs-sidebar-tree-tools" className="ml-auto flex flex-none items-center">
       <RailIconButton
