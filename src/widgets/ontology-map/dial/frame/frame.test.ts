@@ -94,7 +94,7 @@ function frameInput(model: DialModel, over: Partial<DialFrameInput> = {}): DialF
     const toScreen = (x: number, y: number): Point => ({ x: W / 2 + x * scale, y: H / 2 + y * scale });
     return {
         ctx: recordingContext(), dial: { model, scene, overviewPadPx: { left: 0, right: 0, top: 0, bottom: 0 } }, worldKey: {},
-        nodeScreen: (id) => { const p = scene.positions.get(id); return p ? toScreen(p.x, p.y) : null; }, toScreen, scale, labelScale: TOKENS.labelScale, zoomRatio: 1,
+        nodeScreen: (id) => { const p = scene.positions.get(id); return p ? toScreen(p.x, p.y) : null; }, toScreen, scale, zoomRatio: 1,
         viewportWidth: W, viewportHeight: H, freeRect: { minX: 8, minY: 60, maxX: W - 60, maxY: H - 30 },
         mapTokens: MAP, dialTokens: TOKENS, labels: LABELS, evidence: null,
         hoveredNodeId: null, focusedNodeId: null, agentFocusNodeId: null, selectionPulse: null, appearOf: () => 1, hubCount: null,
