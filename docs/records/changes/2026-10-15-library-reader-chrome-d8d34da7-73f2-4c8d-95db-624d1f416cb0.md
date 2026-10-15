@@ -1,0 +1,6 @@
+---
+id: d8d34da7-73f2-4c8d-95db-624d1f416cb0
+date: 2026-10-15
+category: Changed
+---
+Opening a concept document in Library now shows its name as the page title above the file's path, with the view switch and sync state on the reading column, under two bars of chrome instead of four (first line at y311 instead of y365 at 1920px); the empty Check history draws its ledger with column headers and a ghost first row instead of a legend, and Library's guidance sentences read at body size (keeps decisions 6929f7bf, e92269f3 and 2026-09-06 "An empty Library folder is an empty state").
