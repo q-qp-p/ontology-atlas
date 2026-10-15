@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useTranslations } from 'next-intl';
 import { mountHeroObject, type HeroEngineHandle, type HeroGraphData } from '../lib/hero-object-engine';
-import { heroBounds, releaseCaption } from '../lib/hero-bounds';
+import { heroBounds, releaseCaption, watchHeroType } from '../lib/hero-bounds';
 import { echoFact } from '../lib/hero-echo';
 import type { StageGraph } from '../lib/stage-graph';
 import { cn } from '@/shared/lib/cn';
@@ -100,6 +100,7 @@ export function HeroObject({
       form: 'plane',
       anchor: wide ? { x: 0.74, y: 0.43 } : { x: 0.5, bottomPx: 176 },
       bounds: wide ? () => heroBounds(canvas, caption) : undefined,
+      watch: wide ? (refit) => watchHeroType(canvas, caption, refit) : undefined,
       dim: wide ? 0.55 : 0.7,
       tilt: true,
       // Split width only: below it the lift carried the plane up through the strip's links.

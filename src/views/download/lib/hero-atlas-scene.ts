@@ -50,6 +50,7 @@ export interface AtlasOptions {
   /** Radians; below the split the object is seen from higher up so its ink stays out of the type. */
   pitch?: number;
   bounds?: () => HeroBox | null;
+  watch?: (refit: () => void) => () => void;
 }
 
 export interface AtlasHandle {
@@ -611,6 +612,10 @@ export function mountHeroAtlas(host: HTMLElement, data: AtlasData, opts: AtlasOp
       frame(dtMs * Math.max(0.05, factor));
     });
   }
+  const unwatch = opts.watch?.(() => {
+    resize();
+    if (reduced) drawStill();
+  });
 
   const onMove = (e: PointerEvent): void => {
     const r = canvas.getBoundingClientRect();
@@ -662,6 +667,7 @@ export function mountHeroAtlas(host: HTMLElement, data: AtlasData, opts: AtlasOp
       cancelAnimationFrame(stillPending);
       unregister?.();
       ro.disconnect();
+      unwatch?.();
       canvas.removeEventListener('pointermove', onMove);
       canvas.removeEventListener('pointerleave', onLeave);
       sphere.dispose();

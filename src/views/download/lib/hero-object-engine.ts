@@ -52,6 +52,7 @@ export interface HeroEngineOptions {
   /** Fractions of the stage for the ink envelope's centre (default 0.5/0.5). */
   anchor?: { x: number; y?: number; bottomPx?: number };
   bounds?: () => HeroBox | null;
+  watch?: (refit: () => void) => () => void;
   /** A background dome must yield to the type over it. */
   dim?: number;
   /** Lean toward a fine pointer; never under reduced motion. */
@@ -455,6 +456,10 @@ export function mountHeroObject(
   const boxObserver =
     typeof ResizeObserver === 'function' ? new ResizeObserver(() => onResize()) : null;
   boxObserver?.observe(canvas);
+  const unwatch = opts.watch?.(() => {
+    size();
+    drawAt(lastT);
+  });
   /* A lost 2D context would leave a permanent blank, so restore resizes and redraws. */
   const onContextLost = (e: Event): void => e.preventDefault();
   const onContextRestored = (): void => onResize();
@@ -839,6 +844,7 @@ export function mountHeroObject(
       unregisterFrame?.();
       removeEventListener('resize', onResize);
       boxObserver?.disconnect();
+      unwatch?.();
       canvas.removeEventListener('contextlost', onContextLost);
       canvas.removeEventListener('contextrestored', onContextRestored);
       if (tilt) {

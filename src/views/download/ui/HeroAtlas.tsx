@@ -7,7 +7,7 @@ import { cn } from '@/shared/lib/cn';
 import { webglAccelerated } from '@/shared/lib/map-canvas/webgl-probe';
 
 import type { AtlasHandle } from '../lib/hero-atlas-scene';
-import { heroBounds, releaseCaption } from '../lib/hero-bounds';
+import { heroBounds, releaseCaption, watchHeroType } from '../lib/hero-bounds';
 import { echoFact } from '../lib/hero-echo';
 import type { StageGraph } from '../lib/stage-graph';
 import { HERO_SPLIT_MIN_WIDTH_REM, HeroObject } from './HeroObject';
@@ -99,7 +99,13 @@ export function HeroAtlas({ graph, typed, total }: { graph: StageGraph; typed: n
           onHover: setHover,
           onChain: setWalked,
           ...(wide
-            ? { anchor: { x: 0.74, y: 0.43 }, dim: 0.9, fitPx: 540, bounds: () => heroBounds(host, caption) }
+            ? {
+                anchor: { x: 0.74, y: 0.43 },
+                dim: 0.9,
+                fitPx: 540,
+                bounds: () => heroBounds(host, caption),
+                watch: (refit: () => void) => watchHeroType(host, caption, refit),
+              }
             : phone
               ? { anchor: { x: 0.5, bottomPx: 140 }, dim: 0.75, fitPx: 300, pitch: 0.75 }
               : { anchor: { x: 0.5, bottomPx: 210 }, dim: 0.75, fitPx: 440, pitch: 0.75 }),
