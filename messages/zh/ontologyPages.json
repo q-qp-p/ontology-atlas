@@ -496,7 +496,7 @@
       "copySelectedCheck": "复制只读检查请求",
       "copiedSelected": "已复制",
       "reviewSelectedRequest": "查看请求内容",
-      "declarationRange": "每条线代表一条声明 · {total} 条中的 {from}–{to}",
+      "lineLegend": "每条线代表一条声明",
       "previousDeclarations": "上一组声明",
       "nextDeclarations": "下一组声明",
       "selectionMissing": "此文件夹中没有保存的选择。这里显示当前记录的概览。",
@@ -506,7 +506,7 @@
         "dated": "已比较源码日期，含义未验证",
         "unknown": "尚未检查源码当前状态"
       },
-      "declarationsInView": "此图中 {count} 条",
+      "declarationsInView": "此图中 {count} 条声明",
       "declarationPage": "{from}–{to} / {total}",
       "documentTitle": "分析 · Ontology Atlas",
       "findConnection": "查找关系",

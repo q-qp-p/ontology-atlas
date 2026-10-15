@@ -496,7 +496,7 @@
       "copySelectedCheck": "読み取り専用の確認依頼をコピー",
       "copiedSelected": "コピー済み",
       "reviewSelectedRequest": "依頼内容を確認",
-      "declarationRange": "線1本が宣言1件です · {total}件中{from}–{to}",
+      "lineLegend": "線1本が宣言1件です",
       "previousDeclarations": "前の宣言",
       "nextDeclarations": "次の宣言",
       "selectionMissing": "保存された選択はこのフォルダにありません。現在の記録の概要を表示しています。",
@@ -506,7 +506,7 @@
         "dated": "ソース日付を比較済み・意味は未検証",
         "unknown": "ソースの現在の状態は未確認"
       },
-      "declarationsInView": "この図で{count}件",
+      "declarationsInView": "この図で宣言{count}件",
       "declarationPage": "{from}–{to} / {total}",
       "documentTitle": "分析 · Ontology Atlas",
       "findConnection": "関係を検索",

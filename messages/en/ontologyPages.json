@@ -496,7 +496,7 @@
       "copySelectedCheck": "Copy read-only check",
       "copiedSelected": "Copied",
       "reviewSelectedRequest": "Inspect the exact request",
-      "declarationRange": "Each line is one declaration · {from}–{to} of {total}",
+      "lineLegend": "Each line is one declaration",
       "previousDeclarations": "Previous declarations",
       "nextDeclarations": "Next declarations",
       "selectionMissing": "The saved selection is not in this folder. This overview shows the current records.",
@@ -506,7 +506,7 @@
         "dated": "Source dates compared; meaning unverified",
         "unknown": "Source currentness not checked"
       },
-      "declarationsInView": "{count} in this drawing",
+      "declarationsInView": "{count, plural, one {# declaration} other {# declarations}} in this drawing",
       "declarationPage": "{from}–{to} / {total}",
       "documentTitle": "Analysis · Ontology Atlas",
       "findConnection": "Search connections",

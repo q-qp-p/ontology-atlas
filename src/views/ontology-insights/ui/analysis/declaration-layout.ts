@@ -27,15 +27,16 @@ export function declarationPages(edges: readonly KnowledgeGraphEdge[]): Declarat
 export const orderDeclarations = (edges: readonly KnowledgeGraphEdge[]) => declarationPages(edges).flatMap(page => page.edges);
 
 export function declarationLines(edges: readonly KnowledgeGraphEdge[], boxes: ReadonlyMap<string, CardBox>): DeclarationLine[] {
-  const middle = (box: CardBox | undefined) => box ? (box.top + box.bottom) / 2 : 0;
-  const port = (side: 'from' | 'to', edge: KnowledgeGraphEdge) => {
+  const middle = (key: string) => { const box = boxes.get(key); return box ? (box.top + box.bottom) / 2 : null; };
+  const byHeight = (a: number | null, b: number | null) => a === null ? (b === null ? 0 : 1) : b === null ? -1 : a - b;
+  const port = (side: 'from' | 'to', edge: KnowledgeGraphEdge, centre: number) => {
     const far = side === 'from' ? 'to' : 'from';
-    const shared = edges.filter(other => other[side] === edge[side]).sort((a, b) => middle(boxes.get(`${far}:${a[far]}`)) - middle(boxes.get(`${far}:${b[far]}`)) || edges.indexOf(a) - edges.indexOf(b));
-    return middle(boxes.get(`${side}:${edge[side]}`)) + (shared.indexOf(edge) - (shared.length - 1) / 2) * PORT_GAP;
+    const shared = edges.filter(other => other[side] === edge[side]).sort((a, b) => byHeight(middle(`${far}:${a[far]}`), middle(`${far}:${b[far]}`)) || edges.indexOf(a) - edges.indexOf(b));
+    return centre + (shared.indexOf(edge) - (shared.length - 1) / 2) * PORT_GAP;
   };
   return edges.flatMap(edge => {
     const from = boxes.get(`from:${edge.from}`), to = boxes.get(`to:${edge.to}`);
-    return from && to ? [{ id: edge.id, x1: from.right, y1: port('from', edge), x2: to.left, y2: port('to', edge) }] : [];
+    return from && to ? [{ id: edge.id, x1: from.right, y1: port('from', edge, (from.top + from.bottom) / 2), x2: to.left, y2: port('to', edge, (to.top + to.bottom) / 2) }] : [];
   });
 }
 
@@ -57,10 +58,11 @@ function pointAt(line: DeclarationLine, t: number) {
 
 export function labelPoints(lines: readonly DeclarationLine[]) {
   const placed: { id: string; x: number; y: number }[] = [];
+  const clearance = (point: { x: number; y: number }) => Math.min(Infinity, ...placed.map(other => Math.max(Math.abs(other.x - point.x) / LABEL_CLEARANCE.x, Math.abs(other.y - point.y) / LABEL_CLEARANCE.y)));
   for (const line of lines) {
     const stops = LABEL_STOPS.map(t => pointAt(line, t));
-    const free = stops.find(point => placed.every(other => Math.abs(other.x - point.x) >= LABEL_CLEARANCE.x || Math.abs(other.y - point.y) >= LABEL_CLEARANCE.y));
-    placed.push({ id: line.id, ...(free ?? stops[0]) });
+    const free = stops.find(point => clearance(point) >= 1) ?? stops.reduce((best, point) => clearance(point) > clearance(best) ? point : best);
+    placed.push({ id: line.id, ...free });
   }
   return placed;
 }
