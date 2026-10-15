@@ -91,30 +91,42 @@ const LABEL_FONT_WEIGHT: Record<LabelDrawState["kind"], number> = {
 };
 
 const FALLBACK_LABEL_FAMILY = "-apple-system, 'SF Pro Text', sans-serif";
+const LADDER_WEIGHTS = [400, FONT_WEIGHT.signature, FONT_WEIGHT.emphasis, FONT_WEIGHT.strong];
 let labelFamily: string | null = null;
+let adopting: Promise<boolean> | null = null;
 
-function bodyFamily(): string | null {
-  if (typeof document === "undefined" || !document.body || typeof getComputedStyle !== "function") return null;
-  return getComputedStyle(document.body).fontFamily || null;
+/** The page's text family for its locale (`--font-sans`), the one source for every canvas face. */
+export function productFontFamily(): string | null {
+  if (typeof document === "undefined" || !document.documentElement || typeof getComputedStyle !== "function") return null;
+  return getComputedStyle(document.documentElement).getPropertyValue("--font-sans").trim() || null;
 }
 
-/**
- * The family every canvas name is drawn in: the body's typeface once its faces have loaded, so
- * the map reads in the same letters as the chrome around it, and the system stack until then.
- */
+/** The family canvas names are drawn in: the product family once every ladder weight has loaded. */
 export function labelFontFamily(): string {
-  if (labelFamily === null && typeof document !== "undefined" && document.fonts?.status === "loaded") labelFamily = bodyFamily();
+  if (labelFamily === null && adopting === null) void adoptBodyLabelFont();
   return labelFamily ?? FALLBACK_LABEL_FAMILY;
 }
 
-/** Resolves true when the body's typeface became the label family, so the caller can repaint once. */
-export async function adoptBodyLabelFont(): Promise<boolean> {
+async function adopt(): Promise<boolean> {
   if (typeof document === "undefined" || !document.fonts) return false;
-  await document.fonts.ready;
-  const family = bodyFamily();
-  if (family === null || family === labelFamily) return false;
+  const family = productFontFamily();
+  if (family === null) return false;
+  const faces = LADDER_WEIGHTS.map((weight) => `${weight} 12px ${family}`);
+  try {
+    await Promise.all(faces.map((face) => document.fonts.load(face)));
+  } catch {
+    return false;
+  }
+  if (!faces.every((face) => document.fonts.check(face))) return false;
   labelFamily = family;
+  widthCache.clear();
   return true;
+}
+
+/** Resolves true once the product family became the label family, so the caller can repaint once. */
+export function adoptBodyLabelFont(): Promise<boolean> {
+  adopting ??= adopt();
+  return adopting;
 }
 
 /**

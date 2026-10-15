@@ -22,13 +22,13 @@ import {
 export type TerritoryEvidenceState = "current" | "stale" | "unknown";
 
 /** Fonts per text role — the map's own label fonts at the view's fixed sizes. */
-export const TERRITORY_FONTS: Record<TerritoryTextRole, string> = {
-  project: labelFontAt("project", TERRITORY_GEOMETRY.projectFontPx),
-  domain: labelFontAt("domain", TERRITORY_GEOMETRY.domainFontPx),
-  domainStats: labelFontAt("element", TERRITORY_GEOMETRY.domainStatsFontPx),
-  capability: labelFontAt("capability", TERRITORY_GEOMETRY.capabilityFontPx),
-  element: labelFontAt("element", 9.5),
-  chip: labelFontAt("capability", TERRITORY_GEOMETRY.chipFontPx),
+export const TERRITORY_FONTS: Readonly<Record<TerritoryTextRole, string>> = {
+  get project() { return labelFontAt("project", TERRITORY_GEOMETRY.projectFontPx); },
+  get domain() { return labelFontAt("domain", TERRITORY_GEOMETRY.domainFontPx); },
+  get domainStats() { return labelFontAt("element", TERRITORY_GEOMETRY.domainStatsFontPx); },
+  get capability() { return labelFontAt("capability", TERRITORY_GEOMETRY.capabilityFontPx); },
+  get element() { return labelFontAt("element", 9.5); },
+  get chip() { return labelFontAt("capability", TERRITORY_GEOMETRY.chipFontPx); },
 };
 
 /** The `--map-territory-*` family (`app/globals.css`), read once per frame like every map token. */
