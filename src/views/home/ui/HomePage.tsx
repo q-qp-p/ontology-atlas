@@ -81,7 +81,7 @@ export function HomePage() {
   // during static render and hydration, so the exported HTML and first commit are unchanged.
   const [bootedOnce, rememberBooted] = useArrivalMemory("home-map-booted", false);
   const [bootRenderReady, setBootRenderReady] = useState(bootedOnce);
-  const [loaderOnScreen] = useState(() => typeof document !== 'undefined' && document.querySelector('[data-testid="map-entry-fallback"]') !== null);
+  const [loaderOnScreen] = useState(() => typeof document === 'undefined' || document.querySelector('[data-testid="map-entry-fallback"]') !== null);
   useEffect(() => {
     rememberBooted(true);
     if (bootRenderReady) return;
