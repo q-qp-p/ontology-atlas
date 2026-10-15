@@ -115,3 +115,15 @@ export function readDialTokens(): DialTokens {
   cached = { doc: document, theme, tokens };
   return tokens;
 }
+
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+
+export function dialDiscRadiusPx(tokens: Pick<DialTokens, "pitch" | "discPitchShare" | "discMinPx" | "discMaxPx" | "discCapShare">, scale: number, elements: number): number {
+  const pitchPx = tokens.pitch * scale;
+  const base = clamp(pitchPx * tokens.discPitchShare, tokens.discMinPx, tokens.discMaxPx);
+  return Math.min(pitchPx * tokens.discCapShare, base * (0.8 + 0.2 * Math.min(3, Math.sqrt(elements))));
+}
+
+export function dialChipRadiusPx(tokens: Pick<DialTokens, "chipMinPx" | "chipMaxPx">, items: number, maxItems: number): number {
+  return tokens.chipMinPx + (tokens.chipMaxPx - tokens.chipMinPx) * Math.sqrt(items / Math.max(1, maxItems));
+}

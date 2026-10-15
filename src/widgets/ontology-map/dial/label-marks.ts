@@ -1,7 +1,7 @@
 import { tierNameAlpha } from "../morph/tier-assembly";
 import { scaledLabelFont, scaledLabelFontSize } from "../render/labels";
-import { dialChipRadiusPx, dialDiscRadiusPx } from "./frame/marks";
 import { mixOver } from "./ink";
+import { dialChipRadiusPx, dialDiscRadiusPx } from "./tokens";
 import type { Box, DialAttention, DialCluster, DialEvidenceView, DialLabels, DialMarks, DialModel, DialScene, DialTokens, Point, TextMark } from "./types";
 
 export type MeasureText = (text: string, font: string) => number;
