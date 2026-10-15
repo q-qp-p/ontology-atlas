@@ -35,40 +35,6 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * The workbench headline: one title-size h1 beside the location, the way the Library workbench
- * names itself. `trailing` is state at the right; `showScope` says the recording scope here,
- * which the workbench says in its dock.
- */
-export function PageHeader({
-  t,
-  showScope = true,
-  trailing,
-}: {
-  t: Translator;
-  showScope?: boolean;
-  trailing?: React.ReactNode;
-}) {
-  return (
-    <header className="flex shrink-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5 pb-1">
-      <div className="flex min-w-0 flex-col gap-1.5">
-        <h1 className="flex items-center gap-2 text-title leading-title font-[var(--font-weight-signature)] text-[color:var(--color-text-primary)]">
-          <HistoryIcon size={ICON_SIZE.lg} aria-hidden className="text-[color:var(--color-indigo-text-soft)]" />
-          {t("title")}
-        </h1>
-        {/* The scope notice stands here: nothing outside the folder is touched. */}
-        {showScope ? (
-          <p className="flex items-center gap-1.5 text-label leading-prose text-[color:var(--color-text-quaternary)]">
-            <ShieldCheck size={ICON_SIZE.sm} aria-hidden className="shrink-0" />
-            {t("scopeNotice")}
-          </p>
-        ) : null}
-      </div>
-      {trailing}
-    </header>
-  );
-}
-
-/**
  * The connect flow: three steps, since a remote is optional and a local-only history is a
  * complete state. Each step has a name and a description on a hairline progress rail; done is
  * an indigo-outlined check, current a filled indigo mark, later neutral.

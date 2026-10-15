@@ -25,7 +25,9 @@ in-page filtering.
 - Project name linked to its detail page. The name is the locale's `display_<locale>` when the document carries one, the canonical `title`/`name` otherwise (`projectDisplayName`, 2026-09-19, decision "A project is drawn by its locale display name on every screen"): the map, the INDEX and the Library already drew the project by that word, and the list and the page said the canonical title beside them
 - One-line explicitly authored frontmatter description, with neutral fallback when missing
 - Relative last-updated time
-- Clearly labelled "View details" primary action and "View on map" secondary action. "View on map" opens the project's own node (`?p=project:<slug>`), whose datasheet carries the code evidence and the control that connects the code folder (2026-09-25 — it sent the bare slug, which opens the project drawer, where neither exists)
+- Clearly labelled "View details" and "View on map" actions, both secondary: the page has at most one indigo action, "New project", and only while no project exists (2026-10-15 — N cards gave N indigo chips beside the tile's own). "View on map" opens the project's own node (`?p=project:<slug>`), whose datasheet carries the code evidence and the control that connects the code folder (2026-09-25 — it sent the bare slug, which opens the project drawer, where neither exists)
+
+- A project added on its own page rises 8px and fades in over `--motion-base` when the list reopens, and the closing tile glides on the surface spring; a reload or a folder switch shows every card still. Reduced motion fades in place over `--motion-fast` (2026-10-16)
 
 #### Empty state
 - No projects at all → guidance to create a project document; the header's "New project" action remains available
@@ -52,6 +54,7 @@ One cell per Atlas surface, in one band under the hero, replacing the hero's fig
 The caption beside the heading says that sources and wiki pages count the whole folder, because only the ontology half is scoped to this project. Cells are equal height with their doors on one line; three equal columns from `@3xl` of the page column and the ontology cell worth two of the others from `@5xl`.
 
 #### Domain composition
+The overlap note under the rows is 12.5px at the prose measure (it was 11px at the 16px reading box, 95 characters a line, 2026-10-16). The overview brief shares that measure, so it no longer ends on the hero description's right edge; both sit at their own font's `--measure-prose` instead of one box sized for 16px text.
 Domain rows (one per domain, uniform height), in a card in the left track beside the summary rail, no longer behind a tab. Each row carries the shared capability:element ratio bar; clicking a row expands its full capability list in place, and the expanded panel links into topology focus for that domain. The former radial mini-map and card grid were retired 2026-08-13 (the map promised size-by-count it could not render — 4.7px between 17 and 6 — and the cards said the same numbers a third time)
 
 #### Body + summary rail

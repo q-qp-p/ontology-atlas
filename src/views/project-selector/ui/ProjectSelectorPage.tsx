@@ -9,7 +9,7 @@ import { SPRING } from "@/shared/motion/spring";
 import { usePrefersReducedMotion } from "@/shared/lib/render-timing/use-prefers-reduced-motion";
 import { getProjectRuntimeDetailHref, getTopologyProjectNodeHref, projectDisplayName, type Project } from "@/entities/project";
 import { OpenVaultCta } from "@/features/docs-vault-local";
-import { useDataSourceMode, VaultSourceHydrationBoundary, useLocalVault } from "@/entities/vault-session";
+import { useDataSourceMode, VaultSourceHydrationBoundary, useLocalVault, useVaultIdentityScope } from "@/entities/vault-session";
 import { Link } from "@/i18n/navigation";
 import { Copy, Plus } from "lucide-react";
 import { useDocumentTitle } from "@/shared/lib/public-pages/use-document-title";
@@ -22,6 +22,7 @@ import { PAGE_FRAME, PAGE_HEADER_ROW, PAGE_LEDE, PAGE_TITLE, PAGE_TITLE_ROW } fr
 import { AppSettingsMenu } from "@/widgets/app-settings-menu";
 import { useNavRailSettingsSlot } from "@/widgets/app-nav-rail";
 import { resolveAuthoredDescription } from "../lib/authored-description";
+import { resolveRiseBaseline, slugsToRise, type ShownProjects } from "../lib/rise-rule";
 import { resolveRecentActivityAgo, type RecentActivityAgo } from "../lib/recent-activity";
 import { useProjects, useVaultDocs } from "@/features/project-data-source";
 
@@ -33,7 +34,7 @@ function formatAgo(ago: RecentActivityAgo, t: SelectorTranslator) {
   return t("activityAgoDaysAgo", { days: ago.days });
 }
 
-let lastShownSlugs: ReadonlySet<string> | null = null;
+let lastShown: ShownProjects | null = null;
 
 const TILE_SPRING = {
   type: "spring",
@@ -59,12 +60,16 @@ export function ProjectSelectorPage() {
   useNavRailSettingsSlot(navRailSettingsSlot);
   const reducedMotion = usePrefersReducedMotion();
   const ready = loaded && dataSourceMode === "local";
-  const [firstSlugs, setFirstSlugs] = useState<ReadonlySet<string> | null>(null);
+  const scope = useVaultIdentityScope();
+  const [baseline, setBaseline] = useState<ShownProjects | null>(null);
   const setKey = projects.map((project) => project.slug).join("\n");
-  if (ready && firstSlugs === null) setFirstSlugs(lastShownSlugs ?? new Set(projects.map((project) => project.slug)));
+  if (ready && (baseline === null || baseline.scope !== scope)) {
+    setBaseline({ scope, slugs: resolveRiseBaseline(lastShown, scope, setKey.split("\n")) });
+  }
   useEffect(() => {
-    if (ready) lastShownSlugs = new Set(setKey.split("\n"));
-  }, [ready, setKey]);
+    if (ready) lastShown = { scope, slugs: new Set(setKey.split("\n")) };
+  }, [ready, scope, setKey]);
+  const rising = new Set(baseline ? slugsToRise(baseline.slugs, setKey.split("\n")) : []);
   const riseStart = reducedMotion ? OVERLAY_RISE_REDUCED : OVERLAY_RISE;
   const riseTransition = reducedMotion ? MOTION.fast : MOTION.base;
 
@@ -108,7 +113,7 @@ export function ProjectSelectorPage() {
                     <motion.li
                       key={project.slug}
                       className="flex min-w-0"
-                      initial={firstSlugs !== null && !firstSlugs.has(project.slug) ? riseStart : false}
+                      initial={rising.has(project.slug) ? riseStart : false}
                       animate={OVERLAY_SETTLED}
                       transition={riseTransition}
                     >
@@ -196,7 +201,7 @@ function ProjectCard({ project, description, t }: { project: Project; descriptio
           href={detailHref}
           prefetch={false}
           aria-label={t("cardDetailAriaLabel", { name })}
-          className={controlClass({ shape: "chip", size: "md", tone: "accent", className: "relative z-[1]" })}
+          className={controlClass({ shape: "chip", size: "md", tone: "secondary", className: "relative z-[1]" })}
         >
           {t("footDetail")}
         </Link>

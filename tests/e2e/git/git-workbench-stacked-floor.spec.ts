@@ -54,12 +54,20 @@ test("at the minimum app window (1040x720), the stacked document reading pane ke
   // With a step picked the list steps down to about four rows, so the headline sits in the
   // upper part of the window rather than on its last lines (round three: y≈650 of 720).
   expect(headlineTop, "the picked step's headline does not win the window").toBeLessThan(720 * 0.65);
-  // One winner: the selection is larger than the page title, not tied with it.
-  const [pageTitle, picked] = await page.evaluate(() => [
-    Number.parseFloat(getComputedStyle(document.querySelector("h1")!).fontSize),
-    Number.parseFloat(getComputedStyle(document.querySelector('[data-testid="atlas-git-detail-headline"]')!).fontSize),
-  ]);
+  // One winner: the title is the only 23px text.
+  await expect(page.locator("h1:visible")).toHaveCount(1);
+  const [pageTitle, pageTitleBottom, picked] = await page.evaluate(() => {
+    const h1 = document.querySelector("h1")!;
+    const headlineEl = document.querySelector('[data-testid="atlas-git-detail-headline"]')!;
+    return [
+      Number.parseFloat(getComputedStyle(h1).fontSize),
+      h1.getBoundingClientRect().bottom,
+      Number.parseFloat(getComputedStyle(headlineEl).fontSize),
+    ];
+  });
+  expect(pageTitle, "the page title is not the display step").toBe(23);
   expect(picked, "the page title and the selected step tie in size").toBeGreaterThan(pageTitle);
+  expect(pageTitleBottom, "the page title sits below the selection headline").toBeLessThanOrEqual(headlineTop);
   // The capped list says it continues: its bottom edge fades while rows hide below it
   // (round four: it ended on a hairline with eleven steps scrolling unseen inside it).
   await expect(page.getByTestId("atlas-git-steps-scroll")).toHaveAttribute("data-edge-bottom", "true");

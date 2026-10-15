@@ -724,9 +724,7 @@ export function ProjectDetailPage({
           {bodyContent ? (
             <ProjectBriefSummary
               body={dedupedBodyContent ?? bodyContent}
-              // The reading column (`docs/DECISIONS.md`), left-aligned in a card at body-lg so it does not
-              // outrank the hero; hierarchy is weight and space, not size.
-              proseClassName={`${storyMarkdownClassName} max-w-[calc(var(--measure-doc-column)-2*var(--measure-doc-gutter))]`}
+              proseClassName={`${storyMarkdownClassName} max-w-[var(--measure-prose)]`}
               coversLabel={t("bodyCovers")}
               leadSentence={heroTagline}
               sectionNames={{

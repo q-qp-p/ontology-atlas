@@ -252,16 +252,11 @@ export function DocumentChangeReader({
       */}
       <div className="flex w-full max-w-[var(--measure-doc-column)] flex-col gap-4">
       <header className="flex flex-none flex-col gap-1">
-        {/* Display size for the uncommitted change; inside a step, whose headline holds the
-            display step, the name steps down to a panel title. */}
         {heading ? (
           <h3 className="text-label text-[color:var(--color-text-tertiary)]">{heading}</h3>
         ) : (
           <h2
-            className={cn(
-              "flex items-center gap-2 font-[var(--font-weight-strong)] text-[color:var(--color-text-primary)]",
-              source ? "text-title" : "text-display",
-            )}
+            className="flex items-center gap-2 text-title font-[var(--font-weight-strong)] text-[color:var(--color-text-primary)]"
           >
             {kind ? <OntologyMapKindGlyph kind={kind} size={source ? 14 : 16} /> : null}
             <span className="min-w-0 truncate">{label}</span>
