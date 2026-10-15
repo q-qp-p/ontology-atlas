@@ -810,7 +810,6 @@
     "emptyDescription": "每次定时检查运行后，结果都会出现在这里，最新的在前。",
     "emptyAction": "在自动化中安排",
     "emptyKinds": "可以安排的检查",
-    "emptySignals": "每轮会在这里留下什么",
     "signal": {
       "stale": "过时",
       "redrafted": "已重写",

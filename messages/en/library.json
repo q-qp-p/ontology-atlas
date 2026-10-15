@@ -810,7 +810,6 @@
     "emptyDescription": "Each time a scheduled check runs, its result lands here, newest first.",
     "emptyAction": "Schedule in Automations",
     "emptyKinds": "Checks you can schedule",
-    "emptySignals": "What each pass leaves here",
     "signal": {
       "stale": "Stale",
       "redrafted": "Redrafted",

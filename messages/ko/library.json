@@ -810,7 +810,6 @@
     "emptyDescription": "예약한 점검이 돌 때마다 결과가 여기에 최신순으로 쌓여요.",
     "emptyAction": "자동화에서 예약하기",
     "emptyKinds": "예약할 수 있는 점검",
-    "emptySignals": "실행마다 여기에 남는 것",
     "signal": {
       "stale": "낡음",
       "redrafted": "다시 씀",

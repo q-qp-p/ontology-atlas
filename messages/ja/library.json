@@ -810,7 +810,6 @@
     "emptyDescription": "スケジュールした点検が実行されるたびに、その結果が新しい順にここへ入ります。",
     "emptyAction": "自動化でスケジュール",
     "emptyKinds": "スケジュールできる点検",
-    "emptySignals": "各実行がここに残すもの",
     "signal": {
       "stale": "古い",
       "redrafted": "書き直し済み",
