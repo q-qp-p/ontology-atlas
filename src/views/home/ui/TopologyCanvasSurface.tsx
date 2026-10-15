@@ -91,7 +91,6 @@ type TopologyCanvasSurfaceProps = TopologyMapRendererProps & {
     | "mapMountTaskReady"
     | "drawerOpen"
     | "realmActive"
-    | "topologyTotalNodes"
   >;
   topologyCanvasFocus: Pick<ReturnType<typeof useTopologyCanvasFocus>, "handleCanvasPointerDownCapture" | "nodePopoverDismissed">;
   topologyIndexPresentation: Pick<ReturnType<typeof useTopologyIndexPresentation>, "startStepsVisible" | "renderedIndexState" | "dismissStartSteps" | "readoutStackRef">;
@@ -123,7 +122,7 @@ export function TopologyCanvasSurface(props: TopologyCanvasSurfaceProps) {
   const { handleCanvasPointerDownCapture, nodePopoverDismissed } = topologyCanvasFocus;
   const {
     topologyOverlayState, handleScaffoldStarter, starterScaffolding, emptyTopologyNodeCount,
-    clearTopologyFilters, topologyRenderState, mapMountTaskReady, drawerOpen, realmActive, topologyTotalNodes
+    clearTopologyFilters, topologyRenderState, mapMountTaskReady, drawerOpen, realmActive
   } = topologySceneControls;
   const { createNodeOpen, agentConnect, bootstrapPlan, setBootstrapOpen, canCreateNode } = topologyAuthoring;
   const { acpRuntime } = acpRuntimeController;
@@ -142,11 +141,6 @@ export function TopologyCanvasSurface(props: TopologyCanvasSurfaceProps) {
     if (realmActive) return resolveMapScopeCount(ontologyMapGraph.nodes, ontologyMapGraph.edges, resolvedRealmSlug);
     return localGraphRoot === null ? ontologyMapGraph.nodes.length : null;
   }, [isSynthetic, localGraphRoot, ontologyMapGraph.nodes, ontologyMapGraph.edges, realmActive, resolvedRealmSlug]);
-  const readoutSelection = useMemo(() => {
-    const node = canvasSelectedSlug ? ontologyMapGraph.nodes.find((candidate) => candidate.id === canvasSelectedSlug) : null;
-    if (!node) return null;
-    return { name: node.label, count: node.kind === "project" ? topologyTotalNodes : node.descendantCount };
-  }, [canvasSelectedSlug, ontologyMapGraph.nodes, topologyTotalNodes]);
 
   return (<>
     <div
@@ -467,10 +461,9 @@ export function TopologyCanvasSurface(props: TopologyCanvasSurfaceProps) {
           aria-hidden={readoutStepsAside ? true : undefined}
         >
           <TopologyScopeReadout
-            total={topologyRenderState.renderCanvas && mapMountTaskReady && vault.restoreAttempted && !vault.partialTotal ? (isSynthetic ? ontologyMapGraph.nodes.length : topologyTotalNodes) : null}
+            total={topologyRenderState.renderCanvas && mapMountTaskReady && vault.restoreAttempted && !vault.partialTotal ? ontologyMapGraph.nodes.length : null}
             members={scopeConceptCount}
             synthetic={isSynthetic}
-            selection={readoutSelection}
           />
           {/* The frame meter joins the instrument stack instead of claiming a new corner. */}
           <FrameMeter />
