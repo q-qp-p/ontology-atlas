@@ -7,7 +7,7 @@ import { cn } from '@/shared/lib/cn';
 import { webglAccelerated } from '@/shared/lib/map-canvas/webgl-probe';
 
 import type { AtlasHandle } from '../lib/hero-atlas-scene';
-import { heroBounds } from '../lib/hero-bounds';
+import { heroBounds, releaseCaption } from '../lib/hero-bounds';
 import { echoFact } from '../lib/hero-echo';
 import type { StageGraph } from '../lib/stage-graph';
 import { HERO_SPLIT_MIN_WIDTH_REM, HeroObject } from './HeroObject';
@@ -75,6 +75,7 @@ export function HeroAtlas({ graph, typed, total }: { graph: StageGraph; typed: n
   useEffect(() => {
     if (mode !== 'three') return;
     const host = hostRef.current;
+    const caption = captionRef.current;
     if (!host || graph.nodes.length === 0) return;
     let disposed = false;
     let handle: AtlasHandle | null = null;
@@ -98,7 +99,7 @@ export function HeroAtlas({ graph, typed, total }: { graph: StageGraph; typed: n
           onHover: setHover,
           onChain: setWalked,
           ...(wide
-            ? { anchor: { x: 0.74, y: 0.52 }, dim: 0.9, fitPx: 540, bounds: () => heroBounds(host, captionRef.current) }
+            ? { anchor: { x: 0.74, y: 0.43 }, dim: 0.9, fitPx: 540, bounds: () => heroBounds(host, caption) }
             : phone
               ? { anchor: { x: 0.5, bottomPx: 140 }, dim: 0.75, fitPx: 300, pitch: 0.75 }
               : { anchor: { x: 0.5, bottomPx: 210 }, dim: 0.75, fitPx: 440, pitch: 0.75 }),
@@ -127,6 +128,7 @@ export function HeroAtlas({ graph, typed, total }: { graph: StageGraph; typed: n
         delete (window as unknown as { __heroEcho?: unknown }).__heroEcho;
       }
       handle?.dispose();
+      releaseCaption(caption);
     };
   }, [graph, wide, phone, mode]);
 

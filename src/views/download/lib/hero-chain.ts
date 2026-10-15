@@ -15,6 +15,8 @@ export const HERO_CHAIN = Object.freeze({
   swell: 1.35,
 });
 
+export const HERO_TURN_MS = Object.freeze({ plane: 48_000, atlas: 128_000 });
+
 export type HeroChain = readonly [string, string, string];
 
 export function heroChains(
@@ -46,7 +48,8 @@ export function pickChain(chains: readonly HeroChain[], depthOf: (slug: string) 
 export interface ChainFrame {
   lit: [number, number, number];
   inked: number;
-  pulse: { hop: 0 | 1; u: number } | null;
+  pulseHop: -1 | 0 | 1;
+  pulseU: number;
   alpha: number;
   caption: number;
 }
@@ -57,23 +60,47 @@ const ease = (x: number) => {
   return u * u * (3 - 2 * u);
 };
 
-export const CHAIN_HOLD: ChainFrame = Object.freeze({ lit: [1, 1, 1], inked: 2, pulse: null, alpha: 1, caption: 2 }) as ChainFrame;
+const frameSlot = (): ChainFrame => ({ lit: [0, 0, 0], inked: 0, pulseHop: -1, pulseU: 0, alpha: 0, caption: -1 });
 
-export function chainFrame(ms: number, hopMs: number = HERO_CHAIN.hopMs): ChainFrame {
+export const CHAIN_HOLD: Readonly<ChainFrame> = Object.freeze<ChainFrame>({ lit: [1, 1, 1], inked: 2, pulseHop: -1, pulseU: 0, alpha: 1, caption: 2 });
+
+export function chainFrame(ms: number, hopMs: number = HERO_CHAIN.hopMs, out: ChainFrame = frameSlot()): ChainFrame {
   const c = HERO_CHAIN;
   const t0 = c.leadMs + c.brightenMs;
   const t1 = t0 + hopMs;
   const t2 = t1 + hopMs;
   const fadeAt = c.periodMs - c.fadeMs;
-  if (ms < c.leadMs || ms >= c.periodMs) return { lit: [0, 0, 0], inked: 0, pulse: null, alpha: 0, caption: -1 };
-  const lit: [number, number, number] = [
-    ease((ms - c.leadMs) / c.brightenMs),
-    ease((ms - t1) / c.brightenMs),
-    ease((ms - t2) / c.brightenMs),
-  ];
-  const inked = clamp01((ms - t0) / hopMs) + clamp01((ms - t1) / hopMs);
-  const pulse = ms >= t0 && ms < t2 ? (ms < t1 ? { hop: 0 as const, u: (ms - t0) / hopMs } : { hop: 1 as const, u: (ms - t1) / hopMs }) : null;
-  const alpha = 1 - ease((ms - fadeAt) / c.fadeMs);
-  const caption = ms >= fadeAt ? -1 : ms >= t2 ? 2 : ms >= t1 ? 1 : 0;
-  return { lit, inked, pulse, alpha, caption };
+  const on = ms >= c.leadMs && ms < c.periodMs;
+  out.lit[0] = on ? ease((ms - c.leadMs) / c.brightenMs) : 0;
+  out.lit[1] = on ? ease((ms - t1) / c.brightenMs) : 0;
+  out.lit[2] = on ? ease((ms - t2) / c.brightenMs) : 0;
+  out.inked = on ? clamp01((ms - t0) / hopMs) + clamp01((ms - t1) / hopMs) : 0;
+  out.pulseHop = on && ms >= t0 && ms < t2 ? (ms < t1 ? 0 : 1) : -1;
+  out.pulseU = out.pulseHop === 0 ? (ms - t0) / hopMs : out.pulseHop === 1 ? (ms - t1) / hopMs : 0;
+  out.alpha = on ? 1 - ease((ms - fadeAt) / c.fadeMs) : 0;
+  out.caption = !on || ms >= fadeAt ? -1 : ms >= t2 ? 2 : ms >= t1 ? 1 : 0;
+  return out;
+}
+
+export function chainWalker(chains: readonly HeroChain[], hopMs: number, reduced: boolean) {
+  const slot = frameSlot();
+  let turn = -1;
+  let chain: HeroChain | null = null;
+  return {
+    chain: (): HeroChain | null => chain,
+    frame(since: number | null, depthOf: (slug: string) => number): Readonly<ChainFrame> | null {
+      if (since === null) return null;
+      if (reduced) {
+        chain ??= pickChain(chains, depthOf, 0);
+        return CHAIN_HOLD;
+      }
+      if (since < 0) return null;
+      const next = Math.floor(since / HERO_CHAIN.periodMs);
+      if (next !== turn) {
+        turn = next;
+        chain = pickChain(chains, depthOf, next);
+      }
+      return chainFrame(since - next * HERO_CHAIN.periodMs, hopMs, slot);
+    },
+  };
 }

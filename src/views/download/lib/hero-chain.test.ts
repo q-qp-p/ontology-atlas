@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { CHAIN_HOLD, chainFrame, HERO_CHAIN, heroChains, pickChain } from './hero-chain';
+import { CHAIN_HOLD, chainFrame, chainWalker, HERO_CHAIN, heroChains, pickChain } from './hero-chain';
 
 const nodes = [
   { s: 'p', k: 'project' as const },
@@ -38,11 +38,24 @@ describe('hero chain', () => {
     const t0 = c.leadMs + c.brightenMs;
     expect(chainFrame(c.leadMs - 1).alpha).toBe(0);
     expect(chainFrame(c.leadMs + c.brightenMs).lit[0]).toBe(1);
-    expect(chainFrame(t0 + c.hopMs / 2)).toMatchObject({ caption: 0, pulse: { hop: 0, u: 0.5 }, inked: 0.5 });
-    expect(chainFrame(t0 + c.hopMs * 1.5)).toMatchObject({ caption: 1, pulse: { hop: 1, u: 0.5 }, inked: 1.5 });
+    expect(chainFrame(t0 + c.hopMs / 2)).toMatchObject({ caption: 0, pulseHop: 0, pulseU: 0.5, inked: 0.5 });
+    expect(chainFrame(t0 + c.hopMs * 1.5)).toMatchObject({ caption: 1, pulseHop: 1, pulseU: 0.5, inked: 1.5 });
     const hold = chainFrame(t0 + c.hopMs * 2 + c.brightenMs);
     expect({ ...hold, lit: [...hold.lit] }).toEqual({ ...CHAIN_HOLD, lit: [...CHAIN_HOLD.lit] });
     expect(chainFrame(c.periodMs - c.fadeMs / 2)).toMatchObject({ caption: -1, alpha: 0.5 });
     expect(chainFrame(c.periodMs).alpha).toBe(0);
+  });
+
+  it('reuses one frame between walks and holds one chain under reduced motion', () => {
+    const chains = heroChains(nodes, edges);
+    const walker = chainWalker(chains, HERO_CHAIN.hopMs, false);
+    const depth = () => 0;
+    expect(walker.frame(null, depth)).toBeNull();
+    const first = walker.frame(100, depth);
+    expect(walker.frame(HERO_CHAIN.periodMs * 3 + 900, depth)).toBe(first);
+    expect(walker.chain()).toEqual(['e', 'c', 'd']);
+    const still = chainWalker(chains, HERO_CHAIN.hopMs, true);
+    expect(still.frame(0, depth)).toBe(CHAIN_HOLD);
+    expect(still.chain()).toEqual(['e', 'c', 'd']);
   });
 });

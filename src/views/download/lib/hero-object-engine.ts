@@ -7,7 +7,9 @@
 
 import { registerGatedFrameClient } from './gateway-frame-loop';
 import { echoCount, echoOrder, preferredParents } from './hero-echo';
-import { CHAIN_HOLD, chainFrame, HERO_CHAIN, heroChains, pickChain, type ChainFrame, type HeroChain } from './hero-chain';
+import { chainWalker, HERO_CHAIN, HERO_TURN_MS, heroChains } from './hero-chain';
+import { drawChainCanvas } from './hero-chain-canvas';
+import type { HeroBox } from './hero-bounds';
 
 const TAU = Math.PI * 2;
 
@@ -35,7 +37,7 @@ export interface HeroGraphData {
 export interface HeroEngineOptions {
   /** Defaults to document.documentElement. */
   tokenEl?: Element;
-  /** Default 48000: a rotation to gaze at, not a carousel. */
+  /** A rotation to gaze at, not a carousel. */
   periodMs?: number;
   inkScale?: number;
   /** Measured on the shorter side. */
@@ -49,7 +51,7 @@ export interface HeroEngineOptions {
   onChain?: (slug: string | null) => void;
   /** Fractions of the stage for the ink envelope's centre (default 0.5/0.5). */
   anchor?: { x: number; y?: number; bottomPx?: number };
-  bounds?: () => { right: number; bottom: number } | null;
+  bounds?: () => HeroBox | null;
   /** A background dome must yield to the type over it. */
   dim?: number;
   /** Lean toward a fine pointer; never under reduced motion. */
@@ -247,7 +249,7 @@ export function mountHeroObject(
   const ink = hexRgb(cssVar(rootEl, '--color-text-primary', '#f7f8f8'));
   const fill = hexRgb(cssVar(rootEl, '--color-panel', '#0f1011'));
 
-  const PERIOD = opts.periodMs ?? 48000;
+  const PERIOD = opts.periodMs ?? HERO_TURN_MS.plane;
   const PITCH = opts.pitch ?? (flat ? 0.95 : 0.34);
   const F = 1050;
   const ASSEMBLE = 1600;
@@ -326,17 +328,25 @@ export function mountHeroObject(
     const ax = opts.anchor?.x ?? 0.5;
     const ay = opts.anchor?.y ?? 0.5;
     const box = opts.bounds?.() ?? null;
+    const slack = 1 + MARGIN;
     if (box) {
-      scaleFit = Math.min(scaleFit, (box.bottom - (H * MARGIN) / 2) / envH, (box.right - W * ax) / (envW / 2));
+      scaleFit = Math.min(scaleFit, (box.bottom - box.top) / (envH * slack), (box.right - box.left) / (envW * slack));
     }
     const envMidY = ((envelope.y0 + envelope.y1) / 2) * scaleFit;
     centerX = W * ax - ((envelope.x0 + envelope.x1) / 2) * scaleFit;
     // Pixels from the foot, not a fraction: the stage grows with the copy, the plinth does not.
-    centerY = box
-      ? box.bottom - envelope.y1 * scaleFit
-      : opts.anchor?.bottomPx !== undefined
+    centerY =
+      opts.anchor?.bottomPx !== undefined
         ? H - opts.anchor.bottomPx - envMidY
         : H * ay - envMidY;
+    if (box) {
+      const padX = (envW * scaleFit * MARGIN) / 2;
+      const padY = (envH * scaleFit * MARGIN) / 2;
+      centerX += Math.max(0, box.left + padX - (centerX + envelope.x0 * scaleFit));
+      centerX -= Math.max(0, centerX + envelope.x1 * scaleFit - (box.right - padX));
+      centerY += Math.max(0, box.top + padY - (centerY + envelope.y0 * scaleFit));
+      centerY -= Math.max(0, centerY + envelope.y1 * scaleFit - (box.bottom - padY));
+    }
   }
   size();
 
@@ -531,12 +541,18 @@ export function mountHeroObject(
   let disposed = false;
   let unregisterFrame: (() => void) | null = null;
 
-  const chains = heroChains(model.nodes, model.edges);
   const HOP_MS = parseFloat(cssVar(rootEl, '--map-light-hop-max-ms', '')) || HERO_CHAIN.hopMs;
+  const walker = chainWalker(heroChains(model.nodes, model.edges), HOP_MS, reduced);
+  const inkRgb = `rgb(${ink[0]},${ink[1]},${ink[2]})`;
   let echoDoneAt: number | null = echo ? null : ASSEMBLE + 600;
-  let chainTurn = -1;
-  let chain: HeroChain | null = null;
-  let chainShown: Projected[] = [];
+  const depthOf = (slug: string): number => lastProjected.get(slug)?.z ?? 0;
+  const chainPts: [Projected, Projected, Projected] = [
+    { x: 0, y: 0, s: 1, z: 0 },
+    { x: 0, y: 0, s: 1, z: 0 },
+    { x: 0, y: 0, s: 1, z: 0 },
+  ];
+  const chainR: [number, number, number] = [0, 0, 0];
+  let chainOn = false;
   let captioned: string | null = null;
   const caption = (slug: string | null): void => {
     if (slug === captioned) return;
@@ -544,75 +560,26 @@ export function mountHeroObject(
     opts.onChain?.(slug);
   };
 
-  function chainAt(t: number, projected: Map<string, Projected>): ChainFrame | null {
-    if (echoDoneAt === null || t < echoDoneAt) return null;
-    const depth = (slug: string): number => projected.get(slug)?.z ?? 0;
-    if (reduced) {
-      chain ??= pickChain(chains, depth, 0);
-      return CHAIN_HOLD;
-    }
-    const since = t - echoDoneAt;
-    const turn = Math.floor(since / HERO_CHAIN.periodMs);
-    if (turn !== chainTurn) {
-      chainTurn = turn;
-      chain = pickChain(chains, depth, turn);
-    }
-    return chainFrame(since - turn * HERO_CHAIN.periodMs, HOP_MS);
-  }
-
   function drawChain(t: number, projected: Map<string, Projected>, alpha: number): void {
-    const frame = chainAt(t, projected);
-    const points = chain && frame ? chain.map((slug) => projected.get(slug)) : [];
-    if (!frame || !chain || points.some((p) => p === undefined) || frame.alpha <= 0) {
-      chainShown = [];
+    const frame = walker.frame(echoDoneAt === null ? null : t - echoDoneAt, depthOf);
+    const chain = walker.chain();
+    chainOn = false;
+    if (!frame || !chain || frame.alpha <= 0) {
       caption(null);
       return;
     }
-    const [p0, p1, p2] = points as [Projected, Projected, Projected];
-    chainShown = [p0, p1, p2];
-    caption(frame.caption >= 0 ? chain[frame.caption]! : null);
-    ctx!.save();
-    ctx!.globalAlpha = Math.min(1, alpha) * frame.alpha;
-    const ink = `rgba(${accent2[0]},${accent2[1]},${accent2[2]},`;
-    ctx!.strokeStyle = `${ink}0.95)`;
-    ctx!.lineWidth = 1.4;
-    ctx!.beginPath();
-    const hops: [Projected, Projected][] = [[p0, p1], [p1, p2]];
-    hops.forEach(([a, b], i) => {
-      const k = Math.max(0, Math.min(1, frame.inked - i));
-      if (k <= 0) return;
-      ctx!.moveTo(a.x, a.y);
-      ctx!.lineTo(a.x + (b.x - a.x) * k, a.y + (b.y - a.y) * k);
-    });
-    ctx!.stroke();
-    chain.forEach((slug, i) => {
-      const lit = frame.lit[i]!;
-      if (lit <= 0) return;
-      const p = points[i]!;
-      const n = model.bySlug.get(slug)!;
-      const r = Math.max(0.8, NODE_R[n.k] * p.s * scaleFit * 2.1) * (1 + (HERO_CHAIN.swell - 1) * lit);
-      ctx!.beginPath();
-      ctx!.arc(p.x, p.y, r, 0, TAU);
-      ctx!.fillStyle = `rgba(${accent[0]},${accent[1]},${accent[2]},${0.55 * lit})`;
-      ctx!.fill();
-      ctx!.strokeStyle = `${ink}${lit})`;
-      ctx!.lineWidth = 1.3;
-      ctx!.stroke();
-    });
-    if (frame.pulse) {
-      const [a, b] = hops[frame.pulse.hop]!;
-      const x = a.x + (b.x - a.x) * frame.pulse.u;
-      const y = a.y + (b.y - a.y) * frame.pulse.u;
-      ctx!.beginPath();
-      ctx!.arc(x, y, 5, 0, TAU);
-      ctx!.fillStyle = `${ink}0.22)`;
-      ctx!.fill();
-      ctx!.beginPath();
-      ctx!.arc(x, y, 2.1, 0, TAU);
-      ctx!.fillStyle = `${ink}1)`;
-      ctx!.fill();
+    for (let i = 0; i < 3; i += 1) {
+      const p = projected.get(chain[i]!);
+      if (!p) {
+        caption(null);
+        return;
+      }
+      chainPts[i] = p;
+      chainR[i] = Math.max(0.8, NODE_R[model.bySlug.get(chain[i]!)!.k] * p.s * scaleFit * 2.1);
     }
-    ctx!.restore();
+    chainOn = true;
+    caption(frame.caption >= 0 ? chain[frame.caption]! : null);
+    drawChainCanvas(ctx!, frame, chainPts, chainR, inkRgb, alpha);
   }
 
   function drawAt(t: number): void {
@@ -895,8 +862,10 @@ export function mountHeroObject(
       if (reduced && revealAt.size > before) drawStill();
     },
     litCount: () => revealAt.size,
-    activeChain: () =>
-      chain && chainShown.length === 3 ? { nodes: chain.map((s, i) => ({ s, x: chainShown[i]!.x, y: chainShown[i]!.y })) } : null,
+    activeChain: () => {
+      const chain = walker.chain();
+      return chainOn && chain ? { nodes: chain.map((s, i) => ({ s, x: chainPts[i].x, y: chainPts[i].y })) } : null;
+    },
     nodesOnScreen: () =>
       model.nodes.map((n) => {
         const p = lastProjected.get(n.s);

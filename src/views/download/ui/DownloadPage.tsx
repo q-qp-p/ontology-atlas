@@ -297,7 +297,7 @@ function HeroSection({
         )}
       >
         {/* Wider than the lead's 40rem so the three English controls share one line at the split. */}
-        <div className="pointer-events-auto min-w-0 max-w-[45rem]">
+        <div data-hero-text className="pointer-events-auto min-w-0 max-w-[45rem]">
           <p
             className={cn(
               rise('gateway-t240'),

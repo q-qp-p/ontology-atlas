@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useTranslations } from 'next-intl';
 import { mountHeroObject, type HeroEngineHandle, type HeroGraphData } from '../lib/hero-object-engine';
-import { heroBounds } from '../lib/hero-bounds';
+import { heroBounds, releaseCaption } from '../lib/hero-bounds';
 import { echoFact } from '../lib/hero-echo';
 import type { StageGraph } from '../lib/stage-graph';
 import { cn } from '@/shared/lib/cn';
@@ -66,6 +66,7 @@ export function HeroObject({
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    const caption = captionRef.current;
     if (!canvas || graph.nodes.length === 0) return;
 
     const keep = (kind: StageGraph['nodes'][number]['kind']): boolean => !phone || kind !== 'element';
@@ -97,8 +98,8 @@ export function HeroObject({
       onHover: setHover,
       onChain: setWalked,
       form: 'plane',
-      anchor: wide ? { x: 0.74, y: 0.5 } : { x: 0.5, bottomPx: 176 },
-      bounds: wide ? () => heroBounds(canvas, captionRef.current) : undefined,
+      anchor: wide ? { x: 0.74, y: 0.43 } : { x: 0.5, bottomPx: 176 },
+      bounds: wide ? () => heroBounds(canvas, caption) : undefined,
       dim: wide ? 0.55 : 0.7,
       tilt: true,
       // Split width only: below it the lift carried the plane up through the strip's links.
@@ -131,6 +132,7 @@ export function HeroObject({
       handleRef.current = null;
       if (inspect) delete (window as unknown as { __heroEcho?: unknown }).__heroEcho;
       handle?.dispose();
+      releaseCaption(caption);
     };
   }, [graph, wide, phone]);
 
