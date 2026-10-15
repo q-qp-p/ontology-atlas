@@ -2,13 +2,17 @@
 
 import { useMemo } from "react";
 import {
+  computeCanonicalCensus,
   deriveCodeLocations,
+  isContainmentRelation,
+  isMapConcept,
   resolveNodeAgentTarget,
   type KnowledgeGraphEdge,
   type KnowledgeGraphNode,
 } from "@/entities/knowledge-graph";
 import { buildDocsVaultHref } from "@/entities/docs-vault";
-import { buildFullDetailGroups, buildFullDetailReachModel } from "@/widgets/full-detail-a1";
+import { buildFullDetailGroups, buildFullDetailReachModel, type FullDetailGroups } from "@/widgets/full-detail-a1";
+import { readDomainUsage } from "@/widgets/ontology-map";
 import type { TopologyNodeFocusModel } from "../../lib/inspector/topology-node-focus";
 import type { NodeDatasheetDerivation } from "./use-node-datasheet-model";
 
@@ -54,11 +58,13 @@ export function useFullDetailA1Model({
       reach: buildFullDetailReachModel(activeNodeId, insight.nodes, insight.edges),
       codeLocations: deriveCodeLocations(activeNodeId, insight.nodes, insight.edges),
       projectTitle: insight.nodes.find((node) => node.kind === "project")?.title ?? null,
+      census: computeCanonicalCensus(insight.nodes, insight.edges),
     };
   }, [activeNodeId, insight]);
   const groups = useMemo(() => {
     if (activeNodeId === null || !insight) return null;
-    return buildFullDetailGroups(activeNodeId, insight.nodes, insight.edges, changedSlugs);
+    const direct = buildFullDetailGroups(activeNodeId, insight.nodes, insight.edges, changedSlugs);
+    return { ...direct, domainLevel: readDomainLevel(activeNodeId, insight.nodes, insight.edges) };
   }, [activeNodeId, insight, changedSlugs]);
 
   return useMemo(() => {
@@ -114,9 +120,8 @@ export function useFullDetailA1Model({
       codeLocations: graphFacts.codeLocations,
       breadcrumb: {
         projectTitle: graphFacts.projectTitle,
-        // Canonical totals; `renderProjects` double-counted them.
-        totalConcepts: insight.nodes.length,
-        totalRelations: insight.edges.length,
+        totalConcepts: graphFacts.census.conceptCount,
+        totalRelations: graphFacts.census.relationCount,
       },
       bodyMarkdown,
       explanationEdit,
@@ -137,4 +142,29 @@ export function useFullDetailA1Model({
     onSaveExplanation,
     datasheet,
   ]);
+}
+
+function readDomainLevel(
+  nodeId: string,
+  nodes: readonly KnowledgeGraphNode[],
+  edges: readonly KnowledgeGraphEdge[],
+): FullDetailGroups["domainLevel"] {
+  if (nodes.find((node) => node.id === nodeId)?.kind !== "domain") return null;
+  const drawn = nodes.filter(isMapConcept);
+  const ids = new Set(drawn.map((node) => node.id));
+  const usage = readDomainUsage(
+    drawn.map((node) => ({ id: node.id, label: node.display ?? node.title, kind: node.kind })),
+    edges
+      .filter((edge) => ids.has(edge.from) && ids.has(edge.to) && edge.from !== edge.to)
+      .map((edge) => ({
+        source: edge.from,
+        target: edge.to,
+        kind: isContainmentRelation(edge.type) ? "contains" as const : "depends" as const,
+        relationType: edge.type,
+      })),
+    nodeId,
+  );
+  if (!usage) return null;
+  const toLinks = (rows: typeof usage.usedBy) => rows.map((row) => ({ id: row.domainId, title: row.label, links: row.links }));
+  return { usedBy: toLinks(usage.usedBy), needs: toLinks(usage.needs) };
 }

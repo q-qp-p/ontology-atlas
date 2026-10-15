@@ -28,14 +28,13 @@ import {
 import { OntologyMapKindGlyph } from "@/shared/ui/ontology-node/map-kind-glyph";
 import { morphName, morphTargetProps } from "@/shared/motion/shared-element";
 import { formatFullDetailHandoffChain } from "../lib/full-detail-handoff";
-import { formatFullDetailMetricLine } from "../lib/full-detail-metric";
 import type { FullDetailGroups } from "../lib/full-detail-groups";
 import type { FullDetailReachDepth, FullDetailReachModel } from "../lib/full-detail-reach";
 import { FullDetailA1GroupsPanel } from "./full-detail-a1-groups-panel";
 import { FullDetailA1ReachPanel } from "./full-detail-a1-reach-panel";
 
 /**
- * The full-detail surface (`docs/prototypes/detail-a1-datasheet.html`): header, metric strip, four
+ * The full-detail surface (`docs/prototypes/detail-a1-datasheet.html`): header, four
  * direction groups, reach sentence, agent handoff and body. Shared by the topology datasheet's full
  * detail and the `/ontology` node detail, both fed by `buildFullDetailGroups`
  * and `buildFullDetailReachModel` so numbers cannot drift.
@@ -190,25 +189,6 @@ export function FullDetailA1({
     [t],
   );
 
-  const metricLine = useMemo(
-    () =>
-      formatFullDetailMetricLine(
-        {
-          contains: groups.contains.total,
-          usedBy: groups.usedBy.total,
-          dependsOn: groups.dependsOn.total,
-          reach: reach.byDepth[3].reachableCount,
-        },
-        {
-          contains: t("metric.contains"),
-          usedBy: t("metric.usedBy"),
-          dependsOn: t("metric.dependsOn"),
-          reach: t("metric.reach"),
-        },
-      ),
-    [groups, reach, t],
-  );
-
   const handleCopyLink = useCallback(async () => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
     const ok = await copyLinkFeedback.copy(`${origin}${buildOntologyNodeHref(node.id)}`);
@@ -239,6 +219,7 @@ export function FullDetailA1({
             onClick={onBackToMap}
             className={controlClass({
               shape: "link",
+              size: "lg",
               scope: "panel",
               tone: "secondary",
               className:
@@ -261,7 +242,7 @@ export function FullDetailA1({
         </span>
         <span>{getKindLabel(node.kind)}</span>
         {breadcrumb?.totalConcepts != null && breadcrumb?.totalRelations != null ? (
-          <span className="ml-auto font-mono text-label tracking-[var(--tracking-caps-08)] text-[color:var(--engraved-numeral-face)] [text-shadow:var(--engraved-numeral-text-shadow)]">
+          <span data-testid="full-detail-census" className="ml-auto tabular-nums text-[color:var(--engraved-numeral-face)] [text-shadow:var(--engraved-numeral-text-shadow)]">
             {t("census", {
               concepts: breadcrumb.totalConcepts,
               relations: breadcrumb.totalRelations,
@@ -270,7 +251,7 @@ export function FullDetailA1({
         ) : null}
       </nav>
 
-      <header className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2">
+      <header className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2 2xl:-ml-8.5">
         <span className="mt-1">
           <OntologyMapKindGlyph kind={node.kind} size={22} />
         </span>
@@ -278,9 +259,10 @@ export function FullDetailA1({
           <h1
             ref={headingRef}
             tabIndex={-1}
-            {...morphTargetProps(morphName("concept", node.id))}
             className="[overflow-wrap:anywhere] text-display font-[var(--font-weight-strong)] tracking-[var(--tracking-card)] text-[color:var(--map-panel-text-primary)]">
-            {node.title}
+            <span {...morphTargetProps(morphName("concept", node.id))} className="inline-block max-w-full">
+              {node.title}
+            </span>
           </h1>
           {/* The full title as secondary text when the display name abbreviates it. */}
           {node.fullTitle && node.fullTitle !== node.title ? (
@@ -349,16 +331,6 @@ export function FullDetailA1({
           />
         </div>
       </header>
-
-      {/*
-       * Body type with tabular figures, not mono, which spreads Korean words to monospace width.
-       */}
-      <div
-        data-fulldetail-metric="engraved"
-        className="mt-4.5 flex flex-wrap items-baseline gap-x-4.5 gap-y-1 rounded-chip border border-[color:var(--map-panel-border)] bg-[color:var(--map-panel-metric-surface)] px-3.5 py-2.5 text-body tabular-nums tracking-[var(--tracking-label)] text-[color:var(--map-panel-metric-text)]"
-      >
-        {metricLine}
-      </div>
 
       {showProjectSource ? (
         <section
@@ -433,8 +405,10 @@ export function FullDetailA1({
           dependsOnCaption: t("groups.dependsOnCaption"),
           belongsToTitle: t("groups.belongsToTitle"),
           belongsToCaption: t("groups.belongsToCaption"),
-          empty: t("groups.empty"),
           freshDotTitle: t("groups.freshDotTitle"),
+          directLinks: (count) => t("groups.directLinks", { count }),
+          domainCount: (count) => t("groups.domainCount", { count }),
+          domainLinks: (count) => t("groups.domainLinks", { count }),
         }}
       />
 
@@ -581,7 +555,7 @@ export function FullDetailA1({
             {bodyMarkdown && bodyMarkdown.trim().length > 0 ? (
               <div
                 className={cn(
-                  "min-w-0 overflow-x-auto [overflow-wrap:anywhere] text-body-lg leading-prose text-[color:var(--map-panel-text-secondary)]",
+                  "min-w-0 max-w-[var(--measure-prose)] overflow-x-auto [overflow-wrap:anywhere] text-body-lg leading-prose text-[color:var(--map-panel-text-secondary)]",
                   MARKDOWN_PROSE_CLASS,
                 )}
               >
