@@ -76,8 +76,7 @@ describe("FlowTab", () => {
     expect(screen.getByTestId("flow-version")).toHaveTextContent("written by claude-acp");
     expect(screen.getByTestId("flow-version")).toHaveTextContent(labels.standingCurrent);
     // The request is still reachable, but it is not what the tab shows first.
-    const request = screen.getByTestId("flow-request-open").closest("details");
-    expect(request?.open, "the request wall opens on demand, never on arrival").toBeFalsy();
+    expect(screen.getByTestId("flow-request-open"), "the request wall opens on demand, never on arrival").toHaveAttribute("aria-expanded", "false");
     expect(screen.queryByTestId("flow-no-version")).not.toBeInTheDocument();
   });
 

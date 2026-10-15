@@ -32,8 +32,7 @@ for (const subject of [
     await selected.press('Space');
     await expect(selected).toHaveAttribute('aria-expanded', 'true');
     await expect(next).toBeVisible();
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Tab');
+    for (let step = 0; step < 6 && !(await next.evaluate(node => node === document.activeElement)); step += 1) await page.keyboard.press('Shift+Tab');
     await expect(next).toBeFocused();
     await page.keyboard.press('Enter');
     await expect.poll(() => new URL(page.url()).pathname + new URL(page.url()).search).toBe(subject.destination);

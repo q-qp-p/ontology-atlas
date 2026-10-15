@@ -267,6 +267,7 @@ function BriefLineList({
             <li key="status-no-source" className={cn(ROW, cell)} data-testid={`brief-core-no-source-${row.core}`} data-brief-core={noSourceCores.join(' ')}>
               <NoSourceMark unchecked={row.unchecked === true} />
               <span className={CORE_LABEL}>{noSourceCores.map((key) => t(`core.${key}`)).join(t('coreJoin'))}</span>
+              <Numeral />
               <span className={cn(SENTENCE, 'text-[color:var(--color-text-tertiary)]')}>
                 {t('noSourceShared')}
                 {DOOR_GAP}
@@ -285,6 +286,7 @@ function BriefLineList({
               line={row.line}
               core={row.core}
               availability={row.availability}
+              total={row.total}
               appRowPresent={appRow}
               details={details.get(row.line.id) ?? EMPTY_DETAILS}
               nowMs={nowMs}
@@ -308,6 +310,7 @@ function BriefLineList({
               {/* A status row counts nothing, so it wears no state mark, except the one standing for the unchecked-evidence line (`briefRows`). */}
               <NoSourceMark unchecked={row.kind === 'status' && row.unchecked === true} />
               <span className={CORE_LABEL}>{t(`core.${row.core}`)}</span>
+              {row.status === 'quiet' ? <Numeral count={0} total={row.total} /> : row.status === 'no-data' ? <Numeral count={0} /> : <Numeral />}
               <span className={cn(SENTENCE, 'text-[color:var(--color-text-tertiary)]')}>
                 {sentence}
                 {door ? (
@@ -326,6 +329,7 @@ function BriefLineList({
           <li key="app-only" className={cn(ROW, cell)} data-testid="brief-app-only" data-brief-core={row.cores.join(' ')}>
             <span aria-hidden="true" className={MARK_SLOT}><span className={STATE_MARK.unknown} /></span>
             <span className={CORE_LABEL}>{row.cores.map((key) => t(`core.${key}`)).join(t('coreJoin'))}</span>
+            <Numeral />
             <span className={cn(SENTENCE, 'text-[color:var(--color-text-tertiary)]')}>
               {t('appOnly')}
               {DOOR_GAP}
@@ -406,6 +410,7 @@ function LeavingRow({ label, className }: { label: { core: string; sentence: str
         <div className="flex flex-wrap items-start gap-x-3 gap-y-1 py-3 text-[color:var(--color-text-tertiary)] sm:flex-nowrap">
           <span className={MARK_SLOT}><span className={STATE_MARK.current} /></span>
           <span className={CORE_LABEL}>{label.core}</span>
+          <Numeral />
           {/* The door's line box without the door, so the copy starts as tall as the line it replaces. */}
           <span className={SENTENCE}>{label.sentence}{DOOR_GAP}<span className={cn(LINE_LINK, 'invisible')}>{'\u00a0'}</span></span>
         </div>
@@ -425,6 +430,16 @@ function NoSourceMark({ unchecked }: { unchecked: boolean }) {
   return (
     <span aria-hidden="true" className={MARK_SLOT}>
       {unchecked ? <span className={STATE_MARK.unknown} /> : null}
+    </span>
+  );
+}
+/** Each row's count and the whole it is part of, in one fixed column so the figures read down the list; a row with no count keeps the column empty. */
+const NUMERAL = 'shrink-0 tabular-nums text-label leading-body sm:w-16 sm:text-right';
+function Numeral({ count, total }: { count?: number; total?: number }) {
+  if (count === undefined) return <span aria-hidden="true" className={cn(NUMERAL, 'hidden sm:block')} />;
+  return (
+    <span className={cn(NUMERAL, count === 0 ? 'text-[color:var(--color-text-tertiary)]' : 'text-[color:var(--color-text-primary)]')} data-brief-numeral="">
+      {total === undefined ? count : `${count} / ${total}`}
     </span>
   );
 }
@@ -499,23 +514,24 @@ function DestinationLink({
 }
 
 /** One brief line; when its calculation produced named rows it expands in place to show concept, path and the two dates. */
-function BriefLineRow({ line, core, availability, appRowPresent, details, nowMs, onAskAgent, onOpenTab, className }: { className?: string; line: BriefLine; core: BriefCore['core']; availability: BriefCore['availability']; appRowPresent: boolean; details: readonly BriefLineDetail[]; nowMs: number; onAskAgent?: (request: string) => void; onOpenTab?: (tab: InsightsTab) => void }) {
+function BriefLineRow({ total, line, core, availability, appRowPresent, details, nowMs, onAskAgent, onOpenTab, className }: { total?: number; className?: string; line: BriefLine; core: BriefCore['core']; availability: BriefCore['availability']; appRowPresent: boolean; details: readonly BriefLineDetail[]; nowMs: number; onAskAgent?: (request: string) => void; onOpenTab?: (tab: InsightsTab) => void }) {
   const [open, setOpen] = useState(false);
   const detailId = useId();
   const t = useTranslations('ontologyPages.insights.brief');
   const format = useFormatter();
   const locale = useLocale();
-  const href = lineHref(line.id, availability, appRowPresent);
+  const href = line.count === 0 ? undefined : lineHref(line.id, availability, appRowPresent);
   const sentence = t(`line.${line.id}`, { count: line.count });
   const shown = details.slice(0, DETAIL_ROWS);
   // Judging drift is reading work for the coding agent: the request names the rows' concepts, files and dates
   // and asks for a judgement and a proposal, never a write.
   const handoff = line.id === 'ontology-evidence-moved' ? buildDriftHandoff({ rows: details, locale }) : null;
   return (
-    <li className={cn('py-3 text-body text-[color:var(--color-text-primary)]', className)} data-brief-line={line.id} data-brief-state={line.state} data-brief-core={core}>
+    <li className={cn('py-3 text-body', line.count === 0 ? 'text-[color:var(--color-text-tertiary)]' : 'text-[color:var(--color-text-primary)]', className)} data-brief-line={line.id} data-brief-state={line.state} data-brief-core={core}>
       <div className="flex flex-wrap items-start gap-x-3 gap-y-1 sm:flex-nowrap">
         <span aria-hidden="true" className={MARK_SLOT}><span className={STATE_MARK[line.state]} /></span>
         <span className={CORE_LABEL}>{t(`core.${core}`)}</span>
+        <Numeral count={line.count} total={total} />
         {shown.length > 0 ? (
           <div className={SENTENCE}>
             <button

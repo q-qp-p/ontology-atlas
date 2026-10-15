@@ -1,5 +1,6 @@
 'use client';
 
+import { INSIGHTS_HEADLINE } from './insights-headline';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type MutableRefObject, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
@@ -280,9 +281,9 @@ export function HarnessCoverageOverview({
       <div ref={fieldRef} className={styles.field} data-domain-count={evidence.areas.length} tabIndex={-1} aria-label={t('fieldLabel')}>
         <div data-guidance-overview-header className="flex flex-wrap items-start justify-between gap-x-5 gap-y-2">
           <div>
-            <h3 className="text-title font-[var(--font-weight-emphasis)] text-[color:var(--color-text-primary)]">
+            <h2 className={INSIGHTS_HEADLINE}>
               {t('title', { count: evidence.areas.length })}
-            </h3>
+            </h2>
             <p data-guidance-coverage className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-body text-[color:var(--color-text-tertiary)]">
               {covered.map(({ column, count }) => (
                 <span

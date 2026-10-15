@@ -111,7 +111,7 @@ export function FlowTab({
       <p className="text-body font-[var(--font-weight-emphasis)] text-[color:var(--color-text-primary)]">
         {labels.unavailableTitle}
       </p>
-      <p className="max-w-prose text-body leading-prose text-[color:var(--color-text-secondary)]">
+      <p className="max-w-[var(--measure-prose)] text-body leading-prose text-[color:var(--color-text-secondary)]">
         {labels.unavailableBody}
       </p>
     </div>
@@ -130,14 +130,14 @@ export function FlowTab({
 
   const requestFold = (
     <Disclosure summary={labels.requestLabel} summaryTestId="flow-request-open">
-      <pre role="region" aria-label={labels.requestLabel} tabIndex={0} data-testid="flow-request-text" className="mt-2 max-h-[22rem] max-w-prose overflow-auto whitespace-pre-wrap break-words rounded-card border border-[color:var(--color-border-soft)] bg-[color:var(--color-overlay-1)] p-3 font-sans text-body leading-prose text-[color:var(--color-text-secondary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color:var(--color-indigo-focus-ring)]">
+      <pre role="region" aria-label={labels.requestLabel} tabIndex={0} data-testid="flow-request-text" className="mt-2 max-h-[22rem] max-w-[var(--measure-prose)] overflow-auto whitespace-pre-wrap break-words rounded-card border border-[color:var(--color-border-soft)] bg-[color:var(--color-overlay-1)] p-3 font-sans text-body leading-prose text-[color:var(--color-text-secondary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[color:var(--color-indigo-focus-ring)]">
         {request}
       </pre>
     </Disclosure>
   );
 
   const actions = (
-    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+    <div className="flex flex-wrap items-center justify-start gap-x-[var(--card-gap)] gap-y-3">
       {actionBlock}
       {copyButton}
     </div>
@@ -147,7 +147,7 @@ export function FlowTab({
     <section className="flex flex-col gap-4" data-testid="flow-tab">
       <div className="flex flex-col gap-2">
         <InsightsSectionTitle level={2} className={INSIGHTS_HEADLINE}>{labels.title}</InsightsSectionTitle>
-        <p className="max-w-prose text-body text-[color:var(--color-text-secondary)]">{labels.lead}</p>
+        <p className="max-w-[var(--measure-prose)] text-body text-[color:var(--color-text-secondary)]">{labels.lead}</p>
       </div>
 
       {/* What an agent wrote is the body, with how it changed between writings; the request sits behind a fold. */}
@@ -162,7 +162,7 @@ export function FlowTab({
             </span>
             {latest.grounded ? null : <span className="text-label text-[color:var(--color-amber-source-a90)]">{labels.ungrounded}</span>}
           </header>
-          <div className="max-w-prose whitespace-pre-wrap text-body leading-prose text-[color:var(--color-text-primary)]" data-testid="flow-answer">
+          <div className="max-w-[var(--measure-prose)] whitespace-pre-wrap text-body leading-prose text-[color:var(--color-text-primary)]" data-testid="flow-answer">
             {latest.answer}
           </div>
           {changes.length > 0 ? (
@@ -195,7 +195,7 @@ export function FlowTab({
         <div className="flex flex-col gap-4 rounded-panel border border-[color:var(--color-border-soft)] bg-[color:var(--color-panel)] p-[var(--card-pad)]" data-testid="flow-no-version">
           <div className="flex flex-col gap-1.5">
             <p className="text-body-lg font-[var(--font-weight-signature)] text-[color:var(--color-text-primary)]">{labels.noVersionTitle}</p>
-            <p className="max-w-prose text-body leading-prose text-[color:var(--color-text-secondary)]">{labels.noVersionBody}</p>
+            <p className="max-w-[var(--measure-prose)] text-body leading-prose text-[color:var(--color-text-secondary)]">{labels.noVersionBody}</p>
           </div>
           <div className="flex flex-col gap-3 border-t border-[color:var(--color-divider)] pt-4" data-testid="flow-request">
             {actions}

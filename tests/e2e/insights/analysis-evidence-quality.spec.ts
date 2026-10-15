@@ -181,3 +181,24 @@ test.describe('project purpose on coarse input', () => {
     }
   }
 });
+
+test.describe('supporting records at the touch viewport', () => {
+  test.use({ viewport: { width: 600, height: 900 }, hasTouch: true });
+  for (const tab of ['library', 'harness', 'brief']) {
+    test(`${tab} keeps its last action above the bottom navigation with a full touch target`, async ({ page }) => {
+      await page.goto(`/en/ontology/insights/?tab=${tab}&guides=off`);
+      const last = tab === 'brief' ? page.locator('[data-testid="brief-lines"] a').last() : page.getByTestId('preview-primary-action');
+      await expect(last).toBeVisible();
+      await last.scrollIntoViewIfNeeded();
+      const nav = await page.getByRole('navigation', { name: 'Primary menu', exact: true }).boundingBox();
+      const bounds = await last.boundingBox();
+      expect(bounds!.height).toBeGreaterThanOrEqual(44);
+      expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(nav!.y);
+      expect(await last.evaluate(element => {
+        const r = element.getBoundingClientRect();
+        const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+        return element === hit || element.contains(hit);
+      })).toBe(true);
+    });
+  }
+});

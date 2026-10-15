@@ -245,13 +245,14 @@ test.describe("harness tab", () => {
 
   test('Brief restores its normal scrolling contract after measured Guidance', async ({ page }) => {
     await mountHarnessVault(page);
-    await page.setViewportSize({ width: 1040, height: 720 });
+    await page.setViewportSize({ width: 1040, height: 480 });
     await page.goto('/en/ontology/insights/?tab=brief&guides=off');
     await expect(page.getByTestId('brief-tab')).toBeVisible();
     const main = page.locator('main[data-insights-surface="relationship-analysis"]');
     await expect(page.getByTestId('brief-headline')).toHaveAttribute('data-brief-headline-state', 'settled');
     const briefBefore = await main.evaluate((element) => ({ overflowY: getComputedStyle(element).overflowY }));
     expect(briefBefore.overflowY).toBe('auto');
+    expect(await main.evaluate(element => element.scrollHeight)).toBeGreaterThan(await main.evaluate(element => element.clientHeight));
 
     await page.getByTestId('insights-core-harness').click();
     await expect(page.getByTestId('harness-coverage-overview')).toBeVisible();
