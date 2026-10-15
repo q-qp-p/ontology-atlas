@@ -6,8 +6,8 @@ import { waitForBoxStill, waitForDomeEntered, waitForMapSettled, waitForMapStill
 
 /**
  * The overview's centre must match the free map's centre (INDEX right edge to rail left edge)
- * and the chrome stands on one line. Drawn positions convert through the canvas's own box so
- * the entry fade's scale shows up.
+ * and the chrome stands on one line; the Flat dial's drawing is its outer ring. Positions
+ * convert through the canvas box.
  */
 
 /** The app's window floor and its opening window: the two sizes the installed app is read at. */
@@ -60,8 +60,11 @@ async function measure(page: Page): Promise<Frame> {
     // different kinds (a drawn hub capability against a domain, in the fixture vault).
     const root = getComputedStyle(document.documentElement);
     const radius = (kind: string) => Number(root.getPropertyValue(`--map-radius-${kind}`)) * camera.scale;
-    const lefts = drawn.map((node) => canvas.left + (node.x - radius(node.kind)) * stretch);
-    const rights = drawn.map((node) => canvas.left + (node.x + radius(node.kind)) * stretch);
+    const dial = probe.dial?.();
+    const ring = dial?.owns ? Math.max(0, ...dial.rings.map((r) => r.radius)) * camera.scale : 0;
+    const hub = ring > 0 ? drawn.find((node) => node.kind === "project") : undefined;
+    const lefts = hub ? [canvas.left + (hub.x - ring) * stretch] : drawn.map((node) => canvas.left + (node.x - radius(node.kind)) * stretch);
+    const rights = hub ? [canvas.left + (hub.x + ring) * stretch] : drawn.map((node) => canvas.left + (node.x + radius(node.kind)) * stretch);
     const toolbar = document.querySelector('[data-testid="topology-top-toolbar"]')!;
     const toolbarTiles = [...toolbar.querySelectorAll("button")]
       .map(shown)
@@ -123,6 +126,14 @@ function check(frame: Frame, where: string, { chromeLine }: { chromeLine: boolea
   return failures;
 }
 
+async function waitForDialArrived(page: Page) {
+  await page.waitForFunction(() => {
+    const dial = window.__atlasMap?.dial?.();
+    return !dial || (dial.owns && dial.domainAppear >= 1);
+  }, undefined, { polling: "raf", timeout: 30_000 });
+  await waitForMapStill(page);
+}
+
 async function pressFit(page: Page) {
   await page.getByTestId("topology-fit-control").getByRole("button").click();
   await waitForMapStill(page, { what: "camera" });
@@ -143,6 +154,7 @@ test("the overview stands in the middle of the free map, on one chrome line, wit
       });
       await page.evaluate(() => document.fonts.ready);
       await waitForMapSettled(page);
+      await waitForDialArrived(page);
       const where = `${size.width}x${size.height} index=${index}`;
       failures.push(...check(await measure(page), `${where} entry`, { chromeLine: index === "expanded" }));
       // The fit tile frames the same drawing, not a second frame.

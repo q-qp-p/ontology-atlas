@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { scaledLabelFontSize } from "../render/labels";
-import { createMeasureText, dialOverviewPad } from "./fit";
+import { createMeasureText, dialOverviewBounds, dialOverviewPad } from "./fit";
 import type { DialCluster, DialLabels, DialModel, DialScene, DialTokens } from "./types";
 
 const TOKENS = { nameMaxPx: 160, chipMaxPx: 17, labelScale: 1.1 } as DialTokens;
@@ -33,6 +33,7 @@ function fixture(names: string[], radii: number[] = names.map(() => 300), orphan
   const domains = names.map((label, i) => ({ id: `d${i}`, label, capabilityIds: ["a"], directElementIds: [], elementCount: 12 }));
   const model = { domainById: new Map(domains.map((d) => [d.id, d])) } as unknown as DialModel;
   const scene = {
+    rings: [],
     clusters,
     orphans: { ids: orphans ? ["x"] : [], centre: { x: orphans?.x ?? 0, y: orphans?.y ?? 0 }, pitch: 5, radius: 20 },
     extent: { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) },
@@ -77,6 +78,37 @@ describe("dialOverviewPad", () => {
     const b = dialOverviewPad(withOrphans.scene, withOrphans.model, LABELS, measure, TOKENS);
     expect(b.right).toBeCloseTo("1 loose".length * 6 + 8);
     expect(b.left).toBe(a.left);
+  });
+});
+
+describe("dialOverviewBounds and dialOverviewPad", () => {
+  const rings = [{ step: 0, radius: 360, min: 0, max: 1 }, { step: 1, radius: 150, min: 2, max: null }];
+
+  it("frames the outer ring about the hub, reaching up past it by the camera's bottom allowance share", () => {
+    const { scene } = fixture(["Top", "R", "Bottom", "L"]);
+    const box = dialOverviewBounds({ ...scene, rings } as unknown as DialScene);
+    expect([box.minX, box.maxX, box.maxY]).toEqual([-360, 360, 360]);
+    expect(box.minY).toBeLessThan(-360);
+    expect(box.minY).toBeGreaterThan(-400);
+  });
+
+  it("reaches past the ring only where the drawing overhangs it on both sides, so the hub stays centred", () => {
+    const both = fixture(["Top", "R", "Bottom", "L"], [360, 360, 360, 300]);
+    const box = dialOverviewBounds({ ...both.scene, rings } as unknown as DialScene);
+    expect([box.minX, box.maxX, box.maxY]).toEqual([-360, 360, 400]);
+    expect(box.minY).toBeLessThan(-400);
+    const oneSide = fixture(["Top", "R", "Bottom", "L"], [360, 300, 300, 300]);
+    expect(dialOverviewBounds({ ...oneSide.scene, rings } as unknown as DialScene).maxY).toBe(360);
+  });
+
+  it("falls back to the content extent before any ring exists", () => {
+    const { scene } = fixture(["Top", "R"]);
+    expect(dialOverviewBounds(scene)).toEqual(scene.extent);
+  });
+
+  it("pads nothing once rings frame the dial, so every camera path lands on one frame", () => {
+    const { model, scene } = fixture(["Top", "Right side", "Bottom", "Left"]);
+    expect(dialOverviewPad({ ...scene, rings } as unknown as DialScene, model, LABELS, measure, TOKENS)).toEqual({ left: 0, right: 0, top: 0, bottom: 0 });
   });
 });
 
