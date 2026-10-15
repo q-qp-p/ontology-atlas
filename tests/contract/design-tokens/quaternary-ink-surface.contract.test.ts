@@ -86,27 +86,12 @@ describe("quaternary ink licence — down to the resting neutral backgrounds", (
   });
 
   it("the basis of the boundary still exists — on raised backgrounds it really breaks AA", () => {
-    /*
-     * `/gate-probe`: no detector may idle on an empty set. The day this assertion turns
-     * red is the day quaternary passes on raised surfaces too, and on that day this
-     * licence boundary can be folded — the same grammar as the accent/accentOnTint
-     * "grounds for the split" assertion. (Conversely, lifting quaternary that far
-     * collapses the hierarchy against tertiary first — the step ratio below catches
-     * that.)
-     */
     expect(ratioOn(quaternary, stack(panel, o2))).toBeLessThan(4.5);
     expect(ratioOn(quaternary, stack(elevated, o1))).toBeLessThan(4.5);
     expect(ratioOn(quaternary, stack(panel, a14))).toBeLessThan(4.5);
   });
 
   it("the prescription holds — tertiary is AA on every raised background measured this time", () => {
-    /*
-     * For "text on a raised background starts at tertiary" to be a prescription,
-     * tertiary must actually clear those backgrounds. The three compositions the
-     * open-surface instrument caught are the benchmark. If a deeper composition that
-     * tertiary also fails (elevated+overlay-3 and so on) appears on screen, that site
-     * starts at secondary and this list widens then.
-     */
     const raised: Record<string, Rgba> = {
       "panel+overlay-2": stack(panel, o2),
       "indigo-a14∘panel": stack(panel, a14),
@@ -116,6 +101,14 @@ describe("quaternary ink licence — down to the resting neutral backgrounds", (
     for (const [name, bg] of Object.entries(raised)) {
       const r = ratioOn(tertiary, bg);
       expect(r, `tertiary on ${name} is ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("the hierarchy gap remains — secondary/tertiary step ratio on canvas and panel ≥ 1.6", () => {
+    const secondary = cssToken(css, "--color-text-secondary");
+    for (const [name, bg] of Object.entries({ canvas, panel })) {
+      const step = ratioOn(secondary, bg) / ratioOn(tertiary, bg);
+      expect(step, `secondary/tertiary on ${name} is ${step.toFixed(2)}`).toBeGreaterThanOrEqual(1.6);
     }
   });
 
@@ -192,10 +185,17 @@ describe("spots caught by measurement do not go back — architecture profile ro
 });
 
 describe("quaternary ink is a 12.5 px and up ink — small-text ratchet", () => {
-  const FALLBACK_CEILING = 467;
+  // Blind to a size inherited from a parent, a step named in another file, and dynamic tones.
+  const FALLBACK_CEILING = 543;
   const QUATERNARY = /text-\[color:var\(--color-text-quaternary\)\]/;
-  const SMALL =
-    /(?<![\w-])text-(?:caption|label)(?![\w-])|text-\[(?:9\.5|10|10\.5|11)px\]|text-\[length:var\(--[\w-]*(?:label|caption)[\w-]*\)\]/;
+  const STEP = /(?<![\w-])text-(?:caption|label)(?![\w-])|text-\[length:var\(--[\w-]*(?:label|caption)[\w-]*\)\]/;
+  const ARBITRARY = /text-\[(\d*\.?\d+)(px|rem)\]/g;
+  const SMALL_CONTROL_SIZES = new Set(["xs", "sm", "md"]);
+
+  const isSmall = (text: string) =>
+    STEP.test(text) ||
+    [...text.matchAll(ARBITRARY)].some((m) => Number(m[1]) * (m[2] === "rem" ? 16 : 1) <= 11);
+  const hasBoth = (text: string) => QUATERNARY.test(text) && isSmall(text);
 
   const walk = (dir: string, out: string[] = []): string[] => {
     if (!existsSync(dir)) return out;
@@ -203,13 +203,50 @@ describe("quaternary ink is a 12.5 px and up ink — small-text ratchet", () => 
       const p = join(dir, name);
       if (statSync(p).isDirectory()) {
         if (name !== "node_modules" && name !== ".next") walk(p, out);
-      } else if (/\.tsx$/.test(name) && !/\.(test|spec)\./.test(name)) out.push(p);
+      } else if (/\.tsx?$/.test(name) && !/\.(test|spec)\.|\.d\.ts$/.test(name)) out.push(p);
     }
     return out;
   };
 
-  const count = (text: string, rel = "probe.tsx") =>
-    readJsx(rel, text).filter((fact) => QUATERNARY.test(fact.classText) && SMALL.test(fact.classText)).length;
+  const propName = (prop: ts.ObjectLiteralElementLike) =>
+    ts.isPropertyAssignment(prop) && (ts.isIdentifier(prop.name) || ts.isStringLiteral(prop.name))
+      ? prop.name.text
+      : undefined;
+
+  const count = (text: string, rel = "probe.tsx") => {
+    const resolved = readClassSource(rel, text);
+    const { source } = resolved;
+    let total = 0;
+    const visit = (node: ts.Node): void => {
+      if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node) || ts.isTemplateExpression(node)) {
+        if (hasBoth(node.getText(source))) total += 1;
+        if (!ts.isStringLiteral(node) && !ts.isNoSubstitutionTemplateLiteral(node)) return;
+      }
+      const opening = ts.isJsxElement(node) ? node.openingElement : ts.isJsxSelfClosingElement(node) ? node : undefined;
+      const className = opening ? classNameOf(opening) : undefined;
+      if (className?.initializer) {
+        const parts = stringsOf(resolved, className.initializer);
+        if (hasBoth(parts.join(" ")) && !parts.some(hasBoth)) total += 1;
+      }
+      if (ts.isCallExpression(node) && node.expression.getText(source) === "controlClass") {
+        const arg = node.arguments[0];
+        if (arg && ts.isObjectLiteralExpression(arg)) {
+          const lit = (name: string) => {
+            const prop = arg.properties.find((p) => propName(p) === name);
+            const init = prop && ts.isPropertyAssignment(prop) ? prop.initializer : undefined;
+            return init && ts.isStringLiteralLike(init) ? init.text : undefined;
+          };
+          const size = lit("size");
+          if (lit("tone") === "muted" && (size === undefined ? !arg.properties.some((p) => propName(p) === "size") : SMALL_CONTROL_SIZES.has(size))) {
+            total += 1;
+          }
+        }
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(source);
+    return total;
+  };
 
   const census = (root: string) => {
     let total = 0;
@@ -219,11 +256,33 @@ describe("quaternary ink is a 12.5 px and up ink — small-text ratchet", () => 
     return total;
   };
 
-  it("probe: a quaternary ink on a caption or label step is counted", () => {
-    const small = '<span className="text-caption text-[color:var(--color-text-quaternary)]" />';
-    const body = '<span className="text-body text-[color:var(--color-text-quaternary)]" />';
-    expect(count(`export const A = () => ${small};`)).toBe(1);
-    expect(count(`export const A = () => ${body};`)).toBe(0);
+  it("probe: each form of a small quaternary ink is counted, and its compliant twin is not", () => {
+    const forms: [string, string, string][] = [
+      [
+        "element class",
+        'export const A = () => <span className="text-caption text-[color:var(--color-text-quaternary)]" />;',
+        'export const A = () => <span className="text-body text-[color:var(--color-text-quaternary)]" />;',
+      ],
+      [
+        "class helper in a .ts file",
+        "export const eyebrow = (l: string) => `text-caption ${l} text-[color:var(--color-text-quaternary)]`;",
+        "export const eyebrow = (l: string) => `text-caption ${l} text-[color:var(--color-text-tertiary)]`;",
+      ],
+      [
+        "controlClass muted at a small size",
+        'export const c = controlClass({ shape: "chip", size: "sm", tone: "muted" });',
+        'export const c = controlClass({ shape: "chip", size: "lg", tone: "muted" });',
+      ],
+      [
+        "arbitrary rem size",
+        'export const A = () => <span className="text-[0.6875rem] text-[color:var(--color-text-quaternary)]" />;',
+        'export const A = () => <span className="text-[0.78rem] text-[color:var(--color-text-quaternary)]" />;',
+      ],
+    ];
+    for (const [name, red, green] of forms) {
+      expect([name, count(red)]).toEqual([name, 1]);
+      expect([name, count(green)]).toEqual([name, 0]);
+    }
   });
 
   it("does not grow", () => {
