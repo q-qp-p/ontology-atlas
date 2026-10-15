@@ -525,8 +525,7 @@ export function ProjectDetailPage({
                 ariaLabel={t("inlineDescriptionAria")}
                 placeholder={t("inlineDescriptionPlaceholder")}
                 dataTestId="project-detail-description"
-                // The overview prose's own box, so hero and card words share both edges.
-                className="mt-2.5 max-w-[calc(var(--measure-doc-column)-2*var(--measure-doc-gutter))] break-keep text-body-lg leading-body-lg text-pretty text-[color:var(--color-text-secondary)]"
+                className="mt-2.5 max-w-[var(--measure-prose)] break-keep text-body-lg leading-body-lg text-pretty text-[color:var(--color-text-secondary)]"
               />
             </div>
             <div
@@ -725,9 +724,7 @@ export function ProjectDetailPage({
           {bodyContent ? (
             <ProjectBriefSummary
               body={dedupedBodyContent ?? bodyContent}
-              // The reading column (`docs/DECISIONS.md`), left-aligned in a card at body-lg so it does not
-              // outrank the hero; hierarchy is weight and space, not size.
-              proseClassName={`${storyMarkdownClassName} max-w-[calc(var(--measure-doc-column)-2*var(--measure-doc-gutter))]`}
+              proseClassName={`${storyMarkdownClassName} max-w-[var(--measure-prose)]`}
               coversLabel={t("bodyCovers")}
               leadSentence={heroTagline}
               sectionNames={{

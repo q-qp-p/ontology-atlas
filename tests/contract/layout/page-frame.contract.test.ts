@@ -246,6 +246,7 @@ const TITLE_MEMBERS = [
   "src/views/project-editor/ui/ProjectEditorPage.tsx",
   "src/views/project-selector/ui/ProjectSelectorPage.tsx",
   "src/widgets/atlas-git-panel/ui/SetupMode.tsx",
+  "src/widgets/atlas-git-panel/ui/DesktopBody.tsx",
   "src/views/library/ui/parts/first-run/LibraryStartStage.tsx",
   "src/views/library/ui/LibraryRounds.tsx",
   "src/views/library/ui/LibraryConstellations.tsx",
