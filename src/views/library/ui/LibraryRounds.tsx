@@ -3,7 +3,7 @@
 import { CalendarClock, Clock3, Pause, Play, TriangleAlert } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { RoundPassEntry, RoundRecord } from "@/entities/library-round";
 import { cadenceKey, cadenceMinutes, roundPlaceLabels, roundPlaces } from "@/entities/library-round";
@@ -24,6 +24,7 @@ import { lastOutcome, nextRound, sinceSpan, summarizeSince } from "../lib/rounds
 import { RoundsLedger } from "./parts/rounds/RoundsLedger";
 import { SinceYouLeft } from "./parts/rounds/SinceYouLeft";
 import { RoundsHistoryEmpty } from "./parts/rounds/RoundsHistoryEmpty";
+import { countIn } from "./parts/rounds/landing";
 
 /**
  * **Check history** — the Library's read side of document rounds.
@@ -37,6 +38,8 @@ import { RoundsHistoryEmpty } from "./parts/rounds/RoundsHistoryEmpty";
  */
 const EMPTY_ENTRIES: RoundPassEntry[] = [];
 const EMPTY_ROUNDS: RoundRecord[] = [];
+/** The rounds count each folder last showed here, so a first round saved in Automations lands on return. */
+const settledRoundsByFolder = new WeakMap<object, number>();
 const DOCUMENT_AUTOMATIONS_HREF = withQuery(DESTINATION_HREF.automations, { kind: "documents" });
 
 export function LibraryRounds() {
@@ -90,6 +93,18 @@ export function LibraryRounds() {
   const waitingHere = rounds.some((round) => round.enabled && notHere?.has(round.id));
   const next = nextRound(scheduled);
   const allPaused = rounds.length > 0 && scheduled.length === 0;
+  // Counted only once the store has answered, so a load is never mistaken for a first round.
+  const settledCount = runner?.storeStatus === "ok" || runner?.storeStatus === "missing" ? rounds.length : null;
+  const folder = vault.handle ?? null;
+  const [seenCount, setSeenCount] = useState(() => (folder ? settledRoundsByFolder.get(folder) ?? settledCount : settledCount));
+  const [landed, setLanded] = useState(false);
+  if (seenCount !== settledCount) {
+    setSeenCount(settledCount);
+    if (seenCount === 0 && settledCount !== null && settledCount > 0) setLanded(true);
+  }
+  useEffect(() => {
+    if (folder && settledCount !== null) settledRoundsByFolder.set(folder, settledCount);
+  }, [folder, settledCount]);
 
   const openPage = (slug: string) => {
     const bare = slug.replace(/\.md$/, "");
@@ -254,12 +269,12 @@ export function LibraryRounds() {
               <h1 className={`mt-2 ${PAGE_TITLE}`}>
                 {t("title")}
               </h1>
-              <p data-testid="library-rounds-header-line" className={`mt-2 max-w-prose ${PAGE_LEDE}`}>
-                <span className="text-[color:var(--color-text-secondary)]">{t("header.rounds", { count: rounds.length })}</span>
+              <p data-testid="library-rounds-header-line" className={`mt-2 max-w-[var(--measure-prose)] ${PAGE_LEDE}`}>
+                <span key={rounds.length} ref={landed ? countIn : undefined} className="text-[color:var(--color-text-secondary)]">{t("header.rounds", { count: rounds.length })}</span>
                 {" · "}
                 <span className={running ? "text-[color:var(--color-indigo-text-soft)]" : undefined}>{headerLine}</span>
               </p>
-              <p className="mt-1.5 text-label leading-label text-[color:var(--color-text-quaternary)]">{t("limit")}</p>
+              <p data-testid="library-rounds-limit" className="mt-1.5 max-w-[var(--measure-prose)] text-body leading-body text-[color:var(--color-text-tertiary)]">{t("limit")}</p>
             </div>
           </header>
 
@@ -267,9 +282,10 @@ export function LibraryRounds() {
             <RoundsHistoryEmpty title={t("emptyTitle")} description={t("emptyDescription")}
               kindsLabel={t("emptyKinds")}
               signalsLabel={t("emptySignals")}
-              signals={(["stale", "redrafted", "refused", "held"] as const).map((tone) => ({
-                tone, name: t(`signal.${tone}`), body: t(`signal.${tone}Body`),
-              }))}
+              signals={(["stale", "redrafted", "refused", "held"] as const).map((tone) => ({ tone, name: t(`signal.${tone}`) }))}
+              columns={{ time: t("ledger.columnTime"), round: t("ledger.columnRound"), outcome: t("ledger.columnOutcome") }}
+              ghostTime={t("ledger.ghostTime")}
+              ghostLabel={t("ledger.ghostAria")}
               kinds={[
                 { id: "consistency", name: t("kind.consistency"), body: t("kind.consistencyBody") },
                 { id: "service", name: t("kind.service"), body: t("kind.serviceBody") },
@@ -354,6 +370,7 @@ export function LibraryRounds() {
                   running={running}
                   nextDueLabel={next ? dueLabel(next.nextDueAt) : null}
                   allPaused={allPaused}
+                  landed={landed}
                 />
               </div>
             </>
@@ -374,7 +391,7 @@ function Header({ t }: { t: ReturnType<typeof useTranslations<"library.rounds">>
           {t("eyebrow")}
         </p>
         <h1 className={`mt-2 ${PAGE_TITLE}`}>{t("title")}</h1>
-        <p className={`mt-2 max-w-prose ${PAGE_LEDE}`}>{t("lede")}</p>
+        <p className={`mt-2 max-w-[var(--measure-prose)] ${PAGE_LEDE}`}>{t("lede")}</p>
       </div>
       <Link href={DOCUMENT_AUTOMATIONS_HREF} data-testid="library-rounds-manage-automations" className={cn(controlClass({ shape: "link", size: "sm", tone: "secondary" }), "atlas-touch-floor")}>
         <CalendarClock size={ICON_SIZE.sm} aria-hidden />

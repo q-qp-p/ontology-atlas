@@ -2,7 +2,7 @@
 
 import { FileText, Moon, Play, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import type { RoundPassEntry, RoundPassOutcome } from "@/entities/library-round";
 import { undoneReasonKey } from "@/features/library-rounds";
@@ -15,6 +15,7 @@ import { ICON_SIZE } from "@/shared/ui/tokens/icon-size";
 import { Chip } from "@/shared/ui";
 
 import { groupLedgerByDay, passDurationSeconds } from "../../../lib/rounds/round-presentation";
+import { landInk } from "./landing";
 
 /**
  * **The ledger** — passes on a time axis, newest first.
@@ -59,6 +60,36 @@ const OUTCOME_BADGE: Record<Exclude<RoundPassOutcome, "asleep" | "held">, string
 };
 
 const ENTER = "motion-safe:animate-[atlasStatusIn_var(--motion-settle)_var(--motion-ease)_both]";
+
+/** Time, axis dot and pass: every ledger row, the one still waiting included. */
+export const LEDGER_ROW = "grid grid-cols-[3.5rem_1rem_minmax(0,1fr)] items-start gap-x-3";
+
+/**
+ * The row a pass will land in, before it has run: quaternary while no round exists, primary once one
+ * does. `landed` replays that change on the render a round first appears.
+ */
+export function LedgerWaitingRow({ time, ink, landed = false, testId, label, children }: {
+  time: string;
+  ink: "ghost" | "live";
+  landed?: boolean;
+  testId?: string;
+  label?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div ref={landed ? landInk : undefined} data-testid={testId} data-outcome="waiting" className={cn(
+      LEDGER_ROW,
+      ink === "ghost" ? "text-[color:var(--color-text-quaternary)]" : "text-[color:var(--color-text-primary)]",
+    )}>
+      {label ? <span className="sr-only">{label}</span> : null}
+      <span data-ghost-text="" className="py-1.5 text-label leading-label tabular-nums">{time}</span>
+      <span className="flex justify-center py-2.5">
+        <span aria-hidden className="h-1.5 w-1.5 rounded-full border border-current" />
+      </span>
+      {children}
+    </div>
+  );
+}
 
 /** `wiki/payments-api.md` → `payments-api`: the name a person knows the page by. */
 export function pageName(path: string): string {
@@ -158,6 +189,7 @@ export function RoundsLedger({
   running = null,
   nextDueLabel,
   allPaused,
+  landed = false,
 }: {
   entries: readonly RoundPassEntry[];
   locale: string;
@@ -173,6 +205,8 @@ export function RoundsLedger({
   /** The first due time, for the empty line. */
   nextDueLabel: string | null;
   allPaused: boolean;
+  /** True on the render after the first round appeared on this screen. */
+  landed?: boolean;
 }) {
   const t = useTranslations("library.rounds");
   const durationWords = useDurationWords();
@@ -199,9 +233,11 @@ export function RoundsLedger({
     return running ? (
       <LiveRow key={running.startedAt} running={running} locale={locale} />
     ) : (
-      <p data-testid="library-rounds-ledger-empty" className="text-body leading-body text-[color:var(--color-text-tertiary)]">
-        {allPaused ? t("ledger.emptyPaused") : nextDueLabel ? t("ledger.empty", { time: nextDueLabel }) : t("ledger.emptyPaused")}
-      </p>
+      <LedgerWaitingRow time={t("ledger.ghostTime")} ink="live" landed={landed}>
+        <p data-testid="library-rounds-ledger-empty" className="py-1.5 text-body leading-body">
+          {allPaused ? t("ledger.emptyPaused") : nextDueLabel ? t("ledger.empty", { time: nextDueLabel }) : t("ledger.emptyPaused")}
+        </p>
+      </LedgerWaitingRow>
     );
   }
 

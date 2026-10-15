@@ -188,7 +188,7 @@ test.describe("Library rounds", () => {
         return range.getClientRects()[0]?.x ?? Number.NaN;
       };
       const group = root.querySelector('[data-testid="library-rounds-empty-ledger"] [role="group"]');
-      const band = root.querySelector('[data-testid="library-rounds-empty-signals"]');
+      const band = root.querySelector('[data-testid="library-rounds-ghost-ledger"]');
       const eyebrow = root.querySelector("header p");
       const probe = document.createElement("span");
       probe.style.color = "var(--color-text-quaternary)";
@@ -202,7 +202,8 @@ test.describe("Library rounds", () => {
         eyebrowWeight: eyebrow ? getComputedStyle(eyebrow).fontWeight : null,
         quaternary,
         bandHead: textX(band?.querySelector("h3")),
-        bandFirst: x(band?.querySelector("li")),
+        columnHead: textX(root.querySelector('[data-testid="library-rounds-ghost-head"]')),
+        ghostTime: textX(root.querySelector('[data-testid="library-rounds-ghost-row"] [data-ghost-text]')),
         group: x(group),
         groupHead: textX(group?.firstElementChild),
         kindGlyph: x(group?.querySelector("li svg")),
@@ -210,7 +211,8 @@ test.describe("Library rounds", () => {
     });
     expect(Math.abs(sheet.eyebrow - sheet.headline)).toBeLessThanOrEqual(0.5);
     expect(Math.abs(sheet.bandHead - sheet.headline)).toBeLessThanOrEqual(0.5);
-    expect(Math.abs(sheet.bandFirst - sheet.headline)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(sheet.columnHead - sheet.headline)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(sheet.ghostTime - sheet.headline)).toBeLessThanOrEqual(0.5);
     expect(Math.abs(sheet.groupHead - sheet.group)).toBeLessThanOrEqual(0.5);
     expect(Math.abs(sheet.kindGlyph - sheet.group)).toBeLessThanOrEqual(0.5);
     expect(sheet.eyebrowInk).toBe(sheet.quaternary);
