@@ -16,6 +16,7 @@ import { type ConeInputNode, type ConeKind, layoutCone } from '@/widgets/ontolog
 
 import { registerGatedFrameClient } from './gateway-frame-loop';
 import { echoCount, echoOrder } from './hero-echo';
+import { CHAIN_HOLD, chainFrame, HERO_CHAIN, heroChains, pickChain, type HeroChain } from './hero-chain';
 
 export interface AtlasNode {
   s: string;
@@ -37,6 +38,7 @@ export interface AtlasOptions {
   tokenEl?: Element;
   reducedMotion?: boolean;
   onHover?: (slug: string | null) => void;
+  onChain?: (slug: string | null) => void;
   /** Canvas fractions, or below the split a fixed height above the bottom edge. */
   anchor?: { x: number; y: number } | { x: number; bottomPx: number };
   dim?: number;
@@ -46,6 +48,7 @@ export interface AtlasOptions {
   fitPx?: number;
   /** Radians; below the split the object is seen from higher up so its ink stays out of the type. */
   pitch?: number;
+  bounds?: () => { right: number; bottom: number } | null;
 }
 
 export interface AtlasHandle {
@@ -53,6 +56,7 @@ export interface AtlasHandle {
   setTyping: (typed: number, total: number) => void;
   litCount: () => number;
   nodesOnScreen: () => { s: string; k: ConeKind; x: number; y: number }[];
+  activeChain: () => { nodes: { s: string; x: number; y: number }[] } | null;
 }
 
 const PERIOD_MS = 64_000;
@@ -304,11 +308,40 @@ export function mountHeroAtlas(host: HTMLElement, data: AtlasData, opts: AtlasOp
     dependsLine = swap(dependsLine, dep, dependsMat);
   };
 
-  const beadGeom = new THREE.SphereGeometry(0.011, 10, 8);
-  const beadMat = new THREE.MeshBasicMaterial({ color: accentBright, transparent: true, opacity: 0.95 });
-  const beads = new THREE.InstancedMesh(beadGeom, beadMat, Math.max(1, dependsEdges.length));
-  beads.count = 0;
-  group.add(beads);
+  const overArcs = { transparent: true, depthTest: false, depthWrite: false } as const;
+  const beadMat = new THREE.SpriteMaterial({ map: halo, color: ink, blending: THREE.AdditiveBlending, opacity: 1, ...overArcs });
+  const bead = new THREE.Sprite(beadMat);
+  bead.scale.set(0.09, 0.09, 1);
+  bead.renderOrder = 3;
+  bead.visible = false;
+  group.add(bead);
+  const chainMat = new LineMaterial({ color: ink.getHex(), linewidth: 2.4, opacity: 0, ...overArcs });
+  chainMat.resolution = lineRes;
+  const chainGeom = new LineSegmentsGeometry();
+  const chainLine = new LineSegments2(chainGeom, chainMat);
+  chainLine.renderOrder = 2;
+  chainLine.visible = false;
+  group.add(chainLine);
+  const chainHalos = [0, 1, 2].map(() => {
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: halo, color: ink, blending: THREE.AdditiveBlending, opacity: 0, ...overArcs }));
+    sprite.renderOrder = 2;
+    sprite.visible = false;
+    group.add(sprite);
+    return sprite;
+  });
+  const chains = heroChains(nodes, data.edges);
+  const hopMs = parseFloat(cssVar(rootEl, '--map-light-hop-max-ms', '')) || HERO_CHAIN.hopMs;
+  let echoDoneAt: number | null = null;
+  let chainTurn = -1;
+  let chain: HeroChain | null = null;
+  let chainLit = new Map<string, number>();
+  let chainInked = -1;
+  let captioned: string | null = null;
+  const caption = (slug: string | null): void => {
+    if (slug === captioned) return;
+    captioned = slug;
+    opts.onChain?.(slug);
+  };
 
   let W = 1;
   let H = 1;
@@ -323,6 +356,26 @@ export function mountHeroAtlas(host: HTMLElement, data: AtlasData, opts: AtlasOp
   const raycaster = new THREE.Raycaster();
   const ndc = new THREE.Vector2();
 
+  const extent = (): { right: number; up: number; down: number } => {
+    const probe = new THREE.PerspectiveCamera(camera.fov, W / H, 0.05, 50);
+    const pitch = opts.pitch ?? 0.5;
+    const v = new THREE.Vector3();
+    const reach = { right: 0, up: 0, down: 0 };
+    for (let k = 0; k < 12; k += 1) {
+      const yaw = (k / 12) * Math.PI * 2;
+      probe.position.set(Math.sin(yaw) * Math.cos(pitch) * camDistance, Math.sin(pitch) * camDistance, Math.cos(yaw) * Math.cos(pitch) * camDistance);
+      probe.lookAt(0, -0.02, 0);
+      probe.updateMatrixWorld();
+      for (const p of pos.values()) {
+        v.copy(p).project(probe);
+        reach.right = Math.max(reach.right, (v.x * W) / 2);
+        reach.up = Math.max(reach.up, (v.y * H) / 2);
+        reach.down = Math.max(reach.down, (-v.y * H) / 2);
+      }
+    }
+    return reach;
+  };
+
   const resize = (): void => {
     const rect = canvas.getBoundingClientRect();
     W = Math.max(1, Math.round(rect.width));
@@ -336,7 +389,20 @@ export function mountHeroAtlas(host: HTMLElement, data: AtlasData, opts: AtlasOp
       fog.far = camDistance + 2.4;
     }
     const ax = opts.anchor?.x ?? 0.5;
-    const ay = opts.anchor && 'bottomPx' in opts.anchor ? 1 - opts.anchor.bottomPx / H : (opts.anchor?.y ?? 0.5);
+    let ay = opts.anchor && 'bottomPx' in opts.anchor ? 1 - opts.anchor.bottomPx / H : (opts.anchor?.y ?? 0.5);
+    const box = opts.bounds?.() ?? null;
+    if (box) {
+      let reach = extent();
+      for (let k = 0; k < 3; k += 1) {
+        const over = Math.max((reach.up + reach.down) / (box.bottom - 8), reach.right / Math.max(1, box.right - ax * W));
+        if (over <= 1.005) break;
+        camDistance *= over;
+        fog.near = camDistance - 0.2;
+        fog.far = camDistance + 2.4;
+        reach = extent();
+      }
+      ay = (box.bottom - reach.down) / H;
+    }
     // The view offset moves the projection centre to the anchor without moving the scene.
     camera.setViewOffset(W, H, (0.5 - ax) * W, (0.5 - ay) * H, W, H);
     camera.updateProjectionMatrix();
@@ -350,6 +416,57 @@ export function mountHeroAtlas(host: HTMLElement, data: AtlasData, opts: AtlasOp
     const d = camDistance;
     camera.position.set(Math.sin(yaw) * Math.cos(pitch) * d, Math.sin(pitch) * d, Math.cos(yaw) * Math.cos(pitch) * d);
     camera.lookAt(0, -0.02, 0);
+  };
+
+  const walkChain = (): ReturnType<typeof chainFrame> | null => {
+    if (echoDoneAt === null || clock < echoDoneAt) return null;
+    const depth = (slug: string): number => camera.position.distanceTo(pos.get(slug)!);
+    if (reduced) {
+      chain ??= pickChain(chains, depth, 0);
+      return CHAIN_HOLD;
+    }
+    const since = clock - echoDoneAt;
+    const turn = Math.floor(since / HERO_CHAIN.periodMs);
+    if (turn !== chainTurn) {
+      chainTurn = turn;
+      chain = pickChain(chains, depth, turn);
+      chainInked = -1;
+    }
+    return chainFrame(since - turn * HERO_CHAIN.periodMs, hopMs);
+  };
+
+  const drawChain = (walk: ReturnType<typeof chainFrame> | null, dim: number): void => {
+    const on = walk !== null && chain !== null && walk.alpha > 0;
+    chainLit = new Map(on ? chain!.map((s, i) => [s, walk!.lit[i]! * walk!.alpha] as const) : []);
+    caption(on && walk!.caption >= 0 ? chain![walk!.caption]! : null);
+    chainLine.visible = on && walk!.inked > 0;
+    bead.visible = on && walk!.pulse !== null;
+    chainHalos.forEach((sprite, i) => {
+      sprite.visible = on && walk!.lit[i]! > 0;
+      if (!sprite.visible) return;
+      const at = pos.get(chain![i]!)!;
+      sprite.position.copy(at);
+      const size = Math.max(RADIUS[bySlug.get(chain![i]!)!.k] * 7, 0.14);
+      sprite.scale.set(size, size, 1);
+      (sprite.material as THREE.SpriteMaterial).opacity = 0.7 * walk!.lit[i]! * walk!.alpha * dim;
+    });
+    if (!on) return;
+    const [a, b, c] = chain!.map((s) => pos.get(s)!) as [THREE.Vector3, THREE.Vector3, THREE.Vector3];
+    chainMat.opacity = 0.95 * walk!.alpha * dim;
+    if (walk!.inked > 0 && walk!.inked !== chainInked) {
+      chainInked = walk!.inked;
+      const k0 = Math.min(1, walk!.inked);
+      const k1 = Math.max(0, walk!.inked - 1);
+      // Always two segments: the renderer caches an instanced geometry's first instance count.
+      chainGeom.setPositions([
+        a.x, a.y, a.z, a.x + (b.x - a.x) * k0, a.y + (b.y - a.y) * k0, a.z + (b.z - a.z) * k0,
+        b.x, b.y, b.z, b.x + (c.x - b.x) * k1, b.y + (c.y - b.y) * k1, b.z + (c.z - b.z) * k1,
+      ]);
+    }
+    if (walk!.pulse) {
+      const [from, to] = walk!.pulse.hop === 0 ? [a, b] : [b, c];
+      bead.position.lerpVectors(from, to, walk!.pulse.u);
+    }
   };
 
   const lastScreen = new Map<string, { x: number; y: number }>();
@@ -383,6 +500,12 @@ export function mountHeroAtlas(host: HTMLElement, data: AtlasData, opts: AtlasOp
   const frame = (dtMs: number): void => {
     if (disposed) return;
     const dim = opts.dim ?? 1;
+    if (!reduced) clock += dtMs;
+    const kt = 1 - Math.exp(-dtMs / TILT_TAU_MS);
+    tiltYaw += (tiltYawT - tiltYaw) * kt;
+    tiltPitch += (tiltPitchT - tiltPitch) * kt;
+    const yaw = (reduced ? 0.6 : (clock / PERIOD_MS) * Math.PI * 2) + 0.6 + tiltYaw;
+    setCamera(yaw, (opts.pitch ?? 0.5) + tiltPitch);
     let changed = false;
     const k = 1 - Math.exp(-dtMs / ECHO_TAU_MS);
     for (const n of nodes) {
@@ -397,6 +520,7 @@ export function mountHeroAtlas(host: HTMLElement, data: AtlasData, opts: AtlasOp
       builtLit = litTarget;
     }
     if (!changed && !reduced && litTarget >= nodes.length) echoing = false;
+    const walk = walkChain();
 
     for (const kind of Object.keys(meshes) as ConeKind[]) {
       const mesh = meshes[kind]!;
@@ -405,7 +529,8 @@ export function mountHeroAtlas(host: HTMLElement, data: AtlasData, opts: AtlasOp
         const n = list[i];
         const v = vis.get(n.s) ?? 0;
         const p = pos.get(n.s)!;
-        const swell = v <= 0.001 ? 0 : RADIUS[kind] * (0.55 + 0.45 * v) * (n.s === hover ? 1.35 : 1);
+        const lift = n.s === hover ? HERO_CHAIN.swell : 1 + (HERO_CHAIN.swell - 1) * (chainLit.get(n.s) ?? 0);
+        const swell = v <= 0.001 ? 0 : RADIUS[kind] * (0.55 + 0.45 * v) * lift;
         dummy.position.copy(p);
         dummy.scale.setScalar(swell);
         dummy.updateMatrix();
@@ -429,28 +554,8 @@ export function mountHeroAtlas(host: HTMLElement, data: AtlasData, opts: AtlasOp
     floorMat.opacity = 0.28 * dim * (nodes.length ? litShare / nodes.length : 0);
     group.position.y = reduced ? 0 : Math.sin((clock / 14_000) * Math.PI * 2) * 0.02;
 
-    if (!reduced) {
-      clock += dtMs;
-      let count = 0;
-      const bead = new THREE.Vector3();
-      dependsEdges.forEach((e, i) => {
-        if ((vis.get(e.a) ?? 0) < 0.5 || (vis.get(e.b) ?? 0) < 0.5) return;
-        arcPoint(e, (clock / 2600 + (i * 0.137) % 1) % 1, bead);
-        dummy.position.copy(bead);
-        dummy.scale.setScalar(1);
-        dummy.updateMatrix();
-        beads.setMatrixAt(count, dummy.matrix);
-        count += 1;
-      });
-      beads.count = count;
-      beads.instanceMatrix.needsUpdate = true;
-    }
+    drawChain(walk, dim);
 
-    const kt = 1 - Math.exp(-dtMs / TILT_TAU_MS);
-    tiltYaw += (tiltYawT - tiltYaw) * kt;
-    tiltPitch += (tiltPitchT - tiltPitch) * kt;
-    const yaw = (reduced ? 0.6 : (clock / PERIOD_MS) * Math.PI * 2) + 0.6 + tiltYaw;
-    setCamera(yaw, (opts.pitch ?? 0.5) + tiltPitch);
     group.updateMatrixWorld(true);
     projectAll();
     if (pointer && !reduced) {
@@ -518,10 +623,15 @@ export function mountHeroAtlas(host: HTMLElement, data: AtlasData, opts: AtlasOp
       const changed = next !== litTarget;
       litTarget = next;
       echoing = true;
+      if (echoDoneAt === null && nodes.length > 0 && next >= nodes.length) echoDoneAt = reduced ? clock : clock + ECHO_TAU_MS * 3;
       // Reduced motion draws only when the lit count moved, so a still page paints once.
       if (reduced && changed) drawStill();
     },
     litCount: () => Math.min(litTarget, nodes.length),
+    activeChain: () =>
+      chain && chainLit.size > 0
+        ? { nodes: chain.map((s) => ({ s, x: lastScreen.get(s)?.x ?? 0, y: lastScreen.get(s)?.y ?? 0 })) }
+        : null,
     nodesOnScreen: () => nodes.map((n) => ({ s: n.s, k: n.k, x: lastScreen.get(n.s)?.x ?? 0, y: lastScreen.get(n.s)?.y ?? 0 })),
     dispose: () => {
       disposed = true;
@@ -531,11 +641,12 @@ export function mountHeroAtlas(host: HTMLElement, data: AtlasData, opts: AtlasOp
       canvas.removeEventListener('pointermove', onMove);
       canvas.removeEventListener('pointerleave', onLeave);
       sphere.dispose();
-      beadGeom.dispose();
+      chainGeom.dispose();
+      for (const sprite of chainHalos) (sprite.material as THREE.Material).dispose();
       halo.dispose();
       for (const m of Object.values(materials)) m.dispose();
       for (const h of haloSprites) (h.sprite.material as THREE.Material).dispose();
-      for (const m of [containsMat, spineMat, dependsMat, dependsGlowMat, beadMat, floorMat]) m.dispose();
+      for (const m of [containsMat, spineMat, dependsMat, dependsGlowMat, beadMat, floorMat, chainMat]) m.dispose();
       for (const l of [containsLine, spineLine, dependsLine, dependsGlow]) l?.geometry.dispose();
       canvas.style.cursor = '';
       canvas.remove();

@@ -7,6 +7,7 @@
 
 import { registerGatedFrameClient } from './gateway-frame-loop';
 import { echoCount, echoOrder, preferredParents } from './hero-echo';
+import { CHAIN_HOLD, chainFrame, HERO_CHAIN, heroChains, pickChain, type ChainFrame, type HeroChain } from './hero-chain';
 
 const TAU = Math.PI * 2;
 
@@ -45,8 +46,10 @@ export interface HeroEngineOptions {
   echo?: boolean;
   /** Never fires while dragging. */
   onHover?: (slug: string | null) => void;
+  onChain?: (slug: string | null) => void;
   /** Fractions of the stage for the ink envelope's centre (default 0.5/0.5). */
   anchor?: { x: number; y?: number; bottomPx?: number };
+  bounds?: () => { right: number; bottom: number } | null;
   /** A background dome must yield to the type over it. */
   dim?: number;
   /** Lean toward a fine pointer; never under reduced motion. */
@@ -67,6 +70,7 @@ export interface HeroEngineHandle {
   litCount: () => number;
   /** Last drawn frame, canvas CSS px; for gates. */
   nodesOnScreen: () => { s: string; k: HeroGraphNode['k']; x: number; y: number }[];
+  activeChain: () => { nodes: { s: string; x: number; y: number }[] } | null;
 }
 
 function smooth01(u: number): number {
@@ -321,11 +325,18 @@ export function mountHeroObject(
     );
     const ax = opts.anchor?.x ?? 0.5;
     const ay = opts.anchor?.y ?? 0.5;
+    const box = opts.bounds?.() ?? null;
+    if (box) {
+      scaleFit = Math.min(scaleFit, (box.bottom - (H * MARGIN) / 2) / envH, (box.right - W * ax) / (envW / 2));
+    }
     const envMidY = ((envelope.y0 + envelope.y1) / 2) * scaleFit;
     centerX = W * ax - ((envelope.x0 + envelope.x1) / 2) * scaleFit;
     // Pixels from the foot, not a fraction: the stage grows with the copy, the plinth does not.
-    centerY =
-      opts.anchor?.bottomPx !== undefined ? H - opts.anchor.bottomPx - envMidY : H * ay - envMidY;
+    centerY = box
+      ? box.bottom - envelope.y1 * scaleFit
+      : opts.anchor?.bottomPx !== undefined
+        ? H - opts.anchor.bottomPx - envMidY
+        : H * ay - envMidY;
   }
   size();
 
@@ -520,6 +531,90 @@ export function mountHeroObject(
   let disposed = false;
   let unregisterFrame: (() => void) | null = null;
 
+  const chains = heroChains(model.nodes, model.edges);
+  const HOP_MS = parseFloat(cssVar(rootEl, '--map-light-hop-max-ms', '')) || HERO_CHAIN.hopMs;
+  let echoDoneAt: number | null = echo ? null : ASSEMBLE + 600;
+  let chainTurn = -1;
+  let chain: HeroChain | null = null;
+  let chainShown: Projected[] = [];
+  let captioned: string | null = null;
+  const caption = (slug: string | null): void => {
+    if (slug === captioned) return;
+    captioned = slug;
+    opts.onChain?.(slug);
+  };
+
+  function chainAt(t: number, projected: Map<string, Projected>): ChainFrame | null {
+    if (echoDoneAt === null || t < echoDoneAt) return null;
+    const depth = (slug: string): number => projected.get(slug)?.z ?? 0;
+    if (reduced) {
+      chain ??= pickChain(chains, depth, 0);
+      return CHAIN_HOLD;
+    }
+    const since = t - echoDoneAt;
+    const turn = Math.floor(since / HERO_CHAIN.periodMs);
+    if (turn !== chainTurn) {
+      chainTurn = turn;
+      chain = pickChain(chains, depth, turn);
+    }
+    return chainFrame(since - turn * HERO_CHAIN.periodMs, HOP_MS);
+  }
+
+  function drawChain(t: number, projected: Map<string, Projected>, alpha: number): void {
+    const frame = chainAt(t, projected);
+    const points = chain && frame ? chain.map((slug) => projected.get(slug)) : [];
+    if (!frame || !chain || points.some((p) => p === undefined) || frame.alpha <= 0) {
+      chainShown = [];
+      caption(null);
+      return;
+    }
+    const [p0, p1, p2] = points as [Projected, Projected, Projected];
+    chainShown = [p0, p1, p2];
+    caption(frame.caption >= 0 ? chain[frame.caption]! : null);
+    ctx!.save();
+    ctx!.globalAlpha = Math.min(1, alpha) * frame.alpha;
+    const ink = `rgba(${accent2[0]},${accent2[1]},${accent2[2]},`;
+    ctx!.strokeStyle = `${ink}0.95)`;
+    ctx!.lineWidth = 1.4;
+    ctx!.beginPath();
+    const hops: [Projected, Projected][] = [[p0, p1], [p1, p2]];
+    hops.forEach(([a, b], i) => {
+      const k = Math.max(0, Math.min(1, frame.inked - i));
+      if (k <= 0) return;
+      ctx!.moveTo(a.x, a.y);
+      ctx!.lineTo(a.x + (b.x - a.x) * k, a.y + (b.y - a.y) * k);
+    });
+    ctx!.stroke();
+    chain.forEach((slug, i) => {
+      const lit = frame.lit[i]!;
+      if (lit <= 0) return;
+      const p = points[i]!;
+      const n = model.bySlug.get(slug)!;
+      const r = Math.max(0.8, NODE_R[n.k] * p.s * scaleFit * 2.1) * (1 + (HERO_CHAIN.swell - 1) * lit);
+      ctx!.beginPath();
+      ctx!.arc(p.x, p.y, r, 0, TAU);
+      ctx!.fillStyle = `rgba(${accent[0]},${accent[1]},${accent[2]},${0.55 * lit})`;
+      ctx!.fill();
+      ctx!.strokeStyle = `${ink}${lit})`;
+      ctx!.lineWidth = 1.3;
+      ctx!.stroke();
+    });
+    if (frame.pulse) {
+      const [a, b] = hops[frame.pulse.hop]!;
+      const x = a.x + (b.x - a.x) * frame.pulse.u;
+      const y = a.y + (b.y - a.y) * frame.pulse.u;
+      ctx!.beginPath();
+      ctx!.arc(x, y, 5, 0, TAU);
+      ctx!.fillStyle = `${ink}0.22)`;
+      ctx!.fill();
+      ctx!.beginPath();
+      ctx!.arc(x, y, 2.1, 0, TAU);
+      ctx!.fillStyle = `${ink}1)`;
+      ctx!.fill();
+    }
+    ctx!.restore();
+  }
+
   function drawAt(t: number): void {
     if (disposed) return;
     lastT = t;
@@ -648,7 +743,6 @@ export function mountHeroObject(
       ctx!.stroke();
     }
 
-    // Dash motion, not glow: the map section's `.flow` pulse grammar.
     for (const e of dependsEdges) {
       const na = model.bySlug.get(e.a);
       const nb = model.bySlug.get(e.b);
@@ -676,15 +770,6 @@ export function mountHeroObject(
       ctx!.strokeStyle = `rgba(${accent[0]},${accent[1]},${accent[2]},${Math.min(0.9, 0.75 * f) * a})`;
       ctx!.lineWidth = 1.1;
       ctx!.stroke();
-      if (!reduced) {
-        ctx!.save();
-        ctx!.setLineDash([3, 150]);
-        ctx!.lineDashOffset = -((t / 14) % 153);
-        ctx!.strokeStyle = `rgba(${accent2[0]},${accent2[1]},${accent2[2]},${Math.min(1, 1.1 * f) * a})`;
-        ctx!.lineWidth = 1.6;
-        ctx!.stroke();
-        ctx!.restore();
-      }
     }
 
     const nSorted = model.nodes
@@ -726,6 +811,8 @@ export function mountHeroObject(
         ctx!.stroke();
       }
     }
+
+    drawChain(t, projected, ctx!.globalAlpha / (opts.dim ?? 1));
 
     // A stroke ring, not a shadow, as the map's selection draws.
     if (hover !== null) {
@@ -803,10 +890,13 @@ export function mountHeroObject(
       // Only ever added: a remounted headline's smaller count must not put out seen ink.
       const before = revealAt.size;
       for (let i = revealAt.size; i < n; i += 1) revealAt.set(order[i], lastT);
+      if (echoDoneAt === null && order.length > 0 && revealAt.size >= order.length) echoDoneAt = lastT + REVEAL_MS;
       // Reduced motion draws only when ink was added, so a still page paints once.
       if (reduced && revealAt.size > before) drawStill();
     },
     litCount: () => revealAt.size,
+    activeChain: () =>
+      chain && chainShown.length === 3 ? { nodes: chain.map((s, i) => ({ s, x: chainShown[i]!.x, y: chainShown[i]!.y })) } : null,
     nodesOnScreen: () =>
       model.nodes.map((n) => {
         const p = lastProjected.get(n.s);
