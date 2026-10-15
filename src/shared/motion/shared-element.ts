@@ -1,9 +1,10 @@
 import { flushSync } from "react-dom";
-import { SPRING, springEasing, springSettleMs } from "./spring";
+import { SPRING, springEasing, springSettleMs, type Spring } from "./spring";
 
 const MORPH_ATTRIBUTE = "data-morph-name";
 const MORPH_CLASS = "morph-transition";
 const TRAVEL = { easing: "--morph-travel-easing", duration: "--morph-travel-duration" } as const;
+const TRAVEL_SPRING: Spring = { stiffness: SPRING.surface.stiffness, dampingRatio: 1 };
 
 interface MorphHandle {
   finished?: Promise<unknown>;
@@ -71,8 +72,8 @@ export function runMorph(update: () => void, names: readonly string[]): "transit
     named.length = 0;
   };
   root.classList.add(MORPH_CLASS);
-  root.style.setProperty(TRAVEL.easing, springEasing(SPRING.surface));
-  root.style.setProperty(TRAVEL.duration, `${springSettleMs(SPRING.surface)}ms`);
+  root.style.setProperty(TRAVEL.easing, springEasing(TRAVEL_SPRING));
+  root.style.setProperty(TRAVEL.duration, `${springSettleMs(TRAVEL_SPRING)}ms`);
   for (const source of sources) nameElement(source.element, source.name);
   const sourceSet = new Set<Element>(sources.map((source) => source.element));
   const handle = start(() => {

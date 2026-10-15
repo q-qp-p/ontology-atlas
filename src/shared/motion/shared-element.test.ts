@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { morphName, morphTargetProps, runMorph } from "./shared-element";
-import { SPRING, springEasing, springSettleMs } from "./spring";
+import { SPRING, springSettleMs } from "./spring";
 
 type Update = () => void;
 
@@ -78,8 +78,10 @@ describe("runMorph", () => {
     expect(source.style.viewTransitionName).toBe(name);
     expect(document.documentElement.classList.contains("morph-transition")).toBe(true);
     const root = document.documentElement.style;
-    expect(root.getPropertyValue("--morph-travel-easing")).toBe(springEasing(SPRING.surface));
-    expect(root.getPropertyValue("--morph-travel-duration")).toBe(`${springSettleMs(SPRING.surface)}ms`);
+    const stops = root.getPropertyValue("--morph-travel-easing").slice("linear(".length, -1).split(", ").map(Number);
+    expect(Math.max(...stops)).toBe(1);
+    expect(stops).toEqual([...stops].sort((a, b) => a - b));
+    expect(root.getPropertyValue("--morph-travel-duration")).toBe(`${springSettleMs({ ...SPRING.surface, dampingRatio: 1 })}ms`);
 
     calls[0]!();
     expect(source.style.viewTransitionName).toBe("");
