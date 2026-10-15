@@ -12,7 +12,7 @@
 import { clampPointToPanBounds, computePanBounds, type CameraAxes, type CameraTarget, type PanBounds } from "../../engine/camera";
 import { LABEL_OFFSET } from "../../render/labels";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
-import { computeClusterDiscBounds, computeEgoBounds, computeIdsBounds, radiusForKind, type Bounds, type DialFocusFrame, type TopologyWorld } from "../world/topology-world";
+import { computeClusterDiscBounds, computeEgoBounds, computeIdsBounds, dialOverviewFit, radiusForKind, type Bounds, type DialFocusFrame, type TopologyWorld } from "../world/topology-world";
 import type { WorldNode } from "../world/topology-world";
 
 interface Point {
@@ -556,7 +556,7 @@ export function computeFocusCameraTarget(
   if (focusedSlug === null) {
     // Overview fits the SPINE bbox (project+domain+hub — the only tier drawn at
     // entry), not the full 295-node bounds; see `topology-world.ts#spineBounds`.
-    return computeOverviewCameraTarget(overviewBounds, viewportWidth, viewportHeight, tokens);
+    return computeOverviewCameraTarget(overviewBounds, viewportWidth, viewportHeight, tokens, world.nodes.length, dialOverviewFit(world));
   }
   const egoBounds = dialFrame ? computeIdsBounds(world, tokens, dialFrame.ids) : computeEgoBounds(world, tokens, focusedSlug, restrictIds);
   if (!egoBounds) return null;
