@@ -206,13 +206,6 @@ function HeroSection({
    * pressing, in the trust line or beside a demoted label; this line is the only place it lives,
    * so shortening the copy deletes the fact.
    */
-  const releaseTag = published
-    ? MACOS_RELEASE.tag
-    : resolveDisplayReleaseTag({
-        published: false,
-        publishedTag: MACOS_RELEASE.tag,
-        releaseVersion: RELEASE_VERSION,
-      });
   const rise = (extra: string) => cn('gateway-rise', extra, heroIn && 'is-in');
 
   const heroLines = [
@@ -278,12 +271,10 @@ function HeroSection({
         <p
           className={cn(
             rise('gateway-t240'),
-            'pointer-events-auto flex w-fit flex-wrap items-center gap-2 font-mono text-label uppercase leading-label tracking-[var(--tracking-caps-16)] text-[color:var(--color-text-quaternary)]',
+            'pointer-events-auto flex w-fit flex-wrap items-center gap-2 font-mono text-label uppercase leading-label tracking-[var(--tracking-caps-16)] text-[color:var(--color-text-tertiary)]',
           )}
         >
           <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-[color:var(--color-indigo-brand)]" />
-          <span>{releaseTag}</span>
-          <span aria-hidden>·</span>
           <span>{t('eyebrow')}</span>
         </p>
 
@@ -338,7 +329,7 @@ function HeroSection({
               <Link
                 href="/topology"
                 data-testid="gateway-hero-web-cta"
-                className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'px-4 sm:px-6', HERO_CTA_WRAP)}
+                className={cn(buttonVariants({ variant: 'ghost', size: 'lg' }), 'px-4 sm:px-6', HERO_CTA_WRAP)}
               >
                 {t('heroPlaygroundCta')}
               </Link>
@@ -365,6 +356,7 @@ function HeroSection({
         primaryAsset={primaryAsset}
         windowsAsset={windowsInstaller}
         windowsPrimary={heroWindowsPrimary}
+        sizeOnCta={fileWins}
         heroIn={heroIn}
       />
       {/* Below the split the plane draws in this plinth under the strip; no graph, no plinth. */}
@@ -390,6 +382,7 @@ function FactsStrip({
   primaryAsset,
   windowsAsset: windowsInstaller,
   windowsPrimary,
+  sizeOnCta,
   heroIn,
 }: {
   className?: string;
@@ -397,6 +390,7 @@ function FactsStrip({
   primaryAsset: ReturnType<typeof macosAssetFor>;
   windowsAsset: ReturnType<typeof windowsAsset>;
   windowsPrimary: boolean;
+  sizeOnCta: boolean;
   heroIn: boolean;
 }) {
   const t = useTranslations('download');
@@ -427,7 +421,7 @@ function FactsStrip({
   const subjectIsWindows = subject !== null && subject === windowsInstaller;
 
   /* Mono only for program text (`code`): Hangul in the mono face reads as spaced-out printout. */
-  const facts: { label: string; value: string; code?: boolean; href?: string; name?: string }[] = [
+  const facts: { label: string; value: string; code?: boolean; href?: string; name?: string; narrowOnly?: boolean }[] = [
     { label: t('factVersionLabel'), value: version },
     {
       label: t('factRequiresLabel'),
@@ -440,6 +434,7 @@ function FactsStrip({
     facts.push({
       label: subjectIsWindows ? 'EXE' : 'DMG',
       value: formatAssetSize(subject.sizeBytes),
+      narrowOnly: sizeOnCta,
     });
     facts.push({
       label: 'SHA-256',
@@ -481,7 +476,7 @@ function FactsStrip({
 
   return (
     <div className={cn('gateway-rise gateway-t400', heroIn && 'is-in', 'w-full', className)}>
-      {/* One line when all six fit; otherwise one subgrid of equal columns that fill the width, so
+      {/* One line when every fact fits; otherwise a grid of equal columns that fill the width, so
           every row shares a start line. A container query, since the column decides the fit. 54rem:
           four equal columns hold the widest fact (the Korean requirements value, 173px). */}
       <div
@@ -491,15 +486,15 @@ function FactsStrip({
           '@container/gateway-facts border-t border-[color:var(--color-border-soft)] py-5',
         )}
       >
-        <div className="grid grid-cols-1 gap-x-12 gap-y-4 @min-[21rem]/gateway-facts:grid-cols-2 @min-[54rem]/gateway-facts:grid-cols-[repeat(4,minmax(0,1fr))] @min-[66rem]/gateway-facts:flex">
-        <dl className="col-span-full grid min-w-0 grid-cols-subgrid gap-y-4 @min-[66rem]/gateway-facts:flex @min-[66rem]/gateway-facts:gap-x-12">
+        <dl className="grid min-w-0 grid-cols-1 gap-x-12 gap-y-4 @min-[21rem]/gateway-facts:grid-cols-2 @min-[54rem]/gateway-facts:grid-cols-[repeat(4,minmax(0,1fr))] @min-[66rem]/gateway-facts:flex">
           {facts.map((fact) => (
-            <div key={fact.label} className="min-w-0">
+            <div key={fact.label} className={cn('min-w-0', fact.narrowOnly && 'sm:hidden')}>
               <dt className={FACT_LABEL}>{fact.label}</dt>
               <dd
                 data-token="engraved-numeral"
                 className={cn(
-                  'mt-1 text-body leading-body tabular-nums text-[color:var(--engraved-numeral-face)] [text-shadow:var(--engraved-numeral-text-shadow)]',
+                  FACT_VALUE,
+                  'tabular-nums text-[color:var(--engraved-numeral-face)] [text-shadow:var(--engraved-numeral-text-shadow)]',
                   fact.code && 'font-mono',
                 )}
               >
@@ -523,12 +518,13 @@ function FactsStrip({
               </dd>
             </div>
           ))}
-        </dl>
-        <div className="col-span-full grid min-w-0 grid-cols-subgrid gap-y-4 @min-[66rem]/gateway-facts:ml-auto @min-[66rem]/gateway-facts:flex @min-[66rem]/gateway-facts:gap-x-12">
-          {links.map((link) => (
-            <div key={link.label} className="min-w-0">
-              <span className={cn(FACT_LABEL, 'block')}>{link.label}</span>
-              <span className="mt-1 block">
+          {links.map((link, index) => (
+            <div
+              key={link.label}
+              className={cn('min-w-0', index === 0 && '@min-[66rem]/gateway-facts:ml-auto')}
+            >
+              <dt className={FACT_LABEL}>{link.label}</dt>
+              <dd className={FACT_VALUE}>
                 {link.external ? (
                   <a
                     href={link.href}
@@ -551,18 +547,19 @@ function FactsStrip({
                     {link.text}
                   </Link>
                 )}
-              </span>
+              </dd>
             </div>
           ))}
-        </div>
-        </div>
+        </dl>
       </div>
     </div>
   );
 }
 
 const FACT_LABEL =
-  'font-mono text-caption uppercase leading-caption tracking-[var(--tracking-caps-14)] text-[color:var(--color-text-quaternary)]';
+  'font-mono text-caption uppercase leading-caption tracking-[var(--tracking-caps-14)] text-[color:var(--color-text-tertiary)]';
+
+const FACT_VALUE = 'mt-1 text-body leading-body';
 
 const FACT_LINK = controlClass({
   shape: 'link',
