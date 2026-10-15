@@ -65,5 +65,11 @@
     --map-dial-per-end-cap-ends: 12;
     --map-dial-stub-free-share: 0.16;
     --map-dial-label-scale: 1.1;
+    --map-dial-fill-domain: #22222c;
+    --map-dial-fill-capability: #1d1d26;
+    --map-dial-stroke-domain: #a2a2ae;
+    --map-dial-stroke-capability: #84848c;
+    --map-dial-stroke-element: #666672;
+    --map-dial-ring: #666672;
   }
 }

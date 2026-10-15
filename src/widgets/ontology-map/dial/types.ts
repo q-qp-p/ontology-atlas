@@ -52,6 +52,12 @@ export interface DialTokens {
   ledgerRowPx: number;
   ledgerGapPx: number;
   attendedNameInk: string;
+  fillDomain: string;
+  fillCapability: string;
+  strokeDomain: string;
+  strokeCapability: string;
+  strokeElement: string;
+  ring: string;
   spiralC: number;
   spiralK0: number;
   elementRoom: number;

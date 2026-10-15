@@ -1,6 +1,7 @@
 import type { DialTokens } from "./types";
 
-type NumericKey = Exclude<keyof DialTokens, "attendedNameInk">;
+type InkKey = "fillDomain" | "fillCapability" | "strokeDomain" | "strokeCapability" | "strokeElement" | "ring";
+type NumericKey = Exclude<keyof DialTokens, "attendedNameInk" | InkKey>;
 
 export const DIAL_TOKEN_SPECS: readonly { key: NumericKey; cssVar: string }[] = [
   { key: "pitch", cssVar: "--map-dial-pitch" },
@@ -70,6 +71,15 @@ export const DIAL_TOKEN_SPECS: readonly { key: NumericKey; cssVar: string }[] = 
   { key: "labelScale", cssVar: "--map-dial-label-scale" },
 ];
 
+export const DIAL_INK_SPECS: readonly { key: InkKey; cssVar: string }[] = [
+  { key: "fillDomain", cssVar: "--map-dial-fill-domain" },
+  { key: "fillCapability", cssVar: "--map-dial-fill-capability" },
+  { key: "strokeDomain", cssVar: "--map-dial-stroke-domain" },
+  { key: "strokeCapability", cssVar: "--map-dial-stroke-capability" },
+  { key: "strokeElement", cssVar: "--map-dial-stroke-element" },
+  { key: "ring", cssVar: "--map-dial-ring" },
+];
+
 const ATTENDED_NAME_INK = "--map-panel-text-primary";
 
 export function resolveDialTokens(get: (cssVar: string) => string): DialTokens {
@@ -81,9 +91,11 @@ export function resolveDialTokens(get: (cssVar: string) => string): DialTokens {
     if (!raw || !Number.isFinite(value)) missing.push(cssVar);
     out[key] = value;
   }
-  const ink = get(ATTENDED_NAME_INK).trim();
-  if (!ink) missing.push(ATTENDED_NAME_INK);
-  out.attendedNameInk = ink;
+  for (const { key, cssVar } of [...DIAL_INK_SPECS, { key: "attendedNameInk", cssVar: ATTENDED_NAME_INK }]) {
+    const ink = get(cssVar).trim();
+    if (!ink) missing.push(cssVar);
+    out[key] = ink;
+  }
   if (missing.length) throw new Error(`Dial token drift: missing/empty ${missing.join(", ")}`);
   return out as unknown as DialTokens;
 }
