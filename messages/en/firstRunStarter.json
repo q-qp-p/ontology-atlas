@@ -34,8 +34,7 @@
     "conceptUnit": "concepts",
     "scopeFull": "Whole map · {count, plural, one {# concept} other {# concepts}}",
     "scopePartial": "Current scope · {shown, number} / {total, number} concepts",
-    "synthetic": "Performance test · {count, plural, one {# synthetic concept} other {# synthetic concepts}}",
-    "selection": "{name} · {count, plural, one {# concept} other {# concepts}}"
+    "synthetic": "Performance test · {count, plural, one {# synthetic concept} other {# synthetic concepts}}"
   },
   "plainModeCta": "Switch to plain-language view",
   "reopenLabel": "Reopen the start guide",
