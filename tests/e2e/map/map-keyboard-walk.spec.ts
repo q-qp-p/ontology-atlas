@@ -433,6 +433,7 @@ test.describe("map keyboard walk", () => {
         return {
           camX: cam.x,
           camY: cam.y,
+          boxX: box.x,
           nodeDocX: box.x + node.x,
           freeCenterX,
           canvasCenterX: box.x + box.width / 2,
@@ -454,25 +455,20 @@ test.describe("map keyboard walk", () => {
       }
     }
     expect(landed, "never triggered a camera transition").not.toBeNull();
-    const toFree = Math.abs(landed!.nodeDocX - landed!.freeCenterX);
-    const toCanvas = Math.abs(landed!.nodeDocX - landed!.canvasCenterX);
-    /*
-     * **"Exactly centred" is not required** — measuring that way was wrong (measured
-     * 64px off). This dive frames **the ego bbox**, not one node, so what lands in the
-     * centre is the group and the node sits somewhere inside it. "The node is exactly
-     * centred" was a misreading, not the spec.
-     *
-     * The property locked is **whether the framing favours the free area**: the node is
-     * closer to the free area's centre than to the screen's. Reverting the correction
-     * seats the node at the screen centre (a measured 192px difference), which flips
-     * this comparison immediately.
-     */
+    // The dive frames the focus's ego bounds and the leash then holds the focus near the centre, so the
+    // node's own rest says little; the aim of the framed centre is what must favour the free area.
+    const frame = await page.evaluate(() => window.__atlasMap?.focusFrame?.() ?? null);
+    expect(frame, "the dive reported the bounds it framed").not.toBeNull();
+    const aimDocX = landed!.boxX + frame!.aimX;
+    const toFree = Math.abs(aimDocX - landed!.freeCenterX);
+    const toCanvas = Math.abs(aimDocX - landed!.canvasCenterX);
     expect(
       toFree,
-      `The node is closer to the screen centre (${landed!.canvasCenterX.toFixed(0)}) than to ` +
-        `the free area's centre (${landed!.freeCenterX.toFixed(0)}), so the offset did not apply ` +
-        `(free ${toFree.toFixed(0)}px · screen ${toCanvas.toFixed(0)}px)`,
+      `The framed centre was aimed closer to the screen centre (${landed!.canvasCenterX}) than to the free area's centre (${landed!.freeCenterX}), so the offset did not apply (free ${Math.round(toFree)}px · screen ${Math.round(toCanvas)}px)`,
     ).toBeLessThan(toCanvas);
+    expect(toFree, `the framed centre was aimed ${Math.round(toFree)}px from the free area's centre`).toBeLessThan(8);
+    expect(landed!.nodeDocX, "the node lies inside the frame").toBeGreaterThanOrEqual(landed!.boxX + frame!.left - 1);
+    expect(landed!.nodeDocX, "the node lies inside the frame").toBeLessThanOrEqual(landed!.boxX + frame!.right + 1);
   });
 
   /** The shortcut sheet is the only place that teaches the keyboard, so it must list arrow-key walking. */

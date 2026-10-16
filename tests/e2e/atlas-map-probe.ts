@@ -38,6 +38,8 @@ export interface AtlasMapProbe {
    * an interpolating position at an arbitrary wall-clock moment.
    */
   cameraTarget?: () => { x: number; y: number; scale: number } | null;
+  /** The ego bounds the last focus dive framed, canvas CSS px, and where it aimed their centre before the leash clamp. */
+  focusFrame?: () => { left: number; right: number; top: number; bottom: number; aimX: number; aimY: number } | null;
   interaction?: () => { kind: "node" | "pan" | "idle"; nodeId: string | null };
   /** Live DOM-derived horizontal obstruction, before static camera safety tokens. */
   obstacleInsets: () => { left: number; right: number } | null;
