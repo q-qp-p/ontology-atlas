@@ -12,7 +12,7 @@
 import { clampPointToPanBounds, computePanBounds, type CameraAxes, type CameraTarget, type PanBounds } from "../../engine/camera";
 import { LABEL_OFFSET } from "../../render/labels";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
-import { computeClusterDiscBounds, computeEgoBounds, computeIdsBounds, radiusForKind, type Bounds, type DialFocusFrame, type TopologyWorld } from "../world/topology-world";
+import { computeClusterDiscBounds, computeEgoBounds, computeIdsBounds, dialOverviewFit, radiusForKind, type Bounds, type DialFocusFrame, type TopologyWorld } from "../world/topology-world";
 import type { WorldNode } from "../world/topology-world";
 
 interface Point {
@@ -507,6 +507,11 @@ export function focusLeashPx(
   return { x: Math.max(0, freeHalfX - FOCUS_LEASH_EDGE_PAD_PX), y: Math.max(0, freeHalfY - FOCUS_LEASH_EDGE_PAD_PX) };
 }
 
+/** The leash `computeFocusCameraTarget` aims inside, so the physics holds the same box. */
+export function focusTargetLeashPx(tokens: SafeInsetTokens, viewportWidth: number, viewportHeight: number): FocusLeashPx {
+  return focusLeashPx(viewportWidth, viewportHeight, readSafeInsets(tokens, viewportWidth, viewportHeight));
+}
+
 /** The leash in world units at `scale`: the screen leash, never tighter than the token. */
 export function focusLeashWorld(leashPx: number, scale: number, tokenMargin: number): number {
   const floor = Number.isFinite(tokenMargin) ? tokenMargin : 0;
@@ -523,6 +528,18 @@ export function focusPanBounds(
   const mx = focusLeashWorld(leashPx?.x ?? 0, scale, tokenMargin);
   const my = focusLeashWorld(leashPx?.y ?? 0, scale, tokenMargin);
   return { minX: anchor.x - mx, maxX: anchor.x + mx, minY: anchor.y - my, maxY: anchor.y + my };
+}
+
+export interface FocusFrame {
+  bounds: Bounds;
+  /** Where the bounds' centre was aimed before the leash clamp. */
+  aim: { tx: number; ty: number };
+  scale: number;
+}
+let lastFocusFrameState: FocusFrame | null = null;
+/** The ego bounds the last focus target framed; the e2e probe reads it. */
+export function lastFocusFrame(): FocusFrame | null {
+  return lastFocusFrameState;
 }
 
 export function computeFocusCameraTarget(
@@ -551,7 +568,7 @@ export function computeFocusCameraTarget(
   if (focusedSlug === null) {
     // Overview fits the SPINE bbox (project+domain+hub — the only tier drawn at
     // entry), not the full 295-node bounds; see `topology-world.ts#spineBounds`.
-    return computeOverviewCameraTarget(overviewBounds, viewportWidth, viewportHeight, tokens);
+    return computeOverviewCameraTarget(overviewBounds, viewportWidth, viewportHeight, tokens, world.nodes.length, dialOverviewFit(world));
   }
   const egoBounds = dialFrame ? computeIdsBounds(world, tokens, dialFrame.ids) : computeEgoBounds(world, tokens, focusedSlug, restrictIds);
   if (!egoBounds) return null;
@@ -616,6 +633,7 @@ export function computeFocusCameraTarget(
   // (`topology-physics-step.ts`). A target outside that box is unreachable: the spring pushes, the
   // clamp pulls back, and the idle gate reads "camera moving" for as long as the node stays selected.
   const centred = centerForInsets(centerX, centerY, insets, scale);
+  lastFocusFrameState = { bounds: egoBounds, aim: { tx: centred.tx, ty: centred.ty }, scale };
   if (!focus) return { ...centred, tscale: scale };
   // The same rule as `topology-physics-step`: the focus leash past the overview
   // scale, the unfocused leash otherwise.
