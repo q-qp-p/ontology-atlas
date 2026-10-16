@@ -232,8 +232,9 @@ export function useTopologyFocusNavigation({
         target = realmCameraTarget(bounds, tokens, width, height);
       } else {
         const realmMembers = realmActive ? realmData?.memberIds ?? null : null;
-        // A selection avoids the panel it just opened; a deselect aims at the area the closing panel frees.
-        const focusTokens = focusedSlug === null ? tokens : cameraTokens(tokens);
+        // Measured insets both ways: a selection avoids the panel it just opened, and a deselect lands
+        // where the fit tile will, since the folding panel stops declaring itself an obstacle.
+        const focusTokens = cameraTokens(tokens);
         focusLeashPxRef.current = focusedSlug === null ? null : leashFor(width, height, focusTokens);
         const overviewBounds = overviewBoundsFor(overviewFitRef.current, world, tokens, expandedParentsRef.current, clusteredIdsRef.current);
         target =

@@ -186,6 +186,38 @@ test("the overview stands in the middle of the free map, on one chrome line, wit
   expect(failures, failures.join("\n")).toEqual([]);
 });
 
+test("Escape after a deep link lands on the same overview as the entry fit", async ({ page }) => {
+  test.setTimeout(300_000);
+  await seedFirstRunSeen(page);
+  const failures: string[] = [];
+  // The window floor (1040x720) is not claimed: its deselect fit still reads a larger scale than the entry fit.
+  for (const size of SIZES.slice(1)) {
+    await page.setViewportSize(size);
+    await page.goto("/ko/topology/?e2e=1&guides=off", { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("topology-index-panel")).toBeVisible({ timeout: 30_000 });
+    await page.evaluate(() => document.fonts.ready);
+    await waitForMapSettled(page);
+    await waitForDialArrived(page);
+    const entry = await measure(page);
+    // A deep link's selection keeps no camera to return to, so Escape refits the overview.
+    const slug = await page.evaluate(() => window.__atlasMap!.nodes().find((node) => node.kind === "capability")!.id);
+    await page.goto(`/ko/topology/?e2e=1&guides=off&p=${encodeURIComponent(slug)}`, { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("map-detail-panel")).toBeVisible({ timeout: 30_000 });
+    await page.evaluate(() => document.fonts.ready);
+    await waitForMapSettled(page);
+    await waitForDialArrived(page);
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("map-detail-panel")).toBeHidden({ timeout: 15_000 });
+    await waitForMapStill(page, { what: "camera" });
+    const where = `${size.width}x${size.height} escape`;
+    const back = await measure(page);
+    failures.push(...check(back, where, { chromeLine: true }));
+    const moved = Math.hypot(back.drawnLeft - entry.drawnLeft, (back.hubY ?? 0) - (entry.hubY ?? 0));
+    if (moved > 1) failures.push(`${where}: the ring stands ${moved.toFixed(1)}px from where the entry fit put it`);
+  }
+  expect(failures, failures.join("\n")).toEqual([]);
+});
+
 test("beside the open agent dock the overview still stands in the middle of the free map", async ({ page }) => {
   test.setTimeout(300_000);
   await installDesktopRailRuntime(page);
