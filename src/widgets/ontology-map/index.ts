@@ -39,4 +39,4 @@ export type { ConeInputNode, ConeKind } from './model/dome-view/cone-layout';
  */
 export { readDrawnMapMarks } from './ui/frame-draw/drawn-map-marks';
 export { DomainStructureMap } from "./structure/DomainStructureMap";
-export { readDomainUsage } from "./model/domain-usage";
+export { readDomainUsage, type DomainUsage } from "./model/domain-usage";

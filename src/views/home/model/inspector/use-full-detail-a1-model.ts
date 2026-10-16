@@ -10,8 +10,7 @@ import {
 } from "@/entities/knowledge-graph";
 import { buildDocsVaultHref } from "@/entities/docs-vault";
 import { buildFullDetailGroups, buildFullDetailReachModel, type FullDetailGroups } from "@/widgets/full-detail-a1";
-import { readDomainUsage } from "@/widgets/ontology-map";
-import { buildOntologyMapGraph } from "../../lib/map-canvas/map-adapter";
+import type { DomainUsage } from "@/widgets/ontology-map";
 import type { TopologyNodeFocusModel } from "../../lib/inspector/topology-node-focus";
 import type { NodeDatasheetDerivation } from "./use-node-datasheet-model";
 
@@ -60,11 +59,15 @@ export function useFullDetailA1Model({
       census: computeCanonicalCensus(insight.nodes, insight.edges),
     };
   }, [activeNodeId, insight]);
-  const groups = useMemo(() => {
+  const directGroups = useMemo(() => {
     if (activeNodeId === null || !insight) return null;
-    const direct = buildFullDetailGroups(activeNodeId, insight.nodes, insight.edges, changedSlugs);
-    return { ...direct, domainLevel: readDomainLevel(activeNodeId, insight.nodes, insight.edges) };
+    return buildFullDetailGroups(activeNodeId, insight.nodes, insight.edges, changedSlugs);
   }, [activeNodeId, insight, changedSlugs]);
+  const domainUsage = datasheet?.nodeId === activeNodeId ? datasheet.domainUsage : null;
+  const groups = useMemo(
+    () => (directGroups ? { ...directGroups, domainLevel: toDomainLevel(domainUsage) } : null),
+    [directGroups, domainUsage],
+  );
 
   return useMemo(() => {
     if (!open) return null;
@@ -143,15 +146,8 @@ export function useFullDetailA1Model({
   ]);
 }
 
-function readDomainLevel(
-  nodeId: string,
-  nodes: readonly KnowledgeGraphNode[],
-  edges: readonly KnowledgeGraphEdge[],
-): FullDetailGroups["domainLevel"] {
-  if (nodes.find((node) => node.id === nodeId)?.kind !== "domain") return null;
-  const graph = buildOntologyMapGraph(nodes, edges);
-  const usage = readDomainUsage(graph.nodes, graph.edges, nodeId);
+function toDomainLevel(usage: DomainUsage | null): FullDetailGroups["domainLevel"] {
   if (!usage) return null;
-  const toLinks = (rows: typeof usage.usedBy) => rows.map((row) => ({ id: row.domainId, title: row.label, links: row.links }));
+  const toLinks = (rows: DomainUsage["usedBy"]) => rows.map((row) => ({ id: row.domainId, title: row.label, links: row.links }));
   return { usedBy: toLinks(usage.usedBy), needs: toLinks(usage.needs) };
 }

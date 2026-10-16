@@ -1,22 +1,22 @@
 import type { RefObject } from "react";
 import type { ProjectSourceView } from "@/shared/lib/project-source/project-source-receipt";
+import type { DomainUsage } from "../../model/domain-usage";
 import type { V2ConnectionGroupsView, V2EvidenceRow } from "./map-datasheet";
 
 export interface OntologyMapDetailPanelLabels {
   kindLabel: string;
-  /** N6 — the prefix label for the first-class "owning domain" fact ("domain · <name>"). */
+  /** The prefix of the owning-domain fact ("domain · <name>"). */
   domainLabel: string;
   poweredOn: string;
   poweredOff: string;
-  /** M-2 — "containing" (contains). Only rendered for container nodes. */
   metricContains: string;
-  /** S2 part 3 — the toggle label that unfolds summary mode into the individual list ("show all" — show all). */
+  /** Unfolds the path-prefix summary into the list. */
   containsShowAll: string;
-  /** S2 part 3 — the toggle label that folds the list back into the summary ("show summary" — show summary). */
+  /** Folds the list back into the summary. */
   containsShowSummary: string;
-  /** S2 part 3 — the remainder bucket's label in the path-prefix summary ("other" — other). */
+  /** The summary's remainder bucket. */
   containsOtherGroup: string;
-  /** The expand label appended after a group's "+N" ("show more" — show more), so the +N is not a dead number. */
+  /** Follows a group's "+N", so the number is not dead. */
   groupShowMore: string;
   /** The label that returns an expanded group to its capped state ("Collapse"). */
   groupShowFewer: string;
@@ -27,18 +27,24 @@ export interface OntologyMapDetailPanelLabels {
    * full detail (both come from the `edgeTypesPlain.belongs_to` family).
    */
   metricBelongsTo: string;
+  metricRelated: string;
   metricEvidence: string;
-  /**
-   * H1 B2/A — One-line hover explanation for the typed-fact group label (non-developer language) + scope
-   * specification (based on "direct" connections). Exposed only via the `title` attribute — no icon/extra surface.
-   * If undefined, renders without a title (backward compatible).
-   */
+  /** One plain line per group label, carried by `title` only. */
   metricContainsHelp?: string;
   metricUsedByHelp?: string;
   metricDependsOnHelp?: string;
   metricBelongsToHelp?: string;
+  metricRelatedHelp?: string;
+  /** Replace the used-by and needs help while a domain's partners lead those groups. */
+  metricUsedByDomainsHelp?: string;
+  metricDependsOnDomainsHelp?: string;
   metricEvidenceHelp?: string;
   noConnections: string;
+  /** Under a domain's partner rows, the links its own file writes in that direction. */
+  directLinks: (count: number) => string;
+  /** A partner domain row's count, spoken. */
+  domainLinks: (count: number) => string;
+  domainCount: (count: number) => string;
   handoff: string;
   close: string;
   /** "Full Detail" (full detail) — the opt-in link to the A1 full-detail datasheet
@@ -134,6 +140,8 @@ export interface OntologyMapDetailPanelProps {
   powered: boolean;
   /** Single source of every relation count this panel draws, so counts and drawn rows cannot diverge. */
   groups: V2ConnectionGroupsView;
+  /** A domain's partner domains as the map's flows count them; their rows lead used-by and needs. */
+  domainUsage?: DomainUsage | null;
   /** The 「Evidence」 (evidence) group — the node's own backing vault doc(s),
    * RATIO-SYSTEM §4 promotion. Rows built by `buildV2EvidenceRows`; empty when
    * the node has no `evidenceIds` (which hides the group entirely, the same

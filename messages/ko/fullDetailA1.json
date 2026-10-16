@@ -16,6 +16,8 @@
     "dependsOnCaption": "이것들이 없으면 동작하지 않아요",
     "belongsToTitle": "상위 항목",
     "belongsToCaption": "이 개념이 들어가 있는 상위",
+    "relatedTitle": "관련 항목",
+    "relatedCaption": "방향 없이 서로 관련 있다고 적힌 것들",
     "freshDotTitle": "최근 갱신",
     "directLinks": "직접 연결 {count, number}",
     "domainCount": "도메인 {count, number}곳",

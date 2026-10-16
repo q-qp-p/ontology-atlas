@@ -388,6 +388,7 @@ function HomePageImpl({ mapEntryTicket }: { mapEntryTicket: number | null }) {
   const { nodeFocus, v2DatasheetModel } = useNodeDatasheetModel({
     selectedOntologyNode,
     insight: ontologyInsight,
+    mapGraph: ontologyMapGraph,
     handoffSource,
     authoredSignificance,
     docFreshnessIndex,
@@ -455,7 +456,7 @@ function HomePageImpl({ mapEntryTicket }: { mapEntryTicket: number | null }) {
   }, [renderedIndexState, view3d, structure, acpDockFrameOpen]);
   const topologySourceActions = useTopologySourceActions({ toast, v2DatasheetModel, topologyPreferences, topologySourceReadiness, topologyCanvasFocus });
   const topologyInspectorState = useTopologyInspectorState({
-    setExpandAllActive, setRouteState, nodeFocus, v2DatasheetModel, analysisMode, selectedSlug,
+    setExpandAllActive, setRouteState, nodeFocus, v2DatasheetModel, mapGraph: ontologyMapGraph, analysisMode, selectedSlug,
     topologyCanvasFocus, topologyVaultReadModel, topologyAuthoring, homeWorkbenchController,
     topologyIndexPresentation
   });

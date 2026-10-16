@@ -243,6 +243,7 @@ export function TopologyInspectorSurfaces({
               }
               summaryHistoryUnavailable={summaryHistoryUnavailable.has(panelDatasheetModel.slug)}
               groups={panelDatasheetModel.groups}
+              domainUsage={panelDatasheetModel.domainUsage}
               evidence={panelDatasheetModel.evidence}
               codeLocations={panelDatasheetModel.codeLocations}
               updatedAtLabel={panelDatasheetModel.updatedAtLabel}
@@ -269,13 +270,20 @@ export function TopologyInspectorSurfaces({
                 metricUsedBy: t("nodeDatasheet.metricUsedBy"),
                 metricDependsOn: relationVocabulary("depends_on", "plain"),
                 metricBelongsTo: relationVocabulary("belongs_to", "plain"),
+                metricRelated: relationVocabulary("related_to", "plain"),
                 metricEvidence: relationVocabulary("describes", "plain"),
                 metricContainsHelp: t("nodeDatasheet.metricContainsHelp"),
                 metricUsedByHelp: t("nodeDatasheet.metricUsedByHelp"),
                 metricDependsOnHelp: t("nodeDatasheet.metricDependsOnHelp"),
                 metricBelongsToHelp: t("nodeDatasheet.metricBelongsToHelp"),
+                metricRelatedHelp: t("nodeDatasheet.metricRelatedHelp"),
+                metricUsedByDomainsHelp: t("nodeDatasheet.metricUsedByDomainsHelp"),
+                metricDependsOnDomainsHelp: t("nodeDatasheet.metricDependsOnDomainsHelp"),
                 metricEvidenceHelp: t("nodeDatasheet.metricEvidenceHelp"),
                 noConnections: t("nodeDatasheet.noConnections"),
+                directLinks: (count) => t("nodeDatasheet.directLinks", { count }),
+                domainLinks: (count) => t("nodeDatasheet.domainLinks", { count }),
+                domainCount: (count) => t("nodeDatasheet.domainCount", { count }),
                 // Actual code evidence: source file paths.
                 codeLocationsLabel: t("nodeDatasheet.codeLocationsLabel"),
                 codeLocationsCopyLabel: t("nodeDatasheet.codeLocationsCopyLabel"),

@@ -12,9 +12,10 @@ import { FLAT_SELECTION_KEEPS_INDEX_FROM_PX, resolveContextualIndexState } from 
 import { useFlatMapView } from "@/shared/lib/preferences/appearance-preferences";
 import { useViewportBelow } from "@/shared/lib/use-viewport-below";
 import { useIndexSelectionOverride } from "./use-index-selection-override";
+import type { NodeDatasheetDerivation } from "../inspector/use-node-datasheet-model";
 
 interface Options {
-  v2DatasheetModel: { slug: string; nodeId: string; title: string; sourceTitle: string | null; kind: string; domain: { id: string; title: string; } | null; powered: boolean; updatedAtLabel: string | null; metric: { contains: number; usedBy: number; dependsOn: number; belongsTo: number; evidence: number; }; groups: import("@/widgets/ontology-map/ui/detail-panel/map-datasheet").V2ConnectionGroupsView; evidence: { rows: import("@/widgets/ontology-map/ui/detail-panel/map-datasheet").V2EvidenceRow[]; total: number; }; codeLocations: string[]; handoffText: string; documentHref: string | null; mentionDocumentHref: string | null; meaningEditHref: string; lastEditSubject: { kind: import("@/shared/lib/edit-provenance/last-edit-subject").LastEditSubjectKind; ageLabel: string; } | null; mtimeConflict: boolean; } | null;
+  v2DatasheetModel: NodeDatasheetDerivation["v2DatasheetModel"];
   analysisMode: import("@/views/home/model/route-state/url-state").TopologyAnalysisMode;
   setRouteState: (updater: Partial<import("@/views/home/model/route-state/url-state").HomeRouteState> | ((current: import("@/views/home/model/route-state/url-state").HomeRouteState) => import("@/views/home/model/route-state/url-state").HomeRouteState), options?: import("@/views/home/model/route-state/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
   routeState: import("@/views/home/model/route-state/url-state").HomeRouteState;

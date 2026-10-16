@@ -16,6 +16,8 @@
     "dependsOnCaption": "缺了它们就无法运转",
     "belongsToTitle": "所属",
     "belongsToCaption": "此概念所在的上级概念",
+    "relatedTitle": "相关",
+    "relatedCaption": "记为相关、没有方向的条目",
     "freshDotTitle": "最近更新",
     "directLinks": "直接连接 {count, number}",
     "domainCount": "{count, number} 个领域",

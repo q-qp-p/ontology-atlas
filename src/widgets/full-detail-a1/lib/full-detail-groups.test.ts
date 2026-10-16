@@ -26,12 +26,22 @@ describe("buildFullDetailGroups", () => {
     { from: "domain:a", to: "capability:dep", type: "depends_on" },
   ];
 
-  it('returns total 0 in all four groups for no edges', () => {
+  it('returns total 0 in every group for no edges', () => {
     const groups = buildFullDetailGroups("domain:a", nodes, []);
     expect(groups.contains.total).toBe(0);
     expect(groups.usedBy.total).toBe(0);
     expect(groups.dependsOn.total).toBe(0);
     expect(groups.belongsTo.total).toBe(0);
+    expect(groups.related.total).toBe(0);
+  });
+
+  it('puts a related link either way in related, never in a direction', () => {
+    const groups = buildFullDetailGroups("domain:a", nodes, [
+      { from: "domain:a", to: "capability:dep", type: "related_to" },
+      { from: "capability:child-1", to: "domain:a", type: "related_to" },
+    ]);
+    expect(groups.related.rows.map((row) => row.id)).toEqual(["capability:dep", "capability:child-1"]);
+    expect(groups.usedBy.total + groups.dependsOn.total).toBe(0);
   });
 
   it('puts outgoing containment in contains with the grandchild count as childCount', () => {

@@ -117,6 +117,6 @@ export type {
 export { computeCanonicalCensus, isCanonicalConcept, isMapConcept } from "./lib/ontology-tree/canonical-census";
 export { buildProjectOntologyMetrics } from "./lib/project-ontology-metrics";
 export type { ProjectOntologyMetrics } from "./lib/project-ontology-metrics";
-export { buildConnections, groupConnectionsByRole, groupConnectionsByDirection } from "./lib/ontology-tree/connections";
+export { buildConnections, groupConnectionsByRole } from "./lib/ontology-tree/connections";
 export type { ConnectionSourceEdge, ConnectionSourceNode, DatasheetConnection } from "./lib/ontology-tree/connections";
 export { isDirectionalRelation } from "./lib/ontology-tree/relations";

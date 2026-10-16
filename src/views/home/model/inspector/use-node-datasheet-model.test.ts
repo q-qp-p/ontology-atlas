@@ -2,11 +2,19 @@ import { renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { AgentActivityStatus } from "@/entities/vault-session";
 import type { KnowledgeGraphEdge, KnowledgeGraphNode } from "@/entities/knowledge-graph";
+import {
+  readContainmentTree,
+  rollDirectedDomainFlows,
+  rollDomainDependencies,
+  rollRelatesDomainPairs,
+} from "@/widgets/ontology-map/model/containment-tree";
+import { buildOntologyMapGraph } from "../../lib/map-canvas/map-adapter";
 import { useNodeDatasheetModel } from "./use-node-datasheet-model";
 
 /** A concept without its own `.md` must not open another concept's document from its button. */
 
 const stamp = new Date(0);
+const NO_MAP = { nodes: [], edges: [] };
 
 function node(
   id: string,
@@ -42,6 +50,7 @@ function renderModel(
     useNodeDatasheetModel({
       selectedOntologyNode: selected,
       insight: { nodes, edges },
+      mapGraph: buildOntologyMapGraph(nodes, edges),
       handoffSource: "read-only-sample",
       authoredSignificance: null,
       docFreshnessIndex: new Map(),
@@ -140,6 +149,7 @@ describe("useNodeDatasheetModel document link honesty", () => {
       return useNodeDatasheetModel({
         selectedOntologyNode: selected,
         insight: { nodes: [alpha, beta], edges: [] },
+        mapGraph: NO_MAP,
         handoffSource: "read-only-sample",
         authoredSignificance: null,
         docFreshnessIndex: freshness,
@@ -199,6 +209,7 @@ describe("useNodeDatasheetModel document link honesty", () => {
       return useNodeDatasheetModel({
         selectedOntologyNode: coupon,
         insight: { nodes: [coupon], edges: [] },
+        mapGraph: NO_MAP,
         handoffSource: "loaded-vault",
         authoredSignificance: null,
         docFreshnessIndex: freshness,
@@ -235,6 +246,7 @@ describe("useNodeDatasheetModel document link honesty", () => {
       return useNodeDatasheetModel({
         selectedOntologyNode: coupon,
         insight: { nodes: [coupon, cart], edges: [] },
+        mapGraph: NO_MAP,
         handoffSource: "loaded-vault",
         authoredSignificance: null,
         docFreshnessIndex: freshness,
@@ -274,6 +286,7 @@ describe("useNodeDatasheetModel document link honesty", () => {
       return useNodeDatasheetModel({
         selectedOntologyNode: coupon,
         insight: { nodes: [coupon], edges: [] },
+        mapGraph: NO_MAP,
         handoffSource: "loaded-vault",
         authoredSignificance: null,
         docFreshnessIndex: freshness,
@@ -325,6 +338,7 @@ describe("useNodeDatasheetModel document link honesty", () => {
       return useNodeDatasheetModel({
         selectedOntologyNode: selected,
         insight: { nodes: [coupon], edges: [] },
+        mapGraph: NO_MAP,
         handoffSource,
         authoredSignificance: null,
         docFreshnessIndex: freshness,
@@ -390,6 +404,7 @@ describe("useNodeDatasheetModel document link honesty", () => {
       return useNodeDatasheetModel({
         selectedOntologyNode: selected,
         insight: { nodes: [selected], edges: [] },
+        mapGraph: NO_MAP,
         handoffSource: "loaded-vault",
         authoredSignificance: null,
         docFreshnessIndex: freshness,
@@ -428,5 +443,63 @@ describe("useNodeDatasheetModel document link honesty", () => {
     });
 
     expect(result.current.v2DatasheetModel?.mtimeConflict).toBe(false);
+  });
+});
+
+describe("useNodeDatasheetModel relations read as the map draws them", () => {
+  const link = (from: string, to: string, type: string): KnowledgeGraphEdge => ({
+    id: `${from}>${to}`, from, to, type, projectIds: [], evidenceIds: [], lastApprovedAt: stamp, lastApprovedBy: "test",
+  });
+  const graphNodes = [
+    node("project:p", [], { kind: "project" }),
+    ...["domain:meaning", "domain:agent", "domain:code"].map((id) => node(id, [], { kind: "domain" })),
+    ...["capability:graph", "capability:mcp", "capability:scan"].map((id) => node(id, [], { kind: "capability" })),
+    node("element:tool", []),
+  ];
+  const graphEdges = [
+    link("project:p", "domain:meaning", "contains"), link("project:p", "domain:agent", "contains"),
+    link("project:p", "domain:code", "contains"), link("domain:meaning", "capability:graph", "contains"),
+    link("domain:agent", "capability:mcp", "contains"), link("domain:code", "capability:scan", "contains"),
+    link("capability:mcp", "element:tool", "contains"),
+    link("capability:mcp", "capability:graph", "depends_on"), link("element:tool", "capability:graph", "depends_on"),
+    link("capability:scan", "capability:graph", "depends_on"), link("capability:graph", "capability:scan", "depends_on"),
+    link("domain:meaning", "domain:code", "related_to"), link("domain:agent", "domain:meaning", "related_to"),
+  ];
+  const domain = graphNodes[1]!;
+
+  it("gives a domain its partners from the flows the dial draws", () => {
+    const usage = renderModel(domain, graphNodes, graphEdges).v2DatasheetModel?.domainUsage;
+    const map = buildOntologyMapGraph(graphNodes, graphEdges);
+    const tree = readContainmentTree(map.nodes, map.edges);
+    const flows = rollDirectedDomainFlows(rollDomainDependencies(tree, map.edges), rollRelatesDomainPairs(tree, map.edges))
+      .filter((flow) => flow.a === domain.id || flow.b === domain.id);
+    expect(flows.length).toBeGreaterThan(0);
+    for (const flow of flows) {
+      const partner = flow.a === domain.id ? flow.b : flow.a;
+      const [incoming, outgoing] = flow.a === domain.id ? [flow.ba, flow.ab] : [flow.ab, flow.ba];
+      expect(usage?.usedBy.find((row) => row.domainId === partner)?.links ?? 0).toBe(incoming);
+      expect(usage?.needs.find((row) => row.domainId === partner)?.links ?? 0).toBe(outgoing);
+    }
+    expect(usage?.usedBy.map((row) => row.links)).toEqual([2, 1]);
+  });
+
+  it("keeps a domain-level reading off every other kind", () => {
+    expect(renderModel(graphNodes[4]!, graphNodes, graphEdges).v2DatasheetModel?.domainUsage).toBeNull();
+  });
+
+  it("lists `relates` either way as related, never as used by or leaned on", () => {
+    const model = renderModel(domain, graphNodes, graphEdges).v2DatasheetModel;
+    expect(model?.groups.related.rows.map((row) => row.id)).toEqual(["domain:code", "domain:agent"]);
+    expect(model?.groups.usedBy.total).toBe(0);
+    expect(model?.groups.dependsOn.total).toBe(0);
+    expect(model?.handoffText).toContain("related: 2");
+    expect(model?.handoffText).toContain("depends_on: 0");
+  });
+
+  it("hands an agent the same partners the panel lists", () => {
+    const text = renderModel(domain, graphNodes, graphEdges).v2DatasheetModel?.handoffText ?? "";
+    expect(text).toContain("used_by_domains: domain:agent (2), domain:code (1)");
+    expect(text).toContain("needs_domains: domain:code (1)");
+    expect(renderModel(graphNodes[4]!, graphNodes, graphEdges).v2DatasheetModel?.handoffText).not.toContain("used_by_domains");
   });
 });
