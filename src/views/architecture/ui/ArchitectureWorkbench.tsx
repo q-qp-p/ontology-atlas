@@ -618,7 +618,7 @@ export function ArchitectureWorkbench({
             {profileNotices ? <div className={embedded ? 'mb-3' : 'mt-3'}>{profileNotices}</div> : null}
             {!embedded && onOpenReview ? <div className="mt-3"><Chip data-testid="architecture-review-open" onClick={() => { setInspector(null); setEvidenceOpen(false); onOpenReview(selected.slug, selectedRole); }}>{tReview('history')}</Chip></div> : null}
           </header>
-          <div className={cn('mb-3 flex min-w-0 flex-wrap items-center gap-2', !railCompact && 'md:flex-nowrap')}>
+          <div className={cn('mb-3 flex min-w-0 flex-wrap items-center gap-2', !railCompact && 'xl:flex-nowrap')}>
               {embedded ? (
                 /* The profile's name and the door to its history are one group, the name a label, not a control. */
                 <div className="flex min-w-0 items-center gap-2">
@@ -664,9 +664,10 @@ export function ArchitectureWorkbench({
                 deltaStatus={deltaStatus}
                 compact={railCompact}
               />
+              <div className="ml-auto flex shrink-0 items-center gap-2">
               <div
                 ref={taskMenuRef}
-                className="relative ml-auto flex shrink-0 items-stretch"
+                className="relative flex shrink-0 items-stretch"
                 data-testid="architecture-agent-task"
                 onKeyDown={(event: React.KeyboardEvent<HTMLDivElement>) => {
                   if (!taskMenuOpen) return;
@@ -809,6 +810,7 @@ export function ArchitectureWorkbench({
                 <PanelRight size={ICON_SIZE.sm} aria-hidden />
                 <span className={cn('max-xl:sr-only', railCompact && 'sr-only')}>{t('inspectorTitle')}</span>
               </Button>
+              </div>
           </div>
           <div ref={flowHostRef} className="relative flex min-h-0 flex-1">
               <ArchitectureFlow
