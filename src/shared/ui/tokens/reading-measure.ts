@@ -10,7 +10,7 @@ export const PROSE_MEASURE_STEPS = 66;
 
 export const PROSE_MEASURE_STEPS_WIDE = 78;
 
-/** The `base-responsive.css` wide band and `PAGE_TWO_TRACK`'s `2xl`; change all three. */
+/** The `base-responsive.css` wide band; change both together. */
 export const WIDE_READING_MIN_VIEWPORT_PX = 1536;
 
 /**
