@@ -7,6 +7,7 @@ import type { OntologyMapDetailPanelLabels, OntologyMapDetailPanelProps } from "
 
 export function RelationsZone({
   groups,
+  domainUsage,
   evidence,
   codeLocations,
   labels,
@@ -24,6 +25,7 @@ export function RelationsZone({
   setShowProjectRelations,
 }: {
   groups: OntologyMapDetailPanelProps["groups"];
+  domainUsage: OntologyMapDetailPanelProps["domainUsage"];
   evidence: OntologyMapDetailPanelProps["evidence"];
   codeLocations: OntologyMapDetailPanelProps["codeLocations"];
   labels: OntologyMapDetailPanelLabels;
@@ -80,6 +82,14 @@ export function RelationsZone({
               </b>
             </span>
           ) : null}
+          {groups.related.total > 0 ? (
+            <span>
+              {labels.metricRelated}
+              <b className="ml-1 font-[var(--font-weight-strong)] tabular-nums text-[color:var(--map-panel-text-secondary)]">
+                {groups.related.total}
+              </b>
+            </span>
+          ) : null}
           <button
             type="button"
             onClick={() => setShowProjectRelations((value) => !value)}
@@ -119,8 +129,9 @@ export function RelationsZone({
                 group="usedBy"
                 dir="usedBy"
                 label={labels.metricUsedBy}
-                help={labels.metricUsedByHelp}
+                help={domainUsage?.usedBy.length ? labels.metricUsedByDomainsHelp : labels.metricUsedByHelp}
                 view={groups.usedBy}
+                domains={domainUsage?.usedBy}
                 labels={labels}
                 onSelectConnection={onSelectConnection}
                 onHoverConnection={onHoverConnection}
@@ -133,8 +144,9 @@ export function RelationsZone({
                 group="dependsOn"
                 dir="dependsOn"
                 label={labels.metricDependsOn}
-                help={labels.metricDependsOnHelp}
+                help={domainUsage?.needs.length ? labels.metricDependsOnDomainsHelp : labels.metricDependsOnHelp}
                 view={groups.dependsOn}
+                domains={domainUsage?.needs}
                 labels={labels}
                 onSelectConnection={onSelectConnection}
                 onHoverConnection={onHoverConnection}
@@ -143,15 +155,27 @@ export function RelationsZone({
                 expandedGroups={expandedGroups}
                 setExpandedGroups={setExpandedGroups}
               />
-              {/* Belongs to — placed last, in the same order as full detail
-                  (container → used by → depends on → belongs to), so someone moving
-                  between the two surfaces meets the same word in the same place. */}
+              {/* The order full detail keeps, so each word stands in the same place on both. */}
               <ConnectionGroup
                 group="belongsTo"
                 dir="belongsTo"
                 label={labels.metricBelongsTo}
                 help={labels.metricBelongsToHelp}
                 view={groups.belongsTo}
+                labels={labels}
+                onSelectConnection={onSelectConnection}
+                onHoverConnection={onHoverConnection}
+                showAllContains={showAllContains}
+                setShowAllContains={setShowAllContains}
+                expandedGroups={expandedGroups}
+                setExpandedGroups={setExpandedGroups}
+              />
+              <ConnectionGroup
+                group="related"
+                dir="related"
+                label={labels.metricRelated}
+                help={labels.metricRelatedHelp}
+                view={groups.related}
                 labels={labels}
                 onSelectConnection={onSelectConnection}
                 onHoverConnection={onHoverConnection}

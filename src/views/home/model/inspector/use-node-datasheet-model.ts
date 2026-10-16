@@ -24,7 +24,10 @@ import {
   buildV2Connections,
   buildV2EvidenceRows,
   formatV2HandoffText,
+  readDomainUsage,
+  type DomainUsage,
 } from "@/widgets/ontology-map";
+import type { OntologyMapGraph } from "../../lib/map-canvas/map-adapter";
 
 /**
  * Assembles the node datasheet model. `metric` counts come from the same `groups` the panel draws,
@@ -35,6 +38,7 @@ import {
 export interface UseNodeDatasheetModelArgs {
   selectedOntologyNode: KnowledgeGraphNode | null;
   insight: { nodes: readonly KnowledgeGraphNode[]; edges: readonly KnowledgeGraphEdge[] } | null;
+  mapGraph: OntologyMapGraph;
   /** Static samples are facts to inspect, never an MCP write target. */
   handoffSource: "loaded-vault" | "read-only-sample";
   /** Overrides the derived value when present. */
@@ -86,9 +90,11 @@ export interface NodeDatasheetDerivation {
       usedBy: number;
       dependsOn: number;
       belongsTo: number;
+      related: number;
       evidence: number;
     };
     groups: ReturnType<typeof buildV2ConnectionGroups>;
+    domainUsage: DomainUsage | null;
     evidence: { rows: ReturnType<typeof buildV2EvidenceRows>; total: number };
     /**
      * Real code paths from frontmatter `elements:`, kept apart from `evidence` (the source-doc
@@ -116,6 +122,7 @@ export interface NodeDatasheetDerivation {
 export function useNodeDatasheetModel({
   selectedOntologyNode,
   insight,
+  mapGraph,
   handoffSource,
   authoredSignificance,
   docFreshnessIndex,
@@ -181,6 +188,14 @@ export function useNodeDatasheetModel({
       ? editBaseline
       : baselineForCurrentNode;
 
+  const domainUsage = useMemo(
+    () =>
+      selectedOntologyNode?.kind === "domain"
+        ? readDomainUsage(mapGraph.nodes, mapGraph.edges, selectedOntologyNode.id)
+        : null,
+    [mapGraph, selectedOntologyNode],
+  );
+
   const v2DatasheetModel = useMemo(() => {
     if (!nodeFocus || !selectedOntologyNode || !insight) return null;
     // A vault-root slug for a document node; the written reference for a derived node without one.
@@ -198,6 +213,7 @@ export function useNodeDatasheetModel({
       dependsOn: groups.dependsOn.total,
       // Includes the parent, or a node with only a parent hands off "0 connections".
       belongsTo: groups.belongsTo.total,
+      related: groups.related.total,
       evidence: evidenceRows.length,
     };
     const handoffText = formatV2HandoffText({
@@ -210,11 +226,14 @@ export function useNodeDatasheetModel({
       usedBy: metric.usedBy,
       dependsOn: metric.dependsOn,
       belongsTo: metric.belongsTo,
+      related: metric.related,
       evidence: metric.evidence,
       containsNames: groups.contains.rows.map((connection) => connection.title),
       usedByNames: groups.usedBy.rows.map((connection) => connection.title),
       dependsNames: groups.dependsOn.rows.map((connection) => connection.title),
       belongsToNames: groups.belongsTo.rows.map((connection) => connection.title),
+      relatedNames: groups.related.rows.map((connection) => connection.title),
+      domainUsage,
     });
     const freshnessIso = nodeFocus.sourceSlug ? docFreshnessIndex.get(nodeFocus.sourceSlug) : undefined;
     const ago = freshnessIso ? computeUpdatedAgo(freshnessIso, updatedAgoNowMs) : null;
@@ -262,6 +281,7 @@ export function useNodeDatasheetModel({
       updatedAtLabel: ago ? formatUpdatedLabel(ago.key, ago.count) : docDatesReading ? "" : null,
       metric,
       groups,
+      domainUsage,
       evidence: { rows: evidenceRows, total: evidenceRows.length },
       codeLocations,
       handoffText,
@@ -289,6 +309,7 @@ export function useNodeDatasheetModel({
     nodeFocus,
     selectedOntologyNode,
     insight,
+    domainUsage,
     handoffSource,
     nodeFocusData,
     docFreshnessIndex,

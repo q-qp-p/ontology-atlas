@@ -46,6 +46,7 @@ const labels = {
   metricUsedBy: "used by",
   metricDependsOn: "leans on",
   metricBelongsTo: "belongs to",
+  metricRelated: "related",
   metricEvidence: "evidence",
   codeLocationsLabel: "code location",
   codeLocationsCopyLabel: "copy",
@@ -59,6 +60,10 @@ const labels = {
   summaryFreshnessAction: "Review description",
   summaryHistoryUnavailable: "History could not be compared",
   noConnections: "no relations recorded yet · relations are declared in frontmatter",
+  directLinks: (count: number) => `Direct links ${count}`,
+  domainLinks: (count: number) => `${count} links with this domain`,
+  domainCount: (count: number) => `${count} domains`,
+  metricUsedByDomainsHelp: "Other domains that use this one",
   handoff: "Copy next action",
   close: "Close",
   openFullDetail: "Full detail →",
@@ -122,6 +127,7 @@ function renderPanel(
     onProjectSourceConfirmProposal?: () => void | Promise<void>;
     updatedAtLabel?: string | null;
     groups?: OntologyMapDetailPanelProps["groups"];
+    domainUsage?: OntologyMapDetailPanelProps["domainUsage"];
     projectSourceLoading?: boolean;
     summaryHistoryUnavailable?: boolean;
     summaryStaleness?: { behindByDays: number } | null;
@@ -153,7 +159,9 @@ function panelElement(
         usedBy: { rows: [], total: 1 },
         dependsOn: { rows: [], total: 2 },
         belongsTo: { rows: [], total: 0 },
+        related: { rows: [], total: 0 },
       }}
+      domainUsage={overrides.domainUsage}
       evidence={evidence}
       codeLocations={overrides.codeLocations ?? []}
       updatedAtLabel={overrides.updatedAtLabel}
@@ -339,6 +347,7 @@ describe("OntologyMapDetailPanel — project source receipt", () => {
         total: 1,
       },
       belongsTo: { rows: [], total: 0 },
+      related: { rows: [], total: 0 },
     };
 
     renderPanel(undefined, undefined, { kind: "project", projectSource, groups });
@@ -384,6 +393,7 @@ describe("OntologyMapDetailPanel — project source receipt", () => {
       usedBy: { rows: [], total: 0 },
       dependsOn: { rows: [], total: 0 },
       belongsTo: { rows: [], total: 0 },
+      related: { rows: [], total: 0 },
     };
 
     renderPanel(undefined, undefined, { kind: "project", projectSource, groups });
@@ -872,6 +882,7 @@ describe("OntologyMapDetailPanel — viewport clamp (P3-③)", () => {
       usedBy: { rows: [], total: 0 },
       dependsOn: { rows: [], total: 0 },
       belongsTo: { rows: [], total: 0 },
+      related: { rows: [], total: 0 },
     };
     renderPanel(undefined, undefined, { groups });
 
@@ -1005,6 +1016,7 @@ describe("OntologyMapDetailPanel: sticky footer slug in plain language", () => {
           usedBy: { rows: [], total: 0 },
           dependsOn: { rows: [], total: 0 },
           belongsTo: { rows: [], total: 0 },
+          related: { rows: [], total: 0 },
         }}
         evidence={{ rows: [], total: 0 }}
         codeLocations={[]}
@@ -1118,6 +1130,7 @@ describe("OntologyMapDetailPanel — M-2 typed containment split", () => {
           },
           dependsOn: { rows: [], total: 0 },
           belongsTo: { rows: [], total: 0 },
+          related: { rows: [], total: 0 },
         }}
         evidence={{ rows: [], total: 0 }}
         codeLocations={[]}
@@ -1181,6 +1194,7 @@ describe("OntologyMapDetailPanel: connections of a node that has only a parent",
           usedBy: { rows: [], total: 0 },
           dependsOn: { rows: [], total: 0 },
           belongsTo: { rows: [parentRow], total: 1 },
+          related: { rows: [], total: 0 },
         }}
         evidence={{ rows: [], total: 0 }}
         codeLocations={[]}
@@ -1226,6 +1240,7 @@ describe("OntologyMapDetailPanel: connections of a node that has only a parent",
           usedBy: { rows: [], total: 9 },
           dependsOn: { rows: [], total: 1 },
           belongsTo: { rows: [parentRow], total: 1 },
+          related: { rows: [], total: 0 },
         }}
         evidence={{ rows: [], total: 0 }}
         codeLocations={[]}
@@ -1265,6 +1280,7 @@ describe("OntologyMapDetailPanel: empty state for unrecorded relations (0 vs unr
           usedBy: { rows: [], total: 0 },
           dependsOn: { rows: [], total: 0 },
           belongsTo: { rows: [], total: 0 },
+          related: { rows: [], total: 0 },
         }}
         evidence={{ rows: [], total: 0 }}
         codeLocations={[]}
@@ -1445,6 +1461,7 @@ describe("OntologyMapDetailPanel — W2-A action row", () => {
           usedBy: { rows: [], total: 0 },
           dependsOn: { rows: [], total: 0 },
           belongsTo: { rows: [], total: 0 },
+          related: { rows: [], total: 0 },
         }}
         evidence={{ rows: [], total: 0 }}
         codeLocations={[]}
@@ -1492,6 +1509,7 @@ describe("OntologyMapDetailPanel — W2-A action row", () => {
           usedBy: { rows: [], total: 0 },
           dependsOn: { rows: [], total: 0 },
           belongsTo: { rows: [], total: 0 },
+          related: { rows: [], total: 0 },
         }}
         evidence={{ rows: [], total: 0 }}
         codeLocations={[]}
@@ -1538,6 +1556,7 @@ describe("OntologyMapDetailPanel — W2-A action row", () => {
           usedBy: { rows: [], total: 0 },
           dependsOn: { rows: [], total: 0 },
           belongsTo: { rows: [], total: 0 },
+          related: { rows: [], total: 0 },
         }}
         evidence={{ rows: [], total: 0 }}
         codeLocations={[]}
@@ -1642,6 +1661,7 @@ describe("OntologyMapDetailPanel: redesigned structure from the mockup", () => {
           usedBy: { rows: [], total: 0 },
           dependsOn: { rows: [], total: 0 },
           belongsTo: { rows: [], total: 0 },
+          related: { rows: [], total: 0 },
         }}
         evidence={{ rows: [], total: 0 }}
         codeLocations={[]}
@@ -1685,6 +1705,7 @@ describe("OntologyMapDetailPanel: redesigned structure from the mockup", () => {
           usedBy: { rows: [], total: 0 },
           dependsOn: { rows: [], total: 0 },
           belongsTo: { rows: [], total: 0 },
+          related: { rows: [], total: 0 },
         }}
         evidence={{ rows: [], total: 0 }}
         codeLocations={[]}
@@ -1737,6 +1758,7 @@ describe("OntologyMapDetailPanel: redesigned structure from the mockup", () => {
           usedBy: { rows: [], total: 0 },
           dependsOn: { rows: [], total: 0 },
           belongsTo: { rows: [], total: 0 },
+          related: { rows: [], total: 0 },
         }}
         evidence={{ rows: [], total: 0 }}
         codeLocations={[]}
@@ -1781,6 +1803,7 @@ describe("OntologyMapDetailPanel: the channel from row hover out to the map", ()
         usedBy: { rows: [], total: 0 },
         dependsOn: { rows: [], total: 0 },
         belongsTo: { rows: [], total: 0 },
+        related: { rows: [], total: 0 },
       },
     });
 
@@ -1836,6 +1859,7 @@ describe("OntologyMapDetailPanel: the channel from row hover out to the map", ()
         usedBy: { rows: [], total: 0 },
         dependsOn: { rows: [], total: 0 },
         belongsTo: { rows: [], total: 0 },
+        related: { rows: [], total: 0 },
       },
     });
 
@@ -1845,5 +1869,54 @@ describe("OntologyMapDetailPanel: the channel from row hover out to the map", ()
     unmount();
     expect(onHoverConnection).toHaveBeenLastCalledWith(null);
     expect(onHoverEvidence).toHaveBeenLastCalledWith(null);
+  });
+});
+
+describe("OntologyMapDetailPanel a domain's partners", () => {
+  const relatesRow = (id: string, direction: "incoming" | "outgoing") => ({
+    id, title: id, kind: "domain", relationType: "related_to", direction,
+  });
+  const groups = {
+    contains: { rows: [], total: 0 },
+    usedBy: { rows: [], total: 0 },
+    dependsOn: { rows: [], total: 0 },
+    belongsTo: { rows: [], total: 0 },
+    related: { rows: [relatesRow("domain:order", "incoming"), relatesRow("domain:support", "outgoing")], total: 2 },
+  };
+  const domainUsage = {
+    usedBy: [
+      { domainId: "domain:order", label: "Order", links: 3 },
+      { domainId: "domain:support", label: "Support", links: 1 },
+      { domainId: "domain:loyalty", label: "Loyalty", links: 1 },
+    ],
+    needs: [],
+  };
+
+  it("lead used-by with the map's counts, and an empty side stays out", () => {
+    const { container } = renderPanel(undefined, undefined, { groups, domainUsage });
+    const usedBy = container.querySelector('[data-datasheet-group="usedBy"]');
+    expect(usedBy?.querySelector('[data-datasheet-group-total="usedBy"]')?.textContent).toBe("3 domains");
+    expect(usedBy?.querySelector("[title]")?.getAttribute("title")).toBe("Other domains that use this one");
+    expect([...(usedBy?.querySelectorAll("[data-datasheet-domain-row]") ?? [])].map((row) => row.textContent)).toEqual([
+      "Order3, 3 links with this domain",
+      "Support1, 1 links with this domain",
+      "Loyalty1, 1 links with this domain",
+    ]);
+    expect(usedBy?.querySelector("[data-datasheet-direct-links]")).toBeNull();
+    expect(container.querySelector('[data-datasheet-group="dependsOn"]')).toBeNull();
+  });
+
+  it("keep `relates` apart from the directions", () => {
+    const { container } = renderPanel(undefined, undefined, { groups, domainUsage });
+    const related = container.querySelector('[data-datasheet-group="related"]');
+    expect([...(related?.querySelectorAll("[data-datasheet-connection]") ?? [])].map((row) => row.getAttribute("data-datasheet-connection")))
+      .toEqual(["domain:order", "domain:support"]);
+  });
+
+  it("select the partner domain on press", () => {
+    const onSelectConnection = vi.fn();
+    const { container } = renderPanel(undefined, undefined, { groups, domainUsage, onSelectConnection });
+    fireEvent.click(container.querySelector('[data-datasheet-domain-row="domain:loyalty"]')!);
+    expect(onSelectConnection).toHaveBeenCalledWith("domain:loyalty");
   });
 });

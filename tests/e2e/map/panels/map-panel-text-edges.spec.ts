@@ -100,7 +100,7 @@ test("the node popover puts group headers and rows on one glyph column and one t
     const panel = document.querySelector('[data-testid="map-detail-panel"]')!;
     return [...panel.querySelectorAll("[data-datasheet-group]")].map((group) => {
       const glyphSlot = group.firstElementChild?.firstElementChild;
-      const row = group.querySelector("[data-datasheet-connection],[data-datasheet-evidence]");
+      const row = group.querySelector("[data-datasheet-connection],[data-datasheet-domain-row],[data-datasheet-evidence]");
       return {
         group: group.getAttribute("data-datasheet-group"),
         headerSlot: x(glyphSlot),

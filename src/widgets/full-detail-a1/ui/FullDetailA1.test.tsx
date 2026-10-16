@@ -52,6 +52,8 @@ const messages = {
       dependsOnCaption: "depends on",
       belongsToTitle: "속한 곳",
       belongsToCaption: "belongs to",
+      relatedTitle: "관련 항목",
+      relatedCaption: "related",
       freshDotTitle: "최근 갱신",
       directLinks: "직접 연결 {count}",
       domainCount: "도메인 {count}곳",
@@ -252,6 +254,26 @@ describe("FullDetailA1", () => {
     expect(card.querySelector('[data-fulldetail-direct-links="used-by"]')?.textContent).toBe("직접 연결 1");
     fireEvent.click(within(card as HTMLElement).getByText("Domain B"));
     expect(onSelectNode).toHaveBeenCalledWith("domain:b");
+  });
+
+  it('draws a domain with no partner on a side as an empty side, not as zero domains', () => {
+    const groups = {
+      ...buildFullDetailGroups("domain:a", nodes, edges),
+      dependsOn: { rows: [], total: 0 },
+      domainLevel: { usedBy: [{ id: "domain:b", title: "Domain B", links: 9 }], needs: [] },
+    };
+    const { container } = renderFullDetailWithContainer({ groups });
+    expect(container.querySelector('[data-fulldetail-group="depends-on"]')).toBeNull();
+    expect(container.querySelector('[data-fulldetail-empty-groups]')?.textContent).toContain("이 노드가 기대는 곳 없음");
+  });
+
+  it('lists a related concept in its own card and never under a direction', () => {
+    const relatedRow = { id: "domain:c", title: "Domain C", kind: "domain", containment: false, childCount: 0, fresh: false };
+    const groups = { ...buildFullDetailGroups("domain:a", nodes, edges), related: { rows: [relatedRow], total: 1 } };
+    const { container } = renderFullDetailWithContainer({ groups });
+    const card = container.querySelector('[data-fulldetail-group="related"]')!;
+    expect(within(card as HTMLElement).getByText("Domain C")).toBeInTheDocument();
+    expect(container.querySelector('[data-fulldetail-group="used-by"] [data-fulldetail-row="domain:c"]')).toBeNull();
   });
 
   it('calls onSelectNode when a contains row is clicked', () => {

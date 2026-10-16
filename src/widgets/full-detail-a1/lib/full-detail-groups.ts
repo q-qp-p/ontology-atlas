@@ -1,5 +1,5 @@
 /**
- * Full-detail direction groups: four uncapped lists, contains, usedBy, dependsOn and belongsTo
+ * Full-detail role groups, uncapped: contains, usedBy, dependsOn, belongsTo and related
  * (`docs/prototypes/detail-a1-datasheet.html`). Built from `buildConnections`, with no forked edge
  * scan.
  */
@@ -39,12 +39,14 @@ export interface FullDetailDomainLink {
 export interface FullDetailGroups {
   /** Outgoing containment — what this node contains. */
   contains: FullDetailGroupView;
-  /** Incoming non-containment — places that use this node. */
+  /** Incoming directed relations — places that use this node. */
   usedBy: FullDetailGroupView;
-  /** Outgoing non-containment — places this node leans on. */
+  /** Outgoing directed relations — places this node leans on. */
   dependsOn: FullDetailGroupView;
   /** Incoming containment — the (usually single) parent this node belongs to. */
   belongsTo: FullDetailGroupView;
+  /** Symmetric links either way; they name no direction. */
+  related: FullDetailGroupView;
   domainLevel?: { usedBy: FullDetailDomainLink[]; needs: FullDetailDomainLink[] } | null;
 }
 
@@ -95,5 +97,6 @@ export function buildFullDetailGroups(
     usedBy: toView(grouped.usedBy),
     dependsOn: toView(grouped.dependsOn),
     belongsTo: toView(grouped.belongsTo),
+    related: toView(grouped.related),
   };
 }

@@ -38,6 +38,7 @@ import { TopologyInsightsReturnChip } from "./TopologyInsightsReturnChip";
 import { TopologyPathChip } from "./TopologyPathChip";
 import { TopologyRealmChip } from "./TopologyRealmChip";
 import { TopologyTrailChip } from "./TopologyTrailChip";
+import type { NodeDatasheetDerivation } from "../model/inspector/use-node-datasheet-model";
 
 
 interface TopologyCommandChromeProps {
@@ -67,7 +68,7 @@ interface TopologyCommandChromeProps {
   agentDockTouchedRef: React.RefObject<boolean>;
   sampleModeSettled: boolean;
   requestVaultOpen: () => void;
-  v2DatasheetModel: { slug: string; nodeId: string; title: string; sourceTitle: string | null; kind: string; domain: { id: string; title: string; } | null; powered: boolean; updatedAtLabel: string | null; metric: { contains: number; usedBy: number; dependsOn: number; belongsTo: number; evidence: number; }; groups: import("@/widgets/ontology-map/ui/detail-panel/map-datasheet").V2ConnectionGroupsView; evidence: { rows: import("@/widgets/ontology-map/ui/detail-panel/map-datasheet").V2EvidenceRow[]; total: number; }; codeLocations: string[]; handoffText: string; documentHref: string | null; mentionDocumentHref: string | null; meaningEditHref: string; lastEditSubject: { kind: import("@/shared/lib/edit-provenance/last-edit-subject").LastEditSubjectKind; ageLabel: string; } | null; mtimeConflict: boolean; } | null;
+  v2DatasheetModel: NodeDatasheetDerivation["v2DatasheetModel"];
   topologyAgentActivity: Pick<ReturnType<typeof useTopologyAgentActivity>, "acpLiveWork">;
   homeWorkbenchController: Pick<ReturnType<typeof useHomeWorkbenchController>, "meaningWorkbenchOpen" | "toggleMeaningWorkbench">;
   topologyNavigationActions: Pick<ReturnType<typeof useTopologyNavigationActions>, "handleSelect" | "handleReplayPastWalk">;

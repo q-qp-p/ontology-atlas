@@ -16,6 +16,8 @@
     "dependsOnCaption": "Without these it does not work",
     "belongsToTitle": "Belongs to",
     "belongsToCaption": "The concept this one sits inside",
+    "relatedTitle": "Related",
+    "relatedCaption": "Written as related, with no direction",
     "freshDotTitle": "Recently updated",
     "directLinks": "Direct links {count, number}",
     "domainCount": "{count, plural, one {# domain} other {# domains}}",

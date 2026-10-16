@@ -34,8 +34,8 @@ import type { OntologyMapDetailPanelProps } from "./detail-panel/types";
 
 /**
  * Component datasheet node panel (`docs/design/ontology-map.md` section 5). It owns its prop
- * shape; the view maps `TopologyNodeFocusModel` into it. Connection groups are role-based
- * (contains, usedBy, dependsOn, belongsTo), the same four buckets as full detail.
+ * shape; the view maps `TopologyNodeFocusModel` into it. Connection groups are role-based, the
+ * buckets full detail draws.
  */
 
 /**
@@ -55,6 +55,7 @@ export function OntologyMapDetailPanel({
   summaryHistoryUnavailable = false,
   powered,
   groups,
+  domainUsage = null,
   evidence,
   codeLocations,
   updatedAtLabel = null,
@@ -210,7 +211,8 @@ export function OntologyMapDetailPanel({
   // The top count sums the totals of the groups drawn below, so it equals their aggregate by
   // construction.
   const connectedTotal =
-    groups.contains.total + groups.usedBy.total + groups.dependsOn.total + groups.belongsTo.total;
+    groups.contains.total + groups.usedBy.total + groups.dependsOn.total + groups.belongsTo.total +
+    groups.related.total;
   const hasConnections =
     connectedTotal > 0 || evidence.total > 0 || codeLocations.length > 0;
 
@@ -533,6 +535,7 @@ export function OntologyMapDetailPanel({
             ("space encodes grouping"). */}
         <RelationsZone
           groups={groups}
+          domainUsage={domainUsage}
           evidence={evidence}
           codeLocations={codeLocations}
           labels={labels}

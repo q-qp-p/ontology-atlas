@@ -26,6 +26,8 @@ export interface FullDetailA1GroupsLabels {
   dependsOnCaption: string;
   belongsToTitle: string;
   belongsToCaption: string;
+  relatedTitle: string;
+  relatedCaption: string;
   freshDotTitle: string;
   directLinks: (count: number) => string;
   domainCount: (count: number) => string;
@@ -40,10 +42,13 @@ function Row({
   row,
   onSelectNode,
   freshDotTitle,
+  showChildCount,
 }: {
   row: FullDetailConnectionRow;
   onSelectNode: (id: string) => void;
   freshDotTitle: string;
+  /** Only the contains card counts children, so a number beside a partner always means its links. */
+  showChildCount: boolean;
 }) {
   return (
     <button type="button" onClick={() => onSelectNode(row.id)} data-fulldetail-row={row.id} className={ROW_CLASS}>
@@ -58,7 +63,7 @@ function Row({
           style={{ backgroundColor: "var(--map-panel-power-on)" }}
         />
       ) : null}
-      {row.childCount > 0 ? <span className={COUNT_CLASS}>{row.childCount}</span> : null}
+      {showChildCount && row.childCount > 0 ? <span className={COUNT_CLASS}>{row.childCount}</span> : null}
     </button>
   );
 }
@@ -107,7 +112,7 @@ function GroupCard({
   className?: string;
 }) {
   const rows = view.rows.map((row) => (
-    <Row key={row.id} row={row} onSelectNode={onSelectNode} freshDotTitle={labels.freshDotTitle} />
+    <Row key={row.id} row={row} onSelectNode={onSelectNode} freshDotTitle={labels.freshDotTitle} showChildCount={dataGroup === "contains"} />
   ));
   return (
     <section
@@ -141,10 +146,14 @@ function GroupCard({
               <DomainRow key={link.id} link={link} onSelectNode={onSelectNode} linksTitle={labels.domainLinks(link.links)} />
             ))}
           </div>
-          <p data-fulldetail-direct-links={dataGroup} className="mt-2 text-label leading-label text-[color:var(--map-panel-text-tertiary)]">
-            {labels.directLinks(view.total)}
-          </p>
-          {rows.length > 0 ? <div className="-mx-1.5 mt-1 flex flex-col">{rows}</div> : null}
+          {rows.length > 0 ? (
+            <>
+              <p data-fulldetail-direct-links={dataGroup} className="mt-2 text-label leading-label text-[color:var(--map-panel-text-tertiary)]">
+                {labels.directLinks(view.total)}
+              </p>
+              <div className="-mx-1.5 mt-1 flex flex-col">{rows}</div>
+            </>
+          ) : null}
         </>
       ) : (
         <div className={twoColumn ? "-mx-1.5 grid grid-cols-2 gap-x-4" : "-mx-1.5 flex flex-col"}>{rows}</div>
@@ -164,16 +173,19 @@ export function FullDetailA1GroupsPanel({
   onSelectNode: (id: string) => void;
   className?: string;
 }) {
+  const partners = (links: readonly FullDetailDomainLink[] | undefined) => (links && links.length > 0 ? links : undefined);
   const side = [
-    { dataGroup: "used-by", title: labels.usedByTitle, caption: labels.usedByCaption, view: groups.usedBy, domains: groups.domainLevel?.usedBy },
-    { dataGroup: "depends-on", title: labels.dependsOnTitle, caption: labels.dependsOnCaption, view: groups.dependsOn, domains: groups.domainLevel?.needs },
+    { dataGroup: "used-by", title: labels.usedByTitle, caption: labels.usedByCaption, view: groups.usedBy, domains: partners(groups.domainLevel?.usedBy) },
+    { dataGroup: "depends-on", title: labels.dependsOnTitle, caption: labels.dependsOnCaption, view: groups.dependsOn, domains: partners(groups.domainLevel?.needs) },
     { dataGroup: "belongs-to", title: labels.belongsToTitle, caption: labels.belongsToCaption, view: groups.belongsTo, domains: undefined },
+    { dataGroup: "related", title: labels.relatedTitle, caption: labels.relatedCaption, view: groups.related, domains: undefined },
   ];
-  const filled = side.filter((group) => group.view.total > 0 || (group.domains?.length ?? 0) > 0);
+  const filled = side.filter((group) => group.view.total > 0 || group.domains !== undefined);
   const containsFilled = groups.contains.total > 0;
+  // A missing loose association says nothing about the concept, so it is not listed as absent.
   const empty = [
     ...(containsFilled ? [] : [{ title: labels.containsTitle }]),
-    ...side.filter((group) => !filled.includes(group)),
+    ...side.filter((group) => !filled.includes(group) && group.dataGroup !== "related"),
   ];
   return (
     <div className={className}>
