@@ -203,8 +203,7 @@ export function TopologyInspectorSurfaces({
       <div
         ref={nodePopoverPositionerRef}
         data-testid="topology-node-popover-positioner"
-        // A folding panel is no obstacle: the deselect's fit lands where the fit tile will.
-        data-topology-camera-obstacle={panelOpen || meaningEditorOpen ? "side-panel" : "none"}
+        data-topology-camera-obstacle="side-panel"
         data-position-contract="selected-inspector-aligns-to-right-inset"
         data-fixed-surface-role="selected-node-inspector"
         data-fixed-surface-measure-target="topology-node-popover"

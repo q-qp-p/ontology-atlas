@@ -621,7 +621,7 @@ export function ArchitectureWorkbench({
           <div className={cn('mb-3 flex min-w-0 flex-wrap items-center gap-2', !railCompact && 'md:flex-nowrap')}>
               {embedded ? (
                 /* The profile's name and the door to its history are one group, the name a label, not a control. */
-                <div className="flex min-w-0 shrink-0 items-center gap-2">
+                <div className="flex min-w-0 items-center gap-2">
                   <h2 className="max-w-[16rem] truncate text-body-lg font-[var(--font-weight-emphasis)] text-[color:var(--color-text-primary)]">
                     {selected.title}
                   </h2>

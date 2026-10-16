@@ -1,5 +1,6 @@
 "use client";
 
+import { measureEdgeFitObstacle } from "../../interaction/free-area";
 import {
   useCallback,
   useEffect,
@@ -232,9 +233,14 @@ export function useTopologyFocusNavigation({
         target = realmCameraTarget(bounds, tokens, width, height);
       } else {
         const realmMembers = realmActive ? realmData?.memberIds ?? null : null;
-        // Measured insets both ways: a selection avoids the panel it just opened, and a deselect lands
-        // where the fit tile will, since the folding panel stops declaring itself an obstacle.
-        const focusTokens = cameraTokens(tokens);
+        const measured = cameraTokens(tokens);
+        // A deselect lands where the fit tile will: the folding panel is still on screen, so its side
+        // takes the token and the rail's reach, which is what a fit with no panel measures.
+        const canvas = canvasRef.current;
+        const focusTokens =
+          focusedSlug === null
+            ? { ...measured, safeInsetRight: tokens.safeInsetRight, obstacleInsetRight: canvas ? measureEdgeFitObstacle(canvas, "right")?.reach ?? 0 : 0 }
+            : measured;
         focusLeashPxRef.current = focusedSlug === null ? null : leashFor(width, height, focusTokens);
         const overviewBounds = overviewBoundsFor(overviewFitRef.current, world, tokens, expandedParentsRef.current, clusteredIdsRef.current);
         target =
