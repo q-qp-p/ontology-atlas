@@ -36,6 +36,7 @@ import {
   radiusForKind,
   type TopologyWorld,
 } from "../world/topology-world";
+import { lastFocusFrame } from "../camera/topology-camera-math";
 
 type SourceRef<T> = { current: T; };
 
@@ -323,6 +324,21 @@ export function useTopologyMapInstrumentation({
             cameraTarget: () => {
                 const target = cameraTargetRef.current;
                 return { x: target.tx, y: target.ty, scale: target.tscale };
+            },
+            focusFrame: () => {
+                const frame = lastFocusFrame();
+                const camera = cameraRef.current;
+                const { width, height } = viewportRef.current;
+                if (!frame || !camera || width <= 0) return null;
+                const toX = (x: number) => (x - camera.x.value) * camera.scale.value + width / 2;
+                const toY = (y: number) => (y - camera.y.value) * camera.scale.value + height / 2;
+                const centreX = (frame.bounds.minX + frame.bounds.maxX) / 2;
+                const centreY = (frame.bounds.minY + frame.bounds.maxY) / 2;
+                return {
+                    left: toX(frame.bounds.minX), right: toX(frame.bounds.maxX), top: toY(frame.bounds.minY), bottom: toY(frame.bounds.maxY),
+                    aimX: (centreX - frame.aim.tx) * frame.scale + width / 2,
+                    aimY: (centreY - frame.aim.ty) * frame.scale + height / 2,
+                };
             },
             /**
              * Live horizontal obstruction measured by the same product function the

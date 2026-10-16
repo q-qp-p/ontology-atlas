@@ -530,6 +530,18 @@ export function focusPanBounds(
   return { minX: anchor.x - mx, maxX: anchor.x + mx, minY: anchor.y - my, maxY: anchor.y + my };
 }
 
+export interface FocusFrame {
+  bounds: Bounds;
+  /** Where the bounds' centre was aimed before the leash clamp. */
+  aim: { tx: number; ty: number };
+  scale: number;
+}
+let lastFocusFrameState: FocusFrame | null = null;
+/** The ego bounds the last focus target framed; the e2e probe reads it. */
+export function lastFocusFrame(): FocusFrame | null {
+  return lastFocusFrameState;
+}
+
 export function computeFocusCameraTarget(
   world: TopologyWorld,
   tokens: OntologyMapTokens,
@@ -621,6 +633,7 @@ export function computeFocusCameraTarget(
   // (`topology-physics-step.ts`). A target outside that box is unreachable: the spring pushes, the
   // clamp pulls back, and the idle gate reads "camera moving" for as long as the node stays selected.
   const centred = centerForInsets(centerX, centerY, insets, scale);
+  lastFocusFrameState = { bounds: egoBounds, aim: { tx: centred.tx, ty: centred.ty }, scale };
   if (!focus) return { ...centred, tscale: scale };
   // The same rule as `topology-physics-step`: the focus leash past the overview
   // scale, the unfocused leash otherwise.
