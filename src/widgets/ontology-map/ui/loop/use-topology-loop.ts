@@ -339,6 +339,7 @@ export function useTopologyLoop(args: UseTopologyLoopArgs): UseTopologyLoopResul
     cameraTargetRef,
     userDrivenCameraRef,
     hasInitializedRef,
+    domeRuntimeRef,
     overviewScaleRef,
     cameraAngularFreqRef,
     pendingSpotlightFitRef,
