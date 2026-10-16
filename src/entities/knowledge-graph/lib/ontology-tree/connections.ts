@@ -1,6 +1,6 @@
 /** Direct connections of one node, shared by the datasheet and full detail (FSD forbids widget → widget imports). */
 
-import { isContainmentRelation } from "./relations";
+import { isContainmentRelation, isDirectionalRelation } from "./relations";
 
 export interface DatasheetConnection {
   id: string;
@@ -10,47 +10,18 @@ export interface DatasheetConnection {
   direction: "incoming" | "outgoing";
 }
 
-/** usedBy = incoming, dependsOn = outgoing: the axis the metric line counts. */
-export interface GroupedConnections {
-  usedBy: DatasheetConnection[];
-  dependsOn: DatasheetConnection[];
-}
-
-/**
- * Groups connections by direction, one row per neighbor within a group (rows show neighbors, not
- * relation types); the same neighbor in the opposite direction is a separate fact.
- */
-export function groupConnectionsByDirection(
-  connections: readonly DatasheetConnection[],
-): GroupedConnections {
-  const usedBy: DatasheetConnection[] = [];
-  const dependsOn: DatasheetConnection[] = [];
-  const seenUsedBy = new Set<string>();
-  const seenDependsOn = new Set<string>();
-  for (const connection of connections) {
-    if (connection.direction === "incoming") {
-      if (seenUsedBy.has(connection.id)) continue;
-      seenUsedBy.add(connection.id);
-      usedBy.push(connection);
-    } else {
-      if (seenDependsOn.has(connection.id)) continue;
-      seenDependsOn.add(connection.id);
-      dependsOn.push(connection);
-    }
-  }
-  return { usedBy, dependsOn };
-}
-
 /** Connections by role, with containment split out, so popover and full detail count alike. */
 export interface RoleGroupedConnections {
   /** Outgoing containment. */
   contains: DatasheetConnection[];
-  /** Incoming non-containment. */
+  /** Incoming directed relations. */
   usedBy: DatasheetConnection[];
-  /** Outgoing non-containment. */
+  /** Outgoing directed relations. */
   dependsOn: DatasheetConnection[];
   /** Incoming containment. */
   belongsTo: DatasheetConnection[];
+  /** `relates` either way: it names no direction (spec §5). */
+  related: DatasheetConnection[];
 }
 
 /** `contains` points parent → child and `belongs_to` child → parent (as `buildContainmentParents`). */
@@ -60,7 +31,7 @@ function containmentNodeIsParent(connection: DatasheetConnection): boolean {
     : connection.direction === "outgoing";
 }
 
-/** Four role groups, each deduped by neighbor id, in input order. */
+/** Role groups, each deduped by neighbor id, in input order. */
 export function groupConnectionsByRole(
   connections: readonly DatasheetConnection[],
 ): RoleGroupedConnections {
@@ -68,11 +39,13 @@ export function groupConnectionsByRole(
   const usedBy: DatasheetConnection[] = [];
   const dependsOn: DatasheetConnection[] = [];
   const belongsTo: DatasheetConnection[] = [];
+  const related: DatasheetConnection[] = [];
   const seen = {
     contains: new Set<string>(),
     usedBy: new Set<string>(),
     dependsOn: new Set<string>(),
     belongsTo: new Set<string>(),
+    related: new Set<string>(),
   };
   for (const connection of connections) {
     let bucket: DatasheetConnection[];
@@ -85,6 +58,9 @@ export function groupConnectionsByRole(
         bucket = belongsTo;
         seenSet = seen.belongsTo;
       }
+    } else if (!isDirectionalRelation(connection.relationType)) {
+      bucket = related;
+      seenSet = seen.related;
     } else if (connection.direction === "incoming") {
       bucket = usedBy;
       seenSet = seen.usedBy;
@@ -96,7 +72,7 @@ export function groupConnectionsByRole(
     seenSet.add(connection.id);
     bucket.push(connection);
   }
-  return { contains, usedBy, dependsOn, belongsTo };
+  return { contains, usedBy, dependsOn, belongsTo, related };
 }
 
 /** Structural shapes compatible with the KnowledgeGraph types. */

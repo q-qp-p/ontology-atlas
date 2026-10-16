@@ -5,11 +5,11 @@
  */
 export {
   buildConnections as buildV2Connections,
-  groupConnectionsByDirection as groupV2ConnectionsByDirection,
   type DatasheetConnection as V2DatasheetConnection,
 } from "@/entities/knowledge-graph";
 import { groupConnectionsByRole } from "@/entities/knowledge-graph";
 import type { DatasheetConnection as V2DatasheetConnection } from "@/entities/knowledge-graph";
+import type { DomainUsage } from "../../model/domain-usage";
 
 /**
  * S2 part 3 — when the "Contains" (what this contains) list is long (>15), show an
@@ -144,31 +144,23 @@ export interface V2ConnectionGroupView {
 export interface V2ConnectionGroupsView {
   /** Outgoing containment — plain "Contains" (what this node contains). */
   contains: V2ConnectionGroupView;
-  /** Incoming non-containment — plain "Uses" (places that use this). */
+  /** Incoming directed relations — plain "Used by". */
   usedBy: V2ConnectionGroupView;
-  /** Outgoing non-containment — plain "Is Used By" (places this leans on). */
+  /** Outgoing directed relations — plain "Leans on". */
   dependsOn: V2ConnectionGroupView;
-  /**
-   * Incoming containment, plain "Belongs To" (the parent(s) of this node). Drawn and counted so
-   * a node with only a parent does not read "Connected 0"; same four buckets and words as the
-   * full detail.
-   */
+  /** Incoming containment, plain "Belongs To", so a node with only a parent is not "Connected 0". */
   belongsTo: V2ConnectionGroupView;
+  /** `relates` either way, plain "Related": it names no direction, so it joins neither side. */
+  related: V2ConnectionGroupView;
 }
 
 /** Default rows shown per group before the typed "+N" overflow. */
 const V2_CONNECTION_ROW_CAP = 6;
 
 /**
- * Group the full connection set by relation ROLE (contains / usedBy /
- * dependsOn / belongsTo) and cap each group to `perGroupCap` rows, keeping the
- * true total. M-2: containment is pulled into its OWN `contains`/`belongsTo`
- * groups instead of folding into usedBy/dependsOn by raw direction — so a
- * domain's 18 `contains` children read as "Contains 18", not "Is Used By". This
- * is the SAME split `buildFullDetailGroups` uses (both delegate to
- * `groupConnectionsByRole`), so the popover and full-detail can never disagree.
- * Callers source `metric.contains`/`usedBy`/`dependsOn` from these `.total`s so
- * the metric line and the group headers stay the same number by construction.
+ * The full connection set by role, each group capped to `perGroupCap` rows with its true total.
+ * `groupConnectionsByRole` is the split full detail uses too, so the two surfaces cannot disagree,
+ * and the handoff's counts are these totals.
  */
 export function buildV2ConnectionGroups(
   connections: readonly V2DatasheetConnection[],
@@ -182,12 +174,12 @@ export function buildV2ConnectionGroups(
     allRows: rows.slice(),
   });
   return {
-    // S2 part 3 — contains also carries a path-prefix summary computed over all rows
-    // (past the threshold the panel renders that summary instead of individual rows).
+    // Past the threshold the panel draws this summary instead of the rows.
     contains: { ...toView(grouped.contains), summary: summarizeContainsByPathPrefix(grouped.contains) },
     usedBy: toView(grouped.usedBy),
     dependsOn: toView(grouped.dependsOn),
     belongsTo: toView(grouped.belongsTo),
+    related: toView(grouped.related),
   };
 }
 
@@ -316,31 +308,28 @@ export interface V2HandoffInput {
   documented?: boolean;
   kind: string;
   domainTitle: string | null;
-  /** Outgoing containment count (M-2) — `contains` edges, split out from the
-   * old direction-only `depends_on` so an agent reading the handoff sees the
-   * same typed facts the panel shows. */
+  /** The same typed counts the panel's group headers show. */
   contains: number;
   usedBy: number;
   dependsOn: number;
-  /** Incoming containment count — the parent. While this was missing, the handoff for a
-   *  node with only a parent read `contains: 0 / used_by: 0 / depends_on: 0`, so an agent
-   *  saw an orphan node — when it actually sits under a domain or capability. */
+  /** The parent, or a node with only a parent reads as an orphan. */
   belongsTo: number;
+  related: number;
   evidence: number;
-  /** Names of the containment-child (contains) group's rows. */
+  /** Each group's shown row names. */
   containsNames: readonly string[];
-  /** Names of the incoming non-containment (usedBy) group's rows. */
   usedByNames: readonly string[];
-  /** Names of the outgoing non-containment (dependsOn) group's rows. */
   dependsNames: readonly string[];
-  /** Names of the incoming containment (belongsTo) group's rows — the parent names. */
   belongsToNames: readonly string[];
+  relatedNames: readonly string[];
+  /** A domain's partners as the panel lists them; absent for every other kind. */
+  domainUsage?: DomainUsage | null;
 }
 
 /**
  * Agent-ready handoff payload for a single node: stable English field keys plus a suggested MCP call,
  * so it pastes into a coding agent in any UI locale (the button label is localized, this is not).
- * Deterministic; carries the four typed buckets (`contains`, `depends_on`, `used_by`, `belongs_to`).
+ * Deterministic; carries the typed buckets, and a domain's partners as the panel lists them.
  */
 export function formatV2HandoffText(input: V2HandoffInput): string {
   const list = (names: readonly string[]) =>
@@ -366,11 +355,20 @@ export function formatV2HandoffText(input: V2HandoffInput): string {
     `used_by: ${input.usedBy}`,
     `depends_on: ${input.dependsOn}`,
     `belongs_to: ${input.belongsTo}`,
+    `related: ${input.related}`,
     `evidence: ${input.evidence}`,
     `contains_names: ${list(input.containsNames)}`,
     `used_by_names: ${list(input.usedByNames)}`,
     `depends_names: ${list(input.dependsNames)}`,
     `belongs_to_names: ${list(input.belongsToNames)}`,
+    `related_names: ${list(input.relatedNames)}`,
+    ...(input.domainUsage
+      ? [
+          `used_by_domains: ${list(input.domainUsage.usedBy.map((row) => `${row.label} (${row.links})`))}`,
+          `needs_domains: ${list(input.domainUsage.needs.map((row) => `${row.label} (${row.links})`))}`,
+          "domains_basis: depends_on links between the two domains' concepts, counted as the map draws them",
+        ]
+      : []),
     ...(input.source === "read-only-sample"
       ? [
           "write_guard: do not run get_concept / patch_concept / add_relation for this sample node",

@@ -7,7 +7,6 @@ import {
   formatV2HandoffText,
   buildV2MetricSegments,
   formatV2MetricLine,
-  groupV2ConnectionsByDirection,
   slugDisplaySegment,
   summarizeContainsByPathPrefix,
   type V2DatasheetConnection,
@@ -20,46 +19,6 @@ const conn = (
   kind: "capability",
   direction: "outgoing",
   ...partial,
-});
-
-describe("groupV2ConnectionsByDirection — DIRECTION is the grouping axis, not relation type", () => {
-  it("splits incoming (usedBy) from outgoing (dependsOn) regardless of relation type", () => {
-    const grouped = groupV2ConnectionsByDirection([
-      conn({ id: "child-a", relationType: "contains", direction: "outgoing" }),
-      conn({ id: "parent", relationType: "belongs_to", direction: "incoming" }),
-      conn({ id: "dep-x", relationType: "depends_on", direction: "outgoing" }),
-      conn({ id: "impl-y", relationType: "implements", direction: "incoming" }),
-      conn({ id: "use-z", relationType: "uses", direction: "outgoing" }),
-    ]);
-    expect(grouped.usedBy.map((c) => c.id)).toEqual(["parent", "impl-y"]);
-    expect(grouped.dependsOn.map((c) => c.id)).toEqual(["child-a", "dep-x", "use-z"]);
-  });
-
-  it("preserves input order within each group and handles an empty list", () => {
-    expect(groupV2ConnectionsByDirection([])).toEqual({ usedBy: [], dependsOn: [] });
-  });
-
-  it("collapses the SAME neighbor id within a direction even when relationType differs (mcp-server live bug: depends_on AND related_to to the same neighbor)", () => {
-    // The datasheet panel keys rows by (direction, id) and shows only the
-    // title + a per-row type mark — two rows for the SAME neighbor in the
-    // SAME direction would otherwise read as one duplicated row and collide
-    // on the React list key.
-    const grouped = groupV2ConnectionsByDirection([
-      conn({ id: "frontmatter-to-ontology", relationType: "depends_on", direction: "outgoing" }),
-      conn({ id: "frontmatter-to-ontology", relationType: "related_to", direction: "outgoing" }),
-    ]);
-    expect(grouped.dependsOn).toHaveLength(1);
-    expect(grouped.dependsOn[0]).toMatchObject({ id: "frontmatter-to-ontology", relationType: "depends_on" });
-  });
-
-  it("keeps the SAME neighbor id as two rows when it appears in OPPOSITE directions (a real mutual-dependency fact, not a duplicate)", () => {
-    const grouped = groupV2ConnectionsByDirection([
-      conn({ id: "vault-local-first", relationType: "depends_on", direction: "outgoing" }),
-      conn({ id: "vault-local-first", relationType: "depends_on", direction: "incoming" }),
-    ]);
-    expect(grouped.usedBy.map((c) => c.id)).toEqual(["vault-local-first"]);
-    expect(grouped.dependsOn.map((c) => c.id)).toEqual(["vault-local-first"]);
-  });
 });
 
 describe("buildV2Connections", () => {
@@ -150,12 +109,13 @@ describe("buildV2ConnectionGroups — M-2 ROLE axis, single source for metric + 
       conn({ id: "parent", relationType: "belongs_to", direction: "outgoing" }),
     ];
     const groups = buildV2ConnectionGroups(connections, 6);
-    // container 18 · writer 4 · supporter 2 · member 1 — matches full-detail.
     expect(groups.contains.total).toBe(18);
     expect(groups.contains.rows).toHaveLength(6); // capped, true total preserved
-    expect(groups.usedBy.total).toBe(4);
-    expect(groups.dependsOn.total).toBe(2);
+    expect(groups.usedBy.total).toBe(3);
+    expect(groups.dependsOn.total).toBe(1);
     expect(groups.belongsTo.total).toBe(1);
+    // `related_to` names no direction, so either way it is related, not used or leaned on.
+    expect(groups.related.rows.map((row) => row.id)).toEqual(["user-d", "dep-b"]);
   });
 
   it("caps each group independently and never starves the smaller ones", () => {
@@ -173,15 +133,42 @@ describe("buildV2ConnectionGroups — M-2 ROLE axis, single source for metric + 
     expect(groups.usedBy.rows.map((r) => r.id)).toEqual(["u0", "u1"]); // never starved
   });
 
-  it("handles an empty set with zero totals across all four role groups", () => {
+  it("handles an empty set with zero totals across every role group", () => {
     const groups = buildV2ConnectionGroups([]);
     expect(groups).toEqual({
-      // S2 part 3 — contains also carries the path-prefix summary (empty in, empty summary out).
       contains: { rows: [], allRows: [], total: 0, summary: { groups: [], otherCount: 0, total: 0, usable: false } },
       usedBy: { rows: [], allRows: [], total: 0 },
       dependsOn: { rows: [], allRows: [], total: 0 },
       belongsTo: { rows: [], allRows: [], total: 0 },
+      related: { rows: [], allRows: [], total: 0 },
     });
+  });
+
+  it("collapses the same neighbor within one group even when the relation types differ", () => {
+    const groups = buildV2ConnectionGroups([
+      conn({ id: "frontmatter-to-ontology", relationType: "depends_on", direction: "outgoing" }),
+      conn({ id: "frontmatter-to-ontology", relationType: "uses", direction: "outgoing" }),
+    ]);
+    expect(groups.dependsOn.rows).toHaveLength(1);
+    expect(groups.dependsOn.rows[0]).toMatchObject({ id: "frontmatter-to-ontology", relationType: "depends_on" });
+  });
+
+  it("keeps a neighbor that is both leaned on and related as one row in each, two written facts", () => {
+    const groups = buildV2ConnectionGroups([
+      conn({ id: "frontmatter-to-ontology", relationType: "depends_on", direction: "outgoing" }),
+      conn({ id: "frontmatter-to-ontology", relationType: "related_to", direction: "outgoing" }),
+    ]);
+    expect(groups.dependsOn.rows.map((c) => c.id)).toEqual(["frontmatter-to-ontology"]);
+    expect(groups.related.rows.map((c) => c.id)).toEqual(["frontmatter-to-ontology"]);
+  });
+
+  it("keeps the same neighbor in both directions as two facts, a mutual dependency", () => {
+    const groups = buildV2ConnectionGroups([
+      conn({ id: "vault-local-first", relationType: "depends_on", direction: "outgoing" }),
+      conn({ id: "vault-local-first", relationType: "depends_on", direction: "incoming" }),
+    ]);
+    expect(groups.usedBy.rows.map((c) => c.id)).toEqual(["vault-local-first"]);
+    expect(groups.dependsOn.rows.map((c) => c.id)).toEqual(["vault-local-first"]);
   });
 
   it("a leaf node (no containment) still splits cleanly into usedBy/dependsOn with empty contains", () => {
@@ -245,7 +232,7 @@ describe("formatV2MetricLine — M-2 typed segments", () => {
   });
 });
 
-describe("formatV2HandoffText — M-2 contains split", () => {
+describe("formatV2HandoffText", () => {
   it("emits a deterministic payload with contains split out of depends_on, matching the panel's typed groups", () => {
     const text = formatV2HandoffText({
       source: "loaded-vault",
@@ -256,11 +243,13 @@ describe("formatV2HandoffText — M-2 contains split", () => {
       usedBy: 4,
       dependsOn: 2,
       belongsTo: 1,
+      related: 2,
       evidence: 1,
       containsNames: ["mcp-server", "agent-config-onboarding"],
       usedByNames: ["frontmatter-to-ontology"],
       dependsNames: ["relation-graph"],
       belongsToNames: ["ontology-atlas"],
+      relatedNames: ["mcp-tool-server", "agent-handoff"],
     });
     expect(text).toBe(
       [
@@ -273,11 +262,13 @@ describe("formatV2HandoffText — M-2 contains split", () => {
         "used_by: 4",
         "depends_on: 2",
         "belongs_to: 1",
+        "related: 2",
         "evidence: 1",
         "contains_names: mcp-server, agent-config-onboarding",
         "used_by_names: frontmatter-to-ontology",
         "depends_names: relation-graph",
         "belongs_to_names: ontology-atlas",
+        "related_names: mcp-tool-server, agent-handoff",
         'next: get_concept("ai-agent-partner") → review context, then patch_concept / add_relation as needed',
       ].join("\n"),
     );
@@ -293,17 +284,20 @@ describe("formatV2HandoffText — M-2 contains split", () => {
       usedBy: 0,
       dependsOn: 0,
       belongsTo: 0,
+      related: 0,
       evidence: 0,
       containsNames: [],
       usedByNames: [],
       dependsNames: [],
       belongsToNames: [],
+      relatedNames: [],
     });
     expect(text).toContain("domain: -");
     expect(text).toContain("contains_names: -");
     expect(text).toContain("used_by_names: -");
     expect(text).toContain("depends_names: -");
     expect(text).toContain("belongs_to_names: -");
+    expect(text).toContain("related_names: -");
   });
 
   it("marks read-only sample facts and never suggests MCP reads or writes against a vault", () => {
@@ -316,11 +310,13 @@ describe("formatV2HandoffText — M-2 contains split", () => {
       usedBy: 0,
       dependsOn: 0,
       belongsTo: 1,
+      related: 0,
       evidence: 1,
       containsNames: ["상품 이미지 스토리지"],
       usedByNames: [],
       dependsNames: [],
       belongsToNames: ["상품"],
+      relatedNames: [],
     });
 
     expect(text).toContain("source: read-only-sample");

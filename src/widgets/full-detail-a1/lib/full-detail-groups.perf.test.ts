@@ -24,6 +24,7 @@ function scanPerRow(nodeId: string, nodes: ConnectionSourceNode[], edges: Connec
   return {
     contains: toView(grouped.contains), usedBy: toView(grouped.usedBy),
     dependsOn: toView(grouped.dependsOn), belongsTo: toView(grouped.belongsTo),
+    related: toView(grouped.related),
   };
 }
 

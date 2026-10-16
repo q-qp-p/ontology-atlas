@@ -6,6 +6,7 @@ import {
 } from "./map-datasheet";
 import { controlClass, RowButton } from "@/shared/ui";
 import { OntologyMapKindGlyph } from "@/shared/ui/ontology-node/map-kind-glyph";
+import type { DomainUsageRow } from "../../model/domain-usage";
 import { GROUP_GLYPH_SLOT, GROUP_ROW_LIST, RelationGroupShell } from "./RelationGroupShell";
 import type { OntologyMapDetailPanelLabels, OntologyMapDetailPanelProps } from "./types";
 
@@ -20,6 +21,7 @@ export function ConnectionGroup({
   label,
   help,
   view,
+  domains,
   labels,
   onSelectConnection,
   onHoverConnection,
@@ -28,11 +30,13 @@ export function ConnectionGroup({
   expandedGroups,
   setExpandedGroups,
 }: {
-  group: "contains" | "usedBy" | "dependsOn" | "belongsTo";
-  dir: "contains" | "usedBy" | "dependsOn" | "belongsTo";
+  group: "contains" | "usedBy" | "dependsOn" | "belongsTo" | "related";
+  dir: "contains" | "usedBy" | "dependsOn" | "belongsTo" | "related";
   label: string;
   help: string | undefined;
   view: V2ConnectionGroupView;
+  /** A domain's partner domains, counted as the map counts them; they lead the group. */
+  domains?: readonly DomainUsageRow[];
   labels: OntologyMapDetailPanelLabels;
   onSelectConnection: OntologyMapDetailPanelProps["onSelectConnection"];
   onHoverConnection: OntologyMapDetailPanelProps["onHoverConnection"];
@@ -41,7 +45,8 @@ export function ConnectionGroup({
   expandedGroups: ReadonlySet<string>;
   setExpandedGroups: Dispatch<SetStateAction<ReadonlySet<string>>>;
 }) {
-  if (view.total === 0) return null;
+  const partners = domains && domains.length > 0 ? domains : null;
+  if (view.total === 0 && !partners) return null;
   const expanded = expandedGroups.has(group);
   const shownRows = expanded ? (view.allRows ?? view.rows) : view.rows;
   const overflow = view.total - view.rows.length;
@@ -74,13 +79,67 @@ export function ConnectionGroup({
         {showAllContains ? labels.containsShowSummary : labels.containsShowAll}
       </button>
     ) : undefined;
+  const connectionRows = (
+    <ul className={GROUP_ROW_LIST}>
+      {shownRows.map((row: V2DatasheetConnection) => (
+        <li key={`${group}:${row.id}`}>
+          <RowButton
+            size="md"
+            onClick={() => onSelectConnection(row.id)}
+            onPointerEnter={() => onHoverConnection?.(row.id)}
+            onPointerLeave={() => onHoverConnection?.(null)}
+            data-datasheet-connection={row.id}
+            className="rounded-chip hover:bg-[color:var(--map-panel-row-hover)] active:bg-[color:var(--map-panel-row-active)]"
+          >
+            <span className={GROUP_GLYPH_SLOT}>
+              <OntologyMapKindGlyph kind={row.kind} />
+            </span>
+            <span className="min-w-0 flex-1 truncate text-body text-[color:var(--map-panel-text-secondary)]">
+              {row.title}
+            </span>
+          </RowButton>
+        </li>
+      ))}
+      {overflow > 0 ? (
+        <li>
+          <RowButton
+            size="md"
+            aria-expanded={expanded}
+            data-datasheet-group-overflow={group}
+            data-testid={`map-group-more-${group}`}
+            onClick={() =>
+              setExpandedGroups((current) => {
+                const next = new Set(current);
+                if (next.has(group)) next.delete(group);
+                else next.add(group);
+                return next;
+              })
+            }
+            className="rounded-chip hover:bg-[color:var(--map-panel-row-hover)] active:bg-[color:var(--map-panel-row-active)]"
+          >
+            <span aria-hidden className={GROUP_GLYPH_SLOT} />
+            <span className="min-w-0 flex-1 truncate text-label text-[color:var(--map-panel-text-tertiary)]">
+              {expanded ? (
+                labels.groupShowFewer
+              ) : (
+                <>
+                  <span className="tabular-nums">+{overflow}</span> {labels.groupShowMore}
+                </>
+              )}
+            </span>
+          </RowButton>
+        </li>
+      ) : null}
+    </ul>
+  );
   return (
     <RelationGroupShell
       groupKey={group}
       dir={dir}
       label={label}
       help={help}
-      count={view.total}
+      count={partners ? partners.length : view.total}
+      countText={partners ? labels.domainCount(partners.length) : undefined}
       headerExtra={summaryToggle}
     >
       {useSummary && view.summary ? (
@@ -111,58 +170,50 @@ export function ConnectionGroup({
             </li>
           ) : null}
         </ul>
-      ) : (
-        <ul className={GROUP_ROW_LIST}>
-          {shownRows.map((row: V2DatasheetConnection) => (
-            <li key={`${group}:${row.id}`}>
-              <RowButton
-                size="md"
-                onClick={() => onSelectConnection(row.id)}
-                onPointerEnter={() => onHoverConnection?.(row.id)}
-                onPointerLeave={() => onHoverConnection?.(null)}
-                data-datasheet-connection={row.id}
-                className="rounded-chip hover:bg-[color:var(--map-panel-row-hover)] active:bg-[color:var(--map-panel-row-active)]"
+      ) : partners ? (
+        <>
+          <ul className={GROUP_ROW_LIST}>
+            {partners.map((partner) => (
+              <li key={`${group}:domain:${partner.domainId}`}>
+                <RowButton
+                  size="md"
+                  onClick={() => onSelectConnection(partner.domainId)}
+                  onPointerEnter={() => onHoverConnection?.(partner.domainId)}
+                  onPointerLeave={() => onHoverConnection?.(null)}
+                  data-datasheet-domain-row={partner.domainId}
+                  className="rounded-chip hover:bg-[color:var(--map-panel-row-hover)] active:bg-[color:var(--map-panel-row-active)]"
+                >
+                  <span className={GROUP_GLYPH_SLOT}>
+                    <OntologyMapKindGlyph kind="domain" />
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-body text-[color:var(--map-panel-text-secondary)]">
+                    {partner.label}
+                  </span>
+                  <span
+                    title={labels.domainLinks(partner.links)}
+                    className="shrink-0 font-mono text-label tabular-nums text-[color:var(--map-panel-text-tertiary)]"
+                  >
+                    <span aria-hidden="true">{partner.links}</span>
+                    <span className="sr-only">{`, ${labels.domainLinks(partner.links)}`}</span>
+                  </span>
+                </RowButton>
+              </li>
+            ))}
+          </ul>
+          {view.total > 0 ? (
+            <>
+              <p
+                data-datasheet-direct-links={group}
+                className="mt-2 text-label leading-label text-[color:var(--map-panel-text-tertiary)]"
               >
-                <span className={GROUP_GLYPH_SLOT}>
-                  <OntologyMapKindGlyph kind={row.kind} />
-                </span>
-                <span className="min-w-0 flex-1 truncate text-body text-[color:var(--map-panel-text-secondary)]">
-                  {row.title}
-                </span>
-              </RowButton>
-            </li>
-          ))}
-          {overflow > 0 ? (
-            <li>
-              <RowButton
-                size="md"
-                aria-expanded={expanded}
-                data-datasheet-group-overflow={group}
-                data-testid={`map-group-more-${group}`}
-                onClick={() =>
-                  setExpandedGroups((current) => {
-                    const next = new Set(current);
-                    if (next.has(group)) next.delete(group);
-                    else next.add(group);
-                    return next;
-                  })
-                }
-                className="rounded-chip hover:bg-[color:var(--map-panel-row-hover)] active:bg-[color:var(--map-panel-row-active)]"
-              >
-                <span aria-hidden className={GROUP_GLYPH_SLOT} />
-                <span className="min-w-0 flex-1 truncate text-label text-[color:var(--map-panel-text-tertiary)]">
-                  {expanded ? (
-                    labels.groupShowFewer
-                  ) : (
-                    <>
-                      <span className="tabular-nums">+{overflow}</span> {labels.groupShowMore}
-                    </>
-                  )}
-                </span>
-              </RowButton>
-            </li>
+                {labels.directLinks(view.total)}
+              </p>
+              {connectionRows}
+            </>
           ) : null}
-        </ul>
+        </>
+      ) : (
+        connectionRows
       )}
     </RelationGroupShell>
   );

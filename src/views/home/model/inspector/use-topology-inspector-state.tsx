@@ -8,18 +8,21 @@ import { buildDocsVaultHref } from "@/entities/docs-vault";
 import { buildTopologyMeaningEditorNodeHref, buildTopologyReturnMarker, resolveNodeAgentTarget, resolveNodeDocument } from "@/entities/knowledge-graph";
 import { useHeldValue } from "@/shared/lib/render-timing/use-presence";
 import { LG_BREAKPOINT_PX, useViewportBelow } from "@/shared/lib/use-viewport-below";
-import { buildV2ConnectionGroups, buildV2Connections, buildV2EvidenceRows, formatV2HandoffText } from "@/widgets/ontology-map";
+import { buildV2ConnectionGroups, buildV2Connections, buildV2EvidenceRows, formatV2HandoffText, readDomainUsage } from "@/widgets/ontology-map";
+import type { OntologyMapGraph } from "../../lib/map-canvas/map-adapter";
 import { useCallback, useLayoutEffect, useMemo, useState } from "react";
 import { isSearchLaneCrowded, SEARCH_LANE_CROWDED_BELOW_PX } from "./search-lane-density";
 import { selectTopologyPathRouteState } from "../route-state/url-state";
 import { useFullDetailA1Model } from "./use-full-detail-a1-model";
 import { useRetainedDatasheetModel } from "./use-retained-datasheet-model";
+import type { NodeDatasheetDerivation } from "./use-node-datasheet-model";
 
 interface Options {
   setExpandAllActive: React.Dispatch<React.SetStateAction<boolean>>;
   setRouteState: (updater: Partial<import("@/views/home/model/route-state/url-state").HomeRouteState> | ((current: import("@/views/home/model/route-state/url-state").HomeRouteState) => import("@/views/home/model/route-state/url-state").HomeRouteState), options?: import("@/views/home/model/route-state/use-home-route-state").HomeRouteStateUpdateOptions | undefined) => void;
   nodeFocus: import("@/views/home/lib/inspector/topology-node-focus").TopologyNodeFocusModel | null;
-  v2DatasheetModel: { slug: string; nodeId: string; title: string; sourceTitle: string | null; kind: string; domain: { id: string; title: string; } | null; powered: boolean; updatedAtLabel: string | null; metric: { contains: number; usedBy: number; dependsOn: number; belongsTo: number; evidence: number; }; groups: import("@/widgets/ontology-map/ui/detail-panel/map-datasheet").V2ConnectionGroupsView; evidence: { rows: import("@/widgets/ontology-map/ui/detail-panel/map-datasheet").V2EvidenceRow[]; total: number; }; codeLocations: string[]; handoffText: string; documentHref: string | null; mentionDocumentHref: string | null; meaningEditHref: string; lastEditSubject: { kind: import("@/shared/lib/edit-provenance/last-edit-subject").LastEditSubjectKind; ageLabel: string; } | null; mtimeConflict: boolean; } | null;
+  v2DatasheetModel: NodeDatasheetDerivation["v2DatasheetModel"];
+  mapGraph: OntologyMapGraph;
   analysisMode: import("@/views/home/model/route-state/url-state").TopologyAnalysisMode;
   selectedSlug: string | null;
   topologyIndexPresentation: Pick<ReturnType<typeof useTopologyIndexPresentation>, "agentDockRequestedOpen" | "renderedIndexState">;
@@ -50,7 +53,7 @@ interface Options {
   >;
 }
 export function useTopologyInspectorState({
-  setExpandAllActive, setRouteState, nodeFocus, v2DatasheetModel, analysisMode, selectedSlug,
+  setExpandAllActive, setRouteState, nodeFocus, v2DatasheetModel, mapGraph, analysisMode, selectedSlug,
   topologyCanvasFocus, topologyVaultReadModel, topologyAuthoring, homeWorkbenchController,
   topologyIndexPresentation
 }: Options) {
@@ -104,11 +107,14 @@ export function useTopologyInspectorState({
       usedBy: groups.usedBy.total,
       dependsOn: groups.dependsOn.total,
       belongsTo: groups.belongsTo.total,
+      related: groups.related.total,
       evidence: evidenceRows.length,
       containsNames: groups.contains.rows.map((connection) => connection.title),
       usedByNames: groups.usedBy.rows.map((connection) => connection.title),
       dependsNames: groups.dependsOn.rows.map((connection) => connection.title),
       belongsToNames: groups.belongsTo.rows.map((connection) => connection.title),
+      relatedNames: groups.related.rows.map((connection) => connection.title),
+      domainUsage: node.kind === "domain" ? readDomainUsage(mapGraph.nodes, mapGraph.edges, node.id) : null,
     });
     return {
       nodeId: node.id,
@@ -127,7 +133,7 @@ export function useTopologyInspectorState({
       meaningEditHref: buildTopologyMeaningEditorNodeHref(node.id),
       handoffText,
     };
-  }, [contextMenuNode, handoffSource, ontologyInsight]);
+  }, [contextMenuNode, handoffSource, ontologyInsight, mapGraph]);
   // Held through the exit window, or it closes as an empty menu. Keyed by slug and position.
   const contextMenuKey = contextMenuNode
     ? `${contextMenuNode.slug}@${contextMenuNode.x},${contextMenuNode.y}`

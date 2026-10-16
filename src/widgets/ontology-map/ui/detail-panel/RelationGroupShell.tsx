@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+export type RelationGroupDir = "contains" | "usedBy" | "dependsOn" | "belongsTo" | "related" | "evidence" | "code";
+
 export const GROUP_GLYPH_SLOT = "flex size-4 shrink-0 items-center justify-center";
 export const GROUP_ROW_LIST = "-mx-2.5 flex flex-col";
 
@@ -8,13 +10,13 @@ export const GROUP_ROW_LIST = "-mx-2.5 flex flex-col";
  * (mockup-panel-detail) carried over verbatim. Containing = ownership downward
  * (hierarchy), Used By = arriving from outside (arrow-in), Leaning On = leaving
  * outward (arrow-out), Belongs To = Containing flipped vertically (same relation, opposite
- * direction), Evidence = a document, Code = `</>`. Drawn in currentColor only, so the
+ * direction), Related = two ends with no arrow, Evidence = a document, Code = `</>`. Drawn in currentColor only, so the
  * ink inherits the parent's `--map-panel-group-dir` text colour.
  */
 function GroupDirIcon({
   variant,
 }: {
-  variant: "contains" | "usedBy" | "dependsOn" | "belongsTo" | "evidence" | "code";
+  variant: RelationGroupDir;
 }) {
   const common = {
     width: 15,
@@ -64,6 +66,14 @@ function GroupDirIcon({
           <path d="M8.4 12h10M15 8.5l3.5 3.5-3.5 3.5" />
         </svg>
       );
+    case "related":
+      return (
+        <svg {...common}>
+          <circle cx={5.5} cy={12} r={2.4} />
+          <circle cx={18.5} cy={12} r={2.4} />
+          <path d="M7.9 12h8.2" />
+        </svg>
+      );
     case "evidence":
       return (
         <svg {...common}>
@@ -92,14 +102,17 @@ export function RelationGroupShell({
   label,
   help,
   count,
+  countText,
   headerExtra,
   children,
 }: {
   groupKey: string;
-  dir: "contains" | "usedBy" | "dependsOn" | "belongsTo" | "evidence" | "code";
+  dir: RelationGroupDir;
   label: string;
   help?: string;
   count: number;
+  /** Names the unit when the count is not of the rows' own kind. */
+  countText?: string;
   headerExtra?: ReactNode;
   children: ReactNode;
 }) {
@@ -117,9 +130,9 @@ export function RelationGroupShell({
         </span>
         <span
           data-datasheet-group-total={groupKey}
-          className="rounded-chip bg-[color:var(--map-panel-count-surface)] px-1.5 py-px font-mono text-label leading-label text-[color:var(--map-panel-count-text)]"
+          className="shrink-0 whitespace-nowrap rounded-chip bg-[color:var(--map-panel-count-surface)] px-1.5 py-px font-mono text-label leading-label text-[color:var(--map-panel-count-text)]"
         >
-          {count}
+          {countText ?? count}
         </span>
         {headerExtra}
       </div>

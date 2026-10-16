@@ -405,6 +405,8 @@ export function FullDetailA1({
           dependsOnCaption: t("groups.dependsOnCaption"),
           belongsToTitle: t("groups.belongsToTitle"),
           belongsToCaption: t("groups.belongsToCaption"),
+          relatedTitle: t("groups.relatedTitle"),
+          relatedCaption: t("groups.relatedCaption"),
           freshDotTitle: t("groups.freshDotTitle"),
           directLinks: (count) => t("groups.directLinks", { count }),
           domainCount: (count) => t("groups.domainCount", { count }),

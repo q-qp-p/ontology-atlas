@@ -16,6 +16,8 @@
     "dependsOnCaption": "これがないと動きません",
     "belongsToTitle": "所属先",
     "belongsToCaption": "この概念が属している概念",
+    "relatedTitle": "関連",
+    "relatedCaption": "向きを持たず、関連があると書かれたもの",
     "freshDotTitle": "最近更新",
     "directLinks": "直接のつながり{count, number}件",
     "domainCount": "ドメイン{count, number}件",
