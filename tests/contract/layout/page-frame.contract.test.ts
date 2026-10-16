@@ -12,10 +12,7 @@ import {
   PAGE_COLUMN_FORM,
   PAGE_FRAME_FORM,
   PAGE_TOP_PAD,
-  PAGE_TRACK_CAP,
-  PAGE_TWO_TRACK,
 } from "@/shared/ui/tokens/page-frame";
-import { WIDE_READING_MIN_VIEWPORT_PX } from "@/shared/ui/tokens/reading-measure";
 import * as pageFrame from "@/shared/ui/tokens/page-frame";
 import { readGlobalCss } from '../../../scripts/lib/design/global-css.mjs';
 import { blankComments } from '../../../scripts/quality/source-language/inventory.mjs';
@@ -29,7 +26,12 @@ const REPO_ROOT = join(import.meta.dirname, "..", "..", "..");
 
 /** Screens wearing this frame — an `mx-auto` document column in the shell's scroll slot with an `h1` as the first content. */
 /** Screens using the form/edit column: the same top spacing as the list screens, only narrower. */
-const FORM_MEMBERS = ["src/views/project-editor/ui/ProjectEditorPage.tsx"] as const;
+const FORM_MEMBERS = [
+  "src/views/project-editor/ui/ProjectEditorPage.tsx",
+  // Rows read worse the wider they run.
+  "src/views/agents/ui/AgentsPage.tsx",
+  "src/views/automations/ui/AutomationsPage.tsx",
+] as const;
 
 /** Screens that must own their horizontal inset (safe-area) — only the top spacing follows the spec. */
 const TOP_PAD_MEMBERS = ["src/views/project-detail/ui/ProjectDetailPage.tsx"] as const;
@@ -37,9 +39,6 @@ const TOP_PAD_MEMBERS = ["src/views/project-detail/ui/ProjectDetailPage.tsx"] as
 const MEMBERS = [
   "src/views/project-selector/ui/ProjectSelectorPage.tsx",
   "src/views/ontology-insights/ui/OntologyInsightsPage.tsx",
-  // Rows that would read too long across 1520 split into `PAGE_TWO_TRACK` instead of a narrower column.
-  "src/views/agents/ui/AgentsPage.tsx",
-  "src/views/automations/ui/AutomationsPage.tsx",
 ] as const;
 
 const read = (relative: string) => readFileSync(join(REPO_ROOT, relative), "utf8");
@@ -51,18 +50,6 @@ describe("page frame spec", () => {
     );
     expect(PAGE_HEADER_ROW).toBe("flex flex-wrap items-start justify-between gap-x-4 gap-y-2");
     expect(PAGE_TITLE_ROW).toBe("flex flex-wrap items-baseline gap-x-3 gap-y-1");
-    expect(PAGE_TWO_TRACK).toBe(
-      "grid min-w-0 max-w-[960px] 2xl:max-w-none 2xl:grid-cols-[minmax(0,960px)_minmax(0,1fr)] 2xl:items-start 2xl:gap-x-10",
-    );
-    expect(PAGE_TRACK_CAP).toBe("max-w-[960px]");
-  });
-
-  it("the tracks split where the wide reading band starts", () => {
-    const tailwindTheme = read("node_modules/tailwindcss/theme.css");
-    const twoXl = /--breakpoint-2xl:\s*([\d.]+)rem/.exec(tailwindTheme)?.[1];
-    expect(readGlobalCss(), "a local `--breakpoint-2xl` would move the split off the band").not.toMatch(/--breakpoint-2xl:/);
-    expect(Number(twoXl) * 16, "Tailwind `2xl` is no longer the 1536px band").toBe(WIDE_READING_MIN_VIEWPORT_PX);
-    expect(PAGE_TWO_TRACK).toMatch(/(^|\s)2xl:grid-cols-/);
   });
 
   it("the max width points at an existing token — it is not written in two places", () => {
@@ -183,9 +170,6 @@ describe("page frame — second column and top margin (2026-08-11)", () => {
       "",
     );
     expect(width(PAGE_COLUMN_FORM), "could not read the width from the row column").toBe(width(PAGE_FRAME_FORM));
-    expect(width(PAGE_TRACK_CAP), "the work track cap is the form width").toBe(width(PAGE_FRAME_FORM));
-    const trackWidths = [...PAGE_TWO_TRACK.matchAll(/\d+px/g)].map((hit) => `max-w-[${hit[0]}]`);
-    expect(trackWidths, "the split's work track is the same cap").toEqual([width(PAGE_FRAME_FORM), width(PAGE_FRAME_FORM)]);
   });
 
   it("the form column is narrow and decides the width in one place only", () => {

@@ -77,7 +77,7 @@ export function AutomationGhostRow({ cadence, outcome, className }: { cadence: s
 }
 
 export function AutomationLaneFacts({ facts }: { facts: readonly [AutomationLaneFact, AutomationLaneFact, AutomationLaneFact] }) {
-  return <dl className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-3 md:gap-8 2xl:grid-cols-1 2xl:gap-6" data-testid="automations-lane-facts">
+  return <dl className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-3 md:gap-8" data-testid="automations-lane-facts">
     {facts.map((fact) => <div key={fact.title} className={styles.fact}>
       <dt className={styles.factTitle}>{fact.title}</dt>
       <dd className={styles.factBody}>{fact.body}</dd>

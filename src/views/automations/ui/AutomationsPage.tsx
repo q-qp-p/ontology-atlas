@@ -19,7 +19,7 @@ import { SPRING, springEasing, springSettleMs } from "@/shared/motion/spring";
 import { ICON_SIZE } from "@/shared/ui/tokens/icon-size";
 import { Button, buttonVariants, EmptyState, TabBar, useToast } from "@/shared/ui";
 
-import { PAGE_FRAME, PAGE_HEADER_ROW, PAGE_LEDE, PAGE_TITLE, PAGE_TITLE_ROW, PAGE_TRACK_CAP, PAGE_TWO_TRACK } from "@/shared/ui/tokens/page-frame";
+import { PAGE_FRAME_FORM, PAGE_HEADER_ROW, PAGE_LEDE, PAGE_TITLE, PAGE_TITLE_ROW } from "@/shared/ui/tokens/page-frame";
 import { AutomationScheduleRow } from "./AutomationScheduleRow";
 import { AutomationGhostRow, AutomationLaneFacts, AutomationLaneIntro, AutomationListPanel } from "./AutomationListFrame";
 import listStyles from "./automation-list-frame.module.css";
@@ -145,7 +145,7 @@ export function AutomationsPage({
   return (
     <main id="main" tabIndex={-1} data-testid="automations" data-automations-state={state} data-automations-lane={lane}
       className="atlas-scroll-quiet min-h-0 flex-1 overflow-y-auto bg-[color:var(--color-canvas)] text-[color:var(--color-text-primary)]">
-      <div className={`${PAGE_FRAME} flex min-h-full flex-col gap-6 max-lg:pb-[calc(var(--topology-mobile-bottom-tab-reserve)+var(--page-bottom-breath))]`}>
+      <div className={`${PAGE_FRAME_FORM} flex min-h-full flex-col gap-6 max-lg:pb-[calc(var(--topology-mobile-bottom-tab-reserve)+var(--page-bottom-breath))]`}>
         <header className={PAGE_HEADER_ROW}>
           <div className="min-w-0">
             <div className={PAGE_TITLE_ROW}><h1 className={PAGE_TITLE}>{t("title")}</h1></div>
@@ -153,7 +153,7 @@ export function AutomationsPage({
           </div>
         </header>
 
-        <div className={`flex flex-wrap items-end justify-between gap-3 border-b border-[color:var(--color-divider)] pb-3 ${PAGE_TRACK_CAP}`}>
+        <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[color:var(--color-divider)] pb-3">
           <TabBar ariaLabel={t("tabsAria")} activeKey={lane} onSelect={(key) => selectLane(key as AutomationLane)}
             idPrefix="automations" testId="automations-tabs" placement="header"
             items={[
@@ -168,12 +168,12 @@ export function AutomationsPage({
 
         <section id={`automations-tabpanel-${lane}`} role="tabpanel" aria-labelledby={`automations-tab-${lane}`} className="flex min-w-0 flex-1 flex-col gap-5">
           {state === "loading" ? (
-            <div role="status" aria-busy="true" className={PAGE_TRACK_CAP}><EmptyState title={t("loadingTitle")} skeleton tone="solid" /></div>
+            <div role="status" aria-busy="true"><EmptyState title={t("loadingTitle")} skeleton tone="solid" /></div>
           ) : state === "malformed" || state === "unavailable" ? (
-            <EmptyState title={t(`${state}Title`)} description={t(`${state}Description`)} icon={<TriangleAlert />} tone="solid" className={PAGE_TRACK_CAP}
+            <EmptyState title={t(`${state}Title`)} description={t(`${state}Description`)} icon={<TriangleAlert />} tone="solid"
               action={<Button variant="outline" onClick={() => void runner?.refresh()} className="atlas-touch-floor atlas-touch-floor-wide">{t("retry")}</Button>} />
           ) : (
-            <div className={`${PAGE_TWO_TRACK} gap-8`}>
+            <div className="grid min-w-0 gap-8">
               <div className="flex min-w-0 flex-col">
                 <div ref={introHostRef} className="relative min-w-0 overflow-hidden">
                   {intro.mounted ? <div inert={intro.exiting} aria-hidden={intro.exiting || undefined}

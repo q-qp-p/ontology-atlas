@@ -21,7 +21,6 @@ import { AGENT_CLIENTS } from '@/entities/vault-session';
 import { RowStateBadge } from '@/features/docs-vault-local';
 import { requestAgentChat } from '@/shared/lib/agent-chat/agent-chat-intent';
 import { usePanelPresence, useSurfaceSwap } from '@/shared/lib/render-timing/use-presence';
-import { PAGE_TRACK_CAP, PAGE_TWO_TRACK } from '@/shared/ui/tokens/page-frame';
 
 import {
   DETAIL_TOGGLE_CHIP,
@@ -115,7 +114,7 @@ export function AcpRuntimeSettings({
      * as the ways on. No icon tile, which `EmptyState` would indent apart from the actions.
      */
     return (
-      <div data-testid="app-settings-runtimes-web" className={embedded ? `${PAGE_TWO_TRACK} gap-3` : 'grid min-w-0 gap-3'}>
+      <div data-testid="app-settings-runtimes-web" className="grid min-w-0 gap-3">
         <EmptyState
           tone="solid"
           /* The quiet next-step card surface; the surface-vocabulary ratchet refuses a new combination. */
@@ -162,7 +161,7 @@ export function AcpRuntimeSettings({
             id="app-settings-runtimes-web-tools-heading"
             label={t('webToolsHeading', { count: APP_CODING_TOOLS.length })}
           />
-          <ul className={cn('mt-1.5 grid min-w-0 grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-3 xl:grid-cols-4', embedded && '2xl:grid-cols-2')}>
+          <ul className="mt-1.5 grid min-w-0 grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-3 xl:grid-cols-4">
             {APP_CODING_TOOLS.map((tool) => (
               <li
                 key={tool.id}
@@ -209,9 +208,6 @@ export function AcpRuntimeSettings({
     : waiting > 0
       ? t('waitingNote')
       : t(others.length > 0 ? 'noneReadyCaption' : 'noneReadyCaptionNoList');
-  /* `contents` keeps the sheet's single grid; the page splits rows and shelf into two tracks. */
-  const track = embedded ? 'grid min-w-0 content-start gap-3' : 'contents';
-  const shelfColumns = embedded ? ' 2xl:grid-cols-2' : '';
   const hasShelf = runtimes !== null && others.length > 0;
 
   // The setup window's door, on the first shelf group's heading; emphasised when nothing is confirmed.
@@ -273,10 +269,10 @@ export function AcpRuntimeSettings({
 
   return (
     <div
-      className={!embedded ? 'grid min-w-0 gap-3' : hasShelf ? `${PAGE_TWO_TRACK} gap-3` : `grid min-w-0 gap-3 ${PAGE_TRACK_CAP}`}
+      className="grid min-w-0 gap-3"
       data-testid="app-settings-runtimes"
     >
-      <div className={track}>
+      <>
         {/*
           One row above the list: in the sheet the intro line, and the guard note naming the tools
           that open a chat. Not drawn when empty, or it would still spend the grid gap.
@@ -358,7 +354,7 @@ export function AcpRuntimeSettings({
             {pageNote}
           </p>
         ) : null}
-      </div>
+      </>
 
       {hasShelf ? (
         /*
@@ -368,7 +364,7 @@ export function AcpRuntimeSettings({
          * indigo, since the install instructions live there. Falsifier: if people read the
          * shelf instead of reaching the ready tools, it goes back behind the chip.
          */
-        <div className={track}>
+        <>
           {shelf.length > 0 ? (
             <section
               className="min-w-0"
@@ -382,7 +378,7 @@ export function AcpRuntimeSettings({
               />
               <ul
                 data-testid="app-settings-runtimes-others-shelf"
-                className={`mt-1.5 grid min-w-0 grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-4${shelfColumns}`}
+                className="mt-1.5 grid min-w-0 grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-4"
               >
                 {shelf.map((runtime) => (
                   <ShelfTile key={runtime.id} runtime={runtime} onOpen={openOthers} />
@@ -413,7 +409,7 @@ export function AcpRuntimeSettings({
               </p>
               <ul
                 data-testid="app-settings-runtimes-unknown-shelf"
-                className={`mt-1 grid min-w-0 grid-cols-2 gap-x-2 md:grid-cols-3 xl:grid-cols-4${shelfColumns}`}
+                className="mt-1 grid min-w-0 grid-cols-2 gap-x-2 md:grid-cols-3 xl:grid-cols-4"
               >
                 {undetectable.map((runtime) => (
                   <ShelfTile key={runtime.id} runtime={runtime} onOpen={openOthers} quiet />
@@ -430,7 +426,7 @@ export function AcpRuntimeSettings({
             onOpenChat={onOpenChat}
             onRuntimesChanged={() => void refresh()}
           />
-        </div>
+        </>
       ) : null}
     </div>
   );
