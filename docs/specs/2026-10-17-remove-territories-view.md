@@ -1,10 +1,10 @@
 ---
 title: Remove the Territories map view
 doc_type: spec
-status: draft
+status: current
 area: map
 date: 2026-10-17
-decisions: []
+decisions: [fa1f007c-ae28-4a8d-9156-db50f0bd2875]
 ---
 
 # Remove the Territories map view
