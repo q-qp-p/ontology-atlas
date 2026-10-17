@@ -33,7 +33,7 @@ fn json_projection(class: ReadClass, object: &Map<String, Value>) -> Map<String,
         }
         ReadClass::ClaudeSettings => {
             if let Some(hooks) = object.get("hooks") {
-                out.insert("hooks".into(), hooks.clone());
+                out.insert("hooks".into(), hook_commands(hooks));
             }
             if let Some(Value::Object(permissions)) = object.get("permissions") {
                 let mut counted = Map::new();
@@ -47,7 +47,7 @@ fn json_projection(class: ReadClass, object: &Map<String, Value>) -> Map<String,
         }
         ReadClass::CodexHooks => {
             if let Some(hooks) = object.get("hooks") {
-                out.insert("hooks".into(), hooks.clone());
+                out.insert("hooks".into(), hook_commands(hooks));
             }
         }
         ReadClass::PackageScripts => {
@@ -60,26 +60,57 @@ fn json_projection(class: ReadClass, object: &Map<String, Value>) -> Map<String,
     out
 }
 
-fn mcp_header(line: &str) -> Option<&str> {
+fn hook_commands(hooks: &Value) -> Value {
+    let mut events = Map::new();
+    if let Value::Object(by_event) = hooks {
+        for (event, groups) in by_event {
+            let Value::Array(groups) = groups else {
+                continue;
+            };
+            let kept: Vec<Value> = groups
+                .iter()
+                .filter_map(|group| group.get("hooks")?.as_array())
+                .map(|entries| {
+                    let commands: Vec<Value> = entries
+                        .iter()
+                        .filter_map(|entry| entry.get("command")?.as_str())
+                        .map(|command| json!({ "command": command }))
+                        .collect();
+                    json!({ "hooks": commands })
+                })
+                .collect();
+            events.insert(event.clone(), Value::Array(kept));
+        }
+    }
+    Value::Object(events)
+}
+
+fn mcp_header(line: &str) -> Option<String> {
     let trimmed = line.trim();
     let after = trimmed.strip_prefix('[')?;
     let table_array = after.starts_with('[');
-    let rest = after.strip_prefix('[').unwrap_or(after).trim_start();
+    let key = after.strip_prefix('[').unwrap_or(after);
     let named = ["mcp_servers", "\"mcp_servers\"", "'mcp_servers'"]
         .iter()
-        .find_map(|name| rest.strip_prefix(name))?;
+        .find_map(|name| key.trim_start().strip_prefix(name))?;
     if !matches!(named.trim_start().chars().next(), Some('.' | ']')) {
         return None;
     }
     let mut quote: Option<char> = None;
-    for (index, ch) in trimmed.char_indices() {
+    let mut escaped = false;
+    for (index, ch) in key.char_indices() {
         match (quote, ch) {
+            _ if escaped => escaped = false,
+            (Some('"'), '\\') => escaped = true,
             (Some(open), c) if c == open => quote = None,
             (None, '"' | '\'') => quote = Some(ch),
             (None, ']') => {
-                let end = index + 1;
-                let closes_array = table_array && trimmed[end..].starts_with(']');
-                return Some(&trimmed[..end + usize::from(closes_array)]);
+                let (open, close) = if table_array {
+                    ("[[", "]]")
+                } else {
+                    ("[", "]")
+                };
+                return Some(format!("{open}{}{close}", &key[..index]));
             }
             _ => {}
         }
@@ -148,6 +179,33 @@ mod tests {
             "[mcp_servers.git]\n[ mcp_servers . \"two]\" ]\n[[mcp_servers.arr]]\n['mcp_servers'.q.env]"
         );
         assert!(!out.contains(SECRET));
+    }
+
+    #[test]
+    fn hook_projection_keeps_only_command_strings() {
+        let text = format!(
+            r#"{{"hooks":{{"PreToolUse":[{{"matcher":"Bash","extra":"{SECRET}","hooks":[{{"type":"command","command":"a.sh","timeout":5}},{{"type":"http","url":"https://h.example/{SECRET}","headers":{{"Authorization":"{SECRET}"}}}}]}}]}}}}"#
+        );
+        for class in [ReadClass::ClaudeSettings, ReadClass::CodexHooks] {
+            let out = project(class, &text);
+            assert_eq!(
+                out,
+                r#"{"hooks":{"PreToolUse":[{"hooks":[{"command":"a.sh"}]}]}}"#
+            );
+            assert!(!out.contains(SECRET) && !out.contains("h.example"));
+        }
+    }
+
+    #[test]
+    fn toml_header_escapes_cannot_carry_a_value_into_the_projection() {
+        for text in [
+            format!("[mcp_servers.\"x\\\"\"] token = \"{SECRET}]\""),
+            format!("[mcp_servers.\"x\\\"\"] # \" {SECRET} ]"),
+        ] {
+            let out = project(ReadClass::TomlMcpHeaders, &text);
+            assert_eq!(out, "[mcp_servers.\"x\\\"\"]");
+            assert!(!out.contains(SECRET));
+        }
     }
 
     #[test]

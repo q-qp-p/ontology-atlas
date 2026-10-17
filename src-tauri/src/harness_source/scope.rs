@@ -70,6 +70,10 @@ const DENIED_NAMES: &[&str] = &[
     ".dockercfg",
     "auth.json",
     "settings.local.json",
+    ".pgpass",
+    ".boto",
+    ".s3cfg",
+    "kubeconfig",
 ];
 const DENIED_STEMS: &[&str] = &[
     "credential",
@@ -84,9 +88,15 @@ const DENIED_STEMS: &[&str] = &[
     "id_dsa",
     "id_ecdsa",
     "id_ed25519",
+    "apikey",
+    "api-key",
+    "api_key",
+    "service-account",
+    "service_account",
+    "serviceaccount",
 ];
 const DENIED_EXTENSIONS: &[&str] = &[
-    "pem", "key", "p8", "p12", "pfx", "jks", "keystore", "gpg", "kdbx",
+    "pem", "key", "p8", "p12", "pfx", "jks", "keystore", "gpg", "kdbx", "ppk", "asc",
 ];
 
 pub(super) fn is_denied_name(name: &str) -> bool {
@@ -214,7 +224,7 @@ mod tests {
         ))
         .unwrap();
         let cases = table["cases"].as_array().unwrap();
-        assert!(cases.len() >= 79);
+        assert!(cases.len() >= 90);
         for case in cases {
             let path = case["path"].as_str().unwrap();
             assert_eq!(read_class(path).as_str(), case["read"], "read {path:?}");

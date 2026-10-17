@@ -179,15 +179,15 @@ fn refuses_a_symlink_that_leaves_the_repository() {
     );
     assert_eq!(
         f.read(".claude/rules/leak.md").unwrap_err(),
-        "harness-path-outside-source"
+        "harness-path-missing"
     );
     assert_eq!(
         f.read(".claude/skills/out/AGENTS.md").unwrap_err(),
-        "harness-path-outside-source"
+        "harness-path-missing"
     );
     assert_eq!(
         f.list(".claude/skills/out").unwrap_err(),
-        "harness-path-outside-source"
+        "harness-path-missing"
     );
 }
 
@@ -480,4 +480,22 @@ fn the_three_harness_commands_are_registered() {
     ] {
         assert!(handler.contains(name), "{name}");
     }
+}
+
+#[cfg(unix)]
+#[test]
+fn refuses_a_secret_name_the_volume_folds_to_the_same_file() {
+    let f = Fixture::new();
+    let _scope = f.grant();
+    f.put(".codex/hooks/secrets.sh", SECRET);
+    let folds = f.repo.join(".codex/hooks/\u{17f}ecrets.sh").exists();
+    let expected = if folds {
+        "harness-path-denied"
+    } else {
+        "harness-path-missing"
+    };
+    assert_eq!(
+        f.read(".codex/hooks/\u{17f}ecrets.sh").unwrap_err(),
+        expected
+    );
 }

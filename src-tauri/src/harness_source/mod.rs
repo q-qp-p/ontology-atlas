@@ -127,8 +127,9 @@ fn resolve_inside(root: &Path, relative_path: &str, want: Want) -> Result<Resolv
     })?;
     let relative = canonical
         .strip_prefix(root)
-        .map_err(|_| "harness-path-outside-source".to_string())?
+        .map_err(|_| "harness-path-missing".to_string())?
         .to_path_buf();
+    // The canonical target also catches case folding that the request check cannot see.
     let target = relative_text(&relative).ok_or("harness-path-invalid")?;
     let class = check_class(&want, &target)?;
     Ok(Resolved {
