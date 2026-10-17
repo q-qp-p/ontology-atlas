@@ -70,8 +70,8 @@ export function GatewayNav() {
             data-testid="gateway-brand-mark"
             className="size-8 shrink-0"
           />
-          {/* `whitespace-nowrap`: the wordmark must never wrap. */}
-          <span className="whitespace-nowrap text-body leading-body font-[var(--font-weight-signature)] text-[color:var(--color-text-secondary)]">
+          {/* Below `sm` only the link's name. */}
+          <span className="sr-only whitespace-nowrap sm:not-sr-only text-body leading-body font-[var(--font-weight-signature)] text-[color:var(--color-text-secondary)]">
             Ontology Atlas
           </span>
         </Link>
