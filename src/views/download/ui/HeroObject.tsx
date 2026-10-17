@@ -167,7 +167,7 @@ export function HeroObject({
         data-testid="gateway-hero-caption"
         data-hero-caption-source={hover !== null ? 'hover' : walked !== null ? 'chain' : undefined}
         className={cn(
-          'gateway-hero-caption pointer-events-none absolute right-[var(--gateway-origin)] top-12 max-w-[40%] truncate text-right font-mono text-label leading-label text-[color:var(--color-text-tertiary)] md:top-16 min-[90rem]:top-auto min-[90rem]:bottom-[7.5rem]',
+          'gateway-hero-caption pointer-events-none absolute right-[var(--gateway-origin)] top-12 max-w-[40%] truncate text-right text-label leading-label text-[color:var(--color-text-tertiary)] md:top-16 min-[90rem]:top-auto min-[90rem]:bottom-[7.5rem]',
           caption ? 'is-on' : undefined,
         )}
       >
