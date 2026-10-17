@@ -1,6 +1,6 @@
 import { scaledLabelFont, scaledLabelFontSize } from "../../render/labels";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
-import { buildFlowMarks, type FlowMarksResult } from "../flow-marks";
+import { buildFlowMarks, type FlowMarksInput, type FlowMarksResult } from "../flow-marks";
 import { crossfadeInk, inkIndex, mixOver, type DialInks } from "../ink";
 import { buildLabelMarks, capabilityNameTries, overlaps, type Circle, type ExtraTextMark, type LabelInks, type MeasureText, type NameTry } from "../label-marks";
 import type { DialDisclosure } from "./disclosure";
@@ -255,6 +255,61 @@ function hoveredNames(input: DialMarksInput, out: DialFrameMarks, marks: Readonl
   }
 }
 
+const AT_REST_PX = 0.5;
+const HOMED_WITHIN_WORLD = 0.5;
+
+const discShareOf = (capAlpha: number) => DISC_APPEAR_FLOOR + (1 - DISC_APPEAR_FLOOR) * capAlpha;
+
+function restingObstacles(
+  input: DialMarksInput,
+  hub: Circle | null,
+  hubRest: Circle | null,
+  chips: ReadonlyMap<string, Circle>,
+  discs: ReadonlyMap<string, Circle>,
+  flowBase: Omit<FlowMarksInput, "occupied" | "chords" | "inkAttention" | "previous">,
+): { occupied: Box[]; lines: Point[][] } | null {
+  const { scene, tokens } = input;
+  const s = input.scale;
+  const maxItems = maxItemsOf(scene);
+  const discShare = discShareOf(input.disclosure.capAlpha);
+  const restChips = new Map<string, Circle>();
+  const restDiscs = new Map<string, Circle>();
+  let travelling = input.chordPresence < 1;
+  const noteAway = (now: Circle | null | undefined, rest: Circle | null) => {
+    if (!now || !rest) return;
+    const homed = HOMED_WITHIN_WORLD * s;
+    if (Math.abs(now.x - rest.x) > homed || Math.abs(now.y - rest.y) > homed || Math.abs(now.r - rest.r) > AT_REST_PX) travelling = true;
+  };
+  noteAway(hub, hubRest);
+  for (const c of scene.clusters) {
+    const chip = chips.get(c.domainId);
+    if (!chip) continue;
+    const p = input.toScreen(c.chip.x, c.chip.y);
+    const rest = { x: p.x, y: p.y, r: dialChipRadiusPx(tokens, c.items.length, maxItems) };
+    restChips.set(c.domainId, rest);
+    noteAway(chip, rest);
+    for (const it of c.items) {
+      const disc = discs.get(it.id);
+      if (!disc) continue;
+      const q = input.toScreen(it.x, it.y);
+      const restDisc = { x: q.x, y: q.y, r: dialDiscRadiusPx(tokens, s, it.elementIds.length) * discShare };
+      restDiscs.set(it.id, restDisc);
+      noteAway(disc, restDisc);
+    }
+  }
+  if (!travelling) return null;
+  const occupied: Box[] = [];
+  if (hubRest) occupied.push(circleBox(hubRest, 3));
+  for (const c of restChips.values()) occupied.push(circleBox(c, 2));
+  for (const d of restDiscs.values()) occupied.push(circleBox(d, 1));
+  const planned = { inks: [] as string[], strips: [] as DialMarks["strips"], numerals: [] as DialMarks["numerals"], texts: [] as DialMarks["texts"] };
+  buildFlowMarks({
+    ...flowBase, inkAttention: input.attention, previous: null, chordPresence: 1, occupied: [...occupied], chords: [],
+    nodeScreen: () => null, appearOf: () => 1, endRadiusPx: (id) => restChips.get(id)?.r ?? restDiscs.get(id)?.r ?? 0,
+  }, planned);
+  return { occupied, lines: linesOf(planned) };
+}
+
 export function buildDialMarks(input: DialMarksInput, out: DialFrameMarks): DialMarksResult {
   const { model, scene, tokens, mapTokens: map, inks, attention: attn, inkAttention: hov, disclosure } = input;
   const W = input.viewportWidth;
@@ -292,7 +347,7 @@ export function buildDialMarks(input: DialMarksInput, out: DialFrameMarks): Dial
       const appear = input.appearOf(c.domainId);
       for (const it of c.items) {
         const p = it.direct ? input.toScreen(it.x, it.y) : input.nodeScreen(it.id) ?? input.toScreen(it.x, it.y);
-        const r = dialDiscRadiusPx(tokens, s, it.elementIds.length) * (DISC_APPEAR_FLOOR + (1 - DISC_APPEAR_FLOOR) * capAlpha) * appear;
+        const r = dialDiscRadiusPx(tokens, s, it.elementIds.length) * discShareOf(capAlpha) * appear;
         if (r <= 0 || !visible(p, r, CULL_PX)) continue;
         discs.set(it.id, { x: p.x, y: p.y, r });
       }
@@ -331,15 +386,19 @@ export function buildDialMarks(input: DialMarksInput, out: DialFrameMarks): Dial
   const planned = { inks: [] as string[], strips: [] as DialMarks["strips"], numerals: [] as DialMarks["numerals"], texts: [] as DialMarks["texts"] };
   buildFlowMarks({ ...flowBase, inkAttention: attn, previous: null, occupied: [...occupied], chords: [] }, planned);
   const lines = linesOf(planned);
+  const hubSlot = model.projectId ? scene.positions.get(model.projectId) ?? { x: 0, y: 0 } : null;
+  const hubRest = hubSlot ? { ...input.toScreen(hubSlot.x, hubSlot.y), r: dialHubRadiusPx(tokens, map, s) } : null;
+  const resting = restingObstacles(input, hub, hubRest, chips, discs, flowBase) ?? { occupied, lines };
 
   const entered = disclosure.entered;
   const labelInput = {
     model, scene, labels: input.labels, evidence: input.evidence, attention: attn, tokens, inks: labelInks(inks), ink, measureText: input.measureText,
-    scale: s, toScreen: input.toScreen, hub, chips, discs, capAlpha, lines, freeRect: input.freeRect, elementLabel: input.elementLabel,
-    hubRest: hub ? { x: hub.x, y: hub.y, r: dialHubRadiusPx(tokens, map, s) } : null, hubLines: input.hubLines,
+    scale: s, toScreen: input.toScreen, hub, chips, discs, capAlpha, lines: resting.lines, freeRect: input.freeRect, elementLabel: input.elementLabel,
+    hubRest, hubLines: input.hubLines,
   };
-  const labelOccupied = [...occupied];
+  const labelOccupied = [...resting.occupied];
   buildLabelMarks({ ...labelInput, occupied: labelOccupied, ledgerIds: new Set<string>() }, out);
+  const nameClaims = labelOccupied.slice(resting.occupied.length);
 
   let ledger: DialMarksResult["ledger"] = null;
   const font = scaledLabelFont("capability", tokens.labelScale);
@@ -419,7 +478,7 @@ export function buildDialMarks(input: DialMarksInput, out: DialFrameMarks): Dial
   }
   reinkForHover(input, out, ink);
 
-  const flowOccupied = [...labelOccupied];
+  const flowOccupied = [...occupied, ...nameClaims];
   const textBoxes = [...out.texts.map((t) => t.box), ...out.extraTexts.map((t) => t.box)];
   flowOccupied.push(...textBoxes);
   const chords: DialChordLight[] = [];
