@@ -12,7 +12,7 @@
     "domainMeta": "역량 {capabilities} · 요소 {elements}",
     "domainStale": "◐ 낡음 {count}",
     "domainStaleNone": "낡음 0",
-    "projectMeta": "{count} 문서",
+    "projectMeta": "개념 {count}개",
     "plateSub": "{capabilities}",
     "plateSubStale": "{capabilities} · ◐ {stale}",
     "legendBrightness": "밝기 = 요소 수",

@@ -165,7 +165,8 @@ The Flat overview is the dial: [`flat-dial.md`](flat-dial.md).
 - **Five map views, chosen in one picker** — the current-view chip in the top tool
   lane opens **Flat** (the ordinary 2D map, default), **Hex board**,
   **Domain structure**, **Strata**, and **Neural**. The **Hex board** gives every capability one hexagonal tile: a domain is a
-  contiguous region of tiles around its title tile, the project sits at the centre,
+  contiguous region of tiles around its title tile, the project sits at the centre
+  with the folder's concept count (the map INDEX's rule),
   and empty cells between regions keep them apart. A tile's brightness and its row
   of dots count its elements (a gold dot is a stale element); a gold rim is stale
   and a dashed, hatched tile is unknown, by the same rule and Git walk as

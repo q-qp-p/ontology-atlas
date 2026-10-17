@@ -12,7 +12,7 @@
     "domainMeta": "{capabilities} 个能力 · {elements} 个元素",
     "domainStale": "◐ {count} 个过时",
     "domainStaleNone": "0 个过时",
-    "projectMeta": "{count} 篇文档",
+    "projectMeta": "{count} 个概念",
     "plateSub": "{capabilities}",
     "plateSubStale": "{capabilities} · ◐ {stale}",
     "legendBrightness": "亮度 = 元素数",
