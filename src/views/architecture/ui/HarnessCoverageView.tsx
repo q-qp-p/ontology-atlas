@@ -389,7 +389,7 @@ function DocumentReachBlock({
           label={t('reachNamed')}
         >
           <CensusBigNumber scale="section" value={reach.named} testId="harness-reach-number" />
-          {reach.hops > 1 ? (
+          {reach.named > reach.namedDirect ? (
             <CensusSubStat label={t('reachNamedDirectLabel')} value={reach.namedDirect} />
           ) : null}
         </CensusTile>
