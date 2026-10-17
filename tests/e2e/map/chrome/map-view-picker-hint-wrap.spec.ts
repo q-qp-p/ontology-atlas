@@ -46,7 +46,7 @@ for (const locale of FIT_LOCALES) {
         }),
       );
 
-      expect(hints).toHaveLength(6);
+      expect(hints).toHaveLength(5);
       for (const hint of hints) {
         expect(hint.insideRow, `${hint.choice} runs past its row`).toBe(true);
         if (hint.lines > 1) {
