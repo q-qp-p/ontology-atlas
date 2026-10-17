@@ -62,15 +62,17 @@ const LIST_TREES = [
 
 const DENIED_NAMES = new Set([
   '.git', '.ssh', '.aws', '.gnupg', '.env', '.npmrc', '.netrc', '.pypirc', '.git-credentials',
-  '.htpasswd', '.dockercfg', 'auth.json', 'settings.local.json',
+  '.htpasswd', '.dockercfg', 'auth.json', 'settings.local.json', '.pgpass', '.boto', '.s3cfg',
+  'kubeconfig',
 ]);
 
 const DENIED_STEMS = new Set([
   'credential', 'credentials', '.credentials', 'secret', 'secrets', 'private-key', 'private_key',
-  'privatekey', 'id_rsa', 'id_dsa', 'id_ecdsa', 'id_ed25519',
+  'privatekey', 'id_rsa', 'id_dsa', 'id_ecdsa', 'id_ed25519', 'apikey', 'api-key', 'api_key',
+  'service-account', 'service_account', 'serviceaccount',
 ]);
 
-const DENIED_EXTENSIONS = new Set(['pem', 'key', 'p8', 'p12', 'pfx', 'jks', 'keystore', 'gpg', 'kdbx']);
+const DENIED_EXTENSIONS = new Set(['pem', 'key', 'p8', 'p12', 'pfx', 'jks', 'keystore', 'gpg', 'kdbx', 'ppk', 'asc']);
 
 /** Normalized components, or null when the path is not a safe relative path. */
 function components(path: string): string[] | null {
