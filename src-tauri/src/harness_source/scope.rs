@@ -1,5 +1,4 @@
-//! What the harness commands may read or list inside a connected repository.
-//! The rows in `tests/fixtures/harness-read-scope-cases.json` pin this file to its TypeScript mirror.
+//! `tests/fixtures/harness-read-scope-cases.json` pins this file to its TypeScript mirror.
 
 use crate::vault::scope::normalize_relative_path;
 use std::path::Path;
@@ -56,8 +55,7 @@ impl ListClass {
     }
 }
 
-// Names that hold credentials: exact names, a prefix, file stems and extensions, never a
-// substring, so `block-secret-read.sh` stays readable.
+// No substring rule, so `block-secret-read.sh` stays readable.
 const DENIED_NAMES: &[&str] = &[
     ".git",
     ".ssh",
@@ -102,7 +100,6 @@ pub(super) fn is_denied_name(name: &str) -> bool {
     DENIED_STEMS.contains(&stem) || DENIED_EXTENSIONS.contains(&extension)
 }
 
-// Folders whose whole subtree is harness material, read as written.
 const TEXT_TREES: &[&[&str]] = &[
     &[".claude", "rules"],
     &[".claude", "hooks"],
@@ -113,7 +110,6 @@ const TEXT_TREES: &[&[&str]] = &[
     &[".cursor", "rules"],
     &[".codex", "hooks"],
 ];
-// Dot folders a listing may enter; every folder without a dot component is listable too.
 const LISTABLE_DOT_TREES: &[&[&str]] = &[
     &[".claude", "rules"],
     &[".claude", "hooks"],
@@ -140,7 +136,6 @@ const ROOT_TEXT_FILES: &[&str] = &[
     ".gitignore",
 ];
 
-/// Normalised components, or `None` when the path is not a safe relative path.
 fn components_of(path: &str) -> Option<Vec<String>> {
     if path.contains('\0') || path.contains('\\') {
         return None;

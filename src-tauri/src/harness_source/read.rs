@@ -59,7 +59,7 @@ fn open_no_follow(root: &Path, relative: &Path) -> Result<fs::File, String> {
     fs::File::open(root.join(relative)).map_err(|error| io_failure(relative, &error))
 }
 
-/// `relative` is the canonical path below `root`. The error never carries file content.
+/// The error never carries file content.
 pub(super) fn read_bounded_text(root: &Path, relative: &Path) -> Result<BoundedText, String> {
     let file = open_no_follow(root, relative)?;
     let metadata = file

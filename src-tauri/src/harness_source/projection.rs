@@ -1,5 +1,4 @@
-//! Reduces a configuration file to the part the harness view needs, so env values, headers and
-//! permission rules never leave the disk. Text that does not parse projects to "".
+//! Env values, headers and permission rules never leave the disk; unparsable text projects to "".
 
 use super::scope::ReadClass;
 use serde_json::{json, Map, Value};
@@ -61,7 +60,6 @@ fn json_projection(class: ReadClass, object: &Map<String, Value>) -> Map<String,
     out
 }
 
-/// The header line cut after its closing bracket, or `None` when it is not an `mcp_servers` header.
 fn mcp_header(line: &str) -> Option<&str> {
     let trimmed = line.trim();
     let after = trimmed.strip_prefix('[')?;

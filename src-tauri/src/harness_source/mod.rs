@@ -1,6 +1,5 @@
-//! Read-only access to the harness files of the folder a vault's one project binding names.
-//! The page sends a vault and a project, never a source path; each call re-derives the root,
-//! checks the secret-name rule and the allowlist on the request and again on the link target.
+//! Read-only harness files of a vault project's one bound folder. The page never sends a source
+//! path; every call re-derives the root and checks the request and its link target.
 
 mod projection;
 mod read;
@@ -55,8 +54,7 @@ fn authorized_source_root(vault_path: &str, project_slug: &str) -> Result<PathBu
     crate::canonical_source_root(&binding.root.to_string_lossy())
 }
 
-/// A request that passed both checks: `canonical` exists inside the root, `relative` is its path
-/// below the root, and `class` is the target's own class, not the request's.
+/// `class` is the link target's class, not the request's.
 struct Resolved {
     canonical: PathBuf,
     relative: PathBuf,
