@@ -3,13 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LocalFsHandleRecord } from '@/entities/local-fs-handle';
 
 /**
- * Launch path depends only on how many folders are known: one resumes silently,
+ * Launch path depends only on how many folders still exist: one resumes silently,
  * two or more stop at the chooser. The stored `current` record must survive untouched.
  */
 
 const tauri = vi.hoisted(() => ({
   isTauriVaultRuntime: vi.fn(() => true),
-  tauriVaultPathExists: vi.fn(async () => true),
+  tauriVaultPathExists: vi.fn(async (_path: string) => true),
   listTauriDirectoryNames: vi.fn<(rootPath: string) => Promise<string[]>>(async () => []),
   createTauriVaultHandle: vi.fn((rootPath: string) => ({
     kind: 'directory' as const,
@@ -334,6 +334,19 @@ describe('useLocalVaultInternal launch path', () => {
     // vault read on a folder the person may not have picked, and would then have to be
     // thrown away.
     expect(docsVault.buildLocalManifestWithEntries).not.toHaveBeenCalled();
+  });
+
+  it('resumes without asking when the other known folders no longer exist', async () => {
+    const current = record('atlas');
+    store.getLocalFsHandle.mockResolvedValue(current);
+    store.listRecentLocalFsHandles.mockResolvedValue([current, record('gone-1'), record('gone-2')]);
+    tauri.tauriVaultPathExists.mockImplementation(async (path: string) => !path.includes('gone'));
+
+    const hook = renderHook(() => useLocalVaultInternal());
+
+    await waitFor(() => expect(hook.result.current.status).toBe('loaded'));
+    expect(hook.result.current.awaitingVaultChoice).toBe(false);
+    tauri.tauriVaultPathExists.mockImplementation(async () => true);
   });
 
   it('keeps the stored current record so the chooser can mark where you were', async () => {
