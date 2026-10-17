@@ -261,7 +261,7 @@ export async function installDesktopRailRuntime(
           }
           case "read_vault_text_file": {
             const path = relative(args.relativePath);
-            if (!(path in files)) return Promise.reject(new Error(`missing ${path}`));
+            if (!(path in files)) return Promise.reject(new Error(`No such file or directory (os error 2): ${path}`));
             return afterHeldReads([path], () => slow({ text: files[path], lastModified: mtime }));
           }
           case "read_vault_text_files": {
@@ -315,7 +315,7 @@ export async function installDesktopRailRuntime(
             return slow(null);
           case "read_vault_binary_file": {
             const path = relative(args.relativePath);
-            if (!(path in files)) return Promise.reject(new Error(`missing ${path}`));
+            if (!(path in files)) return Promise.reject(new Error(`No such file or directory (os error 2): ${path}`));
             const body = new TextEncoder().encode(files[path]);
             const stamped = new Uint8Array(8 + body.length);
             new DataView(stamped.buffer).setBigUint64(0, BigInt(mtime), true);
@@ -324,7 +324,7 @@ export async function installDesktopRailRuntime(
           }
           case "read_vault_text_tail": {
             const path = relative(args.relativePath);
-            if (!(path in files)) return Promise.reject(new Error(`missing ${path}`));
+            if (!(path in files)) return Promise.reject(new Error(`No such file or directory (os error 2): ${path}`));
             const lines = files[path].split(/\r?\n/);
             if (lines.at(-1) === "") lines.pop();
             return slow(lines.slice(Math.max(0, lines.length - Number(args.maxLines))).join("\n"));
