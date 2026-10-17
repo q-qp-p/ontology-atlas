@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { guideCitation, UNCITED_TOOLS } from './guide-citations';
+import { isReadableHarnessPath } from './harness-read-scope';
 import { scanHarness, type HarnessScanPort } from './repo-scan';
 
 /** A fixture repository with the shapes that have miscounted before: dot dirs, nested and deep AGENTS.md, repeated hook scripts, a missing hook. */
@@ -234,11 +235,85 @@ describe('guide citations', () => {
   });
 });
 
-describe('bounded citation census as authored records grow',()=>{
-  it.each([{count:700,truncated:false},{count:900,truncated:true}])('reports completeness honestly for $count documents',async({count,truncated})=>{
-    const documents=Object.fromEntries(Array.from({length:count},(_,index)=>[`docs/record-${String(index).padStart(4,'0')}.md`,'A saved development observation.']));
-    const port=fixturePort({'AGENTS.md':'# Guide\nSee docs/record-0000.md.\n',...documents});const read=port.readText.bind(port);let documentReads=0;
-    port.readText=async(path)=>{const result=await read(path);if(result&&path.startsWith('docs/'))documentReads++;return result;};
-    const report=await scanHarness(port);expect(report.documentReach.total).toBe(count+1);expect(report.documentReach.truncated).toBe(truncated);expect(documentReads).toBeGreaterThan(0);expect(documentReads).toBeLessThanOrEqual(800);
+describe('scanHarness — what it may read', () => {
+  it('reads no document outside the harness allowlist', async () => {
+    const port = fixturePort({
+      'AGENTS.md': '# Guide\nSee docs/a.md.\n',
+      'docs/a.md': 'Details live in docs/b.md.\n',
+      'docs/b.md': 'Only another document names this one.\n',
+    });
+    const read = port.readText.bind(port);
+    const reads: string[] = [];
+    port.readText = async (path) => {
+      reads.push(path);
+      return read(path);
+    };
+    const report = await scanHarness(port);
+    expect(reads.filter((path) => !isReadableHarnessPath(path))).toEqual([]);
+    expect(reads).not.toContain('docs/a.md');
+    expect(report.documentReach.namedDirect).toBe(1);
+    expect(report.documentReach.unnamed).toBe(1);
+  });
+
+  it('probes a hook script by existence, never by reading it', async () => {
+    const files = {
+      ...REPO,
+      'scripts/check.sh': '#!/bin/sh\n',
+      '.claude/settings.json': JSON.stringify({
+        hooks: {
+          Stop: [{ hooks: [{ type: 'command', command: '"${CLAUDE_PROJECT_DIR:-.}/scripts/check.sh"' }] }],
+        },
+      }),
+    };
+    const port = fixturePort(files);
+    const read = port.readText.bind(port);
+    const reads: string[] = [];
+    const probes: string[] = [];
+    port.readText = async (path) => {
+      reads.push(path);
+      return read(path);
+    };
+    port.pathExists = async (path) => {
+      probes.push(path);
+      return path in files;
+    };
+    const report = await scanHarness(port);
+    expect(reads).not.toContain('scripts/check.sh');
+    expect(probes).toContain('scripts/check.sh');
+    const claude = report.hookGroups.find((group) => group.configPath === '.claude/settings.json');
+    expect(claude?.hooks[0]?.status).toBe('wired');
+  });
+
+  it('carries the on-disk size so a projected file does not shrink the size cap', async () => {
+    const port = fixturePort({ ...REPO, 'AGENTS.md': 'short' });
+    const read = port.readText.bind(port);
+    port.readText = async (path) => {
+      const file = await read(path);
+      return file && path === 'AGENTS.md' ? { ...file, bytes: 40_000 } : file;
+    };
+    const report = await scanHarness(port);
+    expect(report.analysis.checks.codexSizeCap.agentsMdBytes).toBe(40_000);
+  });
+});
+
+describe('scanHarness — the document census', () => {
+  it('counts every document by name without reading it', async () => {
+    const documents = Object.fromEntries(
+      Array.from({ length: 900 }, (_, index) => [
+        `docs/record-${String(index).padStart(4, '0')}.md`,
+        'A saved development observation.',
+      ]),
+    );
+    const port = fixturePort({ 'AGENTS.md': '# Guide\nSee docs/record-0000.md.\n', ...documents });
+    const read = port.readText.bind(port);
+    let documentReads = 0;
+    port.readText = async (path) => {
+      if (path.startsWith('docs/record-')) documentReads += 1;
+      return read(path);
+    };
+    const report = await scanHarness(port);
+    expect(report.documentReach.total).toBe(901);
+    expect(report.documentReach.truncated).toBe(false);
+    expect(documentReads).toBe(0);
   });
 });
