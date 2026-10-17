@@ -6,6 +6,7 @@ import type { ArchitectureSketchProps, EmptyPanel } from './types';
 export function AcrossLaneHeadings({
   contractTrackLabel,
   observationTrackLabel,
+  observationStamp,
   padY,
   boxH,
   observationOffset,
@@ -13,6 +14,7 @@ export function AcrossLaneHeadings({
 }: {
   contractTrackLabel: ArchitectureSketchProps['contractTrackLabel'];
   observationTrackLabel: ArchitectureSketchProps['observationTrackLabel'];
+  observationStamp: ArchitectureSketchProps['observationStamp'];
   padY: number;
   boxH: number;
   observationOffset: number;
@@ -39,6 +41,14 @@ export function AcrossLaneHeadings({
         className="fill-[color:var(--color-text-quaternary)] text-label font-[var(--font-weight-emphasis)] uppercase tracking-[var(--tracking-label)]"
       >
         {observationTrackLabel}
+        {observationStamp ? (
+          <tspan
+            data-testid="architecture-observation-stamp"
+            className="fill-[color:var(--color-text-tertiary)] font-normal normal-case"
+          >
+            {` · ${observationStamp}`}
+          </tspan>
+        ) : null}
       </text>
     </g>
   );
@@ -56,6 +66,7 @@ export function PairedLaneHeadings({
   layoutLeadRoom,
   emptyColumn,
   ruleSentence,
+  observationStamp,
   arriving,
 }: {
   contractTrackLabel: ArchitectureSketchProps['contractTrackLabel'];
@@ -69,6 +80,7 @@ export function PairedLaneHeadings({
   layoutLeadRoom: number;
   emptyColumn: EmptyPanel | null;
   ruleSentence: string | null;
+  observationStamp: ArchitectureSketchProps['observationStamp'];
   arriving: boolean;
 }) {
   return (
@@ -129,6 +141,17 @@ export function PairedLaneHeadings({
       >
         {observationTrackLabel}
       </text>
+      {observationStamp && emptyColumn === null ? (
+        <text
+          x={PAD_X + layoutLeadRoom + contractBoxW + pairedGutterW + observationBoxW / 2}
+          y={laneHeadingY + RULE_SENTENCE_ROW_H}
+          textAnchor="middle"
+          data-testid="architecture-observation-stamp"
+          className="fill-[color:var(--color-text-tertiary)] text-label"
+        >
+          {observationStamp}
+        </text>
+      ) : null}
     </g>
   );
 }

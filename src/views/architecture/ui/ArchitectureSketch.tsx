@@ -71,6 +71,7 @@ export function ArchitectureSketch({
   deltaUnknownLabel,
   contractTrackLabel,
   observationTrackLabel,
+  observationStamp,
   deltaTrackLabel,
   deltaColumnHint,
   observationMissingLabel,
@@ -135,6 +136,7 @@ export function ArchitectureSketch({
     restWidth,
     restHeight,
     roleSummary,
+    hasStamp: observationStamp !== null,
   });
 
   /* Hover answers locally; only selection dims the graph. */
@@ -577,6 +579,7 @@ export function ArchitectureSketch({
           <AcrossLaneHeadings
             contractTrackLabel={contractTrackLabel}
             observationTrackLabel={observationTrackLabel}
+            observationStamp={observationStamp}
             padY={padY}
             boxH={boxH}
             observationOffset={observationOffset}
@@ -596,6 +599,7 @@ export function ArchitectureSketch({
             layoutLeadRoom={layoutLeadRoom}
             emptyColumn={emptyColumn}
             ruleSentence={saysRuleOnce ? lowerOnlyRuleLabel : null}
+            observationStamp={observationStamp}
             arriving={arriving}
           />
         ) : null}
