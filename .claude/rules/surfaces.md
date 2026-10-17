@@ -78,7 +78,7 @@ The second written exception, for Harness only:
 
 | | |
 |---|---|
-| Files | root guides (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.cursorrules`, `.github/copilot-instructions.md`, the agent ignore files, `.gitignore`), one-level `<dir>/AGENTS.md`, files under `.claude/{rules,hooks,skills,agents}`, `.agents/{skills,agents}`, `.cursor/rules`, `.codex/hooks`, one-level `.githooks/*`, `.github/workflows/*.y(a)ml` |
+| Files | root guides (`AGENTS.md`, `CLAUDE.md`, the Gemini, Cursor and GitHub Copilot guide files, the agent ignore files, `.gitignore`), one-level `<dir>/AGENTS.md`, files under `.claude/{rules,hooks,skills,agents}`, `.agents/{skills,agents}`, `.cursor/rules`, `.codex/hooks`, one-level `.githooks/*`, `.github/workflows/*.y(a)ml` |
 | Returned | those files' text; from `.mcp.json`, `.claude/settings.json`, `.codex/hooks.json`, `.codex/config.toml` and the root `package.json` only server names, hook commands, permission counts, MCP headers and scripts; every other file's name, never its text |
 | Never returned | any other file's text, an env or header value, settings beyond hook commands and permission counts, any secret-named path |
 | Root | the opened vault's one recorded binding, inside the existing source grant; never a path the page sends |
