@@ -13,6 +13,7 @@
   "contractBody": "{pattern} · ロール{roles}個 · 根拠ファイル{evidence}件",
   "observationLabel": "ソースの観測",
   "observationTrackLabel": "コードで観測",
+  "observationStamp": "{date}の検査記録",
   "observationRecorded": "検査の記録",
   "observationMissingShort": "未検査",
   "observationEmptyTitle": "ソースはまだ検査されていません",

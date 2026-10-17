@@ -851,6 +851,7 @@ export function ArchitectureWorkbench({
                 deltaUnknownLabel={t('deltaUnknown')}
                 contractTrackLabel={t('contractTrackLabel')}
                 observationTrackLabel={t('observationTrackLabel')}
+                observationStamp={measured ? t('observationStamp', { date: recordDate }) : null}
                 deltaTrackLabel={t('deltaLabel')}
                 deltaColumnHint={t('deltaColumnHint')}
                 observationMissingLabel={t('observationMissingShort')}

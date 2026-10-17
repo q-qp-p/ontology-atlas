@@ -81,6 +81,7 @@ export function solveSketchFrame({
   restWidth,
   restHeight,
   roleSummary,
+  hasStamp,
 }: {
   graph: ArchitectureSketchProps['graph'];
   ledgers: ArchitectureSketchProps['ledgers'];
@@ -88,6 +89,7 @@ export function solveSketchFrame({
   restWidth: number;
   restHeight: number;
   roleSummary: ArchitectureSketchProps['roleSummary'];
+  hasStamp: boolean;
 }) {
   /* One height for every box: mixed heights read as two kinds of thing, and the lane arithmetic assumes one. */
   const hasLedger = graph.boxes.some((box) => ledgers[box.id] !== undefined);
@@ -102,7 +104,7 @@ export function solveSketchFrame({
   /* Under `lower-only` the six rules say one thing, said once under the contract heading. */
   const saysRuleOnce =
     graph.policy === 'lower-only' && graph.edges.some((edge) => edge.kind === 'permitted');
-  const pairedHeaderH = PAIRED_HEADER_H + (saysRuleOnce ? RULE_SENTENCE_ROW_H : 0);
+  const pairedHeaderH = PAIRED_HEADER_H + (saysRuleOnce || hasStamp ? RULE_SENTENCE_ROW_H : 0);
   const pairedNaturalH =
     PAIRED_PAD_Y * 2 +
     pairedHeaderH +

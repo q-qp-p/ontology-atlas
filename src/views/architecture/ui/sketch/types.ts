@@ -52,6 +52,7 @@ export interface ArchitectureSketchProps {
   deltaUnknownLabel: string;
   contractTrackLabel: string;
   observationTrackLabel: string;
+  observationStamp: string | null;
   deltaTrackLabel: string;
   /** The limit of what a delta mark asserts: the delta heading's hover text, never body prose. */
   deltaColumnHint: string;
