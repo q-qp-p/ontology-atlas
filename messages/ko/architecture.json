@@ -13,6 +13,7 @@
   "contractBody": "{pattern} · 역할 {roles}개 · 근거 파일 {evidence}개",
   "observationLabel": "소스 관찰",
   "observationTrackLabel": "코드에서 관찰한 것",
+  "observationStamp": "{date} 검사 기록",
   "observationRecorded": "검사 기록",
   "observationMissingShort": "아직 검사 안 함",
   "observationEmptyTitle": "아직 소스를 검사하지 않았어요",

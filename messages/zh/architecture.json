@@ -13,6 +13,7 @@
   "contractBody": "{pattern} · {roles} 个角色 · {evidence} 个依据文件",
   "observationLabel": "源码观察",
   "observationTrackLabel": "代码中观察到",
+  "observationStamp": "{date} 的检查记录",
   "observationRecorded": "检查回执",
   "observationMissingShort": "尚未检查",
   "observationEmptyTitle": "尚未检查源码",
