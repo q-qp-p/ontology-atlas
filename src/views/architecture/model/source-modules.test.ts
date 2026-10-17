@@ -59,9 +59,9 @@ describe('deriveRoleSourceModules', () => {
       'src/views': [dir('home'), dir('legacy')],
       'src/app': [], 'src/widgets': [], 'src/features': [], 'src/entities': [], 'src/shared': [],
     }));
-    expect(byRole.routing!.map((m) => m.name)).toEqual(['[locale]', 'globals.css']);
-    expect(byRole.views!.map((m) => m.name)).toEqual(['home']);
-    expect(byRole.widgets).toEqual([]);
+    expect(byRole!.routing!.map((m) => m.name)).toEqual(['[locale]', 'globals.css']);
+    expect(byRole!.views!.map((m) => m.name)).toEqual(['home']);
+    expect(byRole!.widgets).toEqual([]);
   });
 
   it('dedupes a module that two globs of one role both reach', async () => {
@@ -72,9 +72,17 @@ describe('deriveRoleSourceModules', () => {
     const byRole = await deriveRoleSourceModules(profile, lister({
       'src/payments/domain': [dir('model')],
     }));
-    expect(byRole.domain).toEqual([
+    expect(byRole!.domain).toEqual([
       { name: 'model', path: 'src/payments/domain/model', kind: 'dir' },
     ]);
+  });
+
+  it('knows nothing, rather than zero modules, when the source cannot be read', async () => {
+    const profile = parseArchitectureProfile(FSD_PROFILE_FRONTMATTER as Record<string, unknown>);
+    const unreadable = async (): Promise<SourceDirEntry[] | null> => {
+      throw new Error('source-root-not-granted');
+    };
+    expect(await deriveRoleSourceModules(profile, unreadable)).toBeNull();
   });
 });
 
