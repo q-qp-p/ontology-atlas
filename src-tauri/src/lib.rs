@@ -17,6 +17,7 @@ mod git;
 mod gray_area;
 mod gray_area_rpc;
 mod gray_area_scope;
+mod harness_source;
 mod jev;
 mod library;
 mod llm;
