@@ -373,8 +373,8 @@ function HeroSection({
         <div
           aria-hidden
           data-testid="gateway-hero-plinth"
-          // Follows the plane's height, or a phone scrolls through empty space.
-          className="h-[clamp(0rem,62vw,22rem)] min-[90rem]:hidden"
+          // Plane height plus the caption's line.
+          className="h-[calc(clamp(0rem,62vw,22rem)+2rem)] min-[90rem]:hidden"
         />
       ) : null}
     </section>
