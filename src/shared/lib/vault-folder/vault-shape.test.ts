@@ -38,7 +38,7 @@ describe("countVaultContents", () => {
     ).toBe(3);
   });
 
-  it("counts as concepts exactly what describeVaultShape calls a map", () => {
+  it("counts as concepts only the kinds the map draws, never a document", () => {
     const docs = [
       { slug: "project", frontmatter: { kind: "project" } },
       { slug: "domains/works", frontmatter: { kind: "domain" } },
@@ -50,9 +50,7 @@ describe("countVaultContents", () => {
       { slug: "blank", frontmatter: { kind: "   " } },
     ];
 
-    expect(countVaultContents(docs).conceptCount).toBe(3);
-    // The parity that matters: one predicate, so a row cannot say "3 concepts" while the
-    // rail says this folder has no map.
+    expect(countVaultContents(docs).conceptCount).toBe(2);
     expect(describeVaultShape(docs).map).toBe(true);
   });
 
