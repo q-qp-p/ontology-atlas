@@ -27,6 +27,7 @@ pub(super) enum ListClass {
     Invalid,
 }
 
+#[cfg(test)]
 impl ReadClass {
     pub(super) fn as_str(self) -> &'static str {
         match self {
@@ -43,6 +44,7 @@ impl ReadClass {
     }
 }
 
+#[cfg(test)]
 impl ListClass {
     pub(super) fn as_str(self) -> &'static str {
         match self {
