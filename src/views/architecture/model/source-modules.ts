@@ -22,7 +22,7 @@ export interface SourceDirEntry {
   kind: 'dir' | 'file';
 }
 
-/** Lists one directory, repo-relative; `null` when the directory does not exist or is unreadable. */
+/** Lists one directory, repo-relative; `null` when absent; throws when the source is unreadable. */
 export type SourceDirLister = (relativePath: string) => Promise<SourceDirEntry[] | null>;
 
 function normalizePattern(pattern: string): string {
@@ -123,18 +123,24 @@ export async function listPatternModules(
 /**
  * Modules per role id, in role order. Overlapping globs dedupe by path; `exclude_paths` filters
  * with the same glob dialect the MCP scans with (`matchesArchitecturePath`), so a module the
- * profile excludes never appears occupied.
+ * profile excludes never appears occupied; `null` when the source is unreadable.
  */
 export async function deriveRoleSourceModules(
   profile: ArchitectureProfile,
   listDir: SourceDirLister,
-): Promise<Record<string, RoleSourceModule[]>> {
+): Promise<Record<string, RoleSourceModule[]> | null> {
   const match = createArchitecturePathMatcher();
   const byRole: Record<string, RoleSourceModule[]> = {};
   for (const role of profile.roles) {
     const seen = new Map<string, RoleSourceModule>();
     for (const pattern of role.paths) {
-      for (const found of await listPatternModules(pattern, listDir)) {
+      let modules: RoleSourceModule[];
+      try {
+        modules = await listPatternModules(pattern, listDir);
+      } catch {
+        return null;
+      }
+      for (const found of modules) {
         if (profile.excludePaths.some((exclude) => match(found.path, exclude))) {
           continue;
         }

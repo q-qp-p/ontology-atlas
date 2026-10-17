@@ -31,6 +31,7 @@ import {
   vaultSelfReadSlot,
 } from '@/features/acp-session';
 import { useVaultConnectors } from '@/features/mcp-connectors';
+import { bridgePort } from '@/features/harness-report';
 import { detectAcpRuntimes, isAcpBridgeAvailable } from '@/shared/lib/agent-chat/tauri-acp';
 import {
   getTauriVaultRootPath,
@@ -320,20 +321,15 @@ export function ArchitecturePage({
           vaultRoot,
           cliEntry,
         };
-        if (!sourceRoot) continue;
-        /* A read-only directory listing; no file is opened, conformance stays with the MCP and CLI. */
-        const listDir = async (relativePath: string): Promise<SourceDirEntry[] | null> => {
-          try {
-            const entries = await listTauriVaultEntries(sourceRoot, relativePath);
-            return entries.map((entry) => ({
-              name: entry.name,
-              kind: entry.kind === 'directory' ? 'dir' : 'file',
-            }));
-          } catch {
-            return null;
-          }
-        };
-        nextModules[profile.slug] = await deriveRoleSourceModules(profile, listDir);
+        if (!sourceRoot || !projectSlug) continue;
+        const port = bridgePort({ vaultRoot, projectSlug });
+        const listDir = async (relativePath: string): Promise<SourceDirEntry[] | null> =>
+          (await port.listDir(relativePath))?.map((entry) => ({
+            name: entry.name,
+            kind: entry.kind === 'directory' ? 'dir' : 'file',
+          })) ?? null;
+        const modules = await deriveRoleSourceModules(profile, listDir);
+        if (modules) nextModules[profile.slug] = modules;
       }
       if (!cancelled) {
         setLoadedHandoffContexts({
