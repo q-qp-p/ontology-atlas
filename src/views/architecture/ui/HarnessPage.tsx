@@ -58,6 +58,7 @@ const readHarnessSurfaceOnServer = () => false;
 function failedReasonKey(code: string | null) {
   if (code === 'source-root-not-granted') return 'failedNotGranted';
   if (code === 'harness-source-missing') return 'failedMissing';
+  if (code === 'harness-unsupported-platform') return 'failedUnsupported';
   return 'failedBody';
 }
 

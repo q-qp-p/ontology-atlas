@@ -70,6 +70,7 @@
   "failed": "无法读取",
   "failedNotGranted": "Atlas 只读取包含你所打开文件夹的仓库，或本次打开应用后你在应用中选择的文件夹。{path} 两者都不是，所以其中的文件一个都没有读取，这里也没有计数。",
   "failedMissing": "{path} 已不在原处，其中的文件一个都没有读取，所以这里没有计数。",
+  "failedUnsupported": "此版本的应用只在 macOS 上读取已连接代码文件夹的 Harness 文件，所以 {path} 中的文件一个都没有读取，这里也没有计数。",
   "failedBody": "{path} 中有一部分无法读取，所以在能够读取之前，这里不计数。",
   "empty": "没有智能体指南文件",
   "emptyBody": "这里没有 AGENTS.md、CLAUDE.md 或 .claude/rules。智能体开始处理这个仓库时，没有被告知任何信息。",

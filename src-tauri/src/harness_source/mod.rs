@@ -46,6 +46,7 @@ fn authorized_source_root(vault_path: &str, project_slug: &str) -> Result<PathBu
             "binding_ambiguous" => "harness-binding-ambiguous",
             "binding_identity_changed" => "harness-binding-changed",
             "source_unavailable" => "harness-source-missing",
+            "unsupported_platform" => "harness-unsupported-platform",
             _ => "harness-binding-unreadable",
         })?;
     if let Some(reason) = crate::vault_root_rejection(&binding.root) {

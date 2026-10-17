@@ -431,6 +431,12 @@ describe('honest degradation', () => {
     expect(screen.queryByTestId('harness-structure-sentence')).toBeNull();
     expect(screen.getByTestId('harness-retry')).toBeInTheDocument();
   });
+
+  it('names the platform when the app cannot read a connected folder on it', () => {
+    state.report = { status: 'failed', sourceRoot: '/repo', code: 'harness-unsupported-platform', message: '.: harness-unsupported-platform' };
+    mount();
+    expect(screen.getByTestId('harness-failed-reason')).toHaveTextContent('macOS');
+  });
 });
 
 describe('the coverage matrix', () => {

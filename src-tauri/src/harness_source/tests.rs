@@ -98,6 +98,7 @@ fn link(target: impl AsRef<Path>, at: &Path) {
     std::os::unix::fs::symlink(target, at).unwrap();
 }
 
+#[cfg(unix)]
 #[test]
 fn reads_an_allowlisted_guide_from_the_repository_holding_the_vault() {
     let f = Fixture::new();
@@ -114,6 +115,7 @@ fn reads_an_allowlisted_guide_from_the_repository_holding_the_vault() {
     );
 }
 
+#[cfg(unix)]
 #[test]
 fn refuses_a_file_outside_the_allowlist() {
     let f = Fixture::new();
@@ -130,6 +132,7 @@ fn refuses_a_file_outside_the_allowlist() {
     }
 }
 
+#[cfg(unix)]
 #[test]
 fn refuses_secret_names_even_inside_claude() {
     let f = Fixture::new();
@@ -236,6 +239,7 @@ fn projects_a_link_by_its_target_class() {
     assert!(!text.contains(SECRET));
 }
 
+#[cfg(unix)]
 #[test]
 fn refuses_parent_components_absolute_paths_and_backslashes() {
     let f = Fixture::new();
@@ -277,6 +281,7 @@ fn refuses_a_vault_that_is_not_granted() {
     assert_eq!(f.exists("AGENTS.md").unwrap_err(), "vault-root-not-granted");
 }
 
+#[cfg(unix)]
 #[test]
 fn refuses_a_bound_root_that_is_not_granted() {
     let f = Fixture::new();
@@ -290,6 +295,7 @@ fn refuses_a_bound_root_that_is_not_granted() {
     );
 }
 
+#[cfg(unix)]
 #[test]
 fn refuses_a_source_root_the_vault_rules_reject() {
     let f = Fixture::new();
@@ -301,6 +307,7 @@ fn refuses_a_source_root_the_vault_rules_reject() {
     );
 }
 
+#[cfg(unix)]
 #[test]
 fn refuses_zero_or_two_bindings_for_the_project() {
     let f = Fixture::new();
@@ -330,6 +337,7 @@ fn refuses_zero_or_two_bindings_for_the_project() {
     assert_eq!(f.read("AGENTS.md").unwrap_err(), "harness-source-missing");
 }
 
+#[cfg(unix)]
 #[test]
 fn refuses_a_binding_whose_identity_changed() {
     let f = Fixture::new();
@@ -367,6 +375,7 @@ fn refuses_a_fifo_without_blocking() {
     );
 }
 
+#[cfg(unix)]
 #[test]
 fn refuses_a_file_over_the_size_limit() {
     let f = Fixture::new();
@@ -386,6 +395,7 @@ fn refuses_a_file_over_the_size_limit() {
     );
 }
 
+#[cfg(unix)]
 #[test]
 fn refuses_binary_and_invalid_utf8() {
     let f = Fixture::new();
@@ -399,6 +409,7 @@ fn refuses_binary_and_invalid_utf8() {
     }
 }
 
+#[cfg(unix)]
 #[test]
 fn lists_names_and_omits_links_and_secret_names() {
     let f = Fixture::new();
@@ -425,6 +436,7 @@ fn lists_names_and_omits_links_and_secret_names() {
     assert_eq!(f.list("src").unwrap()[0].name, "a.ts");
 }
 
+#[cfg(unix)]
 #[test]
 fn refuses_listing_a_dot_directory_outside_the_allowlist() {
     let f = Fixture::new();
@@ -446,6 +458,7 @@ fn refuses_listing_a_dot_directory_outside_the_allowlist() {
     assert_eq!(f.list(".claude/rules").unwrap()[0].name, "a.md");
 }
 
+#[cfg(unix)]
 #[test]
 fn answers_existence_without_leaving_the_repository() {
     let f = Fixture::new();
@@ -498,4 +511,16 @@ fn refuses_a_secret_name_the_volume_folds_to_the_same_file() {
         f.read(".codex/hooks/\u{17f}ecrets.sh").unwrap_err(),
         expected
     );
+}
+
+#[cfg(not(unix))]
+#[test]
+fn names_the_platform_it_cannot_read_on() {
+    let f = Fixture::new();
+    let _scope = f.grant();
+    f.put("AGENTS.md", SECRET);
+    let unsupported = Some("harness-unsupported-platform");
+    assert_eq!(f.read("AGENTS.md").err().as_deref(), unsupported);
+    assert_eq!(f.list("").err().as_deref(), unsupported);
+    assert_eq!(f.exists("AGENTS.md").err().as_deref(), unsupported);
 }
