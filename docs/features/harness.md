@@ -193,7 +193,7 @@ absent. Any other refusal fails the whole reading, and the screen says why inste
 zero of thirteen places. That includes the bridge refusing the source root, or the root itself
 being gone. The harness commands take the opened folder and a project, never a path: they read
 that project's one recorded code folder, and only when the app already holds its read grant (the
-repository containing the opened folder, or a folder picked in the app). Inside it they return the
+repository containing the opened folder, or a folder picked in the app since it last opened). Inside it they return the
 allowlisted harness files' text, configuration reduced to names, hooks and scripts, and every
 other file's name only (`.claude/rules/surfaces.md`).
 
