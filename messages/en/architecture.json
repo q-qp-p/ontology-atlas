@@ -13,6 +13,7 @@
   "contractBody": "{pattern} · {roles, plural, one {# role} other {# roles}} · {evidence, plural, one {# evidence file} other {# evidence files}}",
   "observationLabel": "Source observation",
   "observationTrackLabel": "Observed in code",
+  "observationStamp": "Recorded {date}",
   "observationRecorded": "Inspection receipt",
   "observationMissingShort": "Not inspected yet",
   "observationEmptyTitle": "Source not inspected yet",

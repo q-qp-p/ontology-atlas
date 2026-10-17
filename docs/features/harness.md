@@ -209,6 +209,8 @@ other file's name only (`.claude/rules/surfaces.md`). The binding they read is m
 - A role's modules are the connected repository's folder and file names under the role's
   paths, listed through the read-only harness commands; no file is opened. When that
   repository cannot be read, the role shows no count instead of zero.
+- Under the observation heading the ladder dates what it shows ("Recorded 2026-08-28"): the
+  import counts are the last record's, not a live reading, and this surface cannot re-check them.
 - **The ladder's contract face grows into the card's spare width, and the drawing is
   centred** (2026-09-13, inspection 122 S8). The three faces used to hold 280/72/240 whatever
   the card's width: measured at 1512×949 in the installed-app window the drawn band was **592px

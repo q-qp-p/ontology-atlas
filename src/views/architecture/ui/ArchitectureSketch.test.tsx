@@ -48,6 +48,7 @@ function sketch(
       deltaUnknownLabel="not observed yet"
       contractTrackLabel="Contract"
       observationTrackLabel="Observation"
+      observationStamp={null}
       deltaTrackLabel="Delta"
       deltaColumnHint="Each mark says what that role's own outgoing imports did."
       observationMissingLabel="Not inspected"
@@ -352,6 +353,21 @@ describe('the evidence split plane', () => {
       expect(screen.getAllByTestId(/^architecture-delta-marker-/)).toHaveLength(7);
       expect(screen.getByTestId('architecture-delta-heading').querySelector('title')).toHaveTextContent(
         "Each mark says what that role's own outgoing imports did.",
+      );
+    });
+  });
+
+  it('dates the observation column once, under its heading, when the imports come from a record', () => {
+    withGeometry({ clientWidth: 1200, scrollWidth: 1200, clientHeight: 700, scrollHeight: 700 }, () => {
+      const receipt: RoleLedger = { state: 'clean', violated: 0, outgoing: 1, sampleLimited: false, importsOut: 12 };
+      const roles = ['routing', 'app', 'views', 'widgets', 'features', 'entities', 'shared'];
+      draw(Object.fromEntries(roles.map((role) => [role, receipt])), new Set(), [], FSD_PROFILE_FRONTMATTER, null, {
+        observationStamp: 'Recorded 2026-08-28',
+      });
+      const stamp = screen.getByTestId('architecture-observation-stamp');
+      expect(stamp).toHaveTextContent('Recorded 2026-08-28');
+      expect(stamp.getAttribute('x')).toBe(
+        screen.getByTestId('architecture-observation-heading').getAttribute('x'),
       );
     });
   });

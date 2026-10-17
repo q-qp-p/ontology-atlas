@@ -33,6 +33,7 @@ export function ArchitectureFlow({
   deltaUnknownLabel,
   contractTrackLabel,
   observationTrackLabel,
+  observationStamp,
   deltaTrackLabel,
   deltaColumnHint,
   observationMissingLabel,
@@ -82,6 +83,7 @@ export function ArchitectureFlow({
   deltaUnknownLabel: string;
   contractTrackLabel: string;
   observationTrackLabel: string;
+  observationStamp: string | null;
   deltaTrackLabel: string;
   deltaColumnHint: string;
   observationMissingLabel: string;
@@ -160,6 +162,7 @@ export function ArchitectureFlow({
           deltaUnknownLabel={deltaUnknownLabel}
           contractTrackLabel={contractTrackLabel}
           observationTrackLabel={observationTrackLabel}
+          observationStamp={observationStamp}
           deltaTrackLabel={deltaTrackLabel}
           deltaColumnHint={deltaColumnHint}
           observationMissingLabel={observationMissingLabel}
