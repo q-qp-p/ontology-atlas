@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   readContainmentTree,
@@ -11,6 +11,7 @@ import {
   type TreeInputNode,
 } from "../../model/containment-tree";
 import type { OntologyMapTokens } from "../../tokens/read-map-tokens";
+import { buildFlowMarks } from "../flow-marks";
 import { buildDialModel, dialEvidenceView, resolveDialAttention } from "../dial-model";
 import { mixOver, resolveDialInks } from "../ink";
 import { pickDial } from "../pick";
@@ -19,6 +20,11 @@ import { buildDialMarks, dialHubRadiusPx, emptyDialFrameMarks, type DialDisclosu
 import { resolveDialDisclosure } from "./disclosure";
 import { resolveDialTokens } from "../tokens";
 import type { DialCluster, DialEvidence, DialItem, DialLabels, DialModel, DialScene, Point } from "../types";
+
+vi.mock("../flow-marks", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../flow-marks")>();
+  return { ...actual, buildFlowMarks: vi.fn(actual.buildFlowMarks) };
+});
 
 const css = readFileSync("app/styles/map-dial-tokens.css", "utf8");
 const TOKENS = resolveDialTokens((v) => (v === "--map-panel-text-primary" ? "#f4f4f8" : css.match(new RegExp(`${v}:\\s*([^;]+);`))?.[1] ?? ""));
@@ -104,6 +110,7 @@ interface RunOptions {
   relates?: [string, string][];
   hoverId?: string | null;
   brushId?: string | null;
+  nodeScreen?: (id: string, rest: Point | null) => Point | null;
 }
 
 function run(o: RunOptions = {}) {
@@ -117,7 +124,12 @@ function run(o: RunOptions = {}) {
     evidence: o.evidence === undefined ? null : dialEvidenceView(model, o.evidence),
     attention: resolveDialAttention(model, null, o.focusId ?? null), inkAttention: resolveDialAttention(model, o.hoverId ?? null, o.focusId ?? null), previous: null, inkMix: 1, chordPresence: 1,
     scale, zoomRatio: 1, viewportWidth: 1000, viewportHeight: 800, freeRect: { minX: 0, minY: 0, maxX: 1000, maxY: 800 },
-    nodeScreen: (id) => { const p = scene.positions.get(id); return p ? toScreen(p.x, p.y) : null; }, toScreen,
+    nodeScreen: (id) => {
+      const p = scene.positions.get(id);
+      const rest = p ? toScreen(p.x, p.y) : null;
+      return o.nodeScreen ? o.nodeScreen(id, rest) : rest;
+    },
+    toScreen,
     appearOf: o.appearOf ?? (() => 1), measureText: (text) => text.length * 6, elementLabel: (id) => id,
     hoveredNodeId: o.brushId ?? o.hoverId ?? null, agentFocusNodeId: null, selectionPulse: null, hubCount: null,
     disclosure: { ...resolveDialDisclosure(model, scene, { scale, viewportWidth: 1000, viewportHeight: 800, toScreen }, { minX: 0, minY: 0, maxX: 1000, maxY: 800 }, resolveDialAttention(model, null, o.focusId ?? null), TOKENS), ...o.disclosure },
@@ -128,6 +140,27 @@ function run(o: RunOptions = {}) {
 }
 
 describe("buildDialMarks", () => {
+  it("names a domain where it rests while another domain still travels across that spot", () => {
+    const nameOf = (r: ReturnType<typeof run>) => r.out.texts.find((t) => t.id === "d0" && t.role === "domain")!.box;
+    const rest = nameOf(run());
+    const travelling = run({ nodeScreen: (id, p) => (id === "d1" ? { x: (rest.minX + rest.maxX) / 2, y: (rest.minY + rest.maxY) / 2 } : p) });
+    expect(nameOf(travelling)).toEqual(rest);
+  });
+
+  it("plans resting flows only while a mark travels, not for an appear that stops a hair under 1", () => {
+    const flowBuilds = (o: RunOptions) => {
+      vi.mocked(buildFlowMarks).mockClear();
+      run(o);
+      return vi.mocked(buildFlowMarks).mock.calls.length;
+    };
+    const atRest = flowBuilds({});
+    expect(flowBuilds({ appearOf: (id) => (id === "d0" ? 1 - 6 * 2 ** -53 : 1) })).toBe(atRest);
+    expect(flowBuilds({ nodeScreen: (id, p) => (id === "d1" && p ? { x: p.x + 20, y: p.y } : p) })).toBe(atRest + 1);
+    const zoomed = { scale: 3, centre: { x: 500, y: 1300 } };
+    const leftByHoming = (id: string, p: Point | null) => (id === "d0c0" && p ? { x: p.x + 0.45 * 3, y: p.y } : p);
+    expect(flowBuilds({ ...zoomed, nodeScreen: leftByHoming })).toBe(flowBuilds(zoomed));
+  });
+
   it("culls clusters off the viewport: no chip, no disc, alpha 0", () => {
     const { out, result, model } = run({ scale: 1, centre: { x: 500, y: 1050 } });
     const chips = out.glyphs.filter((g) => g.kind === "domain").map((g) => g.id);
