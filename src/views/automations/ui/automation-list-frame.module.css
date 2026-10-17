@@ -10,7 +10,6 @@
 .columnHead { padding-block: .5rem; color: var(--color-text-tertiary); font-size: var(--text-label); line-height: var(--leading-label); }
 /* Solid, not dashed: a dashed box reads as an add button. */
 .ghost { border-top: 1px solid var(--color-divider); color: var(--color-text-quaternary); }
-.nameBar { position: absolute; left: 0; top: 50%; width: min(12rem, 70%); height: .5rem; border-radius: var(--radius-chip); background: var(--color-divider); transform: translateY(-50%); }
 .fact { min-width: 0; padding-top: 1rem; border-top: 1px solid var(--color-divider); }
 .factTitle { color: var(--color-text-primary); font-size: var(--text-body); line-height: var(--leading-body); font-weight: var(--font-weight-emphasis); }
 .factBody { margin: .25rem 0 0; color: var(--color-text-secondary); font-size: var(--text-body); line-height: var(--leading-body); overflow-wrap: break-word; }
