@@ -366,6 +366,9 @@ export function ProjectDetailPage({
   const metrics = buildProjectOntologyMetrics(insightNodes, insightEdges, project.slug);
   const folderCensus = computeCanonicalCensus(insightNodes, insightEdges);
   const domainComposition = buildProjectDomainComposition(insightNodes, insightEdges, project.slug);
+  const soleProject = insightNodes.filter((node) => node.kind === "project").length <= 1;
+  const domainsOverlap =
+    domainComposition.domains.reduce((sum, row) => sum + row.total, 0) > metrics.capabilities + metrics.elements;
   // Ontology figures are this project's; sources and wiki pages are the folder's, as the caption says.
   const surfaceCells = buildSurfaceComposition({
     metrics,
@@ -431,7 +434,7 @@ export function ProjectDetailPage({
   const heroTagline = resolveProjectTagline({ description: project.description });
   const dedupedBodyContent = stripDuplicateHeading(bodyContent, project.name);
   const heroMeta = [
-    project.isHub ? t("heroLabelHub") : t("heroLabel"),
+    project.isHub ? t("heroLabelHub") : soleProject ? null : t("heroLabel"),
     // statusLabel(undefined) is a truthy "—" that would survive the filter.
     project.status ? statusLabel(project.status) : null,
   ]
@@ -509,10 +512,14 @@ export function ProjectDetailPage({
                 />
               </div>
               <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-body text-[color:var(--color-text-tertiary)]">
-                <span>{heroMeta}</span>
-                <span aria-hidden className="text-[color:var(--color-text-quaternary)]">
-                  ·
-                </span>
+                {heroMeta ? (
+                  <>
+                    <span>{heroMeta}</span>
+                    <span aria-hidden className="text-[color:var(--color-text-quaternary)]">
+                      ·
+                    </span>
+                  </>
+                ) : null}
                 <span>{t("heroUpdatedAt", { date: formatDate(project.updatedAt) })}</span>
               </div>
               <InlineEditable
@@ -614,17 +621,20 @@ export function ProjectDetailPage({
             {t("compositionHeading")}
           </h2>
           {/* Only the ontology half is this project's; the caption says the rest counts the folder. */}
-          <span className="text-label text-[color:var(--color-text-quaternary)]">
-            {t("surfaceFolderScope")}
-          </span>
-          {/* The folder's concept count by `computeCanonicalCensus`, the map INDEX's rule; no folder
-              relation count beside the cell's differently scoped one. */}
-          <span
-            data-testid="project-detail-global-census"
-            className="ml-auto hidden text-label tabular-nums text-[color:var(--color-text-tertiary)] md:inline"
-          >
-            {t("globalCensus", { concepts: folderCensus.conceptCount })}
-          </span>
+          {soleProject ? null : (
+            <>
+              <span className="text-label text-[color:var(--color-text-quaternary)]">
+                {t("surfaceFolderScope")}
+              </span>
+              {/* The folder's concept count by the map INDEX's rule; no folder relation count. */}
+              <span
+                data-testid="project-detail-global-census"
+                className="ml-auto hidden text-label tabular-nums text-[color:var(--color-text-tertiary)] md:inline"
+              >
+                {t("globalCensus", { concepts: folderCensus.conceptCount })}
+              </span>
+            </>
+          )}
         </div>
         <SurfaceCompositionBoard
           cells={surfaceCells}
@@ -662,7 +672,7 @@ export function ProjectDetailPage({
               capabilityUnit: t("domainCapabilityLabel"),
               elementUnit: t("domainElementLabel"),
               legendCaption: t("domainRowsLegendCaption"),
-              overlapNote: t("domainOverlapNote"),
+              overlapNote: domainsOverlap ? t("domainOverlapNote") : "",
               rowToggleAria: (row) =>
                 t("domainRowToggleAria", {
                   title: row.title,

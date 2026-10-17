@@ -544,6 +544,7 @@ describe("ProjectDetailPage", () => {
   it("counts folder-wide concepts by the same rule as the map INDEX", () => {
     mocks.insightNodes = [
       ...BASE_NODES,
+      ontologyNode("project:other", "project", [], "Other"),
       ontologyNode("vault-readme:README", "vault-readme", [], "My ontology vault"),
     ];
     mocks.insightEdges = BASE_EDGES;
@@ -551,13 +552,13 @@ describe("ProjectDetailPage", () => {
     renderPage();
 
     expect(screen.getByTestId("project-detail-global-census")).toHaveTextContent(
-      "5 concepts in the whole folder",
+      "6 concepts in the whole folder",
     );
     expect(screen.getByTestId("project-detail-global-census")).not.toHaveTextContent(/relation/i);
   });
 
   it("captions the composition board with its scope, since only the ontology belongs to this project", () => {
-    mocks.insightNodes = BASE_NODES;
+    mocks.insightNodes = [...BASE_NODES, ontologyNode("project:other", "project", [], "Other")];
     mocks.insightEdges = BASE_EDGES;
     mocks.canEdit = false;
     renderPage();
@@ -565,6 +566,19 @@ describe("ProjectDetailPage", () => {
     expect(screen.getByTestId("project-detail-composition")).toHaveTextContent(
       "Sources and wiki pages count the whole folder",
     );
+  });
+
+  it("drops the folder scope caption, folder census and project-type label when the folder holds one project", () => {
+    mocks.insightNodes = BASE_NODES;
+    mocks.insightEdges = BASE_EDGES;
+    mocks.canEdit = false;
+    renderPage();
+
+    expect(screen.getByTestId("project-detail-composition")).not.toHaveTextContent(
+      "Sources and wiki pages count the whole folder",
+    );
+    expect(screen.queryByTestId("project-detail-global-census")).toBeNull();
+    expect(document.body).not.toHaveTextContent("Individual project");
   });
 
   it("reveals the domain map deep link when a domain row expands", () => {
@@ -647,7 +661,7 @@ describe("ProjectDetailPage", () => {
   });
 
   it("omits the status segment (no stray dash) when the project has no status field", () => {
-    mocks.insightNodes = BASE_NODES;
+    mocks.insightNodes = [...BASE_NODES, ontologyNode("project:other", "project", [], "Other")];
     mocks.insightEdges = BASE_EDGES;
     mocks.canEdit = false;
     // baseProject() has no `status`, so no trailing "· —".

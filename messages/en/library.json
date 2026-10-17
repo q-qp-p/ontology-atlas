@@ -135,7 +135,7 @@
     "collapse": "Fold the index away",
     "expand": "Show the index"
   },
-  "emptyTitle": "Nothing gathered yet",
+  "emptyTitle": "No sources or wiki pages yet",
   "emptyBody": "Bring in the documents this project already has: a spec, a slide deck, a spreadsheet, a page you exported. Atlas copies them into sources/ untouched and never opens them until you ask.",
   "sources": {
     "listAria": "Raw sources in this folder",
