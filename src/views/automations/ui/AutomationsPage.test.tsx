@@ -158,6 +158,7 @@ describe('Automations manager', () => {
     expect(within(list).getByTestId('automations-list-head')).toHaveTextContent(en.automations[lane].preview.last);
     const ghost = within(list).getByTestId('automations-ghost-row');
     expect(ghost).toHaveAttribute('aria-hidden', 'true');
+    expect(ghost).toHaveTextContent(lane === 'ontology' ? en.automations.ontology.defaultName : en.library.rounds.name.consistency);
     expect(ghost).toHaveTextContent(lane === 'ontology' ? en.automations.cadence['6h'] : en.automations.cadence.hour);
     expect(ghost).toHaveTextContent(en.automations.outcome.none);
     expect(screen.getAllByText(en.automations[lane].emptyTitle)).toHaveLength(1);

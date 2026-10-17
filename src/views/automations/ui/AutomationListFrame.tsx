@@ -58,12 +58,12 @@ export function AutomationListPanel({ title, count, columns, trailing, children 
   </section>;
 }
 
-export function AutomationGhostRow({ cadence, outcome, className }: { cadence: string; outcome: string; className?: string }) {
+export function AutomationGhostRow({ name, cadence, outcome, className }: { name: string; cadence: string; outcome: string; className?: string }) {
   return <div aria-hidden data-testid="automations-ghost-row" className={cn('flex items-center', AUTOMATION_ROW_PAD, styles.ghost, className)}>
     <span className="mt-1 flex w-4 flex-none self-start justify-center"><CalendarClock size={ICON_SIZE.md} /></span>
     <span className={AUTOMATION_ROW_GRID}>
       <span data-automation-col="name" className="col-span-2 min-w-0 md:col-span-1">
-        <span className="relative block text-title">&nbsp;<span className={styles.nameBar} /></span>
+        <span className="block break-words text-title font-[var(--font-weight-strong)]">{name}</span>
         <span className="mt-1 block text-body">&nbsp;</span>
       </span>
       <span data-automation-col="cadence" className="min-w-0 text-body">
