@@ -104,6 +104,7 @@ test.describe("map canvas focus on the dogfood vault", () => {
             await expect(page.getByTestId("topology-map-view")).toHaveAttribute("data-map-view", setup.opens);
             await expect(page.getByTestId("widget-error-fallback")).toHaveCount(0);
             await expect(page.getByTestId("topology-view-3d")).toContainText(setup.opens === "hex" ? "육각" : "평면");
+            if (setup.query && setup.opens === "map") expect(new URL(page.url()).searchParams.get("view"), "arrival rewrote the address").toBe("territories");
             if (setup.opens === "hex") {
                 await expect.poll(() => new URL(page.url()).searchParams.get("view")).toBe("hex");
                 expect(await page.evaluate(() => window.localStorage.getItem("atlas.appearance.hex-board"))).toBe("on");

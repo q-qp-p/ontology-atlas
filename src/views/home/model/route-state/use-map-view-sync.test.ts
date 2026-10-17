@@ -17,6 +17,10 @@ describe("map view address sync", () => {
     expect(decideMapViewSync("arrival", "hex", null)).toEqual({ adopt: null, write: "hex" });
   });
 
+  it("writes nothing on arrival when Flat is stored and the address names no view it knows", () => {
+    expect(decideMapViewSync("arrival", null, null)).toEqual({ adopt: null, write: undefined });
+  });
+
   it("never answers another writer's bare address with a write — 20 of them write nothing", () => {
     for (let i = 0; i < 20; i += 1) expect(decideMapViewSync("address-changed", "hex", null)).toEqual({ adopt: null, write: undefined });
   });

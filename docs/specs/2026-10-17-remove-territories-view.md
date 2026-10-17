@@ -256,8 +256,11 @@ your own last view, or Flat."
    tokens and the `territories` keys are gone in four locales; `unused-token-ratchet`
    stays at 0; and `git grep -li territor -- src app tests docs/features
    docs/DESIGN-SYSTEM.md messages ':!tests/contract/ratchet-raises'` lists exactly
-   `topology-edge-hit.ts`, `topology-edge-hit.test.ts`, `error-echo.ts`,
-   `page-metadata.test.ts`; the inert ratchet-raise record is left unedited.
+   the four plain-English uses (`topology-edge-hit.ts`, `topology-edge-hit.test.ts`,
+   `error-echo.ts`, `page-metadata.test.ts`) and the five that name the retired
+   value on purpose (`appearance-preferences.ts` and its test, `url-state.test.ts`,
+   `scope-registry.contract.test.ts`, `map-canvas-focus.spec.ts`); the inert
+   ratchet-raise record is left unedited.
 7. **Given** the dogfood evidence vault at 1512, **when** Hex opens, **then** it
    reads `data-hex-evidence="measured"`, names every capability, and counts stale
    ones as before. Check: `map-hex-board.spec.ts:163-225`, unchanged.

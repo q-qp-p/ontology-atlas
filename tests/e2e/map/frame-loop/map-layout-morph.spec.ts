@@ -76,6 +76,7 @@ const NINETY_BY_MS = 540;
 const SETTLED_BY_MS = 950;
 const SETTLE_BAND = 0.005;
 const TURN_REACH_PX = 400;
+// Past the deepest concept's staggered start, so every concept is already travelling when it turns.
 const TURN_AFTER_MS = 350;
 
 async function installSampler(page: Page): Promise<void> {
