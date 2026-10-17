@@ -1,5 +1,6 @@
 {
   "blockedActions": "{count, plural, one {Blocked # action.} other {Blocked # actions.}}",
+  "ghostExample": "e.g. {name}",
   "toolActivity": "Tool activity",
   "removeQuestion": "Remove “{name}” from the schedule?",
   "removeConfirm": "Remove schedule",

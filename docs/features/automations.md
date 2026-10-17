@@ -17,7 +17,7 @@ an inline confirmation);
 older runs expand on demand. Document results retain checked counts, stale pages,
 updated files, and tool receipts when recorded. An empty lane presents one first
 schedule action. Both states share one list panel, whose column header uses the row's own grid; an
-empty lane shows one dimmed ghost row with the default name and cadence where the first schedule will appear,
+empty lane shows one dimmed ghost row, its name marked as an example ("e.g. …"), with the default cadence where the first schedule will appear,
 and saving it turns that row real in place. The new-schedule button keeps its place at the tab row,
 filled while the lane is empty. The page wears the 960px column centred at every width, as Agents does, and the
 three facts follow the list.

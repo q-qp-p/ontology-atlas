@@ -456,7 +456,7 @@
       "allFilter": "전체",
       "responsibilityMissing": "소속 책임 미기록",
       "recordingNotImplementation": "기록이 없다는 뜻이며, 실제 구현의 부재를 뜻하지 않아요.",
-      "anchorSummary": "구현 근거 기록 · {anchored}/{total}",
+      "anchorSummary": "경로가 적힌 역량 · {anchored}/{total}",
       "gapSummary": "기록의 빈틈 · 역량 {count}개",
       "evidenceChain": "주장에서 근거까지",
       "rationaleShort": "이 연결의 관계 메모가 비어 있어요.",

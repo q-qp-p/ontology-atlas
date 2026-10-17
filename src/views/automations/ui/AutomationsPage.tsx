@@ -141,7 +141,7 @@ export function AutomationsPage({
         action: <OpenVaultCta testId="automations-open-vault" className="atlas-touch-floor atlas-touch-floor-wide" /> }
       : { title: t(`${lane}.emptyTitle`), description: t(`${lane}.emptyDescription`) };
   const ghostRow = (className?: string) => <AutomationGhostRow className={className}
-    name={lane === "ontology" ? t("ontology.defaultName") : tRounds("name.consistency")}
+    name={t("ghostExample", { name: lane === "ontology" ? t("ontology.defaultName") : tRounds("name.consistency") })}
     cadence={lane === "ontology" ? t("cadence.6h") : t("cadence.hour")} outcome={t("outcome.none")} />;
 
   return (
@@ -155,7 +155,7 @@ export function AutomationsPage({
           </div>
         </header>
 
-        <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[color:var(--color-divider)] pb-3">
+        <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[color:var(--color-divider)]">
           <TabBar ariaLabel={t("tabsAria")} activeKey={lane} onSelect={(key) => selectLane(key as AutomationLane)}
             idPrefix="automations" testId="automations-tabs" placement="header"
             items={[
@@ -163,7 +163,7 @@ export function AutomationsPage({
               { key: "documents", label: t("tabs.documents"), testId: "automations-tab-documents" },
             ]} />
           {ready ? <Button size="sm" variant={rounds.length === 0 ? "primary" : "outline"} onClick={add} disabled={lanePending}
-            data-testid="automations-new" className="atlas-touch-floor atlas-touch-floor-wide">
+            data-testid="automations-new" className="atlas-touch-floor atlas-touch-floor-wide mb-2">
             <Plus size={ICON_SIZE.sm} aria-hidden />{t(`${lane}.new`)}
           </Button> : null}
         </div>

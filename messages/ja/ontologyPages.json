@@ -456,7 +456,7 @@
       "allFilter": "すべて",
       "responsibilityMissing": "責務が未記録です",
       "recordingNotImplementation": "記録がないことは実装の不在を意味しません。",
-      "anchorSummary": "実装の根拠 · {anchored}/{total}",
+      "anchorSummary": "パスが記録された能力 · {anchored}/{total}",
       "gapSummary": "記録の不足 · 能力{count}件",
       "evidenceChain": "主張から根拠へ",
       "rationaleShort": "この関係のメモは未記録です。",
