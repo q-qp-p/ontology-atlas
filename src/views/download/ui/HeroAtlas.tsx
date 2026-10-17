@@ -93,7 +93,7 @@ export function HeroAtlas({ graph, typed, total }: { graph: StageGraph; typed: n
             .map((e) => ({ a: e.source, b: e.target, y: e.kind as 'contains' | 'depends' })),
         },
         // Wide stands beside the decision block; narrow is ground under it, seen from above so the
-        // type stays clear (`download-gateway-grid.spec.ts`). 210px keeps the near rim in the 352px plinth.
+        // type stays clear (`download-gateway-grid.spec.ts`); the near rim clears the caption's line.
         {
           canvasClassName: 'block h-full w-full touch-pan-y',
           onHover: setHover,
@@ -107,8 +107,8 @@ export function HeroAtlas({ graph, typed, total }: { graph: StageGraph; typed: n
                 watch: (refit: () => void) => watchHeroType(host, caption, refit),
               }
             : phone
-              ? { anchor: { x: 0.5, bottomPx: 140 }, dim: 0.75, fitPx: 300, pitch: 0.75 }
-              : { anchor: { x: 0.5, bottomPx: 210 }, dim: 0.75, fitPx: 440, pitch: 0.75 }),
+              ? { anchor: { x: 0.5, bottomPx: 172 }, dim: 0.75, fitPx: 300, pitch: 0.75 }
+              : { anchor: { x: 0.5, bottomPx: 242 }, dim: 0.75, fitPx: 440, pitch: 0.75 }),
         },
       );
       if (!handle) {
@@ -169,7 +169,7 @@ export function HeroAtlas({ graph, typed, total }: { graph: StageGraph; typed: n
         data-testid="gateway-hero-caption"
         data-hero-caption-source={hover !== null ? 'hover' : walked !== null ? 'chain' : undefined}
         className={cn(
-          'gateway-hero-caption pointer-events-none absolute right-[var(--gateway-origin)] top-12 max-w-[40%] truncate text-right text-label leading-label text-[color:var(--color-text-tertiary)] md:top-16 min-[90rem]:top-auto min-[90rem]:bottom-[7.5rem]',
+          'gateway-hero-caption pointer-events-none absolute inset-x-[max(1.5rem,env(safe-area-inset-left))] bottom-2 truncate text-center text-label leading-label text-[color:var(--color-text-tertiary)] md:inset-x-[var(--gateway-origin)] min-[90rem]:left-auto min-[90rem]:bottom-[7.5rem] min-[90rem]:max-w-[40%] min-[90rem]:text-right',
           caption ? 'is-on' : undefined,
         )}
       >
