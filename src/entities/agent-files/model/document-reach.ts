@@ -14,8 +14,6 @@ export interface DocumentReach {
   guides: number;
   /** Documents a guide names directly. */
   namedDirect: number;
-  /** Hops until the citation walk reached a fixpoint. */
-  hops: number;
   /** Codex copies of declared byte-identical skills, so they are not counted as distinct guides. */
   mirroredGuides: number;
   named: number;
@@ -102,7 +100,7 @@ export async function buildDocumentReach({
     if (hops === 1) namedDirect = found.length;
     if (found.length === 0) break;
     for (const path of found) reached.add(path);
-    frontier = found.map((path) => contents.get(path) ?? '').join('\n');
+    frontier = found.flatMap((path) => contents.get(path) ?? []).join('\n');
   }
 
   const named = rest.filter((path) => reached.has(path));
@@ -118,7 +116,6 @@ export async function buildDocumentReach({
     total: markdownPaths.length,
     guides: guides.length,
     namedDirect,
-    hops,
     mirroredGuides: guides.filter((path) => path.startsWith('.agents/skills/')).length,
     named: named.length,
     unnamed: unnamed.length,

@@ -117,17 +117,17 @@ function report(): HarnessReport {
     coverage,
     testFiles: [],
     documentReach: {
-      total: 10, guides: 4, mirroredGuides: 2, named: 3, namedDirect: 2, hops: 2, unnamed: 3,
+      total: 10, guides: 4, mirroredGuides: 2, named: 3, namedDirect: 2, unnamed: 3,
       unnamedByFolder: [{ folder: 'docs', count: 3 }], excluded: [], truncated: false,
     },
     guideDocumentCount: 4,
   } as unknown as HarnessReport;
 }
 
-function mount() {
+function mount(harness: HarnessReport = report()) {
   return render(
     <NextIntlClientProvider locale="ko" messages={koMessages}>
-      <HarnessCoverageView report={report()} areas={areas} pathlessCapabilities={0} sourceRoot="/repo" />
+      <HarnessCoverageView report={harness} areas={areas} pathlessCapabilities={0} sourceRoot="/repo" />
     </NextIntlClientProvider>,
   );
 }
@@ -191,6 +191,13 @@ describe('what the marks encode', () => {
     /* Both branches are exercised, so the equality is not 0 = 0. */
     expect(document.querySelectorAll('[data-harness-mark="empty"]').length).toBeGreaterThan(0);
     expect(document.querySelectorAll('[data-harness-mark="filled"]').length).toBeGreaterThan(0);
+  });
+
+  it('names the directly cited share only when the walk reached further than the guides', () => {
+    const direct = report();
+    direct.documentReach = { ...direct.documentReach, named: 2, namedDirect: 2 };
+    mount(direct);
+    expect(screen.queryByText(koMessages.harness.reachNamedDirectLabel)).toBeNull();
   });
 
   it('renders no score, grade, percentage or maturity level', () => {
