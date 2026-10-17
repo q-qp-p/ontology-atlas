@@ -110,9 +110,10 @@ export function AgentsPage({
               : t('ledeWeb')}
       </p>
 
-      <nav className="mt-5" data-testid="agents-tabs">
+      <nav className="mt-5 border-b border-[color:var(--color-divider)]" data-testid="agents-tabs">
         <TabBar
           idPrefix="agents"
+          placement="header"
           ariaLabel={t('workspace.aria')}
           activeKey={tab}
           onSelect={selectTab}
