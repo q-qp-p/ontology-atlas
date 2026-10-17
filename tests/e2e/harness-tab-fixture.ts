@@ -311,21 +311,21 @@ export async function installHarnessRuntime(page: Page, options: { includeOverfl
             }
             // The bridge throws on a path that is not there, and most repositories have no
             // `.cursor/rules`. The caller treats the rejection as an ordinary absence.
-            if (!seen && directory !== "") return Promise.reject(new Error(`missing ${directory}`));
+            if (!seen && directory !== "") return Promise.reject(new Error(`No such file or directory (os error 2): ${directory}`));
             return Promise.resolve([...entries].map(([name, kind]) => ({ name, kind })));
           }
           case "read_vault_text_file": {
             const files = treeFor(args.rootPath);
             if (!files) return Promise.reject(new Error("unknown root"));
             const path = trim(args.relativePath);
-            if (!(path in files)) return Promise.reject(new Error(`missing ${path}`));
+            if (!(path in files)) return Promise.reject(new Error(`No such file or directory (os error 2): ${path}`));
             return Promise.resolve({ text: files[path], lastModified: mtime });
           }
           case "read_vault_binary_file": {
             const files = treeFor(args.rootPath);
             if (!files) return Promise.reject(new Error("unknown root"));
             const path = trim(args.relativePath);
-            if (!(path in files)) return Promise.reject(new Error(`missing ${path}`));
+            if (!(path in files)) return Promise.reject(new Error(`No such file or directory (os error 2): ${path}`));
             const body = new TextEncoder().encode(files[path]);
             const stamped = new Uint8Array(8 + body.length);
             new DataView(stamped.buffer).setBigUint64(0, BigInt(mtime), true);
@@ -431,7 +431,7 @@ export async function installProfilelessHarnessRuntime(page: Page): Promise<void
     const inner = internals.invoke.bind(internals);
     internals.invoke = (command, args = {}) => {
       const path = String((args as { relativePath?: unknown }).relativePath ?? "");
-      if (path.startsWith("architecture/")) return Promise.reject(new Error(`missing ${path}`));
+      if (path.startsWith("architecture/")) return Promise.reject(new Error(`No such file or directory (os error 2): ${path}`));
       if (command === "list_vault_directory" && path === "") {
         return inner(command, args).then((entries) =>
           (entries as { name: string }[]).filter((entry) => entry.name !== "architecture"),
