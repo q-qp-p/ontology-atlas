@@ -456,7 +456,7 @@
       "allFilter": "All",
       "responsibilityMissing": "Responsibility not recorded",
       "recordingNotImplementation": "An absent record does not establish absent implementation.",
-      "anchorSummary": "Implementation anchors · {anchored}/{total}",
+      "anchorSummary": "Capabilities with a recorded path · {anchored}/{total}",
       "gapSummary": "Record gaps · {count} capabilities",
       "evidenceChain": "FROM CLAIM TO EVIDENCE",
       "rationaleShort": "No structured relationship note is recorded.",

@@ -87,10 +87,7 @@ export function computeRecentChanges(
   return { recentNodeIds, rows };
 }
 
-/**
- * Narrows the window until at most `maxShare` passes; the 1-day result is returned even when it
- * overflows, rather than narrowing to zero.
- */
+/** Narrows until at most `maxShare` passes, never into an empty window; 1 day stands even overflowing. */
 const RECENT_CHANGES_ADAPTIVE_LADDER_DAYS: readonly number[] = [7, 3, 1];
 
 export interface AdaptiveRecentChangesResult extends RecentChangesResult {
@@ -109,6 +106,7 @@ export function computeAdaptiveRecentChanges(
   let last: AdaptiveRecentChangesResult | null = null;
   for (const windowDays of RECENT_CHANGES_ADAPTIVE_LADDER_DAYS) {
     const result = computeRecentChanges(nodes, freshnessIndex, nowMs, windowDays);
+    if (last && result.recentNodeIds.size === 0) return last;
     last = { ...result, windowDays };
     if (total === 0 || result.recentNodeIds.size / total <= maxShare) return last;
   }

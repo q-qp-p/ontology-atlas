@@ -456,7 +456,7 @@
       "allFilter": "全部",
       "responsibilityMissing": "尚未记录所属职责",
       "recordingNotImplementation": "没有记录不代表实现不存在。",
-      "anchorSummary": "实现依据记录 · {anchored}/{total}",
+      "anchorSummary": "已记录路径的能力 · {anchored}/{total}",
       "gapSummary": "记录缺项 · {count} 个能力",
       "evidenceChain": "从主张到依据",
       "rationaleShort": "此关系的结构化备注尚未记录。",
