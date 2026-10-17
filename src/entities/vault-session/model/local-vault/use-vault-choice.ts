@@ -284,12 +284,14 @@ export function useVaultChoice({
       }
       if (!isCurrent()) return;
       /*
-       * Two or more known folders means the app asks instead of guessing; the count alone decides.
-       * No launch-chooser preference on purpose: forgetting a folder on the chooser is the control.
+       * Two or more existing folders means the app asks instead of guessing; the count alone decides.
+       * No launch-chooser preference: forgetting a folder on the chooser is the control.
        * Returning early leaves `status` 'idle' with the stored record untouched; `close()` would
        * delete the `current` record.
        */
-      if (recent.length >= 2) {
+      const resolutions = await Promise.all(recent.map(tauriVaultRecordResolves));
+      if (!isCurrent()) return;
+      if (resolutions.filter((resolution) => resolution !== 'missing').length >= 2) {
         setAwaitingVaultChoice(true);
         return;
       }

@@ -18,7 +18,7 @@ export interface LocalFsHandleRecord {
    * permission gesture. Absent for older records, never shown as zero.
    */
   docCount?: number;
-  /** Kind-bearing documents outside `wiki/`, as `src/features/library/lib/wiki/lint-brief.ts` counts them. */
+  /** The map's census (`MAP_CONCEPT_KINDS`). */
   conceptCount?: number;
   /** Epoch ms. */
   countedAt?: number;

@@ -810,9 +810,11 @@ identity** (`src/features/vault-switch`, 2026-09-13). It is the only persistent
 place in the app that says which folder the data comes from — the shell has no
 header, and no destination-specific header can name the folder everywhere — and
 pressing it opens the known folders plus a picker. The same list
-is the launch chooser: when two or more folders are known the cold restore stops
-rather than guess, leaving the folder screen to own the launch. Decision:
-`docs/DECISIONS.md`, "The folder count decides the launch".
+is the launch chooser: when two or more known folders still exist the cold restore
+stops rather than guess, leaving the folder screen to own the launch; a moved or
+deleted folder is not counted. Decisions: `docs/DECISIONS.md`, "The folder count
+decides the launch", narrowed by
+`docs/records/decisions/2026-10-17-launch-counts-present-folders-6805358d-1f74-4d46-a28c-d1940e5cc01e.md`.
 
 The companion game and related personal-record screens are retired. First-run
 and Map retain folder/document entry without a game door. Existing personal
