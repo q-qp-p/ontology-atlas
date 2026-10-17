@@ -206,6 +206,9 @@ other file's name only (`.claude/rules/surfaces.md`). The binding they read is m
   summaries; Atlas does not infer Clean, Hexagonal, MVP, or Feature-Sliced Design
   from folder names. The visible Understand → Plan → Verify stages were removed
   on 2026-09-03; the canvas compares reviewed intent with observation directly.
+- A role's modules are the connected repository's folder and file names under the role's
+  paths, listed through the read-only harness commands; no file is opened. When that
+  repository cannot be read, the role shows no count instead of zero.
 - **The ladder's contract face grows into the card's spare width, and the drawing is
   centred** (2026-09-13, inspection 122 S8). The three faces used to hold 280/72/240 whatever
   the card's width: measured at 1512×949 in the installed-app window the drawn band was **592px
