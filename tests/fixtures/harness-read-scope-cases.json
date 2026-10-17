@@ -78,6 +78,17 @@
     { "path": "/etc/passwd", "read": "invalid", "list": "invalid" },
     { "path": "a\\b.md", "read": "invalid", "list": "invalid" },
     { "path": "a/b/c/d/e/f/g/h/i/j/k/l/AGENTS.md", "read": "invalid", "list": "invalid" },
-    { "path": ".claude/skills/a/b/c/d/e/f/g/h/i.md", "read": "text", "list": "listable" }
+    { "path": ".claude/skills/a/b/c/d/e/f/g/h/i.md", "read": "text", "list": "listable" },
+    { "path": ".claude/skills/deploy/service-account.json", "read": "denied", "list": "denied" },
+    { "path": ".claude/skills/deploy/api_key.txt", "read": "denied", "list": "denied" },
+    { "path": ".claude/hooks/apikey", "read": "denied", "list": "denied" },
+    { "path": ".pgpass", "read": "denied", "list": "denied" },
+    { "path": ".s3cfg", "read": "denied", "list": "denied" },
+    { "path": ".boto", "read": "denied", "list": "denied" },
+    { "path": ".claude/skills/k8s/kubeconfig", "read": "denied", "list": "denied" },
+    { "path": ".claude/agents/deploy.ppk", "read": "denied", "list": "denied" },
+    { "path": ".claude/agents/signing.asc", "read": "denied", "list": "denied" },
+    { "path": "src/shared/ui/tokens", "read": "not-allowed", "list": "listable" },
+    { "path": ".claude/skills/design/tokens.md", "read": "text", "list": "listable" }
   ]
 }
