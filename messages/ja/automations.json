@@ -1,5 +1,6 @@
 {
   "blockedActions": "{count}件の操作をブロックしました。",
+  "ghostExample": "例：{name}",
   "toolActivity": "ツールの動き",
   "removeQuestion": "「{name}」をスケジュールから削除しますか？",
   "removeConfirm": "スケジュールを削除",

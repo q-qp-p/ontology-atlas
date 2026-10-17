@@ -135,7 +135,7 @@
     "collapse": "收起索引",
     "expand": "显示索引"
   },
-  "emptyTitle": "尚未收集任何内容",
+  "emptyTitle": "还没有来源和 Wiki 页面",
   "emptyBody": "把项目已有的文档带进来：规格说明、演示文稿、电子表格、导出的页面。Atlas 会原样复制到 sources/，在你提出之前绝不会打开它们。",
   "sources": {
     "listAria": "此文件夹中的原始来源",

@@ -1,5 +1,6 @@
 {
   "blockedActions": "已拦截 {count} 个操作。",
+  "ghostExample": "例如：{name}",
   "toolActivity": "工具活动",
   "removeQuestion": "从计划中移除“{name}”？",
   "removeConfirm": "移除计划",

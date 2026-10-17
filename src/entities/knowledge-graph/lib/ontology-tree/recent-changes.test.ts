@@ -210,6 +210,19 @@ describe("computeAdaptiveRecentChanges", () => {
     expect(r.recentNodeIds.size).toBe(2);
   });
 
+  it("keeps the wider window when the narrower one would hold nothing", () => {
+    const nodes = [node("a", "a"), node("b", "b"), node("c", "c"), node("d", "d")];
+    const fresh = new Map([
+      ["a", iso(2)],
+      ["b", iso(2)],
+      ["c", iso(2)],
+      ["d", iso(30)],
+    ]);
+    const r = computeAdaptiveRecentChanges(nodes, fresh, now);
+    expect(r.windowDays).toBe(3);
+    expect(r.recentNodeIds.size).toBe(3);
+  });
+
   it("returns an empty 7-day result for an empty graph", () => {
     const r = computeAdaptiveRecentChanges([], new Map(), now);
     expect(r.windowDays).toBe(7);

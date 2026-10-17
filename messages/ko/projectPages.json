@@ -74,7 +74,7 @@
     "surfaceOntologyEmpty": "아직 도메인도 역량도 없어요. 지도에서 첫 도메인을 만들어 보세요.",
     "surfaceLibraryEmpty": "이 폴더에 원문도 위키 페이지도 없어요.",
     "surfaceHarnessHolds": "에이전트가 일할 때 따르는 규칙과 그 규칙을 지키는 검사를 한곳에 모아 보여줘요. 데스크톱 앱이 폴더의 소스에서 읽어 와요.",
-    "surfaceFolderScope": "원문과 위키는 폴더 전체를 세요",
+    "surfaceFolderScope": "원문·위키 수는 폴더 전체 기준이에요",
     "compositionHeading": "구성",
     "bodyCovers": "이 문서가 다루는 것",
     "bodySectionIncludes": "포함",

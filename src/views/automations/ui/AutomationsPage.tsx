@@ -141,7 +141,7 @@ export function AutomationsPage({
         action: <OpenVaultCta testId="automations-open-vault" className="atlas-touch-floor atlas-touch-floor-wide" /> }
       : { title: t(`${lane}.emptyTitle`), description: t(`${lane}.emptyDescription`) };
   const ghostRow = (className?: string) => <AutomationGhostRow className={className}
-    name={lane === "ontology" ? t("ontology.defaultName") : tRounds("name.consistency")}
+    name={t("ghostExample", { name: lane === "ontology" ? t("ontology.defaultName") : tRounds("name.consistency") })}
     cadence={lane === "ontology" ? t("cadence.6h") : t("cadence.hour")} outcome={t("outcome.none")} />;
 
   return (

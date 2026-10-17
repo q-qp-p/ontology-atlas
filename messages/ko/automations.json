@@ -1,5 +1,6 @@
 {
   "blockedActions": "작업 {count}건을 막았어요.",
+  "ghostExample": "예: {name}",
   "toolActivity": "도구 기록",
   "removeQuestion": "‘{name}’ 예약을 삭제할까요?",
   "removeConfirm": "예약 삭제",

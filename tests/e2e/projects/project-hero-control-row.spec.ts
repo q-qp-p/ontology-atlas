@@ -58,8 +58,12 @@ test("the hero's controls are one filled action and outline siblings, on one lin
  * the page that does not describe this project, so it now rides the composition board's scope
  * sentence instead of the control row.
  */
+const SECOND_PROJECT = {
+  "warehouse.md": "---\nuid: 6b1f3c2a-9d4e-4f7a-8c5b-2e0d1a3f4b6c\nkind: project\nslug: warehouse\ntitle: Warehouse\n---\n\nStock and shipping.\n",
+};
+
 test("the top bar draws controls of one size, and the folder total is not among them", async ({ page }) => {
-  await installDesktopRailRuntime(page);
+  await installDesktopRailRuntime(page, SECOND_PROJECT);
   await mountDesktopVault(page);
   await page.goto("/en/project/fallback/?slug=storefront&guides=off");
 
