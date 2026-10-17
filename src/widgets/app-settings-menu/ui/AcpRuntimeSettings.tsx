@@ -203,6 +203,7 @@ export function AcpRuntimeSettings({
   const leadId = embedded && ready.length === 0
     ? listed.find((r) => r.website && r.state !== 'login-needed')?.id
     : undefined;
+  const chatCount = listed.filter((r) => isRuntimeUsable(r.state) && isGuardedRuntime(r.id, r.isolated)).length;
   const pageNote = !embedded || (ready.length > 0 && waiting === 0)
     ? null
     : waiting > 0
@@ -344,6 +345,7 @@ export function AcpRuntimeSettings({
                   onRuntimesChanged={() => void refresh()}
                   page={embedded}
                   lead={runtime.id === leadId}
+                  oneOfSeveralChats={chatCount > 1}
                 />
               ))
             )}
@@ -649,11 +651,13 @@ function RuntimeRow({
   onRuntimesChanged,
   page = false,
   lead = false,
+  oneOfSeveralChats = false,
 }: {
   runtime: AcpRuntimeStatus;
   onOpenChat: (runtimeId: string) => void;
   onRuntimesChanged?: () => void;
   lead?: boolean;
+  oneOfSeveralChats?: boolean;
   /** The Agents page: the last slot holds the state until a chat can open, then the press. */
   page?: boolean;
 }) {
@@ -682,18 +686,17 @@ function RuntimeRow({
   const showDoctor = guarded && isAgentDoctorAvailable();
 
   /*
-   * Filled (`onAccent`): opening a chat is the tab's one action, so the focus ring takes the
-   * primary ink. The verb is the label and the full sentence the accessible name. Gated tools
-   * only, or the promise that the app asks before leaving the folder breaks.
+   * Filled while it is the tab's one chat; beside another chat each takes the tint, so no tool
+   * is ranked. Gated tools only, or the promise that the app asks before leaving the folder breaks.
    */
   const chat = (copy = false) => (
     <Chip
       size="lg"
-      tone="onAccent"
+      tone={oneOfSeveralChats ? 'accentOnTint' : 'onAccent'}
       data-testid={copy ? undefined : `app-settings-runtime-chat-${runtime.id}`}
       aria-label={t('openChat')}
       onClick={() => onOpenChat(runtime.id)}
-      className="shrink-0 focus-visible:ring-[color:var(--color-text-primary)]"
+      className={cn('shrink-0', oneOfSeveralChats ? LEAD_CHIP : 'focus-visible:ring-[color:var(--color-text-primary)]')}
     >
       <MessageSquare size={ICON_SIZE.md} aria-hidden />
       {t('openChatShort')}

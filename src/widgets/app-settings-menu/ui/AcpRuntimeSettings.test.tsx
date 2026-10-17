@@ -82,6 +82,26 @@ describe('runtime list: what works now comes first', () => {
     expect(onOpenChat).toHaveBeenCalledWith('claude-acp');
   });
 
+  it('fills the chat press only while one chat can open; beside another, each takes the tint', async () => {
+    bridge.detect.mockResolvedValue([makeRuntime({ id: 'claude-acp', isolated: true })]);
+    render(<AcpRuntimeSettings embedded />);
+    const sole = await screen.findByTestId('app-settings-runtime-chat-claude-acp');
+    expect(sole).toHaveClass('bg-[color:var(--color-indigo-brand)]');
+    cleanup();
+
+    bridge.detect.mockResolvedValue([
+      makeRuntime({ id: 'claude-acp', isolated: true }),
+      makeRuntime({ id: 'codex-acp', isolated: true }),
+    ]);
+    render(<AcpRuntimeSettings embedded />);
+    await screen.findByTestId('app-settings-runtime-chat-codex-acp');
+    for (const id of ['claude-acp', 'codex-acp']) {
+      const press = screen.getByTestId(`app-settings-runtime-chat-${id}`);
+      expect(press).not.toHaveClass('bg-[color:var(--color-indigo-brand)]');
+      expect(press).toHaveClass('bg-[color:var(--color-indigo-a16)]');
+    }
+  });
+
   it('omits the MCP link inside the destination, whose tab bar already has it', async () => {
     // Embedded, the page's tab strip already reaches MCP; only the sheet keeps the link.
     bridge.detect.mockResolvedValue([
