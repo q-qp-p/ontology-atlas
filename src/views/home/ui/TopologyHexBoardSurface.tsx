@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, type ComponentProps } from "react";
 import { useTranslations } from "next-intl";
-import type { KnowledgeGraphNode } from "@/entities/knowledge-graph";
+import { isMapConcept, type KnowledgeGraphNode } from "@/entities/knowledge-graph";
 import { useHexRelief, writeHexRelief, type MapNavigationSpeed } from "@/shared/lib/preferences/appearance-preferences";
 import { OntologyHexBoardMap, type HexBoardLabels, type HexPlacementRecord, type OntologyMapEdge, type OntologyMapNode } from "@/widgets/ontology-map";
 import { readHexPlacement, writeHexPlacement } from "../model/map-canvas/hex-board-placement-store";
@@ -55,7 +55,10 @@ export function TopologyHexBoardSurface({
     for (const [id, path] of evidence.movedPaths) m.set(id, path.split("/").pop() ?? path);
     return m;
   }, [evidence.movedPaths]);
-  const projectCount = useMemo(() => nodes.find((n) => n.kind === "project")?.descendantCount ?? null, [nodes]);
+  const conceptCount = useMemo(
+    () => (insightNodes && nodes.some((n) => n.kind === "project") ? insightNodes.filter(isMapConcept).length : null),
+    [nodes, insightNodes],
+  );
 
   const labels: HexBoardLabels = useMemo(
     () => ({
@@ -66,13 +69,13 @@ export function TopologyHexBoardSurface({
         `${name}${stale ? ` · ${t("tooltipStale")}` : ""} · ${t("tooltipFacts", { needs, users, elements })}${dependents == null ? "" : ` · ${tr("dependents", { count: dependents })}`}`,
       domainMeta: ({ capabilities, elements }) => t("domainMeta", { capabilities, elements }),
       domainStale: (count) => (count == null ? null : count > 0 ? t("domainStale", { count }) : t("domainStaleNone")),
-      projectMeta: projectCount != null ? t("projectMeta", { count: projectCount }) : null,
+      projectMeta: conceptCount != null ? t("projectMeta", { count: conceptCount }) : null,
       plateSub: ({ capabilities, stale }) => (stale ? t("plateSubStale", { capabilities, stale }) : t("plateSub", { capabilities })),
       relief: tr("toggle"),
       dependents: (count) => tr("dependents", { count }),
       regionDependents: (count) => tr("regionDependents", { count }),
     }),
-    [t, tr, measured, projectCount],
+    [t, tr, measured, conceptCount],
   );
 
   const capabilityCount = useMemo(() => nodes.filter((n) => n.kind === "capability").length, [nodes]);

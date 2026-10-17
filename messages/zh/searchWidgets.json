@@ -222,7 +222,7 @@
       "hex": "每项能力一块瓦片，每个领域一片区域",
       "strata": "包含关系，逐层点亮来读",
       "coupling": "按彼此的关联聚成簇",
-      "structure": "领域结构"
+      "structure": "按名称逐级查看已记录的归属"
     },
     "mapViewAriaLabel": "地图视图",
     "view3dPickerHelp": "选择地图视图。当前：{view}。",

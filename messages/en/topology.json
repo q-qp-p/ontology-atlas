@@ -12,7 +12,7 @@
     "domainMeta": "{capabilities} caps · {elements} el.",
     "domainStale": "◐ {count} stale",
     "domainStaleNone": "0 stale",
-    "projectMeta": "{count} docs",
+    "projectMeta": "{count} concepts",
     "plateSub": "{capabilities}",
     "plateSubStale": "{capabilities} · ◐ {stale}",
     "legendBrightness": "brightness = elements",

@@ -12,7 +12,7 @@
     "domainMeta": "ケイパビリティ{capabilities} · 要素{elements}",
     "domainStale": "◐ 古い{count}",
     "domainStaleNone": "古い0",
-    "projectMeta": "{count}件",
+    "projectMeta": "概念{count}件",
     "plateSub": "{capabilities}",
     "plateSubStale": "{capabilities} · ◐ {stale}",
     "legendBrightness": "明るさ＝要素数",
