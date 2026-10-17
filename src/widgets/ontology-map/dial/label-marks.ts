@@ -407,7 +407,7 @@ function nameReach(ctx: Ctx, cluster: DialCluster, chip: Circle): number {
 function domainNames(ctx: Ctx): void {
   const { input } = ctx;
   const { attention: attn, inks } = input;
-  const centre = input.hub ?? input.toScreen(0, 0);
+  const centre = input.hubRest ?? input.hub ?? input.toScreen(0, 0);
   for (const cluster of clusterOrder(input)) {
     const id = cluster.domainId;
     if (ctx.rest.away.has(id)) continue;
