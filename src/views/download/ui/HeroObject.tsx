@@ -98,7 +98,7 @@ export function HeroObject({
       onHover: setHover,
       onChain: setWalked,
       form: 'plane',
-      anchor: wide ? { x: 0.74, y: 0.43 } : { x: 0.5, bottomPx: 176 },
+      anchor: wide ? { x: 0.74, y: 0.43 } : { x: 0.5, bottomPx: 208 },
       bounds: wide ? () => heroBounds(canvas, caption) : undefined,
       watch: wide ? (refit) => watchHeroType(canvas, caption, refit) : undefined,
       dim: wide ? 0.55 : 0.7,
@@ -167,7 +167,7 @@ export function HeroObject({
         data-testid="gateway-hero-caption"
         data-hero-caption-source={hover !== null ? 'hover' : walked !== null ? 'chain' : undefined}
         className={cn(
-          'gateway-hero-caption pointer-events-none absolute right-[var(--gateway-origin)] top-12 max-w-[40%] truncate text-right text-label leading-label text-[color:var(--color-text-tertiary)] md:top-16 min-[90rem]:top-auto min-[90rem]:bottom-[7.5rem]',
+          'gateway-hero-caption pointer-events-none absolute inset-x-[max(1.5rem,env(safe-area-inset-left))] bottom-2 truncate text-center text-label leading-label text-[color:var(--color-text-tertiary)] md:inset-x-[var(--gateway-origin)] min-[90rem]:left-auto min-[90rem]:bottom-[7.5rem] min-[90rem]:max-w-[40%] min-[90rem]:text-right',
           caption ? 'is-on' : undefined,
         )}
       >
