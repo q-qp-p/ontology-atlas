@@ -108,6 +108,14 @@ describe('useHarnessReport request identity', () => {
     expect(JSON.stringify(mocks.port.mock.calls)).not.toContain('"/repo"');
   });
 
+  it('resolves to no source when no project has exactly one binding on the root', async () => {
+    mocks.list.mockResolvedValue({ status: 'ok', bindings: [{ rootPath: '/repo' }, { rootPath: '/repo' }] });
+    const vault = handle('/repo/docs');
+    const { result } = renderHook(() => useHarnessReport(vault, ['one'], true, []));
+    await waitFor(() => expect(result.current.status).toBe('no-source'));
+    expect(mocks.scan).not.toHaveBeenCalled();
+  });
+
   it('keeps disabled and browser requests unsupported', () => {
     const native = handle('/vault');
     expect(renderHook(() => useHarnessReport(native, [], false, [])).result.current.status).toBe('unsupported');

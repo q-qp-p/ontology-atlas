@@ -51,9 +51,7 @@ async function resolveSourceBinding(
   if (distinct.length !== 1) return null;
   const rootPath = distinct[0]!;
   const single = bound.find((entry) => entry.roots.length === 1);
-  const any = bound.find((entry) => entry.roots.includes(rootPath));
-  const chosen = single ?? any;
-  return chosen ? { projectSlug: chosen.projectSlug, rootPath } : null;
+  return single ? { projectSlug: single.projectSlug, rootPath } : null;
 }
 
 export function useHarnessReport(

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import { guideCitation, UNCITED_TOOLS } from './guide-citations';
-import { isReadableHarnessPath } from './harness-read-scope';
+import { codedFailure } from '@/shared/lib/failures/failure-code';
+
+import { harnessReadClass, isReadableHarnessPath } from './harness-read-scope';
 import { scanHarness, type HarnessScanPort } from './repo-scan';
 
 /** A fixture repository with the shapes that have miscounted before: dot dirs, nested and deep AGENTS.md, repeated hook scripts, a missing hook. */
@@ -284,6 +286,74 @@ describe('scanHarness — what it may read', () => {
     expect(claude?.hooks[0]?.status).toBe('wired');
   });
 
+  it.each(['/usr/local/bin/x.sh', '~/hooks/x.sh', '../shared/hooks/x.sh'])(
+    'reads a hook script outside the repository (%s) as unresolved, never as a failed reading',
+    async (script) => {
+      const files = {
+        ...REPO,
+        '.claude/settings.json': JSON.stringify({
+          hooks: { Stop: [{ hooks: [{ type: 'command', command: `bash ${script}` }] }] },
+        }),
+      };
+      const port = fixturePort(files);
+      port.pathExists = async (path) => {
+        if (harnessReadClass(path) === 'invalid') throw codedFailure('harness-path-invalid', path);
+        return path in files;
+      };
+      const report = await scanHarness(port);
+      const claude = report.hookGroups.find((group) => group.configPath === '.claude/settings.json');
+      expect(claude?.hooks.map((hook) => hook.status)).toEqual(['unresolved']);
+    },
+  );
+
+  it('answers false for a scope path outside the repository without asking the app', async () => {
+    const port = fixturePort(REPO);
+    const probes: string[] = [];
+    port.pathExists = async (path) => {
+      probes.push(path);
+      return true;
+    };
+    const report = await scanHarness(port, { capabilityPaths: ['../elsewhere', 'src'] });
+    expect(probes).not.toContain('../elsewhere');
+    expect(report.coverage).toBeDefined();
+  });
+
+  it.each(['/usr/local/bin/x.sh', '~/hooks/x.sh', '../shared/hooks/x.sh'])(
+    'reads a hook script outside the repository (%s) as unresolved, never as a failed reading',
+    async (script) => {
+      const files = {
+        ...REPO,
+        '.claude/settings.json': JSON.stringify({
+          hooks: { Stop: [{ hooks: [{ type: 'command', command: `bash ${script}` }] }] },
+        }),
+      };
+      const port = fixturePort(files);
+      port.pathExists = async (path) => {
+        if (harnessReadClass(path) === 'invalid') throw codedFailure('harness-path-invalid', path);
+        return path in files;
+      };
+      const report = await scanHarness(port);
+      const claude = report.hookGroups.find((group) => group.configPath === '.claude/settings.json');
+      expect(claude?.hooks.map((hook) => hook.status)).toEqual(['unresolved']);
+    },
+  );
+
+  it('never asks the app whether a scope path outside the repository exists', async () => {
+    const files = {
+      ...REPO,
+      '.claude/rules/outside.md': ['---', 'paths:', '  - "../elsewhere/**"', '---', '', '# Outside', ''].join('\n'),
+    };
+    const port = fixturePort(files);
+    const probes: string[] = [];
+    port.pathExists = async (path) => {
+      probes.push(path);
+      if (harnessReadClass(path) === 'invalid') throw codedFailure('harness-path-invalid', path);
+      return path in files;
+    };
+    await scanHarness(port, { capabilityPaths: ['../elsewhere/api', 'src/features'] });
+    expect(probes.filter((path) => harnessReadClass(path) === 'invalid')).toEqual([]);
+  });
+
   it('carries the on-disk size so a projected file does not shrink the size cap', async () => {
     const port = fixturePort({ ...REPO, 'AGENTS.md': 'short' });
     const read = port.readText.bind(port);
@@ -314,6 +384,30 @@ describe('scanHarness — the document census', () => {
     const report = await scanHarness(port);
     expect(report.documentReach.total).toBe(901);
     expect(report.documentReach.truncated).toBe(false);
+    expect(documentReads).toBe(0);
+  });
+});
+
+describe('scanHarness — a census cut short', () => {
+  it.each([
+    {
+      name: 'more folders than the directory budget',
+      files: Object.fromEntries(Array.from({ length: 3001 }, (_, index) => [`area-${index}/note.md`, 'A note.'])),
+    },
+    {
+      name: 'folders nested deeper than the depth bound',
+      files: { 'a/b/c/d/e/f/g/h/i/deep.md': 'A note.' },
+    },
+  ])('reports $name as truncated without reading a document', async ({ files }) => {
+    const port = fixturePort({ 'AGENTS.md': '# Guide\n', ...files });
+    const read = port.readText.bind(port);
+    let documentReads = 0;
+    port.readText = async (path) => {
+      if (path.endsWith('note.md') || path.endsWith('deep.md')) documentReads += 1;
+      return read(path);
+    };
+    const report = await scanHarness(port);
+    expect(report.documentReach.truncated).toBe(true);
     expect(documentReads).toBe(0);
   });
 });

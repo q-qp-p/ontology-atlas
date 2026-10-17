@@ -68,7 +68,7 @@
   "diagramHint": "Select a part to open the files behind it.",
   "noSourceBody": "The harness belongs to the repository agents actually edit. Connect a source folder to a project and this list fills in. When more than one folder is connected we do not pick which harness you meant.",
   "failed": "Could not read it",
-  "failedNotGranted": "Atlas reads a connected code folder only when it holds the folder you opened, or when you chose it in this app. {path} is neither, so none of its files were read and nothing is counted here.",
+  "failedNotGranted": "Atlas reads a connected code folder only when it is the repository holding the folder you opened, or a folder you chose in this app since it last opened. {path} is neither, so none of its files were read and nothing is counted here.",
   "failedMissing": "{path} is not there any more, so none of its files were read and nothing is counted here.",
   "failedBody": "Part of {path} could not be read, so nothing is counted here until it can be.",
   "empty": "No agent guide files",

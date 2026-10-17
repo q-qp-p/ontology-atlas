@@ -9,7 +9,7 @@ import {
 } from './coverage-collect';
 import type { ScopeDeclaration } from './coverage-scopes';
 import { buildDocumentReach, type DocumentReach } from './document-reach';
-import { isReadableHarnessPath } from './harness-read-scope';
+import { harnessReadClass, isReadableHarnessPath } from './harness-read-scope';
 
 /** Feeds `analyzeAgentFiles` through a file port that can see dot directories, which the File System Access API cannot. */
 
@@ -359,6 +359,7 @@ export async function scanHarness(
   const contentByPath = new Map(files.map((file) => [file.path, file.content ?? '']));
   const scriptExists = async (path: string) => {
     if (contentByPath.has(path)) return true;
+    if (harnessReadClass(path) === 'invalid') return false;
     if (port.pathExists) return port.pathExists(path);
     return (await port.readText(path)) !== null;
   };
@@ -394,6 +395,7 @@ export async function scanHarness(
         }),
         capabilityPaths,
         async (relativePath) => {
+          if (harnessReadClass(relativePath) === 'invalid') return false;
           if (port.pathExists) return port.pathExists(relativePath);
           if ((await port.listDir(relativePath)) !== null) return true;
           return (await port.readText(relativePath)) !== null;
