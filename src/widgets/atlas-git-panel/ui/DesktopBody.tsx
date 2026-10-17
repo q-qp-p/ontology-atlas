@@ -4,7 +4,7 @@ import type { CopyFeedbackState } from "@/shared/lib/clipboard/use-copy-feedback
 import type { GitRemoteState, RemoteAction } from "../lib/remote-state";
 import { stripConventionalPrefix, humanizeStepSubject } from "../lib/step-title";
 import type { DocumentFollow } from "../lib/document-follow";
-import { History as HistoryIcon, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { ICON_SIZE } from "@/shared/ui/tokens/icon-size";
 import { countChangesByStatus } from "@/shared/lib/git/atlas-git-changes";
 import { describeSnapshotSubject, type AtlasGitDiffFile } from "@/shared/lib/git/atlas-git-record";
@@ -38,10 +38,7 @@ export type GitStage = "web" | "no-vault" | "loading" | "not-installed" | "error
 function PageHeader({ t }: { t: Translator }) {
   return (
     <header className="flex shrink-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5 pb-1">
-      <h1 className={cn("flex items-center gap-2", PAGE_TITLE)}>
-        <HistoryIcon size={ICON_SIZE.lg} aria-hidden className="text-[color:var(--color-indigo-text-soft)]" />
-        {t("title")}
-      </h1>
+      <h1 className={PAGE_TITLE}>{t("title")}</h1>
     </header>
   );
 }
@@ -474,7 +471,7 @@ export function DesktopBody({
         No card shell: the workbench is the whole surface, fills the viewport and scrolls inside,
         under one top bar (title, location, actions) and a divider.
       */}
-      <div className="flex flex-none flex-wrap items-center gap-x-3 gap-y-2 border-b border-[color:var(--color-divider)] px-1 pb-3">
+      <div className="flex flex-none flex-wrap items-center gap-x-3 gap-y-2 border-b border-[color:var(--color-divider)] pb-3">
         <PageHeader t={t} />
         <div className="ml-auto flex min-w-0 items-center gap-3">{locationLine}</div>
       </div>
