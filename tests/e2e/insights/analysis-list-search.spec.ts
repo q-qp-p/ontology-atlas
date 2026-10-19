@@ -31,7 +31,7 @@ test('connection search narrows choices without changing the selected fact or sc
 test('a capability beyond the first six remains selected after clearing its search', async ({ page }) => {
   await page.goto('/ko/ontology/insights/?tab=do-next&guides=off');
   const filter = page.getByRole('radiogroup', { name: '역량 표시 범위' });
-  await filter.getByRole('radio', { name: '전체', exact: true }).click();
+  await filter.getByRole('radio', { name: /^전체 \d+$/ }).click();
   const search = page.getByTestId('analysis-claim-search');
   await expect(page.getByTestId('analysis-claim').filter({ hasText: '환불 처리' })).toHaveCount(0);
   await search.fill('환불 처리');
