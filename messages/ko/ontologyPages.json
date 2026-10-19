@@ -382,8 +382,6 @@
       "guidance": "지침",
       "explanations": "기록된 설명",
       "example": "내장 예제",
-      "recorded": "기록된 온톨로지",
-      "purposeMissing": "제품 목적이 아직 기록되지 않았어요.",
       "question": "분석 질문",
       "relationships": "책임 사이의 연결",
       "evidence": "확인할 근거",
@@ -423,7 +421,6 @@
       },
       "empty": "온톨로지 폴더를 열면 기록된 연결을 분석할 수 있어요.",
       "legacy": "저장된 링크에 해당하는 질문을 새 분석 화면에서 열었어요.",
-      "purpose": "기록된 제품 목적",
       "sourceStatus": {
         "example": "소스 · 예제에서 미확인",
         "reading": "소스 · 확인 중",
@@ -445,12 +442,10 @@
         "unknown": "이 주장의 소스 현재 상태는 확인되지 않았어요."
       },
       "nodeDeclarations": "이 그림에 표시된 의존 선언 {count}개",
-      "dependencyDirection": "의존",
       "chooseDeclaration": "의존 선언 선택",
-      "pairRailTitle": "살펴볼 연결",
-      "pairRailScope": "책임 쌍 {pairs}개 · 선언 {count}개",
+      "pairRailTitle": "연결 {count}개",
       "capabilityEvidence": "역량의 구현 근거",
-      "findingDeclarations": "두 책임을 연결하는 실제 의존 선언 {count}개를 읽어보세요.",
+      "findingDeclarations": "의존 선언 {count}개",
       "chooseCapability": "살펴볼 역량 선택",
       "gapsFilter": "빈틈",
       "allFilter": "전체",
@@ -458,11 +453,9 @@
       "recordingNotImplementation": "기록이 없다는 뜻이며, 실제 구현의 부재를 뜻하지 않아요.",
       "anchorSummary": "경로가 적힌 역량 · {anchored}/{total}",
       "gapSummary": "기록의 빈틈 · 역량 {count}개",
-      "evidenceChain": "주장에서 근거까지",
       "rationaleShort": "이 연결의 관계 메모가 비어 있어요.",
       "readBeforeRelying": "이유가 본문에 있는지 원문을 확인하세요.",
       "limitsShort": "기록된 주장은 실행 영향이나 사람의 승인을 증명하지 않아요.",
-      "selected": "선택됨",
       "scopeAll": "전체 기록",
       "scopeCount": "이 폴더의 프로젝트 {count}개",
       "moreRoles": "구현 역할 {count}개 더 있음",
@@ -472,9 +465,6 @@
       "copySelectedCheck": "읽기 전용 확인 요청 복사",
       "copiedSelected": "복사됨",
       "reviewSelectedRequest": "보낼 내용 확인",
-      "lineLegend": "선 하나가 선언 하나예요",
-      "previousDeclarations": "이전 선언",
-      "nextDeclarations": "다음 선언",
       "selectionMissing": "저장된 선택을 이 폴더에서 찾을 수 없어요. 현재 기록의 개요를 보여줘요.",
       "sourceShort": {
         "missing": "소스 경로 누락",
@@ -482,8 +472,6 @@
         "dated": "소스 날짜 비교됨 · 의미는 미검증",
         "unknown": "이 주장의 소스 상태 미확인"
       },
-      "declarationsInView": "이 그림에서 선언 {count}개",
-      "declarationPage": "{from}–{to} / {total}",
       "documentTitle": "분석 · Ontology Atlas",
       "findConnection": "연결 찾기",
       "findCapability": "역량 찾기",
@@ -507,7 +495,10 @@
       "retrySourceDates": "날짜 다시 비교",
       "sourceRecovery": {
         "wrongFolder": "선택한 폴더가 기존 연결과 달라요. 연결된 코드 폴더를 다시 선택해 주세요. 기존 연결은 바뀌지 않았어요."
-      }
+      },
+      "previousDeclaration": "이전 선언",
+      "nextDeclaration": "다음 선언",
+      "declarationStep": "선언 {index} / {total}"
     }
   }
 }
