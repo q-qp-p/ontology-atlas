@@ -486,7 +486,8 @@
       "nextDeclaration": "다음 선언",
       "declarationStep": "선언 {index} / {total}",
       "pathChanged": "{date}에 바뀜",
-      "pathGone": "찾을 수 없음"
+      "pathGone": "찾을 수 없음",
+      "pathUndated": "날짜 미확인"
     }
   }
 }

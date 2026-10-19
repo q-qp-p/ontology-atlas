@@ -486,7 +486,8 @@
       "nextDeclaration": "次の宣言",
       "declarationStep": "宣言{index} / {total}",
       "pathChanged": "{date}に変更",
-      "pathGone": "見つかりません"
+      "pathGone": "見つかりません",
+      "pathUndated": "日付未確認"
     }
   }
 }

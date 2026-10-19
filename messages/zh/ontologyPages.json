@@ -486,7 +486,8 @@
       "nextDeclaration": "下一条声明",
       "declarationStep": "声明 {index} / {total}",
       "pathChanged": "{date} 已更改",
-      "pathGone": "未找到"
+      "pathGone": "未找到",
+      "pathUndated": "日期未核对"
     }
   }
 }

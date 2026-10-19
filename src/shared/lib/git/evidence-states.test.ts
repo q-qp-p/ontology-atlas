@@ -47,6 +47,7 @@ describe('resolveEvidenceStates', () => {
       moved: [{ path: 'src/pay.ts', changedAt: '2026-09-12T00:00:00Z' }],
       gone: [],
       folders: [],
+      undated: [],
     });
     expect(states.rows.find((row) => row.id === 'gone')?.verdict).toBe('missing');
     expect(states.rows.find((row) => row.id === 'cart')?.reason).toBe('folder-only');

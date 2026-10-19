@@ -486,7 +486,8 @@
       "nextDeclaration": "Next declaration",
       "declarationStep": "Declaration {index} of {total}",
       "pathChanged": "changed {date}",
-      "pathGone": "not found"
+      "pathGone": "not found",
+      "pathUndated": "date not checked"
     }
   }
 }
