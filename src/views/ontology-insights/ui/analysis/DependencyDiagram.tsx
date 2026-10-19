@@ -89,6 +89,11 @@ export function DependencyDiagram({ pair, selected, byId, onSelect }: {
   </g>;
   const leaving = shown.leavingPage;
   return <div className={styles.dependencyObject} data-testid="analysis-dependency-diagram">
+    {ordered.length > 1 ? <div role="group" aria-label={t('chooseDeclaration')} className={styles.stepper}>
+      {stepButton(-1, t('previousDeclaration'), <ChevronLeft size={ICON_SIZE.lg} aria-hidden />)}
+      <span data-testid="analysis-declaration-step" aria-live="polite" className="text-label tabular-nums text-[color:var(--color-text-tertiary)]">{t('declarationStep', { index: selectedIndex + 1, total: ordered.length })}<span className="sr-only"> · {name(byId.get(selected.from)!)} → {name(byId.get(selected.to)!)}</span></span>
+      {stepButton(1, t('nextDeclaration'), <ChevronRight size={ICON_SIZE.lg} aria-hidden />)}
+    </div> : null}
     <div ref={host} className={styles.nodeDiagram} style={{ '--declaration-rows': rows } as CSSProperties}>
       <svg className={styles.connections} aria-hidden="true">
         {leaving ? <g className="motion-swap-out">{leaving.lines.map(line => connection(line, line.id === leaving.selectedId ? styles.selectedConnection : styles.connection, false))}</g> : null}
@@ -104,10 +109,5 @@ export function DependencyDiagram({ pair, selected, byId, onSelect }: {
       <div key={`from:${pageKey}`} className={`motion-swap-in ${styles.objectColumn} ${styles.sourceColumn}`}>{cards({ page, selectedId: selected.id }, 'from', true)}</div>
       <div key={`to:${pageKey}`} className={`motion-swap-in ${styles.objectColumn} ${styles.targetColumn}`}>{cards({ page, selectedId: selected.id }, 'to', true)}</div>
     </div>
-    {ordered.length > 1 ? <div role="group" aria-label={t('chooseDeclaration')} className={styles.stepper}>
-      {stepButton(-1, t('previousDeclaration'), <ChevronLeft size={ICON_SIZE.lg} aria-hidden />)}
-      <span data-testid="analysis-declaration-step" aria-live="polite" className="font-mono text-label tabular-nums text-[color:var(--color-text-tertiary)]">{t('declarationStep', { index: selectedIndex + 1, total: ordered.length })}<span className="sr-only"> · {name(byId.get(selected.from)!)} → {name(byId.get(selected.to)!)}</span></span>
-      {stepButton(1, t('nextDeclaration'), <ChevronRight size={ICON_SIZE.lg} aria-hidden />)}
-    </div> : null}
   </div>;
 }
