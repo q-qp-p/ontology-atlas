@@ -55,3 +55,25 @@ test('source grant recovery keeps the selected claim across cancellation, a wron
   await expect(page.getByTestId('analysis-evidence')).toContainText('src/pay.ts');
   await expect(page.getByTestId('analysis-finding-heading')).toHaveText(title);
 });
+
+test('partial date coverage still names the selected claim verdict and marks each path', async ({ page }) => {
+  const twoPaths = { ...files,
+    'capabilities/pay.md': files['capabilities/pay.md'].replace('path: src/pay.ts', 'path: src/pay.ts\nelements: [elements/refund]'),
+    'elements/refund.md': '---\nuid: 40000000-0000-4000-8000-000000000003\nslug: elements/refund\nkind: element\ntitle: Refund\npath: src/refund.ts\n---\nReverses a payment.\n' };
+  await installLibraryWorkHarness(page, { files: twoPaths });
+  await openFolderFromFirstRun(page, 'en');
+  await page.evaluate(() => {
+    const state = window as unknown as { __TAURI_INTERNALS__: { invoke: (command: string, args?: Record<string, unknown>) => Promise<unknown> } };
+    const invoke = state.__TAURI_INTERNALS__.invoke;
+    state.__TAURI_INTERNALS__.invoke = async (command, args) => {
+      if (command === 'git_bound_evidence_dates') return { status: 'partial', omittedVaultPaths: [], omittedSourcePaths: [],
+        vaultChanges: [{ path: 'capabilities/pay.md', exists: true, isDir: false, dirty: false, lastChangedAt: '2026-01-02T00:00:00Z' }],
+        sourceChanges: [{ path: 'src/pay.ts', exists: true, isDir: false, dirty: false, lastChangedAt: '2026-01-03T00:00:00Z' }, { path: 'src/refund.ts', exists: true, isDir: false, dirty: true, lastChangedAt: '2026-01-03T00:00:00Z' }] };
+      return invoke(command, args);
+    };
+  });
+  await page.locator('a[href*="/ontology/insights"]').first().click();
+  await expect(page.getByTestId('analysis-source-status')).toHaveText('Source changed after the record');
+  await expect(page.getByTestId('analysis-evidence')).toContainText('src/pay.ts · changed 2026-01-03');
+  await expect(page.getByTestId('analysis-evidence')).toContainText('src/refund.ts · date not checked');
+});

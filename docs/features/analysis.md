@@ -61,8 +61,9 @@ All or Recorded gaps scope without replacing the selected evidence. A zero-resul
 search preserves that evidence and offers a clear action; clearing or pressing
 Escape returns focus to the search field. Selecting a result is explicit, and
 that selection remains in the first six when the query is cleared. The scope
-filter is an exclusive keyboard-operable control. Each shortened set has a named
-remainder action.
+filter is an exclusive keyboard-operable control that names each scope's count.
+Each shortened set has a named remainder action. The share of capabilities with
+an anchor lives under the count-basis disclosure.
 
 The selected claim links to its declaring document. A local, documented claim
 also links to the existing Map meaning editor and its typed review boundary.
@@ -100,7 +101,9 @@ map recovery paths.
 The total budget is 512 paths, with documents first, and each repository walk
 covers at most 3,000 commits. Omitted paths, uncommitted files, folder-only anchors
 and unavailable or invalid dates remain unknown. Missing paths and newer file
-commits retain the existing verdict precedence. Binding/receipt identity, both
+commits retain the existing verdict precedence. Each recorded path names its own
+state (changed after the document, not found, or date not checked), and the
+selected claim shows its own verdict even when coverage is partial. Binding/receipt identity, both
 canonical roots and both Git revisions are checked before and after reading;
 changed identities discard the comparison. A changed document/path or project
 scope retires the old async request. Cross-repository date ordering is advisory

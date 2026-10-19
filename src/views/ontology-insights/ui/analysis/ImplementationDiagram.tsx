@@ -60,12 +60,11 @@ export function ImplementationDiagram({ claim, responsibility, href }: {
         {branches[0] ? <circle cx={branches[0].x1} cy={branches[0].y1} r="3" /> : null}
       </svg> : null}
       <div className={styles.implementationSubject} data-implementation-source>
-        <span className={styles.nodeKind}><span className="inline-flex items-center gap-1.5"><OntologyMapKindGlyph kind="capability" size={14} />{t('capability')}</span></span>
         <h3 className="text-title font-[var(--font-weight-strong)]">{claim.node.display ?? claim.node.title}</h3>
         <p className="text-body text-[color:var(--color-text-secondary)]">{responsibility || t('responsibilityMissing')}</p>
       </div>
       <div className={styles.implementationElements}>
-        <p className="mb-3 text-body font-[var(--font-weight-strong)]">{t('connectedElements', { count: claim.roles.length })}</p>
+        <p className="mb-3 text-body font-[var(--font-weight-strong)]">{t('connectedElements')}</p>
         <div className={styles.implementationRoles}>
           {roles.map(role => <Link key={role.id} href={href(resolveNodeDocument(role).ownSlug!)} data-testid="analysis-implementation-link" data-implementation-role={role.id}
             aria-label={t('openElementDocument', { name: role.display ?? role.title })}
@@ -78,6 +77,5 @@ export function ImplementationDiagram({ claim, responsibility, href }: {
         {claim.roles.length > limit ? <Button variant="ghost" size="sm" className="atlas-touch-floor mt-3" data-testid="analysis-implementation-more" onClick={() => { pendingFocus.current = claim.roles[limit]?.id ?? null; setLimit(value => value + 6); }}>{t('showMoreItems', { count: Math.min(6, claim.roles.length - limit) })}</Button> : null}
       </div>
     </div>
-    {roles.length ? <figcaption className="mt-5 text-body text-[color:var(--color-text-secondary)]">{t('implementationLegend')}</figcaption> : null}
   </figure>;
 }

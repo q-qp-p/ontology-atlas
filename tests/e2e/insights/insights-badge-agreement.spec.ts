@@ -35,5 +35,6 @@ test('a local folder replaces sample counts and an empty dependency record stays
   await expect(workspace).toHaveAttribute('data-analysis-cross-count', '0');
   await expect(workspace).toContainText('does not establish independence');
   await expect(page.getByTestId('analysis-claim')).toHaveCount(1);
-  await expect(page.getByTestId('analysis-evidence')).toContainText('No source path');
+  await expect(page.getByTestId('analysis-evidence')).toContainText('No path or real implementation-role document is connected');
+  await expect(page.getByTestId('analysis-implementation-empty')).toContainText('An absent record does not establish absent implementation');
 });

@@ -9,6 +9,7 @@
 .pairChoices > button { flex-shrink: 0; }
 .listSearch { display: flex; flex-direction: column; gap: 0.375rem; margin-bottom: 0.75rem; }
 .listSearchStatus { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; min-height: var(--control-h-sm); }
+.listSearchStatus:has(> p:empty:only-child) { min-height: 0; }
 .railActions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; margin-top: 0.5rem; }
 .pairNames { display: flex; flex-direction: column; gap: 0.25rem; }
 .pairTarget { color: var(--color-text-secondary); font-size: var(--text-label); line-height: var(--leading-label); }
@@ -25,7 +26,7 @@
 .selectedConnection { --line-ink: var(--color-indigo-line-a90); --line-width: 2.5; }
 .connections .lineHit { stroke: transparent; stroke-width: 16; pointer-events: stroke; cursor: pointer; }
 .stepper { display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 1.25rem; }
-.supportingFacts { display: flex; flex-wrap: wrap; gap: 0.25rem; border-top: 1px solid var(--color-divider); margin-top: 1.5rem; padding-top: 0.75rem; }
+.countBasis { border-top: 1px solid var(--color-divider); margin-top: 1.5rem; padding-top: 0.75rem; }
 .inspector { min-width: 0; border-left: 1px solid var(--color-divider); padding-left: 1.5rem; }
 .swapHost[data-swapping="true"] { overflow-y: clip; }
 .swapSlot { position: relative; }
@@ -54,8 +55,6 @@
  .layout { grid-template-columns: minmax(0,1fr) 18rem; gap: 1.25rem; }
  .pairRail { grid-column: 1 / -1; padding: 0 0 1rem; border-right: 0; border-bottom: 1px solid var(--color-divider); }
  .railHeading { align-items: center; margin-bottom: 0.5rem; }
- .railHeading > div { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.75rem; }
- .railHeading p { margin-top: 0; }
  .pairChoices { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 0.25rem; }
  .listSearch { max-width: 24rem; }
  .pairChoices { max-height: 12rem; }

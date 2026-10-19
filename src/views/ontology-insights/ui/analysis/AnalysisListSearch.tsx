@@ -6,9 +6,9 @@ import { Button } from '@/shared/ui';
 import { Input } from '@/shared/ui/fields/input';
 import styles from './analysis.module.css';
 
-export function AnalysisListSearch({ value, onChange, label, shown, matches, total, selectionHidden, testId }: {
+export function AnalysisListSearch({ value, onChange, label, matches, total, selectionHidden, testId }: {
   value: string; onChange: (value: string) => void; label: string;
-  shown: number; matches: number; total: number; selectionHidden: boolean; testId: string;
+  matches: number; total: number; selectionHidden: boolean; testId: string;
 }) {
   const t = useTranslations('ontologyPages.insights.analysis');
   const input = useRef<HTMLInputElement>(null);
@@ -18,7 +18,7 @@ export function AnalysisListSearch({ value, onChange, label, shown, matches, tot
       onChange={event => onChange(event.target.value)}
       onKeyDown={event => { if (event.key === 'Escape' && value) { event.preventDefault(); event.stopPropagation(); clear(); } }} />
     <div className={styles.listSearchStatus}>
-      <p role="status" aria-atomic="true" className="text-label text-[color:var(--color-text-secondary)]">{value.trim() ? t('searchMatches', { count: matches, total }) : t('listShown', { shown, total })}</p>
+      <p role="status" aria-atomic="true" className="text-label text-[color:var(--color-text-secondary)]">{value.trim() ? t('searchMatches', { count: matches, total }) : null}</p>
       {value ? <Button variant="ghost" size="sm" className="atlas-touch-floor" onClick={clear} data-testid={`${testId}-clear`}>{t('clearSearch')}</Button> : null}
     </div>
     {value.trim() && !matches ? <p className="text-body text-[color:var(--color-text-secondary)]">{t('noSearchResults')}</p> : null}
