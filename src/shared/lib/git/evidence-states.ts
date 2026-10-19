@@ -37,6 +37,7 @@ export interface EvidenceRow {
   moved: readonly { path: string; changedAt: string }[];
   gone: readonly string[];
   folders: readonly { path: string; changedAt: string }[];
+  undated: readonly string[];
 }
 
 export interface EvidenceStates {
@@ -74,10 +75,9 @@ export function resolveEvidenceStates(
   const rows: EvidenceRow[] = [];
   for (const concept of concepts) {
     const doc = concept.docPath ? changes.get(concept.docPath) : undefined;
-    const { verdict, reason, moved, folders, gone } = judgeEvidence({
-      docChangedAt: concept.docPath ? (doc?.lastChangedAt ?? null) : null,
-      entries: concept.evidencePaths.map((path) => ({ path, change: sourceChanges.get(path) ?? null })),
-    });
+    const docChangedAt = concept.docPath ? (doc?.lastChangedAt ?? null) : null;
+    const entries = concept.evidencePaths.map((path) => ({ path, change: sourceChanges.get(path) ?? null }));
+    const { verdict, reason, moved, folders, gone } = judgeEvidence({ docChangedAt, entries });
     if (verdict === 'current') current.add(concept.id);
     else if (verdict === 'stale') stale.add(concept.id);
     else if (verdict === 'missing') missing.add(concept.id);
@@ -95,6 +95,7 @@ export function resolveEvidenceStates(
         moved,
         gone,
         folders,
+        undated: entries.filter(({ change }) => !change || (change.exists && (!docChangedAt || !change.lastChangedAt))).map(({ path }) => path),
       });
     }
   }

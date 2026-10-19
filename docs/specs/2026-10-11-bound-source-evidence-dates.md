@@ -136,8 +136,8 @@ claim. No new absolute path/remotes are written into Markdown or displayed as pr
 | Connection changed | `analysis.sourceStatus.app-only`; no native snapshot | `analysis.sourceStatus.binding-changed` plus `analysis.retrySourceDates`; compare again |
 | Non-Git or no history | `analysis.sourceStatus.app-only`; inspect recorded claims | `analysis.sourceStatus.no-history`; inspect the document and recorded paths |
 | Unreadable error | `analysis.sourceStatus.app-only`; inspect recorded claims | `analysis.sourceStatus.unreadable` plus `analysis.retrySourceDates`; retry or repair connection |
-| Partial coverage | `analysis.sourceStatus.app-only`; no local Git verdict | `analysis.sourceStatus.partial`; unmeasured claims remain unknown, while proven missing/newer files keep verdict precedence |
-| Current / stale / missing / unknown | `analysis.sourceStatus.app-only`; no invented native verdict | Existing `analysis.sourceShort.*` and `analysis.sourceClaim.*`; open the declaring document |
+| Partial coverage | `analysis.sourceStatus.app-only`; no local Git verdict | `analysis.sourceStatus.partial` with no claim selected; a selected claim shows its own `analysis.sourceShort.*`, so unmeasured claims remain unknown, while proven missing/newer files keep verdict precedence |
+| Current / stale / missing / unknown | `analysis.sourceStatus.app-only`; no invented native verdict | `analysis.sourceShort.*` for the selected claim whenever dates exist, including partial coverage; each recorded path carries `analysis.pathChanged`, `analysis.pathGone` or `analysis.pathUndated`; open the declaring document |
 | No anchors | `analysis.sourceStatus.app-only`; inspect recorded claim | Existing `analysis.sourceStatus.no-anchors`; inspect/correct the claim through the existing action |
 | Largest measured count | No scale claim — web Git reading remains absent | Native fixture returned 512 paths from 513 requests (46,110 serialized bytes); a 3,002-commit fixture left a path outside the 3,000-commit window unknown. This is bounded fixture coverage, not a product scale claim. |
 
@@ -163,8 +163,8 @@ unavailable reads green.
 
 Copy owners are `messages/{en,ko,ja,zh}/ontologyPages.json`. The approved Korean recovery copy names the
 connected code folder in the current scope without repeating the project-kind label. It preserves cancellation,
-wrong-folder and unchanged-connection meaning. Keep the existing `sourceClaim.dated` and `sourceShort.dated`
-limits. The old `different-source` key remains for compatibility, but a valid separate root no longer selects it.
+wrong-folder and unchanged-connection meaning. Keep the existing `sourceShort.dated`
+limit. The old `different-source` key remains for compatibility, but a valid separate root no longer selects it.
 
 ## Edge cases
 
