@@ -382,8 +382,6 @@
       "guidance": "ガイダンス",
       "explanations": "保存された説明",
       "example": "同梱の例",
-      "recorded": "記録されたプロジェクト",
-      "purposeMissing": "プロジェクトの目的がまだ記録されていません。",
       "question": "分析する問い",
       "relationships": "責務間の関係",
       "evidence": "確認する根拠",
@@ -423,7 +421,6 @@
       },
       "empty": "オントロジーフォルダを開くと、記録された関係を確認できます。",
       "legacy": "保存されたリンクに対応する問いを新しい分析画面で開きました。",
-      "purpose": "記録されたプロジェクトの目的",
       "sourceStatus": {
         "example": "ソース · この例では未確認",
         "reading": "ソース · 確認中",
@@ -445,12 +442,9 @@
         "unknown": "この主張のソースの現在の状態は未確認です。"
       },
       "nodeDeclarations": "この図に表示された依存の宣言{count}件",
-      "dependencyDirection": "依存",
       "chooseDeclaration": "依存の宣言を選択",
-      "pairRailTitle": "確認する関係",
-      "pairRailScope": "責務の組{pairs}件 · 宣言{count}件",
+      "pairRailTitle": "関係{count}件",
       "capabilityEvidence": "能力の実装根拠",
-      "findingDeclarations": "二つの責務を結ぶ{count}件の具体的な宣言を読みます。",
       "chooseCapability": "確認する能力を選択",
       "gapsFilter": "不足",
       "allFilter": "すべて",
@@ -458,11 +452,9 @@
       "recordingNotImplementation": "記録がないことは実装の不在を意味しません。",
       "anchorSummary": "パスが記録された能力 · {anchored}/{total}",
       "gapSummary": "記録の不足 · 能力{count}件",
-      "evidenceChain": "主張から根拠へ",
       "rationaleShort": "この関係のメモは未記録です。",
       "readBeforeRelying": "Markdown本文に説明があるか原文を確認してください。",
       "limitsShort": "記録された主張は実行時の影響や人の承認を証明しません。",
-      "selected": "選択中",
       "scopeAll": "記録された全プロジェクト",
       "scopeCount": "このフォルダのプロジェクト{count}件",
       "moreRoles": "他に実装の役割{count}件",
@@ -472,9 +464,6 @@
       "copySelectedCheck": "読み取り専用の確認依頼をコピー",
       "copiedSelected": "コピー済み",
       "reviewSelectedRequest": "依頼内容を確認",
-      "lineLegend": "線1本が宣言1件です",
-      "previousDeclarations": "前の宣言",
-      "nextDeclarations": "次の宣言",
       "selectionMissing": "保存された選択はこのフォルダにありません。現在の記録の概要を表示しています。",
       "sourceShort": {
         "missing": "ソースパスが見つかりません",
@@ -482,8 +471,6 @@
         "dated": "ソース日付を比較済み・意味は未検証",
         "unknown": "ソースの現在の状態は未確認"
       },
-      "declarationsInView": "この図で宣言{count}件",
-      "declarationPage": "{from}–{to} / {total}",
       "documentTitle": "分析 · Ontology Atlas",
       "findConnection": "関係を検索",
       "findCapability": "能力を検索",
@@ -507,7 +494,10 @@
       "retrySourceDates": "日付を再比較",
       "sourceRecovery": {
         "wrongFolder": "選択したフォルダーは、このプロジェクトの接続先と異なります。接続済みコードフォルダーを選択してください。接続は変更されていません。"
-      }
+      },
+      "previousDeclaration": "前の宣言",
+      "nextDeclaration": "次の宣言",
+      "declarationStep": "宣言{index} / {total}"
     }
   }
 }

@@ -19,7 +19,7 @@ import { filterAnalysisItems, visibleAnalysisItems } from '../../lib/analysis-se
 import { buildAnalysisModel, type AnalysisClaim } from '../../lib/analysis-model';
 import { PairRail } from './PairRail';
 import { AnalysisListSearch } from './AnalysisListSearch';
-import { DependencyDiagram, declarationNumeral } from './DependencyDiagram';
+import { DependencyDiagram } from './DependencyDiagram';
 import { orderDeclarations } from './declaration-layout';
 import { ImplementationDiagram } from './ImplementationDiagram';
 import styles from './analysis.module.css';
@@ -68,14 +68,14 @@ export function AnalysisWorkspace({ agentReady, onInspect, active, nodes, edges,
   const missingSelection = Boolean(initialClaim && !model.claims.some(item => item.node.id === initialClaim) || initialEdge && !model.pairs.some(item => item.edges.some(candidate => candidate.id === initialEdge)));
   const project = model.projects.length === 1 ? model.projects[0] : null;
   const scopeName = project ? name(project) : mode === 'local' && vault.handle ? vault.handle.name : t('scopeAll');
+  const scopeNote = [mode === 'static' ? t('example') : null, project ? null : t('scopeCount', { count: model.projects.length })].filter(Boolean).join(' · ');
   const selectionKey = evidenceQuestion ? `claim:${claim?.node.id ?? ''}` : `edge:${edge?.id ?? ''}`;
   const visibleClaims = visibleAnalysisItems(filteredClaims, claimLimit, claim?.node.id ?? null, item => item.node.id);
   const { leaving: leavingKey } = useSurfaceSwap(selectionKey);
   const { hostRef: inspectorHost, capture: captureInspector } = useSwapHeight(selectionKey);
   const shownEdge = (key: string) => key.startsWith('edge:') ? edges.find(item => `edge:${item.id}` === key) ?? null : null;
   const shownClaim = (key: string) => key.startsWith('claim:') ? model.claims.find(item => `claim:${item.node.id}` === key) ?? null : null;
-  const numeralOf = (item: KnowledgeGraphEdge) => { const owner = model.pairs.find(candidate => candidate.edges.some(other => other.id === item.id)); return declarationNumeral(owner === pair ? declarations.findIndex(other => other.id === item.id) : owner ? orderDeclarations(owner.edges).findIndex(other => other.id === item.id) : 0); };
-  const heading = (key: string) => { const item = shownEdge(key), chosen = shownClaim(key); return <><p className="text-label text-[color:var(--color-text-tertiary)]">{item ? <><span className="font-mono">{numeralOf(item)}</span> · </> : null}{t('evidenceChain')}</p><h3 className="mt-2 text-title font-[var(--font-weight-strong)]">{item ? name(model.byId.get(item.from)!) : chosen ? name(chosen.node) : t('noClaim')}</h3>{item ? <p className="mt-1 text-body text-[color:var(--color-text-secondary)]">→ {name(model.byId.get(item.to)!)}</p> : null}</>; };
+  const heading = (key: string) => { const item = shownEdge(key), chosen = shownClaim(key); return <><h3 className="text-title font-[var(--font-weight-strong)]">{item ? name(model.byId.get(item.from)!) : chosen ? name(chosen.node) : t('noClaim')}</h3>{item ? <p className="mt-1 text-body text-[color:var(--color-text-secondary)]">→ {name(model.byId.get(item.to)!)}</p> : null}</>; };
   const body = (key: string) => { const item = shownEdge(key), chosen = shownClaim(key); const implemented = item ? implementationOf(item) : null; return item ? <>
     <div className={styles.documentStep}>{docsOf(item).map(doc => <div key={doc.slug}><Link href={href(doc.slug)} className={controlClass({ hoverSurface: 'lift', shape: 'card', size: 'lg', tone: 'accent', className: 'atlas-touch-floor w-full justify-between' })}>{t('openDeclaration')}</Link><p className="mt-2 break-all text-label text-[color:var(--color-text-tertiary)]">{doc.path}</p></div>)}{!docsOf(item).length ? <p className="text-body">{t('documentMissing')}</p> : null}</div>
     <div className={styles.evidenceStep}><span className={styles.stepLabel}>{t('why')}</span><p className="mt-2 text-body leading-prose">{item.label || t('rationaleShort')}</p>{!item.label ? <p className="mt-2 text-label text-[color:var(--color-text-tertiary)]">{t('readBeforeRelying')}</p> : null}</div>
@@ -84,7 +84,7 @@ export function AnalysisWorkspace({ agentReady, onInspect, active, nodes, edges,
   const swap = (render: (key: string) => ReactNode) => <div className={styles.swapSlot}>{leavingKey ? <div key={`out:${leavingKey}`} inert aria-hidden="true" className="motion-swap-out">{render(leavingKey)}</div> : null}<div key={selectionKey} className="motion-swap-in">{render(selectionKey)}</div></div>;
   useLayoutEffect(() => {
     if (!evidenceQuestion && pendingEdgeFocus.current) {
-      const selected = graphStage.current?.querySelector<HTMLButtonElement>('[data-testid="analysis-witness"][aria-pressed="true"]');
+      const selected = graphStage.current?.querySelector<HTMLButtonElement>('[data-dependency-node^="from:"][aria-pressed="true"]');
       if (selected) { selected.focus(); selected.scrollIntoView({ block: 'nearest', inline: 'nearest' }); pendingEdgeFocus.current = false; }
     }
     if (!pendingClaimFocus.current || !evidenceQuestion) return;
@@ -105,19 +105,18 @@ export function AnalysisWorkspace({ agentReady, onInspect, active, nodes, edges,
   function openEvidence(gaps: boolean) { pendingClaimFocus.current = null; setClaimQuery(''); setClaimLimit(6); setQuestion('evidence'); setOnlyGaps(gaps); setClaimId(null); }
   return <section className={styles.workspace} data-testid="analysis-workspace" data-analysis-capability-count={model.claims.length} data-analysis-cross-count={model.crossCount} data-analysis-project-count={model.projects.length}>
     <div className={styles.scopeBar} data-testid="analysis-scope">
-      <div className="flex min-w-0 items-center gap-2"><OntologyMapKindGlyph kind="project" size={16} /><span className="text-body font-[var(--font-weight-strong)]">{scopeName}</span><span className="text-label text-[color:var(--color-text-tertiary)]">{mode === 'static' ? t('example') : t('recorded')}{!project ? ` · ${t('scopeCount', { count: model.projects.length })}` : ''}</span></div>
+      <div className="flex min-w-0 items-center gap-2"><OntologyMapKindGlyph kind="project" size={16} /><span className="text-body font-[var(--font-weight-strong)]">{scopeName}</span>{scopeNote ? <span className="text-label text-[color:var(--color-text-tertiary)]">{scopeNote}</span> : null}</div>
       <SegmentedControl ariaLabel={t('question')} value={question} onChange={value => setQuestion(value as typeof question)} options={[{ value: 'relationships', label: t('relationships') }, { value: 'evidence', label: t('evidence') }]} />
     </div>
     {missingSelection ? <p role="status" data-testid="analysis-missing-selection" className="mb-3 text-body text-[color:var(--color-text-secondary)]">{t('selectionMissing')}</p> : null}
     <div className={styles.findingHeading}>
       <div><h2 data-testid="analysis-finding-heading" className="text-hero font-[var(--font-weight-strong)] tracking-tight">{!evidenceQuestion && pair ? <>{name(pair.from)} <span className="text-[color:var(--color-text-tertiary)]">→</span> {name(pair.to)}</> : claim ? name(claim.node) : t('evidenceQuestion')}</h2>
-        <p className="mt-2 text-body-lg text-[color:var(--color-text-secondary)]">{!evidenceQuestion && pair ? t('findingDeclarations', { count: pair.edges.length }) : t('evidenceLead')}</p>
+        {evidenceQuestion || !pair ? <p className="mt-2 text-body-lg text-[color:var(--color-text-secondary)]">{t('evidenceLead')}</p> : null}
       </div>
-      <div className={styles.scopeDetail}><Disclosure summary={t('purpose')} summaryTestId="analysis-purpose" className={styles.purposeDisclosure}><p className="text-body leading-prose text-[color:var(--color-text-secondary)]">{project ? project.summary || model.documentOf(project)?.definitionPreview || t('purposeMissing') : model.projects.map(name).join(' · ') || t('purposeMissing')}</p></Disclosure></div>
     </div>
     {!pair && question === 'relationships' ? <p className="mb-4 text-body text-[color:var(--color-text-secondary)]">{t('noDependencies', { count: model.dependencyCount })}</p> : null}
     <div className={styles.layout} data-testid="analysis-layout">
-      {!evidenceQuestion && pair ? <PairRail pairs={model.pairs} selected={pair.id} count={model.crossCount} onSelect={next => { captureInspector(); setPairId(next.id); setEdgeId(null); }} /> : <nav className={styles.pairRail} aria-label={t('chooseCapability')}>
+      {!evidenceQuestion && pair ? <PairRail pairs={model.pairs} selected={pair.id} onSelect={next => { captureInspector(); setPairId(next.id); setEdgeId(null); }} /> : <nav className={styles.pairRail} aria-label={t('chooseCapability')}>
         <div className={styles.railHeading}><h3 className="text-body-lg font-[var(--font-weight-strong)]">{t(onlyGaps ? 'gapClaims' : 'allClaims', { count: candidates.length })}</h3></div>
         <div className="mb-3"><SegmentedControl ariaLabel={t('capabilityFilter')} value={onlyGaps ? 'gaps' : 'all'} onChange={value => openEvidence(value === 'gaps')} options={[{ value: 'all', label: t('allFilter') }, { value: 'gaps', label: t('gapsFilter') }]} /></div>
         <AnalysisListSearch value={claimQuery} onChange={value => { pendingClaimFocus.current = null; setClaimQuery(value); setClaimLimit(6); }} label={t('findCapability')} shown={visibleClaims.length} matches={filteredClaims.length} total={candidates.length} selectionHidden={Boolean(claimQuery.trim() && claim && !filteredClaims.some(item => item.node.id === claim.node.id))} testId="analysis-claim-search" />
@@ -129,7 +128,7 @@ export function AnalysisWorkspace({ agentReady, onInspect, active, nodes, edges,
       </nav>}
       <div ref={graphStage} className={styles.stage}>
         {!evidenceQuestion && pair && edge ? <DependencyDiagram pair={pair} selected={edge} byId={model.byId} onSelect={next => { captureInspector(); setEdgeId(next.id); }} /> : claim ? <ImplementationDiagram key={claim.node.id} claim={claim} responsibility={[...model.domainsOf.get(claim.node.id) ?? []].map(id => name(model.byId.get(id)!)).join(' · ')} href={href} /> : <p className="text-body">{t('noGaps')}</p>}
-        <div className={styles.supportingFacts}><Button variant="ghost" size="sm" className="atlas-touch-floor" onClick={() => openEvidence(false)}>{t('anchorSummary', { anchored: model.anchored, total: model.claims.length })}</Button><Button variant="ghost" size="sm" className="atlas-touch-floor" onClick={() => openEvidence(true)}>{t('gapSummary', { count: model.gaps.length })}</Button></div>
+        {evidenceQuestion ? <div className={styles.supportingFacts}><Button variant="ghost" size="sm" className="atlas-touch-floor" onClick={() => openEvidence(false)}>{t('anchorSummary', { anchored: model.anchored, total: model.claims.length })}</Button><Button variant="ghost" size="sm" className="atlas-touch-floor" onClick={() => openEvidence(true)}>{t('gapSummary', { count: model.gaps.length })}</Button></div> : null}
         <Disclosure summary={t('countBasis')}><p className="text-body leading-prose text-[color:var(--color-text-secondary)]">{t('countDetails', { total: model.dependencyCount, cross: model.crossCount, internal: model.internal, unassigned: model.unassigned })}</p><p className="mt-3 text-body leading-prose text-[color:var(--color-text-secondary)]">{t('inspectionBasis', { inspected: model.inspected, total: model.claims.length })}</p><div className="mt-3 flex flex-wrap gap-3">{relationTypes.map(row => <span key={row.type} className="text-label text-[color:var(--color-text-tertiary)]">{relationLabel(row.type)} · {row.count}</span>)}</div></Disclosure>
       </div>
       <aside className={styles.inspector} data-testid="analysis-evidence">

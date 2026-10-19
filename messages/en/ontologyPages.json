@@ -382,8 +382,6 @@
       "guidance": "Guidance",
       "explanations": "Written explanations",
       "example": "BUNDLED EXAMPLE",
-      "recorded": "RECORDED PROJECT",
-      "purposeMissing": "A project purpose has not been recorded.",
       "question": "Analysis question",
       "relationships": "Relationships",
       "evidence": "Evidence to check",
@@ -423,7 +421,6 @@
       },
       "empty": "Open an ontology folder to inspect its recorded relationships.",
       "legacy": "This saved link now opens the corresponding question in Analysis.",
-      "purpose": "Recorded project purpose",
       "sourceStatus": {
         "example": "Source · not checked in this example",
         "reading": "Source · checking",
@@ -445,12 +442,9 @@
         "unknown": "Source currentness for this claim is not checked."
       },
       "nodeDeclarations": "{count} dependency declarations shown in this graph",
-      "dependencyDirection": "depends on",
       "chooseDeclaration": "Choose a declaration",
-      "pairRailTitle": "Connections to inspect",
-      "pairRailScope": "{pairs} pairs · {count} declarations",
+      "pairRailTitle": "{count, plural, one {# connection} other {# connections}}",
       "capabilityEvidence": "IMPLEMENTATION CLAIM",
-      "findingDeclarations": "{count} concrete declarations connect these responsibilities.",
       "chooseCapability": "Choose a capability to inspect",
       "gapsFilter": "Gaps",
       "allFilter": "All",
@@ -458,11 +452,9 @@
       "recordingNotImplementation": "An absent record does not establish absent implementation.",
       "anchorSummary": "Capabilities with a recorded path · {anchored}/{total}",
       "gapSummary": "Record gaps · {count} capabilities",
-      "evidenceChain": "FROM CLAIM TO EVIDENCE",
       "rationaleShort": "No structured relationship note is recorded.",
       "readBeforeRelying": "The Markdown body may contain an explanation; inspect the original.",
       "limitsShort": "Recorded claims do not establish runtime impact or human acceptance.",
-      "selected": "Selected",
       "scopeAll": "All recorded projects",
       "scopeCount": "{count} projects in this folder",
       "moreRoles": "{count} additional implementation roles",
@@ -472,9 +464,6 @@
       "copySelectedCheck": "Copy read-only check",
       "copiedSelected": "Copied",
       "reviewSelectedRequest": "Inspect the exact request",
-      "lineLegend": "Each line is one declaration",
-      "previousDeclarations": "Previous declarations",
-      "nextDeclarations": "Next declarations",
       "selectionMissing": "The saved selection is not in this folder. This overview shows the current records.",
       "sourceShort": {
         "missing": "Source path missing",
@@ -482,8 +471,6 @@
         "dated": "Source dates compared; meaning unverified",
         "unknown": "Source currentness not checked"
       },
-      "declarationsInView": "{count, plural, one {# declaration} other {# declarations}} in this drawing",
-      "declarationPage": "{from}–{to} / {total}",
       "documentTitle": "Analysis · Ontology Atlas",
       "findConnection": "Search connections",
       "findCapability": "Search capabilities",
@@ -507,7 +494,10 @@
       "retrySourceDates": "Compare dates again",
       "sourceRecovery": {
         "wrongFolder": "The selected folder does not match this project's connection. Choose the connected code folder; the connection is unchanged."
-      }
+      },
+      "previousDeclaration": "Previous declaration",
+      "nextDeclaration": "Next declaration",
+      "declarationStep": "Declaration {index} of {total}"
     }
   }
 }

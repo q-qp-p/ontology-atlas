@@ -382,8 +382,6 @@
       "guidance": "指导",
       "explanations": "已保存的说明",
       "example": "内置示例",
-      "recorded": "已记录的项目",
-      "purposeMissing": "尚未记录项目目的。",
       "question": "分析问题",
       "relationships": "职责之间的关系",
       "evidence": "待检查的依据",
@@ -423,7 +421,6 @@
       },
       "empty": "打开本体文件夹以检查其记录的关系。",
       "legacy": "已在新分析界面中打开保存链接对应的问题。",
-      "purpose": "已记录的项目目的",
       "sourceStatus": {
         "example": "源码 · 此示例中未检查",
         "reading": "源码 · 检查中",
@@ -445,12 +442,9 @@
         "unknown": "尚未检查此主张的源码当前状态。"
       },
       "nodeDeclarations": "此图显示的 {count} 条依赖声明",
-      "dependencyDirection": "依赖",
       "chooseDeclaration": "选择依赖声明",
-      "pairRailTitle": "待查看的关系",
-      "pairRailScope": "{pairs} 组职责关系 · {count} 条声明",
+      "pairRailTitle": "{count} 组关系",
       "capabilityEvidence": "能力的实现依据",
-      "findingDeclarations": "阅读连接这两个职责的 {count} 条具体声明。",
       "chooseCapability": "选择待查看的能力",
       "gapsFilter": "缺项",
       "allFilter": "全部",
@@ -458,11 +452,9 @@
       "recordingNotImplementation": "没有记录不代表实现不存在。",
       "anchorSummary": "已记录路径的能力 · {anchored}/{total}",
       "gapSummary": "记录缺项 · {count} 个能力",
-      "evidenceChain": "从主张到依据",
       "rationaleShort": "此关系的结构化备注尚未记录。",
       "readBeforeRelying": "Markdown 正文中可能有说明，请查看原文。",
       "limitsShort": "已记录的主张不证明运行时影响或人工批准。",
-      "selected": "已选择",
       "scopeAll": "全部已记录项目",
       "scopeCount": "此文件夹中的 {count} 个项目",
       "moreRoles": "另有 {count} 个实现角色",
@@ -472,9 +464,6 @@
       "copySelectedCheck": "复制只读检查请求",
       "copiedSelected": "已复制",
       "reviewSelectedRequest": "查看请求内容",
-      "lineLegend": "每条线代表一条声明",
-      "previousDeclarations": "上一组声明",
-      "nextDeclarations": "下一组声明",
       "selectionMissing": "此文件夹中没有保存的选择。这里显示当前记录的概览。",
       "sourceShort": {
         "missing": "源码路径缺失",
@@ -482,8 +471,6 @@
         "dated": "已比较源码日期，含义未验证",
         "unknown": "尚未检查源码当前状态"
       },
-      "declarationsInView": "此图中 {count} 条声明",
-      "declarationPage": "{from}–{to} / {total}",
       "documentTitle": "分析 · Ontology Atlas",
       "findConnection": "查找关系",
       "findCapability": "查找能力",
@@ -507,7 +494,10 @@
       "retrySourceDates": "重新比较日期",
       "sourceRecovery": {
         "wrongFolder": "所选文件夹与此项目的连接不匹配。请选择已连接的代码文件夹。现有连接未更改。"
-      }
+      },
+      "previousDeclaration": "上一条声明",
+      "nextDeclaration": "下一条声明",
+      "declarationStep": "声明 {index} / {total}"
     }
   }
 }
