@@ -445,7 +445,6 @@
       "chooseDeclaration": "依存の宣言を選択",
       "pairRailTitle": "関係{count}件",
       "capabilityEvidence": "能力の実装根拠",
-      "findingDeclarations": "依存の宣言{count}件",
       "chooseCapability": "確認する能力を選択",
       "gapsFilter": "不足",
       "allFilter": "すべて",

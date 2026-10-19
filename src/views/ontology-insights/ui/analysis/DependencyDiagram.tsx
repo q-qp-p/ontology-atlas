@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { IconButton } from '@/shared/ui';
@@ -23,8 +23,6 @@ export function DependencyDiagram({ pair, selected, byId, onSelect }: {
 }) {
   const t = useTranslations('ontologyPages.insights.analysis');
   const host = useRef<HTMLDivElement>(null);
-  const stepper = useRef<HTMLDivElement>(null);
-  const stepperFocus = useRef<'previous' | 'next' | null>(null);
   const pages = useMemo(() => declarationPages(pair.edges), [pair.edges]);
   const ordered = useMemo(() => pages.flatMap(page => page.edges), [pages]);
   const selectedIndex = Math.max(0, ordered.findIndex(edge => edge.id === selected.id));
@@ -45,16 +43,10 @@ export function DependencyDiagram({ pair, selected, byId, onSelect }: {
     const id = setTimeout(() => setShown(value => ({ ...value, leavingPage: null, leavingLine: null })), EXIT_WINDOW_MS);
     return () => clearTimeout(id);
   }, [shown.leavingPage, shown.leavingLine]);
-  useLayoutEffect(() => {
-    const side = stepperFocus.current;
-    stepperFocus.current = null;
-    if (side) stepper.current?.querySelector<HTMLButtonElement>(`[data-step="${side}"]`)?.focus();
-  }, [selectedIndex]);
-  function step(delta: 1 | -1) {
-    const next = selectedIndex + delta;
-    if (next === 0 || next === ordered.length - 1) stepperFocus.current = delta > 0 ? 'previous' : 'next';
-    onSelect(ordered[next]!);
-  }
+  const stepButton = (delta: 1 | -1, label: string, icon: ReactNode) => {
+    const blocked = !ordered[selectedIndex + delta];
+    return <IconButton label={label} size="lg" tone="muted" hoverInk={blocked ? undefined : 'strong'} hoverSurface={blocked ? undefined : 'lift'} aria-disabled={blocked || undefined} onClick={blocked ? undefined : () => onSelect(ordered[selectedIndex + delta]!)} className="atlas-touch-floor aria-disabled:cursor-not-allowed aria-disabled:opacity-55">{icon}</IconButton>;
+  };
   useLayoutEffect(() => {
     const element = host.current;
     if (!element) return;
@@ -103,7 +95,7 @@ export function DependencyDiagram({ pair, selected, byId, onSelect }: {
         {lines.map(line => connection(line, hot(line.id) ? styles.hotConnection : styles.connection, true))}
         {shown.leavingLine ? <g key={`out:${shown.leavingLine.id}`} className={`structure-link-out ${styles.selectedConnection}`}>{connection(shown.leavingLine, '', false)}</g> : null}
         {active ? <g key={`on:${active.id}`} data-connection="selected" className={styles.selectedConnection}>{connection(active, '', true)}</g> : null}
-        {lines.map(line => <path key={`hit:${line.id}`} data-testid="analysis-witness" data-edge={line.id} data-state={line.id === selected.id ? 'selected' : 'rest'} className={styles.lineHit} d={curvePath(line)} onClick={() => onSelect(page.edges.find(edge => edge.id === line.id)!)} {...hoverProps({ side: 'edge', id: line.id })} />)}
+        {lines.map(line => <path key={`hit:${line.id}`} data-testid="analysis-witness" data-edge={line.id} className={styles.lineHit} d={curvePath(line)} onClick={() => onSelect(page.edges.find(edge => edge.id === line.id)!)} {...hoverProps({ side: 'edge', id: line.id })} />)}
       </svg>
       {leaving ? <>
         <div key={`out-from:${leaving.key}`} inert aria-hidden="true" className={`motion-swap-out ${styles.objectColumn} ${styles.sourceColumn}`}>{cards(leaving, 'from', false)}</div>
@@ -112,10 +104,10 @@ export function DependencyDiagram({ pair, selected, byId, onSelect }: {
       <div key={`from:${pageKey}`} className={`motion-swap-in ${styles.objectColumn} ${styles.sourceColumn}`}>{cards({ page, selectedId: selected.id }, 'from', true)}</div>
       <div key={`to:${pageKey}`} className={`motion-swap-in ${styles.objectColumn} ${styles.targetColumn}`}>{cards({ page, selectedId: selected.id }, 'to', true)}</div>
     </div>
-    {ordered.length > 1 ? <div ref={stepper} role="group" aria-label={t('chooseDeclaration')} className={styles.stepper}>
-      <IconButton data-step="previous" label={t('previousDeclaration')} size="lg" tone="muted" hoverInk="strong" hoverSurface="lift" className="atlas-touch-floor" disabled={selectedIndex === 0} onClick={() => step(-1)}><ChevronLeft size={ICON_SIZE.lg} aria-hidden /></IconButton>
-      <span data-testid="analysis-declaration-step" className="font-mono text-label tabular-nums text-[color:var(--color-text-tertiary)]">{t('declarationStep', { index: selectedIndex + 1, total: ordered.length })}</span>
-      <IconButton data-step="next" label={t('nextDeclaration')} size="lg" tone="muted" hoverInk="strong" hoverSurface="lift" className="atlas-touch-floor" disabled={selectedIndex + 1 >= ordered.length} onClick={() => step(1)}><ChevronRight size={ICON_SIZE.lg} aria-hidden /></IconButton>
+    {ordered.length > 1 ? <div role="group" aria-label={t('chooseDeclaration')} className={styles.stepper}>
+      {stepButton(-1, t('previousDeclaration'), <ChevronLeft size={ICON_SIZE.lg} aria-hidden />)}
+      <span data-testid="analysis-declaration-step" aria-live="polite" className="font-mono text-label tabular-nums text-[color:var(--color-text-tertiary)]">{t('declarationStep', { index: selectedIndex + 1, total: ordered.length })}<span className="sr-only"> · {name(byId.get(selected.from)!)} → {name(byId.get(selected.to)!)}</span></span>
+      {stepButton(1, t('nextDeclaration'), <ChevronRight size={ICON_SIZE.lg} aria-hidden />)}
     </div> : null}
   </div>;
 }

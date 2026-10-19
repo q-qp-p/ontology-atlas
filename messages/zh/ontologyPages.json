@@ -445,7 +445,6 @@
       "chooseDeclaration": "选择依赖声明",
       "pairRailTitle": "{count} 组关系",
       "capabilityEvidence": "能力的实现依据",
-      "findingDeclarations": "{count} 条依赖声明",
       "chooseCapability": "选择待查看的能力",
       "gapsFilter": "缺项",
       "allFilter": "全部",

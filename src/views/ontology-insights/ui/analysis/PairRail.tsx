@@ -16,7 +16,7 @@ export function PairRail({ pairs, selected, onSelect }: { pairs: readonly Analys
   const [query, setQuery] = useState('');
   const list = useRef<HTMLDivElement>(null);
   const pending = useRef<string | null>(null);
-  const filtered = useMemo(() => filterAnalysisItems(pairs, query, pair => [name(pair.from), pair.from.title, name(pair.to), pair.to.title]), [pairs, query]);
+  const filtered = useMemo(() => filterAnalysisItems(pairs, pairs.length > 6 ? query : '', pair => [name(pair.from), pair.from.title, name(pair.to), pair.to.title]), [pairs, query]);
   const visible = visibleAnalysisItems(filtered, limit, selected, pair => pair.id);
   useLayoutEffect(() => {
     if (!pending.current) return;

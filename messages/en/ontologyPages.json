@@ -445,7 +445,6 @@
       "chooseDeclaration": "Choose a declaration",
       "pairRailTitle": "{count, plural, one {# connection} other {# connections}}",
       "capabilityEvidence": "IMPLEMENTATION CLAIM",
-      "findingDeclarations": "{count, plural, one {# dependency declaration} other {# dependency declarations}}",
       "chooseCapability": "Choose a capability to inspect",
       "gapsFilter": "Gaps",
       "allFilter": "All",

@@ -84,7 +84,7 @@ export function AnalysisWorkspace({ agentReady, onInspect, active, nodes, edges,
   const swap = (render: (key: string) => ReactNode) => <div className={styles.swapSlot}>{leavingKey ? <div key={`out:${leavingKey}`} inert aria-hidden="true" className="motion-swap-out">{render(leavingKey)}</div> : null}<div key={selectionKey} className="motion-swap-in">{render(selectionKey)}</div></div>;
   useLayoutEffect(() => {
     if (!evidenceQuestion && pendingEdgeFocus.current) {
-      const selected = graphStage.current?.querySelector<HTMLButtonElement>('[data-testid="analysis-witness"][aria-pressed="true"]');
+      const selected = graphStage.current?.querySelector<HTMLButtonElement>('[data-dependency-node^="from:"][aria-pressed="true"]');
       if (selected) { selected.focus(); selected.scrollIntoView({ block: 'nearest', inline: 'nearest' }); pendingEdgeFocus.current = false; }
     }
     if (!pendingClaimFocus.current || !evidenceQuestion) return;
@@ -111,7 +111,7 @@ export function AnalysisWorkspace({ agentReady, onInspect, active, nodes, edges,
     {missingSelection ? <p role="status" data-testid="analysis-missing-selection" className="mb-3 text-body text-[color:var(--color-text-secondary)]">{t('selectionMissing')}</p> : null}
     <div className={styles.findingHeading}>
       <div><h2 data-testid="analysis-finding-heading" className="text-hero font-[var(--font-weight-strong)] tracking-tight">{!evidenceQuestion && pair ? <>{name(pair.from)} <span className="text-[color:var(--color-text-tertiary)]">→</span> {name(pair.to)}</> : claim ? name(claim.node) : t('evidenceQuestion')}</h2>
-        <p className="mt-2 text-body-lg text-[color:var(--color-text-secondary)]">{!evidenceQuestion && pair ? t('findingDeclarations', { count: pair.edges.length }) : t('evidenceLead')}</p>
+        {evidenceQuestion || !pair ? <p className="mt-2 text-body-lg text-[color:var(--color-text-secondary)]">{t('evidenceLead')}</p> : null}
       </div>
     </div>
     {!pair && question === 'relationships' ? <p className="mb-4 text-body text-[color:var(--color-text-secondary)]">{t('noDependencies', { count: model.dependencyCount })}</p> : null}

@@ -1,6 +1,6 @@
 import type { KnowledgeGraphEdge } from '@/entities/knowledge-graph';
 
-export const DECLARATIONS_PER_PAGE = 4;
+const DECLARATIONS_PER_PAGE = 4;
 export const ARROW_SIZE = 8;
 const PORT_GAP = 10;
 

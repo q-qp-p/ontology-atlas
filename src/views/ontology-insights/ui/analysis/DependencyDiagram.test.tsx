@@ -28,7 +28,8 @@ describe('dependency diagram', () => {
     mount();
     fireEvent.pointerEnter(document.querySelector('[data-dependency-node="from:a1"]')!);
     for (let index = 0; index < 4; index++) fireEvent.click(screen.getByRole('button', { name: 'Next declaration' }));
-    expect(step()).toHaveTextContent('Declaration 5 of 7');
+    expect(step()).toHaveTextContent('Declaration 5 of 7 · a3 → b5');
+    expect(step()).toHaveAttribute('aria-live', 'polite');
     expect(document.querySelector('[data-dependency-node="from:a3"]')).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByTestId('analysis-dependency-diagram')).toBeInTheDocument();
   });
@@ -41,12 +42,13 @@ describe('dependency diagram', () => {
     expect(document.querySelector('[data-dependency-node="to:b3"]')).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('keeps keyboard focus on the stepper when a press reaches the last declaration', () => {
+  it('keeps keyboard focus in place when a press reaches the last declaration', () => {
     mount();
     const next = screen.getByRole('button', { name: 'Next declaration' });
     next.focus();
-    for (let index = 0; index < 6; index++) fireEvent.click(next);
-    expect(next).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Previous declaration' })).toHaveFocus();
+    for (let index = 0; index < 7; index++) fireEvent.click(next);
+    expect(next).toHaveAttribute('aria-disabled', 'true');
+    expect(next).toHaveFocus();
+    expect(step()).toHaveTextContent('Declaration 7 of 7');
   });
 });

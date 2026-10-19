@@ -32,10 +32,18 @@ test('multi-project scope and expanded declarations remain explicit and bounded'
   expect(await page.locator('[data-dependency-node]').count()).toBeLessThanOrEqual(8);
   const next = page.getByRole('button', { name: 'Next declaration', exact: true });
   for (let press = 0; press < 4; press++) await next.click();
-  await expect(page.getByTestId('analysis-declaration-step')).toHaveText('Declaration 5 of 96');
+  await expect(page.getByTestId('analysis-declaration-step')).toContainText('Declaration 5 of 96');
   await expect(page.getByTestId('analysis-witness')).toHaveCount(4);
   await expect(next).toBeFocused();
   expect(await page.locator('[data-dependency-node]').count()).toBeLessThanOrEqual(8);
+});
+
+test('a saved declaration reopens with focus on its source', async ({ page }) => {
+  await page.goto('/en/ontology/insights/?guides=off');
+  await page.getByTestId('analysis-pair').nth(1).click();
+  const edge = await page.getByTestId('analysis-witness').last().getAttribute('data-edge');
+  await page.goto(`/en/ontology/insights/?guides=off&review=${encodeURIComponent(`relation:${edge}`)}`);
+  await expect(page.locator('[data-dependency-node^="from:"][aria-pressed="true"]')).toBeFocused();
 });
 
 test('two-hundred-percent text keeps nodes, evidence and controls inside the reading width', async ({ page }) => {

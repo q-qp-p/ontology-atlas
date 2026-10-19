@@ -445,7 +445,6 @@
       "chooseDeclaration": "의존 선언 선택",
       "pairRailTitle": "연결 {count}개",
       "capabilityEvidence": "역량의 구현 근거",
-      "findingDeclarations": "의존 선언 {count}개",
       "chooseCapability": "살펴볼 역량 선택",
       "gapsFilter": "빈틈",
       "allFilter": "전체",
