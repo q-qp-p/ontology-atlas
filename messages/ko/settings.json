@@ -202,6 +202,7 @@
   "workspaceShapeStartMap": "지도 시작",
   "workspaceShapeStartWiki": "위키 시작",
   "workspaceShapeStarted": "이 폴더에 추가했어요.",
+  "workspaceShapeFailed": "이 폴더에 추가하지 못했어요. 다시 시도해 주세요.",
   "wikiWriteModeLabel": "에이전트가 위키 문서를 쓸 때",
   "wikiWriteModeAuto": "바로 쓰기",
   "wikiWriteModeAsk": "매번 묻기",

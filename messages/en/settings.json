@@ -202,6 +202,7 @@
   "workspaceShapeStartMap": "Start the map",
   "workspaceShapeStartWiki": "Start a wiki",
   "workspaceShapeStarted": "Added to this folder.",
+  "workspaceShapeFailed": "Could not add to this folder. Try again.",
   "wikiWriteModeLabel": "When the agent writes a wiki page",
   "wikiWriteModeAuto": "Write at once",
   "wikiWriteModeAsk": "Ask each time",

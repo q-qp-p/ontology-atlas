@@ -202,6 +202,7 @@
   "workspaceShapeStartMap": "建地图",
   "workspaceShapeStartWiki": "建 Wiki",
   "workspaceShapeStarted": "已添加到此文件夹。",
+  "workspaceShapeFailed": "无法添加到此文件夹，请重试。",
   "wikiWriteModeLabel": "智能体写 Wiki 页面时",
   "wikiWriteModeAuto": "直接写入",
   "wikiWriteModeAsk": "每次询问",
