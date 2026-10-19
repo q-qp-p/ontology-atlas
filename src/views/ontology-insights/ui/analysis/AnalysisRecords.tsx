@@ -116,7 +116,7 @@ export function AnalysisRecords({ dockHost, inspectRequest, onAgentReady, active
   };
   return <>
     {active ? <section className={tab === 'harness' ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : tab === 'flow' && mode === 'static' ? 'flex flex-1 flex-col' : undefined}>
-      <p data-testid="analysis-records-scope" className="mb-4 shrink-0 text-label text-[color:var(--color-text-secondary)]"><span className="font-[var(--font-weight-strong)]">{scopeName}</span>{' · '}{t(mode === 'static' ? 'analysis.example' : 'analysis.recorded')}{!project ? ` · ${t('analysis.scopeCount', { count: model.projects.length })}` : ''}</p>
+      <p data-testid="analysis-records-scope" className="mb-4 shrink-0 text-label text-[color:var(--color-text-secondary)]"><span className="font-[var(--font-weight-strong)]">{scopeName}</span>{[mode === 'static' ? t('analysis.example') : null, project ? null : t('analysis.scopeCount', { count: model.projects.length })].filter(Boolean).map(note => ` · ${note}`).join('')}</p>
       {tab === 'brief' ? <BriefTab brief={brief} onOpenTab={onTab} onAskAgent={canInspect ? text => ask(text) : undefined} /> : null}
       {tab === 'library' ? <LibraryTab detail={brief.library} nowMs={brief.nowMs} /> : null}
       {tab === 'harness' ? <HarnessTab detail={brief.harnessDetail} /> : null}
