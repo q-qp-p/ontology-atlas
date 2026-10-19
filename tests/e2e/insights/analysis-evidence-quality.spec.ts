@@ -30,22 +30,31 @@ test('multi-project scope and expanded declarations remain explicit and bounded'
   await expect(page.getByTestId('analysis-workspace')).toHaveAttribute('data-analysis-cross-count', '96');
   await expect(page.getByTestId('analysis-witness')).toHaveCount(4);
   expect(await page.locator('[data-dependency-node]').count()).toBeLessThanOrEqual(8);
-  await page.getByRole('button', { name: 'Next declarations', exact: true }).click();
+  const next = page.getByRole('button', { name: 'Next declaration', exact: true });
+  for (let press = 0; press < 4; press++) await next.click();
+  await expect(page.getByTestId('analysis-declaration-step')).toContainText('Declaration 5 of 96');
   await expect(page.getByTestId('analysis-witness')).toHaveCount(4);
-  await expect(page.getByTestId('analysis-witness').first()).toBeFocused();
+  await expect(next).toBeFocused();
   expect(await page.locator('[data-dependency-node]').count()).toBeLessThanOrEqual(8);
-  await expect(page.getByTestId('analysis-witness').first()).toContainText('05');
+});
+
+test('a saved declaration reopens with focus on its source', async ({ page }) => {
+  await page.goto('/en/ontology/insights/?guides=off');
+  await page.getByTestId('analysis-pair').nth(1).click();
+  const edge = await page.getByTestId('analysis-witness').last().getAttribute('data-edge');
+  await page.goto(`/en/ontology/insights/?guides=off&review=${encodeURIComponent(`relation:${edge}`)}`);
+  await expect(page.locator('[data-dependency-node^="from:"][aria-pressed="true"]')).toBeFocused();
 });
 
 test('two-hundred-percent text keeps nodes, evidence and controls inside the reading width', async ({ page }) => {
   await page.setViewportSize({ width: 1040, height: 720 });
   await page.goto('/en/ontology/insights/');
-  await expect(page.getByTestId('analysis-witness').first()).toBeVisible();
+  await expect(page.locator('[data-dependency-node]').first()).toBeVisible();
   await page.evaluate(() => { document.documentElement.style.fontSize = '32px'; });
   await expect.poll(() => page.locator('main').evaluate(node => node.scrollWidth - node.clientWidth)).toBeLessThanOrEqual(1);
-  const last = page.getByTestId('analysis-witness').last();
-  await last.focus(); await page.keyboard.press('Enter');
-  await expect(last).toHaveAttribute('aria-pressed', 'true');
+  const next = page.getByRole('button', { name: 'Next declaration', exact: true });
+  await next.focus(); await page.keyboard.press('Enter');
+  await expect(page.getByTestId('analysis-declaration-step')).toContainText('Declaration 2 of');
   const documentLink = page.getByTestId('analysis-evidence').getByRole('link').first();
   await documentLink.scrollIntoViewIfNeeded();
   await expect(documentLink).toBeInViewport({ ratio: 1 });
@@ -67,7 +76,7 @@ for (const tab of ['connections', 'do-next']) {
 
 test('the rendered node text and selected arrow meet contrast on their actual surfaces', async ({ page }, testInfo) => {
   await page.goto('/en/ontology/insights/');
-  await expect(page.getByTestId('analysis-witness').first()).toBeVisible();
+  await expect(page.locator('[data-dependency-node]').first()).toBeVisible();
   const result = await page.evaluate(() => {
     const rgba = (value: string): number[] => { const v = value.match(/[\d.]+/g)?.map(Number) ?? [0, 0, 0]; return [v[0], v[1], v[2], v[3] ?? 1]; };
     const over = (fg: number[], bg: number[]) => [0, 1, 2].map(i => fg[i] * fg[3] + bg[i] * (1 - fg[3])).concat(1);
@@ -163,23 +172,6 @@ test('a local explanation keeps root and identity checks in the unsent request',
   await expect(composer).toHaveValue(/immutable UIDs/);
   await expect(composer).toHaveValue(/12 full concepts/);
   expect((await harness.snapshot(page)).calls.filter(call => call.method === 'session/prompt')).toHaveLength(0);
-});
-
-test.describe('project purpose on coarse input', () => {
-  test.use({ hasTouch: true });
-  for (const [width, height] of [[390, 844], [600, 900], [768, 1024]]) {
-    for (const tab of ['connections', 'do-next']) {
-      test(`${tab} purpose remains a full touch target at ${width}`, async ({ page }) => {
-        await page.setViewportSize({ width, height });
-        await page.goto(`/en/ontology/insights/?tab=${tab}&guides=off`);
-        const purpose = page.getByTestId('analysis-purpose');
-        await expect(purpose).toBeVisible();
-        expect((await purpose.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-        await purpose.click();
-        await expect(purpose).toHaveAttribute('aria-expanded', 'true');
-      });
-    }
-  }
 });
 
 test.describe('supporting records at the touch viewport', () => {

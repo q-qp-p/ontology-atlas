@@ -1,10 +1,8 @@
 import type { KnowledgeGraphEdge } from '@/entities/knowledge-graph';
 
-export const DECLARATIONS_PER_PAGE = 4;
+const DECLARATIONS_PER_PAGE = 4;
 export const ARROW_SIZE = 8;
 const PORT_GAP = 10;
-const LABEL_CLEARANCE = { x: 28, y: 20 };
-const LABEL_STOPS = [0.5, 0.4, 0.6, 0.3, 0.7];
 
 export interface DeclarationPage { sources: string[]; targets: string[]; edges: KnowledgeGraphEdge[] }
 export interface CardBox { top: number; bottom: number; left: number; right: number }
@@ -48,21 +46,3 @@ export function curvePath(line: DeclarationLine) {
 }
 
 export const arrowPoints = (line: DeclarationLine) => `${round(line.x2 - ARROW_SIZE)},${round(line.y2 - ARROW_SIZE / 2)} ${round(line.x2)},${round(line.y2)} ${round(line.x2 - ARROW_SIZE)},${round(line.y2 + ARROW_SIZE / 2)}`;
-
-function pointAt(line: DeclarationLine, t: number) {
-  const end = line.x2 - ARROW_SIZE, bend = (end - line.x1) * 0.5, u = 1 - t;
-  const x = u ** 3 * line.x1 + 3 * u * u * t * (line.x1 + bend) + 3 * u * t * t * (end - bend) + t ** 3 * end;
-  const y = (u ** 3 + 3 * u * u * t) * line.y1 + (3 * u * t * t + t ** 3) * line.y2;
-  return { x: round(x), y: round(y) };
-}
-
-export function labelPoints(lines: readonly DeclarationLine[]) {
-  const placed: { id: string; x: number; y: number }[] = [];
-  const clearance = (point: { x: number; y: number }) => Math.min(Infinity, ...placed.map(other => Math.max(Math.abs(other.x - point.x) / LABEL_CLEARANCE.x, Math.abs(other.y - point.y) / LABEL_CLEARANCE.y)));
-  for (const line of lines) {
-    const stops = LABEL_STOPS.map(t => pointAt(line, t));
-    const free = stops.find(point => clearance(point) >= 1) ?? stops.reduce((best, point) => clearance(point) > clearance(best) ? point : best);
-    placed.push({ id: line.id, ...free });
-  }
-  return placed;
-}

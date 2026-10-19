@@ -18,24 +18,24 @@ The bundled example is explicitly labeled.
 
 The selected responsibility pair owns the headline. A visible comparison rail
 starts with six named pairs, ordered by their distinct declaration counts, with
-a selected pair retained even when it falls outside that initial set. The scope
-total covers every pair, not only the visible choices. Search matches the
-displayed or canonical names at either end without changing the selected graph
-or evidence. Additional pairs reveal six at a time in a bounded list; the action
+a selected pair retained even when it falls outside that initial set. Its
+heading counts every pair, not only the visible choices. Search appears once
+there are more pairs than the first six and matches the displayed or canonical
+names at either end without changing the selected graph or evidence. Additional pairs reveal six at a time in a bounded list; the action
 names the actual next batch and moves focus to its first new choice. Collapse
 returns to six choices while retaining the selection.
 
-The graph expands the selected pair into its actual concept endpoints. Every
-thin directed line is one declared `depends_on` edge; containment and loose
-associations are excluded. Nodes use canonical kind glyphs, explicit selection
-labels and a second frame. Visible node counts name the declarations shown in
-this graph. Ports follow measured DOM geometry when labels wrap or text grows.
-Four declarations are shown at a time as numbered steps that name both ends
-(`01 source → target`); the same numeral sits on its line, so a step and its
-curve read as one, and a caption says each line is one declaration. Each
-declaration leaves and enters its cards at its own port. Previous/next controls
-reach the rest without mounting an unbounded graph. The exact witness controls and declaring
-document are visible together at the minimum app viewport. A missing structured
+The graph expands the selected pair into its actual concept endpoints, named
+once: the headline names the two responsibilities, each card names one concept,
+and the inspector names the selected declaration. Every thin directed line is
+one declared `depends_on` edge; containment and loose associations are
+excluded. Ports follow measured DOM geometry when labels wrap or text grows.
+Four declarations are drawn at a time. Pressing a line or a card selects its
+declaration; a "Declaration n of N" stepper reaches every declaration by
+keyboard and turns to the next four when the selection crosses them, without
+mounting an unbounded graph. Each declaration leaves and enters its cards at
+its own port. The selected declaration and its declaring document are visible
+together at the minimum app viewport. A missing structured
 relationship note does not prove that the Markdown body has no explanation.
 
 Ownership follows recorded containment to the nearest domain on each parent
